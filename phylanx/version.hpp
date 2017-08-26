@@ -7,8 +7,6 @@
 #define PHYLANX_VERSION_AUG_18_2011_0854PM
 
 #include <phylanx/config.hpp>
-#include <phylanx/config/export_definitions.hpp>
-#include <phylanx/config/version.hpp>
 
 #include <cstdint>
 #include <string>

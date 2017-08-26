@@ -7,5 +7,6 @@
 #define PHYLANX_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ir.hpp>
 
 #endif
