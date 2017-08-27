@@ -8,5 +8,6 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir.hpp>
+#include <phylanx/version.hpp>
 
 #endif

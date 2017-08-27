@@ -1,0 +1,39 @@
+#  Copyright (c) 2017 Hartmut Kaiser
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+version: '{branch}-{build}'
+
+image:
+  - Visual Studio 2017
+
+configuration:
+  - Debug
+
+platform:
+  - x64
+
+shallow_clone: true
+skip_branch_with_pr: true
+
+init:
+  - cmd: git config --global core.autocrlf input
+
+install:
+  - ps: Start-FileDownload 'http://stellar-group.org/files/vcpkg-export-hpx-dependencies.7z' -FileName 'C:\projects\vcpkg-export-hpx-dependencies.7z' -Timeout 60000
+  - ps: Start-FileDownload 'http://stellar-group.org/files/hpx-master-redist-VS2017-Debug.7z' -FileName 'C:\projects\hpx-master-redist-VS2017-Debug.7z' -Timeout 60000
+  - cmd: 7z x "C:\projects\vcpkg-export-hpx-dependencies.7z" -y -oC:\projects\vcpkg >NUL
+  - cmd: 7z x "C:\projects\hpx-master-redist-VS2017-Debug.7z" -y -oC:\projects\hpx >NUL
+
+before_build:
+  - cmd: cmake -H. -Bbuild -G"Visual Studio 15 2017" -A%PLATFORM% -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DHPX_DIR=C:/projects/hpx/build/lib/cmake/HPX -DPHYLANX_WITH_PSEUDO_DEPENDENCIES=On
+
+build_script:
+  - cmd: cmake --build build --config %CONFIGURATION% --target core -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /verbosity:minimal /maxcpucount:2 /nologo
+  - cmd: cmake --build build --config %CONFIGURATION% --target tests -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /verbosity:minimal /maxcpucount:2 /nologo
+
+#test_script:
+#  - cmd: |
+#      set PATH=%PATH%;C:\projects\vcpkg\installed\x64-windows\debug\bin;C:\projects\hpx\build\debug\bin
+
