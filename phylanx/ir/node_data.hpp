@@ -13,10 +13,11 @@
 
 #include <Eigen/Dense>
 
+#include <boost/intrusive_ptr.hpp>
+
 #include <array>
 #include <cstddef>
 #include <iterator>
-#include <memory>
 #include <vector>
 
 namespace phylanx { namespace ir
@@ -24,6 +25,8 @@ namespace phylanx { namespace ir
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        /// \cond NOINTERNAL
+
         ///////////////////////////////////////////////////////////////////////
         template <typename T>
         class node_data_iterator
@@ -87,6 +90,13 @@ namespace phylanx { namespace ir
         };
 
         ///////////////////////////////////////////////////////////////////////
+        template <typename T> class node_data_storage_base;
+
+        template <typename T>
+        void intrusive_ptr_add_ref(node_data_storage_base<T>* p);
+        template <typename T>
+        void intrusive_ptr_release(node_data_storage_base<T>* p);
+
         template <typename T>
         class node_data_storage_base
         {
@@ -100,6 +110,7 @@ namespace phylanx { namespace ir
                     dimensions_type const& dims = {0, 0})
               : num_dimensions_(num_dims)
               , dimensions_(dims)
+              , count_(0)
             {
             }
             virtual ~node_data_storage_base() = default;
@@ -142,6 +153,21 @@ namespace phylanx { namespace ir
 
             std::size_t num_dimensions_;
             dimensions_type dimensions_;
+
+            // support for intrusive_ptr
+            template <typename T>
+            friend void intrusive_ptr_add_ref(node_data_storage_base<T>* p)
+            {
+                ++p->count_;
+            }
+            template <typename T>
+            friend void intrusive_ptr_release(node_data_storage_base<T>* p)
+            {
+                if (--p->count_ == 0)
+                    delete p;
+            }
+
+            hpx::util::atomic_count count_;
         };
 
         ///////////////////////////////////////////////////////////////////////
@@ -246,12 +272,14 @@ namespace phylanx { namespace ir
             }
 
             node_data_storage(storage1d_type const& values)
-              : node_data_storage_base<T>(1, {values.size(), 0})
+              : node_data_storage_base<T>(1,
+                    {static_cast<std::ptrdiff_t>(values.size()), 0})
               , data_(values)
             {
             }
             node_data_storage(storage1d_type && values)
-              : node_data_storage_base<T>(1, {values.size(), 0})
+              : node_data_storage_base<T>(1,
+                    {static_cast<std::ptrdiff_t>(values.size()), 0})
               , data_(std::move(values))
             {
             }
@@ -403,7 +431,24 @@ namespace phylanx { namespace ir
 
             storage2d_type data_;
         };
+
+        /// \endcond
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Enable = void>
+    struct node_data_traits
+    {
+        using type = T;
+    };
+
+    template <typename T, int Rows, int Cols, int Options, int MaxRows,
+        int MaxCols>
+    struct node_data_traits<
+        Eigen::Matrix<T, Rows, Cols, Options, MaxRows, MaxCols>>
+    {
+        using type = T;
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -419,6 +464,7 @@ namespace phylanx { namespace ir
 
         node_data() = default;
 
+        /// Create node data for a 0-dimensional value
         node_data(T const& value)
           : data_(new detail::node_data_storage<0, T>(value))
         {
@@ -428,6 +474,7 @@ namespace phylanx { namespace ir
         {
         }
 
+        /// Create node data for a 1-dimensional value
         node_data(storage1d_type const& value)
           : data_(new detail::node_data_storage<1, T>(value))
         {
@@ -441,6 +488,7 @@ namespace phylanx { namespace ir
         {
         }
 
+        /// Create node data for a 2-dimensional value
         node_data(storage2d_type const& value)
           : data_(new detail::node_data_storage<2, T>(value))
         {
@@ -450,6 +498,7 @@ namespace phylanx { namespace ir
         {
         }
 
+        /// Access a specific element of the underlying N-dimensional array
         T const& operator[](std::ptrdiff_t index) const
         {
             return (*data_)[index];
@@ -461,29 +510,35 @@ namespace phylanx { namespace ir
 
         using iterator = typename detail::node_data_storage_base<T>::iterator;
 
+        /// Get iterator referring to the beginning of the underlying data
         iterator begin() const
         {
             return data_->begin();
         }
+        /// Get iterator referring to the end of the underlying data
         iterator end() const
         {
             return data_->end();
         }
 
+        /// Extract the dimensionality of the underlying data array.
         std::size_t num_dimensions() const
         {
             return data_->num_dimensions();
+        }
+
+        /// Extract the dimensional extends of the underlying data array.
+        dimensions_type const& dimensions() const
+        {
+            return data_->dimensions();
         }
         std::size_t dimension(std::size_t dim) const
         {
             return data_->dimension(dim);
         }
-        dimensions_type const& dimensions() const
-        {
-            return data_->dimensions();
-        }
 
     private:
+        /// \cond NOINTERNAL
         friend class hpx::serialization::access;
 
         template <typename Archive>
@@ -492,7 +547,8 @@ namespace phylanx { namespace ir
             ar & data_;
         }
 
-        std::unique_ptr<detail::node_data_storage_base<T>> data_;
+        boost::intrusive_ptr<detail::node_data_storage_base<T>> data_;
+        /// \endcond
     };
 }}
 
