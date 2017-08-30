@@ -8,9 +8,6 @@
 
 #include <Eigen/Dense>
 
-#include <algorithm>
-#include <cstdint>
-
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {
     std::vector<char> out_buffer;
@@ -31,13 +28,7 @@ void test_serialization(phylanx::ir::node_data<double> const& array_value1)
         archive >> array_value2;
     }
 
-    HPX_TEST_EQ(array_value1.num_dimensions(), array_value2.num_dimensions());
-    HPX_TEST(array_value1.dimensions() == array_value2.dimensions());
-
-    HPX_TEST(
-        std::equal(
-            hpx::util::begin(array_value1), hpx::util::end(array_value1),
-            hpx::util::begin(array_value2), hpx::util::end(array_value2)));
+    HPX_TEST(array_value1 == array_value2);
 }
 
 int main(int argc, char* argv[])

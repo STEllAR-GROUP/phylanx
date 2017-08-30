@@ -10,6 +10,8 @@
 
 #include <hpx/include/serialization.hpp>
 
+#include <cstddef>
+
 #include <Eigen/Dense>
 
 namespace hpx { namespace serialization

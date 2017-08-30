@@ -15,6 +15,7 @@
 
 #include <boost/intrusive_ptr.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <iterator>
@@ -550,6 +551,26 @@ namespace phylanx { namespace ir
         boost::intrusive_ptr<detail::node_data_storage_base<T>> data_;
         /// \endcond
     };
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    bool operator==(node_data<T> const& lhs, node_data<T> const& rhs)
+    {
+        if (lhs.num_dimensions() != rhs.num_dimensions() ||
+            lhs.dimensions() != rhs.dimensions())
+        {
+            return false;
+        }
+
+        return std::equal(hpx::util::begin(lhs), hpx::util::end(lhs),
+            hpx::util::begin(rhs), hpx::util::end(rhs));
+    }
+
+    template <typename T>
+    bool operator!=(node_data<T> const& lhs, node_data<T> const& rhs)
+    {
+        return !(lhs == rhs);
+    }
 }}
 
 #endif
