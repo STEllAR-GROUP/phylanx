@@ -10,6 +10,14 @@ cmake_minimum_required(VERSION 3.3.2 FATAL_ERROR)
 cmake_policy(VERSION 3.3.2)
 
 ################################################################################
+# Build type (needs to be handled before project command below)
+################################################################################
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+    "Configuration type (one of Debug, RelWithDebInfo, Release, MinSizeRel)")
+endif()
+
+################################################################################
 # project metadata
 ################################################################################
 project(phylanx CXX C)
@@ -66,16 +74,35 @@ if(EXISTS "${HPX_DIR}")
   find_package(HPX REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
 
   if(NOT HPX_FOUND)
-    phylanx_error("HPX could not be found, please set HPX_DIR to help locate it.")
+    phylanx_error("HPX could not be found, please set HPX_DIR to help locating it.")
+  endif()
+
+  # make sure that configured build type for Phylanx matches the one used for HPX
+  if(NOT (${HPX_BUILD_TYPE} STREQUAL ${CMAKE_BUILD_TYPE}))
+    list(FIND ${CMAKE_BUILD_TYPE} ${HPX_BUILD_TYPE} __pos)
+    if(${__pos} EQUAL -1)
+      phylanx_warn(
+        "The configured CMAKE_BUILD_TYPE (${CMAKE_BUILD_TYPE}) is "
+        "different from the build type used for the found HPX"
+        "(HPX_BUILD_TYPE: ${HPX_BUILD_TYPE})")
+    endif()
   endif()
 
   include_directories(${HPX_INCLUDE_DIRS})
   link_directories(${HPX_LIBRARY_DIR})
-  link_directories(${HPX_LIBRARY_DIR})
+
+  phylanx_info("HPX version: " ${HPX_VERSION_STRING})
 
 else()
   phylanx_error("HPX_DIR has not been specified, please set it to help locating HPX")
 endif()
+
+find_package(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
+if(NOT Eigen3_FOUND)
+  phylanx_error("Eigen3 could not be found, please set Eigen3_DIR to help locating it.")
+endif()
+include_directories(${Eigen3_INCLUDE_DIRS})
+phylanx_info("Eigen3 version: " ${EIGEN3_VERSION_STRING})
 
 ################################################################################
 # Special compiler flags
@@ -203,6 +230,7 @@ phylanx_include(SetOutputPaths)
 
 ################################################################################
 # Build options
+
 phylanx_option(
   PHYLANX_WITH_TESTS_BENCHMARKS BOOL
   "Enable or disable the compilation of benchmark tests"
@@ -217,6 +245,16 @@ phylanx_option(
   PHYLANX_WITH_TESTS_UNIT BOOL
   "Enable or disable the compilation of unit tests"
   ON ADVANCED CATEGORY "Build")
+
+if(MSVC)
+  hpx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
+    "Force creating pseudo targets and pseudo dependencies (default OFF)."
+    OFF CATEGORY "Build Targets")
+else()
+  hpx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
+    "Force creating pseudo targets and pseudo dependencies (default ON)."
+    ON CATEGORY "Build Targets")
+endif()
 
 ################################################################################
 # Target specification

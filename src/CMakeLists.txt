@@ -35,6 +35,12 @@ if(MSVC)
   add_phylanx_library_headers(phylanx
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ir/*.hpp"
     APPEND)
+  add_phylanx_library_headers(phylanx
+    GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/util/*.hpp"
+    APPEND)
+  add_phylanx_library_headers(phylanx
+    GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/include/*.hpp"
+    APPEND)
 
   add_phylanx_source_group(
     NAME phylanx

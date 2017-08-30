@@ -3,12 +3,11 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_CONFIG_AUG_25_2017_0711PM)
-#define PHYLANX_CONFIG_AUG_25_2017_0711PM
+#if !defined(PHYLANX_UTIL_HPP)
+#define PHYLANX_UTIL_HPP
 
-#include <hpx/config.hpp>
-
-#include <phylanx/config/export_definitions.hpp>
-#include <phylanx/config/version.hpp>
+#include <phylanx/config.hpp>
+#include <phylanx/util/eigen_range.hpp>
+#include <phylanx/util/eigen_serialization.hpp>
 
 #endif

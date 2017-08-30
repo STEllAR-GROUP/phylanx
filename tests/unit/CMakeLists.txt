@@ -5,6 +5,7 @@
 
 set(subdirs
     config
+    ir
    )
 
 foreach(subdir ${subdirs})

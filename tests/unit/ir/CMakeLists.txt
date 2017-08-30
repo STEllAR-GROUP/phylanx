@@ -4,7 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    version
+    node_data
    )
 
 foreach(test ${tests})
@@ -17,13 +17,13 @@ foreach(test ${tests})
     SOURCES ${sources}
     ${${test}_FLAGS}
     EXCLUDE_FROM_ALL
-    FOLDER "Tests/Unit/Config/")
+    FOLDER "Tests/Unit/IR/")
 
-  add_phylanx_unit_test("config" ${test} ${${test}_PARAMETERS})
+  add_phylanx_unit_test("ir" ${test} ${${test}_PARAMETERS})
 
-  add_hpx_pseudo_target(tests.unit.config.${test})
-  add_hpx_pseudo_dependencies(tests.unit.config tests.unit.config.${test})
-  add_hpx_pseudo_dependencies(tests.unit.config.${test} ${test}_test_exe)
+  add_hpx_pseudo_target(tests.unit.ir.${test})
+  add_hpx_pseudo_dependencies(tests.unit.ir tests.unit.ir.${test})
+  add_hpx_pseudo_dependencies(tests.unit.ir.${test} ${test}_test_exe)
 
 endforeach()
 
