@@ -104,6 +104,77 @@ namespace phylanx { namespace ast
         op_post_decr,
     };
 
+    char const* const optoken_names[] =
+    {
+        "op_unknown",
+
+        // precedence 1
+        "op_comma",
+
+        // precedence 2
+        "op_assign",
+        "op_plus_assign",
+        "op_minus_assign",
+        "op_times_assign",
+        "op_divide_assign",
+        "op_mod_assign",
+        "op_bit_and_assign",
+        "op_bit_xor_assign",
+        "op_bitor_assign",
+        "op_shift_left_assign",
+        "op_shift_right_assign",
+
+        // precedence 3
+        "op_logical_or",
+
+        // precedence 4
+        "op_logical_and",
+
+        // precedence 5
+        "op_bit_or",
+
+        // precedence 6
+        "op_bit_xor",
+
+        // precedence 7
+        "op_bit_and",
+
+        // precedence 8
+        "op_equal",
+        "op_not_equal",
+
+        // precedence 9
+        "op_less",
+        "op_less_equal",
+        "op_greater",
+        "op_greater_equal",
+
+        // precedence 10
+        "op_shift_left",
+        "op_shift_right",
+
+        // precedence 11
+        "op_plus",
+        "op_minus",
+
+        // precedence 12
+        "op_times",
+        "op_divide",
+        "op_mod",
+
+        // precedence 13
+        "op_positive",
+        "op_negative",
+        "op_pre_incr",
+        "op_pre_decr",
+        "op_compl",
+        "op_not",
+
+        // precedence 14
+        "op_post_incr",
+        "op_post_decr",
+    };
+
     template <typename Archive>
     void load(Archive& ar, optoken& id, unsigned)
     {
@@ -538,6 +609,7 @@ namespace phylanx { namespace ast
 //         using function_list = std::list<function>;
 //     };
 
+    ///////////////////////////////////////////////////////////////////////////
     // print functions for debugging
     inline std::ostream& operator<<(std::ostream& out, nil)
     {
@@ -545,9 +617,50 @@ namespace phylanx { namespace ast
         return out;
     }
 
+    inline std::ostream& operator<<(std::ostream& out, optoken op)
+    {
+        out << optoken_names[static_cast<int>(op)];
+        return out;
+    }
+
     inline std::ostream& operator<<(std::ostream& out, identifier const& id)
     {
-        out << id.name;
+        out << "identifier: " << id.name;
+        return out;
+    }
+
+    template <typename T>
+    inline std::ostream& operator<<(std::ostream& out, primary_expr<T> const& p)
+    {
+        out << "primary_expr<T>";
+        return out;
+    }
+
+    template <typename T>
+    inline std::ostream& operator<<(std::ostream& out, operand<T> const& p)
+    {
+        out << "operand<T>";
+        return out;
+    }
+
+    template <typename T>
+    inline std::ostream& operator<<(std::ostream& out, unary_expr<T> const& p)
+    {
+        out << "unary_expr<T>";
+        return out;
+    }
+
+    template <typename T>
+    inline std::ostream& operator<<(std::ostream& out, operation<T> const& p)
+    {
+        out << "operation<T>";
+        return out;
+    }
+
+    template <typename T>
+    inline std::ostream& operator<<(std::ostream& out, expression<T> const& p)
+    {
+        out << "expression<T>";
         return out;
     }
 }}

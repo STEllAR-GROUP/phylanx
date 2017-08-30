@@ -8,5 +8,6 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/ast/traverse.hpp>
 
 #endif

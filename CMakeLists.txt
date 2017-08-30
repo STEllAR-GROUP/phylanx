@@ -246,6 +246,11 @@ phylanx_option(
   "Enable or disable the compilation of unit tests"
   ON ADVANCED CATEGORY "Build")
 
+phylanx_option(
+  PHYLANX_WITH_EXAMPLES BOOL
+  "Enable or disable the compilation of the examples"
+  ON ADVANCED CATEGORY "Build")
+
 if(MSVC)
   hpx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
     "Force creating pseudo targets and pseudo dependencies (default OFF)."

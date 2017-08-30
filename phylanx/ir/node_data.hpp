@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <iosfwd>
 #include <iterator>
 #include <vector>
 
@@ -570,6 +571,20 @@ namespace phylanx { namespace ir
     bool operator!=(node_data<T> const& lhs, node_data<T> const& rhs)
     {
         return !(lhs == rhs);
+    }
+
+    template <typename T>
+    inline std::ostream& operator<<(std::ostream& out, node_data<T> const& nd)
+    {
+        out << "node_data<T>: ";
+
+        std::ptrdiff_t dims = nd.num_dimensions();
+        out << std::string(dims, '[');
+        out << nd[0];
+        if (dims)
+            out << ", ...";
+        out << std::string(dims, ']');
+        return out;
     }
 }}
 
