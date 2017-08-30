@@ -11,8 +11,8 @@ set(subdirs
    )
 
 foreach(subdir ${subdirs})
-  add_hpx_pseudo_target(tests.unit.${subdir})
+  add_phylanx_pseudo_target(tests.unit.${subdir})
   add_subdirectory(${subdir})
-  add_hpx_pseudo_dependencies(tests.unit tests.unit.${subdir})
+  add_phylanx_pseudo_dependencies(tests.unit tests.unit.${subdir})
 endforeach()
 

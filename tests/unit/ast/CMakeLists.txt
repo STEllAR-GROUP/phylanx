@@ -21,9 +21,9 @@ foreach(test ${tests})
 
   add_phylanx_unit_test("ast" ${test} ${${test}_PARAMETERS})
 
-  add_hpx_pseudo_target(tests.unit.ast.${test})
-  add_hpx_pseudo_dependencies(tests.unit.ast tests.unit.ast.${test})
-  add_hpx_pseudo_dependencies(tests.unit.ast.${test} ${test}_test_exe)
+  add_phylanx_pseudo_target(tests.unit.ast.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.ast tests.unit.ast.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.ast.${test} ${test}_test_exe)
 
 endforeach()
 
