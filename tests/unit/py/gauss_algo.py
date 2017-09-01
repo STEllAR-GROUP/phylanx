@@ -3,7 +3,7 @@
 #
 # http://www.math.umbc.edu/~campbell/Computers/Python/linalg.html#LinAlg-SolveSys
 
-from phylanx import *
+import phylanx as p
 
 # X is a phylanx matrix
 #
@@ -25,7 +25,7 @@ def gauss_elim2(X): # Basic row pivoting
    n = X.shape[1]
 
    def compute_pivot(X, m, n, j):
-      tmpMat = matrix(j,m)
+      tmpMat = p.matrix(j,m)
       for k in range(j,m):
          tmpMat[k,j] = X[k,j]
 
@@ -42,7 +42,7 @@ def gauss_elim2(X): # Basic row pivoting
       # original code
       #
       #if(X[j,j] == 0): # find a non-zero pivot and swap rows
-      #   tmpMat = matrix(j,m)
+      #   tmpMat = p.matrix(j,m)
       #   for k in range(j,m):
       #      tmpMat[k,j] = X[k,j]
       #   ipivot = tmpMat.index(tmpMat.max())
@@ -66,12 +66,15 @@ def gauss_elim2(X): # Basic row pivoting
    return X 
 
 if __name__ == "__main__":
-   A = matrix(float, 100, 100)
-   A = randomize(A)
+   A = p.matrix(float, 100, 100)
+   A = p.randomize(A)
    A = gauss_elim1(A)
 
   
-   B = matrix(float, 100, 100)
-   B = randomize(B)
+   B = p.matrix(float, 100, 100)
+   B = p.randomize(B)
    B = guass_elim2(B)
+
+   p.compute(A)
+   p.compute(B)
 
