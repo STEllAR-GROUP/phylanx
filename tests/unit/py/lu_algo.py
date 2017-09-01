@@ -70,7 +70,7 @@ def lu_decomp(A, B):
 def get_l(LU):
   m = LU.shape[0] # row
   n = LU.shape[1] # col
-  L = p.matrix(m, n)
+  L = p.matrix(float, m, n)
 
   for (i,j) in zip(range(m), range(n)):
     if i > j:
@@ -85,7 +85,7 @@ def get_l(LU):
 def get_u(LU):
   m = LU.shape[0] # row
   n = LU.shape[1] # col
-  U = p.matrix(n, n)
+  U = p.matrix(float, n, n)
 
   for (i,j) in zip(range(n), range(n)):
     if i<=j:
@@ -97,7 +97,7 @@ def get_u(LU):
 
 if __name__ == "__main__":
 
-  A = p.matrix(100,100)
+  A = p.matrix(float, 100,100)
   p.random(A)
 
   Bmat, LU = lu_decomp(A)

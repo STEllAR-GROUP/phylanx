@@ -25,7 +25,7 @@ def gauss_elim2(X): # Basic row pivoting
    n = X.shape[1]
 
    def compute_pivot(X, m, n, j):
-      tmpMat = p.matrix(j,m)
+      tmpMat = p.matrix(float, j,m)
       for k in range(j,m):
          tmpMat[k,j] = X[k,j]
 
