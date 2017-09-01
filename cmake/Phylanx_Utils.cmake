@@ -13,6 +13,7 @@ phylanx_include(
   AddExecutable
   AddLibraryHeaders
   AddLibrarySources
+  AddLinkFlag
   AddPseudoDependencies
   AddPseudoTarget
   AddSourceGroup
