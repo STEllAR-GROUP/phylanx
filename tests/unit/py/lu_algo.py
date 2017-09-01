@@ -1,3 +1,5 @@
+# algorithm provided by http://math.nist.gov/javanumerics/jama/
+#
 import phylanx as p
 
 def lu_decomp(A, B):
