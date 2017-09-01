@@ -8,15 +8,18 @@
 #define PHYLANX_AST_NODE_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/parser/extended_variant.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/optional.hpp>
-#include <phylanx/util/variant.hpp>
-
 #include <phylanx/util/serialization/optional.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 
-#include <hpx/include/serialization.hpp>
+#include <hpx/runtime/serialization/serialization_fwd.hpp>
 
+#include <boost/spirit/include/support_extended_variant.hpp>
+#include <boost/spirit/include/support_attributes.hpp>
+
+#include <cstddef>
 #include <iosfwd>
 #include <list>
 #include <string>
@@ -28,9 +31,9 @@ namespace phylanx { namespace ast
     //  The AST
     struct tagged
     {
-//         int id; // Used to annotate the AST with the iterator position.
-//                 // This id is used as a key to a map<int, Iterator>
-//                 // (not really part of the AST.)
+        std::size_t id; // Used to annotate the AST with the iterator position.
+                        // This id is used as a key to a map<int, Iterator>
+                        // (not really part of the AST.)
     };
 
     enum class optoken
@@ -104,93 +107,6 @@ namespace phylanx { namespace ast
         op_post_decr,
     };
 
-    char const* const optoken_names[] =
-    {
-        "op_unknown",
-
-        // precedence 1
-        "op_comma",
-
-        // precedence 2
-        "op_assign",
-        "op_plus_assign",
-        "op_minus_assign",
-        "op_times_assign",
-        "op_divide_assign",
-        "op_mod_assign",
-        "op_bit_and_assign",
-        "op_bit_xor_assign",
-        "op_bitor_assign",
-        "op_shift_left_assign",
-        "op_shift_right_assign",
-
-        // precedence 3
-        "op_logical_or",
-
-        // precedence 4
-        "op_logical_and",
-
-        // precedence 5
-        "op_bit_or",
-
-        // precedence 6
-        "op_bit_xor",
-
-        // precedence 7
-        "op_bit_and",
-
-        // precedence 8
-        "op_equal",
-        "op_not_equal",
-
-        // precedence 9
-        "op_less",
-        "op_less_equal",
-        "op_greater",
-        "op_greater_equal",
-
-        // precedence 10
-        "op_shift_left",
-        "op_shift_right",
-
-        // precedence 11
-        "op_plus",
-        "op_minus",
-
-        // precedence 12
-        "op_times",
-        "op_divide",
-        "op_mod",
-
-        // precedence 13
-        "op_positive",
-        "op_negative",
-        "op_pre_incr",
-        "op_pre_decr",
-        "op_compl",
-        "op_not",
-
-        // precedence 14
-        "op_post_incr",
-        "op_post_decr",
-    };
-
-    template <typename Archive>
-    void load(Archive& ar, optoken& id, unsigned)
-    {
-        int val;
-        ar >> val;
-        id = static_cast<optoken>(val);
-    }
-
-    template <typename Archive>
-    void save(Archive& ar, optoken const& id, unsigned)
-    {
-        int val = static_cast<int>(id);
-        ar << val;
-    }
-    HPX_SERIALIZATION_SPLIT_FREE(optoken);
-
     ///////////////////////////////////////////////////////////////////////////
     struct nil {};
 
@@ -208,22 +124,21 @@ namespace phylanx { namespace ast
     {
         identifier() = default;
 
-        explicit identifier(std::string const& name)
+        identifier(std::string const& name)
         : name(name)
         {
         }
-        explicit identifier(std::string && name)
+        identifier(std::string && name)
           : name(std::move(name))
         {
         }
 
         std::string name;
 
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned)
-        {
-            ar & name;
-        }
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::input_archive& ar, unsigned);
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::output_archive& ar, unsigned);
     };
 
     inline bool operator==(identifier const& lhs, identifier const& rhs)
@@ -236,433 +151,539 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T> struct unary_expr;
-    template <typename T> struct function_call;
-    template <typename T> struct expression;
+    struct unary_expr;
+    struct expression;
+
+//     struct function_call;
+//     struct if_statement;
+//     struct while_statement;
+//     struct statement;
+//     struct return_statement;
+//
+//     using statement_list = std::list<statement>;
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    struct primary_expr : tagged
+    using expr_node_type = phylanx::ast::parser::extended_variant<
+            nil
+          , bool
+          , phylanx::ir::node_data<double>
+          , identifier
+          , phylanx::util::recursive_wrapper<expression>
+        >;
+
+    struct primary_expr : tagged, expr_node_type
     {
-        using expr_node_type = phylanx::util::variant<
-                nil
-              , bool
-              , phylanx::ir::node_data<T>
-              , identifier
-              , phylanx::util::recursive_wrapper<expression<T>>
-            >;
-
-        expr_node_type value;
-
         primary_expr() = default;
-        explicit primary_expr(bool val)
-          : value(val)
+
+        primary_expr(nil val)
+          : expr_node_type(val)
         {
         }
 
-        explicit primary_expr(phylanx::ir::node_data<T> const& val)
-          : value(val)
-        {
-        }
-        explicit primary_expr(phylanx::ir::node_data<T> && val)
-          : value(std::move(val))
+        primary_expr(bool val)
+          : expr_node_type(val)
         {
         }
 
-        explicit primary_expr(identifier const& val)
-          : value(val)
-        {
-        }
-        explicit primary_expr(identifier && val)
-          : value(std::move(val))
+        primary_expr(double val)
+          : expr_node_type(phylanx::ir::node_data<double>(val))
         {
         }
 
-        explicit primary_expr(expression<T> const& val)
-          : value(val)
+        primary_expr(phylanx::ir::node_data<double> const& val)
+          : expr_node_type(val)
         {
         }
-        explicit primary_expr(expression<T> && val)
-          : value(std::move(val))
+        primary_expr(phylanx::ir::node_data<double> && val)
+          : expr_node_type(std::move(val))
         {
         }
 
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned)
+        primary_expr(identifier const& val)
+          : expr_node_type(val)
         {
-            ar & value;
         }
+        primary_expr(identifier && val)
+          : expr_node_type(std::move(val))
+        {
+        }
+        primary_expr(std::string const&val)
+          : expr_node_type(identifier(val))
+        {
+        }
+
+        primary_expr(expression const& val)
+          : expr_node_type(val)
+        {
+        }
+        primary_expr(expression && val)
+          : expr_node_type(std::move(val))
+        {
+        }
+
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::input_archive& ar, unsigned);
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::output_archive& ar, unsigned);
     };
 
-    template <typename T>
-    bool operator==(primary_expr<T> const& lhs, primary_expr<T> const& rhs)
-    {
-        return lhs.value == rhs.value;
-    }
-    template <typename T>
-    bool operator!=(primary_expr<T> const& lhs, primary_expr<T> const& rhs)
-    {
-        return !(lhs == rhs);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
-    struct operand : tagged
+    using operand_node_type = phylanx::ast::parser::extended_variant<
+            nil
+          , phylanx::util::recursive_wrapper<primary_expr>
+          , phylanx::util::recursive_wrapper<unary_expr>
+//           , phylanx::util::recursive_wrapper<function_call>
+        >;
+
+    struct operand : tagged, operand_node_type
     {
-        using operand_node_type = phylanx::util::variant<
-                nil
-              , phylanx::util::recursive_wrapper<primary_expr<T>>
-              , phylanx::util::recursive_wrapper<unary_expr<T>>
-//                   , phylanx::util::recursive_wrapper<function_call>
-            >;
-
-        operand_node_type value;
-
         operand() = default;
 
-        explicit operand(primary_expr<T> const& val)
-          : value(val)
+        operand(double val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        explicit operand(primary_expr<T> && val)
-          : value(std::move(val))
+        operand(std::string const& val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
 
-        explicit operand(unary_expr<T> const& val)
-          : value(val)
+        operand(primary_expr const& val)
+          : operand_node_type(val)
         {
         }
-        explicit operand(unary_expr<T> && val)
-          : value(std::move(val))
+        operand(primary_expr && val)
+          : operand_node_type(std::move(val))
+        {
+        }
+
+        operand(unary_expr const& val)
+          : operand_node_type(val)
+        {
+        }
+        operand(unary_expr && val)
+          : operand_node_type(std::move(val))
         {
         }
 
 //         operand(function_call const& val)
-//             : value(val)
+//            : operand_node_type(val)
 //         {
 //         }
 //         operand(function_call && val)
-//             : value(std::move(val))
+//            : operand_node_type(std::move(val))
 //         {
 //         }
 
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned)
-        {
-            ar & value;
-        }
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::input_archive& ar, unsigned);
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::output_archive& ar, unsigned);
     };
 
-    template <typename T>
-    bool operator==(operand<T> const& lhs, operand<T> const& rhs)
-    {
-        return lhs.value == rhs.value;
-    }
-    template <typename T>
-    bool operator!=(operand<T> const& lhs, operand<T> const& rhs)
-    {
-        return !(lhs == rhs);
-    }
+//     inline bool operator==(operand const& lhs, operand const& rhs)
+//     {
+//         return lhs.get() == rhs.get();
+//     }
+//     inline bool operator!=(operand const& lhs, operand const& rhs)
+//     {
+//         return !(lhs == rhs);
+//     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
     struct unary_expr : tagged
     {
         unary_expr()
           : operator_(optoken::op_unknown)
         {}
 
-        explicit unary_expr(optoken id, operand<T> const& op)
+        unary_expr(optoken id, operand const& op)
           : operator_(id)
           , operand_(op)
         {}
-        explicit unary_expr(optoken id, operand<T> && op)
+        unary_expr(optoken id, operand && op)
           : operator_(id)
           , operand_(std::move(op))
         {}
 
         optoken operator_;
-        phylanx::util::recursive_wrapper<operand<T>> operand_;
+        operand operand_;
 
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned)
-        {
-            ar & operator_ & operand_;
-        }
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::input_archive& ar, unsigned);
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::output_archive& ar, unsigned);
     };
 
-    template <typename T>
-    bool operator==(unary_expr<T> const& lhs, unary_expr<T> const& rhs)
+    inline bool operator==(unary_expr const& lhs, unary_expr const& rhs)
     {
         return lhs.operator_ == rhs.operator_ &&
             lhs.operand_ == rhs.operand_;
     }
-    template <typename T>
-    bool operator!=(unary_expr<T> const& lhs, unary_expr<T> const& rhs)
+    inline bool operator!=(unary_expr const& lhs, unary_expr const& rhs)
     {
         return !(lhs == rhs);
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
     struct operation
     {
         operation()
           : operator_(optoken::op_unknown)
         {}
 
-        explicit operation(optoken id, operand<T> const& op)
+        operation(optoken id, operand const& op)
           : operator_(id)
           , operand_(op)
         {}
-        explicit operation(optoken id, operand<T> && op)
+        operation(optoken id, operand && op)
           : operator_(id)
           , operand_(std::move(op))
         {}
 
         optoken operator_;
-        operand<T> operand_;
+        operand operand_;
 
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned)
-        {
-            ar & operator_ & operand_;
-        }
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::input_archive& ar, unsigned);
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::output_archive& ar, unsigned);
     };
 
-    template <typename T>
-    bool operator==(operation<T> const& lhs, operation<T> const& rhs)
+    inline bool operator==(operation const& lhs, operation const& rhs)
     {
         return lhs.operator_ == rhs.operator_ &&
             lhs.operand_ == rhs.operand_;
     }
-    template <typename T>
-    bool operator!=(operation<T> const& lhs, operation<T> const& rhs)
+    inline bool operator!=(operation const& lhs, operation const& rhs)
     {
         return !(lhs == rhs);
     }
 
-//         struct function_call
-//         {
-//             identifier function_name;
-//             std::list<expression> args;
-//
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & function_name & args;
-//             }
-//         };
-
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T>
     struct expression
     {
         expression() = default;
 
-        explicit expression(operand<T> const& f)
+        expression(operand const& f)
           : first(f)
         {}
-        explicit expression(operand<T> && f)
+        expression(operand && f)
           : first(std::move(f))
         {}
 
-        void append(operation<T> const& op)
+        void append(operation const& op)
         {
             rest.push_back(op);
         }
-        void append(operation<T> && op)
+        void append(operation && op)
         {
             rest.emplace_back(std::move(op));
         }
-        void append(std::list<operation<T>> const& l)
+        void append(std::list<operation> const& l)
         {
             std::copy(l.begin(), l.end(), std::back_inserter(rest));
         }
-        void append(std::list<operation<T>> && l)
+        void append(std::list<operation> && l)
         {
             std::move(l.begin(), l.end(), std::back_inserter(rest));
         }
 
-        operand<T> first;
-        std::list<operation<T>> rest;
+        operand first;
+        std::list<operation> rest;
 
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned)
-        {
-            ar & first & rest;
-        }
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::input_archive& ar, unsigned);
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::output_archive& ar, unsigned);
     };
 
-    template <typename T>
-    bool operator==(expression<T> const& lhs, expression<T> const& rhs)
+    inline bool operator==(expression const& lhs, expression const& rhs)
     {
         return lhs.first == rhs.first && lhs.rest == rhs.rest;
     }
-    template <typename T>
-    bool operator!=(expression<T> const& lhs, expression<T> const& rhs)
+    inline bool operator!=(expression const& lhs, expression const& rhs)
     {
         return !(lhs == rhs);
     }
 
-//         struct assignment
-//         {
-//             identifier lhs;
-//             optoken operator_;
-//             expression rhs;
+//     ///////////////////////////////////////////////////////////////////////////
+//     struct function_call
+//     {
+//         identifier function_name;
+//         std::list<expression> args;
 //
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & lhs & operator_ & rhs;
-//             }
-//         };
-//
-//         struct variable_declaration
-//         {
-//             identifier lhs;
-//             phylanx::util::optional<expression> rhs;
-//
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & lhs & rhs;
-//             }
-//         };
-//
-//         struct if_statement;
-//         struct while_statement;
-//         struct statement_list;
-//         struct return_statement;
-//
-//         using statement = phylanx::util::variant<
-//                 nil
-//               , variable_declaration
-//               , assignment
-//               , phylanx::util::recursive_wrapper<if_statement>
-//               , phylanx::util::recursive_wrapper<while_statement>
-//               , phylanx::util::recursive_wrapper<return_statement>
-//               , phylanx::util::recursive_wrapper<statement_list>
-//               , phylanx::util::recursive_wrapper<expression>
-//             >;
-//
-//         struct statement_list : std::list<statement>
-//         {
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & *static_cast<std::list<statement>>(this);
-//             }
-//         };
-//
-//         struct if_statement
-//         {
-//             expression condition;
-//             statement then;
-//             phylanx::util::optional<statement> else_;
-//
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & condition & then & else_;
-//             }
-//         };
-//
-//         struct while_statement
-//         {
-//             expression condition;
-//             statement body;
-//
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & condition & body;
-//             }
-//         };
-//
-//         struct return_statement : tagged
-//         {
-//             phylanx::util::optional<expression> expr;
-//
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & expr;
-//             }
-//         };
-//
-//         struct function
-//         {
-//             std::string return_type;
-//             identifier function_name;
-//             std::list<identifier> args;
-//             phylanx::util::optional<statement_list> body;
-//
-//             template <typename Archive>
-//             void serialize(Archive& ar, unsigned)
-//             {
-//                 ar & return_type & function_name & args & body;
-//             }
-//         };
-//
-//         using function_list = std::list<function>;
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
 //     };
+//
+//     inline bool operator==(function_call const& lhs, function_call const& rhs)
+//     {
+//         return lhs.function_name == rhs.function_name && lhs.args == rhs.args;
+//     }
+//     inline bool operator!=(function_call const& lhs, function_call const& rhs)
+//     {
+//         return !(lhs == rhs);
+//     }
+//
+//     ///////////////////////////////////////////////////////////////////////////
+//     struct assignment
+//     {
+//         identifier lhs;
+//         optoken operator_;
+//         expression rhs;
+//
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
+//     };
+//
+//     inline bool operator==(assignment const& lhs, assignment const& rhs)
+//     {
+//         return lhs.lhs == rhs.lhs && lhs.operator_ == rhs.operator_ &&
+//             lhs.rhs == rhs.rhs;
+//     }
+//     inline bool operator!=(assignment const& lhs, assignment const& rhs)
+//     {
+//         return !(lhs == rhs);
+//     }
+//
+//     ///////////////////////////////////////////////////////////////////////////
+//     struct variable_declaration
+//     {
+//         identifier lhs;
+//         phylanx::util::optional<expression> rhs;
+//
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
+//     };
+//
+//     inline bool operator==(
+//         variable_declaration const& lhs, variable_declaration const& rhs)
+//     {
+//         return lhs.lhs == rhs.lhs && lhs.rhs == rhs.rhs;
+//     }
+//     inline bool operator!=(
+//         variable_declaration const& lhs, variable_declaration const& rhs)
+//     {
+//         return !(lhs == rhs);
+//     }
+//
+//     ///////////////////////////////////////////////////////////////////////////
+//     using statement_node_type = phylanx::ast::parser::extended_variant<
+//             nil
+//           , variable_declaration
+//           , assignment
+//           , phylanx::util::recursive_wrapper<if_statement>
+//           , phylanx::util::recursive_wrapper<while_statement>
+//           , phylanx::util::recursive_wrapper<return_statement>
+//           , phylanx::util::recursive_wrapper<statement_list>
+//           , phylanx::util::recursive_wrapper<expression>
+//         >;
+//
+//     struct statement : statement_node_type
+//     {
+//         statement() = default;
+//
+//         statement(nil val)
+//           : statement_node_type(val)
+//         {
+//         }
+//
+//         statement(variable_declaration const& val)
+//           : statement_node_type(val)
+//         {
+//         }
+//         statement(variable_declaration && val)
+//           : statement_node_type(std::move(val))
+//         {
+//         }
+//
+//         statement(assignment const& val)
+//           : statement_node_type(val)
+//         {
+//         }
+//         statement(assignment && val)
+//           : statement_node_type(std::move(val))
+//         {
+//         }
+//
+//         statement(if_statement const& val)
+//           : statement_node_type(val)
+//         {
+//         }
+//         statement(if_statement && val)
+//           : statement_node_type(std::move(val))
+//         {
+//         }
+//
+//         statement(while_statement const& val)
+//           : statement_node_type(val)
+//         {
+//         }
+//         statement(while_statement && val)
+//           : statement_node_type(std::move(val))
+//         {
+//         }
+//
+//         statement(return_statement const& val)
+//           : statement_node_type(val)
+//         {
+//         }
+//         statement(return_statement && val)
+//           : statement_node_type(std::move(val))
+//         {
+//         }
+//
+//         statement(statement_list const& val)
+//           : statement_node_type(val)
+//         {
+//         }
+//         statement(statement_list && val)
+//           : statement_node_type(std::move(val))
+//         {
+//         }
+//
+//         statement(expression const& val)
+//           : statement_node_type(val)
+//         {
+//         }
+//         statement(expression && val)
+//           : statement_node_type(std::move(val))
+//         {
+//         }
+//
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
+//     };
+//
+//     ///////////////////////////////////////////////////////////////////////////
+//     struct if_statement
+//     {
+//         expression condition;
+//         statement then;
+//         phylanx::util::optional<statement> else_;
+//
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
+//     };
+//
+//     inline bool operator==(if_statement const& lhs, if_statement const& rhs)
+//     {
+//         return lhs.condition == rhs.condition && lhs.then == rhs.then &&
+//             lhs.else_ == rhs.else_;
+//     }
+//     inline bool operator!=(if_statement const& lhs, if_statement const& rhs)
+//     {
+//         return !(lhs == rhs);
+//     }
+//
+//     ///////////////////////////////////////////////////////////////////////////
+//     struct while_statement
+//     {
+//         expression condition;
+//         statement body;
+//
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
+//     };
+//
+//     inline bool operator==(
+//         while_statement const& lhs, while_statement const& rhs)
+//     {
+//         return lhs.condition == rhs.condition && lhs.body == rhs.body;
+//     }
+//     inline bool operator!=(
+//         while_statement const& lhs, while_statement const& rhs)
+//     {
+//         return !(lhs == rhs);
+//     }
+//
+//     ///////////////////////////////////////////////////////////////////////////
+//     struct return_statement : tagged
+//     {
+//         phylanx::util::optional<expression> expr;
+//
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
+//     };
+//
+//     inline bool operator==(
+//         return_statement const& lhs, return_statement const& rhs)
+//     {
+//         return lhs.expr == rhs.expr;
+//     }
+//     inline bool operator!=(
+//         return_statement const& lhs, return_statement const& rhs)
+//     {
+//         return !(lhs == rhs);
+//     }
+//
+//     ///////////////////////////////////////////////////////////////////////////
+//     struct function
+//     {
+//         std::string return_type;
+//         identifier function_name;
+//         std::list<identifier> args;
+//         phylanx::util::optional<statement_list> body;
+//
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::input_archive& ar, unsigned);
+//         PHYLANX_EXPORT void serialize(
+//             hpx::serialization::output_archive& ar, unsigned);
+//     };
+//
+//     using function_list = std::list<function>;
 
     ///////////////////////////////////////////////////////////////////////////
     // print functions for debugging
-    inline std::ostream& operator<<(std::ostream& out, nil)
-    {
-        out << "nil";
-        return out;
-    }
-
-    inline std::ostream& operator<<(std::ostream& out, optoken op)
-    {
-        out << optoken_names[static_cast<int>(op)];
-        return out;
-    }
-
-    inline std::ostream& operator<<(std::ostream& out, identifier const& id)
-    {
-        out << "identifier: " << id.name;
-        return out;
-    }
-
-    template <typename T>
-    inline std::ostream& operator<<(std::ostream& out, primary_expr<T> const& p)
-    {
-        out << "primary_expr<T>";
-        return out;
-    }
-
-    template <typename T>
-    inline std::ostream& operator<<(std::ostream& out, operand<T> const& p)
-    {
-        out << "operand<T>";
-        return out;
-    }
-
-    template <typename T>
-    inline std::ostream& operator<<(std::ostream& out, unary_expr<T> const& p)
-    {
-        out << "unary_expr<T>";
-        return out;
-    }
-
-    template <typename T>
-    inline std::ostream& operator<<(std::ostream& out, operation<T> const& p)
-    {
-        out << "operation<T>";
-        return out;
-    }
-
-    template <typename T>
-    inline std::ostream& operator<<(std::ostream& out, expression<T> const& p)
-    {
-        out << "expression<T>";
-        return out;
-    }
+    PHYLANX_EXPORT std::ostream& operator<<(std::ostream& out, nil);
+    PHYLANX_EXPORT std::ostream& operator<<(std::ostream& out, optoken op);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, identifier const& id);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, primary_expr const& p);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, operand const& op);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, unary_expr const& ue);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, operation const& op);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, expression const& expr);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, function_call const& fc);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, assignment const& assign);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, variable_declaration const& vd);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, statement const& stmt);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, if_statement const& if_);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, while_statement const& while_);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, return_statement const& ret);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, function const& func);
+//     PHYLANX_EXPORT std::ostream& operator<<(
+//         std::ostream& out, function_list const& fl);
 }}
 
 #endif

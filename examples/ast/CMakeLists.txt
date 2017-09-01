@@ -4,7 +4,8 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(example_programs
-    traverse_ast
+    generate
+    traverse
    )
 
 foreach(example_program ${example_programs})
@@ -19,7 +20,7 @@ foreach(example_program ${example_programs})
   add_phylanx_executable(${example_program}
                      SOURCES ${sources}
                      ${${example_program}_FLAGS}
-                     FOLDER "Examples/AST/${example_program}")
+                     FOLDER "Examples/AST")
 
   # add a custom target for this example
   add_phylanx_pseudo_target(examples.ast_.${example_program})

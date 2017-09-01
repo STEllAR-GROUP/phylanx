@@ -16,7 +16,7 @@ endif()
 add_phylanx_library_sources(phylanx
   GLOB GLOBS "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_phylanx_library_sources(phylanx
-  GLOB GLOBS "${PROJECT_SOURCE_DIR}/src/ir/*.cpp"
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/ast/*.cpp"
   APPEND)
 
 add_phylanx_source_group(
@@ -33,7 +33,7 @@ if(MSVC)
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/config/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
-    GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ast/*.hpp"
+    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ast/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ir/*.hpp"

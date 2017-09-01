@@ -4,6 +4,8 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
+
+#include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
 #include <Eigen/Dense>

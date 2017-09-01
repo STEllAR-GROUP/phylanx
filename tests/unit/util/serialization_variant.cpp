@@ -6,12 +6,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 
-#include <hpx/runtime/serialization/serialize.hpp>
-#include <hpx/runtime/serialization/string.hpp>
-
-#include <hpx/runtime/serialization/input_archive.hpp>
-#include <hpx/runtime/serialization/output_archive.hpp>
-
+#include <hpx/hpx_main.hpp>
+#include <hpx/include/serialization.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
 #include <string>

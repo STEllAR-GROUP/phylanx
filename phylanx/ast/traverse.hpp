@@ -14,13 +14,21 @@
 namespace phylanx { namespace ast
 {
     ///////////////////////////////////////////////////////////////////////////
-    struct static_visitor {};
-
-    ///////////////////////////////////////////////////////////////////////////
     template <typename F, typename Ast>
     bool traverse(phylanx::util::recursive_wrapper<Ast> const& rw, F && f)
     {
         return traverse(rw.get(), std::forward<F>(f));
+    }
+
+    template <typename F, typename T>
+    bool traverse(std::list<T> const& l, F && f)
+    {
+        for (auto const& val : l)
+        {
+            if (!traverse(val, std::forward<F>(f)))
+                return false;
+        }
+        return true;
     }
 
     template <typename F>
@@ -29,8 +37,8 @@ namespace phylanx { namespace ast
         return hpx::util::invoke(f, b);
     }
 
-    template <typename T, typename F>
-    bool traverse(phylanx::ir::node_data<T> const& data, F && f)
+    template <typename F>
+    bool traverse(phylanx::ir::node_data<double> const& data, F && f)
     {
         return hpx::util::invoke(f, data);
     }
@@ -53,20 +61,44 @@ namespace phylanx { namespace ast
         return hpx::util::invoke(f, id);
     }
 
-    template <typename T, typename F>
-    bool traverse(primary_expr<T> const& pe, F && f);
+    template <typename F>
+    bool traverse(primary_expr const& pe, F && f);
 
-    template <typename T, typename F>
-    bool traverse(operand<T> const& op, F && f);
+    template <typename F>
+    bool traverse(operand const& op, F && f);
 
-    template <typename T, typename F>
-    bool traverse(unary_expr<T> const& ue, F && f);
+    template <typename F>
+    bool traverse(unary_expr const& ue, F && f);
 
-    template <typename T, typename F>
-    bool traverse(operation<T> const& op, F && f);
+    template <typename F>
+    bool traverse(operation const& op, F && f);
 
-    template <typename T, typename F>
-    bool traverse(expression<T> const& expr, F && f);
+    template <typename F>
+    bool traverse(expression const& expr, F && f);
+
+//     template <typename F>
+//     bool traverse(function_call const& op, F && f);
+//
+//     template <typename F>
+//     bool traverse(assignment const& op, F && f);
+//
+//     template <typename F>
+//     bool traverse(variable_declaration const& op, F && f);
+//
+//     template <typename F>
+//     bool traverse(statement const& op, F && f);
+//
+//     template <typename F>
+//     bool traverse(if_statement const& op, F && f);
+//
+//     template <typename F>
+//     bool traverse(while_statement const& op, F && f);
+//
+//     template <typename F>
+//     bool traverse(return_statement const& op, F && f);
+//
+//     template <typename F>
+//     bool traverse(function const& op, F && f);
 
     namespace detail
     {
@@ -95,42 +127,40 @@ namespace phylanx { namespace ast
         }
     }
 
-    template <typename T, typename F>
-    bool traverse(primary_expr<T> const& pe, F && f)
+    template <typename F>
+    bool traverse(primary_expr const& pe, F && f)
     {
         if (hpx::util::invoke(f, pe))
         {
-            return phylanx::util::visit(
-                detail::make_unwrap_visitor(std::forward<F>(f)), pe.value);
+            return visit(detail::make_unwrap_visitor(std::forward<F>(f)), pe);
         }
         return false;
     }
 
-    template <typename T, typename F>
-    bool traverse(operand<T> const& op, F && f)
+    template <typename F>
+    bool traverse(operand const& op, F && f)
     {
         if (hpx::util::invoke(f, op))
         {
-            return phylanx::util::visit(
-                detail::make_unwrap_visitor(std::forward<F>(f)), op.value);
+            return visit(detail::make_unwrap_visitor(std::forward<F>(f)), op);
         }
         return false;
     }
 
-    template <typename T, typename F>
-    bool traverse(unary_expr<T> const& ue, F && f)
+    template <typename F>
+    bool traverse(unary_expr const& ue, F && f)
     {
         if (hpx::util::invoke(f, ue))
         {
-            if (!traverse(ue.operand_, std::forward<F>(f)))
+            if (!traverse(ue.operator_, std::forward<F>(f)))
                 return false;
-            return traverse(ue.operator_, std::forward<F>(f));
+            return traverse(ue.operand_, std::forward<F>(f));
         }
         return false;
     }
 
-    template <typename T, typename F>
-    bool traverse(operation<T> const& op, F && f)
+    template <typename F>
+    bool traverse(operation const& op, F && f)
     {
         if (hpx::util::invoke(f, op))
         {
@@ -141,8 +171,8 @@ namespace phylanx { namespace ast
         return false;
     }
 
-    template <typename T, typename F>
-    bool traverse(expression<T> const& expr, F && f)
+    template <typename F>
+    bool traverse(expression const& expr, F && f)
     {
         if (hpx::util::invoke(f, expr))
         {
@@ -157,6 +187,112 @@ namespace phylanx { namespace ast
         }
         return true;
     }
+
+//     template <typename F>
+//     bool traverse(function_call const& fc, F && f)
+//     {
+//         if (hpx::util::invoke(f, fc))
+//         {
+//             if (!traverse(fc.function_name, std::forward<F>(f)))
+//                 return false;
+//             return traverse(fc.args, std::forward<F>(f));
+//         }
+//         return false;
+//     }
+//
+//     template <typename F>
+//     bool traverse(assignment const& assign, F && f)
+//     {
+//         if (hpx::util::invoke(f, assign))
+//         {
+//             if (!traverse(assign.lhs, std::forward<F>(f)))
+//                 return false;
+//             if (!traverse(assign.operator_, std::forward<F>(f)))
+//                 return false;
+//             return traverse(assign.rhs, std::forward<F>(f));
+//         }
+//         return false;
+//     }
+//
+//     template <typename F>
+//     bool traverse(variable_declaration const& vd, F && f)
+//     {
+//         if (hpx::util::invoke(f, vd))
+//         {
+//             if (!traverse(vd.lhs, std::forward<F>(f)))
+//                 return false;
+//             if (vd.rhs.has_value())
+//                 return traverse(vd.rhs, std::forward<F>(f));
+//             return true;
+//         }
+//         return false;
+//     }
+//
+//     template <typename F>
+//     bool traverse(statement const& stmt, F && f)
+//     {
+//         if (hpx::util::invoke(f, stmt))
+//         {
+//             return visit(detail::make_unwrap_visitor(std::forward<F>(f)), stmt);
+//         }
+//         return false;
+//     }
+//
+//     template <typename F>
+//     bool traverse(if_statement const& if_, F && f)
+//     {
+//         if (hpx::util::invoke(f, if_))
+//         {
+//             if (!traverse(if_.condition, std::forward<F>(f)))
+//                 return false;
+//             if (!traverse(if_.then, std::forward<F>(f)))
+//                 return false;
+//             if (if_.else_.has_value())
+//                 return traverse(if_.else_, std::forward<F>(f));
+//             return true;
+//         }
+//         return false;
+//     }
+//
+//     template <typename F>
+//     bool traverse(while_statement const& while_, F && f)
+//     {
+//         if (hpx::util::invoke(f, while_))
+//         {
+//             if (!traverse(while_.condition, std::forward<F>(f)))
+//                 return false;
+//             return traverse(while_.body, std::forward<F>(f));
+//         }
+//         return false;
+//     }
+//
+//     template <typename F>
+//     bool traverse(return_statement const& ret, F && f)
+//     {
+//         if (hpx::util::invoke(f, ret))
+//         {
+//             if (ret.expr.has_value())
+//                 return traverse(ret.expr, std::forward<F>(f));
+//             return true;
+//         }
+//         return false;
+//     }
+//
+//     template <typename F>
+//     bool traverse(function const& func, F && f)
+//     {
+//         if (hpx::util::invoke(f, func))
+//         {
+//             if (!traverse(func.function_name, std::forward<F>(f)))
+//                 return false;
+//             if (!traverse(func.args, std::forward<F>(f)))
+//                 return false;
+//             if (func.body.has_value())
+//                 return traverse(func.body, std::forward<F>(f));
+//             return true;
+//         }
+//         return false;
+//     }
 }}
 
 #endif
