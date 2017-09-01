@@ -6,7 +6,7 @@ from phylanx import *
 
 # X is a phylanx matrix
 #
-def gaussianelim1(X):
+def gauss_elim1(X):
   row = X.shape[0] # return row size
   col = X.shape[1] # return col size
   for i in range(col):
@@ -19,7 +19,7 @@ def gaussianelim1(X):
 
 # X is a phylanx matrix
 #
-def gausselim2(X): # Basic row pivoting
+def gauss_elim2(X): # Basic row pivoting
    m = X.shape[0]
    n = X.shape[1]
 
@@ -60,3 +60,12 @@ def gausselim2(X): # Basic row pivoting
    # returns result or 'end point'/'sink' of the computational graph
    return X 
 
+if __name__ == "__main__":
+  A = matrix(float, 100, 100)
+  A = randomize(A)
+  A = gauss_elim1(A)
+
+  
+  B = matrix(float, 100, 100)
+  B = randomize(B)
+  B = guass_elim2(B)
