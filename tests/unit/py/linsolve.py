@@ -27,6 +27,7 @@ def gauss_elim2(X): # Basic row pivoting
       tmpMat = matrix(j,m)
       for k in range(j,m):
          tmpMat[k,j] = X[k,j]
+
       ipivot = tmpMat.index(tmpMat.max()) # find index of value 
       tmp = X[j,:] # row select
       X[j,:] = X[ipivot,:]
@@ -50,7 +51,10 @@ def gauss_elim2(X): # Basic row pivoting
       #
       # phylanx version
       #
-      X.if(X[j,j] == 0.0, compute_pivot(X,m, n, j));
+
+      # should if be the name of this method on a matrix node?
+      # 
+      X.conditional(X[j,j] == 0.0, compute_pivot(X,m, n, j));
 
       for i in range(j+1,m):
          c = X[i,j]/X[j,j]   # ratio of (i,j) elt by (j,j) (diagonal) elt
