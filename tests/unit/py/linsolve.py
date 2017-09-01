@@ -7,15 +7,15 @@ from phylanx import *
 # X is a phylanx matrix
 #
 def gauss_elim1(X):
-  row = X.shape[0] # return row size
-  col = X.shape[1] # return col size
-  for i in range(col):
-    for j in range(i+1, row):
-      m = X[j, i]/ X[i, i]
-      for k in range(col):
-        X[j, k] = X[j, k] - m * X[i, k]
+   row = X.shape[0] # return row size
+   col = X.shape[1] # return col size
+   for i in range(col):
+      for j in range(i+1, row):
+         m = X[j, i]/ X[i, i]
+         for k in range(col):
+            X[j, k] = X[j, k] - m * X[i, k]
 
-  return X
+   return X
 
 # X is a phylanx matrix
 #
@@ -65,11 +65,12 @@ def gauss_elim2(X): # Basic row pivoting
    return X 
 
 if __name__ == "__main__":
-  A = matrix(float, 100, 100)
-  A = randomize(A)
-  A = gauss_elim1(A)
+   A = matrix(float, 100, 100)
+   A = randomize(A)
+   A = gauss_elim1(A)
 
   
-  B = matrix(float, 100, 100)
-  B = randomize(B)
-  B = guass_elim2(B)
+   B = matrix(float, 100, 100)
+   B = randomize(B)
+   B = guass_elim2(B)
+
