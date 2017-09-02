@@ -7,7 +7,7 @@ def dotprod(a, b):
    # b is a p.vector(float) or p.ndarray(float)
    # a * b creates an element-wise multiplication node
    # p.reduce creates a addition reduction node
-   assert(a.shape == b.shape)
+   assert(a.shape == b.shape) # shape method returns n-ary tuples
    c = p.reduce(a * b)
    return c
 
