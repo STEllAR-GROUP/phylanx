@@ -31,12 +31,13 @@ def qr_decomp(A):
    m = A.shape[0] # rows
    n = A.shape[1] # cols
 
-   Rdiag = p.array(float, n)
+   c = A.context()
+   Rdiag = c.array(float, n)
 
    QR = A.copy() # deep copy of p.matrix
  
    for k in range(n):
-      nrm = p.scalar(0.0)
+      nrm = c.scalar(0.0)
       for i in range(k,m):
          rnm = hypot(nrm, QR[i,k])
 
@@ -47,7 +48,7 @@ def qr_decomp(A):
 
    for k in range(n):
       for j in range(n):
-         s = p.scalar(0.0)
+         s = c.scalar(0.0)
          for i in range(k, m):
             s += QR[i,k]*X[i,j]
          s = -s/QR[k,k]
@@ -67,10 +68,11 @@ def qr_decomp(A):
 def get_q(QR, Rdiag):
    m = QR.shape[0]
    n = QR.shape[1]
-   Q = p.matrix(float, (m, n), 0.0)
+   c = QR.context()
+   Q = c.matrix(float, (m, n), 0.0)
 
    def Qcompute(j, k, n, QR, Q):
-      s = p.scalar(0.0)
+      s = c.scalar(0.0)
       for i in range(k,m):
          s += QR[i,k]*Q[i,j]
       s = -s/QR[k,k]
@@ -89,7 +91,8 @@ def get_q(QR, Rdiag):
 
 
 def get_r(QR, Rdiag):
-   R = p.matrix(float, (n,n), 0.0)
+   c = QR.context()
+   R = c.matrix(float, (n,n), 0.0)
    for (i,j) in getindices(n,n):
       if i < j:
          R[i,j] = QR[i,j]
@@ -99,10 +102,11 @@ def get_r(QR, Rdiag):
    return R
 
 if __name__ == "__main__":
-   A = p.matrix(float, (100,100))
-   randomize(A)
+   c = p.context()
+   A = c.matrix(float, (100,100))
+   p.randomize(A)
    QR, Rdiag = qr_decomp(A)
    Q = get_q(QR, Rdiag)
    R = get_r(QR, Rdiag)
-   p.compute(Q, R)
+   p.compute(c)
 
