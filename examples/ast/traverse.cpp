@@ -4,16 +4,23 @@
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
-#include <hpx/hpx_main.hp>
+#include <hpx/hpx_main.hpp>
 
 #include <iostream>
 
-struct traverse_ast
+struct traverse_ast : phylanx::ast::static_visitor
 {
     template <typename T>
-    bool operator()(T const& val) const
+    bool on_enter(T const& val) const
     {
-        std::cout << val << std::endl;
+        std::cout << "->" << val << std::endl;
+        return true;
+    }
+
+    template <typename T>
+    bool on_exit(T const& val) const
+    {
+        std::cout << "<-" << val << std::endl;
         return true;
     }
 };

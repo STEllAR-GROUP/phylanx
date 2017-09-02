@@ -9,10 +9,87 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 
+#include <hpx/traits/has_member_xxx.hpp>
 #include <hpx/util/invoke.hpp>
+
+#include <list>
+#include <type_traits>
+#include <utility>
 
 namespace phylanx { namespace ast
 {
+    ///////////////////////////////////////////////////////////////////////////
+    struct static_visitor
+    {
+        template <typename T>
+        bool on_enter(T && val) const
+        {
+            return true;
+        }
+
+        template <typename T>
+        bool on_exit(T && val) const
+        {
+            return true;
+        }
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        HPX_HAS_MEMBER_XXX_TRAIT_DEF(on_enter);
+
+        struct on_enter
+        {
+            template <typename F, typename Ast>
+            static std::enable_if_t<has_on_enter<std::decay_t<F>>::value, bool>
+            call(F && f, Ast const& ast)
+            {
+                return f.on_enter(ast);
+            }
+
+            template <typename F, typename Ast>
+            static std::enable_if_t<!has_on_enter<std::decay_t<F>>::value, bool>
+            call(F && f, Ast const& ast)
+            {
+                return hpx::util::invoke(f, ast);
+            }
+        };
+
+        HPX_HAS_MEMBER_XXX_TRAIT_DEF(on_exit);
+
+        struct on_exit
+        {
+            template <typename F, typename Ast>
+            static std::enable_if_t<has_on_exit<std::decay_t<F>>::value, bool>
+            call(F && f, Ast const& ast)
+            {
+                return f.on_exit(ast);
+            }
+
+            template <typename F, typename Ast>
+            static std::enable_if_t<!has_on_exit<std::decay_t<F>>::value, bool>
+            call(F && f, Ast const& ast)
+            {
+                return true;
+            }
+        };
+
+        ///////////////////////////////////////////////////////////////////////
+        template <typename F, typename Ast, typename Visitor>
+        bool on_visit(F && f, Ast const& ast, Visitor && visit)
+        {
+            try {
+                f(ast, std::forward<Visitor>(visit));
+            }
+            catch (...) {
+                detail::on_exit::call(visit, ast);
+                throw;
+            }
+            return detail::on_exit::call(visit, ast);
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename F, typename Ast>
     bool traverse(phylanx::util::recursive_wrapper<Ast> const& rw, F && f)
@@ -34,31 +111,56 @@ namespace phylanx { namespace ast
     template <typename F>
     bool traverse(bool b, F && f)
     {
-        return hpx::util::invoke(f, b);
+        return detail::on_visit(
+            [](bool b, F && f)
+            {
+                detail::on_enter::call(f, b);
+            },
+            b, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(phylanx::ir::node_data<double> const& data, F && f)
     {
-        return hpx::util::invoke(f, data);
+        return detail::on_visit(
+            [](phylanx::ir::node_data<double> const& data, F && f)
+            {
+                detail::on_enter::call(f, data);
+            },
+            data, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(optoken op, F && f)
     {
-        return hpx::util::invoke(f, op);
+        return detail::on_visit(
+            [](optoken op, F && f)
+            {
+                detail::on_enter::call(f, op);
+            },
+            op, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(nil, F && f)
     {
-        return hpx::util::invoke(f, nil{});
+        return detail::on_visit(
+            [](nil, F && f)
+            {
+                detail::on_enter::call(f, nil{});
+            },
+            nil{}, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(identifier const& id, F && f)
     {
-        return hpx::util::invoke(f, id);
+        return detail::on_visit(
+            [](identifier const& id, F && f)
+            {
+                detail::on_enter::call(f, id);
+            },
+            id, std::forward<F>(f));
     }
 
     template <typename F>
@@ -130,62 +232,80 @@ namespace phylanx { namespace ast
     template <typename F>
     bool traverse(primary_expr const& pe, F && f)
     {
-        if (hpx::util::invoke(f, pe))
-        {
-            return visit(detail::make_unwrap_visitor(std::forward<F>(f)), pe);
-        }
-        return false;
+        return detail::on_visit(
+            [](primary_expr const& pe, F && f)
+            {
+                if (detail::on_enter::call(f, pe))
+                {
+                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), pe);
+                }
+            },
+            pe, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(operand const& op, F && f)
     {
-        if (hpx::util::invoke(f, op))
-        {
-            return visit(detail::make_unwrap_visitor(std::forward<F>(f)), op);
-        }
-        return false;
+        return detail::on_visit(
+            [](operand const& op, F && f)
+            {
+                if (detail::on_enter::call(f, op))
+                {
+                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), op);
+                }
+            },
+            op, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(unary_expr const& ue, F && f)
     {
-        if (hpx::util::invoke(f, ue))
-        {
-            if (!traverse(ue.operator_, std::forward<F>(f)))
-                return false;
-            return traverse(ue.operand_, std::forward<F>(f));
-        }
-        return false;
+        return detail::on_visit(
+            [](unary_expr const& ue, F && f)
+            {
+                if (detail::on_enter::call(f, ue))
+                {
+                    if (traverse(ue.operator_, std::forward<F>(f)))
+                        traverse(ue.operand_, std::forward<F>(f));
+                }
+            },
+            ue, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(operation const& op, F && f)
     {
-        if (hpx::util::invoke(f, op))
-        {
-            if (!traverse(op.operator_, std::forward<F>(f)))
-                return false;
-            return traverse(op.operand_, std::forward<F>(f));
-        }
-        return false;
+        return detail::on_visit(
+            [](operation const& op, F && f)
+            {
+                if (detail::on_enter::call(f, op))
+                {
+                    if (traverse(op.operator_, std::forward<F>(f)))
+                        traverse(op.operand_, std::forward<F>(f));
+                }
+            },
+            op, std::forward<F>(f));
     }
 
     template <typename F>
     bool traverse(expression const& expr, F && f)
     {
-        if (hpx::util::invoke(f, expr))
-        {
-            if (!traverse(expr.first, std::forward<F>(f)))
-                return false;
-
-            for (auto const& op : expr.rest)
+        return detail::on_visit(
+            [](expression const& expr, F && f)
             {
-                if (!traverse(op, std::forward<F>(f)))
-                    return false;
-            }
-        }
-        return true;
+                if (detail::on_enter::call(f, expr))
+                {
+                    if (traverse(expr.first, std::forward<F>(f)))
+                    {
+                        for (auto const& op : expr.rest)
+                        {
+                            if (!traverse(op, std::forward<F>(f)))
+                                break;
+                        }
+                    }
+                }
+            },
+            expr, std::forward<F>(f));
     }
 
 //     template <typename F>

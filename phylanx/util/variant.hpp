@@ -53,8 +53,9 @@ namespace phylanx { namespace util
         }
 
         recursive_wrapper(recursive_wrapper && operand)
-          : p_(new T(std::move(operand.get())))
+          : p_(new T)
         {
+            swap(operand);
         }
 
         recursive_wrapper(T && operand)

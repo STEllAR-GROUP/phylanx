@@ -184,19 +184,19 @@ namespace phylanx { namespace ir
                 typename node_data_storage_base<T>::dimensions_type;
 
             constexpr node_data_storage()
-              : node_data_storage_base<T>(0, {1, 0})
+              : node_data_storage_base<T>(0, {{1, 0}})
               , data_(0.0)
             {
             }
 
             constexpr node_data_storage(T const& value)
-              : node_data_storage_base<T>(0, {1, 0})
+              : node_data_storage_base<T>(0, {{1, 0}})
               , data_(value)
             {
             }
 
             constexpr node_data_storage(T && value)
-              : node_data_storage_base<T>(0, {1, 0})
+              : node_data_storage_base<T>(0, {{1, 0}})
               , data_(std::move(value))
             {
             }
@@ -262,13 +262,13 @@ namespace phylanx { namespace ir
                 Eigen::Matrix<T, Eigen::Dynamic, 1>;
 
             node_data_storage()
-              : node_data_storage_base(1)
+              : node_data_storage_base<T>(1)
               , data_()
             {
             }
 
             node_data_storage(std::size_t dim)
-              : node_data_storage_base(1)
+              : node_data_storage_base<T>(1)
               , data_(dim)
             {
             }
@@ -305,10 +305,10 @@ namespace phylanx { namespace ir
                 data_ = std::move(data_);
                 return *this;
             }
-            node_data_storage& operator=(std::vector<T> const& data)
+            node_data_storage& operator=(std::vector<T> const& values)
             {
                 this->base_type::set_dimensions(
-                    {static_cast<std::ptrdiff_t>(data.size()), 0});
+                    {static_cast<std::ptrdiff_t>(values.size()), 0});
                 data_ = Eigen::Map<storage1d_type const, Eigen::Unaligned>(
                     values.data(), values.size());
                 return *this;
@@ -362,13 +362,13 @@ namespace phylanx { namespace ir
                 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
             node_data_storage()
-              : node_data_storage_base(2)
+              : node_data_storage_base<T>(2)
               , data_()
             {
             }
 
             node_data_storage(std::size_t dim1, std::size_t dim2)
-              : node_data_storage_base(2)
+              : node_data_storage_base<T>(2)
               , data_(dim1, dim2)
             {
             }

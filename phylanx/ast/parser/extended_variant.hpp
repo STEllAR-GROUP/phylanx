@@ -12,6 +12,9 @@
 
 #include <boost/mpl/vector.hpp>
 
+#include <type_traits>
+#include <utility>
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace ast { namespace parser
 {
@@ -28,39 +31,23 @@ namespace phylanx { namespace ast { namespace parser
         extended_variant() = default;
 
         template <typename T>
-        extended_variant(T const& var)
-          : var(var)
-        {
-        }
-
-        template <typename T>
-        extended_variant(T& var)
-          : var(var)
+        extended_variant(T && var)
+          : var(std::forward<T>(var))
         {
         }
 
         template <typename F>
-        auto apply_visitor(F const& v) -> decltype(util::visit(var, v))
+        auto apply_visitor(F && v) -> decltype(
+            util::visit(std::declval<variant_type>(), std::forward<F>(v)))
         {
-            return util::visit(var, v);
+            return util::visit(var, std::forward<F>(v));
         }
 
         template <typename F>
-        auto apply_visitor(F const& v) const -> decltype(util::visit(var, v))
+        auto apply_visitor(F && v) const -> decltype(
+            util::visit(std::declval<variant_type>(), std::forward<F>(v)))
         {
-            return util::visit(var, v);
-        }
-
-        template <typename F>
-        auto apply_visitor(F& v) -> decltype(util::visit(var, v))
-        {
-            return util::visit(var, v);
-        }
-
-        template <typename F>
-        auto apply_visitor(F& v) const -> decltype(util::visit(var, v))
-        {
-            return util::visit(var, v);
+            return util::visit(var, std::forward<F>(v));
         }
 
         variant_type const& get() const

@@ -10,16 +10,21 @@
 #include <iostream>
 #include <iterator>
 
-struct traverse_ast
+struct traverse_ast : phylanx::ast::static_visitor
 {
+    traverse_ast(std::stringstream& strm)
+      : strm_(strm)
+    {
+    }
+
     template <typename T>
     bool operator()(T const& val) const
     {
-        strm << val << '\n';
+        strm_ << val << '\n';
         return true;
     }
 
-    std::stringstream& strm;
+    std::stringstream& strm_;
 };
 
 void generate(std::istream& in, bool print_source_code)
