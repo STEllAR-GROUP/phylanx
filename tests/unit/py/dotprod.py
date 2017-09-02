@@ -18,6 +18,9 @@ if __name__ == "__main__":
    b = c.ndarray(float, N, 1.0)
 
    A = dotprod(a)
+   A.write(p.stdout)
    B = dotprod(b)
+   B.write(p.stdout)
+
    p.compute(c)
 

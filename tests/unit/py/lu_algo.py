@@ -104,7 +104,7 @@ def get_u(LU):
     else:
       U[i,j] = 0.0
 
-  return c, U
+  return U
 
 if __name__ == "__main__":
 
@@ -112,9 +112,11 @@ if __name__ == "__main__":
   A = p.matrix(float, 100,100)
   p.random(A)
 
-  lu_c,Bmat, LU = lu_decomp(A)
-  l_c, L = get_l(LU)
-  u_c, U = get_u(LU)
+  Bmat, LU = lu_decomp(A)
+  L = get_l(LU)
+  U = get_u(LU)
+
+  [ v.write(p.stdout) for v in [ Bmat, LU, L, U] ]
 
   p.compute(c)
   

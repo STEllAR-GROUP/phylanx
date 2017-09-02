@@ -75,12 +75,11 @@ if __name__ == "__main__":
    A = c.matrix(float, 100, 100)
    A = p.randomize(A)
    A = gauss_elim1(A)
-
+   A.write(p.stdout)
   
    B = p.matrix(float, 100, 100)
    B = p.randomize(B)
    B = guass_elim2(B)
+   B.write(p.stdout)
 
-   p.compute(A)
-   p.compute(B)
-
+   p.compute(c)

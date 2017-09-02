@@ -105,8 +105,12 @@ if __name__ == "__main__":
    c = p.context()
    A = c.matrix(float, (100,100))
    p.randomize(A)
+
    QR, Rdiag = qr_decomp(A)
    Q = get_q(QR, Rdiag)
    R = get_r(QR, Rdiag)
+
+   [ v.write(p.stdout) for v in (QR, Rdiag, Q, R) ]
+
    p.compute(c)
 
