@@ -4,6 +4,9 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 ################################################################################
+add_subdirectory(python)
+
+################################################################################
 set(phylanx_SOURCES "" CACHE INTERNAL "Sources for libphylanx." FORCE)
 if(MSVC)
   set(phylanx_HEADERS "" CACHE INTERNAL "Headers for libphylanx." FORCE)
@@ -63,7 +66,7 @@ set_target_properties(
     VERSION ${PHYLANX_VERSION}
     SOVERSION ${PHYLANX_SOVERSION}
     CLEAN_DIRECT_OUTPUT 1
-    OUTPUT_NAME phylanx
+    OUTPUT_NAME phylanx_core
     FOLDER "Core")
 
 set_property(TARGET phylanx APPEND
