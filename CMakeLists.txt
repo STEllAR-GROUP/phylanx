@@ -104,6 +104,13 @@ endif()
 include_directories(${Eigen3_INCLUDE_DIRS})
 phylanx_info("Eigen3 version: " ${EIGEN3_VERSION_STRING})
 
+find_package(pybind11 REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
+if(NOT pybind11_FOUND)
+  phylanx_error("pybind11 could not be found, please set pybind11_DIR to help locating it.")
+endif()
+phylanx_info("Python library version: " ${PYTHON_VERSION_STRING})
+phylanx_info("Pybind11 library version: " ${pybind11_VERSION})
+
 ################################################################################
 # Special compiler flags
 if(WIN32)

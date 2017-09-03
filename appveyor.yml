@@ -35,6 +35,7 @@ before_build:
 
 build_script:
   - cmd: cmake --build build --config %CONFIGURATION% --target core -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /verbosity:minimal /maxcpucount:2 /nologo
+  - cmd: cmake --build build --config %CONFIGURATION% --target examples -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /verbosity:minimal /maxcpucount:2 /nologo
   - cmd: cmake --build build --config %CONFIGURATION% --target tests -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /verbosity:minimal /maxcpucount:2 /nologo
 
 #test_script:

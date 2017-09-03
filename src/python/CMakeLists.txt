@@ -3,14 +3,6 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-find_package(pybind11 REQUIRED)
-phylanx_info("Python library version: " ${PYTHON_VERSION_STRING})
-phylanx_info("Pybind11 library version: " ${pybind11_VERSION})
-
-if(NOT PYTHONLIBS_FOUND)
-  phylanx_fatal(boo)
-endif()
-
 ###############################################################################
 set(phylanx_py_SOURCES "" CACHE INTERNAL "Sources for libphylanx_py." FORCE)
 if(MSVC)
@@ -53,6 +45,19 @@ set_target_properties(
     CLEAN_DIRECT_OUTPUT 1
     OUTPUT_NAME phylanx
     FOLDER "Core")
+
+if(MSVC)
+  set_target_properties(
+    phylanx_py PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Release/bin"
+      LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Debug/bin"
+      LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/MinSizeRel/bin"
+      LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/RelWithDebInfo/bin")
+else()
+  set_target_properties(
+    phylanx_py PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+endif()
 
 set(phylanx_targets ${phylanx_targets} phylanx_py)
 

@@ -127,9 +127,9 @@ function(phylanx_setup_target target)
         VERSION ${PHYLANX_LIBRARY_VERSION}
         SOVERSION ${PHYLANX_SOVERSION})
     endif()
-    if(NOT target_NONAMEPREFIX)
-      phylanx_set_lib_name(${target} ${name})
-    endif()
+#    if(NOT target_NONAMEPREFIX)
+#      phylanx_set_lib_name(${target} ${name})
+#    endif()
     set_target_properties(${target}
       PROPERTIES
       # create *nix style library versions + symbolic links
