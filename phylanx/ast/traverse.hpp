@@ -21,14 +21,14 @@ namespace phylanx { namespace ast
     ///////////////////////////////////////////////////////////////////////////
     struct static_visitor
     {
-        template <typename T>
-        bool on_enter(T && val) const
+        template <typename T, typename ... Ts>
+        bool on_enter(T && val, Ts const&... ts) const
         {
             return true;
         }
 
-        template <typename T>
-        bool on_exit(T && val) const
+        template <typename T, typename ... Ts>
+        bool on_exit(T && val, Ts const&... ts) const
         {
             return true;
         }
@@ -41,18 +41,18 @@ namespace phylanx { namespace ast
 
         struct on_enter
         {
-            template <typename F, typename Ast>
+            template <typename F, typename Ast, typename ... Ts>
             static std::enable_if_t<has_on_enter<std::decay_t<F>>::value, bool>
-            call(F && f, Ast const& ast)
+            call(F && f, Ast const& ast, Ts const&... ts)
             {
-                return f.on_enter(ast);
+                return f.on_enter(ast, ts...);
             }
 
-            template <typename F, typename Ast>
+            template <typename F, typename Ast, typename ... Ts>
             static std::enable_if_t<!has_on_enter<std::decay_t<F>>::value, bool>
-            call(F && f, Ast const& ast)
+            call(F && f, Ast const& ast, Ts const&... ts)
             {
-                return hpx::util::invoke(f, ast);
+                return hpx::util::invoke(f, ast, ts...);
             }
         };
 
@@ -60,123 +60,126 @@ namespace phylanx { namespace ast
 
         struct on_exit
         {
-            template <typename F, typename Ast>
+            template <typename F, typename Ast, typename ... Ts>
             static std::enable_if_t<has_on_exit<std::decay_t<F>>::value, bool>
-            call(F && f, Ast const& ast)
+            call(F && f, Ast const& ast, Ts const&... ts)
             {
-                return f.on_exit(ast);
+                return f.on_exit(ast, ts...);
             }
 
-            template <typename F, typename Ast>
+            template <typename F, typename Ast, typename ... Ts>
             static std::enable_if_t<!has_on_exit<std::decay_t<F>>::value, bool>
-            call(F && f, Ast const& ast)
+            call(F && f, Ast const& ast, Ts const&... ts)
             {
                 return true;
             }
         };
 
         ///////////////////////////////////////////////////////////////////////
-        template <typename F, typename Ast, typename Visitor>
-        bool on_visit(F && f, Ast const& ast, Visitor && visit)
+        template <typename F, typename Ast, typename Visitor, typename ... Ts>
+        bool on_visit(F && f, Ast const& ast, Visitor && visit, Ts const&... ts)
         {
             try {
-                f(ast, std::forward<Visitor>(visit));
+                f(ast, std::forward<Visitor>(visit), ts...);
             }
             catch (...) {
-                detail::on_exit::call(visit, ast);
+                detail::on_exit::call(visit, ast, ts...);
                 throw;
             }
-            return detail::on_exit::call(visit, ast);
+            return detail::on_exit::call(visit, ast, ts...);
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename F, typename Ast>
-    bool traverse(phylanx::util::recursive_wrapper<Ast> const& rw, F && f)
+    template <typename F, typename Ast, typename... Ts>
+    bool traverse(
+        phylanx::util::recursive_wrapper<Ast> const& rw, F&& f, Ts const&... ts)
     {
-        return traverse(rw.get(), std::forward<F>(f));
+        return traverse(rw.get(), std::forward<F>(f), ts...);
     }
 
-    template <typename F, typename T>
-    bool traverse(std::list<T> const& l, F && f)
+    template <typename F, typename T, typename ... Ts>
+    bool traverse(std::list<T> const& l, F && f, Ts const&... ts)
     {
         for (auto const& val : l)
         {
-            if (!traverse(val, std::forward<F>(f)))
+            if (!traverse(val, std::forward<F>(f), ts...))
                 return false;
         }
         return true;
     }
 
-    template <typename F>
-    bool traverse(bool b, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(bool b, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](bool b, F && f)
+            [](bool b, F && f, Ts const&... ts)
             {
-                detail::on_enter::call(f, b);
+                detail::on_enter::call(f, b, ts...);
             },
-            b, std::forward<F>(f));
+            b, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(phylanx::ir::node_data<double> const& data, F && f)
+    template <typename F, typename... Ts>
+    bool traverse(
+        phylanx::ir::node_data<double> const& data, F&& f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](phylanx::ir::node_data<double> const& data, F && f)
+            [](phylanx::ir::node_data<double> const& data, F&& f,
+                Ts const&... ts)
             {
-                detail::on_enter::call(f, data);
+                detail::on_enter::call(f, data, ts...);
             },
-            data, std::forward<F>(f));
+            data, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(optoken op, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(optoken op, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](optoken op, F && f)
+            [](optoken op, F && f, Ts const&... ts)
             {
-                detail::on_enter::call(f, op);
+                detail::on_enter::call(f, op, ts...);
             },
-            op, std::forward<F>(f));
+            op, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(nil, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(nil, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](nil, F && f)
+            [](nil, F && f, Ts const&... ts)
             {
-                detail::on_enter::call(f, nil{});
+                detail::on_enter::call(f, nil{}, ts...);
             },
-            nil{}, std::forward<F>(f));
+            nil{}, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(identifier const& id, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(identifier const& id, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](identifier const& id, F && f)
+            [](identifier const& id, F && f, Ts const&... ts)
             {
-                detail::on_enter::call(f, id);
+                detail::on_enter::call(f, id, ts...);
             },
-            id, std::forward<F>(f));
+            id, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(primary_expr const& pe, F && f);
+    template <typename F, typename ... Ts>
+    bool traverse(primary_expr const& pe, F && f, Ts const&... ts);
 
-    template <typename F>
-    bool traverse(operand const& op, F && f);
+    template <typename F, typename ... Ts>
+    bool traverse(operand const& op, F && f, Ts const&... ts);
 
-    template <typename F>
-    bool traverse(unary_expr const& ue, F && f);
+    template <typename F, typename ... Ts>
+    bool traverse(unary_expr const& ue, F && f, Ts const&... ts);
 
-    template <typename F>
-    bool traverse(operation const& op, F && f);
+    template <typename F, typename ... Ts>
+    bool traverse(operation const& op, F && f, Ts const&... ts);
 
-    template <typename F>
-    bool traverse(expression const& expr, F && f);
+    template <typename F, typename ... Ts>
+    bool traverse(expression const& expr, F && f, Ts const&... ts);
 
 //     template <typename F>
 //     bool traverse(function_call const& op, F && f);
@@ -209,16 +212,17 @@ namespace phylanx { namespace ast
         {
             F f_;
 
-            template <typename T>
-            bool operator()(T const& t) const
+            template <typename T, typename ... Ts>
+            bool operator()(T const& t, Ts const&... ts) const
             {
-                return traverse(t, f_);
+                return traverse(t, f_, ts...);
             }
 
-            template <typename T>
-            bool operator()(phylanx::util::recursive_wrapper<T> const& t) const
+            template <typename T, typename... Ts>
+            bool operator()(phylanx::util::recursive_wrapper<T> const& t,
+                Ts const&... ts) const
             {
-                return traverse(t.get(), f_);
+                return traverse(t.get(), f_, ts...);
             }
         };
 
@@ -229,83 +233,85 @@ namespace phylanx { namespace ast
         }
     }
 
-    template <typename F>
-    bool traverse(primary_expr const& pe, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(primary_expr const& pe, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](primary_expr const& pe, F && f)
+            [](primary_expr const& pe, F && f, Ts const&... ts)
             {
-                if (detail::on_enter::call(f, pe))
+                if (detail::on_enter::call(f, pe, ts...))
                 {
-                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), pe);
+                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), pe,
+                        ts...);
                 }
             },
-            pe, std::forward<F>(f));
+            pe, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(operand const& op, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(operand const& op, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](operand const& op, F && f)
+            [](operand const& op, F && f, Ts const&... ts)
             {
-                if (detail::on_enter::call(f, op))
+                if (detail::on_enter::call(f, op, ts...))
                 {
-                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), op);
+                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), op,
+                        ts...);
                 }
             },
-            op, std::forward<F>(f));
+            op, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(unary_expr const& ue, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(unary_expr const& ue, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](unary_expr const& ue, F && f)
+            [](unary_expr const& ue, F && f, Ts const&... ts)
             {
-                if (detail::on_enter::call(f, ue))
+                if (detail::on_enter::call(f, ue, ts...))
                 {
-                    if (traverse(ue.operator_, std::forward<F>(f)))
-                        traverse(ue.operand_, std::forward<F>(f));
+                    if (traverse(ue.operator_, std::forward<F>(f), ts...))
+                        traverse(ue.operand_, std::forward<F>(f), ts...);
                 }
             },
-            ue, std::forward<F>(f));
+            ue, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(operation const& op, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(operation const& op, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](operation const& op, F && f)
+            [](operation const& op, F && f, Ts const&... ts)
             {
-                if (detail::on_enter::call(f, op))
+                if (detail::on_enter::call(f, op, ts...))
                 {
-                    if (traverse(op.operator_, std::forward<F>(f)))
-                        traverse(op.operand_, std::forward<F>(f));
+                    if (traverse(op.operator_, std::forward<F>(f), ts...))
+                        traverse(op.operand_, std::forward<F>(f), ts...);
                 }
             },
-            op, std::forward<F>(f));
+            op, std::forward<F>(f), ts...);
     }
 
-    template <typename F>
-    bool traverse(expression const& expr, F && f)
+    template <typename F, typename ... Ts>
+    bool traverse(expression const& expr, F && f, Ts const&... ts)
     {
         return detail::on_visit(
-            [](expression const& expr, F && f)
+            [](expression const& expr, F && f, Ts const&... ts)
             {
-                if (detail::on_enter::call(f, expr))
+                if (detail::on_enter::call(f, expr, ts...))
                 {
-                    if (traverse(expr.first, std::forward<F>(f)))
+                    if (traverse(expr.first, std::forward<F>(f), ts...))
                     {
                         for (auto const& op : expr.rest)
                         {
-                            if (!traverse(op, std::forward<F>(f)))
+                            if (!traverse(op, std::forward<F>(f), ts...))
                                 break;
                         }
                     }
                 }
             },
-            expr, std::forward<F>(f));
+            expr, std::forward<F>(f), ts...);
     }
 
 //     template <typename F>
