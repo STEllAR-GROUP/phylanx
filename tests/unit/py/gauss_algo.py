@@ -23,9 +23,10 @@ def gauss_elim1(X):
 def gauss_elim2(X): # Basic row pivoting
    m = X.shape[0]
    n = X.shape[1]
+   c = X.context()
 
    def compute_pivot(X, m, n, j):
-      tmpMat = p.matrix(j,m)
+      tmpMat = c.matrix(float, j,m)
       for k in range(j,m):
          tmpMat[k,j] = X[k,j]
 
@@ -70,15 +71,15 @@ def gauss_elim2(X): # Basic row pivoting
    return X 
 
 if __name__ == "__main__":
-   A = p.matrix(float, 100, 100)
+   c = p.context()
+   A = c.matrix(float, 100, 100)
    A = p.randomize(A)
    A = gauss_elim1(A)
-
+   A.write(p.stdout)
   
    B = p.matrix(float, 100, 100)
    B = p.randomize(B)
    B = guass_elim2(B)
+   B.write(p.stdout)
 
-   p.compute(A)
-   p.compute(B)
-
+   p.compute(c)

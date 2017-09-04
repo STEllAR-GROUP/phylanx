@@ -7,13 +7,18 @@ def lu_decomp(A, B):
   n = A.shape[1] # col
   LU = A.copy() # deep copy of p.matrix into LU
 
-  piv = p.array(m)
+  # phylanx problem context
+  # makes computing easier to 
+  # think about
+  #
+  c = A.context()
+  piv = c.array(m)
   for i in range(m):
     piv[i] = m
 
-  pivsign = p.scalar(1)
-  lurowi = p.array(n)
-  lucolj = p.array(m)
+  pivsign = c.scalar(1)
+  lurowi = c.array(n)
+  lucolj = c.array(m)
 
   for j in range(n):
     for i in range(m):
@@ -24,7 +29,7 @@ def lu_decomp(A, B):
 
       kmax = min(i,j)
 
-      s = p.scalar(0.0)
+      s = c.scalar(0.0)
 
       for k in range(kmax):
         s += lurowi[k] * lucolj[k]
@@ -49,12 +54,16 @@ def lu_decomp(A, B):
         A[i,j] /= A[j, j]
       return A
 
-    p = p.scalar(j)
+    pp = c.scalar(j)
     for i in range(j+1, m):
-      p.conditional(p.abs(lucolj[i]) > p.abs(lucolj[p]), p = i)
-      p.conditional(p != j, compute_piv(A, n, p, j, k, piv))
+      def set(p, i):
+        p = i
+        return p
+      pp.conditional(pp.abs(lucolj[i]) > pp.abs(lucolj[pp]), set(pp,i))
+      pp.conditional(pp != j, compute_piv(A, n, pp, j, k, piv))
 
-    LU.conditional( (LU[i,j] != 0.0) and (j < m), compute_multipliers(LU, j, m) )
+    if j < m:
+       LU.conditional( (LU[i,j] != 0.0), compute_multipliers(LU, j, m) )
 
   nx = B.shape[1] # col dim
   Bmat = B[piv, 1, nx]
@@ -65,12 +74,13 @@ def lu_decomp(A, B):
     for (i, j) in zip(range(k+1, n), range(nx)):
       Bmat[i,j] -= Bmat[k,j]*LU[i,k]
 
-  return Bmat, LU
+  return c, Bmat, LU
 
 def get_l(LU):
   m = LU.shape[0] # row
   n = LU.shape[1] # col
-  L = p.matrix(m, n)
+  c = LU.context()
+  L = c.matrix(float, m, n)
 
   for (i,j) in zip(range(m), range(n)):
     if i > j:
@@ -80,12 +90,13 @@ def get_l(LU):
     else
       L[i,j] = 0.0
 
-   return L
+   return c, L
 
 def get_u(LU):
   m = LU.shape[0] # row
   n = LU.shape[1] # col
-  U = p.matrix(n, n)
+  c = LU.context()
+  U = c.matrix(float, n, n)
 
   for (i,j) in zip(range(n), range(n)):
     if i<=j:
@@ -97,14 +108,15 @@ def get_u(LU):
 
 if __name__ == "__main__":
 
-  A = p.matrix(100,100)
+  c = p.context()
+  A = p.matrix(float, 100,100)
   p.random(A)
 
   Bmat, LU = lu_decomp(A)
   L = get_l(LU)
   U = get_u(LU)
 
-  p.compute(Bmat, LU)
-  p.compute(L)
-  p.compute(U)
+  [ v.write(p.stdout) for v in [ Bmat, LU, L, U] ]
+
+  p.compute(c)
   
