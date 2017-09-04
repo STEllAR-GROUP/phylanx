@@ -21,6 +21,9 @@ add_phylanx_library_sources(phylanx
 add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/ast/*.cpp"
   APPEND)
+add_phylanx_library_sources(phylanx
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/util/*.cpp"
+  APPEND)
 
 add_phylanx_source_group(
   NAME phylanx

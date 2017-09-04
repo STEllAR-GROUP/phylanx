@@ -18,9 +18,9 @@
 #endif
 
 // older versions of pybind11 don't support variant-like types
-#if !defined(PYBIND11_HAS_VARIANT)
 namespace pybind11 { namespace detail
 {
+#if !defined(PYBIND11_HAS_VARIANT)
     ///////////////////////////////////////////////////////////////////////////
     // Expose phylanx::util::variant -- can be any `std::variant`-like container
 
@@ -105,6 +105,7 @@ namespace pybind11 { namespace detail
         PYBIND11_TYPE_CASTER(Type,
             _("Union[") + detail::concat(make_caster<Ts>::name()...) + _("]"));
     };
+#endif
 
     template <typename... Ts>
     struct type_caster<phylanx::util::variant<Ts...>>
@@ -117,8 +118,29 @@ namespace pybind11 { namespace detail
       : variant_caster<phylanx::ast::parser::extended_variant<Ts...>>
     {
     };
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Expose phylanx::util::recursive_wrapper
+    template <typename T>
+    class type_caster<phylanx::util::recursive_wrapper<T>>
+      : public type_caster_base<T>
+    {
+    public:
+        static handle cast(phylanx::util::recursive_wrapper<T> const& src,
+            return_value_policy policy, handle parent)
+        {
+            return type_caster_base<T>::cast(&src.get(), policy, parent);
+        }
+
+        template <typename T_>
+        using cast_op_type = phylanx::util::recursive_wrapper<T>;
+
+        operator phylanx::util::recursive_wrapper<T>()
+        {
+            return phylanx::util::recursive_wrapper<T>(*((T*)this->value));
+        }
+    };
 }}
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
@@ -127,6 +149,7 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
         HPX_PP_STRINGIZE(PHYLANX_MODULE_NAME),
         "Phylanx plugin module");
 
+    ///////////////////////////////////////////////////////////////////////////
     // expose version functions
     m.def("major_version", &phylanx::major_version);
     m.def("minor_version", &phylanx::minor_version);
@@ -134,6 +157,7 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
     m.def("full_version", &phylanx::full_version);
     m.def("full_version_as_string", &phylanx::full_version_as_string);
 
+    ///////////////////////////////////////////////////////////////////////////
     // expose AST submodule
     auto ast = m.def_submodule("ast");
 
@@ -260,7 +284,33 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
         .def(pybind11::self != pybind11::self);
 
     ast.def("generate_ast", &phylanx::ast::generate_ast,
-        "generate an AST from the given expression string)");
+        "generate an AST from the given expression string");
+
+    ///////////////////////////////////////////////////////////////////////////
+    // expose util submodule
+    auto util = m.def_submodule("util");
+
+    util.def("serialize",
+        [](phylanx::ast::identifier const& ast)
+        {
+            return phylanx::util::serialize(ast);
+        },
+        "serialize an AST expression object into a byte-stream");
+    util.def("serialize",
+        [](phylanx::ast::expression const& ast)
+        {
+            return phylanx::util::serialize(ast);
+        },
+        "serialize an AST expression object into a byte-stream");
+
+    util.def("unserialize",
+        [](std::vector<char> const& data) -> phylanx::ast::expression
+        {
+            phylanx::ast::expression ast;
+            phylanx::util::unserialize(data, ast);
+            return ast;
+        },
+        "un-serialize a byte-stream into an AST expression object");
 
     return m.ptr();
 }

@@ -12,23 +12,10 @@
 
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {
-    std::vector<char> out_buffer;
-    std::size_t archive_size = 0;
-
-    {
-        hpx::serialization::output_archive archive(out_buffer);
-        archive << array_value1;
-        archive_size = archive.bytes_written();
-    }
-
     phylanx::ir::node_data<double> array_value2;
 
-    {
-        hpx::serialization::input_archive archive(
-            out_buffer, archive_size);
-
-        archive >> array_value2;
-    }
+    std::vector<char> buffer = phylanx::util::serialize(array_value1);
+    phylanx::util::unserialize(buffer, array_value2);
 
     HPX_TEST(array_value1 == array_value2);
 }
