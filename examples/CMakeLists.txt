@@ -5,14 +5,11 @@
 
 set(subdirs
     ast
-    config
-    ir
-    util
    )
 
 foreach(subdir ${subdirs})
-  add_phylanx_pseudo_target(tests.unit.${subdir})
+  add_phylanx_pseudo_target(examples.${subdir}_)
   add_subdirectory(${subdir})
-  add_phylanx_pseudo_dependencies(tests.unit tests.unit.${subdir})
+  add_phylanx_pseudo_dependencies(examples examples.${subdir}_)
 endforeach()
 

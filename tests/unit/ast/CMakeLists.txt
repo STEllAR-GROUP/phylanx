@@ -4,7 +4,8 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    node_data
+    generate_ast
+    node
    )
 
 foreach(test ${tests})
@@ -17,13 +18,13 @@ foreach(test ${tests})
     SOURCES ${sources}
     ${${test}_FLAGS}
     EXCLUDE_FROM_ALL
-    FOLDER "Tests/Unit/IR/")
+    FOLDER "Tests/Unit/AST/")
 
-  add_phylanx_unit_test("ir" ${test} ${${test}_PARAMETERS})
+  add_phylanx_unit_test("ast" ${test} ${${test}_PARAMETERS})
 
-  add_phylanx_pseudo_target(tests.unit.ir.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.ir tests.unit.ir.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.ir.${test} ${test}_test_exe)
+  add_phylanx_pseudo_target(tests.unit.ast.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.ast tests.unit.ast.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.ast.${test} ${test}_test_exe)
 
 endforeach()
 

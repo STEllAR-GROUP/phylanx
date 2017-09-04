@@ -3,14 +3,14 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_HPP)
-#define PHYLANX_HPP
-
 #include <phylanx/config.hpp>
+#include <phylanx/ast/node.hpp>
 
-#include <phylanx/include/ast.hpp>
-#include <phylanx/include/ir.hpp>
-#include <phylanx/include/util.hpp>
-#include <phylanx/include/version.hpp>
+#include <string>
 
-#endif
+namespace phylanx { namespace ast
+{
+    PHYLANX_EXPORT ast::expression generate_ast(std::string const& input);
+}}
+
+
