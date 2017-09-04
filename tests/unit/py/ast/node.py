@@ -20,6 +20,11 @@ def test_serialization(in_ast):
     out_ast = util.unserialize(data)
     assert(in_ast == out_ast)
 
+    import pickle
+    pickled_data = pickle.dumps(in_ast, pickle.DEFAULT_PROTOCOL)
+    out_ast = pickle.loads(pickled_data)
+    assert(in_ast == out_ast)
+
 ###############################################################################
 def test_identifier():
     ident1 = ast.identifier('ident1')

@@ -56,6 +56,8 @@ namespace pybind11 { namespace detail
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace bindings
 {
+    ///////////////////////////////////////////////////////////////////////////
+    // support for the traverse API
     struct traverse_helper
     {
         template <typename Ast>
@@ -77,18 +79,37 @@ namespace phylanx { namespace bindings
         return phylanx::ast::traverse(ast, traverse_helper{func, args, kwargs});
     }
 
+    // serialization support
     template <typename Ast>
     std::vector<char> serialize(Ast const& ast)
     {
         return phylanx::util::serialize(ast);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // support for __str__
     template <typename Ast>
     std::string as_string(Ast const& ast)
     {
         std::stringstream strm;
         strm << ast;
         return strm.str();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // pickle support
+    template <typename Ast>
+    std::vector<char> pickle_helper(Ast const& ast)
+    {
+        return phylanx::util::serialize(ast);
+    }
+
+    template <typename Ast>
+    Ast unpickle_helper(std::vector<char> data)
+    {
+        Ast ast;
+        phylanx::util::detail::unserialize(data, ast);
+        return ast;
     }
 }}
 
@@ -154,7 +175,10 @@ PYBIND11_MODULE(phylanx, m)
         .value("op_not", phylanx::ast::optoken::op_not)
         .value("op_post_incr", phylanx::ast::optoken::op_post_incr)
         .value("op_post_decr", phylanx::ast::optoken::op_post_decr)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::optoken>);
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::optoken>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::optoken>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::optoken>));
 
     // phylanx::ast::identifier
     pybind11::class_<phylanx::ast::identifier>(
@@ -165,7 +189,10 @@ PYBIND11_MODULE(phylanx, m)
             "the name of the identifier")
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::identifier>);
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::identifier>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::identifier>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::identifier>));
 
     // phylanx::ast::primary_expr
     pybind11::class_<phylanx::ast::primary_expr>(
@@ -189,7 +216,10 @@ PYBIND11_MODULE(phylanx, m)
             "access the current primary_expr's value")
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::primary_expr>);
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::primary_expr>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::primary_expr>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::primary_expr>));
 
     // phylanx::ast::operand
     pybind11::class_<phylanx::ast::operand>(
@@ -211,7 +241,10 @@ PYBIND11_MODULE(phylanx, m)
             "access the current operand's value")
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operand>);
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operand>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::operand>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::operand>));
 
     // phylanx::ast::unary_expr
     pybind11::class_<phylanx::ast::unary_expr>(
@@ -224,7 +257,10 @@ PYBIND11_MODULE(phylanx, m)
             "the operand of the unary_expr")
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::unary_expr>);
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::unary_expr>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::unary_expr>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::unary_expr>));
 
     // phylanx::ast::operation
     pybind11::class_<phylanx::ast::operation>(
@@ -237,7 +273,10 @@ PYBIND11_MODULE(phylanx, m)
             "the operand of the operation")
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operation>);
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operation>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::operation>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::operation>));
 
     // phylanx::ast::expression
     pybind11::class_<phylanx::ast::expression>(
@@ -250,7 +289,10 @@ PYBIND11_MODULE(phylanx, m)
             "the (optional) list of operations of the expression")
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
-        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::expression>);
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::expression>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::expression>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::expression>));
 
     // phylanx::ast::generate_ast()
     ast.def("generate_ast", &phylanx::ast::generate_ast,
