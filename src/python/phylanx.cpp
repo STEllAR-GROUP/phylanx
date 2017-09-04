@@ -9,104 +9,15 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
-#include <hpx/util/detail/pp/stringize.hpp>
-
-#if defined(_DEBUG)
-#define PHYLANX_MODULE_NAME phylanxd
-#else
-#define PHYLANX_MODULE_NAME phylanx
-#endif
+#include <string>
+#include <strstream>
+#include <vector>
 
 // older versions of pybind11 don't support variant-like types
 namespace pybind11 { namespace detail
 {
-#if !defined(PYBIND11_HAS_VARIANT)
     ///////////////////////////////////////////////////////////////////////////
-    // Expose phylanx::util::variant -- can be any `std::variant`-like container
-
-    // Visit a variant and cast any found type to Python
-    struct variant_caster_visitor
-    {
-        return_value_policy policy;
-        handle parent;
-
-        using result_type = handle; // required by boost::variant in C++11
-
-        template <typename T>
-        result_type operator()(T &&src) const
-        {
-            return make_caster<T>::cast(std::forward<T>(src), policy, parent);
-        }
-    };
-
-    // Helper class which abstracts away variant's `visit` function.
-    // `std::variant` and similar `namespace::variant` types which provide a
-    // `namespace::visit()` function are handled here automatically using
-    // argument-dependent lookup. Users can provide specializations for other
-    // variant-like classes, e.g. `boost::variant` and `boost::apply_visitor`.
-    template <template<typename...> class Variant>
-    struct visit_helper
-    {
-        template <typename... Args>
-        static auto call(Args &&...args)
-        ->  decltype(visit(std::forward<Args>(args)...))
-        {
-            return visit(std::forward<Args>(args)...);
-        }
-    };
-
-    // Generic variant caster
-    template <typename Variant> struct variant_caster;
-
-    template <template <typename...> class V, typename... Ts>
-    struct variant_caster<V<Ts...>>
-    {
-        static_assert(sizeof...(Ts) > 0,
-            "Variant must consist of at least one alternative.");
-
-        template <typename U, typename... Us>
-        bool load_alternative(handle src, bool convert, type_list<U, Us...>)
-        {
-            auto caster = make_caster<U>();
-            if (caster.load(src, convert))
-            {
-                value = cast_op<U>(caster);
-                return true;
-            }
-            return load_alternative(src, convert, type_list<Us...>{});
-        }
-
-        bool load_alternative(handle, bool, type_list<>) { return false; }
-
-        bool load(handle src, bool convert)
-        {
-            // Do a first pass without conversions to improve constructor
-            // resolution.
-            // E.g. `py::int_(1).cast<variant<double, int>>()` needs to fill
-            // the `int` slot of the variant. Without two-pass loading `double`
-            // would be filled because it appears first and a conversion is
-            // possible.
-            if (convert && load_alternative(src, false, type_list<Ts...>{}))
-                return true;
-            return load_alternative(src, convert, type_list<Ts...>{});
-        }
-
-        template <typename Variant>
-        static handle cast(
-            Variant&& src, return_value_policy policy, handle parent)
-        {
-            return visit_helper<V>::call(
-                variant_caster_visitor{policy, parent},
-                std::forward<Variant>(src));
-        }
-
-        using Type = V<Ts...>;
-
-        PYBIND11_TYPE_CASTER(Type,
-            _("Union[") + detail::concat(make_caster<Ts>::name()...) + _("]"));
-    };
-#endif
-
+    // Expose phylanx::util::variant and phylanx::ast::parser::extended_variant
     template <typename... Ts>
     struct type_caster<phylanx::util::variant<Ts...>>
       : variant_caster<phylanx::util::variant<Ts...>>
@@ -143,11 +54,52 @@ namespace pybind11 { namespace detail
 }}
 
 ///////////////////////////////////////////////////////////////////////////////
-PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
+namespace phylanx { namespace bindings
 {
-    pybind11::module m(
-        HPX_PP_STRINGIZE(PHYLANX_MODULE_NAME),
-        "Phylanx plugin module");
+    struct traverse_helper
+    {
+        template <typename Ast>
+        bool operator()(Ast const& ast) const
+        {
+            pybind11::object ret = func_(ast, *args_, **kwargs_);
+            return ret.cast<bool>();
+        }
+
+        pybind11::object& func_;
+        pybind11::args& args_;
+        pybind11::kwargs& kwargs_;
+    };
+
+    template <typename Ast>
+    bool traverse(Ast const& ast, pybind11::object func, pybind11::args args,
+        pybind11::kwargs kwargs)
+    {
+        return phylanx::ast::traverse(ast, traverse_helper{func, args, kwargs});
+    }
+
+    template <typename Ast>
+    std::vector<char> serialize(Ast const& ast)
+    {
+        return phylanx::util::serialize(ast);
+    }
+
+    template <typename Ast>
+    std::string as_string(Ast const& ast)
+    {
+        std::stringstream strm;
+        strm << ast;
+        return strm.str();
+    }
+}}
+
+///////////////////////////////////////////////////////////////////////////////
+#if defined(_DEBUG)
+PYBIND11_MODULE(phylanxd, m)
+#else
+PYBIND11_MODULE(phylanx, m)
+#endif
+{
+    m.doc() = "Phylanx plugin module";
 
     ///////////////////////////////////////////////////////////////////////////
     // expose version functions
@@ -201,7 +153,8 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
         .value("op_compl", phylanx::ast::optoken::op_compl)
         .value("op_not", phylanx::ast::optoken::op_not)
         .value("op_post_incr", phylanx::ast::optoken::op_post_incr)
-        .value("op_post_decr", phylanx::ast::optoken::op_post_decr);
+        .value("op_post_decr", phylanx::ast::optoken::op_post_decr)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::optoken>);
 
     // phylanx::ast::identifier
     pybind11::class_<phylanx::ast::identifier>(
@@ -211,7 +164,8 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
         .def_readonly("name", &phylanx::ast::identifier::name,
             "the name of the identifier")
         .def(pybind11::self == pybind11::self)
-        .def(pybind11::self != pybind11::self);
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::identifier>);
 
     // phylanx::ast::primary_expr
     pybind11::class_<phylanx::ast::primary_expr>(
@@ -226,10 +180,16 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
             "initialize primary_expr instance with an value")
         .def(pybind11::init<phylanx::ast::expression>(),
             "initialize primary_expr instance with an expression value")
-        .def_property_readonly("value", &phylanx::ast::primary_expr::value,
+        .def_property_readonly("value",
+            [](phylanx::ast::primary_expr const& pe)
+            ->  phylanx::ast::expr_node_type const&
+            {
+                return pe;
+            },
             "access the current primary_expr's value")
         .def(pybind11::self == pybind11::self)
-        .def(pybind11::self != pybind11::self);
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::primary_expr>);
 
     // phylanx::ast::operand
     pybind11::class_<phylanx::ast::operand>(
@@ -242,10 +202,16 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
             "initialize operand instance with a primary_expr value")
         .def(pybind11::init<phylanx::ast::unary_expr>(),
             "initialize operand instance with a unary_expr value")
-        .def_property_readonly("value", &phylanx::ast::operand::value,
+        .def_property_readonly("value",
+            [](phylanx::ast::operand const& op)
+            ->  phylanx::ast::operand_node_type const&
+            {
+                return op;
+            },
             "access the current operand's value")
         .def(pybind11::self == pybind11::self)
-        .def(pybind11::self != pybind11::self);
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operand>);
 
     // phylanx::ast::unary_expr
     pybind11::class_<phylanx::ast::unary_expr>(
@@ -257,7 +223,8 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
         .def_readonly("operand", &phylanx::ast::unary_expr::operand_,
             "the operand of the unary_expr")
         .def(pybind11::self == pybind11::self)
-        .def(pybind11::self != pybind11::self);
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::unary_expr>);
 
     // phylanx::ast::operation
     pybind11::class_<phylanx::ast::operation>(
@@ -269,7 +236,8 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
         .def_readonly("operand", &phylanx::ast::operation::operand_,
             "the operand of the operation")
         .def(pybind11::self == pybind11::self)
-        .def(pybind11::self != pybind11::self);
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operation>);
 
     // phylanx::ast::expression
     pybind11::class_<phylanx::ast::expression>(
@@ -281,36 +249,55 @@ PYBIND11_PLUGIN(PHYLANX_MODULE_NAME)
         .def_readwrite("rest", &phylanx::ast::expression::rest,
             "the (optional) list of operations of the expression")
         .def(pybind11::self == pybind11::self)
-        .def(pybind11::self != pybind11::self);
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::expression>);
 
+    // phylanx::ast::generate_ast()
     ast.def("generate_ast", &phylanx::ast::generate_ast,
         "generate an AST from the given expression string");
+
+    // phylanx::ast::traverse()
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::optoken>,
+        "traverse the given AST optoken and call the provided function "
+            "on each part of it");
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::identifier>,
+        "traverse the given AST identifier and call the provided function "
+            "on each part of it");
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::primary_expr>,
+        "traverse the given AST primary_expr and call the provided function "
+            "on each part of it");
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::operand>,
+        "traverse the given AST operand and call the provided function "
+            "on each part of it");
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::unary_expr>,
+        "traverse the given AST unary_expr and call the provided function "
+            "on each part of it");
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::operation>,
+        "traverse the given AST operation and call the provided function "
+            "on each part of it");
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::expression>,
+        "traverse the given AST expression and call the provided function "
+            "on each part of it");
 
     ///////////////////////////////////////////////////////////////////////////
     // expose util submodule
     auto util = m.def_submodule("util");
 
-    util.def("serialize",
-        [](phylanx::ast::identifier const& ast)
-        {
-            return phylanx::util::serialize(ast);
-        },
-        "serialize an AST expression object into a byte-stream");
-    util.def("serialize",
-        [](phylanx::ast::expression const& ast)
-        {
-            return phylanx::util::serialize(ast);
-        },
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::optoken>,
+        "serialize an AST optoken object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::identifier>,
+        "serialize an AST identifier object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::primary_expr>,
+        "serialize an AST primary_expr object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::operand>,
+        "serialize an AST operand object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::unary_expr>,
+        "serialize an AST unary_expr object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::operation>,
+        "serialize an AST operation object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::expression>,
         "serialize an AST expression object into a byte-stream");
 
-    util.def("unserialize",
-        [](std::vector<char> const& data) -> phylanx::ast::expression
-        {
-            phylanx::ast::expression ast;
-            phylanx::util::unserialize(data, ast);
-            return ast;
-        },
+    util.def("unserialize", &phylanx::util::unserialize,
         "un-serialize a byte-stream into an AST expression object");
-
-    return m.ptr();
 }

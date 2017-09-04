@@ -19,7 +19,7 @@ void test_serialization(Ast const& in)
     Ast out;
 
     std::vector<char> buffer = phylanx::util::serialize(in);
-    phylanx::util::unserialize(buffer, out);
+    phylanx::util::detail::unserialize(buffer, out);
 
     HPX_TEST(in == out);
 }

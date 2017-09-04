@@ -135,6 +135,9 @@ namespace phylanx { namespace ast
 
         std::string name;
 
+    private:
+        friend class hpx::serialization::access;
+
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
         PHYLANX_EXPORT void serialize(
@@ -224,8 +227,8 @@ namespace phylanx { namespace ast
         {
         }
 
-        // this is only for usage in the Python bindings
-        expr_node_type const& value() const { return *this; }
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
@@ -288,8 +291,8 @@ namespace phylanx { namespace ast
 //         {
 //         }
 
-        // this is only for usage in the Python bindings
-        operand_node_type const& value() const { return *this; }
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
@@ -325,6 +328,9 @@ namespace phylanx { namespace ast
         optoken operator_;
         operand operand_;
 
+    private:
+        friend class hpx::serialization::access;
+
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
         PHYLANX_EXPORT void serialize(
@@ -359,6 +365,9 @@ namespace phylanx { namespace ast
 
         optoken operator_;
         operand operand_;
+
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
@@ -407,6 +416,9 @@ namespace phylanx { namespace ast
 
         operand first;
         std::list<operation> rest;
+
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);

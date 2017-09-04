@@ -39,7 +39,7 @@ namespace phylanx { namespace util
         return detail::serialize(ast);
     }
 
-    std::vector<char> serialize(ast::optoken const& ast)
+    std::vector<char> serialize(ast::optoken ast)
     {
         return detail::serialize(ast);
     }
@@ -78,54 +78,60 @@ namespace phylanx { namespace util
     namespace detail
     {
         template <typename Ast>
-        void unserialize(std::vector<char> const& input, Ast& ast)
+        void unserialize_helper(std::vector<char> const& input, Ast& ast)
         {
             hpx::serialization::input_archive archive(input, input.size());
             archive >> ast;
         }
+
+        void unserialize(
+            std::vector<char> const& input, ir::node_data<double>& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::optoken& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::identifier& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::primary_expr& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::operand& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::unary_expr& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::operation& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::expression& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
     }
 
-    void unserialize(
-        std::vector<char> const& input, ir::node_data<double>& ast)
+    ast::expression unserialize(std::vector<char> const& input)
     {
-        detail::unserialize(input, ast);
+        ast::expression expr;
+        detail::unserialize_helper(input, expr);
+        return expr;
     }
-
-    void unserialize(std::vector<char> const& input, ast::optoken& ast)
-    {
-        detail::unserialize(input, ast);
-    }
-
-    void unserialize(std::vector<char> const& input, ast::identifier& ast)
-    {
-        detail::unserialize(input, ast);
-    }
-
-    void unserialize(std::vector<char> const& input, ast::primary_expr& ast)
-    {
-        detail::unserialize(input, ast);
-    }
-
-    void unserialize(std::vector<char> const& input, ast::operand& ast)
-    {
-        detail::unserialize(input, ast);
-    }
-
-    void unserialize(std::vector<char> const& input, ast::unary_expr& ast)
-    {
-        detail::unserialize(input, ast);
-    }
-
-    void unserialize(std::vector<char> const& input, ast::operation& ast)
-    {
-        detail::unserialize(input, ast);
-    }
-
-    void unserialize(std::vector<char> const& input, ast::expression& ast)
-    {
-        detail::unserialize(input, ast);
-    }
-
 }}
 
 

@@ -16,8 +16,12 @@ namespace phylanx { namespace util
 {
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::vector<char> serialize(ir::node_data<double> const&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ir::node_data<double>&);
+
+    namespace detail
+    {
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ir::node_data<double>&);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::vector<char> serialize(ast::optoken);
@@ -28,20 +32,25 @@ namespace phylanx { namespace util
     PHYLANX_EXPORT std::vector<char> serialize(ast::operation const&);
     PHYLANX_EXPORT std::vector<char> serialize(ast::expression const&);
 
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ast::optoken&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ast::identifier&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ast::primary_expr&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ast::operand&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ast::unary_expr&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ast::operation&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, ast::expression&);
+    namespace detail
+    {
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::optoken&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::identifier&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::primary_expr&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::operand&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::unary_expr&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::operation&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::expression&);
+    }
+
+    PHYLANX_EXPORT ast::expression unserialize(std::vector<char> const&);
 }}
 
 #endif
