@@ -19,9 +19,26 @@ class traverse_ast:
         self.result += str(ast) + delimiter
         return True
 
+class traverse_ast_enter_exit:
+    def __init__(self):
+        self.result = ''
+
+    def on_enter(self, ast, delimiter = ''):
+        self.result += str(ast) + delimiter
+        return True
+
+    # optional, can be ommitted
+    def on_exit(self, ast, *args):
+        return True
+
 def test_expression(expr, expected, delimier):
     ast = phylanx.ast.generate_ast(expr)
+
     visitor = traverse_ast()
+    phylanx.ast.traverse(ast, visitor, delimier)
+    assert(visitor.result == expected)
+
+    visitor = traverse_ast_enter_exit()
     phylanx.ast.traverse(ast, visitor, delimier)
     assert(visitor.result == expected)
 
