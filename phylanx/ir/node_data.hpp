@@ -155,13 +155,13 @@ namespace phylanx { namespace ir
             dimensions_type dimensions_;
 
             // support for intrusive_ptr
-            template <typename T>
-            friend void intrusive_ptr_add_ref(node_data_storage_base<T>* p)
+            template <typename _T>
+            friend void intrusive_ptr_add_ref(node_data_storage_base<_T>* p)
             {
                 ++p->count_;
             }
-            template <typename T>
-            friend void intrusive_ptr_release(node_data_storage_base<T>* p)
+            template <typename _T>
+            friend void intrusive_ptr_release(node_data_storage_base<_T>* p)
             {
                 if (--p->count_ == 0)
                     delete p;
@@ -212,12 +212,14 @@ namespace phylanx { namespace ir
 
             node_data_storage& operator=(T const& data)
             {
+                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({0, 0});
                 data_ = data;
                 return *this;
             }
             node_data_storage& operator=(T && data)
             {
+                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({0, 0});
                 data_ = std::move(data_);
                 return *this;
@@ -260,13 +262,13 @@ namespace phylanx { namespace ir
                 Eigen::Matrix<T, Eigen::Dynamic, 1>;
 
             node_data_storage()
-              : node_data_storage_base(1)
+              : node_data_storage_base<T>(1)
               , data_()
             {
             }
 
             node_data_storage(std::size_t dim)
-              : node_data_storage_base(1)
+              : node_data_storage_base<T>(1)
               , data_(dim)
             {
             }
@@ -293,20 +295,23 @@ namespace phylanx { namespace ir
 
             node_data_storage& operator=(storage1d_type const& data)
             {
+                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), 0});
                 data_ = data;
                 return *this;
             }
             node_data_storage& operator=(storage1d_type && data)
             {
+                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), 0});
                 data_ = std::move(data_);
                 return *this;
             }
-            node_data_storage& operator=(std::vector<T> const& data)
+            node_data_storage& operator=(std::vector<T> const& values)
             {
+                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions(
-                    {static_cast<std::ptrdiff_t>(data.size()), 0});
+                    {static_cast<std::ptrdiff_t>(values.size()), 0});
                 data_ = Eigen::Map<storage1d_type const, Eigen::Unaligned>(
                     values.data(), values.size());
                 return *this;
@@ -360,13 +365,13 @@ namespace phylanx { namespace ir
                 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
             node_data_storage()
-              : node_data_storage_base(2)
+              : node_data_storage_base<T>(2)
               , data_()
             {
             }
 
             node_data_storage(std::size_t dim1, std::size_t dim2)
-              : node_data_storage_base(2)
+              : node_data_storage_base<T>(2)
               , data_(dim1, dim2)
             {
             }
@@ -384,12 +389,14 @@ namespace phylanx { namespace ir
 
             node_data_storage& operator=(storage2d_type const& data)
             {
+                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), data.cols()});
                 data_ = data;
                 return *this;
             }
             node_data_storage& operator=(storage2d_type && data)
             {
+                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), data.cols()});
                 data_ = std::move(data);
                 return *this;
