@@ -180,6 +180,7 @@ namespace phylanx { namespace ir
         public:
             using dimensions_type =
                 typename node_data_storage_base<T>::dimensions_type;
+            using base_type = node_data_storage_base<T>;
 
             constexpr node_data_storage()
               : node_data_storage_base<T>(0, {1, 0})
@@ -212,14 +213,12 @@ namespace phylanx { namespace ir
 
             node_data_storage& operator=(T const& data)
             {
-                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({0, 0});
                 data_ = data;
                 return *this;
             }
             node_data_storage& operator=(T && data)
             {
-                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({0, 0});
                 data_ = std::move(data_);
                 return *this;
@@ -242,7 +241,6 @@ namespace phylanx { namespace ir
             template <typename Archive>
             void serialize(Archive& ar, unsigned)
             {
-                using base_type = node_data_storage_base<T>;
                 ar & hpx::serialization::template base_object<base_type>(*this);
                 ar & data_;
             }
@@ -260,6 +258,7 @@ namespace phylanx { namespace ir
                 typename node_data_storage_base<T>::dimensions_type;
             using storage1d_type =
                 Eigen::Matrix<T, Eigen::Dynamic, 1>;
+            using base_type = node_data_storage_base<T>;
 
             node_data_storage()
               : node_data_storage_base<T>(1)
@@ -295,21 +294,18 @@ namespace phylanx { namespace ir
 
             node_data_storage& operator=(storage1d_type const& data)
             {
-                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), 0});
                 data_ = data;
                 return *this;
             }
             node_data_storage& operator=(storage1d_type && data)
             {
-                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), 0});
                 data_ = std::move(data_);
                 return *this;
             }
             node_data_storage& operator=(std::vector<T> const& values)
             {
-                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions(
                     {static_cast<std::ptrdiff_t>(values.size()), 0});
                 data_ = Eigen::Map<storage1d_type const, Eigen::Unaligned>(
@@ -345,7 +341,6 @@ namespace phylanx { namespace ir
             template <typename Archive>
             void serialize(Archive& ar, unsigned)
             {
-                using base_type = node_data_storage_base<T>;
                 ar & hpx::serialization::template base_object<base_type>(*this);
                 ar & data_;
             }
@@ -359,6 +354,7 @@ namespace phylanx { namespace ir
         class node_data_storage<2, T> : public node_data_storage_base<T>
         {
         public:
+            using base_type = node_data_storage_base<T>;
             using dimensions_type =
                 typename node_data_storage_base<T>::dimensions_type;
             using storage2d_type =
@@ -389,14 +385,12 @@ namespace phylanx { namespace ir
 
             node_data_storage& operator=(storage2d_type const& data)
             {
-                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), data.cols()});
                 data_ = data;
                 return *this;
             }
             node_data_storage& operator=(storage2d_type && data)
             {
-                using base_type = node_data_storage_base<T>;
                 this->base_type::set_dimensions({data.rows(), data.cols()});
                 data_ = std::move(data);
                 return *this;
@@ -430,7 +424,6 @@ namespace phylanx { namespace ir
             template <typename Archive>
             void serialize(Archive& ar, unsigned)
             {
-                using base_type = node_data_storage_base<T>;
                 ar & hpx::serialization::template base_object<base_type>(*this);
                 ar & data_;
             }
