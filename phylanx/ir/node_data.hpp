@@ -155,13 +155,13 @@ namespace phylanx { namespace ir
             dimensions_type dimensions_;
 
             // support for intrusive_ptr
-            template <typename _T>
-            friend void intrusive_ptr_add_ref(node_data_storage_base<_T>* p)
+            template <typename T_>
+            friend void intrusive_ptr_add_ref(node_data_storage_base<T_>* p)
             {
                 ++p->count_;
             }
-            template <typename _T>
-            friend void intrusive_ptr_release(node_data_storage_base<_T>* p)
+            template <typename T_>
+            friend void intrusive_ptr_release(node_data_storage_base<T_>* p)
             {
                 if (--p->count_ == 0)
                     delete p;
