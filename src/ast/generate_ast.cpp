@@ -13,7 +13,7 @@
 
 #include <boost/spirit/include/qi.hpp>
 
-#include <strstream>
+#include <sstream>
 #include <string>
 
 namespace phylanx { namespace ast

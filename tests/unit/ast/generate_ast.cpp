@@ -10,7 +10,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <iostream>
-#include <strstream>
+#include <sstream>
 
 struct traverse_ast : phylanx::ast::static_visitor
 {
