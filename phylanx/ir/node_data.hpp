@@ -157,13 +157,13 @@ namespace phylanx { namespace ir
             dimensions_type dimensions_;
 
             // support for intrusive_ptr
-            template <typename T>
-            friend void intrusive_ptr_add_ref(node_data_storage_base<T>* p)
+            template <typename T_>
+            friend void intrusive_ptr_add_ref(node_data_storage_base<T_>* p)
             {
                 ++p->count_;
             }
-            template <typename T>
-            friend void intrusive_ptr_release(node_data_storage_base<T>* p)
+            template <typename T_>
+            friend void intrusive_ptr_release(node_data_storage_base<T_>* p)
             {
                 if (--p->count_ == 0)
                     delete p;
@@ -182,6 +182,7 @@ namespace phylanx { namespace ir
         public:
             using dimensions_type =
                 typename node_data_storage_base<T>::dimensions_type;
+            using base_type = node_data_storage_base<T>;
 
             constexpr node_data_storage()
               : node_data_storage_base<T>(0, {{1, 0}})
@@ -242,7 +243,6 @@ namespace phylanx { namespace ir
             template <typename Archive>
             void serialize(Archive& ar, unsigned)
             {
-                using base_type = node_data_storage_base<T>;
                 ar & hpx::serialization::template base_object<base_type>(*this);
                 ar & data_;
             }
@@ -260,6 +260,7 @@ namespace phylanx { namespace ir
                 typename node_data_storage_base<T>::dimensions_type;
             using storage1d_type =
                 Eigen::Matrix<T, Eigen::Dynamic, 1>;
+            using base_type = node_data_storage_base<T>;
 
             node_data_storage()
               : node_data_storage_base<T>(1)
@@ -342,7 +343,6 @@ namespace phylanx { namespace ir
             template <typename Archive>
             void serialize(Archive& ar, unsigned)
             {
-                using base_type = node_data_storage_base<T>;
                 ar & hpx::serialization::template base_object<base_type>(*this);
                 ar & data_;
             }
@@ -356,6 +356,7 @@ namespace phylanx { namespace ir
         class node_data_storage<2, T> : public node_data_storage_base<T>
         {
         public:
+            using base_type = node_data_storage_base<T>;
             using dimensions_type =
                 typename node_data_storage_base<T>::dimensions_type;
             using storage2d_type =
@@ -425,7 +426,6 @@ namespace phylanx { namespace ir
             template <typename Archive>
             void serialize(Archive& ar, unsigned)
             {
-                using base_type = node_data_storage_base<T>;
                 ar & hpx::serialization::template base_object<base_type>(*this);
                 ar & data_;
             }
