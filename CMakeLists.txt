@@ -97,12 +97,21 @@ else()
   phylanx_error("HPX_DIR has not been specified, please set it to help locating HPX")
 endif()
 
-find_package(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
+find_package(Eigen3 NO_CMAKE_PACKAGE_REGISTRY)
+if(NOT Eigen3_FOUND)
+  phylanx_info("Searching with PkgConfig for Eigen3...")
+  find_package(PkgConfig)
+  pkg_search_module(Eigen3 REQUIRED eigen3)
+endif()
 if(NOT Eigen3_FOUND)
   phylanx_error("Eigen3 could not be found, please set Eigen3_DIR to help locating it.")
 endif()
+if(${EIGEN3_VERSION_STRING})
+else()
+  set(EIGEN3_VERSION_STRING ${Eigen3_VERSION})
+endif()
 include_directories(${Eigen3_INCLUDE_DIRS})
-phylanx_info("Eigen3 version: " ${EIGEN3_VERSION_STRING})
+phylanx_info("Eigen3 was found, version: " ${EIGEN3_VERSION_STRING})
 
 ################################################################################
 # Special compiler flags
