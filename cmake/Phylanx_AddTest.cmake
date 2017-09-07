@@ -41,7 +41,7 @@ macro(add_phylanx_test category name)
   set(args "-v" "--" ${args})
 
   set(cmd "${PYTHON_EXECUTABLE}"
-          "${CMAKE_BINARY_DIR}/bin/hpxrun.py"
+          "${CMAKE_BINARY_DIR}/bin/phylanxrun.py"
           ${_exe}
           "-e" "${expected}"
           "-l" "${${name}_LOCALITIES}"

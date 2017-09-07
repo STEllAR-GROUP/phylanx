@@ -1,0 +1,25 @@
+#  Copyright (c) 2017  R. Tohid
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+machine:
+    services:
+        - docker
+    environment:
+        IMAGE_NAME: stellargroup/phylanx:test
+
+dependencies:
+    pre:
+        - docker build -t $IMAGE_NAME tools/docker:
+            timeout: 1200
+        - mkdir -p build
+
+    override:
+        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DEigen3_DIR=/eigen/3.3.4/share/eigen3/cmake/ -DEigen3_INCLUDE_DIRS=/eigen/3.3.4/include/eigen3 ..
+        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2
+
+test:
+    override:
+        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} ./bin/phylanxrun.py
+
