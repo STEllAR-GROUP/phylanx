@@ -63,13 +63,14 @@ namespace phylanx { namespace bindings
         template <typename Ast>
         bool on_enter(Ast const& ast) const
         {
-            // pybind11::dict d = func_.attr("__class__")["__dict__"];
-            // if (d.contains("on_enter"))
-            // {
-            //     pybind11::object ret =
-            //         d["on_enter"](func_, ast, *args_, **kwargs_);
-            //     return ret.cast<bool>();
-            // }
+            pybind11::dict d =
+                pybind11::object(func_.attr("__class__").attr("__dict__"));
+            if (d.contains("on_enter"))
+            {
+                pybind11::object ret =
+                    d["on_enter"](func_, ast, *args_, **kwargs_);
+                return ret.cast<bool>();
+            }
             pybind11::object ret = func_(ast, *args_, **kwargs_);
             return ret.cast<bool>();
         }
@@ -77,13 +78,14 @@ namespace phylanx { namespace bindings
         template <typename Ast>
         bool on_exit(Ast const& ast) const
         {
-            // pybind11::dict d = func_.attr("__class__")["__dict__"];
-            // if (d.contains("on_exit"))
-            // {
-            //     pybind11::object ret =
-            //         d["on_exit"](func_, ast, *args_, **kwargs_);
-            //     return ret.cast<bool>();
-            // }
+            pybind11::dict d =
+                pybind11::object(func_.attr("__class__").attr("__dict__"));
+            if (d.contains("on_exit"))
+            {
+                pybind11::object ret =
+                    d["on_exit"](func_, ast, *args_, **kwargs_);
+                return ret.cast<bool>();
+            }
             return true;
         }
 
