@@ -61,7 +61,7 @@ namespace phylanx { namespace ast { namespace parser
         }
 
         void swap(extended_variant& rhs)
-            noexcept(var.swap(std::declval<variant_type>()))
+            noexcept(std::declval<variant_type>().swap(rhs.var))
         {
             var.swap(rhs.var);
         }
