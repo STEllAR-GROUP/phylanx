@@ -199,7 +199,7 @@ if(NOT MSVC)
     phylanx_add_compile_flag_if_available(-Wno-unused-but-set-parameter LANGUAGES CXX C)
     phylanx_add_compile_flag_if_available(-Wno-unused-but-set-variable LANGUAGES CXX C)
     # Uninitialized variables are bad, earlier compilers issue spurious warnings
-    phylanx_add_compile_flag_if_available(-Werror=uninitialized LANGUAGES CXX C)
+    # phylanx_add_compile_flag_if_available(-Werror=uninitialized LANGUAGES CXX C)
     phylanx_add_compile_flag_if_available(-Wno-unused-local-typedefs LANGUAGES CXX C)
   endif()
 
