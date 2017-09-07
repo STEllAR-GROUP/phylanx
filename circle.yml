@@ -9,6 +9,11 @@ machine:
     environment:
         IMAGE_NAME: stellargroup/phylanx:test
 
+general:
+    branches:
+        ignore:
+            - gh-pages
+
 dependencies:
     pre:
         - docker build -t $IMAGE_NAME tools/docker:
