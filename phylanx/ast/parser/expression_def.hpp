@@ -20,7 +20,13 @@ namespace phylanx { namespace ast { namespace parser
 {
     template <typename Iterator>
     expression<Iterator>::expression(error_handler<Iterator>& error_handler)
-      : expression::base_type(expr)
+      : expression_base<Iterator>(error_handler),
+        expression::base_type(expression_base<Iterator>::expr)
+    {}
+
+    template <typename Iterator>
+    expression_base<Iterator>::expression_base(
+        error_handler<Iterator>& error_handler)
     {
         qi::_1_type _1;
         qi::_3_type _3;
