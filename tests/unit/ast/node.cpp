@@ -6,7 +6,6 @@
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
-#include <hpx/include/serialization.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
 #include <vector>
@@ -17,23 +16,10 @@
 template <typename Ast>
 void test_serialization(Ast const& in)
 {
-    std::vector<char> out_buffer;
-    std::size_t archive_size = 0;
-
-    {
-        hpx::serialization::output_archive archive(out_buffer);
-        archive << in;
-        archive_size = archive.bytes_written();
-    }
-
     Ast out;
 
-    {
-        hpx::serialization::input_archive archive(
-            out_buffer, archive_size);
-
-        archive >> out;
-    }
+    std::vector<char> buffer = phylanx::util::serialize(in);
+    phylanx::util::detail::unserialize(buffer, out);
 
     HPX_TEST(in == out);
 }

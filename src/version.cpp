@@ -37,11 +37,11 @@ namespace phylanx
 
     std::string full_version_as_string()
     {
-        std::string result(HPX_PP_STRINGIZE(HPX_PP_EXPAND(HPX_VERSION_MAJOR)));
+        std::string result(HPX_PP_STRINGIZE(HPX_PP_EXPAND(PHYLANX_VERSION_MAJOR)));
         result += ".";
-        result += HPX_PP_STRINGIZE(HPX_PP_EXPAND(HPX_VERSION_MINOR));
+        result += HPX_PP_STRINGIZE(HPX_PP_EXPAND(PHYLANX_VERSION_MINOR));
         result += ".";
-        result += HPX_PP_STRINGIZE(HPX_PP_EXPAND(HPX_VERSION_SUBMINOR));
+        result += HPX_PP_STRINGIZE(HPX_PP_EXPAND(PHYLANX_VERSION_SUBMINOR));
         return result;
     }
 

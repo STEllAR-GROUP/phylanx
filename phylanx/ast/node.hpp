@@ -135,6 +135,9 @@ namespace phylanx { namespace ast
 
         std::string name;
 
+    private:
+        friend class hpx::serialization::access;
+
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
         PHYLANX_EXPORT void serialize(
@@ -185,17 +188,16 @@ namespace phylanx { namespace ast
         {
         }
 
-        primary_expr(double val)
-          : expr_node_type(phylanx::ir::node_data<double>(val))
-        {
-        }
-
         primary_expr(phylanx::ir::node_data<double> const& val)
           : expr_node_type(val)
         {
         }
         primary_expr(phylanx::ir::node_data<double> && val)
           : expr_node_type(std::move(val))
+        {
+        }
+        primary_expr(double val)
+          : expr_node_type(phylanx::ir::node_data<double>(val))
         {
         }
 
@@ -207,8 +209,12 @@ namespace phylanx { namespace ast
           : expr_node_type(std::move(val))
         {
         }
-        primary_expr(std::string const&val)
+        primary_expr(std::string const& val)
           : expr_node_type(identifier(val))
+        {
+        }
+        primary_expr(std::string && val)
+          : expr_node_type(identifier(std::move(val)))
         {
         }
 
@@ -220,6 +226,9 @@ namespace phylanx { namespace ast
           : expr_node_type(std::move(val))
         {
         }
+
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
@@ -249,6 +258,11 @@ namespace phylanx { namespace ast
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
+        operand(std::string && val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(std::move(val)))
+        {
+        }
 
         operand(primary_expr const& val)
           : operand_node_type(val)
@@ -276,6 +290,9 @@ namespace phylanx { namespace ast
 //            : operand_node_type(std::move(val))
 //         {
 //         }
+
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
@@ -311,6 +328,9 @@ namespace phylanx { namespace ast
         optoken operator_;
         operand operand_;
 
+    private:
+        friend class hpx::serialization::access;
+
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
         PHYLANX_EXPORT void serialize(
@@ -345,6 +365,9 @@ namespace phylanx { namespace ast
 
         optoken operator_;
         operand operand_;
+
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
@@ -393,6 +416,9 @@ namespace phylanx { namespace ast
 
         operand first;
         std::list<operation> rest;
+
+    private:
+        friend class hpx::serialization::access;
 
         PHYLANX_EXPORT void serialize(
             hpx::serialization::input_archive& ar, unsigned);
