@@ -12,11 +12,10 @@ fi
 
 build_phylanx()
 {
-
-    builddir=${basedir}/build
-    rm -rf ${builddir}
-    mkdir -p ${builddir}
-    cd ${builddir}
+    echo "Removing old phylanx build..."
+    rm -rf ${phylanx_build_dir}
+    mkdir -p ${phylanx_build_dir}
+    cd ${phylanx_build_dir}
 
     cmake \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -24,7 +23,7 @@ build_phylanx()
     -Dpybind11_DIR=${pybind_build_dir}/share/cmake/pybind11 \
     -DHPX_DIR=${HPX_ROOT}/lib/cmake/HPX \
     -DPHYLANX_WITH_PSEUDO_DEPENDENCIES=On \
-    ${basedir}
+    ${phylanx_src_dir}
 
     make VERBOSE=1
 }

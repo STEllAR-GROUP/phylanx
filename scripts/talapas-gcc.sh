@@ -14,13 +14,16 @@ export mycc=gcc
 export mycxx=g++
 export myfc=gfortran
 
+host=talapas
+arch=`arch`
+uname=`uname`
 
 export basedir=${HOME}/src/phylanx
-export myarch=hpc-gcc
+export myarch=${host}-${arch}-${uname}-gcc
 export hpxtoolchain=${basedir}/src/hpx/cmake/toolchains/Cray.cmake
 export buildtype=Release
 export malloc=tcmalloc
-export contrib=${basedir}/${myarch}-build/contrib
+export contrib=${basedir}/build-${myarch}/contrib
 export malloc_path=${contrib}
 export hwloc_path=${contrib}
 export activeharmony_path=${contrib}
@@ -33,5 +36,5 @@ echo "NB: "
 echo "basedir is set to ${basedir}."
 echo "  All paths are relative to that base."
 echo "myarch is set to ${myarch}."
-echo "  Build output will be in ${myarch}-build."
+echo "  Build output will be in ${basedir}/build-${myarch}."
 echo ""

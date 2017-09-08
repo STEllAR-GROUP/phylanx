@@ -19,6 +19,7 @@ build_eigen3()
         fi
         tar -xzf 3.3.4.tar.gz
     fi
+    echo "Removing old eigen3 build..."
     rm -rf ${eigen_build_dir}
     mkdir -p ${eigen_build_dir}
     cd ${eigen_build_dir}

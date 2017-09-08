@@ -14,8 +14,12 @@ build_pybind()
 {
     if [ ! -d ${pybind_src_dir} ] ; then
         cd $(dirname ${pybind_src_dir})
-        git clone git@github.com:pybind/pybind11.git
+        if [ ! -f v2.2.0.tar.gz ] ; then
+            wget https://github.com/pybind/pybind11/archive/v2.2.0.tar.gz
+        fi
+        tar -xzf v2.2.0.tar.gz
     fi
+    echo "Removing old pybind11 build..."
     rm -rf ${pybind_build_dir}
     mkdir -p ${pybind_build_dir}
     cd ${pybind_build_dir}

@@ -5,10 +5,28 @@ if [ -z ${scriptdir} ] ; then
     scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 fi
 
-# load common settings
-. ${scriptdir}/buildbot_common.sh
+build_project_type()
+{
+    project=$1
+    export buildtype=$2
 
-# ${scriptdir}/build-hpx.sh
-${scriptdir}/buildbot_eigen3.sh
-${scriptdir}/buildbot_pybind.sh
-${scriptdir}/buildbot_phylanx.sh
+    # load common settings
+    . ${scriptdir}/buildbot_common.sh
+
+    # Build the project
+    ${scriptdir}/buildbot_${project}.sh
+    unset buildtype
+}
+
+build_project()
+{
+    project=$1
+    build_project_type ${project} Debug 
+    build_project_type ${project} RelWithDebInfo
+    build_project_type ${project} Release 
+}
+
+#build_project hpx
+build_project eigen3
+build_project pybind
+build_project phylanx
