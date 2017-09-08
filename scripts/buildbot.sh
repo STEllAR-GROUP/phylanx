@@ -26,7 +26,7 @@ build_phylanx()
 
     cmake \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DEigen3_DIR=${eigen_build_dir} \
+    -DEigen3_DIR=${eigen_build_dir}/share/eigen3/cmake \
     -Dpybind11_DIR=${pybind_build_dir}/share/cmake/pybind11 \
     -DHPX_DIR=${HPX_ROOT}/lib/cmake/HPX \
     -DPHYLANX_WITH_PSEUDO_DEPENDENCIES=On \
@@ -65,6 +65,6 @@ build_pybind()
     make install
 }
 
-build_eigen3
-build_pybind
+#build_eigen3
+#build_pybind
 build_phylanx
