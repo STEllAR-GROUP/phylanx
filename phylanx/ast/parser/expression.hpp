@@ -33,10 +33,9 @@ namespace phylanx { namespace ast { namespace parser
     ///////////////////////////////////////////////////////////////////////////
     //  The expression grammar
     template <typename Iterator>
-    struct expression
-      : qi::grammar<Iterator, ast::expression(), skipper<Iterator>>
+    struct expression_base
     {
-        expression(error_handler<Iterator>& error_handler);
+        expression_base(error_handler<Iterator>& error_handler);
 
         qi::rule<Iterator, ast::expression(), skipper<Iterator>> expr;
 
@@ -45,7 +44,7 @@ namespace phylanx { namespace ast { namespace parser
 
 //         qi::rule<Iterator, ast::function_call(), skipper<Iterator>>
 //             function_call;
-// 
+//
 //         qi::rule<Iterator, std::list<ast::expression>(), skipper<Iterator>>
 //             argument_list;
 
@@ -54,6 +53,14 @@ namespace phylanx { namespace ast { namespace parser
         qi::symbols<char, ast::optoken> unary_op;
         qi::symbols<char, ast::optoken> binary_op;
         qi::symbols<char> keywords;
+    };
+
+    template <typename Iterator>
+    struct expression
+      : expression_base<Iterator>,
+        qi::grammar<Iterator, ast::expression(), skipper<Iterator>>
+    {
+        expression(error_handler<Iterator>& error_handler);
     };
 }}}
 

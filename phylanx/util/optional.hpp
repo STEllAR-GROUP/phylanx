@@ -8,6 +8,7 @@
 
 #include <exception>
 #include <string>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -31,12 +32,12 @@ namespace phylanx { namespace util
     {
     public:
         explicit bad_optional_access(std::string const& what_arg)
-          : logic_error(what_arg)
+          : std::logic_error(what_arg)
         {
         }
 
         explicit bad_optional_access(char const* what_arg)
-          : logic_error(what_arg)
+          : std::logic_error(what_arg)
         {
         }
     };

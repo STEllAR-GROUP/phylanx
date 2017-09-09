@@ -12,7 +12,7 @@
 #include <iostream>
 #include <sstream>
 
-struct traverse_ast : phylanx::ast::static_visitor
+struct traverse_ast
 {
     traverse_ast(std::stringstream& strm)
       : strm_(strm)
