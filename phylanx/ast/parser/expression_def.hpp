@@ -99,19 +99,19 @@ namespace phylanx { namespace ast { namespace parser
 
         primary_expr =
                 double_
-//             |   function_call
+            |   function_call
             |   identifier
             |   bool_
             |   '(' > expr > ')'
             ;
 
-//         function_call =
-//                 (identifier >> '(')
-//             >   argument_list
-//             >   ')'
-//             ;
+        function_call =
+                (identifier >> '(')
+            >   argument_list
+            >   ')'
+            ;
 
-//         argument_list = -(expr % ',');
+        argument_list = -(expr % ',');
 
         identifier =
                 !lexeme[keywords >> !(alnum | '_')]
@@ -124,8 +124,8 @@ namespace phylanx { namespace ast { namespace parser
             (expr)
             (unary_expr)
             (primary_expr)
-//             (function_call)
-//             (argument_list)
+            (function_call)
+            (argument_list)
             (identifier)
         );
 

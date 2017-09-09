@@ -161,7 +161,7 @@ function(phylanx_setup_target target)
 
   # linker instructions
   if(NOT target_NOLIBS)
-    set(phylanx_libs phylanx)
+    set(phylanx_libs phylanx_component)
     if(NOT target_STATIC_LINKING)
       set(phylanx_libs ${phylanx_libs})
     endif()

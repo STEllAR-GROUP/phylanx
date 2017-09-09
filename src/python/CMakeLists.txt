@@ -35,7 +35,7 @@ pybind11_add_module(phylanx_py ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
 
 include_directories(${pybind11_INCLUDE_DIR}})
 
-target_link_libraries(phylanx_py PRIVATE phylanx ${pybind11_LIBRARIES})
+target_link_libraries(phylanx_py PRIVATE phylanx_component ${pybind11_LIBRARIES})
 target_compile_definitions(phylanx_py PRIVATE NOMINMAX)
 
 set_target_properties(

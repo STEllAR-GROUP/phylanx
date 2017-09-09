@@ -7,6 +7,7 @@ set(subdirs
     ast
     config
     ir
+    primitives
     util
    )
 

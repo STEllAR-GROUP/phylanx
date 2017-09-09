@@ -22,6 +22,9 @@ add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/ast/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/primitives/*.cpp"
+  APPEND)
+add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/util/*.cpp"
   APPEND)
 
@@ -45,6 +48,9 @@ if(MSVC)
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ir/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
+    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/primitives/*.hpp"
+    APPEND)
+  add_phylanx_library_headers(phylanx
     GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/util/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
@@ -52,7 +58,7 @@ if(MSVC)
     APPEND)
 
   add_phylanx_source_group(
-    NAME phylanx
+    NAME phylanx_component
     CLASS "Header Files"
     ROOT "${PROJECT_SOURCE_DIR}/phylanx"
     TARGETS ${phylanx_HEADERS})
@@ -60,24 +66,22 @@ endif()
 
 ################################################################################
 # create main module
-add_library(phylanx SHARED ${phylanx_SOURCES} ${phylanx_HEADERS})
+add_hpx_component(phylanx SHARED ${phylanx_SOURCES} ${phylanx_HEADERS})
 
-target_link_libraries(phylanx ${HPX_LIBRARIES})
+target_link_libraries(phylanx_component ${HPX_LIBRARIES})
 
 set_target_properties(
-  phylanx PROPERTIES
+  phylanx_component PROPERTIES
     VERSION ${PHYLANX_VERSION}
     SOVERSION ${PHYLANX_SOVERSION}
     CLEAN_DIRECT_OUTPUT 1
-    OUTPUT_NAME phylanx_core
     FOLDER "Core")
 
-set_property(TARGET phylanx APPEND
+set_property(TARGET phylanx_component APPEND
   PROPERTY COMPILE_DEFINITIONS
-  "HPX_COMPONENT_NAME=phylanx"
   "PHYLANX_EXPORTS")
 
-set(phylanx_targets ${phylanx_targets} phylanx)
+set(phylanx_targets ${phylanx_targets} phylanx_component)
 
 install(
   TARGETS ${phylanx_targets}

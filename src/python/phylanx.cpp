@@ -144,6 +144,11 @@ PYBIND11_MODULE(phylanx, m)
 {
     m.doc() = "Phylanx plugin module";
 
+    m.attr("__version__") = pybind11::str(
+        HPX_PP_STRINGIZE(PHYLANX_VERSION_MAJOR) "."
+        HPX_PP_STRINGIZE(PHYLANX_VERSION_MINOR) "."
+        HPX_PP_STRINGIZE(PHYLANX_VERSION_SUBMINOR));
+
     ///////////////////////////////////////////////////////////////////////////
     // expose version functions
     m.def("major_version", &phylanx::major_version);
@@ -304,7 +309,7 @@ PYBIND11_MODULE(phylanx, m)
     pybind11::class_<phylanx::ast::expression>(
             ast, "expression", "AST node representing an expression")
         .def(pybind11::init<phylanx::ast::operand>(),
-            "initialize operation instance with an operand")
+            "initialize expression instance with an operand")
         .def_readonly("first", &phylanx::ast::expression::first,
             "the first operand of the expression")
         .def_readwrite("rest", &phylanx::ast::expression::rest,
@@ -315,6 +320,22 @@ PYBIND11_MODULE(phylanx, m)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::expression>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::expression>));
+
+    // phylanx::ast::function_call
+    pybind11::class_<phylanx::ast::function_call>(
+            ast, "function_call", "AST node representing a function_call")
+        .def(pybind11::init<phylanx::ast::identifier>(),
+            "initialize function_call instance with an identifier")
+        .def_readonly("name", &phylanx::ast::function_call::function_name,
+            "the name of the function to invoke")
+        .def_readwrite("args", &phylanx::ast::function_call::args,
+            "the (optional) list of arguments for the function")
+        .def(pybind11::self == pybind11::self)
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::function_call>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::function_call>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::function_call>));
 
     // phylanx::ast::generate_ast()
     ast.def("generate_ast", &phylanx::ast::generate_ast,
@@ -342,6 +363,9 @@ PYBIND11_MODULE(phylanx, m)
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::expression>,
         "traverse the given AST expression and call the provided function "
             "on each part of it");
+    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::function_call>,
+        "traverse the given AST expression and call the provided function "
+            "on each part of it");
 
     ///////////////////////////////////////////////////////////////////////////
     // expose util submodule
@@ -360,6 +384,8 @@ PYBIND11_MODULE(phylanx, m)
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::operation>,
         "serialize an AST operation object into a byte-stream");
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::expression>,
+        "serialize an AST expression object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::function_call>,
         "serialize an AST expression object into a byte-stream");
 
     util.def("unserialize", &phylanx::util::unserialize,

@@ -31,15 +31,15 @@ class traverse_ast_enter_exit:
     def on_exit(self, ast, *args):
         return True
 
-def test_expression(expr, expected, delimier):
+def test_expression(expr, expected, delimiter):
     ast = phylanx.ast.generate_ast(expr)
 
     visitor = traverse_ast()
-    phylanx.ast.traverse(ast, visitor, delimier)
+    phylanx.ast.traverse(ast, visitor, delimiter)
     assert(visitor.result == expected)
 
     visitor = traverse_ast_enter_exit()
-    phylanx.ast.traverse(ast, visitor, delimier)
+    phylanx.ast.traverse(ast, visitor, delimiter)
     assert(visitor.result == expected)
 
 
@@ -47,33 +47,33 @@ def test_expression(expr, expected, delimier):
 test_expression(
     'A + B',
     'expression\n' +
-        'operand\n' +
-            'primary_expr\n' +
                 'identifier: A\n' +
         'operation\n' +
             'op_plus\n' +
-        'operand\n' +
-            'primary_expr\n' +
                 'identifier: B\n',
     '\n')
 
 test_expression(
     'A + B + -C',
     'expression\n' +
-        'operand\n' +
-            'primary_expr\n' +
                 'identifier: A\n' +
         'operation\n' +
             'op_plus\n' +
-        'operand\n' +
-            'primary_expr\n' +
                 'identifier: B\n' +
         'operation\n' +
             'op_plus\n' +
-        'operand\n' +
             'unary_expr\n' +
                 'op_negative\n' +
-                'operand\n' +
-                    'primary_expr\n' +
                         'identifier: C\n',
+    '\n')
+
+test_expression(
+    'func(A, B)',
+    'expression\n' +
+        'function_call\n' +
+            'identifier: func\n' +
+            'expression\n' +
+                'identifier: A\n' +
+            'expression\n' +
+                'identifier: B\n',
     '\n')

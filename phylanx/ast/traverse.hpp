@@ -181,9 +181,9 @@ namespace phylanx { namespace ast
     template <typename F, typename ... Ts>
     bool traverse(expression const& expr, F && f, Ts const&... ts);
 
-//     template <typename F>
-//     bool traverse(function_call const& op, F && f);
-//
+    template <typename F, typename ... Ts>
+    bool traverse(function_call const& expr, F && f, Ts const&... ts);
+
 //     template <typename F>
 //     bool traverse(assignment const& op, F && f);
 //
@@ -236,32 +236,16 @@ namespace phylanx { namespace ast
     template <typename F, typename ... Ts>
     bool traverse(primary_expr const& pe, F && f, Ts const&... ts)
     {
-        return detail::on_visit(
-            [](primary_expr const& pe, F && f, Ts const&... ts)
-            {
-                if (detail::on_enter::call(f, pe, ts...))
-                {
-                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), pe,
-                        ts...);
+        return visit(
+            detail::make_unwrap_visitor(std::forward<F>(f)), pe, ts...);
                 }
-            },
-            pe, std::forward<F>(f), ts...);
-    }
 
     template <typename F, typename ... Ts>
     bool traverse(operand const& op, F && f, Ts const&... ts)
     {
-        return detail::on_visit(
-            [](operand const& op, F && f, Ts const&... ts)
-            {
-                if (detail::on_enter::call(f, op, ts...))
-                {
-                    visit(detail::make_unwrap_visitor(std::forward<F>(f)), op,
-                        ts...);
+        return visit(
+            detail::make_unwrap_visitor(std::forward<F>(f)), op, ts...);
                 }
-            },
-            op, std::forward<F>(f), ts...);
-    }
 
     template <typename F, typename ... Ts>
     bool traverse(unary_expr const& ue, F && f, Ts const&... ts)
@@ -314,18 +298,27 @@ namespace phylanx { namespace ast
             expr, std::forward<F>(f), ts...);
     }
 
-//     template <typename F>
-//     bool traverse(function_call const& fc, F && f)
-//     {
-//         if (hpx::util::invoke(f, fc))
-//         {
-//             if (!traverse(fc.function_name, std::forward<F>(f)))
-//                 return false;
-//             return traverse(fc.args, std::forward<F>(f));
-//         }
-//         return false;
-//     }
-//
+    template <typename F, typename ... Ts>
+    bool traverse(function_call const& fc, F && f, Ts const&... ts)
+    {
+        return detail::on_visit(
+            [](function_call const& fc, F && f, Ts const&... ts)
+            {
+                if (detail::on_enter::call(f, fc, ts...))
+                {
+                    if (traverse(fc.function_name, std::forward<F>(f), ts...))
+                    {
+                        for (auto const& arg : fc.args)
+                        {
+                            if (!traverse(arg, std::forward<F>(f), ts...))
+                                break;
+                        }
+                    }
+                }
+            },
+            fc, std::forward<F>(f), ts...);
+    }
+
 //     template <typename F>
 //     bool traverse(assignment const& assign, F && f)
 //     {
