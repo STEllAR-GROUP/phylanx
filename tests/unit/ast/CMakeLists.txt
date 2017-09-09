@@ -5,7 +5,6 @@
 
 set(tests
     generate_ast
-    match
     node
    )
 
