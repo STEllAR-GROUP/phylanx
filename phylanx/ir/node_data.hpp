@@ -516,15 +516,15 @@ namespace phylanx { namespace ir
             if (dims[1] != 0)
             {
                 data_ =
-                    new (new detail::node_data_storage<2, T>(dims[0], dims[1]));
+                    (new detail::node_data_storage<2, T>(dims[0], dims[1]));
             }
             else if (dims[0] != 0)
             {
-                data_ = new (new detail::node_data_storage<1, T>(dims[0]));
+                data_ = (new detail::node_data_storage<1, T>(dims[0]));
             }
             else
             {
-                data_ = new(new detail::node_data_storage<0, T>());
+                data_ = (new detail::node_data_storage<0, T>());
             }
         }
 
@@ -532,17 +532,17 @@ namespace phylanx { namespace ir
         {
             if (dims[1] != 0)
             {
-                data_ = new (new detail::node_data_storage<2, T>(
+                data_ = (new detail::node_data_storage<2, T>(
                     dims[0], dims[1], default_value));
             }
             else if (dims[0] != 0)
             {
-                data_ = new (new detail::node_data_storage<1, T>(
+                data_ = (new detail::node_data_storage<1, T>(
                     dims[0], default_value));
             }
             else
             {
-                data_ = new(new detail::node_data_storage<0, T>(default_value));
+                data_ = (new detail::node_data_storage<0, T>(default_value));
             }
         }
 
