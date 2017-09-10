@@ -62,11 +62,32 @@ if(MSVC)
     CLASS "Header Files"
     ROOT "${PROJECT_SOURCE_DIR}/phylanx"
     TARGETS ${phylanx_HEADERS})
+
+  # add natvis files to solution (supported starting VS2015)
+  if(MSVC14)
+    add_phylanx_library_sources(natvis_files
+      GLOB GLOBS "${PROJECT_SOURCE_DIR}/tools/VS/*.natvis")
+    set(phylanx_external_OBJECTS
+        ${phylanx_external_OBJECTS}
+        ${natvis_files_SOURCES})
+    source_group("Natvis Files" FILES ${natvis_files_SOURCES})
+  endif()
+
 endif()
 
 ################################################################################
 # create main module
-add_hpx_component(phylanx SHARED ${phylanx_SOURCES} ${phylanx_HEADERS})
+if(phylanx_external_OBJECTS)
+  add_hpx_component(phylanx SHARED
+    SOURCES ${phylanx_SOURCES}
+    HEADERS ${phylanx_HEADERS}
+    AUXILIARY ${phylanx_external_OBJECTS})
+else()
+  add_hpx_component(phylanx SHARED
+    SOURCES ${phylanx_SOURCES}
+    HEADERS ${phylanx_HEADERS})
+endif()
+
 
 target_link_libraries(phylanx_component ${HPX_LIBRARIES})
 

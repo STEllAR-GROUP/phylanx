@@ -63,8 +63,8 @@ namespace phylanx { namespace bindings
         template <typename Ast>
         bool on_enter(Ast const& ast) const
         {
-            pybind11::dict d =
-                pybind11::object(func_.attr("__class__").attr("__dict__"));
+            auto d =
+                func_.attr("__class__").attr("__dict__").cast<pybind11::dict>();
             if (d.contains("on_enter"))
             {
                 pybind11::object ret =
@@ -78,8 +78,8 @@ namespace phylanx { namespace bindings
         template <typename Ast>
         bool on_exit(Ast const& ast) const
         {
-            pybind11::dict d =
-                pybind11::object(func_.attr("__class__").attr("__dict__"));
+            auto d =
+                func_.attr("__class__").attr("__dict__").cast<pybind11::dict>();
             if (d.contains("on_exit"))
             {
                 pybind11::object ret =
@@ -356,9 +356,6 @@ PYBIND11_MODULE(phylanx, m)
             "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::unary_expr>,
         "traverse the given AST unary_expr and call the provided function "
-            "on each part of it");
-    ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::operation>,
-        "traverse the given AST operation and call the provided function "
             "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::expression>,
         "traverse the given AST expression and call the provided function "

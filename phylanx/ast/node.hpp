@@ -31,6 +31,11 @@ namespace phylanx { namespace ast
     //  The AST
     struct tagged
     {
+        tagged()
+          : id(0)
+        {
+        }
+
         std::size_t id; // Used to annotate the AST with the iterator position.
                         // This id is used as a key to a map<int, Iterator>
                         // (not really part of the AST.)
@@ -38,8 +43,6 @@ namespace phylanx { namespace ast
 
     enum class optoken
     {
-        op_unknown,
-
         // precedence 1
         op_comma,
 
@@ -105,7 +108,11 @@ namespace phylanx { namespace ast
         // precedence 14
         op_post_incr,
         op_post_decr,
+
+        op_unknown
     };
+
+    PHYLANX_EXPORT int precedence_of(optoken);
 
     ///////////////////////////////////////////////////////////////////////////
     struct nil {};
@@ -259,40 +266,40 @@ namespace phylanx { namespace ast
           , phylanx::util::recursive_wrapper<unary_expr>
         >;
 
-    struct operand : tagged, operand_node_type
+    struct operand : operand_node_type, tagged
     {
         operand() = default;
 
-        operand(double val)
+        explicit operand(double val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        operand(std::string const& val)
+        explicit operand(std::string const& val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        operand(std::string && val)
+        explicit operand(std::string && val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(std::move(val)))
         {
         }
 
-        operand(primary_expr const& val)
+        explicit operand(primary_expr const& val)
           : operand_node_type(val)
         {
         }
-        operand(primary_expr && val)
+        explicit operand(primary_expr && val)
           : operand_node_type(std::move(val))
         {
         }
 
-        operand(unary_expr const& val)
+        explicit operand(unary_expr const& val)
           : operand_node_type(val)
         {
         }
-        operand(unary_expr && val)
+        explicit operand(unary_expr && val)
           : operand_node_type(std::move(val))
         {
         }
@@ -396,11 +403,18 @@ namespace phylanx { namespace ast
     {
         expression() = default;
 
-        expression(operand const& f)
+        explicit expression(operand const& f)
           : first(f)
         {}
-        expression(operand && f)
+        explicit expression(operand && f)
           : first(std::move(f))
+        {}
+
+        explicit expression(identifier const& id)
+          : first(operand(id.name))
+        {}
+        explicit expression(identifier && id)
+          : first(operand(std::move(id.name)))
         {}
 
         void append(operation const& op)
