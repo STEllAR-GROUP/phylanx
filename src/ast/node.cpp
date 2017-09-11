@@ -94,6 +94,48 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        struct is_placeholder
+        {
+            template <typename Ast>
+            bool operator()(Ast const& ast) const
+            {
+                return ast::is_placeholder(ast);
+            }
+        };
+
+        struct placeholder_name
+        {
+            template <typename Ast>
+            std::string operator()(Ast const& ast) const
+            {
+                return ast::placeholder_name(ast);
+            }
+        };
+    }
+
+    bool is_placeholder(primary_expr const& pe)
+    {
+        return visit(detail::is_placeholder(), pe);
+    }
+
+    std::string placeholder_name(primary_expr const& pe)
+    {
+        return visit(detail::placeholder_name(), pe);
+    }
+
+    bool is_placeholder(operand const& op)
+    {
+        return visit(detail::is_placeholder(), op);
+    }
+
+    std::string placeholder_name(operand const& op)
+    {
+        return visit(detail::placeholder_name(), op);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     void serialize(hpx::serialization::input_archive& ar, optoken& id, unsigned)
     {
         int val;

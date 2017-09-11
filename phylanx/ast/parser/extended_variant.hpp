@@ -60,6 +60,11 @@ namespace phylanx { namespace ast { namespace parser
             return var;
         }
 
+        constexpr std::size_t index() const
+        {
+            return var.index();
+        }
+
         void swap(extended_variant& rhs) noexcept(
             std::declval<variant_type>().swap(std::declval<variant_type>()))
         {

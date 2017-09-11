@@ -131,10 +131,7 @@ namespace phylanx { namespace ast
     template <typename F, typename... Ts>
     bool match(optoken const& t1, optoken const& t2, F&& f, Ts const&... ts)
     {
-        if (t1 != t2)
-            return false;
-
-        return hpx::util::invoke(std::forward<F>(f), t1, t2, ts...);
+        return t1 == t2;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -143,7 +140,7 @@ namespace phylanx { namespace ast
         identifier const& id1, identifier const& id2, F&& f, Ts const&... ts)
     {
         // handle placeholder
-        if (is_placeholder(id2) || id1 == id2)
+        if (is_placeholder(id2) || is_placeholder(id1) || id1 == id2)
         {
             return hpx::util::invoke(std::forward<F>(f), id1, id2, ts...);
         }
@@ -215,29 +212,149 @@ namespace phylanx { namespace ast
 
     namespace detail
     {
+        // Find full subexpression with a given (or higher) precedence
+        template <typename Ast>
+        expression extract_subexpression(
+            Ast const& ast, int prec,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end)
+        {
+            expression result(it->operand_);
+            while (++it != end && precedence_of(it->operator_) > prec)
+            {
+                result.append(*it);
+            }
+            return result;
+        }
+
+        expression extract_subexpression(
+            expression const& expr, int prec,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end)
+        {
+            ++it;
+            return expr;
+        }
+
+        expression extract_subexpression(
+            primary_expr const& pe, int prec,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end)
+        {
+            // primary expression refers to an expression itself
+            if (pe.index() == 4)
+            {
+                return extract_subexpression(util::get<4>(pe.get()).get(),
+                    prec, it, end);
+            }
+
+            expression result(it->operand_);
+            while (++it != end && precedence_of(it->operator_) > prec)
+            {
+                result.append(*it);
+            }
+            return result;
+        }
+
+        expression extract_subexpression(
+            operand const& op, int prec,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end)
+        {
+            // operand may refer to primary expression
+            if (op.index() == 1)
+            {
+                return extract_subexpression(util::get<1>(op.get()).get(),
+                    prec, it, end);
+            }
+
+            expression result(it->operand_);
+            while (++it != end && precedence_of(it->operator_) > prec)
+            {
+                result.append(*it);
+            }
+            return result;
+        }
+
         // The Shunting-yard algorithm
         template <typename F, typename ... Ts>
         bool match_expression(
             int min_precedence,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end,
-            F&& f, Ts const&... ts)
+            std::list<operation>::const_iterator& it1,
+            std::list<operation>::const_iterator end1,
+            std::list<operation>::const_iterator& it2,
+            std::list<operation>::const_iterator end2,
+            F && f, Ts const&... ts)
         {
-            while (it != rend && precedence[it->operator_] >= min_precedence)
+            while (it1 != end1 && it2 != end2 &&
+                precedence_of(it1->operator_) >= min_precedence)
             {
-                ast::optoken op = it->operator_;
+                operation const& curr1 = *it1;
+                operation const& curr2 = *it2;
 
-                if (!traverse(*it, std::forward<F>(f), ts...))
-                    return false;
+                int prec = precedence_of(curr1.operator_);
 
-                ++it;
-
-                while (it != end && precedence[it->operator_] > precedence[op])
+                if (is_placeholder(*it1))
                 {
-                    ast::optoken next_op = it->operator_;
-                    traverse_expression(precedence[next_op], it, end);
+                    if (!hpx::util::invoke(std::forward<F>(f), curr1,
+                            extract_subexpression(
+                                it2->operand_, prec, it2, end2),
+                            ts...))
+                    {
+                        return false;
+                    }
+                    ++it1;
+                    continue;
+                }
+                else if (is_placeholder(*it2))
+                {
+                    if (!hpx::util::invoke(std::forward<F>(f),
+                            extract_subexpression(
+                                it1->operand_, prec, it1, end1),
+                            curr2, ts...))
+                    {
+                        return false;
+                    }
+                    ++it2;
+                    continue;
+                }
+
+                if (!match(curr1.operand_, curr2.operand_, std::forward<F>(f),
+                        ts...))
+                {
+                    return false;
+                }
+
+                ++it1;
+                ++it2;
+
+                while (it1 != end1 && it2 != end2 &&
+                    precedence_of(it1->operator_) > prec)
+                {
+                    if (!match_expression(precedence_of(it1->operator_), it1,
+                            end1, it2, end2, std::forward<F>(f), ts...))
+                    {
+                        return false;
+                    }
+                }
+
+                if (!match(curr1.operator_, curr2.operator_, std::forward<F>(f),
+                        ts...))
+                {
+                    return false;
                 }
             }
+
+            // bail out if the list lengths don't match
+            if (it1 == end1)
+            {
+                return it2 == end2;
+            }
+            else if (it2 == end2)
+            {
+                return false;
+            }
+
             return true;
         }
     }
@@ -246,21 +363,19 @@ namespace phylanx { namespace ast
     bool match(expression const& expr1, expression const& expr2, F&& f,
         Ts const&... ts)
     {
-        if (expr1.rest.size() != expr2.rest.size())
-            return false;       // different number of operands
-
+        // check whether first operand matches
         if (!match(expr1.first, expr2.first, std::forward<F>(f), ts...))
-            return false;       // first operand does not match
+            return false;
 
-        auto end1 = expr1.rest.end();
-        for (auto it1 = expr1.rest.begin(), it2 = expr2.rest.begin();
-             it1 != end1; ++it1, ++it2)
-        {
-            if (!match(*it1, *it2, std::forward<F>(f), ts...))
-                return false;   // one of the remaining operands does not match
-        }
+        // if one is empty, the other one should be empty as well
+        if (expr1.rest.empty() || expr2.rest.empty())
+            return expr1.rest.size() == expr2.rest.size();
 
-        return true;
+        auto begin1 = expr1.rest.begin();
+        auto begin2 = expr2.rest.begin();
+
+        return detail::match_expression(0, begin1, expr1.rest.end(), begin2,
+            expr2.rest.end(), std::forward<F>(f), ts...);
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -126,6 +126,30 @@ namespace phylanx { namespace ast
         return false;
     }
 
+    template <typename Ast>
+    bool is_placeholder(Ast const&)
+    {
+        return false;
+    }
+
+    template <typename Ast>
+    std::string placeholder_name(Ast const&)
+    {
+        return "";
+    }
+
+    template <typename Ast>
+    bool is_placeholder(util::recursive_wrapper<Ast> const& ast)
+    {
+        return is_placeholder(ast.get());
+    }
+
+    template <typename Ast>
+    std::string placeholder_name(util::recursive_wrapper<Ast> const& ast)
+    {
+        return placeholder_name(ast.get());
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     struct identifier : tagged
     {
@@ -163,6 +187,11 @@ namespace phylanx { namespace ast
     inline bool is_placeholder(identifier const& id)
     {
         return !id.name.empty() && id.name[0] == '_';
+    }
+
+    inline std::string placeholder_name(identifier const& id)
+    {
+        return id.name;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -259,6 +288,9 @@ namespace phylanx { namespace ast
             hpx::serialization::output_archive& ar, unsigned);
     };
 
+    PHYLANX_EXPORT bool is_placeholder(primary_expr const& pe);
+    PHYLANX_EXPORT std::string placeholder_name(primary_expr const& pe);
+
     ///////////////////////////////////////////////////////////////////////////
     using operand_node_type = phylanx::ast::parser::extended_variant<
             nil
@@ -313,14 +345,8 @@ namespace phylanx { namespace ast
             hpx::serialization::output_archive& ar, unsigned);
     };
 
-//     inline bool operator==(operand const& lhs, operand const& rhs)
-//     {
-//         return lhs.get() == rhs.get();
-//     }
-//     inline bool operator!=(operand const& lhs, operand const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
+    PHYLANX_EXPORT bool is_placeholder(operand const& op);
+    PHYLANX_EXPORT std::string placeholder_name(operand const& op);
 
     ///////////////////////////////////////////////////////////////////////////
     struct unary_expr : tagged
@@ -358,6 +384,16 @@ namespace phylanx { namespace ast
     inline bool operator!=(unary_expr const& lhs, unary_expr const& rhs)
     {
         return !(lhs == rhs);
+    }
+
+    inline bool is_placeholder(unary_expr const& ue)
+    {
+        return is_placeholder(ue.operand_);
+    }
+
+    inline std::string placeholder_name(unary_expr const& ue)
+    {
+        return placeholder_name(ue.operand_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -398,6 +434,16 @@ namespace phylanx { namespace ast
         return !(lhs == rhs);
     }
 
+    inline bool is_placeholder(operation const& op)
+    {
+        return is_placeholder(op.operand_);
+    }
+
+    inline std::string placeholder_name(operation const& op)
+    {
+        return placeholder_name(op.operand_);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     struct expression
     {
@@ -415,6 +461,20 @@ namespace phylanx { namespace ast
         {}
         explicit expression(identifier && id)
           : first(operand(std::move(id.name)))
+        {}
+
+        explicit expression(operation const& op)
+          : first(op.operand_)
+        {}
+        explicit expression(operation && op)
+          : first(std::move(op.operand_))
+        {}
+
+        explicit expression(function_call const& fc)
+          : first(primary_expr(fc))
+        {}
+        explicit expression(function_call && fc)
+          : first(primary_expr(std::move(fc)))
         {}
 
         void append(operation const& op)
@@ -453,6 +513,23 @@ namespace phylanx { namespace ast
     inline bool operator!=(expression const& lhs, expression const& rhs)
     {
         return !(lhs == rhs);
+    }
+
+    inline bool is_placeholder(expression const& expr)
+    {
+        if (!expr.rest.empty())
+            return false;
+
+        return is_placeholder(expr.first);
+    }
+
+    inline std::string placeholder_name(expression const& expr)
+    {
+        if (!expr.rest.empty())
+        {
+            return "";
+        }
+        return placeholder_name(expr.first);
     }
 
     ///////////////////////////////////////////////////////////////////////////
