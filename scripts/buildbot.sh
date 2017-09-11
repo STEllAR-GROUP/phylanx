@@ -5,6 +5,11 @@ if [ -z ${scriptdir} ] ; then
     scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 fi
 
+# make the builddir if it doesn't exist
+if [ ! -d ${contrib} ] ; then
+    mkdir $( dirname "${contrib}" )
+fi
+
 build_project_type()
 {
     project=$1
@@ -26,7 +31,7 @@ build_project()
     build_project_type ${project} Release 
 }
 
-#build_project hpx
+build_project hpx
 build_project eigen3
 build_project pybind
 build_project phylanx
