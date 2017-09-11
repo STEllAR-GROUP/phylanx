@@ -273,6 +273,8 @@ namespace phylanx { namespace ir
             using storage1d_type =
                 Eigen::Matrix<T, Eigen::Dynamic, 1>;
             using base_type = node_data_storage_base<T>;
+            using constant_type =
+                typename Eigen::DenseBase<storage1d_type>;
 
             node_data_storage()
               : node_data_storage_base<T>(1)
@@ -287,7 +289,7 @@ namespace phylanx { namespace ir
             }
             node_data_storage(std::size_t dim, T default_value)
               : node_data_storage_base<T>(1)
-              , data_(Eigen::Constant(dim, default_value))
+              , data_(constant_type::Constant(dim, default_value))
             {
             }
 
@@ -387,6 +389,8 @@ namespace phylanx { namespace ir
                 typename node_data_storage_base<T>::dimensions_type;
             using storage2d_type =
                 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+            using constant_type =
+                typename Eigen::DenseBase<storage2d_type>;
 
             node_data_storage()
               : node_data_storage_base<T>(2)
@@ -396,13 +400,13 @@ namespace phylanx { namespace ir
 
             node_data_storage(std::size_t dim1, std::size_t dim2)
               : node_data_storage_base<T>(2)
-              , data_(Eigen::Constant(dim1, dim2))
+              , data_(constant_type::Constant(dim1, dim2))
             {
             }
             node_data_storage(
                 std::size_t dim1, std::size_t dim2, T default_value)
               : node_data_storage_base<T>(2)
-              , data_(Eigen::Constant(dim1, dim2, default_value))
+              , data_(constant_type::Constant(dim1, dim2, default_value))
             {
             }
 
@@ -512,15 +516,15 @@ namespace phylanx { namespace ir
             if (dims[1] != 0)
             {
                 data_ =
-                    new (new detail::node_data_storage<2, T>(dims[0], dims[1]));
+                    (new detail::node_data_storage<2, T>(dims[0], dims[1]));
             }
             else if (dims[0] != 0)
             {
-                data_ = new (new detail::node_data_storage<1, T>(dims[0]));
+                data_ = (new detail::node_data_storage<1, T>(dims[0]));
             }
             else
             {
-                data_ = new(new detail::node_data_storage<0, T>());
+                data_ = (new detail::node_data_storage<0, T>());
             }
         }
 
@@ -528,17 +532,17 @@ namespace phylanx { namespace ir
         {
             if (dims[1] != 0)
             {
-                data_ = new (new detail::node_data_storage<2, T>(
+                data_ = (new detail::node_data_storage<2, T>(
                     dims[0], dims[1], default_value));
             }
             else if (dims[0] != 0)
             {
-                data_ = new (new detail::node_data_storage<1, T>(
+                data_ = (new detail::node_data_storage<1, T>(
                     dims[0], default_value));
             }
             else
             {
-                data_ = new(new detail::node_data_storage<0, T>(default_value));
+                data_ = (new detail::node_data_storage<0, T>(default_value));
             }
         }
 
