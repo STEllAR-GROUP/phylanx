@@ -56,6 +56,10 @@ configure_it()
     export CC=${mycc}
     export CXX=${mycxx}
     export FC=${myfc}
+    export CFLAGS=${mycflags}
+    export CXXFLAGS=${mycxxflags}
+    export LDFLAGS=${myldflags}
+
     cmake \
     -DCMAKE_BUILD_TYPE=${buildtype} \
     -DBOOST_ROOT=${boost_path} \
@@ -64,7 +68,7 @@ configure_it()
     -DCMAKE_INSTALL_PREFIX=. \
     -DHPX_WITH_TOOLS=ON \
     -DHPX_WITH_THREAD_IDLE_RATES=ON \
-    -DHPX_WITH_PARCELPORT_MPI=ON \
+    -DHPX_WITH_PARCELPORT_MPI=OFF \
     -DHPX_WITH_PARCEL_COALESCING=OFF \
     ${apex_opts} \
     ${hpx_src_dir}
@@ -73,7 +77,7 @@ configure_it()
 build_it()
 {
     cd ${HPX_ROOT}
-    make -j20 core
+    make ${makej} core
 }
 
 get_source

@@ -24,6 +24,7 @@ build_eigen3()
     mkdir -p ${eigen_build_dir}
     cd ${eigen_build_dir}
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=. ${eigen_src_dir}
+    make ${makej}
     make install
 }
 

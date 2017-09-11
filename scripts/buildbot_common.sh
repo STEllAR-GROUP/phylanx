@@ -15,8 +15,15 @@ if [ -z ${myarch} ] ; then
 
 fi
 
+nprocs=`nproc`
+let one_fourth=$nprocs/4
+makej=-j${one_fourth}
+
 top=${HOME}/src/phylanx
 buildprefix=${top}/build-${myarch}
+
+boost_src_dir=/dev/shm/src/boost
+boost_build_dir=${buildprefix}/boost-1.65.0
 
 phylanx_src_dir=${top}/src/phylanx
 phylanx_build_dir=${buildprefix}/phylanx-${buildtype}

@@ -5,9 +5,12 @@ if [ -z ${scriptdir} ] ; then
     scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 fi
 
+# load common settings
+. ${scriptdir}/buildbot_common.sh
+
 # make the builddir if it doesn't exist
-if [ ! -d ${contrib} ] ; then
-    mkdir $( dirname "${contrib}" )
+if [ ! -d ${buildprefix} ] ; then
+    mkdir ${buildprefix}
 fi
 
 build_project_type()
@@ -15,7 +18,7 @@ build_project_type()
     project=$1
     export buildtype=$2
 
-    # load common settings
+    # re-load common settings
     . ${scriptdir}/buildbot_common.sh
 
     # Build the project

@@ -10,6 +10,8 @@ if [ -z ${eigen_src_dir} ] ; then
     . ${scriptdir}/buildbot_common.sh
 fi
 
+pythonpath=`which python3`
+
 build_pybind()
 {
     if [ ! -d ${pybind_src_dir} ] ; then
@@ -23,8 +25,10 @@ build_pybind()
     rm -rf ${pybind_build_dir}
     mkdir -p ${pybind_build_dir}
     cd ${pybind_build_dir}
-    cmake -DCMAKE_INSTALL_PREFIX=. -DDOWNLOAD_CATCH=1 ${pybind_src_dir}
-    make -j8
+    set -x
+    export LDFLAGS="-ldl -lutil"
+    cmake -DCMAKE_INSTALL_PREFIX=. -DDOWNLOAD_CATCH=1 -DPYTHON_EXECUTABLE:FILEPATH=${pythonpath} ${pybind_src_dir}
+    make ${makej}
     make install
 }
 
