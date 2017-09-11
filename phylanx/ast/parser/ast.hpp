@@ -37,12 +37,12 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::list<phylanx::ast::operation>, rest)
 )
 
-// BOOST_FUSION_ADAPT_STRUCT(
-//     phylanx::ast::function_call,
-//     (phylanx::ast::identifier, function_name)
-//     (std::list<phylanx::ast::expression>, args)
-// )
-//
+BOOST_FUSION_ADAPT_STRUCT(
+    phylanx::ast::function_call,
+    (phylanx::ast::identifier, function_name)
+    (std::list<phylanx::ast::expression>, args)
+)
+
 // BOOST_FUSION_ADAPT_STRUCT(
 //     phylanx::ast::variable_declaration,
 //     (phylanx::ast::identifier, lhs)

@@ -153,11 +153,16 @@ namespace phylanx { namespace ast
         return !(lhs == rhs);
     }
 
+    inline bool is_placeholder(identifier const& id)
+    {
+        return !id.name.empty() && id.name[0] == '_';
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     struct unary_expr;
     struct expression;
+    struct function_call;
 
-//     struct function_call;
 //     struct if_statement;
 //     struct while_statement;
 //     struct statement;
@@ -172,6 +177,7 @@ namespace phylanx { namespace ast
           , phylanx::ir::node_data<double>
           , identifier
           , phylanx::util::recursive_wrapper<expression>
+          , phylanx::util::recursive_wrapper<function_call>
         >;
 
     struct primary_expr : tagged, expr_node_type
@@ -188,16 +194,17 @@ namespace phylanx { namespace ast
         {
         }
 
+        primary_expr(double val)
+          : expr_node_type(phylanx::ir::node_data<double>(val))
+        {
+        }
+
         primary_expr(phylanx::ir::node_data<double> const& val)
           : expr_node_type(val)
         {
         }
         primary_expr(phylanx::ir::node_data<double> && val)
           : expr_node_type(std::move(val))
-        {
-        }
-        primary_expr(double val)
-          : expr_node_type(phylanx::ir::node_data<double>(val))
         {
         }
 
@@ -227,6 +234,15 @@ namespace phylanx { namespace ast
         {
         }
 
+        primary_expr(function_call const& fc)
+          : expr_node_type(fc)
+        {
+        }
+        primary_expr(function_call && fc)
+          : expr_node_type(std::move(fc))
+        {
+        }
+
     private:
         friend class hpx::serialization::access;
 
@@ -241,7 +257,6 @@ namespace phylanx { namespace ast
             nil
           , phylanx::util::recursive_wrapper<primary_expr>
           , phylanx::util::recursive_wrapper<unary_expr>
-//           , phylanx::util::recursive_wrapper<function_call>
         >;
 
     struct operand : tagged, operand_node_type
@@ -281,15 +296,6 @@ namespace phylanx { namespace ast
           : operand_node_type(std::move(val))
         {
         }
-
-//         operand(function_call const& val)
-//            : operand_node_type(val)
-//         {
-//         }
-//         operand(function_call && val)
-//            : operand_node_type(std::move(val))
-//         {
-//         }
 
     private:
         friend class hpx::serialization::access;
@@ -435,27 +441,56 @@ namespace phylanx { namespace ast
         return !(lhs == rhs);
     }
 
-//     ///////////////////////////////////////////////////////////////////////////
-//     struct function_call
-//     {
-//         identifier function_name;
-//         std::list<expression> args;
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     inline bool operator==(function_call const& lhs, function_call const& rhs)
-//     {
-//         return lhs.function_name == rhs.function_name && lhs.args == rhs.args;
-//     }
-//     inline bool operator!=(function_call const& lhs, function_call const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
-//
+    ///////////////////////////////////////////////////////////////////////////
+    struct function_call
+    {
+        function_call() = default;
+
+        function_call(identifier const& name)
+          : function_name(name)
+        {}
+        function_call(identifier && name)
+          : function_name(std::move(name))
+        {}
+
+        void append(expression const& expr)
+        {
+            args.push_back(expr);
+        }
+        void append(expression && expr)
+        {
+            args.emplace_back(std::move(expr));
+        }
+        void append(std::list<expression> const& l)
+        {
+            std::copy(l.begin(), l.end(), std::back_inserter(args));
+        }
+        void append(std::list<expression> && l)
+        {
+            std::move(l.begin(), l.end(), std::back_inserter(args));
+        }
+
+        identifier function_name;
+        std::list<expression> args;
+
+    private:
+        friend class hpx::serialization::access;
+
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::input_archive& ar, unsigned);
+        PHYLANX_EXPORT void serialize(
+            hpx::serialization::output_archive& ar, unsigned);
+    };
+
+    inline bool operator==(function_call const& lhs, function_call const& rhs)
+    {
+        return lhs.function_name == rhs.function_name && lhs.args == rhs.args;
+    }
+    inline bool operator!=(function_call const& lhs, function_call const& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
 //     ///////////////////////////////////////////////////////////////////////////
 //     struct assignment
 //     {
@@ -692,8 +727,8 @@ namespace phylanx { namespace ast
         std::ostream& out, operation const& op);
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, expression const& expr);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, function_call const& fc);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, function_call const& fc);
 //     PHYLANX_EXPORT std::ostream& operator<<(
 //         std::ostream& out, assignment const& assign);
 //     PHYLANX_EXPORT std::ostream& operator<<(

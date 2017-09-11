@@ -111,6 +111,26 @@ void test_expression()
     test_serialization(p2);
 }
 
+void test_function_call()
+{
+    phylanx::ast::identifier id("function_name");
+    phylanx::ast::function_call fc(std::move(id));
+
+    phylanx::ast::primary_expr p1(true);
+    phylanx::ast::operand op1(p1);
+    phylanx::ast::expression e1(std::move(p1));
+
+    fc.append(e1);
+
+    std::list<phylanx::ast::expression> exprs = {e1, e1};
+    fc.append(exprs);
+
+    test_serialization(fc);
+
+    phylanx::ast::primary_expr p2(std::move(fc));
+    test_serialization(p2);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -120,6 +140,7 @@ int main(int argc, char* argv[])
     test_unary_expr();
     test_operation();
     test_expression();
+    test_function_call();
 
     return hpx::util::report_errors();
 }

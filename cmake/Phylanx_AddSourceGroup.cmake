@@ -35,6 +35,10 @@ macro(add_phylanx_source_group)
           phylanx_debug("add_source_group.${name}"
                     "Adding ${target} to source group '${GROUP_CLASS}${_target}'")
           source_group("${GROUP_CLASS}\\${relpath}" FILES ${target})
+         else()
+          phylanx_debug("add_source_group.${name}"
+                    "Adding ${target} to source group '${GROUP_CLASS}${_target}'")
+          source_group("${GROUP_CLASS}" FILES ${target})
         endif()
       else()
         phylanx_debug("add_source_group.${name}"

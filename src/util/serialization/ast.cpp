@@ -74,6 +74,11 @@ namespace phylanx { namespace util
         return detail::serialize(ast);
     }
 
+    std::vector<char> serialize(ast::function_call const& ast)
+    {
+        return detail::serialize(ast);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
@@ -121,6 +126,11 @@ namespace phylanx { namespace util
         }
 
         void unserialize(std::vector<char> const& input, ast::expression& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::function_call& ast)
         {
             detail::unserialize_helper(input, ast);
         }

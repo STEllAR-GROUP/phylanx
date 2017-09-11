@@ -42,35 +42,35 @@ int main(int argc, char* argv[])
     test_expression(
         "A + B",
         "expression\n"
-            "operand\n"
-                "primary_expr\n"
                     "identifier: A\n"
             "operation\n"
                 "op_plus\n"
-            "operand\n"
-                "primary_expr\n"
                     "identifier: B\n"
     );
 
     test_expression(
         "A + B + -C",
         "expression\n"
-            "operand\n"
-                "primary_expr\n"
                     "identifier: A\n"
             "operation\n"
                 "op_plus\n"
-            "operand\n"
-                "primary_expr\n"
                     "identifier: B\n"
             "operation\n"
                 "op_plus\n"
-            "operand\n"
                 "unary_expr\n"
                     "op_negative\n"
-                    "operand\n"
-                        "primary_expr\n"
                             "identifier: C\n"
+    );
+
+    test_expression(
+        "func(A, B)",
+        "expression\n"
+            "function_call\n"
+                "identifier: func\n"
+                "expression\n"
+                    "identifier: A\n"
+                "expression\n"
+                    "identifier: B\n"
     );
 
     return hpx::util::report_errors();

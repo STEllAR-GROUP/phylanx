@@ -31,6 +31,7 @@ namespace phylanx { namespace util
     PHYLANX_EXPORT std::vector<char> serialize(ast::unary_expr const&);
     PHYLANX_EXPORT std::vector<char> serialize(ast::operation const&);
     PHYLANX_EXPORT std::vector<char> serialize(ast::expression const&);
+    PHYLANX_EXPORT std::vector<char> serialize(ast::function_call const&);
 
     namespace detail
     {
@@ -48,6 +49,8 @@ namespace phylanx { namespace util
             std::vector<char> const&, ast::operation&);
         PHYLANX_EXPORT void unserialize(
             std::vector<char> const&, ast::expression&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::function_call&);
     }
 
     PHYLANX_EXPORT ast::expression unserialize(std::vector<char> const&);

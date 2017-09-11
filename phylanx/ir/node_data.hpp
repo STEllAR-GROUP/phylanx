@@ -143,6 +143,9 @@ namespace phylanx { namespace ir
             virtual iterator begin() const = 0;
             virtual iterator end() const = 0;
 
+            virtual T const* data() const = 0;
+            virtual std::size_t size() const = 0;
+
         private:
             friend class hpx::serialization::access;
 
@@ -237,6 +240,15 @@ namespace phylanx { namespace ir
                 return iterator(&data_ + 1);
             }
 
+            T const* data() const
+            {
+                return &data_;
+            }
+            std::size_t size() const
+            {
+                return 1;
+            }
+
         private:
             friend class hpx::serialization::access;
 
@@ -261,6 +273,8 @@ namespace phylanx { namespace ir
             using storage1d_type =
                 Eigen::Matrix<T, Eigen::Dynamic, 1>;
             using base_type = node_data_storage_base<T>;
+            using constant_type =
+                typename Eigen::DenseBase<storage1d_type>;
 
             node_data_storage()
               : node_data_storage_base<T>(1)
@@ -271,6 +285,11 @@ namespace phylanx { namespace ir
             node_data_storage(std::size_t dim)
               : node_data_storage_base<T>(1)
               , data_(dim)
+            {
+            }
+            node_data_storage(std::size_t dim, T default_value)
+              : node_data_storage_base<T>(1)
+              , data_(constant_type::Constant(dim, default_value))
             {
             }
 
@@ -337,6 +356,15 @@ namespace phylanx { namespace ir
                 return iterator(data_.data() + data_.size());
             }
 
+            T const* data() const
+            {
+                return data_.data();
+            }
+            std::size_t size() const
+            {
+                return data_.size();
+            }
+
         private:
             friend class hpx::serialization::access;
 
@@ -361,6 +389,8 @@ namespace phylanx { namespace ir
                 typename node_data_storage_base<T>::dimensions_type;
             using storage2d_type =
                 Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+            using constant_type =
+                typename Eigen::DenseBase<storage2d_type>;
 
             node_data_storage()
               : node_data_storage_base<T>(2)
@@ -370,7 +400,13 @@ namespace phylanx { namespace ir
 
             node_data_storage(std::size_t dim1, std::size_t dim2)
               : node_data_storage_base<T>(2)
-              , data_(dim1, dim2)
+              , data_(constant_type::Constant(dim1, dim2))
+            {
+            }
+            node_data_storage(
+                std::size_t dim1, std::size_t dim2, T default_value)
+              : node_data_storage_base<T>(2)
+              , data_(constant_type::Constant(dim1, dim2, default_value))
             {
             }
 
@@ -420,6 +456,15 @@ namespace phylanx { namespace ir
                 return iterator(data_.data() + data_.size());
             }
 
+            T const* data() const
+            {
+                return data_.data();
+            }
+            std::size_t size() const
+            {
+                return data_.size();
+            }
+
         private:
             friend class hpx::serialization::access;
 
@@ -465,6 +510,41 @@ namespace phylanx { namespace ir
             Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
         node_data() = default;
+
+        node_data(dimensions_type const& dims)
+        {
+            if (dims[1] != 0)
+            {
+                data_ =
+                    (new detail::node_data_storage<2, T>(dims[0], dims[1]));
+            }
+            else if (dims[0] != 0)
+            {
+                data_ = (new detail::node_data_storage<1, T>(dims[0]));
+            }
+            else
+            {
+                data_ = (new detail::node_data_storage<0, T>());
+            }
+        }
+
+        node_data(dimensions_type const& dims, T default_value)
+        {
+            if (dims[1] != 0)
+            {
+                data_ = (new detail::node_data_storage<2, T>(
+                    dims[0], dims[1], default_value));
+            }
+            else if (dims[0] != 0)
+            {
+                data_ = (new detail::node_data_storage<1, T>(
+                    dims[0], default_value));
+            }
+            else
+            {
+                data_ = (new detail::node_data_storage<0, T>(default_value));
+            }
+        }
 
         /// Create node data for a 0-dimensional value
         node_data(T const& value)
@@ -521,6 +601,15 @@ namespace phylanx { namespace ir
         iterator end() const
         {
             return data_->end();
+        }
+
+        T const* data() const
+        {
+            return data_->data();
+        }
+        std::size_t size() const
+        {
+            return data_->size();
         }
 
         /// Extract the dimensionality of the underlying data array.

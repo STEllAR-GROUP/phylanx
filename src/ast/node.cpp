@@ -95,19 +95,19 @@ namespace phylanx { namespace ast
         ar >> first >> rest;
     }
 
-//     ///////////////////////////////////////////////////////////////////////////
-//     void function_call::serialize(
-//         hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << function_name << args;
-//     }
-//
-//     void function_call::serialize(
-//         hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> function_name >> args;
-//     }
-//
+    ///////////////////////////////////////////////////////////////////////////
+    void function_call::serialize(
+        hpx::serialization::output_archive& ar, unsigned)
+    {
+        ar << function_name << args;
+    }
+
+    void function_call::serialize(
+        hpx::serialization::input_archive& ar, unsigned)
+    {
+        ar >> function_name >> args;
+    }
+
 //     ///////////////////////////////////////////////////////////////////////////
 //     void assignment::serialize(hpx::serialization::output_archive& ar, unsigned)
 //     {
@@ -316,12 +316,12 @@ namespace phylanx { namespace ast
         return out;
     }
 
-//     std::ostream& operator<<(std::ostream& out, function_call const& f)
-//     {
-//         out << "function_call";
-//         return out;
-//     }
-//
+    std::ostream& operator<<(std::ostream& out, function_call const& f)
+    {
+        out << "function_call";
+        return out;
+    }
+
 //     std::ostream& operator<<(std::ostream& out, assignment const& a)
 //     {
 //         out << "assignment";
