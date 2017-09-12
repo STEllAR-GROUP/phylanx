@@ -71,22 +71,41 @@ void test_placeholder_matching(std::string const& to_match,
 int main(int argc, char* argv[])
 {
     // one placeholder
+    test_placeholder_matching("_1", "A + B", "A + B");
+    test_placeholder_matching("_1", "(A + B)", "A + B");
+    test_placeholder_matching("_1", "((A + B))", "A + B");
+
     test_placeholder_matching("A + _1", "A + B", "B");
     test_placeholder_matching("_1 + B", "A + B", "A");
 
     test_placeholder_matching("A + _1", "A + B * C", "B * C");
+    test_placeholder_matching("A + _1", "A + (B * C)", "B * C");
     test_placeholder_matching("_1 + B * C", "A + B * C", "A");
 
     test_placeholder_matching("A + _1", "A + (B * C)", "B * C");
     test_placeholder_matching("_1 * C", "(A + B) * C", "A + B");
+
+    test_placeholder_matching("func(_1)", "func(A)", "A");
+    test_placeholder_matching("func(_1)", "func(-A)", "-A");
+    test_placeholder_matching("func(_1)", "func(A + B)", "A + B");
+
+    test_placeholder_matching("_1(A)", "func(A)", "func");
 
     // two placeholders
     test_placeholder_matching("_1 + _2", "A + B", "A", "B");
     test_placeholder_matching("_2 + _1", "A + B", "B", "A");
 
     test_placeholder_matching("_1 * _2", "(A + B) * (C + D)", "A + B", "C + D");
+    test_placeholder_matching("_1 * _2", "((A + B) * (C + D))", "A + B", "C + D");
 
     test_placeholder_matching("A + _1 + _2", "A + B * C + D", "B * C", "D");
+    test_placeholder_matching("A + _1 + _2", "(A + (B * C) + D)", "B * C", "D");
+
+    test_placeholder_matching("func(_1, _2)", "func(A, B)", "A", "B");
+    test_placeholder_matching("func(_1, _2)", "func(A, -B)", "A", "-B");
+    test_placeholder_matching(
+        "func(_1, _2)", "func(A + B, C * D)", "A + B", "C * D");
+    test_placeholder_matching("_1(_2)", "func(A)", "func", "A");
 
     return hpx::util::report_errors();
 }

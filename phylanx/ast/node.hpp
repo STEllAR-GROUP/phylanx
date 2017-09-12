@@ -518,8 +518,9 @@ namespace phylanx { namespace ast
     inline bool is_placeholder(expression const& expr)
     {
         if (!expr.rest.empty())
+        {
             return false;
-
+        }
         return is_placeholder(expr.first);
     }
 

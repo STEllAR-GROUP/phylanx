@@ -10,6 +10,7 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
+#include <hpx/util/assert.hpp>
 #include <hpx/util/detail/pack.hpp>
 #include <hpx/util/invoke.hpp>
 #include <hpx/util/tuple.hpp>
@@ -91,9 +92,6 @@ namespace phylanx { namespace ast
         template <typename F, typename... Ts>
         struct match_visitor
         {
-//             match_visitor(F const& f, hpx::util::tuple<Ts const&...> const& t)
-//               : f_(f), t_(t)
-//             {}
             match_visitor(F && f, hpx::util::tuple<Ts const&...> const& t)
               : f_(static_cast<F&&>(f)), t_(t)
             {}
@@ -181,8 +179,9 @@ namespace phylanx { namespace ast
         unary_expr const& pe1, unary_expr const& pe2, F&& f, Ts const&... ts)
     {
         if (!match(pe1.operator_, pe2.operator_, std::forward<F>(f), ts...))
+        {
             return false;       // operator does not match
-
+        }
         return match(pe1.operand_, pe2.operand_, std::forward<F>(f), ts...);
     }
 
@@ -192,8 +191,9 @@ namespace phylanx { namespace ast
         operation const& op1, operation const& op2, F&& f, Ts const&... ts)
     {
         if (!match(op1.operator_, op2.operator_, std::forward<F>(f), ts...))
+        {
             return false;       // operator does not match
-
+        }
         return match(op1.operand_, op2.operand_, std::forward<F>(f), ts...);
     }
 
@@ -227,16 +227,33 @@ namespace phylanx { namespace ast
             return result;
         }
 
-        expression extract_subexpression(
+        inline expression extract_subexpression(
+            primary_expr const& pe, int prec,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end);
+        inline expression extract_subexpression(
+            operand const& op, int prec,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end);
+        inline expression extract_subexpression(
+            operand const& op, int prec,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end);
+
+        inline expression extract_subexpression(
             expression const& expr, int prec,
             std::list<operation>::const_iterator& it,
             std::list<operation>::const_iterator end)
         {
+            if (expr.rest.empty())
+            {
+                return extract_subexpression(expr.first, prec, it, end);
+            }
             ++it;
             return expr;
         }
 
-        expression extract_subexpression(
+        inline expression extract_subexpression(
             primary_expr const& pe, int prec,
             std::list<operation>::const_iterator& it,
             std::list<operation>::const_iterator end)
@@ -256,7 +273,7 @@ namespace phylanx { namespace ast
             return result;
         }
 
-        expression extract_subexpression(
+        inline expression extract_subexpression(
             operand const& op, int prec,
             std::list<operation>::const_iterator& it,
             std::list<operation>::const_iterator end)
@@ -276,6 +293,59 @@ namespace phylanx { namespace ast
             return result;
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        template <typename Ast>
+        bool is_expression(Ast const&)
+        {
+            return false;
+        }
+
+        inline bool is_expression(operand const& op);
+        inline bool is_expression(expression const& expr);
+
+        inline bool is_expression(primary_expr const& pe)
+        {
+            return pe.index() == 4 &&
+                is_expression(util::get<4>(pe.get()).get());
+        }
+
+        inline bool is_expression(operand const& op)
+        {
+            return op.index() == 1 &&
+                is_expression(util::get<1>(op.get()).get());
+        }
+
+        inline bool is_expression(expression const& expr)
+        {
+            return true;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        inline expression const& extract_expression(operand const& op);
+        inline expression const& extract_expression(expression const& expr);
+
+        inline expression const& extract_expression(primary_expr const& pe)
+        {
+            HPX_ASSERT(pe.index() == 4);
+            return extract_expression(util::get<4>(pe.get()).get());
+        }
+
+        inline expression const& extract_expression(operand const& op)
+        {
+            HPX_ASSERT(op.index() == 1);
+            return extract_expression(util::get<1>(op.get()).get());
+        }
+
+        inline expression const& extract_expression(expression const& expr)
+        {
+            if (expr.rest.empty() && is_expression(expr.first))
+            {
+                return extract_expression(expr.first);
+            }
+            return expr;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         // The Shunting-yard algorithm
         template <typename F, typename ... Ts>
         bool match_expression(
@@ -363,19 +433,37 @@ namespace phylanx { namespace ast
     bool match(expression const& expr1, expression const& expr2, F&& f,
         Ts const&... ts)
     {
+        if (is_placeholder(expr1))
+        {
+            return hpx::util::invoke(std::forward<F>(f), expr1,
+                detail::extract_expression(expr2), ts...);
+        }
+        else if (is_placeholder(expr2))
+        {
+            return hpx::util::invoke(std::forward<F>(f),
+                detail::extract_expression(expr1), expr2, ts...);
+        }
+
         // check whether first operand matches
-        if (!match(expr1.first, expr2.first, std::forward<F>(f), ts...))
+        expression subexpr1 = detail::extract_expression(expr1);
+        expression subexpr2 = detail::extract_expression(expr2);
+
+        if (!match(subexpr1.first, subexpr2.first, std::forward<F>(f), ts...))
+        {
             return false;
+        }
 
         // if one is empty, the other one should be empty as well
-        if (expr1.rest.empty() || expr2.rest.empty())
-            return expr1.rest.size() == expr2.rest.size();
+        if (subexpr1.rest.empty() || subexpr2.rest.empty())
+        {
+            return subexpr1.rest.size() == subexpr2.rest.size();
+        }
 
-        auto begin1 = expr1.rest.begin();
-        auto begin2 = expr2.rest.begin();
+        auto begin1 = subexpr1.rest.begin();
+        auto begin2 = subexpr2.rest.begin();
 
-        return detail::match_expression(0, begin1, expr1.rest.end(), begin2,
-            expr2.rest.end(), std::forward<F>(f), ts...);
+        return detail::match_expression(0, begin1, subexpr1.rest.end(), begin2,
+            subexpr2.rest.end(), std::forward<F>(f), ts...);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -396,7 +484,9 @@ namespace phylanx { namespace ast
         Ts const&... ts)
     {
         if (fc1.args.size() != fc2.args.size())
+        {
             return false;       // different number of operands
+        }
 
         if (!match(fc1.function_name, fc2.function_name,
                 std::forward<F>(f), ts...))
