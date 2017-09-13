@@ -25,7 +25,6 @@ dependencies:
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2
 
 test:
-    override:
-        - cp /usr/local/bin/hpxrun.py ./bin/    
+    override:   
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make tests
 
