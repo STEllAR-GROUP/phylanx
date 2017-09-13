@@ -28,6 +28,22 @@
 namespace phylanx { namespace ast
 {
     ///////////////////////////////////////////////////////////////////////////
+    struct identifier;
+    struct primary_expr;
+    struct operand;
+    struct unary_expr;
+    struct operation;
+    struct expression;
+    struct function_call;
+
+//     struct if_statement;
+//     struct while_statement;
+//     struct statement;
+//     struct return_statement;
+//
+//     using statement_list = std::list<statement>;
+
+    ///////////////////////////////////////////////////////////////////////////
     //  The AST
     struct tagged
     {
@@ -127,105 +143,6 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    struct identifier;
-    struct primary_expr;
-    struct operand;
-    struct unary_expr;
-    struct operation;
-    struct expression;
-    struct function_call;
-
-//     struct if_statement;
-//     struct while_statement;
-//     struct statement;
-//     struct return_statement;
-//
-//     using statement_list = std::list<statement>;
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Ast>
-    bool is_placeholder(Ast const&)
-    {
-        return false;
-    }
-
-    inline bool is_placeholder(identifier const& id);
-    PHYLANX_EXPORT bool is_placeholder(primary_expr const& pe);
-    PHYLANX_EXPORT bool is_placeholder(operand const& op);
-    inline bool is_placeholder(unary_expr const& ue);
-    inline bool is_placeholder(operation const& op);
-    inline bool is_placeholder(expression const& expr);
-
-    template <typename Ast>
-    bool is_placeholder(util::recursive_wrapper<Ast> const& ast)
-    {
-        return is_placeholder(ast.get());
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Ast>
-    bool is_placeholder_ellipses(Ast const&)
-    {
-        return false;
-    }
-
-    inline bool is_placeholder_ellipses(identifier const& id);
-    PHYLANX_EXPORT bool is_placeholder_ellipses(primary_expr const& pe);
-    PHYLANX_EXPORT bool is_placeholder_ellipses(operand const& op);
-    inline bool is_placeholder_ellipses(unary_expr const& ue);
-    inline bool is_placeholder_ellipses(operation const& op);
-    inline bool is_placeholder_ellipses(expression const& expr);
-
-    template <typename Ast>
-    bool is_placeholder_ellipses(util::recursive_wrapper<Ast> const& ast)
-    {
-        return is_placeholder_ellipses(ast.get());
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    template <typename Ast>
-    bool is_identifier(Ast const&)
-    {
-        return false;
-    }
-
-    template <typename Ast>
-    std::string identifier_name(Ast const&)
-    {
-        return "";
-    }
-
-    inline bool is_identifier(identifier const& id);
-    inline std::string identifier_name(identifier const& id);
-
-    PHYLANX_EXPORT bool is_identifier(primary_expr const& pe);
-    PHYLANX_EXPORT std::string identifier_name(primary_expr const& pe);
-
-    PHYLANX_EXPORT bool is_identifier(operand const& op);
-    PHYLANX_EXPORT std::string identifier_name(operand const& op);
-
-    inline bool is_identifier(unary_expr const& ue);
-    inline std::string identifier_name(unary_expr const& ue);
-
-    inline bool is_identifier(operation const& op);
-    inline std::string identifier_name(operation const& op);
-
-    inline bool is_identifier(expression const& expr);
-    inline std::string identifier_name(expression const& expr);
-
-    template <typename Ast>
-    bool is_identifier(util::recursive_wrapper<Ast> const& ast)
-    {
-        return is_identifier(ast.get());
-    }
-
-    template <typename Ast>
-    std::string identifier_name(util::recursive_wrapper<Ast> const& ast)
-    {
-        return identifier_name(ast.get());
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     struct identifier : tagged
     {
         identifier() = default;
@@ -257,26 +174,6 @@ namespace phylanx { namespace ast
     inline bool operator!=(identifier const& lhs, identifier const& rhs)
     {
         return !(lhs == rhs);
-    }
-
-    inline bool is_placeholder(identifier const& id)
-    {
-        return !id.name.empty() && id.name[0] == '_';
-    }
-
-    inline bool is_placeholder_ellipses(identifier const& id)
-    {
-        return id.name.size() >= 2 && id.name[0] == '_' && id.name[1] == '_';
-    }
-
-    inline bool is_identifier(identifier const& id)
-    {
-        return !id.name.empty();
-    }
-
-    inline std::string identifier_name(identifier const& id)
-    {
-        return id.name;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -453,26 +350,6 @@ namespace phylanx { namespace ast
         return !(lhs == rhs);
     }
 
-    inline bool is_placeholder(unary_expr const& ue)
-    {
-        return is_placeholder(ue.operand_);
-    }
-
-    inline bool is_placeholder_ellipses(unary_expr const& ue)
-    {
-        return is_placeholder_ellipses(ue.operand_);
-    }
-
-    inline bool is_identifier(unary_expr const& ue)
-    {
-        return is_identifier(ue.operand_);
-    }
-
-    inline std::string identifier_name(unary_expr const& ue)
-    {
-        return identifier_name(ue.operand_);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     struct operation
     {
@@ -509,26 +386,6 @@ namespace phylanx { namespace ast
     inline bool operator!=(operation const& lhs, operation const& rhs)
     {
         return !(lhs == rhs);
-    }
-
-    inline bool is_placeholder(operation const& op)
-    {
-        return is_placeholder(op.operand_);
-    }
-
-    inline bool is_placeholder_ellipses(operation const& op)
-    {
-        return is_placeholder_ellipses(op.operand_);
-    }
-
-    inline bool is_identifier(operation const& op)
-    {
-        return is_identifier(op.operand_);
-    }
-
-    inline std::string identifier_name(operation const& op)
-    {
-        return identifier_name(op.operand_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -607,42 +464,6 @@ namespace phylanx { namespace ast
     inline bool operator!=(expression const& lhs, expression const& rhs)
     {
         return !(lhs == rhs);
-    }
-
-    inline bool is_placeholder(expression const& expr)
-    {
-        if (!expr.rest.empty())
-        {
-            return false;
-        }
-        return is_placeholder(expr.first);
-    }
-
-    inline bool is_placeholder_ellipses(expression const& expr)
-    {
-        if (!expr.rest.empty())
-        {
-            return false;
-        }
-        return is_placeholder_ellipses(expr.first);
-    }
-
-    inline bool is_identifier(expression const& expr)
-    {
-        if (!expr.rest.empty())
-        {
-            return false;
-        }
-        return is_identifier(expr.first);
-    }
-
-    inline std::string identifier_name(expression const& expr)
-    {
-        if (!expr.rest.empty())
-        {
-            return "";
-        }
-        return identifier_name(expr.first);
     }
 
     ///////////////////////////////////////////////////////////////////////////

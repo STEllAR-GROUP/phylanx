@@ -21,33 +21,33 @@ struct on_placeholder_match
         using value_type = typename std::multimap<std::string,
             phylanx::ast::expression>::value_type;
 
-        if (phylanx::ast::is_placeholder(ast1))
+        if (phylanx::ast::detail::is_placeholder(ast1))
         {
-            if (phylanx::ast::is_placeholder_ellipses(ast1))
+            if (phylanx::ast::detail::is_placeholder_ellipses(ast1))
             {
-                placeholders.insert(
-                    value_type(phylanx::ast::identifier_name(ast1).substr(1),
-                        phylanx::ast::expression(ast2)));
+                placeholders.insert(value_type(
+                    phylanx::ast::detail::identifier_name(ast1).substr(1),
+                    phylanx::ast::expression(ast2)));
             }
             else
             {
                 placeholders.insert(
-                    value_type(phylanx::ast::identifier_name(ast1),
+                    value_type(phylanx::ast::detail::identifier_name(ast1),
                         phylanx::ast::expression(ast2)));
             }
         }
-        else if (phylanx::ast::is_placeholder(ast2))
+        else if (phylanx::ast::detail::is_placeholder(ast2))
         {
-            if (phylanx::ast::is_placeholder_ellipses(ast2))
+            if (phylanx::ast::detail::is_placeholder_ellipses(ast2))
             {
-                placeholders.insert(
-                    value_type(phylanx::ast::identifier_name(ast2).substr(1),
-                        phylanx::ast::expression(ast1)));
+                placeholders.insert(value_type(
+                    phylanx::ast::detail::identifier_name(ast2).substr(1),
+                    phylanx::ast::expression(ast1)));
             }
             else
             {
                 placeholders.insert(
-                    value_type(phylanx::ast::identifier_name(ast2),
+                    value_type(phylanx::ast::detail::identifier_name(ast2),
                         phylanx::ast::expression(ast1)));
             }
         }

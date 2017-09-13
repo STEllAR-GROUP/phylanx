@@ -6,6 +6,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/generate_ast.hpp>
 #include <phylanx/ast/match_ast.hpp>
+#include <phylanx/ast/detail/is_identifier.hpp>
+#include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/execution_tree/generate_tree.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/literal_value.hpp>
@@ -54,32 +56,34 @@ namespace phylanx { namespace execution_tree
                 using value_type = typename std::multimap<std::string,
                     ast::expression>::value_type;
 
-                if (ast::is_placeholder(ast1))
+                if (ast::detail::is_placeholder(ast1))
                 {
-                    if (ast::is_placeholder_ellipses(ast1))
+                    if (ast::detail::is_placeholder_ellipses(ast1))
+                    {
+                        placeholders.insert(value_type(
+                            ast::detail::identifier_name(ast1).substr(1),
+                            ast::expression(ast2)));
+                    }
+                    else
                     {
                         placeholders.insert(
-                            value_type(ast::identifier_name(ast1).substr(1),
+                            value_type(ast::detail::identifier_name(ast1),
                                 ast::expression(ast2)));
                     }
-                    else
+                }
+                else if (ast::detail::is_placeholder(ast2))
+                {
+                    if (ast::detail::is_placeholder_ellipses(ast1))
                     {
                         placeholders.insert(value_type(
-                            ast::identifier_name(ast1), ast::expression(ast2)));
+                            ast::detail::identifier_name(ast2).substr(1),
+                            ast::expression(ast1)));
                     }
-                }
-                else if (ast::is_placeholder(ast2))
-                {
-                    if (ast::is_placeholder_ellipses(ast1))
+                    else
                     {
                         placeholders.insert(
-                            value_type(ast::identifier_name(ast2).substr(1),
+                            value_type(ast::detail::identifier_name(ast2),
                                 ast::expression(ast1)));
-                    }
-                    else
-                    {
-                        placeholders.insert(value_type(
-                            ast::identifier_name(ast2), ast::expression(ast1)));
                     }
                 }
                 return true;
@@ -119,9 +123,9 @@ namespace phylanx { namespace execution_tree
             }
 
             // remaining expression could refer to a variable
-            if (ast::is_identifier(expr))
+            if (ast::detail::is_identifier(expr))
             {
-                auto it = variables.find(ast::identifier_name(expr));
+                auto it = variables.find(ast::detail::identifier_name(expr));
                 if (it != variables.end())
                 {
                     return it->second;

@@ -7,6 +7,8 @@
 #define PHYLANX_AST_MATCH_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/is_placeholder.hpp>
+#include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
@@ -139,7 +141,8 @@ namespace phylanx { namespace ast
         identifier const& id1, identifier const& id2, F&& f, Ts const&... ts)
     {
         // handle placeholder
-        if (is_placeholder(id1) || is_placeholder(id2) || id1 == id2)
+        if (detail::is_placeholder(id1) || detail::is_placeholder(id2) ||
+            id1 == id2)
         {
             return hpx::util::invoke(std::forward<F>(f), id1, id2, ts...);
         }
@@ -161,7 +164,7 @@ namespace phylanx { namespace ast
         operand const& op, identifier const& id, F&& f, Ts const&... ts)
     {
         // handle placeholder
-        if (is_placeholder(id))
+        if (detail::is_placeholder(id))
         {
             return hpx::util::invoke(std::forward<F>(f), op, id, ts...);
         }
@@ -206,7 +209,7 @@ namespace phylanx { namespace ast
         expression const& expr, identifier const& id, F&& f, Ts const&... ts)
     {
         // handle placeholder
-        if (is_placeholder(id))
+        if (detail::is_placeholder(id))
         {
             return hpx::util::invoke(std::forward<F>(f), expr, id, ts...);
         }
@@ -367,7 +370,7 @@ namespace phylanx { namespace ast
 
                 int prec = precedence_of(curr1.operator_);
 
-                if (is_placeholder(curr1))
+                if (detail::is_placeholder(curr1))
                 {
                     if (!hpx::util::invoke(std::forward<F>(f), curr1,
                             extract_subexpression(
@@ -376,11 +379,11 @@ namespace phylanx { namespace ast
                     {
                         return false;
                     }
-                    if (!is_placeholder_ellipses(curr1) || it2 == end2)
+                    if (!detail::is_placeholder_ellipses(curr1) || it2 == end2)
                         ++it1;
                     continue;
                 }
-                else if (is_placeholder(curr2))
+                else if (detail::is_placeholder(curr2))
                 {
                     if (!hpx::util::invoke(std::forward<F>(f),
                             extract_subexpression(
@@ -389,7 +392,7 @@ namespace phylanx { namespace ast
                     {
                         return false;
                     }
-                    if (!is_placeholder_ellipses(curr2) || it1 == end1)
+                    if (!detail::is_placeholder_ellipses(curr2) || it1 == end1)
                         ++it2;
                     continue;
                 }
@@ -423,11 +426,11 @@ namespace phylanx { namespace ast
             // bail out if the list lengths don't match
             if (it1 == end1)
             {
-                return it2 == end2 || is_placeholder_ellipses(*it2);
+                return it2 == end2 || detail::is_placeholder_ellipses(*it2);
             }
             else if (it2 == end2)
             {
-                return is_placeholder_ellipses(*it1);
+                return detail::is_placeholder_ellipses(*it1);
             }
 
             return true;
@@ -438,12 +441,12 @@ namespace phylanx { namespace ast
     bool match_ast(expression const& expr1, expression const& expr2, F&& f,
         Ts const&... ts)
     {
-        if (is_placeholder(expr1))
+        if (detail::is_placeholder(expr1))
         {
             return hpx::util::invoke(std::forward<F>(f), expr1,
                 detail::extract_expression(expr2), ts...);
         }
-        else if (is_placeholder(expr2))
+        else if (detail::is_placeholder(expr2))
         {
             return hpx::util::invoke(std::forward<F>(f),
                 detail::extract_expression(expr1), expr2, ts...);
@@ -478,7 +481,7 @@ namespace phylanx { namespace ast
         Ts const&... ts)
     {
         // handle placeholder
-        if (is_placeholder(id))
+        if (detail::is_placeholder(id))
         {
             return hpx::util::invoke(std::forward<F>(f), fc, id, ts...);
         }
@@ -499,7 +502,7 @@ namespace phylanx { namespace ast
         auto end1 = fc1.args.end(), end2 = fc2.args.end();
         while (it1 != end1 && it2 != end2)
         {
-            if (is_placeholder_ellipses(*it1))
+            if (detail::is_placeholder_ellipses(*it1))
             {
                 if (!hpx::util::invoke(std::forward<F>(f), *it1, *it2, ts...))
                 {
@@ -508,7 +511,7 @@ namespace phylanx { namespace ast
                 ++it2;
                 continue;
             }
-            else if (is_placeholder_ellipses(*it2))
+            else if (detail::is_placeholder_ellipses(*it2))
             {
                 if (!hpx::util::invoke(std::forward<F>(f), *it1, *it2, ts...))
                 {
@@ -530,11 +533,11 @@ namespace phylanx { namespace ast
         // bail out if the list lengths don't match
         if (it1 == end1)
         {
-            return it2 == end2 || is_placeholder_ellipses(*it2);
+            return it2 == end2 || detail::is_placeholder_ellipses(*it2);
         }
         else if (it2 == end2)
         {
-            return is_placeholder_ellipses(*it1);
+            return detail::is_placeholder_ellipses(*it1);
         }
 
         return true;
