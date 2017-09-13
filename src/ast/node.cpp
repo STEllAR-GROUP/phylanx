@@ -105,12 +105,30 @@ namespace phylanx { namespace ast
             }
         };
 
-        struct placeholder_name
+        struct is_placeholder_ellipses
+        {
+            template <typename Ast>
+            bool operator()(Ast const& ast) const
+            {
+                return ast::is_placeholder_ellipses(ast);
+            }
+        };
+
+        struct is_identifier
+        {
+            template <typename Ast>
+            bool operator()(Ast const& ast) const
+            {
+                return ast::is_identifier(ast);
+            }
+        };
+
+        struct identifier_name
         {
             template <typename Ast>
             std::string operator()(Ast const& ast) const
             {
-                return ast::placeholder_name(ast);
+                return ast::identifier_name(ast);
             }
         };
     }
@@ -120,9 +138,19 @@ namespace phylanx { namespace ast
         return visit(detail::is_placeholder(), pe);
     }
 
-    std::string placeholder_name(primary_expr const& pe)
+    bool is_placeholder_ellipses(primary_expr const& pe)
     {
-        return visit(detail::placeholder_name(), pe);
+        return visit(detail::is_placeholder_ellipses(), pe);
+    }
+
+    bool is_identifier(primary_expr const& pe)
+    {
+        return visit(detail::is_identifier(), pe);
+    }
+
+    std::string identifier_name(primary_expr const& pe)
+    {
+        return visit(detail::identifier_name(), pe);
     }
 
     bool is_placeholder(operand const& op)
@@ -130,9 +158,19 @@ namespace phylanx { namespace ast
         return visit(detail::is_placeholder(), op);
     }
 
-    std::string placeholder_name(operand const& op)
+    bool is_placeholder_ellipses(operand const& op)
     {
-        return visit(detail::placeholder_name(), op);
+        return visit(detail::is_placeholder_ellipses(), op);
+    }
+
+    bool is_identifier(operand const& op)
+    {
+        return visit(detail::is_identifier(), op);
+    }
+
+    std::string identifier_name(operand const& op)
+    {
+        return visit(detail::identifier_name(), op);
     }
 
     ///////////////////////////////////////////////////////////////////////////

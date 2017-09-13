@@ -4,8 +4,8 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/primitives/add_operation.hpp>
 #include <phylanx/util/serialization/eigen.hpp>
 
 #include <hpx/include/util.hpp>
@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace primitives
+namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     add_operation::add_operation(std::vector<primitive> && operands)
@@ -173,7 +173,7 @@ namespace phylanx { namespace primitives
     }
 
     // implement '+' for all possible combinations of lhs and rhs
-    hpx::future<ir::node_data<double>> add_operation::eval()
+    hpx::future<ir::node_data<double>> add_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
             [this](std::vector<ir::node_data<double>> && ops)
@@ -204,4 +204,4 @@ namespace phylanx { namespace primitives
                 })
         );
     }
-}}
+}}}

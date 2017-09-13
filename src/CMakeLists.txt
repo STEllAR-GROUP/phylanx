@@ -22,7 +22,7 @@ add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/ast/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
-  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/primitives/*.cpp"
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/execution_tree/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/util/*.cpp"
@@ -48,7 +48,7 @@ if(MSVC)
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ir/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
-    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/primitives/*.hpp"
+    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
     GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/util/*.hpp"

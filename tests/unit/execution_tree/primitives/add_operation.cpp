@@ -16,18 +16,18 @@
 
 void test_add_operation_0d()
 {
-    phylanx::primitives::primitive lhs =
-        hpx::new_<phylanx::primitives::literal_value>(
+    phylanx::execution_tree::primitive lhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(41.0));
 
-    phylanx::primitives::primitive rhs =
-        hpx::new_<phylanx::primitives::literal_value>(
+    phylanx::execution_tree::primitive rhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
-    phylanx::primitives::primitive add =
-        hpx::new_<phylanx::primitives::add_operation>(
+    phylanx::execution_tree::primitive add =
+        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
             hpx::find_here(),
-            std::vector<phylanx::primitives::primitive>{
+            std::vector<phylanx::execution_tree::primitive>{
                 std::move(lhs), std::move(rhs)
             });
 
@@ -40,18 +40,18 @@ void test_add_operation_1d()
     Eigen::VectorXd v1 = Eigen::VectorXd::Random(1007);
     Eigen::VectorXd v2 = Eigen::VectorXd::Random(1007);
 
-    phylanx::primitives::primitive lhs =
-        hpx::new_<phylanx::primitives::literal_value>(
+    phylanx::execution_tree::primitive lhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
-    phylanx::primitives::primitive rhs =
-        hpx::new_<phylanx::primitives::literal_value>(
+    phylanx::execution_tree::primitive rhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
-    phylanx::primitives::primitive add =
-        hpx::new_<phylanx::primitives::add_operation>(
+    phylanx::execution_tree::primitive add =
+        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
             hpx::find_here(),
-            std::vector<phylanx::primitives::primitive>{
+            std::vector<phylanx::execution_tree::primitive>{
                 std::move(lhs), std::move(rhs)
             });
 
@@ -66,18 +66,18 @@ void test_add_operation_2d()
     Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(101, 101);
     Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(101, 101);
 
-    phylanx::primitives::primitive lhs =
-        hpx::new_<phylanx::primitives::literal_value>(
+    phylanx::execution_tree::primitive lhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
-    phylanx::primitives::primitive rhs =
-        hpx::new_<phylanx::primitives::literal_value>(
+    phylanx::execution_tree::primitive rhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
-    phylanx::primitives::primitive add =
-        hpx::new_<phylanx::primitives::add_operation>(
+    phylanx::execution_tree::primitive add =
+        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
             hpx::find_here(),
-            std::vector<phylanx::primitives::primitive>{
+            std::vector<phylanx::execution_tree::primitive>{
                 std::move(lhs), std::move(rhs)
             });
 

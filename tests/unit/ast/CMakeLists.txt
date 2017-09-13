@@ -5,7 +5,7 @@
 
 set(tests
     generate_ast
-    match
+    match_ast
     node
    )
 

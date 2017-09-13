@@ -126,17 +126,35 @@ namespace phylanx { namespace ast
         return false;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    struct identifier;
+    struct primary_expr;
+    struct operand;
+    struct unary_expr;
+    struct operation;
+    struct expression;
+    struct function_call;
+
+//     struct if_statement;
+//     struct while_statement;
+//     struct statement;
+//     struct return_statement;
+//
+//     using statement_list = std::list<statement>;
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Ast>
     bool is_placeholder(Ast const&)
     {
         return false;
     }
 
-    template <typename Ast>
-    std::string placeholder_name(Ast const&)
-    {
-        return "";
-    }
+    inline bool is_placeholder(identifier const& id);
+    PHYLANX_EXPORT bool is_placeholder(primary_expr const& pe);
+    PHYLANX_EXPORT bool is_placeholder(operand const& op);
+    inline bool is_placeholder(unary_expr const& ue);
+    inline bool is_placeholder(operation const& op);
+    inline bool is_placeholder(expression const& expr);
 
     template <typename Ast>
     bool is_placeholder(util::recursive_wrapper<Ast> const& ast)
@@ -144,10 +162,67 @@ namespace phylanx { namespace ast
         return is_placeholder(ast.get());
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Ast>
-    std::string placeholder_name(util::recursive_wrapper<Ast> const& ast)
+    bool is_placeholder_ellipses(Ast const&)
     {
-        return placeholder_name(ast.get());
+        return false;
+    }
+
+    inline bool is_placeholder_ellipses(identifier const& id);
+    PHYLANX_EXPORT bool is_placeholder_ellipses(primary_expr const& pe);
+    PHYLANX_EXPORT bool is_placeholder_ellipses(operand const& op);
+    inline bool is_placeholder_ellipses(unary_expr const& ue);
+    inline bool is_placeholder_ellipses(operation const& op);
+    inline bool is_placeholder_ellipses(expression const& expr);
+
+    template <typename Ast>
+    bool is_placeholder_ellipses(util::recursive_wrapper<Ast> const& ast)
+    {
+        return is_placeholder_ellipses(ast.get());
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Ast>
+    bool is_identifier(Ast const&)
+    {
+        return false;
+    }
+
+    template <typename Ast>
+    std::string identifier_name(Ast const&)
+    {
+        return "";
+    }
+
+    inline bool is_identifier(identifier const& id);
+    inline std::string identifier_name(identifier const& id);
+
+    PHYLANX_EXPORT bool is_identifier(primary_expr const& pe);
+    PHYLANX_EXPORT std::string identifier_name(primary_expr const& pe);
+
+    PHYLANX_EXPORT bool is_identifier(operand const& op);
+    PHYLANX_EXPORT std::string identifier_name(operand const& op);
+
+    inline bool is_identifier(unary_expr const& ue);
+    inline std::string identifier_name(unary_expr const& ue);
+
+    inline bool is_identifier(operation const& op);
+    inline std::string identifier_name(operation const& op);
+
+    inline bool is_identifier(expression const& expr);
+    inline std::string identifier_name(expression const& expr);
+
+    template <typename Ast>
+    bool is_identifier(util::recursive_wrapper<Ast> const& ast)
+    {
+        return is_identifier(ast.get());
+    }
+
+    template <typename Ast>
+    std::string identifier_name(util::recursive_wrapper<Ast> const& ast)
+    {
+        return identifier_name(ast.get());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -189,22 +264,20 @@ namespace phylanx { namespace ast
         return !id.name.empty() && id.name[0] == '_';
     }
 
-    inline std::string placeholder_name(identifier const& id)
+    inline bool is_placeholder_ellipses(identifier const& id)
+    {
+        return id.name.size() >= 2 && id.name[0] == '_' && id.name[1] == '_';
+    }
+
+    inline bool is_identifier(identifier const& id)
+    {
+        return !id.name.empty();
+    }
+
+    inline std::string identifier_name(identifier const& id)
     {
         return id.name;
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    struct unary_expr;
-    struct expression;
-    struct function_call;
-
-//     struct if_statement;
-//     struct while_statement;
-//     struct statement;
-//     struct return_statement;
-//
-//     using statement_list = std::list<statement>;
 
     ///////////////////////////////////////////////////////////////////////////
     using expr_node_type = phylanx::ast::parser::extended_variant<
@@ -288,9 +361,6 @@ namespace phylanx { namespace ast
             hpx::serialization::output_archive& ar, unsigned);
     };
 
-    PHYLANX_EXPORT bool is_placeholder(primary_expr const& pe);
-    PHYLANX_EXPORT std::string placeholder_name(primary_expr const& pe);
-
     ///////////////////////////////////////////////////////////////////////////
     using operand_node_type = phylanx::ast::parser::extended_variant<
             nil
@@ -345,9 +415,6 @@ namespace phylanx { namespace ast
             hpx::serialization::output_archive& ar, unsigned);
     };
 
-    PHYLANX_EXPORT bool is_placeholder(operand const& op);
-    PHYLANX_EXPORT std::string placeholder_name(operand const& op);
-
     ///////////////////////////////////////////////////////////////////////////
     struct unary_expr : tagged
     {
@@ -391,9 +458,19 @@ namespace phylanx { namespace ast
         return is_placeholder(ue.operand_);
     }
 
-    inline std::string placeholder_name(unary_expr const& ue)
+    inline bool is_placeholder_ellipses(unary_expr const& ue)
     {
-        return placeholder_name(ue.operand_);
+        return is_placeholder_ellipses(ue.operand_);
+    }
+
+    inline bool is_identifier(unary_expr const& ue)
+    {
+        return is_identifier(ue.operand_);
+    }
+
+    inline std::string identifier_name(unary_expr const& ue)
+    {
+        return identifier_name(ue.operand_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -439,9 +516,19 @@ namespace phylanx { namespace ast
         return is_placeholder(op.operand_);
     }
 
-    inline std::string placeholder_name(operation const& op)
+    inline bool is_placeholder_ellipses(operation const& op)
     {
-        return placeholder_name(op.operand_);
+        return is_placeholder_ellipses(op.operand_);
+    }
+
+    inline bool is_identifier(operation const& op)
+    {
+        return is_identifier(op.operand_);
+    }
+
+    inline std::string identifier_name(operation const& op)
+    {
+        return identifier_name(op.operand_);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -461,6 +548,13 @@ namespace phylanx { namespace ast
         {}
         explicit expression(identifier && id)
           : first(operand(std::move(id.name)))
+        {}
+
+        explicit expression(primary_expr const& pe)
+          : first(operand(pe))
+        {}
+        explicit expression(primary_expr && pe)
+          : first(operand(std::move(pe)))
         {}
 
         explicit expression(operation const& op)
@@ -524,13 +618,31 @@ namespace phylanx { namespace ast
         return is_placeholder(expr.first);
     }
 
-    inline std::string placeholder_name(expression const& expr)
+    inline bool is_placeholder_ellipses(expression const& expr)
+    {
+        if (!expr.rest.empty())
+        {
+            return false;
+        }
+        return is_placeholder_ellipses(expr.first);
+    }
+
+    inline bool is_identifier(expression const& expr)
+    {
+        if (!expr.rest.empty())
+        {
+            return false;
+        }
+        return is_identifier(expr.first);
+    }
+
+    inline std::string identifier_name(expression const& expr)
     {
         if (!expr.rest.empty())
         {
             return "";
         }
-        return placeholder_name(expr.first);
+        return identifier_name(expr.first);
     }
 
     ///////////////////////////////////////////////////////////////////////////

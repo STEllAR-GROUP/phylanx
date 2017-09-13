@@ -8,7 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/generate_ast.hpp>
-#include <phylanx/ast/match.hpp>
+#include <phylanx/ast/match_ast.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ast/traverse.hpp>
 
