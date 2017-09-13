@@ -21,7 +21,7 @@ dependencies:
         - mkdir -p build
 
     override:
-        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DCMAKE_CXX_COMPILER=g++ -DHPX_DIR=/usr/local/lib/cmake/HPX -DEigen3_DIR=/eigen/3.3.4/share/eigen3/cmake/ -DEigen3_INCLUDE_DIRS=/eigen/3.3.4/include/eigen3 -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ ..
+        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DCMAKE_CXX_COMPILER=g++ -DHPX_DIR=/usr/local/lib/cmake/HPX -DEigen3_DIR=/eigen/3.3.4/share/eigen3/cmake/ -DEigen3_INCLUDE_DIRS=/eigen/3.3.4/include/eigen3 -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2
 
 test:
