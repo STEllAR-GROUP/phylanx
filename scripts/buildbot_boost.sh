@@ -26,5 +26,5 @@ cd /dev/shm/src/boost_1_65_0
 if [ ${mycc} == "icc" ] ; then
     ./b2 ${makej} install toolset=intel address-model=64
 else
-    ./b2 ${makej} install cxxflags="-march=native" linkflags="-march=native"
+    ./b2 ${makej} install cxxflags="-std=c++11"
 fi

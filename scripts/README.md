@@ -5,10 +5,23 @@ of the Phylanx project.  All dependencies are included, such as HPX, pybind11,
 eigen3.
 
 The top level script is buildbot.sh. The other scripts:
-* build-hpx.sh: for building HPX
-* buildbot_common.sh: for setting common build paths
-* buildbot_eigen3.sh: for "building" the eigen3 headers
-* buildbot_phylanx.sh: for building phylanx
-* buildbot_pybind.sh: for "building" the pybind11 headers
+* buildbot\_boost.sh: for building boost 1.65
+* buildbot\_hpx.sh: for building HPX master
+* buildbot\_common.sh: for setting common build paths
+* buildbot\_eigen3.sh: for "building" the eigen3 headers
+* buildbot\_pybind.sh: for "building" the pybind11 headers
+* buildbot\_phylanx.sh: for building phylanx
 * launch-build-talapas.sh: for launching the HPX build on a compute node
-* talapas-gcc.sh: for loading modules, etc. on talapas cluster at UO
+* talapas-gcc.sh: for loading modules, etc. on talapas x86\_64 cluster at UO
+* delphi-gcc.sh: for loading modules, etc. on delphi x86\_64 server at UO
+* grover-intel.sh: for loading modules, etc. on grover KNL server at UO
+
+Working machines:
+
+Delphi (x86\_64-Linux with 18 cores, hyperthreading, gcc 7.1, boost 1.65)
+
+Non-working (yet) machines:
+
+Talapas (x86\_64-Linux with 28 cores, hyperthreading, gcc 6.1, boost 1.61)
+Grover (KNL-Linux with 68 cores, 4x threads per core, Intel 18, boost 1.63)
+centaur (IBM Power8-Linux with 40 cores, 4x threads per core)

@@ -5,9 +5,9 @@ module load boost/1.61
 module list
 
 # special flags for some library builds
-export mycflags="-fPIC -mavx512f -mavx512cd -mavx512bw -mavx512dq -mavx512vl -mavx512ifma -mavx512vbmi"
-export mycxxflags="-fPIC -mavx512f -mavx512cd -mavx512bw -mavx512dq -mavx512vl -mavx512ifma -mavx512vbmi"
-export myldflags="-fPIC -mavx512f -mavx512cd -mavx512bw -mavx512dq -mavx512vl -mavx512ifma -mavx512vbmi"
+export mycflags="-fPIC -xMIC_AVX512"
+export mycxxflags="-fPIC -xMIC_AVX512"
+export myldflags="-fPIC -xMIC_AVX512"
 # export mycflags="-fPIC -march=native"
 # export mycxxflags="-fPIC -march=native"
 # export myldflags="-fPIC -march=native"

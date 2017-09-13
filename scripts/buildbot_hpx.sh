@@ -60,6 +60,11 @@ configure_it()
     export CXXFLAGS=${mycxxflags}
     export LDFLAGS=${myldflags}
 
+    if [[ ${myarch} =~ .*knl.* ]] ; then
+        cmake_extras="-DHPX_WITH_MAX_CPU_COUNT=512 -DCMAKE_TOOLCHAIN_FILE=${hpx_src_dir}/cmake/toolchains/KNL.cmake"
+    fi
+
+    set -x
     cmake \
     -DCMAKE_BUILD_TYPE=${buildtype} \
     -DBOOST_ROOT=${boost_path} \
@@ -71,6 +76,7 @@ configure_it()
     -DHPX_WITH_PARCELPORT_MPI=OFF \
     -DHPX_WITH_PARCEL_COALESCING=OFF \
     ${apex_opts} \
+    ${cmake_extras} \
     ${hpx_src_dir}
 }
 
