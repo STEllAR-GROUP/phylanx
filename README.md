@@ -6,6 +6,12 @@
 
 # Phylanx: A Distributed Array Computing Toolkit
 
+The [CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx) contiguous integration service tracks the current build status for the master branch:
+[![CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx.svg?style=svg)](https://circleci.com/gh/STEllAR-GROUP/phylanx).
+
+The [AppVeyor](https://ci.appveyor.com/project/hkaiser/phylanx) contiguous integration tracks the status for Windows builds using the native Visual Studio toolchain: 
+[![Build status](https://ci.appveyor.com/api/projects/status/2ewum879yi7akxc1?svg=true)](https://ci.appveyor.com/project/hkaiser/phylanx).
+
 ### Acknowledgements
 
 We would like to acknowledge the NSF, DoD, the Center for Computation
