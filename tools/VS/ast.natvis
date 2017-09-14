@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (c) 2017 Hartmut Kaiser                                      -->
+
+<!-- Use, modification and distribution are subject to the Boost Software   -->
+<!-- License, Version 1.0. (See accompanying file LICENSE_1_0.txt           -->
+<!-- or copy at http://www.boost.org/LICENSE_1_0.txt)                       -->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="phylanx::ast::nil">
+        <DisplayString>nil</DisplayString>
+    </Type>
+
+    <Type Name="phylanx::ast::identifier">
+        <DisplayString>{name}</DisplayString>
+        <Expand>
+            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
+            <Item Name="[name]">name</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="phylanx::ast::primary_expr">
+        <DisplayString Condition="(var.impl_.index_ == 0)">nil</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 1)">bool ({var.impl_.data_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 2)">node_data ({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 3)">identifier ({var.impl_.data_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 4)">expression ({var.impl_.data_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 5)">function_call ({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <Expand>
+            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
+            <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
+            <Item Name="[bool]" Condition="(var.impl_.index_ == 1)">var.impl_.data_.tail_.head_.value</Item>
+            <Item Name="[node_data]" Condition="(var.impl_.index_ == 2)">var.impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[identifier]" Condition="(var.impl_.index_ == 3)">var.impl_.data_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[expression]" Condition="(var.impl_.index_ == 4)">var.impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[function_call]" Condition="(var.impl_.index_ == 5)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="phylanx::ast::operand">
+        <DisplayString Condition="(var.impl_.index_ == 0)">nil</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 1)">primary_expr ({var.impl_.data_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 2)">unary_expr ({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
+        <Expand>
+            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
+            <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
+            <Item Name="[primary_expr]" Condition="(var.impl_.index_ == 1)">var.impl_.data_.tail_.head_.value</Item>
+            <Item Name="[unary_expr]" Condition="(var.impl_.index_ == 2)">var.impl_.data_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="phylanx::ast::unary_expr">
+        <DisplayString>{operator_}, {operand_}</DisplayString>
+        <Expand>
+            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
+            <Item Name="[operator]">operator_</Item>
+            <Item Name="[operand]">operand_</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="phylanx::ast::operation">
+        <DisplayString>{operator_}, {operand_}</DisplayString>
+        <Expand>
+            <Item Name="[operator]">operator_</Item>
+            <Item Name="[operand]">operand_</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="phylanx::ast::expression">
+        <DisplayString Condition="(rest._Mypair._Myval2._Mysize == 0)">{first}</DisplayString>
+        <DisplayString Condition="(rest._Mypair._Myval2._Mysize != 0)">{first}, {rest}</DisplayString>
+        <DisplayString>{first}</DisplayString>
+        <Expand>
+            <Item Name="[first]">first</Item>
+            <Item Name="[rest]" Condition="(rest._Mypair._Myval2._Mysize != 0)">rest</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="phylanx::ast::function_call">
+        <DisplayString Condition="(rest._Mypair._Myval2._Mysize == 0)">{function_name}</DisplayString>
+        <DisplayString Condition="(rest._Mypair._Myval2._Mysize != 0)">{function_name}, {args}</DisplayString>
+        <DisplayString>{first}</DisplayString>
+        <Expand>
+            <Item Name="[function_name]">function_name</Item>
+            <Item Name="[args]" Condition="(rest._Mypair._Myval2._Mysize != 0)">args</Item>
+        </Expand>
+    </Type>
+
+</AutoVisualizer>
+

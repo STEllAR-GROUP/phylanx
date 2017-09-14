@@ -240,11 +240,11 @@ namespace phylanx { namespace ir
                 return iterator(&data_ + 1);
             }
 
-            T const* data() const
+            T const* data() const override
             {
                 return &data_;
             }
-            std::size_t size() const
+            std::size_t size() const override
             {
                 return 1;
             }
@@ -356,11 +356,11 @@ namespace phylanx { namespace ir
                 return iterator(data_.data() + data_.size());
             }
 
-            T const* data() const
+            T const* data() const override
             {
                 return data_.data();
             }
-            std::size_t size() const
+            std::size_t size() const override
             {
                 return data_.size();
             }
@@ -456,11 +456,11 @@ namespace phylanx { namespace ir
                 return iterator(data_.data() + data_.size());
             }
 
-            T const* data() const
+            T const* data() const override
             {
                 return data_.data();
             }
-            std::size_t size() const
+            std::size_t size() const override
             {
                 return data_.size();
             }

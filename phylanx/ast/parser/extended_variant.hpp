@@ -60,6 +60,11 @@ namespace phylanx { namespace ast { namespace parser
             return var;
         }
 
+        constexpr std::size_t index() const
+        {
+            return var.index();
+        }
+
         void swap(extended_variant& rhs) noexcept(
             std::declval<variant_type>().swap(std::declval<variant_type>()))
         {
@@ -100,6 +105,19 @@ namespace phylanx { namespace ast { namespace parser
     auto visit(F && f, extended_variant<Ts...>& v)
     {
         return util::visit(std::forward<F>(f), v.var);
+    }
+
+    template <typename F, typename... Ts1, typename... Ts2>
+    auto visit(F&& f, extended_variant<Ts1...> const& v1,
+        extended_variant<Ts2...> const& v2)
+    {
+        return util::visit(std::forward<F>(f), v1.var, v2.var);
+    }
+    template <typename F, typename... Ts1, typename... Ts2>
+    auto visit(
+        F&& f, extended_variant<Ts1...>& v1, extended_variant<Ts2...>& v2)
+    {
+        return util::visit(std::forward<F>(f), v1.var, v2.var);
     }
 }}}
 

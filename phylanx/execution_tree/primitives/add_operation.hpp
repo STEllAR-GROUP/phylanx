@@ -8,14 +8,14 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
 #include <hpx/include/components.hpp>
 
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace primitives
+namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT add_operation
         : public base_primitive
@@ -30,7 +30,7 @@ namespace phylanx { namespace primitives
         add_operation(std::vector<primitive> && operands);
         add_operation(std::vector<primitive> const& operands);
 
-        hpx::future<ir::node_data<double>> eval() override;
+        hpx::future<ir::node_data<double>> eval() const override;
 
     protected:
         ir::node_data<double> add0d(operands_type const& ops) const;
@@ -43,7 +43,7 @@ namespace phylanx { namespace primitives
     private:
         std::vector<primitive> operands_;
     };
-}}
+}}}
 
 #endif
 

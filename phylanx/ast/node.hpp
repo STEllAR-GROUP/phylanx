@@ -28,9 +28,30 @@
 namespace phylanx { namespace ast
 {
     ///////////////////////////////////////////////////////////////////////////
+    struct identifier;
+    struct primary_expr;
+    struct operand;
+    struct unary_expr;
+    struct operation;
+    struct expression;
+    struct function_call;
+
+//     struct if_statement;
+//     struct while_statement;
+//     struct statement;
+//     struct return_statement;
+//
+//     using statement_list = std::list<statement>;
+
+    ///////////////////////////////////////////////////////////////////////////
     //  The AST
     struct tagged
     {
+        tagged()
+          : id(0)
+        {
+        }
+
         std::size_t id; // Used to annotate the AST with the iterator position.
                         // This id is used as a key to a map<int, Iterator>
                         // (not really part of the AST.)
@@ -38,8 +59,6 @@ namespace phylanx { namespace ast
 
     enum class optoken
     {
-        op_unknown,
-
         // precedence 1
         op_comma,
 
@@ -105,7 +124,11 @@ namespace phylanx { namespace ast
         // precedence 14
         op_post_incr,
         op_post_decr,
+
+        op_unknown
     };
+
+    PHYLANX_EXPORT int precedence_of(optoken);
 
     ///////////////////////////////////////////////////////////////////////////
     struct nil {};
@@ -152,23 +175,6 @@ namespace phylanx { namespace ast
     {
         return !(lhs == rhs);
     }
-
-    inline bool is_placeholder(identifier const& id)
-    {
-        return !id.name.empty() && id.name[0] == '_';
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    struct unary_expr;
-    struct expression;
-    struct function_call;
-
-//     struct if_statement;
-//     struct while_statement;
-//     struct statement;
-//     struct return_statement;
-//
-//     using statement_list = std::list<statement>;
 
     ///////////////////////////////////////////////////////////////////////////
     using expr_node_type = phylanx::ast::parser::extended_variant<
@@ -259,40 +265,40 @@ namespace phylanx { namespace ast
           , phylanx::util::recursive_wrapper<unary_expr>
         >;
 
-    struct operand : tagged, operand_node_type
+    struct operand : operand_node_type, tagged
     {
         operand() = default;
 
-        operand(double val)
+        explicit operand(double val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        operand(std::string const& val)
+        explicit operand(std::string const& val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        operand(std::string && val)
+        explicit operand(std::string && val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(std::move(val)))
         {
         }
 
-        operand(primary_expr const& val)
+        explicit operand(primary_expr const& val)
           : operand_node_type(val)
         {
         }
-        operand(primary_expr && val)
+        explicit operand(primary_expr && val)
           : operand_node_type(std::move(val))
         {
         }
 
-        operand(unary_expr const& val)
+        explicit operand(unary_expr const& val)
           : operand_node_type(val)
         {
         }
-        operand(unary_expr && val)
+        explicit operand(unary_expr && val)
           : operand_node_type(std::move(val))
         {
         }
@@ -305,15 +311,6 @@ namespace phylanx { namespace ast
         PHYLANX_EXPORT void serialize(
             hpx::serialization::output_archive& ar, unsigned);
     };
-
-//     inline bool operator==(operand const& lhs, operand const& rhs)
-//     {
-//         return lhs.get() == rhs.get();
-//     }
-//     inline bool operator!=(operand const& lhs, operand const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
 
     ///////////////////////////////////////////////////////////////////////////
     struct unary_expr : tagged
@@ -396,11 +393,39 @@ namespace phylanx { namespace ast
     {
         expression() = default;
 
-        expression(operand const& f)
+        explicit expression(operand const& f)
           : first(f)
         {}
-        expression(operand && f)
+        explicit expression(operand && f)
           : first(std::move(f))
+        {}
+
+        explicit expression(identifier const& id)
+          : first(operand(id.name))
+        {}
+        explicit expression(identifier && id)
+          : first(operand(std::move(id.name)))
+        {}
+
+        explicit expression(primary_expr const& pe)
+          : first(operand(pe))
+        {}
+        explicit expression(primary_expr && pe)
+          : first(operand(std::move(pe)))
+        {}
+
+        explicit expression(operation const& op)
+          : first(op.operand_)
+        {}
+        explicit expression(operation && op)
+          : first(std::move(op.operand_))
+        {}
+
+        explicit expression(function_call const& fc)
+          : first(primary_expr(fc))
+        {}
+        explicit expression(function_call && fc)
+          : first(primary_expr(std::move(fc)))
         {}
 
         void append(operation const& op)

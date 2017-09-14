@@ -17,13 +17,15 @@ foreach(test ${tests})
     SOURCES ${sources}
     ${${test}_FLAGS}
     EXCLUDE_FROM_ALL
-    FOLDER "Tests/Unit/Primitives/")
+    FOLDER "Tests/Unit/ExecutionTree/Primitives")
 
   add_phylanx_unit_test("primitives" ${test} ${${test}_PARAMETERS})
 
-  add_phylanx_pseudo_target(tests.unit.primitives.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.primitives tests.unit.primitives.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.primitives.${test} ${test}_test_exe)
+  add_phylanx_pseudo_target(tests.unit.execution_tree.primitives.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives
+    tests.unit.execution_tree.primitives.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives.${test} 
+    ${test}_test_exe)
 
 endforeach()
 

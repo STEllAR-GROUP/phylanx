@@ -10,13 +10,13 @@
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/components.hpp>
+#include <hpx/include/util.hpp>
 
 #include <utility>
+#include <vector>
 
-namespace phylanx { namespace primitives
+namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class primitive;
-
     class HPX_COMPONENT_EXPORT base_primitive
       : public hpx::traits::detail::component_tag
     {
@@ -28,27 +28,28 @@ namespace phylanx { namespace primitives
         {
             return eval();
         }
-        virtual hpx::future<ir::node_data<double>> eval() = 0;
+        virtual hpx::future<ir::node_data<double>> eval() const = 0;
 
     public:
         HPX_DEFINE_COMPONENT_ACTION(base_primitive,
             eval_nonvirtual, eval_action);
     };
-}}
+}}}
 
 // Declaration of serialization support for the local_file actions
 HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::primitives::base_primitive::eval_action,
+    phylanx::execution_tree::primitives::base_primitive::eval_action,
     phylanx_primitive_eval_action);
 
-namespace phylanx { namespace primitives
+namespace phylanx { namespace execution_tree
 {
     class HPX_COMPONENT_EXPORT primitive
-      : public hpx::components::client_base<primitive, base_primitive>
+      : public hpx::components::client_base<primitive,
+            primitives::base_primitive>
     {
     private:
         using base_type =
-            hpx::components::client_base<primitive, base_primitive>;
+            hpx::components::client_base<primitive, primitives::base_primitive>;
 
     public:
         primitive() = default;
@@ -69,6 +70,22 @@ namespace phylanx { namespace primitives
         hpx::future<ir::node_data<double>> eval() const;
     };
 }}
+
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    ///////////////////////////////////////////////////////////////////////////
+    // Factory functions
+    using factory_function_type =
+        hpx::util::function_nonser<primitive(
+            hpx::id_type, std::vector<primitive>&&)>;
+
+    template <typename Primitive>
+    primitive create(
+        hpx::id_type locality, std::vector<primitive>&& operands)
+    {
+        return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
+    }
+}}}
 
 #endif
 

@@ -47,24 +47,40 @@ def test_expression(expr, expected, delimiter):
 test_expression(
     'A + B',
     'expression\n' +
-                'identifier: A\n' +
-        'operation\n' +
-            'op_plus\n' +
-                'identifier: B\n',
+        'identifier: A\n' +
+        'identifier: B\n' +
+        'op_plus\n'
     '\n')
 
 test_expression(
     'A + B + -C',
     'expression\n' +
-                'identifier: A\n' +
-        'operation\n' +
-            'op_plus\n' +
-                'identifier: B\n' +
-        'operation\n' +
-            'op_plus\n' +
-            'unary_expr\n' +
-                'op_negative\n' +
-                        'identifier: C\n',
+        'identifier: A\n' +
+        'identifier: B\n' +
+        'op_plus\n' +
+        'identifier: C\n' +
+        'op_negative\n' +
+        'op_plus\n'
+    '\n')
+
+test_expression(
+    'A + B * C',
+    'expression\n' +
+        'identifier: A\n' +
+        'identifier: B\n' +
+        'identifier: C\n' +
+        'op_times\n' +
+        'op_plus\n'
+    '\n')
+
+test_expression(
+    'A * B + C',
+    'expression\n' +
+        'identifier: A\n' +
+        'identifier: B\n' +
+        'op_times\n' +
+        'identifier: C\n' +
+        'op_plus\n'
     '\n')
 
 test_expression(

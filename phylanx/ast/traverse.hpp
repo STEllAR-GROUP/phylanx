@@ -16,6 +16,10 @@
 #include <type_traits>
 #include <utility>
 
+// This implements a traversal of our AST data structures. Note that
+// ast::expression nodes are traversed in postfix order to resolve possible
+// precedence problems.
+
 namespace phylanx { namespace ast
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -176,9 +180,6 @@ namespace phylanx { namespace ast
     bool traverse(unary_expr const& ue, F && f, Ts const&... ts);
 
     template <typename F, typename ... Ts>
-    bool traverse(operation const& op, F && f, Ts const&... ts);
-
-    template <typename F, typename ... Ts>
     bool traverse(expression const& expr, F && f, Ts const&... ts);
 
     template <typename F, typename ... Ts>
@@ -238,43 +239,64 @@ namespace phylanx { namespace ast
     {
         return visit(
             detail::make_unwrap_visitor(std::forward<F>(f)), pe, ts...);
-                }
+    }
 
     template <typename F, typename ... Ts>
     bool traverse(operand const& op, F && f, Ts const&... ts)
     {
         return visit(
             detail::make_unwrap_visitor(std::forward<F>(f)), op, ts...);
-                }
+    }
 
     template <typename F, typename ... Ts>
     bool traverse(unary_expr const& ue, F && f, Ts const&... ts)
     {
-        return detail::on_visit(
-            [](unary_expr const& ue, F && f, Ts const&... ts)
-            {
-                if (detail::on_enter::call(f, ue, ts...))
-                {
-                    if (traverse(ue.operator_, std::forward<F>(f), ts...))
-                        traverse(ue.operand_, std::forward<F>(f), ts...);
-                }
-            },
-            ue, std::forward<F>(f), ts...);
+        if (!traverse(ue.operand_, std::forward<F>(f), ts...))
+            return false;
+        return traverse(ue.operator_, std::forward<F>(f), ts...);
     }
 
-    template <typename F, typename ... Ts>
-    bool traverse(operation const& op, F && f, Ts const&... ts)
+    namespace detail
     {
-        return detail::on_visit(
-            [](operation const& op, F && f, Ts const&... ts)
-            {
-                if (detail::on_enter::call(f, op, ts...))
+        // The Shunting-yard algorithm
+        template <typename F, typename ... Ts>
+        bool traverse_expression(
+            int min_precedence,
+            std::list<operation>::const_iterator& it,
+            std::list<operation>::const_iterator end,
+            F && f, Ts const&... ts)
+        {
+            return detail::on_visit(
+                [&](operation const&, F && f, Ts const&... ts) -> bool
                 {
-                    if (traverse(op.operator_, std::forward<F>(f), ts...))
-                        traverse(op.operand_, std::forward<F>(f), ts...);
-                }
-            },
-            op, std::forward<F>(f), ts...);
+                    while (it != end &&
+                        precedence_of(it->operator_) >= min_precedence)
+                    {
+                        operation const& curr = *it;
+                        int op_precedence = precedence_of(curr.operator_);
+
+                        if (!traverse(curr.operand_, std::forward<F>(f), ts...))
+                            return false;
+
+                        ++it;
+
+                        while (it != end &&
+                            precedence_of(it->operator_) > op_precedence)
+                        {
+                            traverse_expression(
+                                precedence_of(it->operator_), it, end,
+                                std::forward<F>(f), ts...);
+                        }
+
+                        if (!traverse(curr.operator_, std::forward<F>(f), ts...))
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                *it, std::forward<F>(f), ts...);
+        }
     }
 
     template <typename F, typename ... Ts>
@@ -285,13 +307,12 @@ namespace phylanx { namespace ast
             {
                 if (detail::on_enter::call(f, expr, ts...))
                 {
-                    if (traverse(expr.first, std::forward<F>(f), ts...))
+                    if (traverse(expr.first, std::forward<F>(f), ts...) &&
+                        !expr.rest.empty())
                     {
-                        for (auto const& op : expr.rest)
-                        {
-                            if (!traverse(op, std::forward<F>(f), ts...))
-                                break;
-                        }
+                        auto begin = expr.rest.begin();
+                        detail::traverse_expression(0, begin,
+                            expr.rest.end(), std::forward<F>(f), ts...);
                     }
                 }
             },
