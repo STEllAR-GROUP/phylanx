@@ -453,8 +453,8 @@ namespace phylanx { namespace ast
         }
 
         // check whether first operand matches
-        expression subexpr1 = detail::extract_expression(expr1);
-        expression subexpr2 = detail::extract_expression(expr2);
+        expression const subexpr1 = detail::extract_expression(expr1);
+        expression const subexpr2 = detail::extract_expression(expr2);
 
         if (!match_ast(
                 subexpr1.first, subexpr2.first, std::forward<F>(f), ts...))
