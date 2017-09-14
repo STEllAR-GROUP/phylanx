@@ -323,3 +323,7 @@ if(PHYLANX_WITH_TESTS_BENCHMARKS OR PHYLANX_WITH_TESTS_REGRESSIONS OR PHYLANX_WI
   add_subdirectory(tests)
 endif()
 
+# Configure phylanxrun.py
+configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/phylanxrun.py.in"
+               "${CMAKE_BINARY_DIR}/bin/phylanxrun.py"
+               @ONLY)
