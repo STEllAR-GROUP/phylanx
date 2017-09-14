@@ -49,10 +49,10 @@ namespace phylanx { namespace ast { namespace parser
             {
             }
 
-//             void operator()(ast::function_call& x) const
-//             {
-//                 x.function_name.id = id;
-//             }
+            void operator()(ast::function_call& x) const
+            {
+                x.function_name.id = id;
+            }
 
             void operator()(ast::identifier& x) const
             {
@@ -70,7 +70,6 @@ namespace phylanx { namespace ast { namespace parser
         {
             std::size_t id = iters.size();
             iters.push_back(pos);
-//             ast.apply_visitor(set_id(id));
             visit(set_id(id), ast);
         }
 
