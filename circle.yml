@@ -24,11 +24,20 @@ dependencies:
     override:
         - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DCMAKE_CXX_COMPILER=g++ -DHPX_DIR=/usr/local/lib/cmake/HPX -DEigen3_DIR=/eigen/3.3.4/share/eigen3/cmake/ -DEigen3_INCLUDE_DIRS=/eigen/3.3.4/include/eigen3 -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2
+        # TODO replace this line with "docker build" once docker managed to
+        # introduce temporal file copies that don't show in the resulting image
+        # size.
+        # The problem is the "ADD/COPY" and "RUN rm" in Dockerfile. Those count
+        # as separate steps and keep the temporal files stored as part of the
+        # image, expanding it by about 500 MB.
+        # docker-compile.pl is a dirty workaround, and shall be removed ASAP.
+        - cp tools/docker/Dockerfile tools/docker/.dockerignore .
+        - ./tools/docker/docker-compile.pl ${TARGET_IMAGE_NAME}:
+            timeout: 1200   # increase timeout to avoid failure
 
 test:
-    override:   
-        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make tests
-
+    override:
+        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2 tests
 
 deployment:
     hub:
