@@ -10,6 +10,8 @@
 
 #include <Eigen/Dense>
 
+#include <algorithm>
+
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {
     phylanx::ir::node_data<double> array_value2;

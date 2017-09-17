@@ -7,6 +7,7 @@
 #include <phylanx/ast/generate_ast.hpp>
 #include <phylanx/ast/match_ast.hpp>
 #include <phylanx/ast/detail/is_identifier.hpp>
+#include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/execution_tree/generate_tree.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -105,19 +106,32 @@ namespace phylanx { namespace execution_tree
                     continue;
                 }
 
+                std::vector<ast::literal_value_type> literals;
+                literals.reserve(placeholders.size());
+
                 std::vector<primitive> arguments;
                 arguments.reserve(placeholders.size());
 
                 for (auto const& placeholder : placeholders)
                 {
-                    arguments.push_back(
-                        generate_tree(hpx::util::get<0>(pattern),
-                            placeholder.second, patterns, variables));
+                    if (ast::detail::is_literal_value(placeholder.second))
+                    {
+                        literals.push_back(
+                            ast::detail::literal_value(placeholder.second));
+                        arguments.push_back(primitive{});
+                    }
+                    else
+                    {
+                        literals.push_back(ast::nil{});
+                        arguments.push_back(
+                            generate_tree(hpx::util::get<0>(pattern),
+                                placeholder.second, patterns, variables));
+                    }
                 }
 
                 // create primitive with given arguments
-                result = hpx::util::get<2>(pattern)(
-                    hpx::find_here(), std::move(arguments));
+                result = hpx::util::get<2>(pattern)(hpx::find_here(),
+                    std::move(literals), std::move(arguments));
 
                 return result;
             }

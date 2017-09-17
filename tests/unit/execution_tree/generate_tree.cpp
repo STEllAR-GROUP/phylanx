@@ -26,7 +26,7 @@ phylanx::execution_tree::primitive create_literal_value(double value)
             hpx::find_here(), phylanx::ir::node_data<double>(value)));
 }
 
-int main(int argc, char* argv[])
+void test_add_primitive()
 {
     phylanx::execution_tree::pattern_list patterns = {
         { "_1 + _2", &phylanx::execution_tree::primitives::create<
@@ -43,6 +43,31 @@ int main(int argc, char* argv[])
     test_generate_tree("A + (B + C)", patterns, variables, 55.0);
     test_generate_tree("A + (B + A)", patterns, variables, 83.0);
     test_generate_tree("(A + B) + C", patterns, variables, 55.0);
+}
+
+void test_file_io_primitives()
+{
+    phylanx::execution_tree::variables variables = {
+        {"A", create_literal_value(41.0)},
+        {"B", create_literal_value(1.0)},
+        {"C", create_literal_value(13.0)}
+    };
+
+    phylanx::execution_tree::pattern_list patterns = {
+        { "file_write(_1, _2)", &phylanx::execution_tree::primitives::create<
+                phylanx::execution_tree::primitives::file_write>},
+        { "file_read(_1)", &phylanx::execution_tree::primitives::create<
+                phylanx::execution_tree::primitives::file_read>}
+    };
+
+    test_generate_tree("file_write(\"test_file\", A)", patterns, variables, 41.0);
+    test_generate_tree("file_read(\"test_file\")", patterns, variables, 41.0);
+}
+
+int main(int argc, char* argv[])
+{
+//     test_add_primitive();
+    test_file_io_primitives();
 
     return 0;
 }

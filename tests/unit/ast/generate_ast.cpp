@@ -39,13 +39,13 @@ void test_expression(std::string const& expr, std::string const& expected)
 
 int main(int argc, char* argv[])
 {
-//     test_expression(
-//         "A + B",
-//         "expression\n"
-//             "identifier: A\n"
-//             "identifier: B\n"
-//             "op_plus\n"
-//     );
+    test_expression(
+        "A + B",
+        "expression\n"
+            "identifier: A\n"
+            "identifier: B\n"
+            "op_plus\n"
+    );
 
     test_expression(
         "A + B + -C",
@@ -88,6 +88,11 @@ int main(int argc, char* argv[])
                 "expression\n"
                     "identifier: B\n"
     );
+
+    test_expression(
+        "\"test\"",
+        "expression\n"
+            "test\n");
 
     return hpx::util::report_errors();
 }
