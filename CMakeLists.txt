@@ -327,3 +327,37 @@ endif()
 configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/phylanxrun.py.in"
                "${CMAKE_BINARY_DIR}/bin/phylanxrun.py"
                @ONLY)
+
+################################################################################
+# installation instructions
+################################################################################
+install(
+  FILES "${CMAKE_BINARY_DIR}/bin/phylanxrun.py"
+  DESTINATION bin
+  COMPONENT core
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+  GROUP_READ GROUP_EXECUTE
+  WORLD_READ WORLD_EXECUTE)
+
+# Install all Phylanx header files
+install(
+  DIRECTORY phylanx/
+  DESTINATION include/phylanx
+  COMPONENT core
+  FILES_MATCHING PATTERN "*.hpp"
+  PATTERN ".git" EXCLUDE
+  PATTERN "CMakeFiles" EXCLUDE
+  PATTERN "CTestFiles" EXCLUDE)
+
+# Install all Phylanx cmake utility files
+install(
+  DIRECTORY cmake/
+  DESTINATION ${LIB}/cmake/${PHYLANX_PACKAGE_NAME}
+  COMPONENT core
+  PATTERN ".in" EXCLUDE
+  PATTERN ".git" EXCLUDE)
+
+install(
+  FILES "${PROJECT_SOURCE_DIR}/LICENSE_1_0.txt"
+  DESTINATION share/phylanx-${PHYLANX_VERSION}
+  COMPONENT license)
