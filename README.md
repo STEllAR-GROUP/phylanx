@@ -4,6 +4,9 @@
 <!--   Distributed under the Boost Software License, Version 1.0. (See accompanying -->
 <!--   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)        -->
 
+Find our project website [here](http://phylanx.stellar-group.org/). This site provides an overview of the project as well 
+as information on who we are and what we plan to do!
+
 # Phylanx: A Distributed Array Computing Toolkit
 
 The [CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx) contiguous integration service tracks the current build status for the master branch:
