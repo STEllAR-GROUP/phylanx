@@ -171,7 +171,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    // implement '+' for all possible combinations of lhs and rhs
+    // implement '-' for all possible combinations of lhs and rhs
     hpx::future<ir::node_data<double>> sub_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
