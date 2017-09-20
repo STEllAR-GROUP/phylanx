@@ -7,6 +7,7 @@ FROM stellargroup/hpx:dev
 
 # Install Eigen library (http://eigen.tuxfamily.org/)
 RUN apt-get -y install wget python3 python3-dev python3-pip &&                   \
+    pip3 install setuptools &&                                                   \
     pip3 install pytest &&                                                       \
     wget http://bitbucket.org/eigen/eigen/get/3.3.4.tar.bz2 &&                   \
     mkdir -p eigen/3.3.4 &&                                                      \
