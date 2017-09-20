@@ -45,16 +45,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ir::node_data<double> sub_operation::sub0d(operands_type const& ops) const
     {
         std::size_t rhs_dims = ops[1].num_dimensions();
+        //std::cout<<ops.size();
         switch(rhs_dims)
         {
             case 0:
             {
-                auto result = [&]() -> double {
-                    auto val1 = *ops.begin();
-                    auto val2 = *(++ops.begin());
-                    return val1[0] - val2[0];
-                };
-                return ir::node_data<double>(result());
+                if(ops.size()==2)
+                {
+                    auto result = [&]() -> double {
+                        auto val1 = *ops.begin();
+                        auto val2 = *(++ops.begin());
+                        return val1[0] - val2[0];
+                    };
+                    return ir::node_data<double>(result());
+                }
+                else
+                {
+                    auto first = *ops.begin();
+                    return ir::node_data<double>(
+                            std::accumulate(ops.begin()+1, ops.end(), first[0],
+                                            [](double result, ir::node_data<double> const& curr)
+                                            {
+                                                return result - curr[0];
+                                            }));
+                }
             }
             case 1: HPX_FALLTHROUGH;
             case 2: HPX_FALLTHROUGH;
@@ -82,15 +96,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using result_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
         using array_map_type = Eigen::Map<array_type const>;
 
-        auto lambda = [&]()->result_type {
+        if(ops.size()==2)
+        {
+            auto lambda = [&]() -> result_type {
+                auto val1 = *ops.begin();
+                auto val2 = *(++ops.begin());
+                array_map_type first(val1.data(), lhs_size);
+                array_map_type second(val2.data(), lhs_size);
+                return first - second;
+            };
+            result_type result = lambda();
+            return ir::node_data<double>(std::move(result));
+        }
+        else
+        {
             auto val1 = *ops.begin();
-            auto val2 = *(++ops.begin());
             array_map_type first(val1.data(), lhs_size);
-            array_map_type second(val2.data(), lhs_size);
-            return first - second;
-        };
-        result_type result = lambda();
-        return ir::node_data<double>(std::move(result));
+            Eigen::Matrix<double, Eigen::Dynamic, 1> result =
+                    std::accumulate(ops.begin()+1, ops.end(),
+                                    array_type{first},
+                                    [&](array_type const& result, ir::node_data<double> const& curr)
+                                            ->  array_type
+                                    {
+                                        Eigen::Map<array_type const> lhs(curr.data(), lhs_size);
+                                        return result - lhs;
+                                    });
+
+            return ir::node_data<double>(std::move(result));
+
+        }
     }
 
     ir::node_data<double> sub_operation::sub1d(operands_type const& ops) const
@@ -127,15 +161,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using result_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
         using array_map_type = Eigen::Map<array_type const>;
 
-        auto lambda = [&]()->result_type {
+        if(ops.size()==2)
+        {
+            auto lambda = [&]() -> result_type {
+                auto val1 = *ops.begin();
+                auto val2 = *(++ops.begin());
+                array_map_type first(val1.data(), lhs_size[0], lhs_size[1]);
+                array_map_type second(val2.data(), lhs_size[0], lhs_size[1]);
+                return first - second;
+            };
+            result_type result = lambda();
+            return ir::node_data<double>(std::move(result));
+        }
+        else
+        {
             auto val1 = *ops.begin();
-            auto val2 = *(++ops.begin());
             array_map_type first(val1.data(), lhs_size[0], lhs_size[1]);
-            array_map_type second(val2.data(), lhs_size[0], lhs_size[1]);
-            return first - second;
-        };
-        result_type result = lambda();
-        return ir::node_data<double>(std::move(result));
+            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> result =
+                    std::accumulate(
+                            ops.begin()+1, ops.end(),array_type{first},
+                            [&](array_type const& result, ir::node_data<double> const& curr)
+                                    ->  array_type
+                            {
+                                return result -
+                                       array_map_type{curr.data(), lhs_size[0], lhs_size[1]};
+                            });
+
+            return ir::node_data<double>(std::move(result));
+        }
     }
 
     ir::node_data<double> sub_operation::sub2d(operands_type const& ops) const
