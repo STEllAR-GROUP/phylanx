@@ -45,7 +45,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ir::node_data<double> sub_operation::sub0d(operands_type const& ops) const
     {
         std::size_t rhs_dims = ops[1].num_dimensions();
-        //std::cout<<ops.size();
         switch(rhs_dims)
         {
             case 0:
