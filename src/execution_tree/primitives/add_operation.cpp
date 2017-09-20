@@ -118,14 +118,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         using array_type = Eigen::Array<double, Eigen::Dynamic, 1>;
 
+        array_type first_term = ops.begin()->matrix().array();
         Eigen::Matrix<double, Eigen::Dynamic, 1> result =
-            std::accumulate(ops.begin(), ops.end(),
-                array_type::Zero(lhs_size).eval(),
-                [&](array_type const& result, ir::node_data<double> const& curr)
+            std::accumulate(
+                ops.begin() + 1, ops.end(), first_term,
+                [&](array_type& result, ir::node_data<double> const& curr)
                 ->  array_type
                 {
-                    Eigen::Map<array_type const> lhs(curr.data(), lhs_size);
-                    return result + lhs;
+                    return result += curr.matrix().array();
                 });
 
         return ir::node_data<double>(std::move(result));
@@ -162,17 +162,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         using array_type = Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic>;
-        using array_map_type = Eigen::Map<array_type const>;
 
+        array_type first_term = ops.begin()->matrix().array();
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> result =
             std::accumulate(
-                ops.begin(), ops.end(),
-                array_type::Zero(lhs_size[0], lhs_size[1]).eval(),
-                [&](array_type const& result, ir::node_data<double> const& curr)
+                ops.begin() + 1, ops.end(), first_term,
+                [&](array_type& result, ir::node_data<double> const& curr)
                 ->  array_type
                 {
-                    return result +
-                        array_map_type{curr.data(), lhs_size[0], lhs_size[1]};
+                    return result += curr.matrix().array();
                 });
 
         return ir::node_data<double>(std::move(result));
