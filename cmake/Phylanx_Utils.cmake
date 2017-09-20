@@ -18,10 +18,18 @@ phylanx_include(
   AddPseudoTarget
   AddSourceGroup
   AddTest
+  CreateSymbolicLink
   ExportTargets
   ForceOutOfTreeBuild
   IsTarget
+  SetupCompilerFlags
+  SetOutputPaths
   SetupTarget
   ShortenPseudoTarget
 )
 
+phylanx_include(
+  SetupHPX
+  SetupEigen3
+  SetupPybind11
+)
