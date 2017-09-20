@@ -33,6 +33,11 @@ int main(int argc, char* argv[])
             phylanx::execution_tree::primitives::add_operation>}
     };
 
+    phylanx::execution_tree::pattern_list patternsub = {
+            { "_1 - _2", &phylanx::execution_tree::primitives::create<
+                    phylanx::execution_tree::primitives::sub_operation>}
+    };
+
     phylanx::execution_tree::variables variables = {
         {"A", create_literal_value(41.0)},
         {"B", create_literal_value(1.0)},
@@ -43,6 +48,12 @@ int main(int argc, char* argv[])
     test_generate_tree("A + (B + C)", patterns, variables, 55.0);
     test_generate_tree("A + (B + A)", patterns, variables, 83.0);
     test_generate_tree("(A + B) + C", patterns, variables, 55.0);
+
+    //tests for subtraction pattern
+    test_generate_tree("A - B", patternsub, variables, 40.0);
+    test_generate_tree("A - (B - C)", patternsub, variables, 53.0);
+    test_generate_tree("A - (B - A)", patternsub, variables, 81.0);
+    test_generate_tree("(A - B) - C", patternsub, variables, 27.0);
 
     return 0;
 }
