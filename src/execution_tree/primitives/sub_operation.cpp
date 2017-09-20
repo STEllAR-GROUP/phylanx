@@ -47,7 +47,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t rhs_dims = ops[1].num_dimensions();
         switch(rhs_dims)
         {
-            case 0:{
+            case 0:
+            {
                 auto result = [&]() -> double {
                     auto val1 = *ops.begin();
                     auto val2 = *(++ops.begin());
