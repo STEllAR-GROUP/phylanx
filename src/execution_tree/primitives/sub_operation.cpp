@@ -79,11 +79,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         using array_type = Eigen::Array<double, Eigen::Dynamic, 1>;
         using result_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+        using array_map_type = Eigen::Map<array_type const>;
+
         auto lambda = [&]()->result_type {
             auto val1 = *ops.begin();
             auto val2 = *(++ops.begin());
-            Eigen::Map<array_type const> first(val1.data(), lhs_size);
-            Eigen::Map<array_type const> second(val2.data(), lhs_size);
+            array_map_type first(val1.data(), lhs_size);
+            array_map_type second(val2.data(), lhs_size);
             return first - second;
         };
         result_type result = lambda();
