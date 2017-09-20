@@ -16,34 +16,34 @@
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
-        {
-            class HPX_COMPONENT_EXPORT sub_operation
-                    : public base_primitive
-                            , public hpx::components::component_base<sub_operation>
-            {
-            private:
-                using operands_type = std::vector<ir::node_data<double>>;
+{
+    class HPX_COMPONENT_EXPORT sub_operation
+        : public base_primitive
+        , public hpx::components::component_base<sub_operation>
+    {
+    private:
+        using operands_type = std::vector<ir::node_data<double>>;
 
-            public:
-                sub_operation() = default;
+    public:
+        sub_operation() = default;
 
-                sub_operation(std::vector<primitive> && operands);
-                sub_operation(std::vector<primitive> const& operands);
+        sub_operation(std::vector<primitive> && operands);
+        sub_operation(std::vector<primitive> const& operands);
 
-                hpx::future<ir::node_data<double>> eval() const override;
+        hpx::future<ir::node_data<double>> eval() const override;
 
-            protected:
-                ir::node_data<double> sub0d(operands_type const& ops) const;
-                ir::node_data<double> sub1d(operands_type const& ops) const;
-                ir::node_data<double> sub2d(operands_type const& ops) const;
+    protected:
+        ir::node_data<double> sub0d(operands_type const& ops) const;
+        ir::node_data<double> sub1d(operands_type const& ops) const;
+        ir::node_data<double> sub2d(operands_type const& ops) const;
 
-                ir::node_data<double> sub1d1d(operands_type const& ops) const;
-                ir::node_data<double> sub2d2d(operands_type const& ops) const;
+        ir::node_data<double> sub1d1d(operands_type const& ops) const;
+        ir::node_data<double> sub2d2d(operands_type const& ops) const;
 
-            private:
-                std::vector<primitive> operands_;
-            };
-        }}}
+    private:
+        std::vector<primitive> operands_;
+    };
+}}}
 
 #endif
 
