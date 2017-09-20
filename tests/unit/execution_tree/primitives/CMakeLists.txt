@@ -5,6 +5,7 @@
 
 set(tests
     add_operation
+    sub_operation
    )
 
 foreach(test ${tests})
