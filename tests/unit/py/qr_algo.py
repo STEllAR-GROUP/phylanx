@@ -83,7 +83,7 @@ def get_q(QR, Rdiag):
          
 
    for k in range(n, -1, -1):
-      Q[k,k = 1.0
+      Q[k,k] = 1.0
       for j in range(k,n):
          QR.conditional(QR[k,k] != 0.0, Qcompute(j, k, n, QR, Q))
 
