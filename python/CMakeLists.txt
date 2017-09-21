@@ -9,9 +9,7 @@
 add_subdirectory(src)
 
 # integrate the extension module with the Python installation
-find_program(PYTHON "python")
-
-if (PYTHON)
+if (PYTHON_EXECUTABLE)
   set(SETUP_PY_IN "${PROJECT_SOURCE_DIR}/cmake/templates/setup.py.in")
   set(DEPS "${CMAKE_CURRENT_SOURCE_DIR}/phylanx/__init__.py")
 
@@ -45,11 +43,12 @@ if (PYTHON)
 
   set(__setup_script "${SETUP_PY}_$<CONFIG>.py")
   add_custom_command(OUTPUT ${OUTPUT}
-                     COMMAND ${PYTHON} ${__setup_script} build
+                     COMMAND ${PYTHON_EXECUTABLE} ${__setup_script} build
                      COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
                      DEPENDS ${DEPS})
 
   add_custom_target(Python ALL DEPENDS ${OUTPUT} ${__setup_script} phylanx_py)
 
-  install(CODE "execute_process(COMMAND ${PYTHON} ${__setup_script} install)")
+  install(CODE
+    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${__setup_script} install)")
 endif()
