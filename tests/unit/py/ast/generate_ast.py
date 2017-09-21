@@ -53,6 +53,17 @@ test_expression(
     '\n')
 
 test_expression(
+    'A + B + -C',
+    'expression\n' +
+        'identifier: A\n' +
+        'identifier: B\n' +
+        'op_plus\n' +
+        'identifier: C\n' +
+        'op_negative\n' +
+        'op_plus\n',
+    '\n')
+
+test_expression(
     'A + B * C',
     'expression\n' +
         'identifier: A\n' +
