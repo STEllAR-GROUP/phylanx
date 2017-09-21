@@ -44,6 +44,6 @@ int main(int argc, char* argv[])
     test_generate_tree("A + (B + A)", patterns, variables, 83.0);
     test_generate_tree("(A + B) + C", patterns, variables, 55.0);
 
-    return 0;
+    return hpx::util::report_errors();
 }
 
