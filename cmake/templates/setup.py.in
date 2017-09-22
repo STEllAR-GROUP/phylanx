@@ -60,7 +60,7 @@ setup_args = {
     'url' : 'phylanx.stellar-group.org',
     'description' : 'A Python wrapper for the Phylanx execution engine',
     'long_description' : '',
-    'packages' : ['phylanx'],
+    'packages' : ['phylanx', 'phylanx.ast', 'phylanx.util'],
     'package_dir' : { '' : '@PYTHON_PACKAGE_BASE_DIR@' },
     'ext_modules' : [
         CopyExtension('@PYTHON_PACKAGE_NAME@',
