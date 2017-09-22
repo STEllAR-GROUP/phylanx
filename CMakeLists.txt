@@ -143,8 +143,11 @@ if(PHYLANX_WITH_TESTS_BENCHMARKS OR PHYLANX_WITH_TESTS_REGRESSIONS OR PHYLANX_WI
   include(CTest)
 
   if(NOT MSVC)
+    find_program(CTEST_EXECUTABLE "ctest")
     add_custom_command(TARGET tests POST_BUILD
-      COMMAND ctest --output-on-failure --timeout 100)
+      COMMAND ${CTEST_EXECUTABLE} --output-on-failure --timeout 100 -C $<CONFIG>)
+    set_target_properties(tests
+      PROPERTIES FOLDER "Tests")
   endif()
 
   include_directories(tests)

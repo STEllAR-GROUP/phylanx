@@ -18,6 +18,7 @@ phylanx_include(
   AddPseudoTarget
   AddSourceGroup
   AddTest
+  AddPythonTest
   CreateSymbolicLink
   ExportTargets
   ForceOutOfTreeBuild
