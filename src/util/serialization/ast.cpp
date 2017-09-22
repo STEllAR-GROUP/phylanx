@@ -144,8 +144,28 @@ namespace phylanx { namespace util
         return expr;
     }
 
+    // You cannot add to expression.rest unless you
+    // use this function. Note sure why.
     void append_operation(ast::expression& ast,ast::operation const& o) {
       ast.rest.push_back(o);
+    }
+
+    namespace detail {
+      template<typename Ast>
+      std::string stringify(Ast const& ast);
+
+      struct ast_stringify_visitor 
+      {
+          mutable std::string out;
+
+          template <typename Ast>
+          bool operator()(Ast const& ast) const
+          {
+            out = stringify<Ast>(ast);
+            return true;
+          }
+
+      };
     }
 
     std::string stringify_expression(ast::expression const & ast) {
@@ -165,21 +185,9 @@ namespace phylanx { namespace util
       return m.str();
     }
     std::string stringify_operand(ast::operand const & ast) {
-      switch(ast.index()) {
-        case 0:
-          return "";
-        case 1:
-          {
-            auto v = phylanx::util::get<1>(ast.get());
-            return stringify_primary_expr(v.get());
-          }
-        case 2:
-          {
-            auto v = phylanx::util::get<2>(ast.get());
-            return stringify_unary_expr(v.get());
-          }
-      };
-      return "";
+      detail::ast_stringify_visitor p;
+      visit(p,ast.get());
+      return p.out;
     }
     std::string stringify_operation(ast::operation const & ast) {
       std::string out;
@@ -202,31 +210,58 @@ namespace phylanx { namespace util
       m  << "optoken(" <<  st << ")";
       return m.str();
     }
-    std::string stringify_primary_expr(ast::primary_expr const & ast) {
-      switch(ast.index()) {
-        case 0:
-          return "";
-        case 1:
-          return phylanx::util::get<1>(ast.get()) ? "T" : "F";
-        case 2:
-          {
-            std::ostringstream m;
 
-            phylanx::ir::node_data<double> d = phylanx::util::get<2>(ast.get());
-            m << d;
-            return m.str();
-          }
-        case 3:
-          return stringify_identifier(phylanx::util::get<3>(ast.get()));
-        case 4:
-          return stringify_expression(phylanx::util::get<4>(ast.get()).get());
-      };
-      return "";
+    std::string stringify_primary_expr(ast::primary_expr const & ast) {
+      detail::ast_stringify_visitor p;
+      visit(p,ast.get());
+      return p.out;
     }
     std::string stringify_unary_expr(ast::unary_expr const & ast) {
       std::string out;
       out += stringify_optoken(ast.operator_);
       out += stringify_operand(ast.operand_);
       return out;
+    }
+
+    namespace detail {
+      template<>
+      std::string stringify(bool const & b) {
+        return b ? "T" : "F";
+      }
+
+      template<>
+      std::string stringify(ast::nil const & n) {
+        return "";
+      }
+
+      template<>
+      std::string stringify(phylanx::ir::node_data<double> const & n) {
+        return "double";
+      }
+
+      template<>
+      std::string stringify(ast::identifier const & ident) {
+        return stringify_identifier(ident);
+      }
+
+      template<>
+      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::expression> const & expr) {
+        return stringify_expression(expr.get());
+      }
+
+      template<>
+      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::function_call> const & func) {
+        return "func";
+      }
+
+      template<>
+      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::unary_expr> const & un) {
+        return stringify_unary_expr(un.get());
+      }
+
+      template<>
+      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::primary_expr> const & pr) {
+        return stringify_primary_expr(pr.get());
+      }
     }
 }}
