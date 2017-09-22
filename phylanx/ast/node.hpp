@@ -182,9 +182,25 @@ namespace phylanx { namespace ast
           , bool
           , phylanx::ir::node_data<double>
           , identifier
+          , std::string
+          , std::int64_t
           , phylanx::util::recursive_wrapper<expression>
           , phylanx::util::recursive_wrapper<function_call>
         >;
+
+    using literal_value_type = phylanx::util::variant<
+            nil
+          , bool
+          , std::int64_t
+          , std::string
+          , phylanx::ir::node_data<double>
+        >;
+
+    // a literal value is valid of its not nil{}
+    inline bool valid(literal_value_type const& val)
+    {
+        return val.index() != 0;
+    }
 
     struct primary_expr : tagged, expr_node_type
     {
@@ -205,6 +221,24 @@ namespace phylanx { namespace ast
         {
         }
 
+        primary_expr(std::uint64_t val)
+          : expr_node_type(std::int64_t(val))
+        {
+        }
+        primary_expr(std::int64_t val)
+          : expr_node_type(val)
+        {
+        }
+
+        primary_expr(std::string const& val)
+          : expr_node_type(val)
+        {
+        }
+        primary_expr(std::string && val)
+          : expr_node_type(std::move(val))
+        {
+        }
+
         primary_expr(phylanx::ir::node_data<double> const& val)
           : expr_node_type(val)
         {
@@ -220,14 +254,6 @@ namespace phylanx { namespace ast
         }
         primary_expr(identifier && val)
           : expr_node_type(std::move(val))
-        {
-        }
-        primary_expr(std::string const& val)
-          : expr_node_type(identifier(val))
-        {
-        }
-        primary_expr(std::string && val)
-          : expr_node_type(identifier(std::move(val)))
         {
         }
 
@@ -269,19 +295,34 @@ namespace phylanx { namespace ast
     {
         operand() = default;
 
-        explicit operand(double val)
+        operand(bool const val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        explicit operand(std::string const& val)
+        operand(double const val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        explicit operand(std::string && val)
+        operand(std::string const& val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(val))
+        {
+        }
+        operand(std::string && val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(std::move(val)))
+        {
+        }
+        operand(std::int64_t const val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(val))
+        {
+        }
+        operand(std::uint64_t const val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
 
@@ -401,10 +442,10 @@ namespace phylanx { namespace ast
         {}
 
         explicit expression(identifier const& id)
-          : first(operand(id.name))
+          : first(operand(id))
         {}
         explicit expression(identifier && id)
-          : first(operand(std::move(id.name)))
+          : first(operand(std::move(id)))
         {}
 
         explicit expression(primary_expr const& pe)

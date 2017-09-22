@@ -49,7 +49,7 @@ test_expression(
     'expression\n' +
         'identifier: A\n' +
         'identifier: B\n' +
-        'op_plus\n'
+        'op_plus\n',
     '\n')
 
 test_expression(
@@ -60,7 +60,7 @@ test_expression(
         'op_plus\n' +
         'identifier: C\n' +
         'op_negative\n' +
-        'op_plus\n'
+        'op_plus\n',
     '\n')
 
 test_expression(
@@ -70,7 +70,7 @@ test_expression(
         'identifier: B\n' +
         'identifier: C\n' +
         'op_times\n' +
-        'op_plus\n'
+        'op_plus\n',
     '\n')
 
 test_expression(
@@ -80,7 +80,7 @@ test_expression(
         'identifier: B\n' +
         'op_times\n' +
         'identifier: C\n' +
-        'op_plus\n'
+        'op_plus\n',
     '\n')
 
 test_expression(

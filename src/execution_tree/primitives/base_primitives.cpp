@@ -5,44 +5,16 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
-#include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/execution_tree/primitives/literal_value.hpp>
 
-#include <hpx/hpx.hpp>
+#include <hpx/include/actions.hpp>
+#include <hpx/include/components.hpp>
 
 #include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Add factory registration functionality
 HPX_REGISTER_COMPONENT_MODULE()
-
-///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::literal_value>
-    literal_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    literal_type, phylanx_literal_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(literal_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::add_operation>
-    add_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    add_operation_type, phylanx_add_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(add_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
-
-typedef hpx::components::component<
-        phylanx::execution_tree::primitives::sub_operation>
-        sub_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-        sub_operation_type, phylanx_sub_operation_component,
-        "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(sub_operation_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Serialization support for the base_file actions

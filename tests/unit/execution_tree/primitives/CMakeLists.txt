@@ -6,6 +6,8 @@
 set(tests
     add_operation
     sub_operation
+    file_primitives
+    literal_value
    )
 
 foreach(test ${tests})
@@ -25,7 +27,7 @@ foreach(test ${tests})
   add_phylanx_pseudo_target(tests.unit.execution_tree.primitives.${test})
   add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives
     tests.unit.execution_tree.primitives.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives.${test} 
+  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives.${test}
     ${test}_test_exe)
 
 endforeach()
