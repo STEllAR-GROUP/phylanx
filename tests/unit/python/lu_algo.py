@@ -40,7 +40,7 @@ def lu_decomp(A, B):
     def compute_piv(A, n, p, j, k, piv):
       for k in range(n):
         t = A[p,k]
-        A[p, k] = A[j, k)
+        A[p, k] = A[j, k]
         A[j, k] = t
 
       k = piv[p]
@@ -87,10 +87,10 @@ def get_l(LU):
       L[i,j] = LU[i,j]
     elif i == j:
       L[i,j] = 1.0
-    else
+    else:
       L[i,j] = 0.0
 
-   return c, L
+  return c, L
 
 def get_u(LU):
   m = LU.shape[0] # row

@@ -6,6 +6,9 @@
 
 # Phylanx: A Distributed Array Computing Toolkit
 
+Find our project website [here](http://phylanx.stellar-group.org/). This site provides an overview of the project as well 
+as information on who we are and what we plan to do!
+
 The [CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx) contiguous integration service tracks the current build status for the master branch:
 [![CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx.svg?style=svg)](https://circleci.com/gh/STEllAR-GROUP/phylanx).
 

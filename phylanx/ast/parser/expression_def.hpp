@@ -40,6 +40,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::alpha_type alpha;
         qi::alnum_type alnum;
         qi::bool_type bool_;
+        qi::uint_parser<std::uint64_t> ulong_long;
 
         using qi::on_error;
         using qi::on_success;
@@ -100,8 +101,10 @@ namespace phylanx { namespace ast { namespace parser
         primary_expr =
                 double_
             |   function_call
-            |   identifier
+            |   as<ast::identifier>()[identifier]
             |   bool_
+            |   ulong_long
+            |   string
             |   '(' > expr > ')'
             ;
 
@@ -116,6 +119,9 @@ namespace phylanx { namespace ast { namespace parser
         identifier =
                 !lexeme[keywords >> !(alnum | '_')]
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
+            ;
+
+        string = '"' > raw[lexeme[+(char_ - '"')]] > '"'
             ;
 
         ///////////////////////////////////////////////////////////////////////

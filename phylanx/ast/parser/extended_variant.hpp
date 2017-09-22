@@ -38,16 +38,16 @@ namespace phylanx { namespace ast { namespace parser
 
         template <typename F>
         auto apply_visitor(F && v) -> decltype(
-            util::visit(std::declval<variant_type>(), std::forward<F>(v)))
+            util::visit(std::forward<F>(v), std::declval<variant_type>()))
         {
-            return util::visit(var, std::forward<F>(v));
+            return util::visit(std::forward<F>(v), var);
         }
 
         template <typename F>
         auto apply_visitor(F && v) const -> decltype(
-            util::visit(std::declval<variant_type>(), std::forward<F>(v)))
+            util::visit(std::forward<F>(v), std::declval<variant_type>()))
         {
-            return util::visit(var, std::forward<F>(v));
+            return util::visit(std::forward<F>(v), var);
         }
 
         variant_type const& get() const
