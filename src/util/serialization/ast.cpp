@@ -230,13 +230,27 @@ namespace phylanx { namespace util
       }
 
       template<>
+      std::string stringify(long const & lg) {
+        std::ostringstream m;
+        m << lg;
+        return m.str();
+      }
+
+      template<>
+      std::string stringify(std::string const & s) {
+        return s;
+      }
+
+      template<>
       std::string stringify(ast::nil const & n) {
         return "";
       }
 
       template<>
-      std::string stringify(phylanx::ir::node_data<double> const & n) {
-        return "double";
+      std::string stringify(phylanx::ir::node_data<double> const & d) {
+        std::ostringstream m;
+        m << "(" << d << ")";
+        return m.str();
       }
 
       template<>

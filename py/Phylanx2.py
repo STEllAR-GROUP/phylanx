@@ -67,7 +67,7 @@ class Arr (Ops):
         return str(self.value)+":"+str(self.value.value)
 
 # Create some matrices
-a1 = Arr("a")
+a1 = Arr(3.14)
 a2 = Arr("b")
 a0 = Arr("c")
 a3 = Arr("d")
