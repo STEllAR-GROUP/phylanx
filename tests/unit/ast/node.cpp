@@ -45,6 +45,12 @@ void test_primary_expr()
     phylanx::ast::primary_expr p3{
         phylanx::ir::node_data<double>{v}};
     test_serialization(p3);
+
+    phylanx::ast::primary_expr p4{"some string"};
+    test_serialization(p4);
+
+    phylanx::ast::primary_expr p5{std::uint64_t(42)};
+    test_serialization(p5);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,6 +64,14 @@ void test_operand()
         phylanx::ast::identifier{"some_name"});
     phylanx::ast::operand op2(std::move(p2));
     test_serialization(op2);
+
+    phylanx::ast::primary_expr p3{"some string"};
+    phylanx::ast::operand op3(std::move(p3));
+    test_serialization(op3);
+
+    phylanx::ast::primary_expr p4{std::uint64_t(42)};
+    phylanx::ast::operand op4(std::move(p4));
+    test_serialization(op4);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

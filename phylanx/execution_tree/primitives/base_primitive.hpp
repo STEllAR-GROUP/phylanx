@@ -7,6 +7,7 @@
 #define PHYLANX_PRIMITIVES_BASE_PRIMITIVE_SEP_05_2017_1102AM
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/components.hpp>
@@ -76,14 +77,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
-        hpx::util::function_nonser<primitive(
-            hpx::id_type, std::vector<primitive>&&)>;
+        hpx::util::function_nonser<primitive(hpx::id_type,
+            std::vector<ast::literal_value_type>&&, std::vector<primitive>&&)>;
 
     template <typename Primitive>
-    primitive create(
-        hpx::id_type locality, std::vector<primitive>&& operands)
+    primitive create(hpx::id_type locality,
+        std::vector<ast::literal_value_type>&& literals,
+        std::vector<primitive>&& operands)
     {
-        return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
+        return primitive(hpx::new_<Primitive>(
+            locality, std::move(literals), std::move(operands)));
     }
 }}}
 
