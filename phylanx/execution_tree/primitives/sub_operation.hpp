@@ -7,6 +7,7 @@
 #define PHYLANX_PRIMITIVES_SUB_OPERATION_SEP_15_2017_1035AM
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
@@ -27,8 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         sub_operation() = default;
 
-        sub_operation(std::vector<primitive> && operands);
-        sub_operation(std::vector<primitive> const& operands);
+        sub_operation(std::vector<ast::literal_value_type>&& literals,
+                      std::vector<primitive>&& operands);
 
         hpx::future<ir::node_data<double>> eval() const override;
 
@@ -41,6 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double> sub2d2d(operands_type const& ops) const;
 
     private:
+        std::vector<ast::literal_value_type> literals_;
         std::vector<primitive> operands_;
     };
 }}}
