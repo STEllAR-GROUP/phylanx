@@ -27,14 +27,18 @@
         <DisplayString Condition="(var.impl_.index_ == 3)">identifier ({var.impl_.data_.tail_.tail_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 4)">expression ({var.impl_.data_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 5)">function_call ({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 6)">function_call ({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 7)">function_call ({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <Expand>
             <Item Name="[tagged]" Condition="(id != 0)">id</Item>
             <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
             <Item Name="[bool]" Condition="(var.impl_.index_ == 1)">var.impl_.data_.tail_.head_.value</Item>
             <Item Name="[node_data]" Condition="(var.impl_.index_ == 2)">var.impl_.data_.tail_.tail_.head_.value</Item>
             <Item Name="[identifier]" Condition="(var.impl_.index_ == 3)">var.impl_.data_.tail_.tail_.tail_.head_.value</Item>
-            <Item Name="[expression]" Condition="(var.impl_.index_ == 4)">var.impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
-            <Item Name="[function_call]" Condition="(var.impl_.index_ == 5)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[string]" Condition="(var.impl_.index_ == 4)">var.impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[std::int64_t]" Condition="(var.impl_.index_ == 5)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[expression]" Condition="(var.impl_.index_ == 6)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[function_call]" Condition="(var.impl_.index_ == 7)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
         </Expand>
     </Type>
 

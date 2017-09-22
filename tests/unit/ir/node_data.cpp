@@ -10,6 +10,8 @@
 
 #include <Eigen/Dense>
 
+#include <algorithm>
+
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {
     phylanx::ir::node_data<double> array_value2;
@@ -35,7 +37,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(single_value.num_dimensions(), std::ptrdiff_t(0));
         HPX_TEST(single_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({1, 0}));
+            phylanx::ir::node_data<double>::dimensions_type({1, 1}));
 
         test_serialization(single_value);
     }
@@ -53,7 +55,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::ptrdiff_t(1));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({v.rows(), 0}));
+            phylanx::ir::node_data<double>::dimensions_type({v.rows(), 1}));
 
         test_serialization(array_value);
     }
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
         HPX_TEST_EQ(array_value.num_dimensions(), std::ptrdiff_t(1));
         HPX_TEST(array_value.dimensions() ==
             phylanx::ir::node_data<double>::dimensions_type(
-                {static_cast<std::ptrdiff_t>(v.size()), 0}));
+                {static_cast<std::ptrdiff_t>(v.size()), 1}));
 
         test_serialization(array_value);
     }

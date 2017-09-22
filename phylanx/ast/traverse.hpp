@@ -124,6 +124,28 @@ namespace phylanx { namespace ast
             b, std::forward<F>(f), ts...);
     }
 
+    template <typename F, typename ... Ts>
+    bool traverse(std::string const& str, F && f, Ts const&... ts)
+    {
+        return detail::on_visit(
+            [](std::string const& str, F && f, Ts const&... ts)
+            {
+                detail::on_enter::call(f, str, ts...);
+            },
+            str, std::forward<F>(f), ts...);
+    }
+
+    template <typename F, typename ... Ts>
+    bool traverse(std::int64_t val, F && f, Ts const&... ts)
+    {
+        return detail::on_visit(
+            [](std::int64_t val, F && f, Ts const&... ts)
+            {
+                detail::on_enter::call(f, val, ts...);
+            },
+            val, std::forward<F>(f), ts...);
+    }
+
     template <typename F, typename... Ts>
     bool traverse(
         phylanx::ir::node_data<double> const& data, F&& f, Ts const&... ts)

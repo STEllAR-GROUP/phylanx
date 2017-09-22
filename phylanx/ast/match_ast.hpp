@@ -265,9 +265,9 @@ namespace phylanx { namespace ast
             std::list<operation>::const_iterator end)
         {
             // primary expression refers to an expression itself
-            if (pe.index() == 4)
+            if (pe.index() == 6)
             {
-                return extract_subexpression(util::get<4>(pe.get()).get(),
+                return extract_subexpression(util::get<6>(pe.get()).get(),
                     prec, it, end);
             }
 
@@ -311,8 +311,8 @@ namespace phylanx { namespace ast
 
         inline bool is_expression(primary_expr const& pe)
         {
-            return pe.index() == 4 &&
-                is_expression(util::get<4>(pe.get()).get());
+            return pe.index() == 6 &&
+                is_expression(util::get<6>(pe.get()).get());
         }
 
         inline bool is_expression(operand const& op)
@@ -332,8 +332,8 @@ namespace phylanx { namespace ast
 
         inline expression const& extract_expression(primary_expr const& pe)
         {
-            HPX_ASSERT(pe.index() == 4);
-            return extract_expression(util::get<4>(pe.get()).get());
+            HPX_ASSERT(pe.index() == 6);
+            return extract_expression(util::get<6>(pe.get()).get());
         }
 
         inline expression const& extract_expression(operand const& op)
