@@ -128,6 +128,10 @@ if(PHYLANX_WITH_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
+################################################################################
+# Targets related to Python (must come before tests)
+add_subdirectory(python)
+
 ###############################################################################
 # Tests
 if(PHYLANX_WITH_TESTS_BENCHMARKS OR PHYLANX_WITH_TESTS_REGRESSIONS OR PHYLANX_WITH_TESTS_UNIT)
@@ -153,10 +157,6 @@ if(PHYLANX_WITH_TESTS_BENCHMARKS OR PHYLANX_WITH_TESTS_REGRESSIONS OR PHYLANX_WI
   include_directories(tests)
   add_subdirectory(tests)
 endif()
-
-################################################################################
-# Targets related to Python
-add_subdirectory(python)
 
 # Configure phylanxrun.py
 configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/phylanxrun.py.in"

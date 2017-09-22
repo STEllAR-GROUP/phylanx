@@ -21,7 +21,7 @@ if (PYTHON_EXECUTABLE)
 
   set(PYTHON_PACKAGE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
   set(PYTHON_BINARY_BASE_DIR "${CMAKE_BINARY_DIR}")
-  set(PHYLANX_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/..")
+  set(PHYLANX_INSTALL_PATH "${CMAKE_BINARY_DIR}")
   set(HPX_INSTALL_PATH "${HPX_PREFIX}")
 
   if(WIN32)
@@ -72,3 +72,9 @@ if (PYTHON_EXECUTABLE)
   install(CODE
     "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${__setup_script} install)")
 endif()
+
+phylanx_get_python_extension_location(${PYTHON_MODULE_EXTENSION} _result)
+set(PHYLANX_PYTHON_EXTENSION_LOCATION ${_result} CACHE STRING
+    "Location of the staged python extension")
+mark_as_advanced(PHYLANX_PYTHON_EXTENSION_LOCATION)
+

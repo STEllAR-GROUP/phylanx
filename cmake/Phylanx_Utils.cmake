@@ -22,6 +22,7 @@ phylanx_include(
   CreateSymbolicLink
   ExportTargets
   ForceOutOfTreeBuild
+  GetPythonExtensionLocation
   IsTarget
   SetupCompilerFlags
   SetOutputPaths

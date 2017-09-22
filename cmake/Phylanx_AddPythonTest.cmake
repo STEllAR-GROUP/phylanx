@@ -5,7 +5,7 @@
 
 macro(add_phylanx_python_test category name)
   set(options FAILURE_EXPECTED)
-  set(one_value_args SCRIPT FOLDER)
+  set(one_value_args SCRIPT FOLDER WORKING_DIRECTORY)
   set(multi_value_args ARGS DEPENDS)
   cmake_parse_arguments(${name} "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
@@ -16,6 +16,11 @@ macro(add_phylanx_python_test category name)
   set(_depends)
   if(${name}_DEPENDS)
     set(_depends "${${name}_DEPENDS}")
+  endif()
+
+  set(_working_directory)
+  if(${name}_WORKING_DIRECTORY)
+    set(_working_directory WORKING_DIRECTORY ${${name}_WORKING_DIRECTORY})
   endif()
 
   set(script ${CMAKE_CURRENT_SOURCE_DIR}/${${name}_SCRIPT})
@@ -53,11 +58,14 @@ macro(add_phylanx_python_test category name)
     set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp.${name}")
     add_custom_command(OUTPUT ${OUTPUT} ${script}
       COMMAND ${cmd}
-      DEPENDS ${name}_test_py ${_depends})
+      COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
+      DEPENDS ${name}_test_py ${_depends}
+      ${_working_directory})
   else()
     add_test(
       NAME "${category}.${name}"
-      COMMAND ${cmd})
+      COMMAND ${cmd}
+      ${_working_directory})
   endif()
 
 endmacro()

@@ -34,7 +34,6 @@ set_target_properties(
     OUTPUT_NAME _phylanx
     FOLDER "Core")
 
-
 if(MSVC)
   set_target_properties(
     phylanx_py PROPERTIES
