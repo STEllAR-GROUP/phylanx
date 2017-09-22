@@ -8,8 +8,8 @@ set(subdirs
    )
 
 foreach(subdir ${subdirs})
-  add_phylanx_pseudo_target(tests.unit.python.${subdir})
+  add_phylanx_pseudo_target(tests.unit.python_${subdir})
   add_subdirectory(${subdir})
-  add_phylanx_pseudo_dependencies(tests.unit.python tests.unit.python.${subdir})
+  add_phylanx_pseudo_dependencies(tests.unit.python tests.unit.python_${subdir})
 endforeach()
 

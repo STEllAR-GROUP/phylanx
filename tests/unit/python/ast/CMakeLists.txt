@@ -15,11 +15,11 @@ foreach(test ${tests})
   add_phylanx_python_unit_test("ast" ${test}
     SCRIPT ${script}
     FOLDER "Tests/Python/Unit/AST"
-    DEPENDS python)
+    DEPENDS python_setup)
 
-  add_phylanx_pseudo_target(tests.unit.python.ast.${test}_py)
-  add_phylanx_pseudo_dependencies(tests.unit.python.ast tests.unit.python.ast.${test}_py)
-  add_phylanx_pseudo_dependencies(tests.unit.python.ast.${test}_py ${test}_test_py)
+  add_phylanx_pseudo_target(tests.unit.python_ast.${test}_py)
+  add_phylanx_pseudo_dependencies(tests.unit.python_ast tests.unit.python_ast.${test}_py)
+  add_phylanx_pseudo_dependencies(tests.unit.python_ast.${test}_py ${test}_test_py)
 
 endforeach()
 

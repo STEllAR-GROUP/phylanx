@@ -59,11 +59,11 @@ if (PYTHON_EXECUTABLE)
     COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
     DEPENDS ${DEPS} phylanx_py)
 
-  add_custom_target(python ALL
+  add_custom_target(python_setup ALL
     DEPENDS ${OUTPUT} ${__setup_script} ${DEPS} phylanx_py
     SOURCES ${setup_files})
 
-  set_target_properties(python
+  set_target_properties(python_setup
     PROPERTIES FOLDER "Core")
 
   source_group("Setup" FILES ${setup_files})
