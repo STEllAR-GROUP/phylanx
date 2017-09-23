@@ -8,7 +8,6 @@
 
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
-#include <phylanx/include/util.hpp>
 
 #include <iosfwd>
 
@@ -377,10 +376,6 @@ namespace phylanx { namespace ast
     std::ostream& operator<<(std::ostream& out, operand const& op)
     {
         out << "operand";
-        int ind = op.index();
-        if(ind == 1) {
-          auto ident = phylanx::util::get<1>(op.get());
-        }
         return out;
     }
 
@@ -398,11 +393,7 @@ namespace phylanx { namespace ast
 
     std::ostream& operator<<(std::ostream& out, expression const& expr)
     {
-        out << "expression ";
-        out << expr.first;
-        for(auto i=expr.rest.begin();i != expr.rest.end();++i) {
-          out << *i;
-        }
+        out << "expression";
         return out;
     }
 
