@@ -132,6 +132,12 @@ endif()
 # Targets related to Python (must come before tests)
 add_subdirectory(python)
 
+phylanx_export_targets(${phylanx_targets})
+
+foreach(target ${phylanx_targets})
+  add_phylanx_pseudo_dependencies(core ${target})
+endforeach()
+
 ###############################################################################
 # Tests
 if(PHYLANX_WITH_TESTS_BENCHMARKS OR PHYLANX_WITH_TESTS_REGRESSIONS OR PHYLANX_WITH_TESTS_UNIT)

@@ -15,31 +15,38 @@ macro(add_phylanx_python_test category name)
 
   set(_depends)
   if(${name}_DEPENDS)
-    set(_depends "${${name}_DEPENDS}")
+    if(MSVC)
+      set(_depends "${${name}_DEPENDS}")
+    else()
+      set(_depends DEPENDS "${${name}_DEPENDS}")
+    endif()
   endif()
+  phylanx_debug("add_phylanx_python_test (${name})" "DEPENDS: ${_depends}")
 
   set(_working_directory)
   if(${name}_WORKING_DIRECTORY)
     set(_working_directory WORKING_DIRECTORY ${${name}_WORKING_DIRECTORY})
   endif()
+  phylanx_debug("add_phylanx_python_test (${name})" "WORKING_DIRECTORY: ${_working_directory}")
 
   set(_environment)
   if(${name}_ENVIRONMENT)
     if(MSVC)
-      set(_environment ${CMAKE_COMMAND} -E env ${${name}_ENVIRONMENT})
+      set(_environment ${CMAKE_COMMAND} -E env "${${name}_ENVIRONMENT}")
     else()
-      set(_environment ENVIRONMENT ${${name}_ENVIRONMENT})
+      set(_environment ENVIRONMENT "${${name}_ENVIRONMENT}")
     endif()
   endif()
+  phylanx_debug("add_phylanx_python_test (${name})" "ENVIRONMENT: ${_environment}")
 
   set(script ${CMAKE_CURRENT_SOURCE_DIR}/${${name}_SCRIPT})
 
-  phylanx_debug("add_phylanx_python_test" "target name: ${${name}_SCRIPT}_test_py, script: ${script}")
+  phylanx_debug("add_phylanx_python_test (${name})" "target name: ${${name}_SCRIPT}_test_py, script: ${script}")
   add_custom_target(
     ${name}_test_py
     SOURCES ${script})
 
-  phylanx_debug("add_phylanx_python_test" "FOLDER: ${${name}_FOLDER}")
+  phylanx_debug("add_phylanx_python_test (${name})" "FOLDER: ${${name}_FOLDER}")
   if(${name}_FOLDER)
     set_target_properties(
       ${name}_test_py
@@ -54,7 +61,7 @@ macro(add_phylanx_python_test category name)
     set(expected "1")
   endif()
 
-#  set(args)
+  set(args)
 #  foreach(arg ${${name}_UNPARSED_ARGUMENTS})
 #    set(args ${args} "${arg}")
 #  endforeach()

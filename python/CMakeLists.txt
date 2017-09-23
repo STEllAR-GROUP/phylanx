@@ -13,10 +13,10 @@ if (PYTHON_EXECUTABLE)
   set(SETUP_PY_IN "${PROJECT_SOURCE_DIR}/cmake/templates/setup.py.in")
   set(INIT_PY_IN "${PROJECT_SOURCE_DIR}/cmake/templates/__init__.py.in")
 
-  set(INIT_PY ${CMAKE_CURRENT_SOURCE_DIR}/phylanx/__init__)
+  set(INIT_PY ${CMAKE_CURRENT_SOURCE_DIR}/phylanx/__init__.py)
   set(SETUP_PY ${CMAKE_CURRENT_BINARY_DIR}/setup)
 
-  set(DEPS ${INIT_PY}.py)
+  set(DEPS ${INIT_PY})
   set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
 
   set(PYTHON_PACKAGE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -49,7 +49,7 @@ if (PYTHON_EXECUTABLE)
     configure_file(${SETUP_PY_IN} "${SETUP_PY}_${__config}.py" @ONLY)
   endforeach()
 
-  configure_file(${INIT_PY_IN} "${INIT_PY}.py" @ONLY)
+  configure_file(${INIT_PY_IN} "${INIT_PY}" @ONLY)
 
   set(__setup_script "${SETUP_PY}_$<CONFIG>.py")
   set(setup_files ${SETUP_PY_IN} ${INIT_PY_IN})
@@ -60,7 +60,7 @@ if (PYTHON_EXECUTABLE)
     DEPENDS ${DEPS} phylanx_py)
 
   add_custom_target(python_setup ALL
-    DEPENDS ${OUTPUT} ${__setup_script} ${DEPS} phylanx_py
+    DEPENDS ${OUTPUT} ${__setup_script} ${DEPS}
     SOURCES ${setup_files})
 
   set_target_properties(python_setup
@@ -69,8 +69,9 @@ if (PYTHON_EXECUTABLE)
   source_group("Setup" FILES ${setup_files})
   set_source_files_properties(${setup_files} PROPERTIES HEADER_FILE_ONLY TRUE)
 
+  # for the install step it does not matter which setup.py we use
   install(CODE
-    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${__setup_script} install)")
+    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__config}.py install)")
 endif()
 
 phylanx_get_python_extension_location(${PYTHON_MODULE_EXTENSION} _result)
@@ -78,3 +79,4 @@ set(PHYLANX_PYTHON_EXTENSION_LOCATION ${_result} CACHE STRING
     "Location of the staged python extension")
 mark_as_advanced(PHYLANX_PYTHON_EXTENSION_LOCATION)
 
+set(phylanx_targets ${phylanx_targets} python_setup)
