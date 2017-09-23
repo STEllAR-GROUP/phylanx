@@ -1,0 +1,75 @@
+# Copyright (c) 2014 Thomas Heller
+# Copyright (c) 2015 Andreas Schäfer
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "@PHYLANX_CMAKE_MODULE_PATH@")
+include(Phylanx_Utils)
+
+function(phylanx_check_compiler_compatibility)
+  if(PHYLANX_IGNORE_COMPILER_COMPATIBILITY)
+    return()
+  endif()
+
+  if(NOT (${CMAKE_CXX_COMPILER_ID} STREQUAL ${PHYLANX_CXX_COMPILER_ID}
+     AND ${CMAKE_CXX_COMPILER_VERSION} STREQUAL ${PHYLANX_CXX_COMPILER_VERSION}))
+    set(MESSAGE "Compilers do not match. In order to compile PHYLANX application it is"
+        " recommended to use the same compiler as you did for PHYLANX. "
+        "PHYLANX_CXX_COMPILER=${PHYLANX_CXX_COMPILER}, "
+        "CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}. "
+        "PHYLANX_CXX_COMPILER_ID=${PHYLANX_CXX_COMPILER_ID}, "
+        "CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}. "
+        "To disable this message set PHYLANX_IGNORE_COMPILER_COMPATIBILITY to On."
+        )
+    if (PHYLANX_FIND_REQUIRED)
+      phylanx_error("${MESSAGE}")
+    else()
+      phylanx_warn("${MESSAGE}")
+      set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE "${MESSAGE}" PARENT_SCOPE)
+      set(${CMAKE_FIND_PACKAGE_NAME}_FOUND False PARENT_SCOPE)
+    endif()
+  endif()
+endfunction()
+
+function(phylanx_check_boost_compatibility)
+  if(PHYLANX_IGNORE_BOOST_COMPATIBILITY)
+    return()
+  endif()
+  if(NOT DEFINED BOOST_ROOT)
+    return()
+  endif()
+
+  # make sure paths are tested even if not string identical
+  get_filename_component(PATH1 ${PHYLANX_BOOST_ROOT} ABSOLUTE)
+  get_filename_component(PATH2 ${BOOST_ROOT} ABSOLUTE)
+
+  if(NOT PATH1 STREQUAL PATH2)
+    phylanx_error(
+        "The specified BOOST_ROOT differs from what has been used when"
+        " configuring and building PHYLANX. Please use the same Boost "
+        "versions. Phylanx' boost is ${PHYLANX_BOOST_ROOT} and user's is ${BOOST_ROOT}. "
+        "To disable this message set PHYLANX_IGNORE_BOOST_COMPATIBILITY On."
+    )
+  endif()
+endfunction()
+
+function(phylanx_setup_allocator)
+  if(PHYLANX_DISABLE_CUSTOM_ALLOCATOR)
+    return()
+  endif()
+  if(DEFINED PHYLANX_WITH_MALLOC)
+    string(TOUPPER "${PHYLANX_WITH_MALLOC}" PHYLANX_MALLOC_UPPER)
+    string(TOUPPER "${PHYLANX_WITH_MALLOC_DEFAULT}" PHYLANX_MALLOC_DEFAULT_UPPER)
+    if(NOT PHYLANX_MALLOC_UPPER STREQUAL PHYLANX_MALLOC_DEFAULT_UPPER)
+      phylanx_error(
+        "The specified allocators do not match. This Project is configured "
+        "with ${PHYLANX_WITH_MALLOC} and Phylanx was configured with "
+        "${PHYLANX_WITH_MALLOC_DEFAULT}.")
+    endif()
+  endif()
+  set(PHYLANX_WITH_MALLOC ${PHYLANX_WITH_MALLOC_DEFAULT} CACHE STRING
+    "Define which allocator should be linked in. Options are: "
+    "system, tcmalloc, jemalloc, tbbmalloc, and custom (default is: tcmalloc)")
+  include(PHYLANX_SetupAllocator)
+endfunction()
