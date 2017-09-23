@@ -16,7 +16,7 @@ if (PYTHON_EXECUTABLE)
   set(INIT_PY ${CMAKE_CURRENT_SOURCE_DIR}/phylanx/__init__)
   set(SETUP_PY ${CMAKE_CURRENT_BINARY_DIR}/setup)
 
-  set(DEPS ${INIT_PY})
+  set(DEPS ${INIT_PY}.py)
   set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
 
   set(PYTHON_PACKAGE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
