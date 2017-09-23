@@ -5,6 +5,7 @@
 
 set(tests
     add_operation
+    sub_operation
     file_primitives
     literal_value
    )
