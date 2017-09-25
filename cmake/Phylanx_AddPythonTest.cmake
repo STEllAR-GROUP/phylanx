@@ -72,11 +72,11 @@ macro(add_phylanx_python_test category name)
   set(cmd "${PYTHON_EXECUTABLE}" ${script} ${args})
   if(MSVC)
     set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp.${name}")
-    add_custom_command(OUTPUT ${OUTPUT} ${script}
-      COMMAND ${_environment} ${cmd}
-      COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
-      DEPENDS ${name}_test_py ${_depends}
-      ${_working_directory})
+#    add_custom_command(OUTPUT ${OUTPUT} ${script}
+#      COMMAND ${_environment} ${cmd}
+#      COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
+#      DEPENDS ${name}_test_py ${_depends}
+#      ${_working_directory})
   else()
     add_test(
       NAME "${category}.${name}"
