@@ -71,7 +71,7 @@ configure_it()
     ${alloc_opts} \
     -DHWLOC_ROOT=${hwloc_path} \
     -DCMAKE_INSTALL_PREFIX=. \
-    -DHPX_WITH_TOOLS=ON \
+    -DHPX_WITH_TOOLS=OFF \
     -DHPX_WITH_THREAD_IDLE_RATES=ON \
     -DHPX_WITH_PARCELPORT_MPI=OFF \
     -DHPX_WITH_PARCEL_COALESCING=OFF \
