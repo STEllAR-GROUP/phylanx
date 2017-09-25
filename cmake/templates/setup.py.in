@@ -50,6 +50,7 @@ class CopyBuildExt(build_ext):
         source_path = os.path.join(source_path, 'bin')
         source_path = os.path.join(source_path, filename)
 
+        print("copying {} -> {}".format(source_path, extdir))
         shutil.copyfile(source_path, os.path.join(extdir, filename))
 
 setup_args = {
