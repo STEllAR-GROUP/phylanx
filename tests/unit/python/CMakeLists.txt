@@ -5,16 +5,11 @@
 
 set(subdirs
     ast
-    config
-    execution_tree
-    ir
-#    python
-    util
    )
 
 foreach(subdir ${subdirs})
-  add_phylanx_pseudo_target(tests.unit.${subdir})
+  add_phylanx_pseudo_target(tests.unit.python_${subdir})
   add_subdirectory(${subdir})
-  add_phylanx_pseudo_dependencies(tests.unit tests.unit.${subdir})
+  add_phylanx_pseudo_dependencies(tests.unit.python tests.unit.python_${subdir})
 endforeach()
 

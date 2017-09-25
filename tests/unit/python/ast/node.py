@@ -3,16 +3,9 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-try:
-    # first try release version
-    import phylanx
-    import phylanx.ast as ast
-    import phylanx.util as util
-except Exception:
-    # then try debug version
-    import phylanxd as phylanx
-    import phylanxd.ast as ast
-    import phylanxd.util as util
+import phylanx
+import phylanx.ast as ast
+import phylanx.util as util
 
 ###############################################################################
 def test_serialization(in_ast):

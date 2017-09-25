@@ -10,25 +10,13 @@ if(MSVC)
 endif()
 
 add_phylanx_library_sources(phylanx_py
-  GLOB GLOBS "${PROJECT_SOURCE_DIR}/src/python/*.cpp")
+  GLOB GLOBS "${PROJECT_SOURCE_DIR}/python/src/*.cpp")
 
 add_phylanx_source_group(
   NAME phylanx_py
   CLASS "Source Files"
-  ROOT "${PROJECT_SOURCE_DIR}/src/python"
+  ROOT "${PROJECT_SOURCE_DIR}"
   TARGETS ${phylanx_SOURCES})
-
-if(MSVC)
-  # libphylanx_py headers
-  add_phylanx_library_headers(phylanx_py
-    GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/python/*.hpp")
-
-  add_phylanx_source_group(
-    NAME phylanx_py
-    CLASS "Header Files"
-    ROOT "${PROJECT_SOURCE_DIR}/phylanx/python"
-    TARGETS ${phylanx_HEADERS})
-endif()
 
 ###############################################################################
 pybind11_add_module(phylanx_py ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
@@ -43,7 +31,7 @@ set_target_properties(
     VERSION ${PHYLANX_VERSION}
     SOVERSION ${PHYLANX_SOVERSION}
     CLEAN_DIRECT_OUTPUT 1
-    OUTPUT_NAME phylanx
+    OUTPUT_NAME _phylanx
     FOLDER "Core")
 
 if(MSVC)

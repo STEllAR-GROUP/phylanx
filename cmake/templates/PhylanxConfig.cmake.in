@@ -1,0 +1,62 @@
+# Copyright (c) 2014 Thomas Heller
+# Copyright (c) 2015 Andreas Schaefer
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# include exported targets if not already defined
+if (NOT TARGET phylanx)
+  include("${CMAKE_CURRENT_LIST_DIR}/PhylanxTargets.cmake")
+endif()
+
+# include Phylanx cmake utilities
+include("${CMAKE_CURRENT_LIST_DIR}/PhylanxMacros.cmake")
+
+get_filename_component(_phylanx_root_dir "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+
+set(PHYLANX_INCLUDE_DIRS "@PHYLANX_CMAKE_CONF_INCLUDE_DIRS@")
+
+set(PHYLANX_LIBRARIES "@PHYLANX_CONF_LIBRARIES@")
+set(PHYLANX_LIBRARY_DIR "@PHYLANX_CONF_LIBRARY_DIR@")
+
+set(PHYLANX_VERSION_STRING "@PHYLANX_VERSION@")
+set(PHYLANX_MAJOR_VERSION @PHYLANX_MAJOR_VERSION@)
+set(PHYLANX_MINOR_VERSION @PHYLANX_MINOR_VERSION@)
+set(PHYLANX_PATCH_LEVEL   @PHYLANX_PATCH_LEVEL@)
+
+set(PHYLANX_PREFIX "${_phylanx_root_dir}")
+set(PHYLANX_DEBUG_POSTFIX "@PHYLANX_DEBUG_POSTFIX@")
+set(PHYLANX_BUILD_TYPE "@CMAKE_BUILD_TYPE@")
+
+set(PHYLANX_C_COMPILER "@CMAKE_C_COMPILER@" CACHE STRING "C compiler for PHYLANX")
+set(PHYLANX_C_COMPILER_ID "@CMAKE_C_COMPILER_ID@" CACHE STRING "C compiler id for PHYLANX")
+set(PHYLANX_C_COMPILER_VERSION "@CMAKE_C_COMPILER_VERSION@" CACHE STRING "C compiler version for PHYLANX")
+
+set(PHYLANX_CXX_COMPILER "@CMAKE_CXX_COMPILER@" CACHE STRING "CXX compiler for PHYLANX")
+set(PHYLANX_CXX_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@" CACHE STRING "CXX compiler id for PHYLANX")
+set(PHYLANX_CXX_COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@" CACHE STRING "CXX compiler version for PHYLANX")
+
+set(PHYLANX_BOOST_ROOT "@HPX_BOOST_ROOT@")
+set(PHYLANX_BOOST_LIBRARIES "@HPX_BOOST_LIBRARIES@")
+
+set(PHYLANX_WITH_PSEUDO_DEPENDENCIES @PHYLANX_WITH_PSEUDO_DEPENDENCIES@)
+set(PHYLANX_WITH_MALLOC_DEFAULT @PHYLANX_WITH_MALLOC@)
+
+if(NOT PHYLANX_CMAKE_LOGLEVEL)
+  set(PHYLANX_CMAKE_LOGLEVEL "WARN")
+endif()
+
+if(NOT LIB)
+  set(LIB "lib")
+endif()
+
+enable_language(C)
+
+phylanx_check_compiler_compatibility()
+phylanx_check_boost_compatibility()
+phylanx_setup_allocator()
+
+if(NOT DEFINED ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+  set(${CMAKE_FIND_PACKAGE_NAME}_FOUND true)
+endif()
+

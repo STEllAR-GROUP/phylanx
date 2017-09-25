@@ -137,9 +137,9 @@ namespace phylanx { namespace bindings
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(_DEBUG)
-PYBIND11_MODULE(phylanxd, m)
+PYBIND11_MODULE(_phylanxd, m)
 #else
-PYBIND11_MODULE(phylanx, m)
+PYBIND11_MODULE(_phylanx, m)
 #endif
 {
     m.doc() = "Phylanx plugin module";

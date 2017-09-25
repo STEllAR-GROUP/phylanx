@@ -1,0 +1,43 @@
+# Copyright (c) 2017 Hartmut Kaiser
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+PHYLANX_INSTALL_PATH = '@PHYLANX_INSTALL_PATH@'
+HPX_INSTALL_PATH = '@HPX_INSTALL_PATH@'
+
+import os
+import sys
+import platform
+
+sys.path.append(os.path.dirname(__file__))
+pathenv = os.environ['PATH']
+
+def add_to_environ(path, pathenv):
+    return '{}{}{}'.format(path, os.pathsep, pathenv)
+
+try:
+    if platform.system() == "Windows":
+        phylanx_bindir = PHYLANX_INSTALL_PATH + '\\RelWithDebInfo\\bin'
+        hpx_bindir = HPX_INSTALL_PATH + '\\RelWithDebInfo\\bin'
+    else:
+        phylanx_bindir = PHYLANX_INSTALL_PATH + '/lib'
+        hpx_bindir = HPX_INSTALL_PATH + '/lib'
+
+    os.environ['PATH'] = add_to_environ(phylanx_bindir, pathenv)
+    os.environ['PATH'] = add_to_environ(hpx_bindir, os.environ['PATH'])
+
+    from _phylanx import *
+
+except Exception:
+    if platform.system() == "Windows":
+        phylanx_bindir = PHYLANX_INSTALL_PATH + '\\Debug\\bin'
+        hpx_bindir = HPX_INSTALL_PATH + '\\Debug\\bin'
+    else:
+        phylanx_bindir= PHYLANX_INSTALL_PATH + '/lib'
+        hpx_bindir = HPX_INSTALL_PATH + '/lib'
+
+    os.environ['PATH'] = add_to_environ(phylanx_bindir, pathenv)
+    os.environ['PATH'] = add_to_environ(hpx_bindir, os.environ['PATH'])
+
+    from _phylanxd import *

@@ -113,11 +113,11 @@ namespace phylanx { namespace ir
 
         node_data(dimensions_type const& dims)
         {
-            if (dims[1] != 0)
+            if (dims[1] != 1)
             {
                 data_ = constant_type::Constant(dims[0], dims[1]);
             }
-            else if (dims[0] != 0)
+            else if (dims[0] != 1)
             {
                 data_ = constant_type::Constant(dims[0], 1);
             }
@@ -129,11 +129,11 @@ namespace phylanx { namespace ir
 
         node_data(dimensions_type const& dims, T default_value)
         {
-            if (dims[1] != 0)
+            if (dims[1] != 1)
             {
                 data_ = constant_type::Constant(dims[0], dims[1], default_value);
             }
-            else if (dims[0] != 0)
+            else if (dims[0] != 1)
             {
                 data_ = constant_type::Constant(dims[0], 1, default_value);
             }
