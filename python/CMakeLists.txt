@@ -41,18 +41,18 @@ if (PYTHON_EXECUTABLE)
     set(__configs ${CMAKE_CONFIGURATION_TYPES})
   endif()
   foreach (__config ${__configs})
-    set(CONFIG ${__config})
-    if(${__config} STREQUAL "Debug")
+    set(CONFIG ${__configs})
+    if(${__configs} STREQUAL "Debug")
       set(PYTHON_PACKAGE_NAME "_phylanxd")
     else()
       set(PYTHON_PACKAGE_NAME "_phylanx")
     endif()
-    configure_file(${SETUP_PY_IN} "${SETUP_PY}_${__config}.py" @ONLY)
+    configure_file(${SETUP_PY_IN} "${SETUP_PY}_${__configs}.py" @ONLY)
   endforeach()
 
   configure_file(${INIT_PY_IN} "${INIT_PY}" @ONLY)
 
-  set(__setup_script "${SETUP_PY}_$<CONFIG>.py")
+  set(__setup_script "${SETUP_PY}_${__configs}.py")
   set(setup_files ${SETUP_PY_IN} ${INIT_PY_IN})
 
   add_custom_command(OUTPUT ${OUTPUT}
@@ -72,7 +72,7 @@ if (PYTHON_EXECUTABLE)
 
   # for the install step it does not matter which setup.py we use
   install(CODE
-    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__config}.py install)")
+    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__configs}.py install --user)")
 endif()
 
 phylanx_get_python_extension_location(${PYTHON_MODULE_EXTENSION} _result)
