@@ -41,38 +41,41 @@ if (PYTHON_EXECUTABLE)
     set(__configs ${CMAKE_CONFIGURATION_TYPES})
   endif()
   foreach (__config ${__configs})
-    set(CONFIG ${__configs})
-    if(${__configs} STREQUAL "Debug")
+    set(CONFIG ${__config})
+    if(${__config} STREQUAL "Debug")
       set(PYTHON_PACKAGE_NAME "_phylanxd")
     else()
       set(PYTHON_PACKAGE_NAME "_phylanx")
     endif()
-    configure_file(${SETUP_PY_IN} "${SETUP_PY}_${__configs}.py" @ONLY)
+    configure_file(${SETUP_PY_IN} "${SETUP_PY}_${__config}.py" @ONLY)
   endforeach()
 
   configure_file(${INIT_PY_IN} "${INIT_PY}" @ONLY)
 
-  set(__setup_script "${SETUP_PY}_${__configs}.py")
-  set(setup_files ${SETUP_PY_IN} ${INIT_PY_IN})
 
-  add_custom_command(OUTPUT ${OUTPUT}
-    COMMAND ${PYTHON_EXECUTABLE} ${__setup_script} build
-    COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
-    DEPENDS ${DEPS} phylanx_py)
+  foreach (__config ${__configs})
+    set(__setup_script "${SETUP_PY}_${__config}.py")
+    set(setup_files ${SETUP_PY_IN} ${INIT_PY_IN})
 
-  add_custom_target(python_setup ALL
-    DEPENDS ${OUTPUT} ${__setup_script} ${DEPS}
-    SOURCES ${setup_files})
+    add_custom_command(OUTPUT ${OUTPUT}
+      COMMAND ${PYTHON_EXECUTABLE} ${__setup_script} build 
+      COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
+      DEPENDS ${DEPS} phylanx_py)
 
-  set_target_properties(python_setup
-    PROPERTIES FOLDER "Core")
+    add_custom_target(python_setup ALL
+      DEPENDS ${OUTPUT} ${__setup_script} ${DEPS}
+      SOURCES ${setup_files})
 
-  source_group("Setup" FILES ${setup_files})
-  set_source_files_properties(${setup_files} PROPERTIES HEADER_FILE_ONLY TRUE)
+    set_target_properties(python_setup
+      PROPERTIES FOLDER "Core")
 
-  # for the install step it does not matter which setup.py we use
-  install(CODE
-    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__configs}.py install --user)")
+    source_group("Setup" FILES ${setup_files})
+    set_source_files_properties(${setup_files} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+    # for the install step it does not matter which setup.py we use
+    install(CODE
+      "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__config}.py install --user)")
+  endforeach()
 endif()
 
 phylanx_get_python_extension_location(${PYTHON_MODULE_EXTENSION} _result)
