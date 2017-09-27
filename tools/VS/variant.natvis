@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (c) 2017 Hartmut Kaiser                                      -->
+
+<!-- Use, modification and distribution are subject to the Boost Software   -->
+<!-- License, Version 1.0. (See accompanying file LICENSE_1_0.txt           -->
+<!-- or copy at http://www.boost.org/LICENSE_1_0.txt)                       -->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="mpark::variant&lt;*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{_impl.data_.head_.value}"</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  3)">{impl_.data_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[3]]" Condition="(impl_.index_ ==  3)">impl_.data_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  3)">{impl_.data_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  4)">{impl_.data_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[3]]" Condition="(impl_.index_ ==  3)">impl_.data_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[4]]" Condition="(impl_.index_ ==  4)">impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*,*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  3)">{impl_.data_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  4)">{impl_.data_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  5)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[3]]" Condition="(impl_.index_ ==  3)">impl_.data_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[4]]" Condition="(impl_.index_ ==  4)">impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[5]]" Condition="(impl_.index_ ==  5)">impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*,*,*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  3)">{impl_.data_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  4)">{impl_.data_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  5)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  6)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[3]]" Condition="(impl_.index_ ==  3)">impl_.data_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[4]]" Condition="(impl_.index_ ==  4)">impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[5]]" Condition="(impl_.index_ ==  5)">impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[6]]" Condition="(impl_.index_ ==  6)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*,*,*,*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  3)">{impl_.data_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  4)">{impl_.data_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  5)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  6)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  7)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[3]]" Condition="(impl_.index_ ==  3)">impl_.data_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[4]]" Condition="(impl_.index_ ==  4)">impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[5]]" Condition="(impl_.index_ ==  5)">impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[6]]" Condition="(impl_.index_ ==  6)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[7]]" Condition="(impl_.index_ ==  7)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*,*,*,*,*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  3)">{impl_.data_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  4)">{impl_.data_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  5)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  6)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  7)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  8)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[3]]" Condition="(impl_.index_ ==  3)">impl_.data_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[4]]" Condition="(impl_.index_ ==  4)">impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[5]]" Condition="(impl_.index_ ==  5)">impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[6]]" Condition="(impl_.index_ ==  6)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[7]]" Condition="(impl_.index_ ==  7)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[8]]" Condition="(impl_.index_ ==  8)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="mpark::variant&lt;*,*,*,*,*,*,*,*,*,*&gt;">
+        <DisplayString Condition="(impl_.index_ ==  0)">{impl_.data_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  1)">{impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  2)">{impl_.data_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  3)">{impl_.data_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  4)">{impl_.data_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  5)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  6)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  7)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  8)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(impl_.index_ ==  9)">{impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value}</DisplayString>
+        <Expand>
+            <Item Name="[data[0]]" Condition="(impl_.index_ ==  0)">impl_.data_.head_.value</Item>
+            <Item Name="[data[1]]" Condition="(impl_.index_ ==  1)">impl_.data_.tail_.head_.value</Item>
+            <Item Name="[data[2]]" Condition="(impl_.index_ ==  2)">impl_.data_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[3]]" Condition="(impl_.index_ ==  3)">impl_.data_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[4]]" Condition="(impl_.index_ ==  4)">impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[5]]" Condition="(impl_.index_ ==  5)">impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[6]]" Condition="(impl_.index_ ==  6)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[7]]" Condition="(impl_.index_ ==  7)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[8]]" Condition="(impl_.index_ ==  8)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[data[9]]" Condition="(impl_.index_ ==  9)">impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+</AutoVisualizer>
+

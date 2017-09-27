@@ -119,6 +119,7 @@ namespace phylanx { namespace util
         }
     };
 
+    ///////////////////////////////////////////////////////////////////////////
     // Swaps two recursive_wrapper<T> objects of the same type T.
     template <typename T>
     inline void swap(
@@ -140,6 +141,13 @@ namespace phylanx { namespace util
         recursive_wrapper<T> const& lhs, recursive_wrapper<T> const& rhs)
     {
         return !(lhs == rhs);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    std::ostream& operator<<(std::ostream& os, recursive_wrapper<T> const& val)
+    {
+        return os << val.get();
     }
 }}
 

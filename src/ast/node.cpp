@@ -7,11 +7,92 @@
 #include <phylanx/ast/node.hpp>
 
 #include <hpx/include/serialization.hpp>
+#include <hpx/include/util.hpp>
 
 #include <iosfwd>
 
 namespace phylanx { namespace ast
 {
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        static constexpr int const precedence[] =
+        {
+            // precedence 1
+            1, // op_comma
+
+            // precedence 2
+            2, // op_assign
+            2, // op_plus_assign
+            2, // op_minus_assign
+            2, // op_times_assign
+            2, // op_divide_assign
+            2, // op_mod_assign
+            2, // op_bit_and_assign
+            2, // op_bit_xor_assign
+            2, // op_bitor_assign
+            2, // op_shift_left_assign
+            2, // op_shift_right_assign
+
+            // precedence 3
+            3, // op_logical_or
+
+            // precedence 4
+            4, // op_logical_and
+
+            // precedence 5
+            5, // op_bit_or
+
+            // precedence 6
+            6, // op_bit_xor
+
+            // precedence 7
+            7, // op_bit_and
+
+            // precedence 8
+            8, // op_equal
+            8, // op_not_equal
+
+            // precedence 9
+            9, // op_less
+            9, // op_less_equal
+            9, // op_greater
+            9, // op_greater_equal
+
+            // precedence 10
+            10, // op_shift_left
+            10, // op_shift_right
+
+            // precedence 11
+            11, // op_plus
+            11, // op_minus
+
+            // precedence 12
+            12, // op_times
+            12, // op_divide
+            12, // op_mod
+
+            // precedence 13
+            13, // op_positive
+            13, // op_negative
+            13, // op_pre_incr
+            13, // op_pre_decr
+            13, // op_compl
+            13, // op_not
+
+            // precedence 14
+            14, // op_post_incr
+            14  // op_post_decr
+        };
+    }
+
+    int precedence_of(optoken t)
+    {
+        int op = static_cast<int>(t);
+        HPX_ASSERT(op >= 0 && op < static_cast<int>(optoken::op_unknown) -1);
+        return detail::precedence[op];
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     void serialize(hpx::serialization::input_archive& ar, optoken& id, unsigned)
     {
@@ -196,10 +277,8 @@ namespace phylanx { namespace ast
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        char const* const optoken_names[] =
+        static constexpr char const* const optoken_names[] =
         {
-            "op_unknown",
-
             // precedence 1
             "op_comma",
 
@@ -265,6 +344,8 @@ namespace phylanx { namespace ast
             // precedence 14
             "op_post_incr",
             "op_post_decr",
+
+            "op_unknown",
         };
     }
 

@@ -1,0 +1,80 @@
+# Copyright (c) 2017 Hartmut Kaiser
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# partially taken from http://www.benjack.io/2017/06/12/python-cpp-tests.html
+
+# @ADDITIONAL_COMMENT@
+
+import os
+import platform
+import sys
+import shutil
+
+try:
+    from setuptools import setup, Extension
+    from setuptools.command.build_ext import build_ext
+except ImportError:
+    from distutils.core import setup, Extension
+    from distutils.command.build_ext import build_ext
+
+# enable this to see more output from distutils
+#os.environ["DISTUTILS_DEBUG"] = "1"
+
+class CopyExtension(Extension):
+    def __init__(self, name, source_dir='', binary_base_dir=''):
+        Extension.__init__(self, name, sources=[])
+        self.source_dir = os.path.abspath(source_dir)
+        self.binary_base_dir = os.path.abspath(binary_base_dir)
+
+class CopyBuildExt(build_ext):
+    def __init__(self, *args, **kwargs):
+        build_ext.__init__(self, *args, **kwargs)
+        self.build_type = '@CONFIG@'
+
+    def build_extension(self, ext):
+
+        fullpath = self.get_ext_fullpath(ext.name)
+        filename = self.get_ext_filename(ext.name)
+
+        extdir = os.path.abspath(os.path.dirname(fullpath))
+
+        extdir = os.path.join(extdir, 'phylanx')
+        if not os.path.exists(extdir):
+            os.make_dirs(extdir)
+
+        source_path = ext.binary_base_dir
+        if platform.system() == "Windows":
+            source_path = os.path.join(source_path, self.build_type)
+        source_path = os.path.join(source_path, 'bin')
+        source_path = os.path.join(source_path, filename)
+
+        print("copying {} -> {}".format(source_path, extdir))
+        shutil.copyfile(source_path, os.path.join(extdir, filename))
+
+setup_args = {
+    'name' : 'phylanx',
+    'version' : '@PHYLANX_VERSION@',
+    'author' : 'The STE||AR Group',
+    'author_email' : 'phylanx@stellar-group.org',
+    'url' : 'phylanx.stellar-group.org',
+    'description' : 'A Python wrapper for the Phylanx execution engine',
+    'long_description' : '',
+    'packages' : ['phylanx', 'phylanx.ast', 'phylanx.util'],
+    'package_dir' : { '' : '@PYTHON_PACKAGE_BASE_DIR@' },
+    'ext_modules' : [
+        CopyExtension('@PYTHON_PACKAGE_NAME@',
+            '@PYTHON_PACKAGE_BASE_DIR@',
+            '@PYTHON_BINARY_BASE_DIR@')
+    ],
+    'cmdclass' : {
+        'build_ext' : CopyBuildExt
+    },
+    'platforms' : 'All',
+    'zip_safe' : False,
+    'license' : 'Boost Software License, Version 1.0 (http://www.boost.org/LICENSE_1_0.txt)'
+}
+
+setup(**setup_args)
+

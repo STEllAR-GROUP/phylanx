@@ -6,8 +6,9 @@
 set(subdirs
     ast
     config
+    execution_tree
     ir
-    primitives
+    python
     util
    )
 

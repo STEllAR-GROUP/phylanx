@@ -29,12 +29,43 @@ struct traverse_ast
     std::stringstream& strm_;
 };
 
+struct traverse_ast_enter_exit
+{
+    traverse_ast_enter_exit(std::stringstream& strm)
+      : strm_(strm)
+    {
+    }
+
+    template <typename T, typename ... Ts>
+    bool on_enter(T && val, Ts const&... ts) const
+    {
+        strm_ << val << '\n';
+        return true;
+    }
+
+    template <typename T, typename ... Ts>
+    bool on_exit(T && val, Ts const&... ts) const
+    {
+        return true;
+    }
+
+    std::stringstream& strm_;
+};
+
 void test_expression(std::string const& expr, std::string const& expected)
 {
-    phylanx::ast::expression ast = phylanx::ast::generate_ast(expr);
-    std::stringstream strm;
-    phylanx::ast::traverse(ast, traverse_ast{strm});
-    HPX_TEST_EQ(strm.str(), expected);
+    {
+        phylanx::ast::expression ast = phylanx::ast::generate_ast(expr);
+        std::stringstream strm;
+        phylanx::ast::traverse(ast, traverse_ast{strm});
+        HPX_TEST_EQ(strm.str(), expected);
+    }
+    {
+        phylanx::ast::expression ast = phylanx::ast::generate_ast(expr);
+        std::stringstream strm;
+        phylanx::ast::traverse(ast, traverse_ast_enter_exit{strm});
+        HPX_TEST_EQ(strm.str(), expected);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -42,24 +73,40 @@ int main(int argc, char* argv[])
     test_expression(
         "A + B",
         "expression\n"
-                    "identifier: A\n"
-            "operation\n"
-                "op_plus\n"
-                    "identifier: B\n"
+            "identifier: A\n"
+            "identifier: B\n"
+            "op_plus\n"
     );
 
     test_expression(
         "A + B + -C",
         "expression\n"
-                    "identifier: A\n"
-            "operation\n"
-                "op_plus\n"
-                    "identifier: B\n"
-            "operation\n"
-                "op_plus\n"
-                "unary_expr\n"
-                    "op_negative\n"
-                            "identifier: C\n"
+            "identifier: A\n"
+            "identifier: B\n"
+            "op_plus\n"
+            "identifier: C\n"
+            "op_negative\n"
+            "op_plus\n"
+    );
+
+    test_expression(
+        "A + B * C",
+        "expression\n"
+            "identifier: A\n"
+            "identifier: B\n"
+            "identifier: C\n"
+            "op_times\n"
+            "op_plus\n"
+    );
+
+    test_expression(
+        "A * B + C",
+        "expression\n"
+            "identifier: A\n"
+            "identifier: B\n"
+            "op_times\n"
+            "identifier: C\n"
+            "op_plus\n"
     );
 
     test_expression(
@@ -72,6 +119,11 @@ int main(int argc, char* argv[])
                 "expression\n"
                     "identifier: B\n"
     );
+
+    test_expression(
+        "\"test\"",
+        "expression\n"
+            "test\n");
 
     return hpx::util::report_errors();
 }

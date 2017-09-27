@@ -4,9 +4,6 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 ################################################################################
-add_subdirectory(python)
-
-################################################################################
 set(phylanx_SOURCES "" CACHE INTERNAL "Sources for libphylanx." FORCE)
 if(MSVC)
   set(phylanx_HEADERS "" CACHE INTERNAL "Headers for libphylanx." FORCE)
@@ -22,7 +19,7 @@ add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/ast/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
-  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/primitives/*.cpp"
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/execution_tree/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/util/*.cpp"
@@ -48,7 +45,7 @@ if(MSVC)
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ir/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
-    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/primitives/*.hpp"
+    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
     GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/util/*.hpp"
@@ -62,11 +59,32 @@ if(MSVC)
     CLASS "Header Files"
     ROOT "${PROJECT_SOURCE_DIR}/phylanx"
     TARGETS ${phylanx_HEADERS})
+
+  # add natvis files to solution (supported starting VS2015)
+  if(MSVC14)
+    add_phylanx_library_sources(natvis_files
+      GLOB GLOBS "${PROJECT_SOURCE_DIR}/tools/VS/*.natvis")
+    set(phylanx_external_OBJECTS
+        ${phylanx_external_OBJECTS}
+        ${natvis_files_SOURCES})
+    source_group("Natvis Files" FILES ${natvis_files_SOURCES})
+  endif()
+
 endif()
 
 ################################################################################
 # create main module
-add_hpx_component(phylanx SHARED ${phylanx_SOURCES} ${phylanx_HEADERS})
+if(phylanx_external_OBJECTS)
+  add_hpx_component(phylanx SHARED
+    SOURCES ${phylanx_SOURCES}
+    HEADERS ${phylanx_HEADERS}
+    AUXILIARY ${phylanx_external_OBJECTS})
+else()
+  add_hpx_component(phylanx SHARED
+    SOURCES ${phylanx_SOURCES}
+    HEADERS ${phylanx_HEADERS})
+endif()
+
 
 target_link_libraries(phylanx_component ${HPX_LIBRARIES})
 
@@ -92,8 +110,3 @@ install(
   COMPONENT runtime
   OPTIONAL)
 
-phylanx_export_targets(${phylanx_targets})
-
-foreach(target ${phylanx_targets})
-  add_phylanx_pseudo_dependencies(core ${target})
-endforeach()
