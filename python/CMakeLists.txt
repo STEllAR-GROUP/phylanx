@@ -53,7 +53,6 @@ if (PYTHON_EXECUTABLE)
   configure_file(${INIT_PY_IN} "${INIT_PY}" @ONLY)
 
 
-  set(last_config EMPTY)
   foreach (__config ${__configs})
     set(__setup_script "${SETUP_PY}_${__config}.py")
     set(setup_files ${SETUP_PY_IN} ${INIT_PY_IN})
@@ -73,12 +72,11 @@ if (PYTHON_EXECUTABLE)
     source_group("Setup" FILES ${setup_files})
     set_source_files_properties(${setup_files} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-    set(last_config ${__config})
+    # for the install step it does not matter which setup.py we use
+    install(CODE
+      "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__config}.py install --user)")
+    break()
   endforeach()
-
-  # for the install step it does not matter which setup.py we use
-  install(CODE
-    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${last_config}.py install --user)")
 endif()
 
 phylanx_get_python_extension_location(${PYTHON_MODULE_EXTENSION} _result)
