@@ -30,14 +30,27 @@ try:
     from _phylanx import *
 
 except Exception:
-    if platform.system() == "Windows":
-        phylanx_bindir = PHYLANX_INSTALL_PATH + '\\Debug\\bin'
-        hpx_bindir = HPX_INSTALL_PATH + '\\Debug\\bin'
-    else:
-        phylanx_bindir= PHYLANX_INSTALL_PATH + '/lib'
-        hpx_bindir = HPX_INSTALL_PATH + '/lib'
 
-    os.environ['PATH'] = add_to_environ(phylanx_bindir, pathenv)
-    os.environ['PATH'] = add_to_environ(hpx_bindir, os.environ['PATH'])
+    try:
+        if platform.system() == "Windows":
+            phylanx_bindir = PHYLANX_INSTALL_PATH + '\\Debug\\bin'
+            hpx_bindir = HPX_INSTALL_PATH + '\\Debug\\bin'
+        else:
+            phylanx_bindir= PHYLANX_INSTALL_PATH + '/lib'
+            hpx_bindir = HPX_INSTALL_PATH + '/lib'
 
-    from _phylanxd import *
+        os.environ['PATH'] = add_to_environ(phylanx_bindir, pathenv)
+        os.environ['PATH'] = add_to_environ(hpx_bindir, os.environ['PATH'])
+
+        from _phylanxd import *
+
+    except Exception as e:
+
+        print("Couldn't load _phylanx(d) extension module: ", str(e))
+        print("sys.path: ", sys.path)
+        print("os.environ['PATH']: ", os.environ['PATH'])
+        print("phylanx_bindir: ", phylanx_bindir)
+        print("hpx_bindir: ", hpx_bindir)
+
+        sys.exit(1)
+

@@ -15,7 +15,7 @@ foreach(test ${tests})
   add_phylanx_python_unit_test("ast" ${test}
     SCRIPT ${script}
     FOLDER "Tests/Python/Unit/AST"
-    DEPENDS python_setup
+    DEPENDS phylanx_py python_setup
     WORKING_DIRECTORY ${PHYLANX_PYTHON_EXTENSION_LOCATION}
     ENVIRONMENT "PYTHONPATH=${PHYLANX_PYTHON_EXTENSION_LOCATION}")
 

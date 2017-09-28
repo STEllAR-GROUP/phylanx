@@ -8,7 +8,7 @@ set(subdirs
     config
     execution_tree
     ir
-#    python
+    python
     util
    )
 

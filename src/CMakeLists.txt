@@ -110,8 +110,3 @@ install(
   COMPONENT runtime
   OPTIONAL)
 
-phylanx_export_targets(${phylanx_targets})
-
-foreach(target ${phylanx_targets})
-  add_phylanx_pseudo_dependencies(core ${target})
-endforeach()
