@@ -10,14 +10,13 @@
 #include <hpx/include/serialization.hpp>
 
 #include <cstddef>
-#include <vector>
 #include <sstream>
+#include <vector>
 
-namespace phylanx { namespace util
-{
+namespace phylanx {
+namespace util {
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
+    namespace detail {
         template <typename Ast>
         std::vector<char> serialize(Ast const& input)
         {
@@ -81,8 +80,7 @@ namespace phylanx { namespace util
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
+    namespace detail {
         template <typename Ast>
         void unserialize_helper(std::vector<char> const& input, Ast& ast)
         {
@@ -131,7 +129,8 @@ namespace phylanx { namespace util
             detail::unserialize_helper(input, ast);
         }
 
-        void unserialize(std::vector<char> const& input, ast::function_call& ast)
+        void unserialize(
+            std::vector<char> const& input, ast::function_call& ast)
         {
             detail::unserialize_helper(input, ast);
         }
@@ -146,136 +145,164 @@ namespace phylanx { namespace util
 
     // You cannot add to expression.rest unless you
     // use this function. Note sure why.
-    void append_operation(ast::expression& ast,ast::operation const& o) {
-      ast.rest.push_back(o);
+    void append_operation(ast::expression& ast, ast::operation const& o)
+    {
+        ast.rest.push_back(o);
     }
 
     namespace detail {
-      template<typename Ast>
-      std::string stringify(Ast const& ast);
+        template <typename Ast>
+        std::string stringify(Ast const& ast);
 
-      struct ast_stringify_visitor 
-      {
-          mutable std::string out;
+        struct ast_stringify_visitor
+        {
+            mutable std::string out;
 
-          template <typename Ast>
-          bool operator()(Ast const& ast) const
-          {
-            out = stringify<Ast>(ast);
-            return true;
-          }
-
-      };
+            template <typename Ast>
+            bool operator()(Ast const& ast) const
+            {
+                out = stringify<Ast>(ast);
+                return true;
+            }
+        };
     }
 
-    std::string stringify_expression(ast::expression const & ast) {
-      std::ostringstream txt;
-      txt << "(";
-      txt << stringify_operand(ast.first);
-      for(auto r = ast.rest.begin(); r != ast.rest.end(); ++r) {
-        txt << ' ';
-        txt << stringify_operation(*r);
-      }
-      txt << ")";
-      return txt.str();
+    std::string stringify_expression(ast::expression const& ast)
+    {
+        std::ostringstream txt;
+        txt << "(";
+        txt << stringify_operand(ast.first);
+        for (auto r = ast.rest.begin(); r != ast.rest.end(); ++r)
+        {
+            txt << ' ';
+            txt << stringify_operation(*r);
+        }
+        txt << ")";
+        return txt.str();
     }
-    std::string stringify_identifier(ast::identifier const & ast) {
-      std::ostringstream m;
-      m << "indent(" << ast.name << ")";
-      return m.str();
+    std::string stringify_identifier(ast::identifier const& ast)
+    {
+        std::ostringstream m;
+        m << "indent(" << ast.name << ")";
+        return m.str();
     }
-    std::string stringify_operand(ast::operand const & ast) {
-      detail::ast_stringify_visitor p;
-      visit(p,ast.get());
-      return p.out;
+    std::string stringify_operand(ast::operand const& ast)
+    {
+        detail::ast_stringify_visitor p;
+        visit(p, ast.get());
+        return p.out;
     }
-    std::string stringify_operation(ast::operation const & ast) {
-      std::string out;
-      out += stringify_optoken(ast.operator_);
-      out += ' ';
-      out += stringify_operand(ast.operand_);
-      return out;
+    std::string stringify_operation(ast::operation const& ast)
+    {
+        std::string out;
+        out += stringify_optoken(ast.operator_);
+        out += ' ';
+        out += stringify_operand(ast.operand_);
+        return out;
     }
-    std::string stringify_optoken(ast::optoken st) {
-      switch(st) {
+    std::string stringify_optoken(ast::optoken st)
+    {
+        switch (st)
+        {
         case ast::optoken::op_plus:
-          return "+";
+            return "+";
         case ast::optoken::op_negative:
         case ast::optoken::op_minus:
-          return "-";
+            return "-";
         case ast::optoken::op_times:
-          return "*";
-      }
-      std::ostringstream m;
-      m  << "optoken(" <<  st << ")";
-      return m.str();
+            return "*";
+        }
+        std::ostringstream m;
+        m << "optoken(" << st << ")";
+        return m.str();
     }
 
-    std::string stringify_primary_expr(ast::primary_expr const & ast) {
-      detail::ast_stringify_visitor p;
-      visit(p,ast.get());
-      return p.out;
+    std::string stringify_primary_expr(ast::primary_expr const& ast)
+    {
+        detail::ast_stringify_visitor p;
+        visit(p, ast.get());
+        return p.out;
     }
-    std::string stringify_unary_expr(ast::unary_expr const & ast) {
-      std::string out;
-      out += stringify_optoken(ast.operator_);
-      out += stringify_operand(ast.operand_);
-      return out;
+    std::string stringify_unary_expr(ast::unary_expr const& ast)
+    {
+        std::string out;
+        out += stringify_optoken(ast.operator_);
+        out += stringify_operand(ast.operand_);
+        return out;
     }
 
     namespace detail {
-      template<>
-      std::string stringify(bool const & b) {
-        return b ? "T" : "F";
-      }
+        template <>
+        std::string stringify(bool const& b)
+        {
+            return b ? "T" : "F";
+        }
 
-      template<>
-      std::string stringify(long const & lg) {
-        std::ostringstream m;
-        m << lg;
-        return m.str();
-      }
+        template <>
+        std::string stringify(long const& lg)
+        {
+            std::ostringstream m;
+            m << lg;
+            return m.str();
+        }
 
-      template<>
-      std::string stringify(std::string const & s) {
-        return s;
-      }
+        template <>
+        std::string stringify(std::string const& s)
+        {
+            return s;
+        }
 
-      template<>
-      std::string stringify(ast::nil const & n) {
-        return "";
-      }
+        template <>
+        std::string stringify(ast::nil const& n)
+        {
+            return "";
+        }
 
-      template<>
-      std::string stringify(phylanx::ir::node_data<double> const & d) {
-        std::ostringstream m;
-        m << "(" << d << ")";
-        return m.str();
-      }
+        template <>
+        std::string stringify(phylanx::ir::node_data<double> const& d)
+        {
+            std::ostringstream m;
+            m << "(" << d << ")";
+            return m.str();
+        }
 
-      template<>
-      std::string stringify(ast::identifier const & ident) {
-        return stringify_identifier(ident);
-      }
+        template <>
+        std::string stringify(ast::identifier const& ident)
+        {
+            return stringify_identifier(ident);
+        }
 
-      template<>
-      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::expression> const & expr) {
-        return stringify_expression(expr.get());
-      }
+        template <>
+        std::string stringify(
+            phylanx::util::recursive_wrapper<phylanx::ast::expression> const&
+                expr)
+        {
+            return stringify_expression(expr.get());
+        }
 
-      template<>
-      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::function_call> const & func) {
-        return "func";
-      }
+        template <>
+        std::string stringify(
+            phylanx::util::recursive_wrapper<phylanx::ast::function_call> const&
+                func)
+        {
+            return "func";
+        }
 
-      template<>
-      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::unary_expr> const & un) {
-        return stringify_unary_expr(un.get());
-      }
+        template <>
+        std::string stringify(
+            phylanx::util::recursive_wrapper<phylanx::ast::unary_expr> const&
+                un)
+        {
+            return stringify_unary_expr(un.get());
+        }
 
-      template<>
-      std::string stringify(phylanx::util::recursive_wrapper<phylanx::ast::primary_expr> const & pr) {
-        return stringify_primary_expr(pr.get());
-      }
+        template <>
+        std::string stringify(
+            phylanx::util::recursive_wrapper<phylanx::ast::primary_expr> const&
+                pr)
+        {
+            return stringify_primary_expr(pr.get());
+        }
     }
-}}
+}
+}
