@@ -25,6 +25,6 @@ macro(phylanx_get_python_extension_location suffix result)
   # compose full path
   set(${result} "${CMAKE_CURRENT_BINARY_DIR}/build/${_result}")
 
-  phylanx_info("phylanx_get_python_extension_location: ${suffix} -> ${result}")
+  phylanx_info("phylanx_get_python_extension_location: ${suffix} -> ${${result}}")
 
 endmacro()
