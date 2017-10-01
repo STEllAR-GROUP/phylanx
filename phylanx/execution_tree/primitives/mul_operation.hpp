@@ -9,8 +9,8 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -18,32 +18,30 @@
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
-        {
-            class HPX_COMPONENT_EXPORT mul_operation
-                    : public base_primitive
-            , public hpx::components::component_base<mul_operation>
-        {
-            private:
-            using operands_type = std::vector<ir::node_data<double>>;
+{
+    class HPX_COMPONENT_EXPORT mul_operation
+      : public base_primitive
+      , public hpx::components::component_base<mul_operation>
+    {
+    private:
+        using operands_type = std::vector<ir::node_data<double>>;
 
-            public:
-            mul_operation() = default;
+    public:
+        mul_operation() = default;
 
-            mul_operation(std::vector<ast::literal_value_type>&& literals,
+        mul_operation(std::vector<ast::literal_value_type>&& literals,
             std::vector<primitive>&& operands);
 
-            hpx::future<ir::node_data<double>> eval() const override;
+        hpx::future<ir::node_data<double>> eval() const override;
 
-            protected:
-            ir::node_data<double> mul0d(operands_type const& ops) const;
-            ir::node_data<double> mulxd(operands_type const& ops) const;
+    protected:
+        ir::node_data<double> mul0d(operands_type const& ops) const;
+        ir::node_data<double> mulxd(operands_type const& ops) const;
 
-            private:
-            std::vector<ast::literal_value_type> literals_;
-            std::vector<primitive> operands_;
-        };
-    }}}
+    private:
+        std::vector<ast::literal_value_type> literals_;
+        std::vector<primitive> operands_;
+    };
+}}}
 
 #endif
-
-

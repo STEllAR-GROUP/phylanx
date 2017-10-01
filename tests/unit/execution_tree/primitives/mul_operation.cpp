@@ -19,20 +19,20 @@
 void test_mul_operation_0d()
 {
     phylanx::execution_tree::primitive lhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(7.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(7.0));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>(2),
-                    std::vector<phylanx::execution_tree::primitive>{
-                            std::move(lhs), std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>(2),
+            std::vector<phylanx::execution_tree::primitive>{
+                std::move(lhs), std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
     HPX_TEST_EQ(42.0, f.get()[0]);
@@ -43,18 +43,18 @@ void test_mul_operation_0d_lit()
     phylanx::ir::node_data<double> lhs(6.0);
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(7.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(7.0));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>{
-                            std::move(lhs), {}
-                    },
-                    std::vector<phylanx::execution_tree::primitive>{
-                            {}, std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>{
+                std::move(lhs), {}
+            },
+            std::vector<phylanx::execution_tree::primitive>{
+                {}, std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
     HPX_TEST_EQ(42.0, f.get()[0]);
@@ -65,20 +65,20 @@ void test_mul_operation_0d1d()
     Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
 
     phylanx::execution_tree::primitive lhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(v));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>(2),
-                    std::vector<phylanx::execution_tree::primitive>{
-                            std::move(lhs), std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>(2),
+            std::vector<phylanx::execution_tree::primitive>{
+                std::move(lhs), std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -93,18 +93,18 @@ void test_mul_operation_0d1d_lit()
     phylanx::ir::node_data<double> lhs(6.0);
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(v));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>{
-                            std::move(lhs), {}
-                    },
-                    std::vector<phylanx::execution_tree::primitive>{
-                            {}, std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>{
+                std::move(lhs), {}
+            },
+            std::vector<phylanx::execution_tree::primitive>{
+                {}, std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -117,20 +117,20 @@ void test_mul_operation_0d2d()
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
 
     phylanx::execution_tree::primitive lhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(m));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>(2),
-                    std::vector<phylanx::execution_tree::primitive>{
-                            std::move(lhs), std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>(2),
+            std::vector<phylanx::execution_tree::primitive>{
+                std::move(lhs), std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -145,18 +145,18 @@ void test_mul_operation_0d2d_lit()
     phylanx::ir::node_data<double> lhs(6.0);
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(m));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>{
-                            std::move(lhs), {}
-                    },
-                    std::vector<phylanx::execution_tree::primitive>{
-                            {}, std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>{
+                std::move(lhs), {}
+            },
+            std::vector<phylanx::execution_tree::primitive>{
+                {}, std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -169,20 +169,20 @@ void test_mul_operation_1d0d()
     Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
 
     phylanx::execution_tree::primitive lhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(v));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>(2),
-                    std::vector<phylanx::execution_tree::primitive>{
-                            std::move(lhs), std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>(2),
+            std::vector<phylanx::execution_tree::primitive>{
+                std::move(lhs), std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -197,18 +197,18 @@ void test_mul_operation_1d0d_lit()
     phylanx::ir::node_data<double> lhs(v);
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>{
-                            std::move(lhs), {}
-                    },
-                    std::vector<phylanx::execution_tree::primitive>{
-                            {}, std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>{
+                std::move(lhs), {}
+            },
+            std::vector<phylanx::execution_tree::primitive>{
+                {}, std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -221,20 +221,20 @@ void test_mul_operation_2d0d()
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
 
     phylanx::execution_tree::primitive lhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(m));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>(2),
-                    std::vector<phylanx::execution_tree::primitive>{
-                            std::move(lhs), std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>(2),
+            std::vector<phylanx::execution_tree::primitive>{
+                std::move(lhs), std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -249,18 +249,18 @@ void test_mul_operation_2d0d_lit()
     phylanx::ir::node_data<double> lhs(m);
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>{
-                            std::move(lhs), {}
-                    },
-                    std::vector<phylanx::execution_tree::primitive>{
-                            {}, std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>{
+                std::move(lhs), {}
+            },
+            std::vector<phylanx::execution_tree::primitive>{
+                {}, std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -274,20 +274,20 @@ void test_mul_operation_2d()
     Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(42, 42);
 
     phylanx::execution_tree::primitive lhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(m1));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(m2));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>(2),
-                    std::vector<phylanx::execution_tree::primitive>{
-                            std::move(lhs), std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>(2),
+            std::vector<phylanx::execution_tree::primitive>{
+                std::move(lhs), std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
@@ -303,18 +303,18 @@ void test_mul_operation_2d_lit()
     phylanx::ir::node_data<double> lhs(m1);
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(m2));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive mul =
-            hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::ast::literal_value_type>{
-                            std::move(lhs), {}
-                    },
-                    std::vector<phylanx::execution_tree::primitive>{
-                            {}, std::move(rhs)
-                    });
+        hpx::new_<phylanx::execution_tree::primitives::mul_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::ast::literal_value_type>{
+                std::move(lhs), {}
+            },
+            std::vector<phylanx::execution_tree::primitive>{
+                {}, std::move(rhs)
+            });
 
     hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
 
