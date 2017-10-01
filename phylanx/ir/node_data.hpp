@@ -32,8 +32,8 @@ namespace phylanx { namespace ir
 
         ///////////////////////////////////////////////////////////////////////
         template <typename T>
-        class node_data_iterator
-          : public hpx::util::iterator_facade<node_data_iterator<T>,
+        class node_value_iterator
+          : public hpx::util::iterator_facade<node_value_iterator<T>,
                 T,
                 std::random_access_iterator_tag,
                 T const&,
@@ -42,7 +42,7 @@ namespace phylanx { namespace ir
         {
         private:
             using base_type =
-                hpx::util::iterator_facade<node_data_iterator<T>,
+                hpx::util::iterator_facade<node_value_iterator<T>,
                     T,
                     std::random_access_iterator_tag,
                     T const&,
@@ -50,7 +50,7 @@ namespace phylanx { namespace ir
                     T const*>;
 
         public:
-            node_data_iterator(T const* p)
+            node_value_iterator(T const* p)
               : p_(p)
             {
             }
@@ -63,7 +63,7 @@ namespace phylanx { namespace ir
                 return *p_;
             }
 
-            bool equal(node_data_iterator const& x) const
+            bool equal(node_value_iterator const& x) const
             {
                 return p_ == x.p_;
             }
@@ -84,7 +84,7 @@ namespace phylanx { namespace ir
             }
 
             typename base_type::difference_type distance_to(
-                node_data_iterator const& y) const
+                node_value_iterator const& y) const
             {
                 return y.p_ - p_;
             }
@@ -104,7 +104,6 @@ namespace phylanx { namespace ir
 
         using dimensions_type = std::array<std::ptrdiff_t, max_dimensions>;
         using storage_type = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
-        using array_storage_type = Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>;
         using constant_type = Eigen::DenseBase<storage_type>;
 
         using storage1d_type = Eigen::Matrix<T, Eigen::Dynamic, 1>;
@@ -188,8 +187,8 @@ namespace phylanx { namespace ir
             return data_(indicies[0], indicies[1]);
         }
 
-        using iterator = detail::node_data_iterator<T>;
-        using const_iterator = detail::node_data_iterator<T>;
+        using iterator = detail::node_value_iterator<T>;
+        using const_iterator = detail::node_value_iterator<T>;
 
         /// Get iterator referring to the beginning of the underlying data
         iterator begin() const
@@ -284,19 +283,8 @@ namespace phylanx { namespace ir
         return !(lhs == rhs);
     }
 
-    template <typename T>
-    inline std::ostream& operator<<(std::ostream& out, node_data<T> const& nd)
-    {
-        out << "node_data<T>: ";
-
-        std::ptrdiff_t dims = nd.num_dimensions();
-        out << std::string(dims, '[');
-        out << nd[0];
-        if (dims)
-            out << ", ...";
-        out << std::string(dims, ']');
-        return out;
-    }
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, node_data<double> const& nd);
 }}
 
 #endif

@@ -27,10 +27,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_read_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    file_read::file_read(std::vector<ast::literal_value_type>&& literals,
-        std::vector<primitive>&& operands)
+    file_read::file_read(std::vector<primitive_value_type>&& operands)
     {
-        if (literals.size() != 1)
+        if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::file_read",
@@ -38,17 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "argument");
         }
 
-        // Verify that argument arrays are filled properly (this could be
-        // converted to asserts).
-        if (operands.size() != literals.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read::file_read",
-                "the file_read primitive requires that the size of the "
-                    "literals and operands arrays is the same");
-        }
-
-        if (!valid(literals[0]) || operands[0].valid())
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::file_read",
@@ -57,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "arrays is valid");
         }
 
-        std::string* name = util::get_if<std::string>(&literals[0]);
+        std::string* name = util::get_if<std::string>(&operands[0]);
         if (name == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

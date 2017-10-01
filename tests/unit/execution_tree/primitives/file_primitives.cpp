@@ -28,11 +28,8 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive outfile =
             hpx::new_<phylanx::execution_tree::primitives::file_write>(
                 hpx::find_here(),
-                std::vector<phylanx::ast::literal_value_type>{
-                    {filename}, {}
-                },
-                std::vector<phylanx::execution_tree::primitive>{
-                    {}, litval
+                std::vector<phylanx::execution_tree::primitive_value_type>{
+                    {filename}, litval
                 });
 
         auto f = outfile.eval();
@@ -45,11 +42,8 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive infile =
             hpx::new_<phylanx::execution_tree::primitives::file_read>(
                 hpx::find_here(),
-                std::vector<phylanx::ast::literal_value_type>{
+                std::vector<phylanx::execution_tree::primitive_value_type>{
                     {filename}
-                },
-                std::vector<phylanx::execution_tree::primitive>{
-                    {}
                 });
 
 
@@ -70,11 +64,8 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive outfile =
             hpx::new_<phylanx::execution_tree::primitives::file_write>(
                 hpx::find_here(),
-                std::vector<phylanx::ast::literal_value_type>{
+                std::vector<phylanx::execution_tree::primitive_value_type>{
                     {filename}, in
-                },
-                std::vector<phylanx::execution_tree::primitive>{
-                    {}, {}
                 });
 
         auto f = outfile.eval();
@@ -87,11 +78,8 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive infile =
             hpx::new_<phylanx::execution_tree::primitives::file_read>(
                 hpx::find_here(),
-                std::vector<phylanx::ast::literal_value_type>{
+                std::vector<phylanx::execution_tree::primitive_value_type>{
                     {filename}
-                },
-                std::vector<phylanx::execution_tree::primitive>{
-                    {}
                 });
 
 

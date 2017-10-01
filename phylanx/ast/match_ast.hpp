@@ -379,6 +379,13 @@ namespace phylanx { namespace ast
                     {
                         return false;
                     }
+
+                    if (!match_ast(curr1.operator_, curr2.operator_,
+                            std::forward<F>(f), ts...))
+                    {
+                        return false;
+                    }
+
                     if (!detail::is_placeholder_ellipses(curr1) || it2 == end2)
                         ++it1;
                     continue;
@@ -392,6 +399,13 @@ namespace phylanx { namespace ast
                     {
                         return false;
                     }
+
+                    if (!match_ast(curr1.operator_, curr2.operator_,
+                            std::forward<F>(f), ts...))
+                    {
+                        return false;
+                    }
+
                     if (!detail::is_placeholder_ellipses(curr2) || it1 == end1)
                         ++it2;
                     continue;

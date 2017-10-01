@@ -91,7 +91,7 @@ namespace phylanx { namespace execution_tree
             }
         };
 
-        primitive generate_tree(std::string const& exprstr,
+        primitive generate_tree(
             ast::expression const& expr,
             expression_pattern_list const& patterns,
             phylanx::execution_tree::variables const& variables)
@@ -106,32 +106,28 @@ namespace phylanx { namespace execution_tree
                     continue;
                 }
 
-                std::vector<ast::literal_value_type> literals;
-                literals.reserve(placeholders.size());
-
-                std::vector<primitive> arguments;
+                std::vector<primitive_value_type> arguments;
                 arguments.reserve(placeholders.size());
 
                 for (auto const& placeholder : placeholders)
                 {
                     if (ast::detail::is_literal_value(placeholder.second))
                     {
-                        literals.push_back(
-                            ast::detail::literal_value(placeholder.second));
-                        arguments.push_back(primitive{});
+                        arguments.push_back(
+                            to_primitive_value_type(
+                                ast::detail::literal_value(placeholder.second)
+                            ));
                     }
                     else
                     {
-                        literals.push_back(ast::nil{});
-                        arguments.push_back(
-                            generate_tree(hpx::util::get<0>(pattern),
-                                placeholder.second, patterns, variables));
+                        arguments.push_back(generate_tree(
+                            placeholder.second, patterns, variables));
                     }
                 }
 
                 // create primitive with given arguments
-                result = hpx::util::get<2>(pattern)(hpx::find_here(),
-                    std::move(literals), std::move(arguments));
+                result = hpx::util::get<2>(pattern)(
+                    hpx::find_here(), std::move(arguments));
 
                 return result;
             }
@@ -150,24 +146,24 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::generate_tree",
                 "couldn't fully pattern-match the given expression: " +
-                    exprstr);
+                    ast::to_string(expr));
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive generate_tree(std::string const& exprstr,
-        ast::expression const& expr, pattern_list const& patterns,
+    primitive generate_tree(ast::expression const& expr,
+        pattern_list const& patterns,
         phylanx::execution_tree::variables const& variables)
     {
         return detail::generate_tree(
-            exprstr, expr, detail::generate_patterns(patterns), variables);
+            expr, detail::generate_patterns(patterns), variables);
     }
 
     primitive generate_tree(std::string const& exprstr,
         pattern_list const& patterns,
         phylanx::execution_tree::variables const& variables)
     {
-        return detail::generate_tree(exprstr, ast::generate_ast(exprstr),
+        return detail::generate_tree(ast::generate_ast(exprstr),
             detail::generate_patterns(patterns), variables);
     }
 }}

@@ -347,60 +347,204 @@ namespace phylanx { namespace ast
 
             "op_unknown",
         };
+
+        static constexpr char const* const optoken_repr[] =
+        {
+            // precedence 1
+            ",",
+
+            // precedence 2
+            "=",
+            "+=",
+            "-=",
+            "*=",
+            "/=",
+            "%=",
+            "&=",
+            "^=",
+            "|=",
+            "<<=",
+            ">>=",
+
+            // precedence 3
+            "||",
+
+            // precedence 4
+            "&&",
+
+            // precedence 5
+            "|",
+
+            // precedence 6
+            "^",
+
+            // precedence 7
+            "&",
+
+            // precedence 8
+            "==",
+            "!=",
+
+            // precedence 9
+            "<",
+            "<=",
+            ">",
+            ">=",
+
+            // precedence 10
+            "<<",
+            ">>",
+
+            // precedence 11
+            "+",
+            "-",
+
+            // precedence 12
+            "*",
+            "/",
+            "%",
+
+            // precedence 13
+            "+",
+            "-",
+            "++",
+            "--",
+            "~",
+            "!",
+
+            // precedence 14
+            "++",
+            "--",
+
+            "\?\?\?",
+        };
     }
 
     std::ostream& operator<<(std::ostream& out, nil)
     {
-        out << "nil";
         return out;
     }
 
     std::ostream& operator<<(std::ostream& out, optoken op)
     {
-        out << detail::optoken_names[static_cast<int>(op)];
+        out << detail::optoken_repr[static_cast<int>(op)];
         return out;
     }
 
     std::ostream& operator<<(std::ostream& out, identifier const& id)
     {
-        out << "identifier: " << id.name;
+        out << id.name;
         return out;
+    }
+
+    namespace detail
+    {
+        struct to_string
+        {
+            void operator()(bool ast) const
+            {
+                out_ << (ast ? "true" : "false");
+            }
+
+            void operator()(std::string const& ast) const
+            {
+                out_ << "\"";
+                for (char c : ast)
+                {
+                    switch (c)
+                    {
+                    case '\b':  out_ << "\\\b"; break;
+                    case '\n':  out_ << "\\\n"; break;
+                    case '\r':  out_ << "\\\r"; break;
+                    case '\t':  out_ << "\\\t"; break;
+                    case '\\':  out_ << "\\\\"; break;
+                    case '\"':  out_ << "\\\""; break;
+                    default:    out_ << c;
+                    }
+                }
+                out_ << "\"";
+            }
+
+            template <typename Ast>
+            void operator()(util::recursive_wrapper<Ast> const& ast) const
+            {
+                out_ << ast.get();
+            }
+
+            template <typename Ast>
+            void operator()(Ast const& ast) const
+            {
+                out_ << ast;
+            }
+
+            std::ostream& out_;
+        };
     }
 
     std::ostream& operator<<(std::ostream& out, primary_expr const& pe)
     {
-        out << "primary_expr";
+        util::visit(detail::to_string{out}, pe.get());
         return out;
     }
 
     std::ostream& operator<<(std::ostream& out, operand const& op)
     {
-        out << "operand";
+        util::visit(detail::to_string{out}, op.get());
         return out;
     }
 
     std::ostream& operator<<(std::ostream& out, unary_expr const& ue)
     {
-        out << "unary_expr";
+        out << ue.operator_ << ue.operand_;
         return out;
     }
 
     std::ostream& operator<<(std::ostream& out, operation const& op)
     {
-        out << "operation";
+        out << " " << op.operator_ << " " << op.operand_;
         return out;
     }
 
     std::ostream& operator<<(std::ostream& out, expression const& expr)
     {
-        out << "expression";
+        if (!expr.rest.empty())
+        {
+            out << "(";
+        }
+
+        out << expr.first;
+
+        if (!expr.rest.empty())
+        {
+            for (auto const& op : expr.rest)
+                out << op;
+            out << ")";
+        }
         return out;
     }
 
     std::ostream& operator<<(std::ostream& out, function_call const& f)
     {
-        out << "function_call";
+        out << f.function_name << "(";
+        bool first = true;
+        for (auto const& arg : f.args)
+        {
+            if (!first)
+            {
+                out << ", ";
+            }
+            first = false;
+            out << arg;
+        }
+        out << ")";
         return out;
+    }
+
+    std::string to_string(expression const& expr)
+    {
+        std::ostringstream str;
+        str << expr;
+        return str.str();
     }
 
 //     std::ostream& operator<<(std::ostream& out, assignment const& a)

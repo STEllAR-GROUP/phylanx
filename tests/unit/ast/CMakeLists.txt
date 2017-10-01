@@ -7,6 +7,7 @@ set(tests
     generate_ast
     match_ast
     node
+    to_string
    )
 
 foreach(test ${tests})

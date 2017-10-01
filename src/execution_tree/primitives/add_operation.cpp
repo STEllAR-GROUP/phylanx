@@ -31,11 +31,8 @@ HPX_DEFINE_GET_COMPONENT_TYPE(add_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    add_operation::add_operation(
-            std::vector<ast::literal_value_type>&& literals,
-            std::vector<primitive>&& operands)
-      : literals_(std::move(literals))
-      , operands_(std::move(operands))
+    add_operation::add_operation(std::vector<primitive_value_type>&& operands)
+      : operands_(std::move(operands))
     {
         if (operands_.size() < 2)
         {
@@ -44,27 +41,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the add_operation primitive requires at least two operands");
         }
 
-        // Verify that argument arrays are filled properly (this could be
-        // converted to asserts).
-        if (operands_.size() != literals_.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "add_operation::add_operation",
-                "the add_operation primitive requires that the size of the "
-                    "literals and operands arrays is the same");
-        }
-
         bool arguments_valid = true;
-        for (std::size_t i = 0; i != literals.size(); ++i)
+        for (std::size_t i = 0; i != operands_.size(); ++i)
         {
-            if (valid(literals_[i]))
-            {
-                if (operands_[i].valid())
-                {
-                    arguments_valid = false;
-                }
-            }
-            else if (!operands_[i].valid())
+            if (!valid(operands_[i]))
             {
                 arguments_valid = false;
             }
@@ -87,12 +67,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch(rhs_dims)
         {
         case 0:
-            return ir::node_data<double>(
-                std::accumulate(ops.begin(), ops.end(), 0.0,
-                    [](double result, ir::node_data<double> const& curr)
-                    {
-                        return result + curr[0];
-                    }));
+            {
+                if (ops.size() == 2)
+                {
+                    return ops[0][0] + ops[1][0];
+                }
+
+                return ir::node_data<double>(
+                    std::accumulate(ops.begin() + 1, ops.end(), ops[0][0],
+                        [](double result, ir::node_data<double> const& curr)
+                        {
+                            return result + curr[0];
+                        }));
+            }
+            break;
 
         case 1: HPX_FALLTHROUGH;
         case 2: HPX_FALLTHROUGH;
@@ -117,9 +105,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         using array_type = Eigen::Array<double, Eigen::Dynamic, 1>;
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
+        if (ops.size() == 2)
+        {
+            matrix_type result = ops[0].matrix().array() + ops[1].matrix().array();
+            return ir::node_data<double>(std::move(result));
+        }
 
         array_type first_term = ops.begin()->matrix().array();
-        Eigen::Matrix<double, Eigen::Dynamic, 1> result =
+        matrix_type result =
             std::accumulate(
                 ops.begin() + 1, ops.end(), first_term,
                 [&](array_type& result, ir::node_data<double> const& curr)
@@ -162,9 +157,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         using array_type = Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic>;
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+
+        if (ops.size() == 2)
+        {
+            matrix_type result = ops[0].matrix().array() + ops[1].matrix().array();
+            return ir::node_data<double>(std::move(result));
+        }
 
         array_type first_term = ops.begin()->matrix().array();
-        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> result =
+        matrix_type result =
             std::accumulate(
                 ops.begin() + 1, ops.end(), first_term,
                 [&](array_type& result, ir::node_data<double> const& curr)
@@ -193,28 +195,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    namespace detail
-    {
-        template <typename T1, typename T2, typename F>
-        auto map(std::vector<T1> const& in1, std::vector<T2> const& in2, F&& f)
-            -> std::vector<decltype(
-                hpx::util::invoke(f, std::declval<T1>(), std::declval<T2>()))>
-        {
-            HPX_ASSERT(in1.size() == in2.size());
-
-            std::vector<decltype(
-                hpx::util::invoke(f, std::declval<T1>(), std::declval<T2>()))>
-                out;
-            out.reserve(in1.size());
-
-            for (std::size_t i = 0; i != in1.size(); ++i)
-            {
-                out.push_back(hpx::util::invoke(f, in1[i], in2[i]));
-            }
-            return out;
-        }
-    }
-
     // implement '+' for all possible combinations of lhs and rhs
     hpx::future<ir::node_data<double>> add_operation::eval() const
     {
@@ -240,18 +220,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
             }),
-            detail::map(literals_, operands_,
-                [](ast::literal_value_type const& val, primitive const& p)
+            detail::map_operands(operands_,
+                [](primitive_value_type const& val)
                 ->  hpx::future<ir::node_data<double>>
                 {
-                    if (valid(val))
-                    {
-                        return hpx::make_ready_future(
-                            ast::detail::literal_value(val));
-                    }
+                    primitive const* p = util::get_if<primitive>(&val);
+                    if (p != nullptr)
+                        return p->eval();
 
-                    HPX_ASSERT(p.valid());
-                    return p.eval();
+                    HPX_ASSERT(valid(val));
+                    return hpx::make_ready_future(extract_literal_value(val));
                 })
         );
     }

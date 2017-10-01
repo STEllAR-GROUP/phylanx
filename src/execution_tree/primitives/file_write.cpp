@@ -29,47 +29,16 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_write_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    file_write::file_write(std::vector<ast::literal_value_type>&& literals,
-            std::vector<primitive>&& operands)
-      : literals_(literals)
-      , operands_(operands)
+    file_write::file_write(std::vector<primitive_value_type>&& operands)
     {
-        if (operands_.size() != 2)
+        if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::file_write",
                 "the file_write primitive requires exactly two operands");
         }
 
-        // Verify that argument arrays are filled properly (this could be
-        // converted to asserts).
-        if (operands_.size() != literals.size())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::file_write",
-                "the file_write primitive requires that the size of the "
-                    "literals and operands arrays is the same");
-        }
-
-        bool arguments_valid = true;
-        if (!valid(literals[0]))
-        {
-            arguments_valid = false;
-        }
-
-        if (valid(literals[1]))
-        {
-            if (operands_[1].valid())
-            {
-                arguments_valid = false;
-            }
-        }
-        else if (!operands_[1].valid())
-        {
-            arguments_valid = false;
-        }
-
-        if (!arguments_valid)
+        if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::file_write",
@@ -78,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "arrays is valid");
         }
 
-        std::string* name = util::get_if<std::string>(&literals[0]);
+        std::string* name = util::get_if<std::string>(&operands[0]);
         if (name == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -88,6 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         filename_ = std::move(*name);
+        operand_ = std::move(operands[1]);
     }
 
     void write_to_file(
@@ -115,28 +85,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // read data from given file and return content
     hpx::future<ir::node_data<double>> file_write::eval() const
     {
-        if (valid(literals_[1]))
+        primitive const* p = util::get_if<primitive>(&operand_);
+        if (p != nullptr)
         {
-            ir::node_data<double> const* nd =
-                util::get_if<ir::node_data<double>>(&literals_[1]);
-
-            if (nd == nullptr)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::file_write::eval",
-                    "second argument must be a literator of type "
-                        "ir::node_data<double> or another primitive");
-            }
-
-            write_to_file(filename_, *nd);
-            return hpx::make_ready_future(*nd);
+            return p->eval().then(hpx::util::unwrapping(
+                [this](ir::node_data<double> && nd) -> ir::node_data<double>
+                {
+                    write_to_file(filename_, nd);
+                    return std::move(nd);
+                }));
         }
 
-        return operands_[1].eval().then(hpx::util::unwrapping(
-            [this](ir::node_data<double> && nd) -> ir::node_data<double>
-            {
-                write_to_file(filename_, nd);
-                return std::move(nd);
-            }));
+        ir::node_data<double> const* nd =
+            util::get_if<ir::node_data<double>>(&operand_);
+
+        if (nd == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_write::eval",
+                "second argument must be a literator of type "
+                    "ir::node_data<double> or another primitive");
+        }
+
+        write_to_file(filename_, *nd);
+        return hpx::make_ready_future(*nd);
     }
 }}}

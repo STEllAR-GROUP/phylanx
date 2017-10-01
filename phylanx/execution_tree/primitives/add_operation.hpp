@@ -28,8 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         add_operation() = default;
 
-        add_operation(std::vector<ast::literal_value_type>&& literals,
-            std::vector<primitive>&& operands);
+        add_operation(std::vector<primitive_value_type>&& operands);
 
         hpx::future<ir::node_data<double>> eval() const override;
 
@@ -42,8 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double> add2d2d(operands_type const& ops) const;
 
     private:
-        std::vector<ast::literal_value_type> literals_;
-        std::vector<primitive> operands_;
+        std::vector<primitive_value_type> operands_;
     };
 }}}
 
