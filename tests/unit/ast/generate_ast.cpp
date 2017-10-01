@@ -26,6 +26,18 @@ struct traverse_ast
         return true;
     }
 
+    // skip expressions
+    bool operator()(phylanx::ast::expression const& val) const
+    {
+        return true;
+    }
+
+    // skip function calls
+    bool operator()(phylanx::ast::function_call const& val) const
+    {
+        return true;
+    }
+
     std::stringstream& strm_;
 };
 
@@ -40,6 +52,20 @@ struct traverse_ast_enter_exit
     bool on_enter(T && val, Ts const&... ts) const
     {
         strm_ << val << '\n';
+        return true;
+    }
+
+    // skip expressions
+    template <typename ... Ts>
+    bool on_enter(phylanx::ast::expression const& val, Ts const&... ts) const
+    {
+        return true;
+    }
+
+    // skip function calls
+    template <typename ... Ts>
+    bool on_enter(phylanx::ast::function_call const& val, Ts const&... ts) const
+    {
         return true;
     }
 
@@ -72,57 +98,48 @@ int main(int argc, char* argv[])
 {
     test_expression(
         "A + B",
-        "expression\n"
-            "identifier: A\n"
-            "identifier: B\n"
-            "op_plus\n"
+            "A\n"
+            "B\n"
+            "+\n"
     );
 
     test_expression(
         "A + B + -C",
-        "expression\n"
-            "identifier: A\n"
-            "identifier: B\n"
-            "op_plus\n"
-            "identifier: C\n"
-            "op_negative\n"
-            "op_plus\n"
+            "A\n"
+            "B\n"
+            "+\n"
+            "C\n"
+            "-\n"
+            "+\n"
     );
 
     test_expression(
         "A + B * C",
-        "expression\n"
-            "identifier: A\n"
-            "identifier: B\n"
-            "identifier: C\n"
-            "op_times\n"
-            "op_plus\n"
+            "A\n"
+            "B\n"
+            "C\n"
+            "*\n"
+            "+\n"
     );
 
     test_expression(
         "A * B + C",
-        "expression\n"
-            "identifier: A\n"
-            "identifier: B\n"
-            "op_times\n"
-            "identifier: C\n"
-            "op_plus\n"
+            "A\n"
+            "B\n"
+            "*\n"
+            "C\n"
+            "+\n"
     );
 
     test_expression(
         "func(A, B)",
-        "expression\n"
-            "function_call\n"
-                "identifier: func\n"
-                "expression\n"
-                    "identifier: A\n"
-                "expression\n"
-                    "identifier: B\n"
+            "func\n"
+            "A\n"
+            "B\n"
     );
 
     test_expression(
         "\"test\"",
-        "expression\n"
             "test\n");
 
     return hpx::util::report_errors();
