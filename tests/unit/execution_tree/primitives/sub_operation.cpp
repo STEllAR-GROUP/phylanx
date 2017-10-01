@@ -28,7 +28,7 @@ void test_sub_operation_0d()
     phylanx::execution_tree::primitive sub =
         hpx::new_<phylanx::execution_tree::primitives::sub_operation>(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_value_type>{
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
@@ -46,7 +46,7 @@ void test_sub_operation_0d_lit()
     phylanx::execution_tree::primitive sub =
         hpx::new_<phylanx::execution_tree::primitives::sub_operation>(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_value_type>{
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
@@ -69,7 +69,7 @@ void test_sub_operation_1d()
     phylanx::execution_tree::primitive sub =
         hpx::new_<phylanx::execution_tree::primitives::sub_operation>(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_value_type>{
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
@@ -92,7 +92,7 @@ void test_sub_operation_1d_lit()
     phylanx::execution_tree::primitive sub =
         hpx::new_<phylanx::execution_tree::primitives::sub_operation>(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_value_type>{
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
@@ -117,7 +117,7 @@ void test_sub_operation_2d()
     phylanx::execution_tree::primitive sub =
         hpx::new_<phylanx::execution_tree::primitives::sub_operation>(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_value_type>{
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
@@ -140,7 +140,7 @@ void test_sub_operation_2d_lit()
     phylanx::execution_tree::primitive sub =
         hpx::new_<phylanx::execution_tree::primitives::sub_operation>(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_value_type>{
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::ir::node_data<double>> f = sub.eval();

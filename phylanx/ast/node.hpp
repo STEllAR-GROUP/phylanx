@@ -533,10 +533,10 @@ namespace phylanx { namespace ast
     {
         function_call() = default;
 
-        function_call(identifier const& name)
+        explicit function_call(identifier const& name)
           : function_name(name)
         {}
-        function_call(identifier && name)
+        explicit function_call(identifier && name)
           : function_name(std::move(name))
         {}
 

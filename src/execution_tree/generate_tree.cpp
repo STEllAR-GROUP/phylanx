@@ -106,7 +106,7 @@ namespace phylanx { namespace execution_tree
                     continue;
                 }
 
-                std::vector<primitive_value_type> arguments;
+                std::vector<primitive_argument_type> arguments;
                 arguments.reserve(placeholders.size());
 
                 for (auto const& placeholder : placeholders)

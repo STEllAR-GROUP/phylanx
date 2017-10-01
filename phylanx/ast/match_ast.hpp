@@ -241,10 +241,6 @@ namespace phylanx { namespace ast
             operand const& op, int prec,
             std::list<operation>::const_iterator& it,
             std::list<operation>::const_iterator end);
-        inline expression extract_subexpression(
-            operand const& op, int prec,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end);
 
         inline expression extract_subexpression(
             expression const& expr, int prec,
@@ -255,7 +251,11 @@ namespace phylanx { namespace ast
             {
                 return extract_subexpression(expr.first, prec, it, end);
             }
-            ++it;
+
+            while (++it != end && precedence_of(it->operator_) > prec)
+            {
+                /**/;
+            }
             return expr;
         }
 

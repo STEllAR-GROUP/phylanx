@@ -60,7 +60,7 @@ test_expression(
 
 test_expression(
     'A + B * C',
-    'A + B * C\n' +
+    '(A + B * C)\n' +
         'A\n' +
         'B\n' +
         'C\n' +

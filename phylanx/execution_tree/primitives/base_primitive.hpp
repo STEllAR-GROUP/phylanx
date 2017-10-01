@@ -73,7 +73,7 @@ namespace phylanx { namespace execution_tree
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    using primitive_value_type = phylanx::util::variant<
+    using primitive_argument_type = phylanx::util::variant<
             phylanx::ast::nil
           , bool
           , std::int64_t
@@ -84,17 +84,17 @@ namespace phylanx { namespace execution_tree
 
 
     // a literal value is valid of its not nil{}
-    inline bool valid(primitive_value_type const& val)
+    inline bool valid(primitive_argument_type const& val)
     {
         return val.index() != 0;
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_EXPORT  primitive_value_type to_primitive_value_type(
+    PHYLANX_EXPORT  primitive_argument_type to_primitive_value_type(
         ast::literal_value_type && val);
 
     PHYLANX_EXPORT ir::node_data<double> extract_literal_value(
-        primitive_value_type const& val);
+        primitive_argument_type const& val);
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -103,12 +103,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // Factory functions
     using factory_function_type =
         hpx::util::function_nonser<
-            primitive(hpx::id_type, std::vector<primitive_value_type>&&)
+            primitive(hpx::id_type, std::vector<primitive_argument_type>&&)
         >;
 
     template <typename Primitive>
     primitive create(hpx::id_type locality,
-        std::vector<primitive_value_type>&& operands)
+        std::vector<primitive_argument_type>&& operands)
     {
         return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
     }

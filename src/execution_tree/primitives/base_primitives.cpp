@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////
     ir::node_data<double> extract_literal_value(
-        primitive_value_type const& val)
+        primitive_argument_type const& val)
     {
         switch (val.index())
         {
@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_value_type to_primitive_value_type(
+    primitive_argument_type to_primitive_value_type(
         ast::literal_value_type && val)
     {
         switch (val.index())

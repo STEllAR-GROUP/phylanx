@@ -22,13 +22,13 @@
 
     <Type Name="phylanx::ast::primary_expr">
         <DisplayString Condition="(var.impl_.index_ == 0)">nil</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 1)">bool ({var.impl_.data_.tail_.head_.value})</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 2)">node_data ({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 3)">identifier ({var.impl_.data_.tail_.tail_.tail_.head_.value})</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 4)">expression ({var.impl_.data_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 5)">function_call ({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 6)">function_call ({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 7)">function_call ({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 1)">bool({var.impl_.data_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 2)">node_data({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 3)">identifier({var.impl_.data_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 4)">std::string({var.impl_.data_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 5)">std::int64_t({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 6)">expression({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 7)">function_call({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <Expand>
             <Item Name="[tagged]" Condition="(id != 0)">id</Item>
             <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
@@ -44,8 +44,8 @@
 
     <Type Name="phylanx::ast::operand">
         <DisplayString Condition="(var.impl_.index_ == 0)">nil</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 1)">primary_expr ({var.impl_.data_.tail_.head_.value})</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 2)">unary_expr ({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 1)">primary_expr({var.impl_.data_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 2)">unary_expr({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
         <Expand>
             <Item Name="[tagged]" Condition="(id != 0)">id</Item>
             <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>

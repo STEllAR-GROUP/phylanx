@@ -27,7 +27,7 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_read_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    file_read::file_read(std::vector<primitive_value_type>&& operands)
+    file_read::file_read(std::vector<primitive_argument_type>&& operands)
     {
         if (operands.size() != 1)
         {

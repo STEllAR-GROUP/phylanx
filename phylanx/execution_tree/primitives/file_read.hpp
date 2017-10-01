@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         file_read() = default;
 
-        file_read(std::vector<primitive_value_type>&& operands);
+        file_read(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<ir::node_data<double>> eval() const override;
 

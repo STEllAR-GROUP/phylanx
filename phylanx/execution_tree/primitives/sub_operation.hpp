@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         sub_operation() = default;
 
-        sub_operation(std::vector<primitive_value_type>&& operands);
+        sub_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<ir::node_data<double>> eval() const override;
 
@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double> sub2d2d(operands_type const& ops) const;
 
     private:
-        std::vector<primitive_value_type> operands_;
+        std::vector<primitive_argument_type> operands_;
     };
 }}}
 

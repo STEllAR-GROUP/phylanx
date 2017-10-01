@@ -31,7 +31,7 @@ HPX_DEFINE_GET_COMPONENT_TYPE(add_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    add_operation::add_operation(std::vector<primitive_value_type>&& operands)
+    add_operation::add_operation(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
         if (operands_.size() < 2)
@@ -54,9 +54,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add_operation",
-                "the add_operation primitive requires that the "
-                    "exactly one element of the literals and operands "
-                    "arrays is valid");
+                "the add_operation primitive requires that the arguments given "
+                    "by the operands array is valid");
         }
     }
 
@@ -117,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         matrix_type result =
             std::accumulate(
                 ops.begin() + 1, ops.end(), first_term,
-                [&](array_type& result, ir::node_data<double> const& curr)
+                [](array_type& result, ir::node_data<double> const& curr)
                 ->  array_type
                 {
                     return result += curr.matrix().array();
@@ -169,7 +168,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         matrix_type result =
             std::accumulate(
                 ops.begin() + 1, ops.end(), first_term,
-                [&](array_type& result, ir::node_data<double> const& curr)
+                [](array_type& result, ir::node_data<double> const& curr)
                 ->  array_type
                 {
                     return result += curr.matrix().array();
@@ -221,7 +220,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }),
             detail::map_operands(operands_,
-                [](primitive_value_type const& val)
+                [](primitive_argument_type const& val)
                 ->  hpx::future<ir::node_data<double>>
                 {
                     primitive const* p = util::get_if<primitive>(&val);
