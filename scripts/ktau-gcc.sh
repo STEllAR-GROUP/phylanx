@@ -26,8 +26,8 @@ export malloc_path=/usr/local/jemalloc/5.0.1
 export activeharmony_path=/usr/local/activeharmony/4.6
 export otf2_path=/usr/local/otf2/2.1
 export papi_path=/usr/local/papi/5.5.0/
-#export boost_path=/usr/local/boost/1.6.5-gcc7
-export boost_path=/usr
+export boost_path=/usr/local/boost/1.65.0-gcc7
+#export boost_path=/usr
 export BOOST_DIR=${boost_path}
 export BOOST_ROOT=${boost_path}
 
