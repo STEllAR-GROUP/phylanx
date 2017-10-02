@@ -25,7 +25,7 @@ sourcedir=${top}/src
 buildprefix=${top}/build-${myarch}
 
 boost_src_dir=/dev/shm/src/boost
-boost_build_dir=${buildprefix}/boost-1.65.0
+boost_build_dir=${buildprefix}/boost-1.65.0-gcc7
 
 phylanx_src_dir=${tmptop}
 phylanx_build_dir=${buildprefix}/phylanx-${buildtype}
