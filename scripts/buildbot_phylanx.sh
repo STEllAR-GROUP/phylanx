@@ -43,7 +43,7 @@ build_phylanx()
     make ${makej}
 }
 
-if [ ${step} == "all" ] || [ ${step} == "config" ] ; then
+if [ ${step} == "all" ] || [ ${step} == "configure" ] ; then
     configure_phylanx
 fi
 if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then

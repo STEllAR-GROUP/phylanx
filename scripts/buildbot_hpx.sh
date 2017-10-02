@@ -1,5 +1,4 @@
 #!/bin/bash -e
-set -x
 
 steps=all
 if [ $# -eq 3 ] ; then
@@ -45,6 +44,8 @@ get_source()
     cd ${hpx_src_dir}
     git checkout master
     git pull
+    git reset --hard
+    patch -N CMakeLists.txt ${scriptdir}/hpx.patch
 }
 
 configure_it()
@@ -93,10 +94,10 @@ build_it()
     make ${makej} core
 }
 
-if [ ${step} == "all" ] || [ ${step} == "config" ] ; then
-    echo get_source
-    echo configure_it
+if [ ${step} == "all" ] || [ ${step} == "configure" ] ; then
+    get_source
+    configure_it
 fi
 if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then
-    echo build_it
+    build_it
 fi

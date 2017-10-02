@@ -40,7 +40,7 @@ build_eigen3()
     make install
 }
 
-if [ ${step} == "all" ] || [ ${step} == "config" ] ; then
+if [ ${step} == "all" ] || [ ${step} == "configure" ] ; then
     configure_eigen3
 fi
 if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then

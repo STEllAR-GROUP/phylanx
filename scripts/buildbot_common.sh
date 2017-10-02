@@ -19,22 +19,24 @@ nprocs=`nproc`
 let one_fourth=$nprocs/4
 makej=-j${one_fourth}
 
-top=${HOME}/src/phylanx
+tmptop=$( dirname "${scriptdir}" )
+top=${tmptop}/buildbot
+sourcedir=${top}/src
 buildprefix=${top}/build-${myarch}
 
 boost_src_dir=/dev/shm/src/boost
 boost_build_dir=${buildprefix}/boost-1.65.0
 
-phylanx_src_dir=${top}/src/phylanx
+phylanx_src_dir=${sourcedir}/phylanx
 phylanx_build_dir=${buildprefix}/phylanx-${buildtype}
 
-pybind_src_dir=${top}/src/pybind11-2.2.0
+pybind_src_dir=${sourcedir}/pybind11-2.2.0
 pybind_build_dir=${buildprefix}/pybind-${buildtype}
 
-eigen_src_dir=${top}/src/eigen-eigen-5a0156e40feb
+eigen_src_dir=${sourcedir}/eigen-eigen-5a0156e40feb
 eigen_build_dir=${buildprefix}/eigen3-${buildtype}
 
-hpx_src_dir=${top}/src/hpx
+hpx_src_dir=${sourcedir}/hpx
 HPX_ROOT=${buildprefix}/hpx-${buildtype}
 
 # go up one directory

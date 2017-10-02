@@ -44,7 +44,7 @@ build_pybind()
     make install
 }
 
-if [ ${step} == "all" ] || [ ${step} == "config" ] ; then
+if [ ${step} == "all" ] || [ ${step} == "configure" ] ; then
     configure_pybind
 fi
 if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then

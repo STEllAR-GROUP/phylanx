@@ -10,11 +10,6 @@ myhost=`hostname`
 . ${scriptdir}/${myhost}-gcc.sh
 . ${scriptdir}/buildbot_common.sh
 
-# make the builddir if it doesn't exist
-if [ ! -d ${buildprefix} ] ; then
-    mkdir ${buildprefix}
-fi
-
 args=$(getopt -l "searchpath:" -o "c:t:s:h" -- "$@")
 component_in="all"
 buildtype_in="all"
@@ -45,7 +40,7 @@ while [ $# -ge 1 ]; do
     shift
 done
 
-echo "component = ${build_in}"
+echo "component = ${component_in}"
 echo "buildtype = ${buildtype_in}"
 echo "step = ${step_in}"
 
@@ -94,4 +89,15 @@ loop_buildtypes() {
     fi
 }
 
+# make the builddir if it doesn't exist
+if [ ! -d ${buildprefix} ] ; then
+    mkdir -p ${buildprefix}
+fi
+
+# make the sourcedir if it doesn't exist
+if [ ! -d ${sourcedir} ] ; then
+    mkdir -p ${sourcedir}
+fi
+
+# do all the requested combinations
 loop_buildtypes
