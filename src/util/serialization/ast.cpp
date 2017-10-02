@@ -152,14 +152,14 @@ namespace util {
 
     namespace detail {
         template <typename Ast>
-        std::string stringify(Ast const& ast);
+        PHYLANX_EXPORT std::string stringify(Ast const& ast);
 
         struct ast_stringify_visitor
         {
             mutable std::string out;
 
             template <typename Ast>
-            bool operator()(Ast const& ast) const
+            PHYLANX_EXPORT bool operator()(Ast const& ast) const
             {
                 out = stringify<Ast>(ast);
                 return true;
@@ -233,13 +233,13 @@ namespace util {
 
     namespace detail {
         template <>
-        std::string stringify(bool const& b)
+        PHYLANX_EXPORT std::string stringify(bool const& b)
         {
             return b ? "T" : "F";
         }
 
         template <>
-        std::string stringify(long const& lg)
+        PHYLANX_EXPORT std::string stringify(long const& lg)
         {
             std::ostringstream m;
             m << lg;
@@ -247,19 +247,19 @@ namespace util {
         }
 
         template <>
-        std::string stringify(std::string const& s)
+        PHYLANX_EXPORT std::string stringify(std::string const& s)
         {
             return s;
         }
 
         template <>
-        std::string stringify(ast::nil const& n)
+        PHYLANX_EXPORT std::string stringify(ast::nil const& n)
         {
             return "";
         }
 
         template <>
-        std::string stringify(phylanx::ir::node_data<double> const& d)
+        PHYLANX_EXPORT std::string stringify(phylanx::ir::node_data<double> const& d)
         {
             std::ostringstream m;
             m << "(" << d << ")";
@@ -267,13 +267,13 @@ namespace util {
         }
 
         template <>
-        std::string stringify(ast::identifier const& ident)
+        PHYLANX_EXPORT std::string stringify(ast::identifier const& ident)
         {
             return stringify_identifier(ident);
         }
 
         template <>
-        std::string stringify(
+        PHYLANX_EXPORT std::string stringify(
             phylanx::util::recursive_wrapper<phylanx::ast::expression> const&
                 expr)
         {
@@ -281,7 +281,7 @@ namespace util {
         }
 
         template <>
-        std::string stringify(
+        PHYLANX_EXPORT std::string stringify(
             phylanx::util::recursive_wrapper<phylanx::ast::function_call> const&
                 func)
         {
@@ -289,7 +289,7 @@ namespace util {
         }
 
         template <>
-        std::string stringify(
+        PHYLANX_EXPORT std::string stringify(
             phylanx::util::recursive_wrapper<phylanx::ast::unary_expr> const&
                 un)
         {
@@ -297,7 +297,7 @@ namespace util {
         }
 
         template <>
-        std::string stringify(
+        PHYLANX_EXPORT std::string stringify(
             phylanx::util::recursive_wrapper<phylanx::ast::primary_expr> const&
                 pr)
         {
