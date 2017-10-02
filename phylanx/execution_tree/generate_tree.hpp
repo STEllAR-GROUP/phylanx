@@ -23,9 +23,8 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT primitive generate_tree(std::string const& exprstr,
         pattern_list const& patterns, variables const& variables);
-    PHYLANX_EXPORT primitive generate_tree(std::string const& exprstr,
-        ast::expression const& expr, pattern_list const& patterns,
-        variables const& variables);
+    PHYLANX_EXPORT primitive generate_tree(ast::expression const& expr,
+        pattern_list const& patterns, variables const& variables);
 }}
 
 #endif
