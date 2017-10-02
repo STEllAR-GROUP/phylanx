@@ -8,9 +8,12 @@ export myldflags="-fPIC -march=native -latomic"
 #export mycflags="-fPIC"
 #export mycxxflags="-fPIC -fpermissive"
 #export myldflags="-fPIC"
-export mycc=gcc
-export mycxx=g++
+export mycc=gcc-7
+export mycxx=g++-7
 export myfc=gfortran
+
+export CC=gcc-7
+export CXX=g++-7
 
 host=ktau
 arch=`arch`

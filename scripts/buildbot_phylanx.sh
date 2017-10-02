@@ -26,6 +26,13 @@ configure_phylanx()
     mkdir -p ${phylanx_build_dir}
     cd ${phylanx_build_dir}
 
+    export CC=${mycc}
+    export CXX=${mycxx}
+    export FC=${myfc}
+    export CFLAGS=${mycflags}
+    export CXXFLAGS=${mycxxflags}
+    export LDFLAGS=${myldflags}
+
     set -x
     cmake \
     -DCMAKE_BUILD_TYPE=${buildtype} \
