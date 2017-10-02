@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+steps=all
+if [ $# -eq 3 ] ; then
+    buildtype=$1
+    step=$2
+fi
+echo "Component HPX, buildtype ${buildtype}, step ${step}"
+
 # where is this script?
 if [ -z ${scriptdir} ] ; then
     scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -10,7 +17,7 @@ if [ -z ${eigen_src_dir} ] ; then
     . ${scriptdir}/buildbot_common.sh
 fi
 
-build_eigen3()
+configure_eigen3()
 {
     if [ ! -d ${eigen_src_dir} ] ; then
         cd ${top}/src
@@ -24,8 +31,18 @@ build_eigen3()
     mkdir -p ${eigen_build_dir}
     cd ${eigen_build_dir}
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=. ${eigen_src_dir}
+}
+
+build_eigen3()
+{
+    cd ${eigen_build_dir}
     make ${makej}
     make install
 }
 
-build_eigen3
+if [ ${step} == "all" ] || [ ${step} == "config" ] ; then
+    configure_eigen3
+fi
+if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then
+    build_eigen3
+fi

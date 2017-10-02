@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+steps=all
+if [ $# -eq 3 ] ; then
+    buildtype=$1
+    step=$2
+fi
+echo "Component HPX, buildtype ${buildtype}, step ${step}"
+
 # where is this script?
 if [ -z ${scriptdir} ] ; then
     scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -12,7 +19,7 @@ fi
 
 pythonpath=`which python3`
 
-build_phylanx()
+configure_phylanx()
 {
     echo "Removing old phylanx build..."
     rm -rf ${phylanx_build_dir}
@@ -28,8 +35,17 @@ build_phylanx()
     -DPHYLANX_WITH_PSEUDO_DEPENDENCIES=On \
     -DPYTHON_EXECUTABLE:FILEPATH=${pythonpath} \
     ${phylanx_src_dir}
+}
 
+build_phylanx()
+{
+    cd ${phylanx_build_dir}
     make ${makej}
 }
 
-build_phylanx
+if [ ${step} == "all" ] || [ ${step} == "config" ] ; then
+    configure_phylanx
+fi
+if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then
+    build_phylanx
+fi

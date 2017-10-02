@@ -1,6 +1,13 @@
 #!/bin/bash -e
 set -x
 
+steps=all
+if [ $# -eq 3 ] ; then
+    buildtype=$1
+    step=$2
+fi
+echo "Component HPX, buildtype ${buildtype}, step ${step}"
+
 # where is this script?
 if [ -z ${scriptdir} ] ; then
     scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -86,6 +93,10 @@ build_it()
     make ${makej} core
 }
 
-get_source
-configure_it
-build_it
+if [ ${step} == "all" ] || [ ${step} == "config" ] ; then
+    echo get_source
+    echo configure_it
+fi
+if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then
+    echo build_it
+fi

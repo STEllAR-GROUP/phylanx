@@ -39,4 +39,4 @@ HPX_ROOT=${buildprefix}/hpx-${buildtype}
 
 # go up one directory
 basedir=$(dirname ${scriptdir})
-echo ${basedir}
+echo "Basedir: ${basedir}"
