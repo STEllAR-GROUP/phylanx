@@ -39,7 +39,7 @@ get_source()
 {
     if [ ! -d ${hpx_src_dir} ] ; then
         cd $(dirname ${hpx_src_dir})
-        git clone git@github.com:STEllAR-GROUP/hpx.git
+        git clone https://github.com/STEllAR-GROUP/hpx.git
     fi
     cd ${hpx_src_dir}
     git checkout master
