@@ -16,8 +16,8 @@ if [ -z ${myarch} ] ; then
 fi
 
 nprocs=`nproc`
-let one_fourth=$nprocs/4
-makej=-j${one_fourth}
+let one_half=$nprocs/2
+makej=-j${one_half}
 
 tmptop=$( dirname "${scriptdir}" )
 top=${tmptop}/buildbot
