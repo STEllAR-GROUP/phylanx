@@ -27,7 +27,7 @@ buildprefix=${top}/build-${myarch}
 boost_src_dir=/dev/shm/src/boost
 boost_build_dir=${buildprefix}/boost-1.65.0
 
-phylanx_src_dir=${sourcedir}/phylanx
+phylanx_src_dir=${tmptop}
 phylanx_build_dir=${buildprefix}/phylanx-${buildtype}
 
 pybind_src_dir=${sourcedir}/pybind11-2.2.0
