@@ -50,9 +50,19 @@ build_phylanx()
     make ${makej}
 }
 
+test_phylanx()
+{
+    cd ${phylanx_build_dir}
+    make tests
+    make test
+}
+
 if [ ${step} == "all" ] || [ ${step} == "configure" ] ; then
     configure_phylanx
 fi
 if [ ${step} == "all" ] || [ ${step} == "compile" ] ; then
     build_phylanx
+fi
+if [ ${step} == "all" ] || [ ${step} == "test" ] ; then
+    test_phylanx
 fi
