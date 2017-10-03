@@ -26,7 +26,7 @@ buildprefix=${top}/build-${myarch}
 
 # only used to _build_ boost
 boost_src_dir=/dev/shm/src/boost
-boost_build_dir=/usr/local/boost/1.65.0-gcc7
+boost_build_dir=/usr/local/boost/1.65.0-gcc6
 
 phylanx_src_dir=${tmptop}
 phylanx_build_dir=${buildprefix}/phylanx-${buildtype}

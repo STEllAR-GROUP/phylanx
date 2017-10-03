@@ -33,7 +33,7 @@ while [ $# -ge 1 ]; do
             step_in="$2"
             ;;
         -h)
-            echo "$0 -c,--component [all|hpx|eigen3|pybind|phylanx] -t,--type [all|Release|RelWithDebInfo|Debug] -s,--step [all|config|compile|test|install] -h,--help"
+            echo "$0 -c,--component [all|hpx|eigen3|pybind|phylanx] -t,--type [all|Release|RelWithDebInfo|Debug] -s,--step [all|configure|compile|test|install] -h,--help"
             exit 0
             ;;
     esac
