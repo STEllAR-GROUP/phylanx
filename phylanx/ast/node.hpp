@@ -148,7 +148,7 @@ namespace phylanx { namespace ast
         identifier() = default;
 
         identifier(std::string const& name)
-        : name(name)
+          : name(name)
         {
         }
         identifier(std::string && name)
@@ -230,6 +230,10 @@ namespace phylanx { namespace ast
         {
         }
 
+        primary_expr(char const* val)
+          : expr_node_type(std::string(val))
+        {
+        }
         primary_expr(std::string const& val)
           : expr_node_type(val)
         {
@@ -301,6 +305,12 @@ namespace phylanx { namespace ast
         {
         }
         operand(double const val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(val))
+        {
+        }
+
+        operand(char const* val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
@@ -448,11 +458,22 @@ namespace phylanx { namespace ast
           : first(operand(std::move(id)))
         {}
 
+        explicit expression(bool b)
+          : first(operand(primary_expr(b)))
+        {}
+
         explicit expression(primary_expr const& pe)
           : first(operand(pe))
         {}
         explicit expression(primary_expr && pe)
           : first(operand(std::move(pe)))
+        {}
+
+        explicit expression(unary_expr const& ue)
+          : first(operand(ue))
+        {}
+        explicit expression(unary_expr && ue)
+          : first(operand(std::move(ue)))
         {}
 
         explicit expression(operation const& op)
@@ -512,10 +533,10 @@ namespace phylanx { namespace ast
     {
         function_call() = default;
 
-        function_call(identifier const& name)
+        explicit function_call(identifier const& name)
           : function_name(name)
         {}
-        function_call(identifier && name)
+        explicit function_call(identifier && name)
           : function_name(std::move(name))
         {}
 
@@ -811,6 +832,8 @@ namespace phylanx { namespace ast
 //         std::ostream& out, function const& func);
 //     PHYLANX_EXPORT std::ostream& operator<<(
 //         std::ostream& out, function_list const& fl);
+
+    PHYLANX_EXPORT std::string to_string(expression const& expr);
 }}
 
 #endif

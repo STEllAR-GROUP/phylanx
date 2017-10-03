@@ -6,3 +6,7 @@
 *.pyc
 /build
 /python/phylanx/__init__.py
+cmake-build-debug/
+cmake-build-release/
+cmake-build-relwithdebinfo/
+.idea/
