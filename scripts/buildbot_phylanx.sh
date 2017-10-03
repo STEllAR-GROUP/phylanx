@@ -40,6 +40,8 @@ configure_phylanx()
     -Dpybind11_DIR=${pybind_build_dir}/share/cmake/pybind11 \
     -DHPX_DIR=${HPX_ROOT}/lib/cmake/HPX \
     -DPHYLANX_WITH_PSEUDO_DEPENDENCIES=On \
+    -DPHYLANX_WITH_MALLOC=jemalloc \
+    -DCMAKE_INSTALL_PREFIX=${phylanx_install_dir} \
     -DPYTHON_EXECUTABLE:FILEPATH=${pythonpath} \
     ${phylanx_src_dir}
 }

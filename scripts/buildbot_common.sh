@@ -30,6 +30,7 @@ boost_build_dir=/usr/local/boost/1.65.0-gcc6
 
 phylanx_src_dir=${tmptop}
 phylanx_build_dir=${buildprefix}/phylanx-${buildtype}
+phylanx_install_dir=${buildprefix}/phylanx-${buildtype}-install
 
 pybind_src_dir=${sourcedir}/pybind11-2.2.0
 pybind_build_dir=${buildprefix}/pybind-${buildtype}
