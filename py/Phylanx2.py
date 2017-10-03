@@ -83,4 +83,4 @@ expr = a1*a2*a0+a3*-a4
 #expr = (a1 + a2)+a3-a4
 
 # Convert the AST to a string and print it
-print(util.stringify(expr.value))
+print(str(expr.value))

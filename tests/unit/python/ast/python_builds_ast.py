@@ -84,7 +84,7 @@ expr = a1*a2*a0+a3*-a4
 #expr = (a1 + a2)+a3-a4
 
 # Convert the AST to a string and check the value
-if util.stringify(expr.value) == "((((node_data<T>: 3.14) * b) * c) + (d * -e))":
+if str(expr.value) == '(((3.140000 * "b") * "c") + ("d" * -"e"))':
     print("Success")
 else:
     print("Failure")

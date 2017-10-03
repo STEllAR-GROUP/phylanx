@@ -390,18 +390,4 @@ PYBIND11_MODULE(_phylanx, m)
 
     util.def("append_operation",&phylanx::util::append_operation,
         "append an operand to an expression");
-    util.def("stringify",&phylanx::util::stringify_expression,
-        "convert an AST to a string representation");
-    util.def("stringify",&phylanx::util::stringify_identifier,
-        "convert an AST to a string representation");
-    util.def("stringify",&phylanx::util::stringify_operand,
-        "convert an AST to a string representation");
-    util.def("stringify",&phylanx::util::stringify_optoken,
-        "convert an AST to a string representation");
-    util.def("stringify",&phylanx::util::stringify_unary_expr,
-        "convert an AST to a string representation");
-    util.def("stringify",&phylanx::util::stringify_operation,
-        "convert an AST to a string representation");
-    util.def("stringify",&phylanx::util::stringify_primary_expr,
-        "convert an AST to a string representation");
 }
