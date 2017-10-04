@@ -11,10 +11,10 @@ if [ -z ${hpx_src_dir} ] ; then
     . ${scriptdir}/buildbot_common.sh
 fi
 
-#workdir=/dev/shm/src
-#if [ ${host} == centaur ] ; then
+workdir=/dev/shm/src
+if [ ${host} == "centaur" ] ; then
     workdir=/tmp/src
-#fi
+fi
 mkdir -p ${workdir}
 cd ${workdir}
 if [ ! -d boost_1_65_0 ] ; then
@@ -27,9 +27,9 @@ fi
 
 cd ${workdir}/boost_1_65_0
 if [ ${mycc} == "clang" ] ; then
-    ./bootstrap.sh --prefix=${boost_build_dir} --with-toolset=clang
+    ./bootstrap.sh --prefix=${boost_path} --with-toolset=clang
 else
-    ./bootstrap.sh --prefix=${boost_build_dir} --with-toolset=gcc
+    ./bootstrap.sh --prefix=${boost_path} --with-toolset=gcc
 fi
 if [ ${mycc} == "icc" ] ; then
     ./b2 ${makej} install toolset=intel address-model=64
