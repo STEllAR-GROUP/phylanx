@@ -13,6 +13,10 @@
 #include <sstream>
 #include <vector>
 
+// See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
+PYBIND11_MAKE_OPAQUE(std::list<phylanx::ast::operation>);
+PYBIND11_MAKE_OPAQUE(std::list<phylanx::ast::expression>);
+
 // older versions of pybind11 don't support variant-like types
 namespace pybind11 { namespace detail
 {
@@ -320,6 +324,26 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::expression>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::expression>));
+
+    // list of phylanx::ast::operations
+    pybind11::class_<std::list<phylanx::ast::operation>>(ast,"operation_list","A list of operations")
+        .def(pybind11::init<>())
+        .def("pop_back",&std::list<phylanx::ast::operation>::pop_back)
+        .def("append",[](std::list<phylanx::ast::operation>& v,const phylanx::ast::operation& f) { v.push_back(f); })
+        .def("__len__",[](const std::list<phylanx::ast::operation>& v) { return v.size(); })
+        .def("__iter__",[](std::list<phylanx::ast::operation>& v) {
+            return pybind11::make_iterator(v.begin(), v.end());
+        }, pybind11::keep_alive<0,1>());
+
+    // list of phylanx::ast::expressions
+    pybind11::class_<std::list<phylanx::ast::expression>>(ast,"expression_list","A list of expressions")
+        .def(pybind11::init<>())
+        .def("pop_back",&std::list<phylanx::ast::expression>::pop_back)
+        .def("append",[](std::list<phylanx::ast::expression>& v,const phylanx::ast::expression& f) { v.push_back(f); })
+        .def("__len__",[](const std::list<phylanx::ast::expression>& v) { return v.size(); })
+        .def("__iter__",[](std::list<phylanx::ast::expression>& v) {
+            return pybind11::make_iterator(v.begin(), v.end());
+        }, pybind11::keep_alive<0,1>());
 
     // phylanx::ast::function_call
     pybind11::class_<phylanx::ast::function_call>(
