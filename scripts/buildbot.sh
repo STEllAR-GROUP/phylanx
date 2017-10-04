@@ -99,5 +99,11 @@ if [ ! -d ${sourcedir} ] ; then
     mkdir -p ${sourcedir}
 fi
 
+# if necessary, build boost
+if [ ${myhost} == "delphi" ] ; then
+    if [ ! -d ${boost_path} ] ; then
+        ${scriptdir}/buildbot_boost.sh
+    fi
+fi
 # do all the requested combinations
 loop_buildtypes
