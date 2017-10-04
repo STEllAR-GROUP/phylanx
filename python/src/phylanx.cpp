@@ -328,7 +328,7 @@ PYBIND11_MODULE(_phylanx, m)
     // list of phylanx::ast::operations
     pybind11::class_<std::list<phylanx::ast::operation>>(ast,"operation_list","A list of operations")
         .def(pybind11::init<>())
-        .def("pop_back",&std::list<phylanx::ast::operation>::clear)
+        .def("pop_back",&std::list<phylanx::ast::operation>::pop_back)
         .def("append",[](std::list<phylanx::ast::operation>& v,const phylanx::ast::operation& f) { v.push_back(f); })
         .def("__len__",[](const std::list<phylanx::ast::operation>& v) { return v.size(); })
         .def("__iter__",[](std::list<phylanx::ast::operation>& v) {
@@ -338,7 +338,7 @@ PYBIND11_MODULE(_phylanx, m)
     // list of phylanx::ast::expressions
     pybind11::class_<std::list<phylanx::ast::expression>>(ast,"expression_list","A list of expressions")
         .def(pybind11::init<>())
-        .def("pop_back",&std::list<phylanx::ast::expression>::clear)
+        .def("pop_back",&std::list<phylanx::ast::expression>::pop_back)
         .def("append",[](std::list<phylanx::ast::expression>& v,const phylanx::ast::expression& f) { v.push_back(f); })
         .def("__len__",[](const std::list<phylanx::ast::expression>& v) { return v.size(); })
         .def("__iter__",[](std::list<phylanx::ast::expression>& v) {
