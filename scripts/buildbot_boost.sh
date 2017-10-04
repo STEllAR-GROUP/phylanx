@@ -38,3 +38,5 @@ elif [ ${mycc} == "clang" ] ; then
 else
     ./b2 ${makej} install cxxflags="-std=c++11"
 fi
+
+rm -rf ${workdir}

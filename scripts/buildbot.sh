@@ -7,7 +7,13 @@ fi
 
 myhost=`hostname`
 # load common settings
-. ${scriptdir}/${myhost}-gcc.sh
+if [ ${host} == "ktau" ] ; then
+    . ${scriptdir}/${myhost}-gcc.sh
+elif [ ${host} == "delphi" ] ; then
+    . ${scriptdir}/${myhost}-gcc.sh
+elif [ ${host} == "centaur" ] ; then
+    . ${scriptdir}/${myhost}-clang.sh
+fi
 . ${scriptdir}/buildbot_common.sh
 
 args=$(getopt -l "searchpath:" -o "c:t:s:h" -- "$@")
