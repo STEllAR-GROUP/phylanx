@@ -411,4 +411,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     util.def("unserialize", &phylanx::util::unserialize,
         "un-serialize a byte-stream into an AST expression object");
+
+    util.def("append_operation",&phylanx::util::append_operation,
+        "append an operand to an expression");
 }
