@@ -88,7 +88,8 @@ def test_expression():
     e1.rest.append(op2);
     test_serialization(e1)
 
-    e1.rest.append([op2, op2]);
+    e1.rest.append(op2)
+    e1.rest.append(op2)
     test_serialization(e1)
 
 ###############################################################################
