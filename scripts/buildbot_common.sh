@@ -17,7 +17,7 @@ fi
 
 nprocs=`nproc`
 let one_half=$nprocs/2
-makej=-j${one_half}
+makej="-j ${one_half} -l ${nprocs}"
 
 tmptop=$( dirname "${scriptdir}" )
 top=${tmptop}/buildbot

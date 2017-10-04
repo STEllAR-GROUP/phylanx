@@ -8,11 +8,14 @@ export mycc=gcc
 export mycxx=g++
 export myfc=gfortran
 
-host=delphi
+export host=delphi
 arch=`arch`
 uname=`uname`
 
-export basedir=${HOME}/src/phylanx
+if [ -z ${scriptdir} ] ; then
+    scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+fi
+export basedir=$( dirname "${scriptdir}" )
 export myarch=${host}-${arch}-${uname}-gcc
 export buildtype=Release
 export malloc=tcmalloc

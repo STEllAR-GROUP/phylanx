@@ -12,8 +12,8 @@ if [ -z ${hpx_src_dir} ] ; then
 fi
 
 workdir=/dev/shm/src
-if [ ${host} == "centaur" ] ; then
-    workdir=/tmp/src
+if [ "${host}" == "centaur" ] || [ "${host}" == "delphi" ] || [ "${host}" == "grover" ] ; then
+    workdir=${sourcedir}/boost
 fi
 mkdir -p ${workdir}
 cd ${workdir}
@@ -39,4 +39,3 @@ else
     ./b2 ${makej} install cxxflags="-std=c++11"
 fi
 
-rm -rf ${workdir}
