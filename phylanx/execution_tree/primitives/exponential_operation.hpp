@@ -18,8 +18,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
     {
       class HPX_COMPONENT_EXPORT exponential_operation
-        : public base_primitive
-        , public hpx::components::component_base<exponential_operation>
+          : public base_primitive
+          , public hpx::components::component_base<exponential_operation>
       {
       private:
         using operands_type = std::vector<ir::node_data<double>>;
@@ -33,10 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<ir::node_data<double>> eval() const override;
 
       protected:
-        ir::node_data<double> exp0d(operands_type const& ops) const;
-        ir::node_data<double> expxd(operands_type const& ops) const;
+        ir::node_data<double> exponential0d(operands_type const& ops) const;
+        ir::node_data<double> exponentialxd(operands_type const& ops) const;
       };
-
     }}}
-
 #endif //PHYLANX_EXPONENTIAL_OPERATION_HPP_OCT031241PM
