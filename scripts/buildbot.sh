@@ -7,11 +7,11 @@ fi
 
 myhost=`hostname`
 # load common settings
-if [ ${host} == "ktau" ] ; then
+if [ ${myhost} == "ktau" ] ; then
     . ${scriptdir}/${myhost}-gcc.sh
-elif [ ${host} == "delphi" ] ; then
+elif [ ${myhost} == "delphi" ] ; then
     . ${scriptdir}/${myhost}-gcc.sh
-elif [ ${host} == "centaur" ] ; then
+elif [ ${myhost} == "centaur" ] ; then
     . ${scriptdir}/${myhost}-clang.sh
 fi
 . ${scriptdir}/buildbot_common.sh
