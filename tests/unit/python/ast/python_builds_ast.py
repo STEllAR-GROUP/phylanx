@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017 Steven R. Brandt
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -42,7 +42,7 @@ class Ops:
         self.value = e1
 
     def __str__(self):
-        return str(self.value) 
+        return str(self.value)
 
 # Unary negation
 class Neg (Ops):
