@@ -55,11 +55,12 @@ configure_it()
     mkdir -p ${HPX_ROOT}
     cd ${HPX_ROOT}
 
-    malloc=jemalloc
     if [ ${malloc} == "jemalloc" ] ; then
         alloc_opts="-DJEMALLOC_ROOT=${malloc_path} -DHPX_WITH_MALLOC=jemalloc"
-    else
+    elif [ ${malloc} == "tcmalloc" ] ; then
         alloc_opts="-DTCMALLOC_ROOT=${malloc_path} -DHPX_WITH_MALLOC=tcmalloc"
+    else
+        alloc_opts="-DHPX_WITH_MALLOC=system"
     fi
     apex_opts="-DHPX_WITH_APEX=TRUE -DAPEX_WITH_ACTIVEHARMONY=TRUE -DACTIVEHARMONY_ROOT=${activeharmony_path} -DAPEX_WITH_OTF2=TRUE -DOTF2_ROOT=${otf2_path} -DAPEX_WITH_PAPI=TRUE -DPAPI_ROOT=${papi_path} -DHPX_WITH_APEX_NO_UPDATE=TRUE "
     export CC=${mycc}
