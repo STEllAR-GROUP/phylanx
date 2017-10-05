@@ -9,6 +9,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
@@ -26,11 +28,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         base_primitive() = default;
         virtual ~base_primitive() = default;
 
-        hpx::future<ir::node_data<double>> eval_nonvirtual()
+        hpx::future<util::optional<ir::node_data<double>>> eval_nonvirtual()
         {
             return eval();
         }
-        virtual hpx::future<ir::node_data<double>> eval() const = 0;
+        virtual hpx::future<util::optional<ir::node_data<double>>> eval() const = 0;
 
     public:
         HPX_DEFINE_COMPONENT_ACTION(base_primitive,
@@ -69,7 +71,7 @@ namespace phylanx { namespace execution_tree
         {
         }
 
-        hpx::future<ir::node_data<double>> eval() const;
+        hpx::future<util::optional<ir::node_data<double>>> eval() const;
     };
 
     ///////////////////////////////////////////////////////////////////////////

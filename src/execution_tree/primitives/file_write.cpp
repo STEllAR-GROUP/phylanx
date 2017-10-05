@@ -6,7 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/components.hpp>
@@ -83,16 +85,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<ir::node_data<double>> file_write::eval() const
+    hpx::future<util::optional<ir::node_data<double>>> file_write::eval() const
     {
         primitive const* p = util::get_if<primitive>(&operand_);
         if (p != nullptr)
         {
             return p->eval().then(hpx::util::unwrapping(
-                [this](ir::node_data<double> && nd) -> ir::node_data<double>
+                [this](util::optional<ir::node_data<double>> && nd)
+                ->  operand_type
                 {
-                    write_to_file(filename_, nd);
-                    return std::move(nd);
+                    write_to_file(filename_, nd.value());
+                    return operand_type(std::move(nd));
                 }));
         }
 
@@ -108,6 +111,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         write_to_file(filename_, *nd);
-        return hpx::make_ready_future(*nd);
+        return hpx::make_ready_future(operand_type(*nd));
     }
 }}}

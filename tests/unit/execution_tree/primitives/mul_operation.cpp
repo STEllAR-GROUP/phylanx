@@ -33,8 +33,9 @@ void test_mul_operation_0d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
-    HPX_TEST_EQ(42.0, f.get()[0]);
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
+    HPX_TEST_EQ(42.0, f.get().value()[0]);
 }
 
 void test_mul_operation_0d_lit()
@@ -52,8 +53,9 @@ void test_mul_operation_0d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
-    HPX_TEST_EQ(42.0, f.get()[0]);
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
+    HPX_TEST_EQ(42.0, f.get().value()[0]);
 }
 
 void test_mul_operation_0d1d()
@@ -75,10 +77,12 @@ void test_mul_operation_0d1d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::VectorXd expected = 6.0 * v;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_0d1d_lit()
@@ -98,10 +102,12 @@ void test_mul_operation_0d1d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::VectorXd expected = 6.0 * v;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_0d2d()
@@ -123,10 +129,12 @@ void test_mul_operation_0d2d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::MatrixXd expected = 6.0 * m;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_0d2d_lit()
@@ -146,10 +154,12 @@ void test_mul_operation_0d2d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::MatrixXd expected = 6.0 * m;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_1d0d()
@@ -171,10 +181,12 @@ void test_mul_operation_1d0d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::VectorXd expected = v * 6.0;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_1d0d_lit()
@@ -194,10 +206,12 @@ void test_mul_operation_1d0d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::VectorXd expected = v * 6.0;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_2d0d()
@@ -219,10 +233,12 @@ void test_mul_operation_2d0d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::MatrixXd expected = m * 6.0;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_2d0d_lit()
@@ -242,10 +258,12 @@ void test_mul_operation_2d0d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::MatrixXd expected = m * 6.0;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_2d()
@@ -268,10 +286,12 @@ void test_mul_operation_2d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::MatrixXd expected = m1 * m2;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_mul_operation_2d_lit()
@@ -292,10 +312,12 @@ void test_mul_operation_2d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::ir::node_data<double>> f = mul.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        mul.eval();
 
     Eigen::MatrixXd expected = m1 * m2;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 int main(int argc, char* argv[])
