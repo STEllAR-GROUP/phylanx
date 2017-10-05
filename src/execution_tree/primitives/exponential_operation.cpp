@@ -32,15 +32,31 @@ HPX_DEFINE_GET_COMPONENT_TYPE(exponential_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
     {
       ///////////////////////////////////////////////////////////////////////////
-      exponential_operation::exponential_operation(std::vector<primitive_argument_type>
-                                                   &&operands)
+      exponential_operation::exponential_operation
+          (std::vector<primitive_argument_type> &&operands)
           : operands_(std::move(operands))
       {
-        std::cout<<"Exponential Constructor"<<std::endl;
+          if (operands_.size() > 1)
+          {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "exponential_operation::exponential_operation",
+                                "the exponential_operation primitive requires"
+                                "exactly one operand");
+          }
+
+          if (!valid(operands_[0]))
+          {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "exponential_operation::exponential_operation",
+                                "the exponential_operation primitive requires "
+                                "that the arguments given by the operands array"
+                                " is valid");
+          }
       }
 
       ///////////////////////////////////////////////////////////////////////////
-      ir::node_data<double> exponential_operation::exponential0d(operands_type const& ops) const
+      ir::node_data<double> exponential_operation::exponential0d
+          (operands_type const& ops) const
       {
         return std::exp(ops[0][0]);
       }
@@ -49,7 +65,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
       ir::node_data<double> exponential_operation::exponentialxd(operands_type const&
       ops) const
       {
-        return ir::node_data<double>(42);
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+                            "exponential_operation::exponentialxd",
+                            "this feature has not been implemented yet!!");
       }
 
       hpx::future<ir::node_data<double>> exponential_operation::eval() const
