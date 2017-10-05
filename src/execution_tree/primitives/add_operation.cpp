@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add_operation",
                 "the add_operation primitive requires that the arguments given "
-                    "by the operands array is valid");
+                    "by the operands array are valid");
         }
     }
 
@@ -212,6 +212,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::dataflow(hpx::util::unwrapping(
             [this](operands_type && ops)
             {
+                if (detail::verify_argument_values(ops))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_operation::eval",
+                        "the add_operation primitive requires that the argument"
+                            " values given by the operands array are non-empty");
+                }
+
                 std::size_t lhs_dims = ops[0].value().num_dimensions();
                 switch (lhs_dims)
                 {
@@ -231,18 +239,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
             }),
-            detail::map_operands(operands_,
-                [](primitive_argument_type const& val)
-                ->  hpx::future<operand_type>
-                {
-                    primitive const* p = util::get_if<primitive>(&val);
-                    if (p != nullptr)
-                        return p->eval();
-
-                    HPX_ASSERT(valid(val));
-                    return hpx::make_ready_future(
-                        operand_type(extract_literal_value(val)));
-                })
+            detail::map_operands(operands_, detail::extract_node_data)
         );
     }
 }}}

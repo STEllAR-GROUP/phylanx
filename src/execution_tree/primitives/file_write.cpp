@@ -94,6 +94,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [this](util::optional<ir::node_data<double>> && nd)
                 ->  operand_type
                 {
+                    if (!nd)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "file_write::eval",
+                            "the file_write primitive requires that the argument"
+                                " value given by the operand is non-empty");
+                    }
+
                     write_to_file(filename_, nd.value());
                     return operand_type(std::move(nd));
                 }));
