@@ -19,6 +19,8 @@
 #include <vector>
 #include <cmath>
 
+#include <unsupported/Eigen/MatrixFunctions>
+
 ////////////////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::exponential_operation>
@@ -65,17 +67,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
       ir::node_data<double> exponential_operation::exponential1d(operands_type const&
       ops) const
       {
-        HPX_THROW_EXCEPTION(hpx::not_implemented,
-                            "exponential_operation::exponentialxd",
-                            "exponential1d has not been implemented yet!!");
+        using array_type = Eigen::Array<double, Eigen::Dynamic, 1>;
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
+        array_type data = ops[0].matrix();
+        matrix_type result =  data.exp();
+
+        return ir::node_data<double>(std::move(result));
       }
 
       ir::node_data<double> exponential_operation::exponentialxd(operands_type const&
       ops) const
       {
-        HPX_THROW_EXCEPTION(hpx::not_implemented,
-                            "exponential_operation::exponential1d",
-                            "exponentialxd has not been implemented yet!!");
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+
+        matrix_type result =  ops[0].matrix().exp();;
+
+        return ir::node_data<double>(std::move(result));
       }
 
       hpx::future<ir::node_data<double>> exponential_operation::eval() const
