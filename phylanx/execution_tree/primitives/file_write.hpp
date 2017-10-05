@@ -27,15 +27,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         file_write() = default;
 
-        file_write(std::vector<ast::literal_value_type>&& literals,
-            std::vector<primitive>&& operands);
+        file_write(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<ir::node_data<double>> eval() const override;
 
     private:
         std::string filename_;
-        std::vector<ast::literal_value_type> literals_;
-        std::vector<primitive> operands_;
+        primitive_argument_type operand_;
     };
 }}}
 

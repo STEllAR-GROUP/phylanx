@@ -49,21 +49,57 @@ void test_add_primitive()
 void test_sub_primitive()
 {
     phylanx::execution_tree::pattern_list patterns = {
-            { "_1 - _2", &phylanx::execution_tree::primitives::create<
-                    phylanx::execution_tree::primitives::sub_operation>}
-    };
+        { "_1 - _2", &phylanx::execution_tree::primitives::create<
+            phylanx::execution_tree::primitives::sub_operation>}};
 
     phylanx::execution_tree::variables variables = {
-            {"A", create_literal_value(41.0)},
-            {"B", create_literal_value(1.0)},
-            {"C", create_literal_value(13.0)}
-    };
+        {"A", create_literal_value(41.0)},
+        {"B", create_literal_value(1.0)},
+        {"C", create_literal_value(13.0)}};
 
     test_generate_tree("A - B", patterns, variables, 40.0);
     test_generate_tree("A - (B - C)", patterns, variables, 53.0);
     test_generate_tree("A - (B - A)", patterns, variables, 81.0);
     test_generate_tree("(A - B) - C", patterns, variables, 27.0);
+}
 
+void test_mul_primitive()
+{
+    phylanx::execution_tree::pattern_list patterns = {
+        { "_1 * _2", &phylanx::execution_tree::primitives::create<
+            phylanx::execution_tree::primitives::mul_operation>}};
+
+    phylanx::execution_tree::variables variables = {
+        {"A", create_literal_value(41.0)},
+        {"B", create_literal_value(1.0)},
+        {"C", create_literal_value(13.0)}};
+
+    test_generate_tree("A * B", patterns, variables, 41.0);
+    test_generate_tree("A * (B * C)", patterns, variables, 533.0);
+    test_generate_tree("A * (B * A)", patterns, variables, 1681.0);
+    test_generate_tree("(A * B) * C", patterns, variables, 533.0);
+}
+
+void test_math_primitives()
+{
+    phylanx::execution_tree::pattern_list patterns = {
+        { "_1 + _2", &phylanx::execution_tree::primitives::create<
+            phylanx::execution_tree::primitives::add_operation>},
+        { "_1 - _2", &phylanx::execution_tree::primitives::create<
+            phylanx::execution_tree::primitives::sub_operation>},
+        { "_1 * _2", &phylanx::execution_tree::primitives::create<
+            phylanx::execution_tree::primitives::mul_operation>}
+    };
+
+    phylanx::execution_tree::variables variables = {
+        {"A", create_literal_value(41.0)},
+        {"B", create_literal_value(1.0)},
+        {"C", create_literal_value(13.0)}
+    };
+
+    test_generate_tree("A + ((B - C) * A)", patterns, variables, -451.0);
+    test_generate_tree("(A * (B + A)) + C", patterns, variables, 1735.0);
+    test_generate_tree("(A * B) - C", patterns, variables, 28.0);
 }
 
 void test_file_io_primitives()
@@ -87,9 +123,11 @@ void test_file_io_primitives()
 
 int main(int argc, char* argv[])
 {
-    test_add_primitive();
-    test_file_io_primitives();
-    test_sub_primitive();
+//     test_add_primitive();
+//     test_sub_primitive();
+//     test_mul_primitive();
+    test_math_primitives();
+//     test_file_io_primitives();
 
     return hpx::util::report_errors();
 }

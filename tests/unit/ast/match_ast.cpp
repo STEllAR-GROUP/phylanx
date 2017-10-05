@@ -160,6 +160,9 @@ int main(int argc, char* argv[])
         "func(_1, _2)", "func(A + B, C * D)", "A + B", "C * D");
     test_placeholder_matching("_1(_2)", "func(A)", "func", "A");
 
+    test_placeholder_matching("_1 + _2", "A + ((B - C) * D)", "A", "(B - C) * D");
+    test_placeholder_matching("_1 * _2", "(A + (B - C)) * D", "A + (B - C)", "D");
+
     // using placeholder ellipses
     test_placeholder_matching_ellipses(
         "_1 + __2", "A + B + C", "A",

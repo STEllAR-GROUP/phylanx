@@ -41,50 +41,50 @@ def test_expression(expr, expected, delimiter):
 ###############################################################################
 test_expression(
     'A + B',
-    'expression\n' +
-        'identifier: A\n' +
-        'identifier: B\n' +
-        'op_plus\n',
+    '(A + B)\n' +
+        'A\n' +
+        'B\n' +
+        '+\n',
     '\n')
 
 test_expression(
     'A + B + -C',
-    'expression\n' +
-        'identifier: A\n' +
-        'identifier: B\n' +
-        'op_plus\n' +
-        'identifier: C\n' +
-        'op_negative\n' +
-        'op_plus\n',
+    '(A + B + -C)\n' +
+        'A\n' +
+        'B\n' +
+        '+\n' +
+        'C\n' +
+        '-\n' +
+        '+\n',
     '\n')
 
 test_expression(
     'A + B * C',
-    'expression\n' +
-        'identifier: A\n' +
-        'identifier: B\n' +
-        'identifier: C\n' +
-        'op_times\n' +
-        'op_plus\n',
+    '(A + B * C)\n' +
+        'A\n' +
+        'B\n' +
+        'C\n' +
+        '*\n' +
+        '+\n',
     '\n')
 
 test_expression(
     'A * B + C',
-    'expression\n' +
-        'identifier: A\n' +
-        'identifier: B\n' +
-        'op_times\n' +
-        'identifier: C\n' +
-        'op_plus\n',
+    '(A * B + C)\n' +
+        'A\n' +
+        'B\n' +
+        '*\n' +
+        'C\n' +
+        '+\n',
     '\n')
 
 test_expression(
     'func(A, B)',
-    'expression\n' +
-        'function_call\n' +
-            'identifier: func\n' +
-            'expression\n' +
-                'identifier: A\n' +
-            'expression\n' +
-                'identifier: B\n',
+    'func(A, B)\n' +
+        'func(A, B)\n' +
+            'func\n' +
+            'A\n' +
+                'A\n' +
+            'B\n' +
+                'B\n',
     '\n')

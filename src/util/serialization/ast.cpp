@@ -10,13 +10,13 @@
 #include <hpx/include/serialization.hpp>
 
 #include <cstddef>
+#include <sstream>
 #include <vector>
 
-namespace phylanx { namespace util
-{
+namespace phylanx {
+namespace util {
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
+    namespace detail {
         template <typename Ast>
         std::vector<char> serialize(Ast const& input)
         {
@@ -80,8 +80,7 @@ namespace phylanx { namespace util
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
+    namespace detail {
         template <typename Ast>
         void unserialize_helper(std::vector<char> const& input, Ast& ast)
         {
@@ -130,7 +129,8 @@ namespace phylanx { namespace util
             detail::unserialize_helper(input, ast);
         }
 
-        void unserialize(std::vector<char> const& input, ast::function_call& ast)
+        void unserialize(
+            std::vector<char> const& input, ast::function_call& ast)
         {
             detail::unserialize_helper(input, ast);
         }
@@ -141,6 +141,13 @@ namespace phylanx { namespace util
         ast::expression expr;
         detail::unserialize_helper(input, expr);
         return expr;
+    }
+
+    // You cannot add to expression.rest unless you
+    // use this function. Note sure why.
+    void append_operation(ast::expression& ast, ast::operation const& o)
+    {
+        ast.rest.push_back(o);
     }
 }}
 
