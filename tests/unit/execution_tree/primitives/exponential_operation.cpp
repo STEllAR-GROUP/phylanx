@@ -66,7 +66,7 @@ void test_exponential_operation_1d()
 
 void test_exponential_operation_2d()
 {
-  Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
+  Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
 
   phylanx::execution_tree::primitive lhs =
       hpx::new_<phylanx::execution_tree::primitives::literal_value>(
