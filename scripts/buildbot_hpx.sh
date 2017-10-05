@@ -42,10 +42,10 @@ get_source()
         git clone https://github.com/STEllAR-GROUP/hpx.git
     fi
     cd ${hpx_src_dir}
-    # git checkout master
-    # git pull
-    git checkout a7da13ca4a48b08db379534d8f2cbfd7265ca6fa
     git reset --hard
+    git checkout master
+    git pull
+    # git checkout a7da13ca4a48b08db379534d8f2cbfd7265ca6fa
     patch -N CMakeLists.txt ${scriptdir}/hpx.patch
 }
 

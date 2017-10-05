@@ -108,7 +108,7 @@ if [ ! -d ${sourcedir} ] ; then
 fi
 
 # if necessary, build boost
-if [ ${myhost} == "delphi" ] ; then
+if [ ${myhost} == "delphi" ] || [ ${myhost} == "centaur" ] ; then
     if [ ! -d ${boost_path} ] ; then
         ${scriptdir}/buildbot_boost.sh
     fi
