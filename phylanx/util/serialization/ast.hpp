@@ -33,6 +33,8 @@ namespace phylanx { namespace util
     PHYLANX_EXPORT std::vector<char> serialize(ast::expression const&);
     PHYLANX_EXPORT std::vector<char> serialize(ast::function_call const&);
 
+    PHYLANX_EXPORT void append_operation(ast::expression &,ast::operation const &);
+
     namespace detail
     {
         PHYLANX_EXPORT void unserialize(
