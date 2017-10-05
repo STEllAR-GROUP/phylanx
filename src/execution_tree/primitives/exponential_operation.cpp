@@ -17,6 +17,7 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+#include <cmath>
 
 ////////////////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -31,7 +32,8 @@ HPX_DEFINE_GET_COMPONENT_TYPE(exponential_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
     {
       ///////////////////////////////////////////////////////////////////////////
-      exponential_operation::exponential_operation(primitive_argument_type &&operands)
+      exponential_operation::exponential_operation(std::vector<primitive_argument_type>
+                                                   &&operands)
           : operands_(std::move(operands))
       {
         std::cout<<"Exponential Constructor"<<std::endl;
@@ -40,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       ///////////////////////////////////////////////////////////////////////////
       ir::node_data<double> exponential_operation::exponential0d(operands_type const& ops) const
       {
-        return ir::node_data<double>(42);
+        return std::exp(ops[0][0]);
       }
 
       ///////////////////////////////////////////////////////////////////////////
@@ -52,7 +54,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
       hpx::future<ir::node_data<double>> exponential_operation::eval() const
       {
-        return hpx::make_ready_future(ir::node_data<double>(42));
+          return hpx::dataflow(hpx::util::unwrapping(
+              [this](std::vector<ir::node_data<double>> && ops)
+          {
+            std::size_t dims = ops[0].num_dimensions();
+            switch (dims)
+            {
+              case 0:
+                return exponential0d(ops);
+
+              case 1:
+                return exponentialxd(ops);
+
+              case 2:
+                return exponentialxd(ops);;
+
+              default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "exponential_operation::eval",
+                                    "something wrong with the dimentions");
+            }
+          }),
+          detail::map_operands(operands_,
+                               [](primitive_argument_type const& val)
+                                   ->  hpx::future<ir::node_data<double>>
+                               {
+                                 primitive const* p = util::get_if<primitive>(&val);
+                                 if (p != nullptr)
+                                   return p->eval();
+
+                                 HPX_ASSERT(valid(val));
+                                 return hpx::make_ready_future(extract_literal_value(val));
+                               })
+          );
       }
 
     }}}

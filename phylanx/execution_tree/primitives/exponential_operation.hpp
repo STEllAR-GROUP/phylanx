@@ -23,12 +23,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
       {
       private:
         using operands_type = std::vector<ir::node_data<double>>;
-        primitive_argument_type operands_;
+        std::vector<primitive_argument_type> operands_;
 
       public:
         exponential_operation() = default;
 
-        exponential_operation(primitive_argument_type &&operands);
+        exponential_operation(std::vector<primitive_argument_type> &&operands);
 
         hpx::future<ir::node_data<double>> eval() const override;
 
