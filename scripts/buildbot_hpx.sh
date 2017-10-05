@@ -71,7 +71,7 @@ configure_it()
     export LDFLAGS=${myldflags}
 
     if [[ ${myarch} =~ .*knl.* ]] ; then
-        cmake_extras="-DHPX_WITH_MAX_CPU_COUNT=512 -DCMAKE_TOOLCHAIN_FILE=${hpx_src_dir}/cmake/toolchains/KNL.cmake"
+        cmake_extras="-DHPX_WITH_MAX_CPU_COUNT=512"
     fi
 
     set -x

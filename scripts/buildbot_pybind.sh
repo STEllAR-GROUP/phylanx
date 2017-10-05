@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+set -x
+
 steps=all
 if [ $# -eq 3 ] ; then
     buildtype=$1
@@ -34,7 +36,12 @@ configure_pybind()
     cd ${pybind_build_dir}
     set -x
     export LDFLAGS="-ldl -lutil"
-    cmake -DCMAKE_INSTALL_PREFIX=. -DDOWNLOAD_CATCH=1 -DPYTHON_EXECUTABLE:FILEPATH=${pythonpath} ${pybind_src_dir}
+    cmake \
+    -DCMAKE_BUILD_TYPE=${buildtype} \
+    -DDOWNLOAD_CATCH=1 \
+    -DPYTHON_EXECUTABLE:FILEPATH=${pythonpath} \
+    -DCMAKE_INSTALL_PREFIX=. \
+    ${pybind_src_dir}
 }
 
 build_pybind()

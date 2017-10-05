@@ -30,7 +30,10 @@ configure_eigen3()
     rm -rf ${eigen_build_dir}
     mkdir -p ${eigen_build_dir}
     cd ${eigen_build_dir}
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=. ${eigen_src_dir}
+    cmake \
+    -DCMAKE_BUILD_TYPE=${buildtype} \
+    -DCMAKE_INSTALL_PREFIX=. \
+    ${eigen_src_dir}
 }
 
 build_eigen3()

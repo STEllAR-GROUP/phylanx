@@ -11,6 +11,8 @@ if [ ${myhost} == "ktau" ] ; then
     . ${scriptdir}/${myhost}-gcc.sh
 elif [ ${myhost} == "delphi" ] ; then
     . ${scriptdir}/${myhost}-gcc.sh
+elif [ ${myhost} == "grover" ] ; then
+    . ${scriptdir}/${myhost}-intel.sh
 elif [ ${myhost} == "centaur" ] ; then
     . ${scriptdir}/${myhost}-clang.sh
 fi
