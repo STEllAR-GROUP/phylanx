@@ -62,12 +62,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
       }
 
       ///////////////////////////////////////////////////////////////////////////
-      ir::node_data<double> exponential_operation::exponentialxd(operands_type const&
+      ir::node_data<double> exponential_operation::exponential1d(operands_type const&
       ops) const
       {
         HPX_THROW_EXCEPTION(hpx::not_implemented,
                             "exponential_operation::exponentialxd",
-                            "this feature has not been implemented yet!!");
+                            "exponential1d has not been implemented yet!!");
+      }
+
+      ir::node_data<double> exponential_operation::exponentialxd(operands_type const&
+      ops) const
+      {
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+                            "exponential_operation::exponential1d",
+                            "exponentialxd has not been implemented yet!!");
       }
 
       hpx::future<ir::node_data<double>> exponential_operation::eval() const
@@ -82,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return exponential0d(ops);
 
               case 1:
-                return exponentialxd(ops);
+                return exponential1d(ops);
 
               case 2:
                 return exponentialxd(ops);;

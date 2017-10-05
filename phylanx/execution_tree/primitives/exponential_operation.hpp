@@ -34,6 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
       protected:
         ir::node_data<double> exponential0d(operands_type const& ops) const;
+        ir::node_data<double> exponential1d(operands_type const& ops) const;
         ir::node_data<double> exponentialxd(operands_type const& ops) const;
       };
     }}}
