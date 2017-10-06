@@ -12,14 +12,10 @@
 
 #include <map>
 #include <string>
-#include <utility>
-#include <vector>
 
 namespace phylanx { namespace execution_tree
 {
     using variables = std::map<std::string, primitive>;
-    using pattern_list =
-        std::vector<std::pair<std::string, primitives::factory_function_type>>;
 
     PHYLANX_EXPORT primitive generate_tree(std::string const& exprstr,
         pattern_list const& patterns, variables const& variables);

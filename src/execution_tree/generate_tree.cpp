@@ -28,8 +28,9 @@ namespace phylanx { namespace execution_tree
     {
         ///////////////////////////////////////////////////////////////////////
         using expression_pattern_list =
-            std::vector<hpx::util::tuple<std::string, ast::expression,
-                primitives::factory_function_type>>;
+            std::vector<
+                hpx::util::tuple<std::string, ast::expression, factory_function_type
+            >>;
 
         expression_pattern_list generate_patterns(pattern_list const& patterns)
         {
