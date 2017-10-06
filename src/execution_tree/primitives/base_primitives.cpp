@@ -55,8 +55,33 @@ namespace phylanx { namespace execution_tree
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::primitives::literal_value",
-            "unsupported primitive_value_type");
+            "phylanx::execution_tree::extract_literal_value",
+            "primitive_value_type does not hold a literal value type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive extract_primitive(primitive_argument_type const& val)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+            return *p;
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_primitive",
+            "primitive_value_type does not hold a primitive");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::future<util::optional<ir::node_data<double>>> evaluate_operand(
+        primitive_argument_type const& val)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+            return p->eval();
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(util::optional<ir::node_data<double>>(
+            extract_literal_value(val)));
     }
 
     ///////////////////////////////////////////////////////////////////////////

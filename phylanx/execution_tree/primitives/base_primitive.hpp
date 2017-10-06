@@ -95,8 +95,22 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT  primitive_argument_type to_primitive_value_type(
         ast::literal_value_type && val);
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Extract a literal type from a given primitive_argument_type, throw
+    // if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<double> extract_literal_value(
         primitive_argument_type const& val);
+
+    // Extract a primitive from a given primitive_argument_type, throw
+    // if it doesn't hold one.
+    PHYLANX_EXPORT primitive extract_primitive(
+        primitive_argument_type const& val);
+
+    ///////////////////////////////////////////////////////////////////////
+    // Extract a node_data<double> from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<util::optional<ir::node_data<double>>>
+        evaluate_operand(primitive_argument_type const& val);
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -144,21 +158,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return false;
             }
             return true;
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-        // Extract a node_data<double> from a primitive_argument_type (that
-        // could be a primitive or a literal value).
-        inline hpx::future<util::optional<ir::node_data<double>>>
-            extract_node_data(primitive_argument_type const& val)
-        {
-            primitive const* p = util::get_if<primitive>(&val);
-            if (p != nullptr)
-                return p->eval();
-
-            HPX_ASSERT(valid(val));
-            return hpx::make_ready_future(util::optional<ir::node_data<double>>(
-                extract_literal_value(val)));
         }
     }
 }}}

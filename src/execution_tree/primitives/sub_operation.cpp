@@ -238,7 +238,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
             }),
-            detail::map_operands(operands_, detail::extract_node_data)
+            detail::map_operands(operands_, evaluate_operand)
         );
     }
 }}}
