@@ -5,6 +5,7 @@
 
 set(tests
     add_operation
+    equal_operation
     sub_operation
     mul_operation
     file_primitives

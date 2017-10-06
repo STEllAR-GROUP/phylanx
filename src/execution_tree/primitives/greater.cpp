@@ -162,7 +162,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::dataflow(hpx::util::unwrapping(
             [this](operands_type && ops)
             {
-                if (detail::verify_argument_values(ops))
+                if (!detail::verify_argument_values(ops))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",

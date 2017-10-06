@@ -30,7 +30,8 @@ HPX_DEFINE_GET_COMPONENT_TYPE(while_operation_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    while_operation::while_operation(std::vector<primitive_argument_type>&& operands)
+    while_operation::while_operation(
+            std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
         if (operands_.size() != 2)
@@ -62,17 +63,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
               , result_(hpx::make_ready_future(operand_type{}))
             {}
 
-            hpx::future<operand_type> recurse(hpx::future<operand_type> && cond)
+            hpx::future<operand_type> body(hpx::future<operand_type> && cond)
             {
-                if (bool(cond.get()))
+                if (bool(cond.get().value()))
                 {
                     // evaluate body of while statement
-                    result_ = evaluate_operand(operands_[1]);
-
                     auto this_ = this->shared_from_this();
-                    return result_.then(
-                        [this_](hpx::future<operand_type> && result)
+                    return evaluate_operand(operands_[1]).then(
+                        [this_](hpx::future<operand_type> && result) mutable
                         {
+                            this_->result_ = std::move(result);
                             return this_->loop();
                         });
                 }
@@ -82,13 +82,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             hpx::future<operand_type> loop()
             {
                 // evaluate condition of while statement
-                hpx::future<operand_type> cond = evaluate_operand(operands_[0]);
-
                 auto this_ = this->shared_from_this();
-                return cond.then(
+                return evaluate_operand(operands_[0]).then(
                     [this_](hpx::future<operand_type> && cond)
                     {
-                        return this_->recurse(std::move(cond));
+                        return this_->body(std::move(cond));
                     });
             }
 

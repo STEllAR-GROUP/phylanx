@@ -8,7 +8,6 @@
 
 #include <hpx/exception.hpp>
 
-#include <algorithm>
 #include <cstddef>
 #include <iosfwd>
 #include <string>
@@ -74,12 +73,11 @@ namespace phylanx { namespace ir
         switch (dims)
         {
         case 0:
-            return data_.data()[0] != 0.0;
-
-        case 1: HPX_FALLTHROUGH;
+            HPX_FALLTHROUGH;
+        case 1:
+            HPX_FALLTHROUGH;
         case 2:
-            return std::any_of(
-                begin(), end(), [](double d) { return d != 0.0; });
+            return matrix().norm() != 0;
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
