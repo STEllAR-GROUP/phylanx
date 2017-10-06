@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mul_operation::mul_operation",
                 "the mul_operation primitive requires that the arguments given "
-                    "by the operands array is valid");
+                    "by the operands array are valid");
         }
     }
 

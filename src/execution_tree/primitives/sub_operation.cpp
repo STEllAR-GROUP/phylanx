@@ -58,7 +58,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "sub_operation::sub_operation",
                 "the sub_operation primitive requires that the arguments given "
-                    "by the operands array is valid");
+                    "by the operands array are valid");
         }
     }
 
