@@ -29,6 +29,13 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_read_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const file_read::match_data =
+    {
+        "file_read(_1)", &create<file_read>
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     file_read::file_read(std::vector<primitive_argument_type>&& operands)
     {
         if (operands.size() != 1)

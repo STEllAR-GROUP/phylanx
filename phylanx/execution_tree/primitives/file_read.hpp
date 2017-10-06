@@ -30,6 +30,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using operands_type = std::vector<operand_type>;
 
     public:
+        static match_pattern_type const match_data;
+
         file_read() = default;
 
         file_read(std::vector<primitive_argument_type>&& operands);
