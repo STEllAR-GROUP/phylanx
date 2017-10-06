@@ -31,8 +31,9 @@ void test_sub_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
-    HPX_TEST_EQ(42.0, f.get()[0]);
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        sub.eval();
+    HPX_TEST_EQ(42.0, f.get().value()[0]);
 }
 
 void test_sub_operation_0d_lit()
@@ -49,8 +50,9 @@ void test_sub_operation_0d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
-    HPX_TEST_EQ(42.0, f.get()[0]);
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        sub.eval();
+    HPX_TEST_EQ(42.0, f.get().value()[0]);
 }
 
 void test_sub_operation_1d()
@@ -72,10 +74,12 @@ void test_sub_operation_1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        sub.eval();
 
     Eigen::VectorXd expected = v1 - v2;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_sub_operation_1d_lit()
@@ -95,10 +99,12 @@ void test_sub_operation_1d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        sub.eval();
 
     Eigen::VectorXd expected = v1 - v2;
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_sub_operation_2d()
@@ -120,10 +126,12 @@ void test_sub_operation_2d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        sub.eval();
 
     Eigen::MatrixXd expected = m1.array() - m2.array();
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 void test_sub_operation_2d_lit()
@@ -143,10 +151,12 @@ void test_sub_operation_2d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::ir::node_data<double>> f = sub.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        sub.eval();
 
     Eigen::MatrixXd expected = m1.array() - m2.array();
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), f.get());
+    HPX_TEST_EQ(
+        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
 }
 
 int main(int argc, char* argv[])

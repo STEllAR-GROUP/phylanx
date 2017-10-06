@@ -9,6 +9,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -30,9 +32,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             : data_(std::move(data))
         {}
 
-        hpx::future<ir::node_data<double>> eval() const override
+        hpx::future<util::optional<ir::node_data<double>>> eval() const override
         {
-            return hpx::make_ready_future(data_);
+            return hpx::make_ready_future(
+                util::optional<ir::node_data<double>>(data_));
         }
 
     private:

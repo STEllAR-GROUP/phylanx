@@ -10,6 +10,8 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -24,12 +26,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<file_read>
     {
+        using operand_type = util::optional<ir::node_data<double>>;
+        using operands_type = std::vector<operand_type>;
+
     public:
         file_read() = default;
 
         file_read(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<ir::node_data<double>> eval() const override;
+        hpx::future<operand_type> eval() const override;
 
     private:
         std::string filename_;

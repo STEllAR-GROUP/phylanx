@@ -5,7 +5,6 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/literal_value.hpp>
-#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>

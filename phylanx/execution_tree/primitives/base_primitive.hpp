@@ -9,6 +9,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
@@ -26,11 +28,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         base_primitive() = default;
         virtual ~base_primitive() = default;
 
-        hpx::future<ir::node_data<double>> eval_nonvirtual()
+        hpx::future<util::optional<ir::node_data<double>>> eval_nonvirtual()
         {
             return eval();
         }
-        virtual hpx::future<ir::node_data<double>> eval() const = 0;
+        virtual hpx::future<util::optional<ir::node_data<double>>> eval() const = 0;
 
     public:
         HPX_DEFINE_COMPONENT_ACTION(base_primitive,
@@ -69,7 +71,7 @@ namespace phylanx { namespace execution_tree
         {
         }
 
-        hpx::future<ir::node_data<double>> eval() const;
+        hpx::future<util::optional<ir::node_data<double>>> eval() const;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -82,7 +84,7 @@ namespace phylanx { namespace execution_tree
           , primitive
         >;
 
-
+    ///////////////////////////////////////////////////////////////////////////
     // a literal value is valid of its not nil{}
     inline bool valid(primitive_argument_type const& val)
     {
@@ -115,6 +117,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     namespace detail
     {
+        // Invoke the given function on all items in the input vector, while
+        // returning another vector holding the respective results.
         template <typename T, typename F>
         auto map_operands(std::vector<T> const& in, F && f)
         ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>()))>
@@ -127,6 +131,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 out.push_back(hpx::util::invoke(f, d));
             }
             return out;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // check if one of the optionals in the list of operands is empty
+        inline bool verify_argument_values(
+            std::vector<util::optional<ir::node_data<double>>> const& ops)
+        {
+            for (auto const& op : ops)
+            {
+                if (!op)
+                    return false;
+            }
+            return true;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // Extract a node_data<double> from a primitive_argument_type (that
+        // could be a primitive or a literal value).
+        inline hpx::future<util::optional<ir::node_data<double>>>
+            extract_node_data(primitive_argument_type const& val)
+        {
+            primitive const* p = util::get_if<primitive>(&val);
+            if (p != nullptr)
+                return p->eval();
+
+            HPX_ASSERT(valid(val));
+            return hpx::make_ready_future(util::optional<ir::node_data<double>>(
+                extract_literal_value(val)));
         }
     }
 }}}

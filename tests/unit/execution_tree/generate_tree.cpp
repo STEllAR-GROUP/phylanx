@@ -17,7 +17,7 @@ void test_generate_tree(std::string const& exprstr,
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::generate_tree(exprstr, patterns, variables);
 
-    HPX_TEST_EQ(p.eval().get()[0], expected_result);
+    HPX_TEST_EQ(p.eval().get().value()[0], expected_result);
 }
 
 phylanx::execution_tree::primitive create_literal_value(double value)
