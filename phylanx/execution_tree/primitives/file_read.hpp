@@ -15,9 +15,6 @@
 
 #include <hpx/include/components.hpp>
 
-#include <array>
-#include <fstream>
-#include <utility>
 #include <string>
 
 namespace phylanx { namespace execution_tree { namespace primitives

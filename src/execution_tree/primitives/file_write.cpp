@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <fstream>
 #include <vector>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -44,9 +45,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::file_write",
-                "the file_write primitive requires that the "
-                    "exactly one element of the literals and operands "
-                    "arrays is valid");
+                "the file_write primitive requires that the given operands "
+                    "are valid");
         }
 
         std::string* name = util::get_if<std::string>(&operands[0]);

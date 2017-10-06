@@ -8,10 +8,11 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
-#include <phylanx/execution_tree/primitives/sub_operation.hpp>
-#include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/execution_tree/primitives/literal_value.hpp>
+#include <phylanx/execution_tree/primitives/mul_operation.hpp>
+#include <phylanx/execution_tree/primitives/sub_operation.hpp>
+#include <phylanx/execution_tree/primitives/while_operation.hpp>
 
 #endif

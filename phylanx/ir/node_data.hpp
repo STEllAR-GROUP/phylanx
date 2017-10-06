@@ -249,6 +249,12 @@ namespace phylanx { namespace ir
             return (dim == 0) ? data_.rows() : data_.cols();
         }
 
+        explicit operator bool() const;
+        bool operator!() const
+        {
+            return !bool(*this);
+        }
+
     private:
         /// \cond NOINTERNAL
         friend class hpx::serialization::access;
