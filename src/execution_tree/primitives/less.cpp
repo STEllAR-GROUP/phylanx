@@ -30,10 +30,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(less_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-//     match_pattern_type const less::match_data =
-//     {
-//         "_1 < _2", &create<less>
-//     };
+    match_pattern_type const less::match_data =
+    {
+        "_1 < _2", &create<less>
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     less::less(std::vector<primitive_argument_type>&& operands)

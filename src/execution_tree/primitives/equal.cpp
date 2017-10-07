@@ -30,10 +30,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(equal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-//     match_pattern_type const equal::match_data =
-//     {
-//         "_1 == _2", &create<equal>
-//     };
+    match_pattern_type const equal::match_data =
+    {
+        "_1 == _2", &create<equal>
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     equal::equal(std::vector<primitive_argument_type>&& operands)

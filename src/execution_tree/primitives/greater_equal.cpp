@@ -30,10 +30,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(greater_equal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-//     match_pattern_type const greater_equal::match_data =
-//     {
-//         "_1 >= _2", &create<greater_equal>
-//     };
+    match_pattern_type const greater_equal::match_data =
+    {
+        "_1 >= _2", &create<greater_equal>
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     greater_equal::greater_equal(std::vector<primitive_argument_type>&& operands)

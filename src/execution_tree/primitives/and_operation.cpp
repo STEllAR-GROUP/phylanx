@@ -33,6 +33,12 @@ HPX_DEFINE_GET_COMPONENT_TYPE(and_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const and_operation::match_data =
+    {
+        "_1 && __2", &create<and_operation>
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     and_operation::and_operation(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
