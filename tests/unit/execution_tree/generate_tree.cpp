@@ -86,18 +86,23 @@ void test_math_primitives()
     phylanx::execution_tree::pattern_list patterns = {
         phylanx::execution_tree::primitives::add_operation::match_data,
         phylanx::execution_tree::primitives::sub_operation::match_data,
-        phylanx::execution_tree::primitives::mul_operation::match_data
+        phylanx::execution_tree::primitives::mul_operation::match_data,
+        phylanx::execution_tree::primitives::exponential_operation::match_data
     };
 
     phylanx::execution_tree::variables variables = {
         {"A", create_literal_value(41.0)},
         {"B", create_literal_value(1.0)},
-        {"C", create_literal_value(13.0)}
+        {"C", create_literal_value(13.0)},
+        {"D", create_literal_value(5.0)}
     };
 
     test_generate_tree("A + ((B - C) * A)", patterns, variables, -451.0);
     test_generate_tree("(A * (B + A)) + C", patterns, variables, 1735.0);
     test_generate_tree("(A * B) - C", patterns, variables, 28.0);
+    test_generate_tree("exp(D) * 2", patterns, variables, std::exp(5.0) * 2);
+    test_generate_tree("exp(D) + 2", patterns, variables, std::exp(5.0) + 2);
+    test_generate_tree("exp(D) - 2", patterns, variables, std::exp(5.0) - 2);
 }
 
 void test_file_io_primitives()

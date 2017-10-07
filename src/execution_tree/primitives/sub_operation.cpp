@@ -215,7 +215,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_result_type> sub_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type&& ops)
+            [this](operands_type&& ops) -> primitive_result_type
             {
                 std::size_t lhs_dims = ops[0].num_dimensions();
                 switch (lhs_dims)

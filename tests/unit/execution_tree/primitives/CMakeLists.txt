@@ -7,6 +7,7 @@ set(tests
     add_operation
     and_operation
     equal_operation
+    exponential_operation
     file_primitives
     greater_operation
     greater_equal_operation
