@@ -39,10 +39,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     protected:
         ir::node_data<double> add0d(operands_type const& ops) const;
-        ir::node_data<double> add1d(operands_type const& ops) const;
-        ir::node_data<double> add2d(operands_type const& ops) const;
+        ir::node_data<double> add0d0d(operands_type const& ops) const;
+        ir::node_data<double> add0d1d(operands_type const& ops) const;
+        ir::node_data<double> add0d2d(operands_type const& ops) const;
 
+        ir::node_data<double> add1d(operands_type const& ops) const;
+        ir::node_data<double> add1d0d(operands_type const& ops) const;
         ir::node_data<double> add1d1d(operands_type const& ops) const;
+
+        ir::node_data<double> add2d(operands_type const& ops) const;
+        ir::node_data<double> add2d0d(operands_type const& ops) const;
         ir::node_data<double> add2d2d(operands_type const& ops) const;
 
     private:

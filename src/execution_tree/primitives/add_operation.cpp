@@ -68,32 +68,68 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> add_operation::add0d(operands_type const& ops) const
+    ir::node_data<double> add_operation::add0d0d(operands_type const& ops) const
     {
         auto const& lhs = ops[0];
         auto const& rhs = ops[1];
 
-        std::size_t rhs_dims = rhs.num_dimensions();
+        if (ops.size() == 2)
+        {
+            return lhs[0] + rhs[0];
+        }
+
+        return ir::node_data<double>(
+            std::accumulate(ops.begin() + 1, ops.end(), lhs[0],
+                [](double result, operand_type const& curr)
+                {
+                    return result + curr[0];
+                }));
+    }
+
+    ir::node_data<double> add_operation::add0d1d(operands_type const& ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d1d",
+                "the add_operation primitive can add a single value to a "
+                    "vector only if there are exectly 2 operands");
+        }
+
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+        matrix_type result = ops[0][0] + ops[1].matrix().array();
+        return ir::node_data<double>(std::move(result));
+    }
+
+    ir::node_data<double> add_operation::add0d2d(operands_type const& ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d2d",
+                "the add_operation primitive can add a single value to a "
+                    "matrix only if there are exectly 2 operands");
+        }
+
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+        matrix_type result = ops[0][0] + ops[1].matrix().array();
+        return ir::node_data<double>(std::move(result));
+    }
+
+    ir::node_data<double> add_operation::add0d(operands_type const& ops) const
+    {
+        std::size_t rhs_dims = ops[1].num_dimensions();
         switch(rhs_dims)
         {
         case 0:
-            {
-                if (ops.size() == 2)
-                {
-                    return lhs[0] + rhs[0];
-                }
+            return add0d0d(ops);
 
-                return ir::node_data<double>(
-                    std::accumulate(ops.begin() + 1, ops.end(), lhs[0],
-                        [](double result, operand_type const& curr)
-                        {
-                            return result + curr[0];
-                        }));
-            }
-            break;
+        case 1:
+            return add0d1d(ops);
 
-        case 1: HPX_FALLTHROUGH;
-        case 2: HPX_FALLTHROUGH;
+        case 2:
+            return add0d2d(ops);
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add0d",
@@ -102,6 +138,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    ir::node_data<double> add_operation::add1d0d(operands_type const& ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d1d",
+                "the add_operation primitive can add a single value to a "
+                    "vector only if there are exactly 2 operands");
+        }
+
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+        matrix_type result = ops[0].matrix().array() + ops[1][0];
+        return ir::node_data<double>(std::move(result));
+    }
+
     ir::node_data<double> add_operation::add1d1d(operands_type const& ops) const
     {
         auto const& lhs = ops[0];
@@ -110,7 +161,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
 
-        if(lhs_size  != rhs_size)
+        if (lhs_size  != rhs_size)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add1d1d",
@@ -145,10 +196,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         switch(rhs_dims)
         {
+        case 0:
+            return add1d0d(ops);
+
         case 1:
             return add1d1d(ops);
 
-        case 0: HPX_FALLTHROUGH;
         case 2: HPX_FALLTHROUGH;
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -158,6 +211,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    ir::node_data<double> add_operation::add2d0d(operands_type const& ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d2d",
+                "the add_operation primitive can add a single value to a "
+                    "matrix only if there are exactly 2 operands");
+        }
+
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+        matrix_type result = ops[0].matrix().array() + ops[1][0];
+        return ir::node_data<double>(std::move(result));
+    }
+
     ir::node_data<double> add_operation::add2d2d(operands_type const& ops) const
     {
         auto const& lhs = ops[0];
@@ -200,10 +268,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t rhs_dims = ops[1].num_dimensions();
         switch(rhs_dims)
         {
+        case 0:
+            return add2d0d(ops);
+
         case 2:
             return add2d2d(ops);
 
-        case 0: HPX_FALLTHROUGH;
         case 1: HPX_FALLTHROUGH;
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
