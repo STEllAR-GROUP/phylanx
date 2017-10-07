@@ -68,11 +68,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return std::exp(ops[0].value()[0]);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> exponential_operation::exponential1d(
         operands_type const& ops) const
     {
         using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
+        auto const& val = ops[0].value().matrix();
+        if (val.rows() != val.cols())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "exponential_operation::exponential1d",
+                "matrix exponentiation requires quadratic matrices");
+        }
 
         matrix_type result = ops[0].value().matrix().exp();
         return ir::node_data<double>(std::move(result));
@@ -118,7 +125,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "exponential_operation::eval",
-                        "something wrong with the dimentions");
+                        "left hand side operand has unsupported number of "
+                            "dimensions");
                 }
             }),
             detail::map_operands(operands_, evaluate_operand)

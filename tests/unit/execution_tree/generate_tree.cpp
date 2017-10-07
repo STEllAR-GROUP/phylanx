@@ -98,9 +98,9 @@ void test_math_primitives()
     test_generate_tree("A + ((B - C) * A)", patterns, variables, -451.0);
     test_generate_tree("(A * (B + A)) + C", patterns, variables, 1735.0);
     test_generate_tree("(A * B) - C", patterns, variables, 28.0);
-    test_generate_tree("exp(D) * 2", patterns, variables, std::exp(5.0)*2);
-    test_generate_tree("exp(D) + 2", patterns, variables, std::exp(5.0)+2);
-    test_generate_tree("exp(D) - 2", patterns, variables, std::exp(5.0)-2);
+    test_generate_tree("exp(D) * 2", patterns, variables, std::exp(5.0) * 2);
+    test_generate_tree("exp(D) + 2", patterns, variables, std::exp(5.0) + 2);
+    test_generate_tree("exp(D) - 2", patterns, variables, std::exp(5.0) - 2);
 }
 
 void test_file_io_primitives()
