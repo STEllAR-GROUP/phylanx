@@ -23,8 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public hpx::components::component_base<less>
     {
     private:
-        using operand_type = util::optional<ir::node_data<double>>;
-        using operands_type = std::vector<operand_type>;
+        using operands_type = std::vector<primitive_result_type>;
 
     public:
         static match_pattern_type const match_data;
@@ -33,15 +32,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         less(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<operand_type> eval() const override;
+        hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        ir::node_data<double> less0d(operands_type const& ops) const;
-        ir::node_data<double> less1d(operands_type const& ops) const;
-        ir::node_data<double> less2d(operands_type const& ops) const;
+        bool less0d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+        bool less1d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+        bool less2d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
 
-        ir::node_data<double> less1d1d(operands_type const& ops) const;
-        ir::node_data<double> less2d2d(operands_type const& ops) const;
+        bool less1d1d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+        bool less2d2d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+
+    public:
+        bool less_all(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
 
     private:
         std::vector<primitive_argument_type> operands_;

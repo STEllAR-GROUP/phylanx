@@ -56,12 +56,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> less_equal::less_equal0d(
-        operands_type const& ops) const
+    bool less_equal::less_equal0d(ir::node_data<double> const& lhs,
+        ir::node_data<double> const& rhs) const
     {
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
-
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
@@ -78,12 +75,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> less_equal::less_equal1d1d(
-        operands_type const& ops) const
+    bool less_equal::less_equal1d1d(ir::node_data<double> const& lhs,
+        ir::node_data<double> const& rhs) const
     {
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
-
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
 
@@ -94,39 +88,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dimensions of the operands do not match");
         }
 
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-
-        matrix_type result =
+        Eigen::Matrix<double, Eigen::Dynamic, 1> result =
             (lhs.matrix().array() <= rhs.matrix().array()).cast<double>();
-        return ir::node_data<double>(std::move(result));
+
+        return result.norm() != 0.0;
     }
 
-    ir::node_data<double> less_equal::less_equal1d(
-        operands_type const& ops) const
+    bool less_equal::less_equal1d(ir::node_data<double> const& lhs,
+        ir::node_data<double> const& rhs) const
     {
-        std::size_t rhs_dims = ops[1].value().num_dimensions();
-
+        std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 1:
-            return less_equal1d1d(ops);
+            return less_equal1d1d(lhs, rhs);
 
         case 0: HPX_FALLTHROUGH;
         case 2: HPX_FALLTHROUGH;
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "less_equal::less1d",
+                "less_equal::less_equal1d",
                 "the operands have incompatible number of dimensions");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> less_equal::less_equal2d2d(
-        operands_type const& ops) const
+    bool less_equal::less_equal2d2d(ir::node_data<double> const& lhs,
+        ir::node_data<double> const& rhs) const
     {
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
-
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
 
@@ -137,20 +126,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dimensions of the operands do not match");
         }
 
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-
-        matrix_type result =
+        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> result =
             (lhs.matrix().array() <= rhs.matrix().array()).cast<double>();
-        return ir::node_data<double>(std::move(result));
+
+        return result.norm() != 0.0;
     }
 
-    ir::node_data<double> less_equal::less_equal2d(operands_type const& ops) const
+    bool less_equal::less_equal2d(ir::node_data<double> const& lhs,
+        ir::node_data<double> const& rhs) const
     {
-        std::size_t rhs_dims = ops[1].value().num_dimensions();
+        std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 2:
-            return less_equal2d2d(ops);
+            return less_equal2d2d(lhs, rhs);
 
         case 0: HPX_FALLTHROUGH;
         case 1: HPX_FALLTHROUGH;
@@ -161,40 +150,72 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    bool less_equal::less_equal_all(ir::node_data<double> const& lhs,
+        ir::node_data<double> const& rhs) const
+    {
+        std::size_t lhs_dims = lhs.num_dimensions();
+        switch (lhs_dims)
+        {
+        case 0:
+            return less_equal0d(lhs, rhs);
+
+        case 1:
+            return less_equal1d(lhs, rhs);
+
+        case 2:
+            return less_equal2d(lhs, rhs);
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "less_equal::less_equal_all",
+                "left hand side operand has unsupported number of "
+                "dimensions");
+        }
+    }
+
+    namespace detail
+    {
+        struct visit_less_equal
+        {
+            visit_less_equal(less_equal const& this_)
+              : less_equal_(this_)
+            {}
+
+            template <typename T1, typename T2>
+            bool operator()(T1, T2) const
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "less_equal::eval",
+                    "left hand side and right hand side are incompatible and "
+                        "can't be compared");
+            }
+
+            template <typename T>
+            bool operator()(T const& lhs, T const& rhs) const
+            {
+                return lhs <= rhs;
+            }
+
+            bool operator()(ir::node_data<double> const& lhs,
+                ir::node_data<double> const& rhs) const
+            {
+                return less_equal_.less_equal_all(lhs, rhs);
+            }
+
+            less_equal const& less_equal_;
+        };
+    }
+
     // implement '<=' for all possible combinations of lhs and rhs
-    hpx::future<util::optional<ir::node_data<double>>> less_equal::eval() const
+    hpx::future<primitive_result_type> less_equal::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
             [this](operands_type && ops)
             {
-                if (!detail::verify_argument_values(ops))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "less_equal::eval",
-                        "the less_equal primitive requires that the argument"
-                            " values given by the operands array are non-empty");
-                }
-
-                std::size_t lhs_dims = ops[0].value().num_dimensions();
-                switch (lhs_dims)
-                {
-                case 0:
-                    return operand_type(less_equal0d(ops));
-
-                case 1:
-                    return operand_type(less_equal1d(ops));
-
-                case 2:
-                    return operand_type(less_equal2d(ops));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "less_equal::eval",
-                        "left hand side operand has unsupported number of "
-                        "dimensions");
-                }
+                return primitive_result_type(
+                    util::visit(detail::visit_less_equal(*this), ops[0], ops[1]));
             }),
-            detail::map_operands(operands_, evaluate_operand)
+            detail::map_operands(operands_, literal_operand)
         );
     }
 }}}

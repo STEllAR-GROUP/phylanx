@@ -68,7 +68,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<util::optional<ir::node_data<double>>> file_read::eval() const
+    hpx::future<primitive_result_type> file_read::eval() const
     {
         std::ifstream infile(filename_.c_str(),
             std::ios::binary | std::ios::in | std::ios::ate);
@@ -94,10 +94,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     filename_);
         }
 
-        // assume data in file is result of a serialized ir::node_data
-        ir::node_data<double> nd;
-        phylanx::util::detail::unserialize(data, nd);
+        // assume data in file is result of a serialized primitive_result_type
+        primitive_result_type val;
+        phylanx::util::detail::unserialize(data, val);
 
-        return hpx::make_ready_future(operand_type(std::move(nd)));
+        return hpx::make_ready_future(std::move(val));
     }
 }}}

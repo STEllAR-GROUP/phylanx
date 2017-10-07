@@ -69,35 +69,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // implement '||' for all possible combinations of lhs or rhs
-    hpx::future<util::optional<ir::node_data<double>>> or_operation::eval() const
+    hpx::future<primitive_result_type> or_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
             [this](operands_type && ops)
             {
-                if (!detail::verify_argument_values(ops))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        "the or_operation primitive requires that the argument"
-                            " values given by the operors array are non-empty");
-                }
-
                 if (ops.size() == 2)
                 {
-                    return operand_type(ir::node_data<double>(
-                            bool(ops[0].value()) || bool(ops[1].value()) ?
-                                1.0 : 0.0
-                        ));
+                    return primitive_result_type(ops[0] || ops[1]);
                 }
 
-                return operand_type(ir::node_data<double>(
+                return primitive_result_type(
                     std::any_of(ops.begin(), ops.end(),
-                        [](operand_type const& curr)
-                        {
-                            return bool(curr.value());
-                        }) ? 1.0 : 0.0));
+                        [](std::uint8_t curr) { return curr; }));
             }),
-            detail::map_operands(operands_, evaluate_operand)
+            detail::map_operands(operands_, boolean_operand)
         );
     }
 }}}

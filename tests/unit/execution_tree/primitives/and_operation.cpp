@@ -17,46 +17,30 @@
 
 void test_and_operation_0d_false()
 {
-    phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-            hpx::find_here(), phylanx::ir::node_data<double>(0.0));
-
-    phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
-
     phylanx::execution_tree::primitive and =
         hpx::new_<phylanx::execution_tree::primitives::and_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
+                true, false
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
-    HPX_TEST_EQ(0.0, f.get().value()[0]);
+    HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
 }
 
 void test_and_operation_0d_true()
 {
-    phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
-
-    phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
-
     phylanx::execution_tree::primitive and =
         hpx::new_<phylanx::execution_tree::primitives::and_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
+                true, true
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
-    HPX_TEST_EQ(42.0, f.get().value()[0]);
+    HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
 }
 
 void test_and_operation_0d_lit_false()
@@ -74,9 +58,9 @@ void test_and_operation_0d_lit_false()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
-    HPX_TEST_EQ(0.0, f.get().value()[0]);
+    HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
 }
 
 void test_and_operation_0d_lit_true()
@@ -94,9 +78,9 @@ void test_and_operation_0d_lit_true()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
-    HPX_TEST_EQ(1.0, f.get().value()[0]);
+    HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
 }
 
 void test_and_operation_1d()
@@ -119,12 +103,12 @@ void test_and_operation_1d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
 
-    Eigen::VectorXd expected = (v1.norm() != 0.0) && (v2.norm() != 0.0);
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
+        (v1.norm() != 0.0) && (v2.norm() != 0.0),
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 void test_and_operation_1d_lit()
@@ -145,12 +129,12 @@ void test_and_operation_1d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
 
-    Eigen::VectorXd expected = (v1.norm() != 0.0) && (v2.norm() != 0.0);
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
+        (v1.norm() != 0.0) && (v2.norm() != 0.0),
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 void test_and_operation_2d()
@@ -173,12 +157,12 @@ void test_and_operation_2d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
 
-    Eigen::MatrixXd expected = (m1.norm() != 0.0) && (m2.norm() != 0.0);
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
+        (m1.norm() != 0.0) && (m2.norm() != 0.0),
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 void test_and_operation_2d_lit()
@@ -199,12 +183,12 @@ void test_and_operation_2d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         and.eval();
 
-    Eigen::MatrixXd expected = (m1.norm() != 0.0) && (m2.norm() != 0.0);
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
+        (m1.norm() != 0.0) && (m2.norm() != 0.0),
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 int main(int argc, char* argv[])

@@ -70,8 +70,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> add_operation::add0d(operands_type const& ops) const
     {
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
+        auto const& lhs = ops[0];
+        auto const& rhs = ops[1];
 
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
@@ -87,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::accumulate(ops.begin() + 1, ops.end(), lhs[0],
                         [](double result, operand_type const& curr)
                         {
-                            return result + curr.value()[0];
+                            return result + curr[0];
                         }));
             }
             break;
@@ -104,8 +104,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> add_operation::add1d1d(operands_type const& ops) const
     {
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
+        auto const& lhs = ops[0];
+        auto const& rhs = ops[1];
 
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -126,14 +126,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return ir::node_data<double>(std::move(result));
         }
 
-        array_type first_term = ops.begin()->value().matrix().array();
+        array_type first_term = ops.begin()->matrix().array();
         matrix_type result =
             std::accumulate(
                 ops.begin() + 1, ops.end(), first_term,
                 [](array_type& result, operand_type const& curr)
                 ->  array_type
                 {
-                    return result += curr.value().matrix().array();
+                    return result += curr.matrix().array();
                 });
 
         return ir::node_data<double>(std::move(result));
@@ -141,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ir::node_data<double> add_operation::add1d(operands_type const& ops) const
     {
-        std::size_t rhs_dims = ops[1].value().num_dimensions();
+        std::size_t rhs_dims = ops[1].num_dimensions();
 
         switch(rhs_dims)
         {
@@ -160,8 +160,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> add_operation::add2d2d(operands_type const& ops) const
     {
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
+        auto const& lhs = ops[0];
+        auto const& rhs = ops[1];
 
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
@@ -182,14 +182,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return ir::node_data<double>(std::move(result));
         }
 
-        array_type first_term = ops.begin()->value().matrix().array();
+        array_type first_term = ops.begin()->matrix().array();
         matrix_type result =
             std::accumulate(
                 ops.begin() + 1, ops.end(), first_term,
                 [](array_type& result, operand_type const& curr)
                 ->  array_type
                 {
-                    return result += curr.value().matrix().array();
+                    return result += curr.matrix().array();
                 });
 
         return ir::node_data<double>(std::move(result));
@@ -197,7 +197,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ir::node_data<double> add_operation::add2d(operands_type const& ops) const
     {
-        std::size_t rhs_dims = ops[1].value().num_dimensions();
+        std::size_t rhs_dims = ops[1].num_dimensions();
         switch(rhs_dims)
         {
         case 2:
@@ -213,30 +213,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement '+' for all possible combinations of lhs and rhs
-    hpx::future<util::optional<ir::node_data<double>>> add_operation::eval() const
+    hpx::future<primitive_result_type> add_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
             [this](operands_type && ops)
             {
-                if (!detail::verify_argument_values(ops))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::eval",
-                        "the add_operation primitive requires that the argument"
-                            " values given by the operands array are non-empty");
-                }
-
-                std::size_t lhs_dims = ops[0].value().num_dimensions();
+                std::size_t lhs_dims = ops[0].num_dimensions();
                 switch (lhs_dims)
                 {
                 case 0:
-                    return operand_type(add0d(ops));
+                    return primitive_result_type(add0d(ops));
 
                 case 1:
-                    return operand_type(add1d(ops));
+                    return primitive_result_type(add1d(ops));
 
                 case 2:
-                    return operand_type(add2d(ops));
+                    return primitive_result_type(add2d(ops));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -245,7 +237,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
             }),
-            detail::map_operands(operands_, evaluate_operand)
+            detail::map_operands(operands_, numeric_operand)
         );
     }
 }}}

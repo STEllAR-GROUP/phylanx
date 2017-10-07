@@ -74,8 +74,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
+        auto const& lhs = ops[0];
+        auto const& rhs = ops[1];
 
         std::size_t rhs_dims = rhs.num_dimensions();
         switch (rhs_dims)
@@ -91,12 +91,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::accumulate(ops.begin() + 1, ops.end(), lhs[0],
                         [](double result, operand_type const& curr)
                         {
-                            return result * curr.value()[0];
+                            return result * curr[0];
                         }));
             }
             break;
 
-        case 1:
+        case 1: HPX_FALLTHROUGH;
         case 2:
             {
                 if (ops.size() > 2)
@@ -123,8 +123,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
+        auto const& lhs = ops[0];
+        auto const& rhs = ops[1];
 
         if (ops.size() == 2)
         {
@@ -138,13 +138,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return ir::node_data<double>(std::move(result));
         }
 
-        matrix_type first_term = ops.begin()->value().matrix();
+        matrix_type first_term = ops.begin()->matrix();
         matrix_type result =
             std::accumulate(ops.begin() + 1, ops.end(), first_term,
                 [](matrix_type& result, operand_type const& curr)
                 ->  matrix_type
                 {
-                    auto const& val = curr.value();
+                    auto const& val = curr;
                     if (val.num_dimensions() == 0)
                         return result *= val[0];
                     return result *= val.matrix();
@@ -154,28 +154,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement '*' for all possible combinations of lhs and rhs
-    hpx::future<util::optional<ir::node_data<double>>> mul_operation::eval() const
+    hpx::future<primitive_result_type> mul_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
             [this](operands_type&& ops)
             {
-                if (!detail::verify_argument_values(ops))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "mul_operation::eval",
-                        "the mul_operation primitive requires that the argument"
-                            " values given by the operands array are non-empty");
-                }
-
-                std::size_t lhs_dims = ops[0].value().num_dimensions();
+                std::size_t lhs_dims = ops[0].num_dimensions();
                 switch (lhs_dims)
                 {
                 case 0:
-                    return operand_type(mul0d(ops));
+                    return primitive_result_type(mul0d(ops));
 
-                case 1:
+                case 1: HPX_FALLTHROUGH;
                 case 2:
-                    return operand_type(mulxd(ops));
+                    return primitive_result_type(mulxd(ops));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -184,7 +176,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
             }),
-            detail::map_operands(operands_, evaluate_operand)
+            detail::map_operands(operands_, numeric_operand)
         );
     }
 }}}

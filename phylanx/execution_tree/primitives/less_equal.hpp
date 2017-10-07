@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_LESS_EQUAL_OCT_07_2017_0226PM)
-#define PHYLANX_PRIMITIVES_LESS_EQUAL_OCT_07_2017_0226PM
+#if !defined(PHYLANX_PRIMITIVES_less_equal_OCT_07_2017_0226PM)
+#define PHYLANX_PRIMITIVES_less_equal_OCT_07_2017_0226PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
@@ -23,8 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public hpx::components::component_base<less_equal>
     {
     private:
-        using operand_type = util::optional<ir::node_data<double>>;
-        using operands_type = std::vector<operand_type>;
+        using operands_type = std::vector<primitive_result_type>;
 
     public:
         static match_pattern_type const match_data;
@@ -33,15 +32,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         less_equal(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<operand_type> eval() const override;
+        hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        ir::node_data<double> less_equal0d(operands_type const& ops) const;
-        ir::node_data<double> less_equal1d(operands_type const& ops) const;
-        ir::node_data<double> less_equal2d(operands_type const& ops) const;
+        bool less_equal0d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+        bool less_equal1d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+        bool less_equal2d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
 
-        ir::node_data<double> less_equal1d1d(operands_type const& ops) const;
-        ir::node_data<double> less_equal2d2d(operands_type const& ops) const;
+        bool less_equal1d1d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+        bool less_equal2d2d(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
+
+    public:
+        bool less_equal_all(ir::node_data<double> const& lhs,
+            ir::node_data<double> const& rhs) const;
 
     private:
         std::vector<primitive_argument_type> operands_;

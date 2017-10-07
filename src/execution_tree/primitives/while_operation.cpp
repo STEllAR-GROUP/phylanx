@@ -63,21 +63,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct iteration : std::enable_shared_from_this<iteration>
         {
-            using operand_type = util::optional<ir::node_data<double>>;
-
             iteration(std::vector<primitive_argument_type> const& operands)
               : operands_(operands)
-              , result_(hpx::make_ready_future(operand_type{}))
+              , result_(hpx::make_ready_future(primitive_result_type{}))
             {}
 
-            hpx::future<operand_type> body(hpx::future<operand_type> && cond)
+            hpx::future<primitive_result_type> body(
+                hpx::future<primitive_result_type>&& cond)
             {
-                if (bool(cond.get().value()))
+                if (extract_boolean_value(cond.get()))
                 {
                     // evaluate body of while statement
                     auto this_ = this->shared_from_this();
-                    return evaluate_operand(operands_[1]).then(
-                        [this_](hpx::future<operand_type> && result) mutable
+                    return literal_operand(operands_[1]).then(
+                        [this_](
+                            hpx::future<primitive_result_type> && result
+                        ) mutable
                         {
                             this_->result_ = std::move(result);
                             return this_->loop();
@@ -86,12 +87,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(result_);
             }
 
-            hpx::future<operand_type> loop()
+            hpx::future<primitive_result_type> loop()
             {
                 // evaluate condition of while statement
                 auto this_ = this->shared_from_this();
-                return evaluate_operand(operands_[0]).then(
-                    [this_](hpx::future<operand_type> && cond)
+                return literal_operand(operands_[0]).then(
+                    [this_](hpx::future<primitive_result_type> && cond)
                     {
                         return this_->body(std::move(cond));
                     });
@@ -99,13 +100,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         private:
             std::vector<primitive_argument_type> operands_;
-            hpx::future<operand_type> result_;
+            hpx::future<primitive_result_type> result_;
         };
     }
 
     // start iteration over given while statement
-    hpx::future<util::optional<ir::node_data<double>>>
-        while_operation::eval() const
+    hpx::future<primitive_result_type> while_operation::eval() const
     {
         return std::make_shared<detail::iteration>(operands_)->loop();
     }
