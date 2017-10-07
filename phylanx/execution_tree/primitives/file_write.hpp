@@ -24,12 +24,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<file_write>
     {
+        using operand_type = util::optional<ir::node_data<double>>;
+        using operands_type = std::vector<operand_type>;
+
     public:
+        static match_pattern_type const match_data;
+
         file_write() = default;
 
         file_write(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<ir::node_data<double>> eval() const override;
+        hpx::future<operand_type> eval() const override;
 
     private:
         std::string filename_;

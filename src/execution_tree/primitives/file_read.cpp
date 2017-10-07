@@ -6,7 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -27,6 +29,13 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_read_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const file_read::match_data =
+    {
+        "file_read(_1)", &create<file_read>
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     file_read::file_read(std::vector<primitive_argument_type>&& operands)
     {
         if (operands.size() != 1)
@@ -59,7 +68,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<ir::node_data<double>> file_read::eval() const
+    hpx::future<util::optional<ir::node_data<double>>> file_read::eval() const
     {
         std::ifstream infile(filename_.c_str(),
             std::ios::binary | std::ios::in | std::ios::ate);
@@ -89,6 +98,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<double> nd;
         phylanx::util::detail::unserialize(data, nd);
 
-        return hpx::make_ready_future(std::move(nd));
+        return hpx::make_ready_future(operand_type(std::move(nd)));
     }
 }}}
