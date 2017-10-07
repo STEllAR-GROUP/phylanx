@@ -18,6 +18,11 @@
 #include <utility>
 #include <vector>
 
+namespace phylanx { namespace execution_tree
+{
+    class HPX_COMPONENT_EXPORT primitive;
+}}
+
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -47,7 +52,8 @@ HPX_REGISTER_ACTION_DECLARATION(
 
 namespace phylanx { namespace execution_tree
 {
-    class HPX_COMPONENT_EXPORT primitive
+    ///////////////////////////////////////////////////////////////////////////
+    class primitive
       : public hpx::components::client_base<primitive,
             primitives::base_primitive>
     {
@@ -111,10 +117,7 @@ namespace phylanx { namespace execution_tree
     // could be a primitive or a literal value).
     PHYLANX_EXPORT hpx::future<util::optional<ir::node_data<double>>>
         evaluate_operand(primitive_argument_type const& val);
-}}
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
@@ -129,6 +132,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    using match_pattern_type = std::pair<std::string, factory_function_type>;
+    using pattern_list = std::vector<match_pattern_type>;
+}}
+
+namespace phylanx { namespace execution_tree { namespace primitives
+{
     namespace detail
     {
         // Invoke the given function on all items in the input vector, while
