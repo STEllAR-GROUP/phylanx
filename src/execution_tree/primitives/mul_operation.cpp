@@ -8,7 +8,9 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -31,6 +33,12 @@ HPX_DEFINE_GET_COMPONENT_TYPE(mul_operation_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const mul_operation::match_data =
+    {
+        "_1 * __2", &create<mul_operation>
+    };
+
     ///////////////////////////////////////////////////////////////////////////
     mul_operation::mul_operation(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
@@ -66,21 +74,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
-        std::size_t rhs_dims = ops[1].num_dimensions();
+        auto const& lhs = ops[0].value();
+        auto const& rhs = ops[1].value();
+
+        std::size_t rhs_dims = rhs.num_dimensions();
         switch (rhs_dims)
         {
         case 0:
             {
                 if (ops.size() == 2)
                 {
-                    return ops[0][0] * ops[1][0];
+                    return lhs[0] * rhs[0];
                 }
 
                 return ir::node_data<double>(
-                    std::accumulate(ops.begin() + 1, ops.end(), ops[0][0],
-                        [](double result, ir::node_data<double> const& curr)
+                    std::accumulate(ops.begin() + 1, ops.end(), lhs[0],
+                        [](double result, operand_type const& curr)
                         {
-                            return result * curr[0];
+                            return result * curr.value()[0];
                         }));
             }
             break;
@@ -96,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "is not a matrix");
                 }
 
-                matrix_type result = ops[0][0] * ops[1].matrix();
+                matrix_type result = lhs[0] * rhs.matrix();
                 return ir::node_data<double>(std::move(result));
             }
 
@@ -112,47 +123,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
+        auto const& lhs = ops[0].value();
+        auto const& rhs = ops[1].value();
+
         if (ops.size() == 2)
         {
-            if (ops[1].num_dimensions() == 0)
+            if (rhs.num_dimensions() == 0)
             {
-                matrix_type result = ops[0].matrix() * ops[1][0];
+                matrix_type result = lhs.matrix() * rhs[0];
                 return ir::node_data<double>(std::move(result));
             }
 
-            matrix_type result = ops[0].matrix() * ops[1].matrix();
+            matrix_type result = lhs.matrix() * rhs.matrix();
             return ir::node_data<double>(std::move(result));
         }
 
-        matrix_type first_term = ops.begin()->matrix();
+        matrix_type first_term = ops.begin()->value().matrix();
         matrix_type result =
             std::accumulate(ops.begin() + 1, ops.end(), first_term,
-                [](matrix_type& result, ir::node_data<double> const& curr)
+                [](matrix_type& result, operand_type const& curr)
                 ->  matrix_type
                 {
-                    if (curr.num_dimensions() == 0)
-                        return result *= curr[0];
-                    return result *= curr.matrix();
+                    auto const& val = curr.value();
+                    if (val.num_dimensions() == 0)
+                        return result *= val[0];
+                    return result *= val.matrix();
                 });
 
         return ir::node_data<double>(std::move(result));
     }
 
     // implement '*' for all possible combinations of lhs and rhs
-    hpx::future<ir::node_data<double>> mul_operation::eval() const
+    hpx::future<util::optional<ir::node_data<double>>> mul_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
-            [this](std::vector<ir::node_data<double>>&& ops)
+            [this](operands_type&& ops)
             {
-                std::size_t lhs_dims = ops[0].num_dimensions();
+                if (!detail::verify_argument_values(ops))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::eval",
+                        "the mul_operation primitive requires that the argument"
+                            " values given by the operands array are non-empty");
+                }
+
+                std::size_t lhs_dims = ops[0].value().num_dimensions();
                 switch (lhs_dims)
                 {
                 case 0:
-                    return mul0d(ops);
+                    return operand_type(mul0d(ops));
 
                 case 1:
                 case 2:
-                    return mulxd(ops);
+                    return operand_type(mulxd(ops));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -161,16 +184,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
             }),
-            detail::map_operands(operands_,
-                [](primitive_argument_type const& val)
-                ->  hpx::future<ir::node_data<double>>
-                {
-                    primitive const* p = util::get_if<primitive>(&val);
-                    if (p != nullptr)
-                        return p->eval();
-
-                    HPX_ASSERT(valid(val));
-                    return hpx::make_ready_future(extract_literal_value(val));
-                }));
+            detail::map_operands(operands_, evaluate_operand)
+        );
     }
 }}}

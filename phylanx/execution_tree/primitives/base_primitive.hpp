@@ -9,12 +9,19 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 
 #include <utility>
 #include <vector>
+
+namespace phylanx { namespace execution_tree
+{
+    class HPX_COMPONENT_EXPORT primitive;
+}}
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -26,11 +33,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         base_primitive() = default;
         virtual ~base_primitive() = default;
 
-        hpx::future<ir::node_data<double>> eval_nonvirtual()
+        hpx::future<util::optional<ir::node_data<double>>> eval_nonvirtual()
         {
             return eval();
         }
-        virtual hpx::future<ir::node_data<double>> eval() const = 0;
+        virtual hpx::future<util::optional<ir::node_data<double>>> eval() const = 0;
 
     public:
         HPX_DEFINE_COMPONENT_ACTION(base_primitive,
@@ -45,7 +52,8 @@ HPX_REGISTER_ACTION_DECLARATION(
 
 namespace phylanx { namespace execution_tree
 {
-    class HPX_COMPONENT_EXPORT primitive
+    ///////////////////////////////////////////////////////////////////////////
+    class primitive
       : public hpx::components::client_base<primitive,
             primitives::base_primitive>
     {
@@ -69,7 +77,7 @@ namespace phylanx { namespace execution_tree
         {
         }
 
-        hpx::future<ir::node_data<double>> eval() const;
+        hpx::future<util::optional<ir::node_data<double>>> eval() const;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -82,7 +90,7 @@ namespace phylanx { namespace execution_tree
           , primitive
         >;
 
-
+    ///////////////////////////////////////////////////////////////////////////
     // a literal value is valid of its not nil{}
     inline bool valid(primitive_argument_type const& val)
     {
@@ -93,12 +101,23 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT  primitive_argument_type to_primitive_value_type(
         ast::literal_value_type && val);
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Extract a literal type from a given primitive_argument_type, throw
+    // if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<double> extract_literal_value(
         primitive_argument_type const& val);
-}}
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+    // Extract a primitive from a given primitive_argument_type, throw
+    // if it doesn't hold one.
+    PHYLANX_EXPORT primitive extract_primitive(
+        primitive_argument_type const& val);
+
+    ///////////////////////////////////////////////////////////////////////
+    // Extract a node_data<double> from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<util::optional<ir::node_data<double>>>
+        evaluate_operand(primitive_argument_type const& val);
+
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
@@ -113,8 +132,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    using match_pattern_type = std::pair<std::string, factory_function_type>;
+    using pattern_list = std::vector<match_pattern_type>;
+}}
+
+namespace phylanx { namespace execution_tree { namespace primitives
+{
     namespace detail
     {
+        // Invoke the given function on all items in the input vector, while
+        // returning another vector holding the respective results.
         template <typename T, typename F>
         auto map_operands(std::vector<T> const& in, F && f)
         ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>()))>
@@ -127,6 +155,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 out.push_back(hpx::util::invoke(f, d));
             }
             return out;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // check if one of the optionals in the list of operands is empty
+        inline bool verify_argument_values(
+            std::vector<util::optional<ir::node_data<double>>> const& ops)
+        {
+            for (auto const& op : ops)
+            {
+                if (!op)
+                    return false;
+            }
+            return true;
         }
     }
 }}}

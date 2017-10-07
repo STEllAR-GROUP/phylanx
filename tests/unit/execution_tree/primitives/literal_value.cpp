@@ -15,9 +15,10 @@ void test_literal_value()
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
-    hpx::future<phylanx::ir::node_data<double>> f = val.eval();
+    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+        val.eval();
 
-    HPX_TEST_EQ(42.0, f.get()[0]);
+    HPX_TEST_EQ(42.0, f.get().value()[0]);
 }
 
 int main(int argc, char* argv[])
