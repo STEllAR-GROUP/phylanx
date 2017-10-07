@@ -5,11 +5,18 @@
 
 set(tests
     add_operation
+    and_operation
     equal_operation
-    sub_operation
-    mul_operation
     file_primitives
+    greater_operation
+    greater_equal_operation
+    less_operation
+    less_equal_operation
     literal_value
+    mul_operation
+    not_equal_operation
+    or_operation
+    sub_operation
    )
 
 foreach(test ${tests})
