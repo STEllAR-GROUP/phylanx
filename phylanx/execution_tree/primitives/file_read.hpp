@@ -15,9 +15,6 @@
 
 #include <hpx/include/components.hpp>
 
-#include <array>
-#include <fstream>
-#include <utility>
 #include <string>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -26,9 +23,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<file_read>
     {
-        using operand_type = util::optional<ir::node_data<double>>;
-        using operands_type = std::vector<operand_type>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -36,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         file_read(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<operand_type> eval() const override;
+        hpx::future<primitive_result_type> eval() const override;
 
     private:
         std::string filename_;

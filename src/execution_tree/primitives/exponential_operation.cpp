@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ir::node_data<double> exponential_operation::exponential0d(
         operands_type const& ops) const
     {
-        return std::exp(ops[0].value()[0]);
+        return std::exp(ops[0][0]);
     }
 
     ir::node_data<double> exponential_operation::exponential1d(
@@ -73,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
 
-        auto const& val = ops[0].value().matrix();
+        auto const& val = ops[0].matrix();
         if (val.rows() != val.cols())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "matrix exponentiation requires quadratic matrices");
         }
 
-        matrix_type result = ops[0].value().matrix().exp();
+        matrix_type result = ops[0].matrix().exp();
         return ir::node_data<double>(std::move(result));
     }
 
@@ -91,36 +91,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using matrix_type =
             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
-        matrix_type result = ops[0].value().matrix().exp();
+        matrix_type result = ops[0].matrix().exp();
         return ir::node_data<double>(std::move(result));
     }
 
-    hpx::future<util::optional<ir::node_data<double>>>
-        exponential_operation::eval() const
+    hpx::future<primitive_result_type> exponential_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type&& ops) -> operand_type
+            [this](operands_type&& ops) -> primitive_result_type
             {
-                if (!detail::verify_argument_values(ops))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "exponential_operation::eval",
-                        "the exponential_operation primitive requires that "
-                            "the argument values given by the operands "
-                            "array are non-empty");
-                }
-
-                std::size_t dims = ops[0].value().num_dimensions();
+                std::size_t dims = ops[0].num_dimensions();
                 switch (dims)
                 {
                 case 0:
-                    return operand_type(exponential0d(ops));
+                    return primitive_result_type(exponential0d(ops));
 
                 case 1:
-                    return operand_type(exponential1d(ops));
+                    return primitive_result_type(exponential1d(ops));
 
                 case 2:
-                    return operand_type(exponentialxd(ops));
+                    return primitive_result_type(exponentialxd(ops));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -129,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "dimensions");
                 }
             }),
-            detail::map_operands(operands_, evaluate_operand)
+            detail::map_operands(operands_, numeric_operand)
         );
     }
 }}}

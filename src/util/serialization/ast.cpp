@@ -13,8 +13,8 @@
 #include <sstream>
 #include <vector>
 
-namespace phylanx {
-namespace util {
+namespace phylanx { namespace util
+{
     ///////////////////////////////////////////////////////////////////////////
     namespace detail {
         template <typename Ast>
@@ -79,10 +79,16 @@ namespace util {
         return detail::serialize(ast);
     }
 
+    std::vector<char> serialize(ast::literal_value_type const& ast)
+    {
+        return detail::serialize(ast);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
+    namespace detail
+    {
         template <typename Ast>
-        void unserialize_helper(std::vector<char> const& input, Ast& ast)
+        inline void unserialize_helper(std::vector<char> const& input, Ast& ast)
         {
             hpx::serialization::input_archive archive(input, input.size());
             archive >> ast;
@@ -131,6 +137,12 @@ namespace util {
 
         void unserialize(
             std::vector<char> const& input, ast::function_call& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(
+            std::vector<char> const& input, ast::literal_value_type& ast)
         {
             detail::unserialize_helper(input, ast);
         }

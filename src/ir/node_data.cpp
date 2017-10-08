@@ -6,8 +6,11 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 
+#include <hpx/exception.hpp>
+
 #include <cstddef>
 #include <iosfwd>
+#include <string>
 
 namespace phylanx { namespace ir
 {
@@ -32,7 +35,8 @@ namespace phylanx { namespace ir
     ///////////////////////////////////////////////////////////////////////////
     std::ostream& operator<<(std::ostream& out, node_data<double> const& nd)
     {
-        switch (nd.num_dimensions())
+        std::size_t dims = nd.num_dimensions();
+        switch (dims)
         {
         case 0:
             out << std::to_string(nd[0]);
@@ -55,8 +59,32 @@ namespace phylanx { namespace ir
             break;
 
         default:
-            break;
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "node_data<double>::operator bool",
+                "invalid dimensionality: " + std::to_string(dims));
         }
         return out;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <>
+    node_data<double>::operator bool() const
+    {
+        std::size_t dims = num_dimensions();
+        switch (dims)
+        {
+        case 0:
+            HPX_FALLTHROUGH;
+        case 1:
+            HPX_FALLTHROUGH;
+        case 2:
+            return matrix().norm() != 0;
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "node_data<double>::operator bool",
+                "invalid dimensionality: " + std::to_string(dims));
+        }
+        return false;
     }
 }}

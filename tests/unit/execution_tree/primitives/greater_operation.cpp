@@ -15,7 +15,29 @@
 #include <utility>
 #include <vector>
 
-void test_add_operation_0d()
+void test_greater_operation_0d_false()
+{
+    phylanx::execution_tree::primitive lhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
+
+    phylanx::execution_tree::primitive rhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(41.0));
+
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(lhs), std::move(rhs)
+            });
+
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+        greater.eval();
+    HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
+}
+
+void test_greater_operation_0d_true()
 {
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
@@ -25,21 +47,39 @@ void test_add_operation_0d()
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
-    phylanx::execution_tree::primitive add =
-        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        add.eval();
-
-    HPX_TEST_EQ(
-        42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+        greater.eval();
+    HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
 }
 
-void test_add_operation_0d_lit()
+void test_greater_operation_0d_lit_false()
+{
+    phylanx::ir::node_data<double> lhs(1.0);
+
+    phylanx::execution_tree::primitive rhs =
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
+
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(lhs), std::move(rhs)
+            });
+
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+        greater.eval();
+    HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
+}
+
+void test_greater_operation_0d_lit_true()
 {
     phylanx::ir::node_data<double> lhs(41.0);
 
@@ -47,21 +87,19 @@ void test_add_operation_0d_lit()
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
-    phylanx::execution_tree::primitive add =
-        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        add.eval();
-
-    HPX_TEST_EQ(
-        42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+        greater.eval();
+    HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
 }
 
-void test_add_operation_1d()
+void test_greater_operation_1d()
 {
     Eigen::VectorXd v1 = Eigen::VectorXd::Random(1007);
     Eigen::VectorXd v2 = Eigen::VectorXd::Random(1007);
@@ -74,23 +112,23 @@ void test_add_operation_1d()
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
-    phylanx::execution_tree::primitive add =
-        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        add.eval();
+        greater.eval();
 
-    Eigen::VectorXd expected = v1 + v2;
+    Eigen::VectorXd expected = (v1.array() > v2.array()).cast<double>();
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+        expected.norm() != 0.0,
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
-void test_add_operation_1d_lit()
+void test_greater_operation_1d_lit()
 {
     Eigen::VectorXd v1 = Eigen::VectorXd::Random(1007);
     Eigen::VectorXd v2 = Eigen::VectorXd::Random(1007);
@@ -101,23 +139,23 @@ void test_add_operation_1d_lit()
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
-    phylanx::execution_tree::primitive add =
-        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        add.eval();
+        greater.eval();
 
-    Eigen::VectorXd expected = v1 + v2;
+    Eigen::VectorXd expected = (v1.array() > v2.array()).cast<double>();
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+        expected.norm() != 0.0,
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
-void test_add_operation_2d()
+void test_greater_operation_2d()
 {
     Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(101, 101);
     Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(101, 101);
@@ -130,23 +168,23 @@ void test_add_operation_2d()
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
-    phylanx::execution_tree::primitive add =
-        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        add.eval();
+        greater.eval();
 
-    Eigen::MatrixXd expected = m1.array() + m2.array();
+    Eigen::MatrixXd expected = (m1.array() > m2.array()).cast<double>();
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+        expected.norm() != 0.0,
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
-void test_add_operation_2d_lit()
+void test_greater_operation_2d_lit()
 {
     Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(101, 101);
     Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(101, 101);
@@ -157,32 +195,34 @@ void test_add_operation_2d_lit()
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
-    phylanx::execution_tree::primitive add =
-        hpx::new_<phylanx::execution_tree::primitives::add_operation>(
+    phylanx::execution_tree::primitive greater =
+        hpx::new_<phylanx::execution_tree::primitives::greater>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        add.eval();
+        greater.eval();
 
-    Eigen::MatrixXd expected = m1.array() + m2.array();
+    Eigen::MatrixXd expected = (m1.array() > m2.array()).cast<double>();
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+        expected.norm() != 0.0,
+        phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 int main(int argc, char* argv[])
 {
-    test_add_operation_0d();
-    test_add_operation_0d_lit();
+    test_greater_operation_0d_false();
+    test_greater_operation_0d_true();
+    test_greater_operation_0d_lit_false();
+    test_greater_operation_0d_lit_true();
 
-    test_add_operation_1d();
-    test_add_operation_1d_lit();
+    test_greater_operation_1d();
+    test_greater_operation_1d_lit();
 
-    test_add_operation_2d();
-    test_add_operation_2d_lit();
+    test_greater_operation_2d();
+    test_greater_operation_2d_lit();
 
     return hpx::util::report_errors();
 }

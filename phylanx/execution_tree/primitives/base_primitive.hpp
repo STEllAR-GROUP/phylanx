@@ -21,6 +21,8 @@
 namespace phylanx { namespace execution_tree
 {
     class HPX_COMPONENT_EXPORT primitive;
+
+    using primitive_result_type = ast::literal_value_type;
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -33,11 +35,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         base_primitive() = default;
         virtual ~base_primitive() = default;
 
-        hpx::future<util::optional<ir::node_data<double>>> eval_nonvirtual()
+        hpx::future<primitive_result_type> eval_nonvirtual()
         {
             return eval();
         }
-        virtual hpx::future<util::optional<ir::node_data<double>>> eval() const = 0;
+        virtual hpx::future<primitive_result_type> eval() const = 0;
 
     public:
         HPX_DEFINE_COMPONENT_ACTION(base_primitive,
@@ -77,7 +79,7 @@ namespace phylanx { namespace execution_tree
         {
         }
 
-        hpx::future<util::optional<ir::node_data<double>>> eval() const;
+        hpx::future<primitive_result_type> eval() const;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -98,25 +100,51 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_EXPORT  primitive_argument_type to_primitive_value_type(
-        ast::literal_value_type && val);
+    PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
+        primitive_result_type && val);
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a literal type from a given primitive_argument_type, throw
     // if it doesn't hold one.
-    PHYLANX_EXPORT ir::node_data<double> extract_literal_value(
+    PHYLANX_EXPORT primitive_result_type extract_literal_value(
         primitive_argument_type const& val);
+    PHYLANX_EXPORT primitive_result_type extract_literal_value(
+        primitive_result_type && val);
 
+    // Extract a ir::node_data<double> type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
+        primitive_result_type && val);
+
+    // Extract a boolean type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::uint8_t extract_boolean_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT std::uint8_t extract_boolean_value(
+        primitive_result_type const& val);
+
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a primitive from a given primitive_argument_type, throw
     // if it doesn't hold one.
-    PHYLANX_EXPORT primitive extract_primitive(
+    PHYLANX_EXPORT primitive primitive_operand(
         primitive_argument_type const& val);
 
-    ///////////////////////////////////////////////////////////////////////
+    // Extract a primitive_result_type from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<primitive_result_type>
+        literal_operand(primitive_argument_type const& val);
+
     // Extract a node_data<double> from a primitive_argument_type (that
     // could be a primitive or a literal value).
-    PHYLANX_EXPORT hpx::future<util::optional<ir::node_data<double>>>
-        evaluate_operand(primitive_argument_type const& val);
+    PHYLANX_EXPORT hpx::future<ir::node_data<double>>
+        numeric_operand(primitive_argument_type const& val);
+
+    // Extract a boolean from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<std::uint8_t>
+        boolean_operand(primitive_argument_type const& val);
 
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
@@ -160,11 +188,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///////////////////////////////////////////////////////////////////////
         // check if one of the optionals in the list of operands is empty
         inline bool verify_argument_values(
-            std::vector<util::optional<ir::node_data<double>>> const& ops)
+            std::vector<primitive_result_type> const& ops)
         {
             for (auto const& op : ops)
             {
-                if (!op)
+                if (!valid(op))
                     return false;
             }
             return true;
