@@ -67,6 +67,7 @@ namespace phylanx { namespace ir
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    template <>
     node_data<double>::operator bool() const
     {
         std::size_t dims = num_dimensions();
