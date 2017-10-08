@@ -39,8 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        ir::node_data<double> mul0d(operands_type const& ops) const;
-        ir::node_data<double> mulxd(operands_type const& ops) const;
+        ir::node_data<double> mul0d(operands_type && ops) const;
+        ir::node_data<double> mulxd(operands_type && ops) const;
 
     private:
         std::vector<primitive_argument_type> operands_;
