@@ -41,7 +41,7 @@ void test_less_operation_0d_true()
 {
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
+            hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive rhs =
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
@@ -81,7 +81,7 @@ void test_less_operation_0d_lit_false()
 
 void test_less_operation_0d_lit_true()
 {
-    phylanx::ir::node_data<double> lhs(1.0);
+    phylanx::ir::node_data<double> lhs(0.0);
 
     phylanx::execution_tree::primitive rhs =
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(

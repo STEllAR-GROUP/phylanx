@@ -47,11 +47,11 @@ void test_or_operation_0d_true()
 
 void test_or_operation_0d_lit_false()
 {
-    phylanx::ir::node_data<double> lhs(41.0);
+    phylanx::ir::node_data<double> lhs(0.0);
 
     phylanx::execution_tree::primitive rhs =
         hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
+            hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive or_ =
         hpx::new_<phylanx::execution_tree::primitives::or_operation>(
