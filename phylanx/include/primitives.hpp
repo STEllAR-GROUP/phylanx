@@ -8,9 +8,10 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
-#include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
+#include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/equal.hpp>
+#include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>

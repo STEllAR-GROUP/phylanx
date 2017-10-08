@@ -180,7 +180,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         array_type first_term = ops.begin()->matrix().array();
         matrix_type result =
             std::accumulate(
-                ops.begin() + 1, ops.end(), first_term,
+                ops.begin() + 1, ops.end(), std::move(first_term),
                 [](array_type& result, operand_type const& curr)
                 ->  array_type
                 {
@@ -253,7 +253,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         array_type first_term = ops.begin()->matrix().array();
         matrix_type result =
             std::accumulate(
-                ops.begin() + 1, ops.end(), first_term,
+                ops.begin() + 1, ops.end(), std::move(first_term),
                 [](array_type& result, operand_type const& curr)
                 ->  array_type
                 {
