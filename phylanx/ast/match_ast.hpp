@@ -25,7 +25,7 @@ namespace phylanx { namespace ast
 {
     ///////////////////////////////////////////////////////////////////////////
     template <typename Ast1, typename Ast2, typename F, typename ... Ts>
-    bool match_ast(Ast1 const&, Ast2 const&, F && f, Ts const&... ts)
+    bool match_ast(Ast1 const& ast1, Ast2 const& ast2, F && f, Ts const&... ts)
     {
         return false;       // by default things don't match
     }
@@ -72,6 +72,8 @@ namespace phylanx { namespace ast
     bool match_ast(unary_expr const&, identifier const&, F&&, Ts const&...);
     template <typename F, typename... Ts>
     bool match_ast(unary_expr const&, unary_expr const&, F&&, Ts const&...);
+    template <typename F, typename... Ts>
+    bool match_ast(unary_expr const&, primary_expr const&, F&&, Ts const&...);
 
     template <typename F, typename... Ts>
     bool match_ast(operation const&, identifier const&, F&&, Ts const&...);
@@ -189,6 +191,18 @@ namespace phylanx { namespace ast
             return false;       // operator does not match
         }
         return match_ast(pe1.operand_, pe2.operand_, std::forward<F>(f), ts...);
+    }
+
+    template <typename F, typename... Ts>
+    bool match_ast(
+        unary_expr const& ue, primary_expr const& pe, F&& f, Ts const&... ts)
+    {
+        if (detail::is_placeholder(pe))
+        {
+            return hpx::util::invoke(
+                std::forward<F>(f), ue, detail::placeholder_id(pe), ts...);
+        }
+        return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -457,13 +471,15 @@ namespace phylanx { namespace ast
     {
         if (detail::is_placeholder(expr1))
         {
-            return hpx::util::invoke(std::forward<F>(f), expr1,
+            return hpx::util::invoke(std::forward<F>(f),
+                detail::placeholder_id(expr1),
                 detail::extract_expression(expr2), ts...);
         }
         else if (detail::is_placeholder(expr2))
         {
             return hpx::util::invoke(std::forward<F>(f),
-                detail::extract_expression(expr1), expr2, ts...);
+                detail::extract_expression(expr1),
+                detail::placeholder_id(expr2), ts...);
         }
 
         // check whether first operand matches

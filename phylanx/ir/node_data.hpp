@@ -178,6 +178,15 @@ namespace phylanx { namespace ir
         }
 
         /// Access a specific element of the underlying N-dimensional array
+        T& operator[](std::ptrdiff_t index)
+        {
+            return data_.data()[index];
+        }
+        T& operator[](dimensions_type const& indicies)
+        {
+            return data_(indicies[0], indicies[1]);
+        }
+
         T const& operator[](std::ptrdiff_t index) const
         {
             return data_.data()[index];
@@ -220,6 +229,10 @@ namespace phylanx { namespace ir
             return data_.size();
         }
 
+        storage_type& matrix()
+        {
+            return data_;
+        }
         storage_type const& matrix() const
         {
             return data_;

@@ -20,14 +20,31 @@ namespace phylanx { namespace ast { namespace detail
         }
     };
 
+    struct placeholder_helper
+    {
+        template <typename Ast>
+        identifier operator()(Ast const& ast) const
+        {
+            return placeholder_id(ast);
+        }
+    };
+
     bool is_placeholder(primary_expr const& pe)
     {
         return visit(is_placeholder_helper(), pe);
+    }
+    identifier placeholder_id(primary_expr const& pe)
+    {
+        return visit(placeholder_helper(), pe);
     }
 
     bool is_placeholder(operand const& op)
     {
         return visit(is_placeholder_helper(), op);
+    }
+    identifier placeholder_id(operand const& op)
+    {
+        return visit(placeholder_helper(), op);
     }
 }}}
 
