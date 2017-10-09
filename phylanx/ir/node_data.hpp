@@ -177,7 +177,43 @@ namespace phylanx { namespace ir
         {
         }
 
+        node_data(node_data const& d)
+          : data_(d.data_)
+        {
+        }
+        node_data(node_data && d)
+          : data_(std::move(d.data_))
+        {
+        }
+
+        node_data& operator=(node_data const& d)
+        {
+            if (this != &d)
+            {
+                data_ = d.data_;
+            }
+            return *this;
+        }
+        node_data& operator=(node_data && d)
+        {
+            if (this != &d)
+            {
+                data_ = std::move(d.data_);
+            }
+            return *this;
+        }
+
+
         /// Access a specific element of the underlying N-dimensional array
+        T& operator[](std::ptrdiff_t index)
+        {
+            return data_.data()[index];
+        }
+        T& operator[](dimensions_type const& indicies)
+        {
+            return data_(indicies[0], indicies[1]);
+        }
+
         T const& operator[](std::ptrdiff_t index) const
         {
             return data_.data()[index];
@@ -220,6 +256,10 @@ namespace phylanx { namespace ir
             return data_.size();
         }
 
+        storage_type& matrix()
+        {
+            return data_;
+        }
         storage_type const& matrix() const
         {
             return data_;
@@ -247,6 +287,12 @@ namespace phylanx { namespace ir
         std::size_t dimension(std::size_t dim) const
         {
             return (dim == 0) ? data_.rows() : data_.cols();
+        }
+
+        explicit operator bool() const;
+        bool operator!() const
+        {
+            return !bool(*this);
         }
 
     private:

@@ -24,9 +24,10 @@ void test_exponential_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         exponential.eval();
-    HPX_TEST_EQ(std::exp(5.0), f.get().value()[0]);
+    HPX_TEST_EQ(std::exp(5.0),
+        phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
 void test_exponential_operation_0d_lit()
@@ -40,9 +41,10 @@ void test_exponential_operation_0d_lit()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         exponential.eval();
-    HPX_TEST_EQ(std::exp(5.0), f.get().value()[0]);
+    HPX_TEST_EQ(std::exp(5.0),
+        phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
 void test_exponential_operation_2d()
@@ -60,12 +62,13 @@ void test_exponential_operation_2d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> f =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         exponential.eval();
 
     Eigen::MatrixXd expected = m.exp();
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)), f.get().value());
+        phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 int main(int argc, char* argv[])

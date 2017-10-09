@@ -32,10 +32,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             : data_(std::move(data))
         {}
 
-        hpx::future<util::optional<ir::node_data<double>>> eval() const override
+        hpx::future<primitive_result_type> eval() const override
         {
-            return hpx::make_ready_future(
-                util::optional<ir::node_data<double>>(data_));
+            return hpx::make_ready_future(primitive_result_type(data_));
         }
 
     private:

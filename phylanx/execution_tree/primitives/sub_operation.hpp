@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public hpx::components::component_base<sub_operation>
     {
     private:
-        using operand_type = util::optional<ir::node_data<double>>;
+        using operand_type = ir::node_data<double>;
         using operands_type = std::vector<operand_type>;
 
     public:
@@ -35,15 +35,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         sub_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<operand_type> eval() const override;
+        hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        ir::node_data<double> sub0d(operands_type const& ops) const;
-        ir::node_data<double> sub1d(operands_type const& ops) const;
-        ir::node_data<double> sub2d(operands_type const& ops) const;
+        ir::node_data<double> sub0d(operands_type && ops) const;
+        ir::node_data<double> sub0d0d(operands_type && ops) const;
+        ir::node_data<double> sub0d1d(operands_type && ops) const;
+        ir::node_data<double> sub0d2d(operands_type && ops) const;
 
-        ir::node_data<double> sub1d1d(operands_type const& ops) const;
-        ir::node_data<double> sub2d2d(operands_type const& ops) const;
+        ir::node_data<double> sub1d(operands_type && ops) const;
+        ir::node_data<double> sub1d0d(operands_type && ops) const;
+        ir::node_data<double> sub1d1d(operands_type && ops) const;
+
+        ir::node_data<double> sub2d(operands_type && ops) const;
+        ir::node_data<double> sub2d0d(operands_type && ops) const;
+        ir::node_data<double> sub2d2d(operands_type && ops) const;
 
     private:
         std::vector<primitive_argument_type> operands_;

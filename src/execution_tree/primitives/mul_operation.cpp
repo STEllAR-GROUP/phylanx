@@ -65,17 +65,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mul_operation::mul_operation",
                 "the mul_operation primitive requires that the arguments given "
-                    "by the operands array is valid");
+                    "by the operands array are valid");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> mul_operation::mul0d(operands_type const& ops) const
+    ir::node_data<double> mul_operation::mul0d(operands_type && ops) const
     {
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
 
         std::size_t rhs_dims = rhs.num_dimensions();
         switch (rhs_dims)
@@ -84,19 +82,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (ops.size() == 2)
                 {
-                    return lhs[0] * rhs[0];
+                    lhs[0] *= rhs[0];
+                    return std::move(lhs);
                 }
 
-                return ir::node_data<double>(
-                    std::accumulate(ops.begin() + 1, ops.end(), lhs[0],
-                        [](double result, operand_type const& curr)
-                        {
-                            return result * curr.value()[0];
-                        }));
+                return std::accumulate(
+                    ops.begin() + 1, ops.end(), std::move(lhs),
+                    [](operand_type& result, operand_type const& curr)
+                    {
+                        result.matrix() *= curr[0];
+                        return std::move(result);
+                    });
             }
             break;
 
-        case 1:
+        case 1: HPX_FALLTHROUGH;
         case 2:
             {
                 if (ops.size() > 2)
@@ -107,8 +107,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "is not a matrix");
                 }
 
-                matrix_type result = lhs[0] * rhs.matrix();
-                return ir::node_data<double>(std::move(result));
+                rhs.matrix() = lhs[0] * rhs.matrix();
+                return std::move(rhs);
             }
 
         default:
@@ -119,63 +119,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> mul_operation::mulxd(operands_type const& ops) const
+    ir::node_data<double> mul_operation::mulxd(operands_type && ops) const
     {
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-
-        auto const& lhs = ops[0].value();
-        auto const& rhs = ops[1].value();
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
 
         if (ops.size() == 2)
         {
             if (rhs.num_dimensions() == 0)
             {
-                matrix_type result = lhs.matrix() * rhs[0];
-                return ir::node_data<double>(std::move(result));
+                lhs.matrix() *= rhs[0];
+                return std::move(lhs);
             }
 
-            matrix_type result = lhs.matrix() * rhs.matrix();
-            return ir::node_data<double>(std::move(result));
+            lhs.matrix() *= rhs.matrix();
+            return std::move(lhs);
         }
 
-        matrix_type first_term = ops.begin()->value().matrix();
-        matrix_type result =
-            std::accumulate(ops.begin() + 1, ops.end(), first_term,
-                [](matrix_type& result, operand_type const& curr)
-                ->  matrix_type
+        return std::accumulate(
+            ops.begin() + 1, ops.end(), std::move(lhs),
+            [](operand_type& result, operand_type const& curr) -> operand_type
+            {
+                if (curr.num_dimensions() == 0)
                 {
-                    auto const& val = curr.value();
-                    if (val.num_dimensions() == 0)
-                        return result *= val[0];
-                    return result *= val.matrix();
-                });
-
-        return ir::node_data<double>(std::move(result));
+                    result.matrix() *= curr[0];
+                }
+                else
+                {
+                    result.matrix() *= curr.matrix();
+                }
+                return std::move(result);
+            });
     }
 
     // implement '*' for all possible combinations of lhs and rhs
-    hpx::future<util::optional<ir::node_data<double>>> mul_operation::eval() const
+    hpx::future<primitive_result_type> mul_operation::eval() const
     {
         return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type&& ops)
+            [this](operands_type&& ops) -> primitive_result_type
             {
-                if (!detail::verify_argument_values(ops))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "mul_operation::eval",
-                        "the mul_operation primitive requires that the argument"
-                            " values given by the operands array are non-empty");
-                }
-
-                std::size_t lhs_dims = ops[0].value().num_dimensions();
+                std::size_t lhs_dims = ops[0].num_dimensions();
                 switch (lhs_dims)
                 {
                 case 0:
-                    return operand_type(mul0d(ops));
+                    return primitive_result_type(mul0d(std::move(ops)));
 
-                case 1:
+                case 1: HPX_FALLTHROUGH;
                 case 2:
-                    return operand_type(mulxd(ops));
+                    return primitive_result_type(mulxd(std::move(ops)));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -184,7 +175,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
             }),
-            detail::map_operands(operands_, evaluate_operand)
+            detail::map_operands(operands_, numeric_operand)
         );
     }
 }}}
