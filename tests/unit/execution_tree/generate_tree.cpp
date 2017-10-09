@@ -22,6 +22,19 @@ void test_generate_tree(std::string const& exprstr,
         expected_result);
 }
 
+void test_generate_tree(std::string const& exprstr,
+    phylanx::execution_tree::pattern_list const& patterns,
+    phylanx::execution_tree::variables const& variables,
+    bool expected_result)
+{
+    phylanx::execution_tree::primitive p =
+        phylanx::execution_tree::generate_tree(exprstr, patterns, variables);
+
+    HPX_TEST_EQ(
+        phylanx::execution_tree::extract_boolean_value(p.eval().get()) != 0,
+        expected_result);
+}
+
 phylanx::execution_tree::primitive create_literal_value(double value)
 {
     return phylanx::execution_tree::primitive(
@@ -122,6 +135,57 @@ void test_file_io_primitives()
     test_generate_tree("file_read(\"test_file\")", patterns, variables, 41.0);
 }
 
+void test_boolean_primitives()
+{
+    phylanx::execution_tree::pattern_list patterns = {
+        phylanx::execution_tree::primitives::unary_minus_operation::match_data,
+        phylanx::execution_tree::primitives::unary_not_operation::match_data,
+        phylanx::execution_tree::primitives::and_operation::match_data,
+        phylanx::execution_tree::primitives::or_operation::match_data,
+        phylanx::execution_tree::primitives::equal::match_data,
+        phylanx::execution_tree::primitives::not_equal::match_data,
+        phylanx::execution_tree::primitives::less::match_data,
+        phylanx::execution_tree::primitives::less_equal::match_data,
+        phylanx::execution_tree::primitives::greater::match_data,
+        phylanx::execution_tree::primitives::greater_equal::match_data
+    };
+
+    phylanx::execution_tree::variables variables = {
+        {"A", create_literal_value(41.0)},
+        {"B", create_literal_value(0.0)}
+    };
+
+    test_generate_tree("!A", patterns, variables, false);
+    test_generate_tree("!!A", patterns, variables, true);
+
+    test_generate_tree("-A", patterns, variables, -41.0);
+    test_generate_tree("--A", patterns, variables, 41.0);
+
+    test_generate_tree("A && A", patterns, variables, true);
+    test_generate_tree("A && B", patterns, variables, false);
+
+    test_generate_tree("B || B", patterns, variables, false);
+    test_generate_tree("A || B", patterns, variables, true);
+
+    test_generate_tree("A == A", patterns, variables, true);
+    test_generate_tree("A == B", patterns, variables, false);
+
+    test_generate_tree("A != A", patterns, variables, false);
+    test_generate_tree("A != B", patterns, variables, true);
+
+    test_generate_tree("A <= A", patterns, variables, true);
+    test_generate_tree("A <= B", patterns, variables, false);
+
+    test_generate_tree("A < A", patterns, variables, false);
+    test_generate_tree("A < B", patterns, variables, false);
+
+    test_generate_tree("A >= A", patterns, variables, true);
+    test_generate_tree("A >= B", patterns, variables, true);
+
+    test_generate_tree("A > A", patterns, variables, false);
+    test_generate_tree("A > B", patterns, variables, true);
+}
+
 int main(int argc, char* argv[])
 {
     test_add_primitive();
@@ -129,6 +193,8 @@ int main(int argc, char* argv[])
     test_mul_primitive();
     test_math_primitives();
     test_file_io_primitives();
+
+    test_boolean_primitives();
 
     return hpx::util::report_errors();
 }
