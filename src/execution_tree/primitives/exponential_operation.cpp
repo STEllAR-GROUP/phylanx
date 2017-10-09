@@ -65,7 +65,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ir::node_data<double> exponential_operation::exponential0d(
         operands_type && ops) const
     {
-        return operand_type(std::exp(ops[0][0]));
+        ops[0][0] = std::exp(ops[0][0]);
+        return std::move(ops[0]);
     }
 
     ir::node_data<double> exponential_operation::exponential1d(
