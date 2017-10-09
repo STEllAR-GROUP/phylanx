@@ -63,16 +63,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> exponential_operation::exponential0d(
-        operands_type const& ops) const
+        operands_type && ops) const
     {
-        return std::exp(ops[0][0]);
+        return operand_type(std::exp(ops[0][0]));
     }
 
     ir::node_data<double> exponential_operation::exponential1d(
-        operands_type const& ops) const
+        operands_type && ops) const
     {
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-
         auto const& val = ops[0].matrix();
         if (val.rows() != val.cols())
         {
@@ -81,13 +79,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "matrix exponentiation requires quadratic matrices");
         }
 
+        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
         matrix_type result = ops[0].matrix().exp();
         return ir::node_data<double>(std::move(result));
     }
 
     ir::node_data<double> exponential_operation::exponentialxd(
-        operands_type const& ops) const
+        operands_type && ops) const
     {
+        auto const& val = ops[0].matrix();
+        if (val.rows() != val.cols())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "exponential_operation::exponential1d",
+                "matrix exponentiation requires quadratic matrices");
+        }
+
         using matrix_type =
             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
@@ -104,13 +112,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (dims)
                 {
                 case 0:
-                    return primitive_result_type(exponential0d(ops));
+                    return primitive_result_type(exponential0d(std::move(ops)));
 
                 case 1:
-                    return primitive_result_type(exponential1d(ops));
+                    return primitive_result_type(exponential1d(std::move(ops)));
 
                 case 2:
-                    return primitive_result_type(exponentialxd(ops));
+                    return primitive_result_type(exponentialxd(std::move(ops)));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

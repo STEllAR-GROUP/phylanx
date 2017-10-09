@@ -38,18 +38,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        ir::node_data<double> div0d(operands_type const& ops) const;
-        ir::node_data<double> div0d0d(operands_type const& ops) const;
-        ir::node_data<double> div0d1d(operands_type const& ops) const;
-        ir::node_data<double> div0d2d(operands_type const& ops) const;
+        ir::node_data<double> div0d(operands_type && ops) const;
+        ir::node_data<double> div0d0d(operands_type && ops) const;
+        ir::node_data<double> div0d1d(operands_type && ops) const;
+        ir::node_data<double> div0d2d(operands_type && ops) const;
 
-        ir::node_data<double> div1d(operands_type const& ops) const;
-        ir::node_data<double> div1d0d(operands_type const& ops) const;
-        ir::node_data<double> div1d1d(operands_type const& ops) const;
+        ir::node_data<double> div1d(operands_type && ops) const;
+        ir::node_data<double> div1d0d(operands_type && ops) const;
+        ir::node_data<double> div1d1d(operands_type && ops) const;
 
-        ir::node_data<double> div2d(operands_type const& ops) const;
-        ir::node_data<double> div2d0d(operands_type const& ops) const;
-        ir::node_data<double> div2d2d(operands_type const& ops) const;
+        ir::node_data<double> div2d(operands_type && ops) const;
+        ir::node_data<double> div2d0d(operands_type && ops) const;
+        ir::node_data<double> div2d2d(operands_type && ops) const;
 
     private:
         std::vector<primitive_argument_type> operands_;

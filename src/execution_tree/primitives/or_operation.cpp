@@ -76,12 +76,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (ops.size() == 2)
                 {
-                    return primitive_result_type(ops[0] || ops[1]);
+                    return primitive_result_type(ops[0] != 0 || ops[1] != 0);
                 }
 
                 return primitive_result_type(
-                    std::any_of(ops.begin(), ops.end(),
-                        [](std::uint8_t curr) { return curr; }));
+                    std::any_of(
+                        ops.begin(), ops.end(),
+                        [](std::uint8_t curr)
+                        {
+                            return curr != 0;
+                        }));
             }),
             detail::map_operands(operands_, boolean_operand)
         );

@@ -23,6 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public hpx::components::component_base<less>
     {
     private:
+        using operand_type = ir::node_data<double>;
         using operands_type = std::vector<primitive_result_type>;
 
     public:
@@ -35,21 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        bool less0d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
-        bool less1d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
-        bool less2d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
+        bool less0d(operand_type&& lhs, operand_type&& rhs) const;
+        bool less1d(operand_type&& lhs, operand_type&& rhs) const;
+        bool less2d(operand_type&& lhs, operand_type&& rhs) const;
 
-        bool less1d1d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
-        bool less2d2d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
+        bool less1d1d(operand_type&& lhs, operand_type&& rhs) const;
+        bool less2d2d(operand_type&& lhs, operand_type&& rhs) const;
 
     public:
-        bool less_all(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
+        bool less_all(operand_type&& lhs, operand_type&& rhs) const;
 
     private:
         std::vector<primitive_argument_type> operands_;

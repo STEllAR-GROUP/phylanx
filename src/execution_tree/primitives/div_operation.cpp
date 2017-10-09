@@ -68,77 +68,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> div_operation::div0d0d(operands_type const& ops) const
+    ir::node_data<double> div_operation::div0d0d(operands_type && ops) const
     {
-        auto const& lhs = ops[0];
-        auto const& rhs = ops[1];
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
 
         if (ops.size() == 2)
         {
-            return lhs[0] / rhs[0];
+            lhs[0] /= rhs[0];
+            return std::move(lhs);
         }
 
-        return ir::node_data<double>(
-            std::accumulate(ops.begin() + 1, ops.end(), lhs[0],
-                [](double result, operand_type const& curr)
-                {
-                    return result / curr[0];
-                }));
+        return std::accumulate(
+            ops.begin() + 1, ops.end(), std::move(lhs),
+            [](operand_type& result, operand_type const& curr) -> operand_type
+            {
+                result[0] /= curr[0];
+                return std::move(result);
+            });
     }
 
-    ir::node_data<double> div_operation::div0d1d(operands_type const& ops) const
-    {
-        if (ops.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div0d1d",
-                "the div_operation primitive can div a single value to a "
-                    "vector only if there are exectly 2 operands");
-        }
-
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-        matrix_type result = ops[0][0] / ops[1].matrix().array();
-        return ir::node_data<double>(std::move(result));
-    }
-
-    ir::node_data<double> div_operation::div0d2d(operands_type const& ops) const
-    {
-        if (ops.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div0d2d",
-                "the div_operation primitive can div a single value to a "
-                    "matrix only if there are exectly 2 operands");
-        }
-
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-        matrix_type result = ops[0][0] / ops[1].matrix().array();
-        return ir::node_data<double>(std::move(result));
-    }
-
-    ir::node_data<double> div_operation::div0d(operands_type const& ops) const
-    {
-        std::size_t rhs_dims = ops[1].num_dimensions();
-        switch(rhs_dims)
-        {
-        case 0:
-            return div0d0d(ops);
-
-        case 1:
-            return div0d1d(ops);
-
-        case 2:
-            return div0d2d(ops);
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div0d",
-                "the operands have incompatible number of dimensions");
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> div_operation::div1d0d(operands_type const& ops) const
+    ir::node_data<double> div_operation::div0d1d(operands_type && ops) const
     {
         if (ops.size() != 2)
         {
@@ -148,15 +98,64 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "vector only if there are exactly 2 operands");
         }
 
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-        matrix_type result = ops[0].matrix().array() / ops[1][0];
-        return ir::node_data<double>(std::move(result));
+        ops[1].matrix().array() = ops[0][0] / ops[1].matrix().array();
+        return std::move(ops[1]);
     }
 
-    ir::node_data<double> div_operation::div1d1d(operands_type const& ops) const
+    ir::node_data<double> div_operation::div0d2d(operands_type && ops) const
     {
-        auto const& lhs = ops[0];
-        auto const& rhs = ops[1];
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "div_operation::div0d2d",
+                "the div_operation primitive can div a single value to a "
+                    "matrix only if there are exactly 2 operands");
+        }
+
+        ops[1].matrix().array() = ops[0][0] / ops[1].matrix().array();
+        return std::move(ops[1]);
+    }
+
+    ir::node_data<double> div_operation::div0d(operands_type && ops) const
+    {
+        std::size_t rhs_dims = ops[1].num_dimensions();
+        switch(rhs_dims)
+        {
+        case 0:
+            return div0d0d(std::move(ops));
+
+        case 1:
+            return div0d1d(std::move(ops));
+
+        case 2:
+            return div0d2d(std::move(ops));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "div_operation::div0d",
+                "the operands have incompatible number of dimensions");
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    ir::node_data<double> div_operation::div1d0d(operands_type && ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "div_operation::div0d1d",
+                "the div_operation primitive can div a single value to a "
+                    "vector only if there are exactly 2 operands");
+        }
+
+        ops[0].matrix().array() /= ops[1][0];
+        return std::move(ops[0]);
+    }
+
+    ir::node_data<double> div_operation::div1d1d(operands_type && ops) const
+    {
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
 
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -168,39 +167,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dimensions of the operands do not match");
         }
 
-        using array_type = Eigen::Array<double, Eigen::Dynamic, 1>;
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-
         if (ops.size() == 2)
         {
-            matrix_type result = lhs.matrix().array() / rhs.matrix().array();
-            return ir::node_data<double>(std::move(result));
+            lhs.matrix().array() /= rhs.matrix().array();
+            return std::move(lhs);
         }
 
-        array_type first_term = ops.begin()->matrix().array();
-        matrix_type result =
-            std::accumulate(
-                ops.begin() + 1, ops.end(), std::move(first_term),
-                [](array_type& result, operand_type const& curr)
-                ->  array_type
-                {
-                    return result /= curr.matrix().array();
-                });
-
-        return ir::node_data<double>(std::move(result));
+        operand_type& first_term = *ops.begin();
+        return std::accumulate(
+            ops.begin() + 1, ops.end(), std::move(first_term),
+            [](operand_type& result, operand_type const& curr) -> operand_type
+            {
+                result.matrix().array() /= curr.matrix().array();
+                return std::move(result);
+            });
     }
 
-    ir::node_data<double> div_operation::div1d(operands_type const& ops) const
+    ir::node_data<double> div_operation::div1d(operands_type && ops) const
     {
         std::size_t rhs_dims = ops[1].num_dimensions();
 
         switch(rhs_dims)
         {
         case 0:
-            return div1d0d(ops);
+            return div1d0d(std::move(ops));
 
         case 1:
-            return div1d1d(ops);
+            return div1d1d(std::move(ops));
 
         case 2: HPX_FALLTHROUGH;
         default:
@@ -211,7 +204,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> div_operation::div2d0d(operands_type const& ops) const
+    ir::node_data<double> div_operation::div2d0d(operands_type && ops) const
     {
         if (ops.size() != 2)
         {
@@ -221,15 +214,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "matrix only if there are exactly 2 operands");
         }
 
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-        matrix_type result = ops[0].matrix().array() / ops[1][0];
-        return ir::node_data<double>(std::move(result));
+        ops[0].matrix().array() /= ops[1][0];
+        return std::move(ops[0]);
     }
 
-    ir::node_data<double> div_operation::div2d2d(operands_type const& ops) const
+    ir::node_data<double> div_operation::div2d2d(operands_type && ops) const
     {
-        auto const& lhs = ops[0];
-        auto const& rhs = ops[1];
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
 
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
@@ -241,38 +233,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dimensions of the operands do not match");
         }
 
-        using array_type = Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic>;
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-
         if (ops.size() == 2)
         {
-            matrix_type result = lhs.matrix().array() / rhs.matrix().array();
-            return ir::node_data<double>(std::move(result));
+            lhs.matrix().array() /= rhs.matrix().array();
+            return std::move(lhs);
         }
 
-        array_type first_term = ops.begin()->matrix().array();
-        matrix_type result =
-            std::accumulate(
-                ops.begin() + 1, ops.end(), std::move(first_term),
-                [](array_type& result, operand_type const& curr)
-                ->  array_type
-                {
-                    return result /= curr.matrix().array();
-                });
-
-        return ir::node_data<double>(std::move(result));
+        operand_type& first_term = *ops.begin();
+        return std::accumulate(
+            ops.begin() + 1, ops.end(), std::move(first_term),
+            [](operand_type& result, operand_type const& curr) -> operand_type
+            {
+                result.matrix().array() /= curr.matrix().array();
+                return std::move(result);
+            });
     }
 
-    ir::node_data<double> div_operation::div2d(operands_type const& ops) const
+    ir::node_data<double> div_operation::div2d(operands_type && ops) const
     {
         std::size_t rhs_dims = ops[1].num_dimensions();
         switch(rhs_dims)
         {
         case 0:
-            return div2d0d(ops);
+            return div2d0d(std::move(ops));
 
         case 2:
-            return div2d2d(ops);
+            return div2d2d(std::move(ops));
 
         case 1: HPX_FALLTHROUGH;
         default:
@@ -292,13 +278,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (lhs_dims)
                 {
                 case 0:
-                    return primitive_result_type(div0d(ops));
+                    return primitive_result_type(div0d(std::move(ops)));
 
                 case 1:
-                    return primitive_result_type(div1d(ops));
+                    return primitive_result_type(div1d(std::move(ops)));
 
                 case 2:
-                    return primitive_result_type(div2d(ops));
+                    return primitive_result_type(div2d(std::move(ops)));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
