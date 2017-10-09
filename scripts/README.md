@@ -19,11 +19,11 @@ The top level script is buildbot.sh. The other relevant scripts:
 
 Working machines:
 
-Delphi (x86\_64-Linux RedHat, with 18 cores, hyperthreading, gcc 7.1, boost 1.65)
-ktau (x86\_64-Linux Ubuntu, with 8 cores, gcc 7.1, boost 1.65)
+* Delphi (x86\_64-Linux RedHat, with 18 cores, hyperthreading, gcc 7.1, boost 1.65)
+* ktau (x86\_64-Linux Ubuntu, with 8 cores, gcc 7.1, boost 1.65)
 
 Non-working (yet) machines:
 
-delphi (x86\_64-Linux with 28 cores, hyperthreading, gcc 6.1, boost 1.65)
-grover (KNL-Linux with 68 cores, 4x threads per core, Intel 18, boost 1.65)
-centaur (IBM Power8-Linux with 40 cores, 4x threads per core, Clang 5.0, boost 1.65)
+* delphi (x86\_64-Linux with 28 cores, hyperthreading, gcc 6.1, boost 1.65)
+* grover (KNL-Linux with 68 cores, 4x threads per core, Intel 18, boost 1.65)
+* centaur (IBM Power8-Linux with 40 cores, 4x threads per core, Clang 5.0, boost 1.65)
