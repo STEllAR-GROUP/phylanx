@@ -21,6 +21,8 @@ set(tests
     or_operation
     parallel_block_operation
     sub_operation
+    unary_minus_operation
+    unary_not_operation
    )
 
 foreach(test ${tests})

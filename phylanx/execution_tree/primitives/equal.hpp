@@ -23,6 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public hpx::components::component_base<equal>
     {
     private:
+        using operand_type = ir::node_data<double>;
         using operands_type = std::vector<primitive_result_type>;
 
     public:
@@ -35,21 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        bool equal0d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
-        bool equal1d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
-        bool equal2d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
+        bool equal0d(operand_type&& lhs, operand_type&& rhs) const;
+        bool equal1d(operand_type&& lhs, operand_type&& rhs) const;
+        bool equal2d(operand_type&& lhs, operand_type&& rhs) const;
 
-        bool equal1d1d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
-        bool equal2d2d(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
+        bool equal1d1d(operand_type&& lhs, operand_type&& rhs) const;
+        bool equal2d2d(operand_type&& lhs, operand_type&& rhs) const;
 
     public:
-        bool equal_all(ir::node_data<double> const& lhs,
-            ir::node_data<double> const& rhs) const;
+        bool equal_all(operand_type&& lhs, operand_type&& rhs) const;
 
     private:
         std::vector<primitive_argument_type> operands_;

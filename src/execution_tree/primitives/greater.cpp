@@ -56,8 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    bool greater::greater0d(ir::node_data<double> const& lhs,
-        ir::node_data<double> const& rhs) const
+    bool greater::greater0d(operand_type&& lhs, operand_type&& rhs) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
@@ -75,33 +74,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    bool greater::greater1d1d(ir::node_data<double> const& lhs,
-        ir::node_data<double> const& rhs) const
+    bool greater::greater1d1d(operand_type&& lhs, operand_type&& rhs) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
 
-        if (lhs_size  != rhs_size)
+        if (lhs_size != rhs_size)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater::greater1d1d",
                 "the dimensions of the operands do not match");
         }
 
-        Eigen::Matrix<double, Eigen::Dynamic, 1> result =
+        lhs.matrix().array() =
             (lhs.matrix().array() > rhs.matrix().array()).cast<double>();
 
-        return result.norm() != 0.0;
+        return lhs.matrix().norm() != 0.0;
     }
 
-    bool greater::greater1d(ir::node_data<double> const& lhs,
-        ir::node_data<double> const& rhs) const
+    bool greater::greater1d(operand_type&& lhs, operand_type&& rhs) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 1:
-            return greater1d1d(lhs, rhs);
+            return greater1d1d(std::move(lhs), std::move(rhs));
 
         case 0: HPX_FALLTHROUGH;
         case 2: HPX_FALLTHROUGH;
@@ -113,8 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    bool greater::greater2d2d(ir::node_data<double> const& lhs,
-        ir::node_data<double> const& rhs) const
+    bool greater::greater2d2d(operand_type&& lhs, operand_type&& rhs) const
     {
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
@@ -126,20 +122,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the dimensions of the operands do not match");
         }
 
-        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> result =
+        lhs.matrix().array() =
             (lhs.matrix().array() > rhs.matrix().array()).cast<double>();
 
-        return result.norm() != 0.0;
+        return lhs.matrix().norm() != 0.0;
     }
 
-    bool greater::greater2d(ir::node_data<double> const& lhs,
-        ir::node_data<double> const& rhs) const
+    bool greater::greater2d(operand_type&& lhs, operand_type&& rhs) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 2:
-            return greater2d2d(lhs, rhs);
+            return greater2d2d(std::move(lhs), std::move(rhs));
 
         case 0: HPX_FALLTHROUGH;
         case 1: HPX_FALLTHROUGH;
@@ -150,20 +145,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    bool greater::greater_all(ir::node_data<double> const& lhs,
-        ir::node_data<double> const& rhs) const
+    bool greater::greater_all(operand_type&& lhs, operand_type&& rhs) const
     {
         std::size_t lhs_dims = lhs.num_dimensions();
         switch (lhs_dims)
         {
         case 0:
-            return greater0d(lhs, rhs);
+            return greater0d(std::move(lhs), std::move(rhs));
 
         case 1:
-            return greater1d(lhs, rhs);
+            return greater1d(std::move(lhs), std::move(rhs));
 
         case 2:
-            return greater2d(lhs, rhs);
+            return greater2d(std::move(lhs), std::move(rhs));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -177,6 +171,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct visit_greater
         {
+            using operand_type = ir::node_data<double>;
+
             visit_greater(greater const& this_)
               : greater_(this_)
             {}
@@ -191,15 +187,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             template <typename T>
-            bool operator()(T const& lhs, T const& rhs) const
+            bool operator()(T && lhs, T && rhs) const
             {
                 return lhs > rhs;
             }
 
-            bool operator()(ir::node_data<double> const& lhs,
-                ir::node_data<double> const& rhs) const
+            bool operator()(operand_type&& lhs, operand_type&& rhs) const
             {
-                return greater_.greater_all(lhs, rhs);
+                return greater_.greater_all(std::move(lhs), std::move(rhs));
             }
 
             greater const& greater_;
@@ -213,7 +208,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this](operands_type && ops)
             {
                 return primitive_result_type(
-                    util::visit(detail::visit_greater(*this), ops[0], ops[1]));
+                    util::visit(detail::visit_greater(*this),
+                        std::move(ops[0]), std::move(ops[1])));
             }),
             detail::map_operands(operands_, literal_operand)
         );

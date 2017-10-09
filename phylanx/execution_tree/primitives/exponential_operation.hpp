@@ -38,9 +38,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        ir::node_data<double> exponential0d(operands_type const& ops) const;
-        ir::node_data<double> exponential1d(operands_type const& ops) const;
-        ir::node_data<double> exponentialxd(operands_type const& ops) const;
+        ir::node_data<double> exponential0d(operands_type && ops) const;
+        ir::node_data<double> exponential1d(operands_type && ops) const;
+        ir::node_data<double> exponentialxd(operands_type && ops) const;
     };
 }}}
 

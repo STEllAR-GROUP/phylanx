@@ -3,13 +3,15 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_LESS_OCT_07_2017_0225PM)
-#define PHYLANX_PRIMITIVES_LESS_OCT_07_2017_0225PM
+#if !defined(PHYLANX_PRIMITIVES_UNARY_MINUS_OPERATION_OCT_10_2017_0248PM)
+#define PHYLANX_PRIMITIVES_UNARY_MINUS_OPERATION_OCT_10_2017_0248PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -18,33 +20,26 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT less
+    class HPX_COMPONENT_EXPORT unary_minus_operation
         : public base_primitive
-        , public hpx::components::component_base<less>
+        , public hpx::components::component_base<unary_minus_operation>
     {
     private:
         using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<primitive_result_type>;
+        using operands_type = std::vector<operand_type>;
 
     public:
         static match_pattern_type const match_data;
 
-        less() = default;
+        unary_minus_operation() = default;
 
-        less(std::vector<primitive_argument_type>&& operands);
+        unary_minus_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        bool less0d(operand_type&& lhs, operand_type&& rhs) const;
-        bool less1d(operand_type&& lhs, operand_type&& rhs) const;
-        bool less2d(operand_type&& lhs, operand_type&& rhs) const;
-
-        bool less1d1d(operand_type&& lhs, operand_type&& rhs) const;
-        bool less2d2d(operand_type&& lhs, operand_type&& rhs) const;
-
-    public:
-        bool less_all(operand_type&& lhs, operand_type&& rhs) const;
+        ir::node_data<double> neg0d(operands_type && ops) const;
+        ir::node_data<double> negxd(operands_type && ops) const;
 
     private:
         std::vector<primitive_argument_type> operands_;
