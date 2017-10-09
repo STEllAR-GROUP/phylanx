@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 07b5ea3..d16c373 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1554,7 +1554,7 @@ if(HPX_WITH_APEX)
+   include(GitExternal)
+   git_external(apex
+     https://github.com/khuck/xpress-apex.git
+-    v1.2
++    develop
+     ${_hpx_apex_no_update}
+     VERBOSE)
+ 
