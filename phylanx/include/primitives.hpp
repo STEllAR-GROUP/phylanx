@@ -9,6 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
+#include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/equal.hpp>
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
@@ -22,6 +23,7 @@
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
+#include <phylanx/execution_tree/primitives/parallel_block_operation.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/execution_tree/primitives/while_operation.hpp>
 
