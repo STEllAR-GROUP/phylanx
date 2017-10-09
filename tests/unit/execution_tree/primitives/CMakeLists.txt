@@ -6,6 +6,7 @@
 set(tests
     add_operation
     and_operation
+    block_operation
     div_operation
     equal_operation
     exponential_operation
@@ -18,6 +19,7 @@ set(tests
     mul_operation
     not_equal_operation
     or_operation
+    parallel_block_operation
     sub_operation
     unary_minus_operation
     unary_not_operation
