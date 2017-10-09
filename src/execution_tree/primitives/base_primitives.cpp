@@ -22,17 +22,32 @@ HPX_REGISTER_COMPONENT_MODULE()
 // Serialization support for the base_file actions
 typedef phylanx::execution_tree::primitives::base_primitive base_primitive_type;
 
-HPX_REGISTER_ACTION(
-    base_primitive_type::eval_action, phylanx_primitive_eval_action)
+HPX_REGISTER_ACTION(base_primitive_type::eval_action,
+    phylanx_primitive_eval_action)
+HPX_REGISTER_ACTION(base_primitive_type::store_action,
+    phylanx_primitive_store_action)
 HPX_DEFINE_GET_COMPONENT_TYPE(base_primitive_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
 {
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_result_type> primitive::eval() const
     {
         using action_type = primitives::base_primitive::eval_action;
         return hpx::async(action_type(), this->base_type::get_id());
+    }
+
+    hpx::future<void> primitive::store(primitive_result_type const& data)
+    {
+        using action_type = primitives::base_primitive::store_action;
+        return hpx::async(action_type(), this->base_type::get_id(), data);
+    }
+
+    void primitive::store(hpx::launch::sync_policy,
+        primitive_result_type const& data)
+    {
+        return store(data).get();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -207,6 +222,11 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_primitive",
             "primitive_value_type does not hold a primitive");
+    }
+
+    bool is_primitive_operand(primitive_argument_type const& val)
+    {
+        return util::get_if<primitive>(&val) != nullptr;
     }
 
     ///////////////////////////////////////////////////////////////////////////
