@@ -9,9 +9,10 @@
 #include <phylanx/ast/detail/is_identifier.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/ast/detail/is_placeholder.hpp>
+#include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/execution_tree/generate_tree.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/literal_value.hpp>
+#include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/throw_exception.hpp>
@@ -140,6 +141,11 @@ namespace phylanx { namespace execution_tree
                 if (it != variables.end())
                 {
                     return it->second;
+                }
+                else
+                {
+                    // create an empty variable
+                    return hpx::new_<primitives::variable>(hpx::find_here());
                 }
             }
 

@@ -25,7 +25,7 @@ void test_generate_tree(std::string const& exprstr,
 phylanx::execution_tree::primitive create_literal_value(double value)
 {
     return phylanx::execution_tree::primitive(
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(value)));
 }
 
