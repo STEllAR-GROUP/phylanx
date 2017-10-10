@@ -26,6 +26,7 @@
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_not_operation.hpp>
-#include <phylanx/execution_tree/primitives/variable.hpp>#include <phylanx/execution_tree/primitives/while_operation.hpp>
+#include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives/while_operation.hpp>
 
 #endif
