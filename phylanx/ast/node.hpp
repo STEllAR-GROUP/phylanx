@@ -141,6 +141,22 @@ namespace phylanx { namespace ast
     {
         return false;
     }
+    constexpr inline bool operator>(nil const&, nil const&)
+    {
+        return false;
+    }
+    constexpr inline bool operator<(nil const&, nil const&)
+    {
+        return false;
+    }
+    constexpr inline bool operator>=(nil const&, nil const&)
+    {
+        return true;
+    }
+    constexpr inline bool operator<=(nil const&, nil const&)
+    {
+        return true;
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     struct identifier : tagged

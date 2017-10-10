@@ -36,9 +36,6 @@ namespace phylanx { namespace ast { namespace detail
     PHYLANX_EXPORT bool is_identifier(operand const& op);
     PHYLANX_EXPORT std::string identifier_name(operand const& op);
 
-    inline bool is_identifier(unary_expr const& ue);
-    inline std::string identifier_name(unary_expr const& ue);
-
     inline bool is_identifier(operation const& op);
     inline std::string identifier_name(operation const& op);
 
@@ -65,16 +62,6 @@ namespace phylanx { namespace ast { namespace detail
     inline std::string identifier_name(identifier const& id)
     {
         return id.name;
-    }
-
-    inline bool is_identifier(unary_expr const& ue)
-    {
-        return is_identifier(ue.operand_);
-    }
-
-    inline std::string identifier_name(unary_expr const& ue)
-    {
-        return identifier_name(ue.operand_);
     }
 
     inline bool is_identifier(operation const& op)

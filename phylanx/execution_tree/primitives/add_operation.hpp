@@ -8,8 +8,10 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -23,22 +25,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public hpx::components::component_base<add_operation>
     {
     private:
-        using operands_type = std::vector<ir::node_data<double>>;
+        using operand_type = ir::node_data<double>;
+        using operands_type = std::vector<operand_type>;
 
     public:
+        static match_pattern_type const match_data;
+
         add_operation() = default;
 
         add_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<ir::node_data<double>> eval() const override;
+        hpx::future<primitive_result_type> eval() const override;
 
     protected:
-        ir::node_data<double> add0d(operands_type const& ops) const;
-        ir::node_data<double> add1d(operands_type const& ops) const;
-        ir::node_data<double> add2d(operands_type const& ops) const;
+        ir::node_data<double> add0d(operands_type && ops) const;
+        ir::node_data<double> add0d0d(operands_type && ops) const;
+        ir::node_data<double> add0d1d(operands_type && ops) const;
+        ir::node_data<double> add0d2d(operands_type && ops) const;
 
-        ir::node_data<double> add1d1d(operands_type const& ops) const;
-        ir::node_data<double> add2d2d(operands_type const& ops) const;
+        ir::node_data<double> add1d(operands_type && ops) const;
+        ir::node_data<double> add1d0d(operands_type && ops) const;
+        ir::node_data<double> add1d1d(operands_type && ops) const;
+
+        ir::node_data<double> add2d(operands_type && ops) const;
+        ir::node_data<double> add2d0d(operands_type && ops) const;
+        ir::node_data<double> add2d2d(operands_type && ops) const;
 
     private:
         std::vector<primitive_argument_type> operands_;

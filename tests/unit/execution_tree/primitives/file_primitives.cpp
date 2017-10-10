@@ -37,7 +37,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
     }
 
     // read back the file
-    hpx::future<phylanx::ir::node_data<double>> f;
+    hpx::future<phylanx::execution_tree::primitive_result_type> f;
     {
         phylanx::execution_tree::primitive infile =
             hpx::new_<phylanx::execution_tree::primitives::file_read>(
@@ -50,7 +50,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
         f = infile.eval();
     }
 
-    HPX_TEST(in == f.get());
+    HPX_TEST(in == phylanx::execution_tree::extract_numeric_value(f.get()));
 
     std::remove(filename.c_str());
 }
@@ -73,7 +73,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
     }
 
     // read back the file
-    hpx::future<phylanx::ir::node_data<double>> f;
+    hpx::future<phylanx::execution_tree::primitive_result_type> f;
     {
         phylanx::execution_tree::primitive infile =
             hpx::new_<phylanx::execution_tree::primitives::file_read>(
@@ -86,7 +86,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
         f = infile.eval();
     }
 
-    HPX_TEST(in == f.get());
+    HPX_TEST(in == phylanx::execution_tree::extract_numeric_value(f.get()));
 
     std::remove(filename.c_str());
 }

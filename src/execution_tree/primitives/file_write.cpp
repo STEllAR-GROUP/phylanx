@@ -6,7 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/components.hpp>
@@ -16,6 +18,7 @@
 #include <cstddef>
 #include <fstream>
 #include <vector>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -29,6 +32,13 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_write_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const file_write::match_data =
+    {
+        "file_write(_1, _2)", &create<file_write>
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     file_write::file_write(std::vector<primitive_argument_type>&& operands)
     {
         if (operands.size() != 2)
@@ -42,9 +52,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::file_write",
-                "the file_write primitive requires that the "
-                    "exactly one element of the literals and operands "
-                    "arrays is valid");
+                "the file_write primitive requires that the given operands "
+                    "are valid");
         }
 
         std::string* name = util::get_if<std::string>(&operands[0]);
@@ -61,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void write_to_file(
-        std::string const& filename, ir::node_data<double> const& nd)
+        std::string const& filename, primitive_result_type const& val)
     {
         std::ofstream outfile(filename.c_str(),
             std::ios::binary | std::ios::out | std::ios::trunc);
@@ -72,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "couldn't open file: " + filename);
         }
 
-        std::vector<char> data = phylanx::util::serialize(nd);
+        std::vector<char> data = phylanx::util::serialize(val);
         if (!outfile.write(data.data(), data.size()))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -83,31 +92,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<ir::node_data<double>> file_write::eval() const
+    hpx::future<primitive_result_type> file_write::eval() const
     {
-        primitive const* p = util::get_if<primitive>(&operand_);
-        if (p != nullptr)
-        {
-            return p->eval().then(hpx::util::unwrapping(
-                [this](ir::node_data<double> && nd) -> ir::node_data<double>
+        return literal_operand(operand_).then(hpx::util::unwrapping(
+            [this](primitive_result_type && val) -> primitive_result_type
+            {
+                if (!valid(val))
                 {
-                    write_to_file(filename_, nd);
-                    return std::move(nd);
-                }));
-        }
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "file_write::eval",
+                        "the file_write primitive requires that the argument"
+                            " value given by the operand is non-empty");
+                }
 
-        ir::node_data<double> const* nd =
-            util::get_if<ir::node_data<double>>(&operand_);
-
-        if (nd == nullptr)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::eval",
-                "second argument must be a literator of type "
-                    "ir::node_data<double> or another primitive");
-        }
-
-        write_to_file(filename_, *nd);
-        return hpx::make_ready_future(*nd);
+                write_to_file(filename_, val);
+                return primitive_result_type(std::move(val));
+            }));
     }
 }}}

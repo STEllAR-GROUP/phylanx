@@ -1,0 +1,4 @@
+[submodule "tools/buildbot"]
+	path = tools/buildbot
+	url = https://github.com/khuck/phylanx-buildbot-scripts.git
+	branch = master

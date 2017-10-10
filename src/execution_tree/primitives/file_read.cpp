@@ -6,7 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -14,6 +16,7 @@
 #include <cstddef>
 #include <fstream>
 #include <vector>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -27,6 +30,13 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_read_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const file_read::match_data =
+    {
+        "file_read(_1)", &create<file_read>
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     file_read::file_read(std::vector<primitive_argument_type>&& operands)
     {
         if (operands.size() != 1)
@@ -41,9 +51,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::file_read",
-                "the file_read primitive requires that the "
-                    "exactly one element of the literals and operands "
-                    "arrays is valid");
+                "the file_read primitive requires that the given operand is "
+                    "valid");
         }
 
         std::string* name = util::get_if<std::string>(&operands[0]);
@@ -59,7 +68,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<ir::node_data<double>> file_read::eval() const
+    hpx::future<primitive_result_type> file_read::eval() const
     {
         std::ifstream infile(filename_.c_str(),
             std::ios::binary | std::ios::in | std::ios::ate);
@@ -85,10 +94,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     filename_);
         }
 
-        // assume data in file is result of a serialized ir::node_data
-        ir::node_data<double> nd;
-        phylanx::util::detail::unserialize(data, nd);
+        // assume data in file is result of a serialized primitive_result_type
+        primitive_result_type val;
+        phylanx::util::detail::unserialize(data, val);
 
-        return hpx::make_ready_future(std::move(nd));
+        return hpx::make_ready_future(std::move(val));
     }
 }}}

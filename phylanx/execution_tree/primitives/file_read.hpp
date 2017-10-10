@@ -10,12 +10,11 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
-#include <array>
-#include <fstream>
-#include <utility>
 #include <string>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -25,11 +24,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public hpx::components::component_base<file_read>
     {
     public:
+        static match_pattern_type const match_data;
+
         file_read() = default;
 
         file_read(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<ir::node_data<double>> eval() const override;
+        hpx::future<primitive_result_type> eval() const override;
 
     private:
         std::string filename_;

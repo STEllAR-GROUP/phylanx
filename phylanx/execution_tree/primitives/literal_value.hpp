@@ -9,6 +9,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -18,25 +20,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT literal_value
       : public base_primitive
-      , public hpx::components::component_base<literal_value>
+      , public hpx::components::locking_hook<
+          hpx::components::component_base<literal_value>>
     {
     public:
         literal_value() = default;
 
         literal_value(ir::node_data<double> const& data)
-            : data_(data)
-        {}
-        literal_value(ir::node_data<double> && data)
-            : data_(std::move(data))
-        {}
+          : data_(data)
+        {
+        }
+        literal_value(ir::node_data<double>&& data)
+          : data_(std::move(data))
+        {
+        }
 
-        hpx::future<ir::node_data<double>> eval() const override
+        hpx::future<primitive_result_type> eval() const override
         {
             return hpx::make_ready_future(data_);
         }
 
+        void store(primitive_result_type const& data) override
+        {
+            data_ = data;
+        }
+
     private:
-        ir::node_data<double> data_;
+        primitive_result_type data_;
     };
 }}}
 

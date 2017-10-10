@@ -9,12 +9,21 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/optional.hpp>
+#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 
 #include <utility>
 #include <vector>
+
+namespace phylanx { namespace execution_tree
+{
+    class HPX_COMPONENT_EXPORT primitive;
+
+    using primitive_result_type = ast::literal_value_type;
+}}
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -26,15 +35,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
         base_primitive() = default;
         virtual ~base_primitive() = default;
 
-        hpx::future<ir::node_data<double>> eval_nonvirtual()
+        hpx::future<primitive_result_type> eval_nonvirtual()
         {
             return eval();
         }
-        virtual hpx::future<ir::node_data<double>> eval() const = 0;
+        virtual hpx::future<primitive_result_type> eval() const = 0;
+
+        void store_nonvirtual(primitive_result_type const& data)
+        {
+            store(data);
+        }
+        virtual void store(primitive_result_type const&)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::execution_tree::primitives::base_primitive",
+                "store function should only be called in store_primitive");
+        }
 
     public:
         HPX_DEFINE_COMPONENT_ACTION(base_primitive,
             eval_nonvirtual, eval_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            base_primitive, store_nonvirtual, store_action);
     };
 }}}
 
@@ -42,10 +64,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::eval_action,
     phylanx_primitive_eval_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::base_primitive::store_action,
+    phylanx_primitive_store_action);
 
 namespace phylanx { namespace execution_tree
 {
-    class HPX_COMPONENT_EXPORT primitive
+    ///////////////////////////////////////////////////////////////////////////
+    class primitive
       : public hpx::components::client_base<primitive,
             primitives::base_primitive>
     {
@@ -69,7 +95,10 @@ namespace phylanx { namespace execution_tree
         {
         }
 
-        hpx::future<ir::node_data<double>> eval() const;
+        hpx::future<primitive_result_type> eval() const;
+
+        hpx::future<void> store(primitive_result_type const&);
+        void store(hpx::launch::sync_policy, primitive_result_type const&);
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -82,7 +111,7 @@ namespace phylanx { namespace execution_tree
           , primitive
         >;
 
-
+    ///////////////////////////////////////////////////////////////////////////
     // a literal value is valid of its not nil{}
     inline bool valid(primitive_argument_type const& val)
     {
@@ -90,15 +119,54 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_EXPORT  primitive_argument_type to_primitive_value_type(
-        ast::literal_value_type && val);
+    PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
+        primitive_result_type && val);
 
-    PHYLANX_EXPORT ir::node_data<double> extract_literal_value(
+    ///////////////////////////////////////////////////////////////////////////
+    // Extract a literal type from a given primitive_argument_type, throw
+    // if it doesn't hold one.
+    PHYLANX_EXPORT primitive_result_type extract_literal_value(
         primitive_argument_type const& val);
-}}
+    PHYLANX_EXPORT primitive_result_type extract_literal_value(
+        primitive_result_type && val);
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+    // Extract a ir::node_data<double> type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
+        primitive_result_type && val);
+
+    // Extract a boolean type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::uint8_t extract_boolean_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT std::uint8_t extract_boolean_value(
+        primitive_result_type const& val);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Extract a primitive from a given primitive_argument_type, throw
+    // if it doesn't hold one.
+    PHYLANX_EXPORT primitive primitive_operand(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT bool is_primitive_operand(
+        primitive_argument_type const& val);
+
+    // Extract a primitive_result_type from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<primitive_result_type>
+        literal_operand(primitive_argument_type const& val);
+
+    // Extract a node_data<double> from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<ir::node_data<double>>
+        numeric_operand(primitive_argument_type const& val);
+
+    // Extract a boolean from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<std::uint8_t>
+        boolean_operand(primitive_argument_type const& val);
+
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
@@ -113,8 +181,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    using match_pattern_type = std::pair<std::string, factory_function_type>;
+    using pattern_list = std::vector<match_pattern_type>;
+}}
+
+namespace phylanx { namespace execution_tree { namespace primitives
+{
     namespace detail
     {
+        // Invoke the given function on all items in the input vector, while
+        // returning another vector holding the respective results.
         template <typename T, typename F>
         auto map_operands(std::vector<T> const& in, F && f)
         ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>()))>
@@ -127,6 +204,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 out.push_back(hpx::util::invoke(f, d));
             }
             return out;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // check if one of the optionals in the list of operands is empty
+        inline bool verify_argument_values(
+            std::vector<primitive_result_type> const& ops)
+        {
+            for (auto const& op : ops)
+            {
+                if (!valid(op))
+                    return false;
+            }
+            return true;
         }
     }
 }}}
