@@ -168,21 +168,25 @@ namespace phylanx { namespace execution_tree
             primitives::file_write::match_data,
             primitives::while_operation::match_data,
             // unary functions
+            primitives::determinant::match_data,
             primitives::exponential_operation::match_data,
+            primitives::inverse_operation::match_data,
+            primitives::transpose_operation::match_data,
             // variadic operations
             primitives::add_operation::match_data,
-            primitives::sub_operation::match_data,
-            primitives::mul_operation::match_data,
-            primitives::div_operation::match_data,
             primitives::and_operation::match_data,
+            primitives::div_operation::match_data,
+            primitives::mul_operation::match_data,
             primitives::or_operation::match_data,
+            primitives::sub_operation::match_data,
             // binary operations
             primitives::equal::match_data,
-            primitives::not_equal::match_data,
-            primitives::less::match_data,
-            primitives::less_equal::match_data,
             primitives::greater::match_data,
             primitives::greater_equal::match_data,
+            primitives::less::match_data,
+            primitives::less_equal::match_data,
+            primitives::not_equal::match_data,
+            primitives::store_operation::match_data,
             // unary operations
             primitives::unary_minus_operation::match_data,
             primitives::unary_not_operation::match_data
