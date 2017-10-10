@@ -22,7 +22,6 @@ namespace phylanx { namespace ast { namespace detail
     inline bool is_placeholder_ellipses(identifier const& id);
     PHYLANX_EXPORT bool is_placeholder_ellipses(primary_expr const& pe);
     PHYLANX_EXPORT bool is_placeholder_ellipses(operand const& op);
-    inline bool is_placeholder_ellipses(unary_expr const& ue);
     inline bool is_placeholder_ellipses(operation const& op);
     inline bool is_placeholder_ellipses(expression const& expr);
 
@@ -35,11 +34,6 @@ namespace phylanx { namespace ast { namespace detail
     inline bool is_placeholder_ellipses(identifier const& id)
     {
         return id.name.size() >= 2 && id.name[0] == '_' && id.name[1] == '_';
-    }
-
-    inline bool is_placeholder_ellipses(unary_expr const& ue)
-    {
-        return is_placeholder_ellipses(ue.operand_);
     }
 
     inline bool is_placeholder_ellipses(operation const& op)

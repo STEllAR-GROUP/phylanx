@@ -144,6 +144,9 @@ int main(int argc, char* argv[])
 
     test_placeholder_matching("_1(A)", "func(A)", "func");
 
+    test_placeholder_matching("!_1", "!A", "A");
+    test_placeholder_matching("-_1", "-A", "A");
+
     // two placeholders
     test_placeholder_matching("_1 + _2", "A + B", "A", "B");
     test_placeholder_matching("_2 + _1", "A + B", "B", "A");
