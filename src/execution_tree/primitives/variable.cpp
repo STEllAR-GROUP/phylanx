@@ -22,7 +22,7 @@ HPX_DEFINE_GET_COMPONENT_TYPE(literal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     variable::variable(primitive_argument_type&& operand)
-      : operand_(operand)
+      : data_(extract_literal_value(operand))
     {}
 
     variable::variable(std::vector<primitive_argument_type>&& operands)
@@ -36,13 +36,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands.empty())
         {
-            operand_ = operands[0];
+            data_ = extract_literal_value(operands[0]);
         }
     }
 
     hpx::future<primitive_result_type> variable::eval() const
     {
-        return literal_operand(operand_);
+        return hpx::make_ready_future(data_);
+    }
+
+    void variable::store(primitive_result_type const& data)
+    {
+        data_ = data;
     }
 }}}
 

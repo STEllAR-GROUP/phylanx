@@ -41,9 +41,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         virtual hpx::future<primitive_result_type> eval() const = 0;
 
+        void store_nonvirtual(primitive_result_type const& data)
+        {
+            store(data);
+        }
+        virtual void store(primitive_result_type const&)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::execution_tree::primitives::base_primitive",
+                "store function should only be called in store_primitive");
+        }
+
     public:
         HPX_DEFINE_COMPONENT_ACTION(base_primitive,
             eval_nonvirtual, eval_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            base_primitive, store_nonvirtual, store_action);
     };
 }}}
 
@@ -51,6 +64,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::eval_action,
     phylanx_primitive_eval_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::base_primitive::store_action,
+    phylanx_primitive_store_action);
 
 namespace phylanx { namespace execution_tree
 {
@@ -80,6 +96,9 @@ namespace phylanx { namespace execution_tree
         }
 
         hpx::future<primitive_result_type> eval() const;
+
+        hpx::future<void> store(primitive_result_type const&);
+        void store(hpx::launch::sync_policy, primitive_result_type const&);
     };
 
     ///////////////////////////////////////////////////////////////////////////
