@@ -14,11 +14,11 @@ void test_generate_tree(std::string const& exprstr,
     phylanx::execution_tree::variables const& variables,
     double expected_result)
 {
-    phylanx::execution_tree::primitive p =
+    phylanx::execution_tree::primitive_argument_type p =
         phylanx::execution_tree::generate_tree(exprstr, patterns, variables);
 
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(p.eval().get())[0],
+        phylanx::execution_tree::numeric_operand(p).get()[0],
         expected_result);
 }
 
@@ -27,11 +27,11 @@ void test_generate_tree(std::string const& exprstr,
     phylanx::execution_tree::variables const& variables,
     bool expected_result)
 {
-    phylanx::execution_tree::primitive p =
+    phylanx::execution_tree::primitive_argument_type p =
         phylanx::execution_tree::generate_tree(exprstr, patterns, variables);
 
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_boolean_value(p.eval().get()) != 0,
+        phylanx::execution_tree::boolean_operand(p).get() != 0,
         expected_result);
 }
 

@@ -14,13 +14,13 @@
 void test_block_operation()
 {
     phylanx::execution_tree::primitive arg1 =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
     phylanx::execution_tree::primitive arg2 =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(7.0));
     phylanx::execution_tree::primitive arg3 =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(9.0));
 
     phylanx::execution_tree::primitive block =

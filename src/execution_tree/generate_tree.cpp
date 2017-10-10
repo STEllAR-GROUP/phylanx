@@ -11,8 +11,7 @@
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/execution_tree/generate_tree.hpp>
-#include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/throw_exception.hpp>
@@ -93,12 +92,12 @@ namespace phylanx { namespace execution_tree
             }
         };
 
-        primitive generate_tree(
+        primitive_argument_type generate_tree(
             ast::expression const& expr,
             expression_pattern_list const& patterns,
             phylanx::execution_tree::variables const& variables)
         {
-            primitive result;
+            primitive_argument_type result;
             for (auto const& pattern : patterns)
             {
                 std::multimap<std::string, ast::expression> placeholders;
@@ -158,7 +157,57 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive generate_tree(ast::expression const& expr,
+    pattern_list const& get_all_known_patterns()
+    {
+        static pattern_list patterns = {
+            // variadic functions
+            primitives::block_operation::match_data,
+            primitives::parallel_block_operation::match_data,
+            // binary functions
+            primitives::file_read::match_data,
+            primitives::file_write::match_data,
+            primitives::while_operation::match_data,
+            // unary functions
+            primitives::exponential_operation::match_data,
+            // variadic operations
+            primitives::add_operation::match_data,
+            primitives::sub_operation::match_data,
+            primitives::mul_operation::match_data,
+            primitives::div_operation::match_data,
+            primitives::and_operation::match_data,
+            primitives::or_operation::match_data,
+            // binary operations
+            primitives::equal::match_data,
+            primitives::not_equal::match_data,
+            primitives::less::match_data,
+            primitives::less_equal::match_data,
+            primitives::greater::match_data,
+            primitives::greater_equal::match_data,
+            // unary operations
+            primitives::unary_minus_operation::match_data,
+            primitives::unary_not_operation::match_data
+        };
+
+        return patterns;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type generate_tree(std::string const& exprstr)
+    {
+        return detail::generate_tree(ast::generate_ast(exprstr),
+            detail::generate_patterns(get_all_known_patterns()),
+            phylanx::execution_tree::variables{});
+    }
+
+    primitive_argument_type generate_tree(std::string const& exprstr,
+        phylanx::execution_tree::variables const& variables)
+    {
+        return detail::generate_tree(ast::generate_ast(exprstr),
+            detail::generate_patterns(get_all_known_patterns()),
+            variables);
+    }
+
+    primitive_argument_type generate_tree(ast::expression const& expr,
         pattern_list const& patterns,
         phylanx::execution_tree::variables const& variables)
     {
@@ -166,7 +215,7 @@ namespace phylanx { namespace execution_tree
             expr, detail::generate_patterns(patterns), variables);
     }
 
-    primitive generate_tree(std::string const& exprstr,
+    primitive_argument_type generate_tree(std::string const& exprstr,
         pattern_list const& patterns,
         phylanx::execution_tree::variables const& variables)
     {

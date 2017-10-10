@@ -14,7 +14,7 @@
 void test_unary_minus_operation_0d()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
     phylanx::execution_tree::primitive unary_minus =
@@ -54,7 +54,7 @@ void test_unary_minus_operation_2d()
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive unary_minus =

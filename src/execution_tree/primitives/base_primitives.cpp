@@ -209,6 +209,11 @@ namespace phylanx { namespace execution_tree
             "primitive_value_type does not hold a primitive");
     }
 
+    bool is_primitive_operand(primitive_argument_type const& val)
+    {
+        return util::get_if<primitive>(&val) != nullptr;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_result_type> literal_operand(
         primitive_argument_type const& val)

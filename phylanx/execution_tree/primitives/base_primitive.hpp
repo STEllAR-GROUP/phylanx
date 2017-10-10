@@ -130,6 +130,8 @@ namespace phylanx { namespace execution_tree
     // if it doesn't hold one.
     PHYLANX_EXPORT primitive primitive_operand(
         primitive_argument_type const& val);
+    PHYLANX_EXPORT bool is_primitive_operand(
+        primitive_argument_type const& val);
 
     // Extract a primitive_result_type from a primitive_argument_type (that
     // could be a primitive or a literal value).
