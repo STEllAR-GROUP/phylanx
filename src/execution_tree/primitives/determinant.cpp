@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Bibek Wagle
+//   Copyright (c) 2017 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -35,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const determinant::match_data =
     {
-        "transpose(_1)", &create<determinant>
+        "determinant(_1)", &create<determinant>
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -61,43 +62,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> determinant::determinant0d(operands_type && ops) const
+    namespace detail
     {
-        return std::move(ops[0]);       // no-op
-    }
+        struct determinant : std::enable_shared_from_this<determinant>
+        {
+            determinant(std::vector<primitive_argument_type> const& operands)
+              : operands_(operands)
+            {}
 
-    ir::node_data<double> determinant::determinantxd(operands_type&& ops) const
-    {
-        using matrix_type =
-            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+            hpx::future<primitive_result_type> eval()
+            {
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& ops) -> primitive_result_type
+                    {
+                        std::size_t dims = ops[0].num_dimensions();
+                        switch (dims)
+                        {
+                        case 0:
+                            return this_->determinant0d(std::move(ops));
 
-        double result = ops[0].matrix().determinant();
-        return ir::node_data<double>(result);
+                        case 1: HPX_FALLTHROUGH;
+                        case 2:
+                            return this_->determinantxd(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "determinant::eval",
+                                "left hand side operand has unsupported "
+                                    "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(operands_, numeric_operand)
+                );
+            }
+
+        protected:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<operand_type>;
+
+            primitive_result_type determinant0d(operands_type && ops) const
+            {
+                return std::move(ops[0]);       // no-op
+            }
+
+            primitive_result_type determinantxd(operands_type && ops) const
+            {
+                return operand_type(ops[0].matrix().determinant());
+            }
+
+        private:
+            std::vector<primitive_argument_type> operands_;
+        };
     }
 
     hpx::future<primitive_result_type> determinant::eval() const
     {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type&& ops) -> primitive_result_type
-            {
-                std::size_t dims = ops[0].num_dimensions();
-                switch (dims)
-                {
-                case 0:
-                    return primitive_result_type(determinant0d(std::move(ops)));
-
-                case 1: HPX_FALLTHROUGH;
-                case 2:
-                    return primitive_result_type(determinantxd(std::move(ops)));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "determinant::eval",
-                        "left hand side operand has unsupported number of "
-                            "dimensions");
-                }
-            }),
-            detail::map_operands(operands_, numeric_operand)
-        );
+        return std::make_shared<detail::determinant>(operands_)->eval();
     }
 }}}

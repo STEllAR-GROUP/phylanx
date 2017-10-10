@@ -21,12 +21,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         : public base_primitive
         , public hpx::components::component_base<inverse_operation>
     {
-    private:
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
-
-        std::vector<primitive_argument_type> operands_;
-
     public:
         static match_pattern_type const match_data;
 
@@ -37,9 +31,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_result_type> eval() const override;
 
-    protected:
-        ir::node_data<double> inverse0d(operands_type && ops) const;
-        ir::node_data<double> inversexd(operands_type && ops) const;
+    private:
+        std::vector<primitive_argument_type> operands_;
     };
 }}}
 

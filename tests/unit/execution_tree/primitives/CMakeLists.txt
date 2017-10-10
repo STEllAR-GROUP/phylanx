@@ -6,12 +6,14 @@
 set(tests
     add_operation
     and_operation
+    determinant
     div_operation
     equal_operation
     exponential_operation
     file_primitives
     greater_operation
     greater_equal_operation
+    inverse_operation
     less_operation
     less_equal_operation
     literal_value
@@ -19,6 +21,7 @@ set(tests
     not_equal_operation
     or_operation
     sub_operation
+    transpose_operation
     unary_minus_operation
     unary_not_operation
    )

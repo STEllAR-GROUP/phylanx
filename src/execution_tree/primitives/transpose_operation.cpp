@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Bibek Wagle
+//   Copyright (c) 2017 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -61,42 +62,63 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> transpose_operation::transpose0d(
-        operands_type && ops) const
+    namespace detail
     {
-        return std::move(ops[0]);       // no-op
-    }
+        struct transpose : std::enable_shared_from_this<transpose>
+        {
+            transpose(std::vector<primitive_argument_type> const& operands)
+              : operands_(operands)
+            {}
 
-    ir::node_data<double> transpose_operation::transposexd(
-        operands_type && ops) const
-    {
-        ops[0].matrix().transposeInPlace();
-        return std::move(ops[0]);
+            hpx::future<primitive_result_type> eval()
+            {
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& ops) -> primitive_result_type
+                    {
+                        std::size_t dims = ops[0].num_dimensions();
+                        switch (dims)
+                        {
+                        case 0:
+                            return this_->transpose0d(std::move(ops));
+
+                        case 1: HPX_FALLTHROUGH;
+                        case 2:
+                            return this_->transposexd(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "transpose_operation::eval",
+                                "left hand side operand has unsupported "
+                                    "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(operands_, numeric_operand)
+                );
+            }
+
+        protected:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<operand_type>;
+
+            primitive_result_type transpose0d(operands_type && ops) const
+            {
+                return std::move(ops[0]);       // no-op
+            }
+
+            primitive_result_type transposexd(operands_type && ops) const
+            {
+                ops[0].matrix().transposeInPlace();
+                return std::move(ops[0]);
+            }
+
+        private:
+            std::vector<primitive_argument_type> operands_;
+        };
     }
 
     hpx::future<primitive_result_type> transpose_operation::eval() const
     {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type&& ops) -> primitive_result_type
-            {
-                std::size_t dims = ops[0].num_dimensions();
-                switch (dims)
-                {
-                case 0:
-                    return primitive_result_type(transpose0d(std::move(ops)));
-
-                case 1: HPX_FALLTHROUGH;
-                case 2:
-                    return primitive_result_type(transposexd(std::move(ops)));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "transpose_operation::eval",
-                        "left hand side operand has unsupported number of "
-                            "dimensions");
-                }
-            }),
-            detail::map_operands(operands_, numeric_operand)
-        );
+        return std::make_shared<detail::transpose>(operands_)->eval();
     }
 }}}
