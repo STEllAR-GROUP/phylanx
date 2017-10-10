@@ -134,7 +134,7 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            "primitive_argument_type does not hold a literal value type");
+            "primitive_argument_type does not hold a numeric value type");
     }
 
     ir::node_data<double> extract_numeric_value(
@@ -159,7 +159,7 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            "primitive_result_type does not hold a literal value type");
+            "primitive_result_type does not hold a numeric value type");
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -185,7 +185,7 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            "primitive_argument_type does not hold a literal value type");
+            "primitive_argument_type does not hold a boolean value type");
     }
 
     std::uint8_t extract_boolean_value(primitive_result_type const& val)
@@ -209,7 +209,7 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            "primitive_result_type does not hold a literal value type");
+            "primitive_result_type does not hold a boolean value type");
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -306,7 +306,7 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::to_primitive_value_type",
-            "unsupported literal_value_type");
+            "unsupported primitive_result_type");
     }
 }}
 

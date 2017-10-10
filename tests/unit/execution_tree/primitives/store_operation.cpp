@@ -9,32 +9,35 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-void test_literal_value()
+void test_store_operation()
 {
     phylanx::execution_tree::primitive lhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(0.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive rhs =
-            hpx::new_<phylanx::execution_tree::primitives::literal_value>(
-                    hpx::find_here(), phylanx::ir::node_data<double>(42.0));
+        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+            hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
     phylanx::execution_tree::primitive store =
-            hpx::new_<phylanx::execution_tree::primitives::store_operation>(
-                    hpx::find_here(),
-                    std::vector<phylanx::execution_tree::primitive_argument_type>{
-                            std::move(lhs), std::move(rhs)
-                    });
-    hpx::future<phylanx::util::optional<phylanx::ir::node_data<double>>> result =
-            store.eval();
+        hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                lhs, std::move(rhs)
+            });
 
-    HPX_TEST_EQ(42.0, lhs.get().value()[0]);
-    HPX_TEST_EQ(42.0, result.get().value()[0]);
+    HPX_TEST_EQ(0.0, phylanx::execution_tree::numeric_operand(lhs).get()[0]);
+
+    hpx::future<phylanx::execution_tree::primitive_result_type> result =
+        store.eval();
+
+    HPX_TEST_EQ(
+        42.0, phylanx::execution_tree::extract_numeric_value(result.get())[0]);
 }
 
 int main(int argc, char* argv[])
 {
-    test_literal_value();
+    test_store_operation();
 
     return hpx::util::report_errors();
 }
