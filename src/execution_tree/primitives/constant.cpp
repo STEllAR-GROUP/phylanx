@@ -5,7 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
-#include <phylanx/execution_tree/primitives/determinant.hpp>
+#include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/eigen.hpp>
 
@@ -23,49 +23,50 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
-    phylanx::execution_tree::primitives::determinant>
-    determinant_type;
+    phylanx::execution_tree::primitives::constant>
+    constant_type;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    determinant_type, phylanx_determinant_component,
+    constant_type, phylanx_constant_component,
     "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(determinant_type::wrapped_type)
+HPX_DEFINE_GET_COMPONENT_TYPE(constant_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const determinant::match_data =
+    match_pattern_type const constant::match_data =
     {
-        "determinant(_1)", &create<determinant>
+        "constant(_1, _2)", &create<constant>
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    determinant::determinant(std::vector<primitive_argument_type>&& operands)
+    constant::constant(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
-        if (operands_.size() != 1)
+        if (operands_.size() != 1 && operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "determinant::determinant",
-                "the determinant primitive requires"
-                "exactly one operand");
+                "constant::constant",
+                "the constant primitive requires"
+                    "at least one annd at most 2 operands");
         }
 
-        if (!valid(operands_[0]))
+        if (!valid(operands_[0]) ||
+            (operands_.size() == 2 && !valid(operands_[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "determinant::determinant",
-                "the determinant primitive requires that the "
-                    "argument given by the operands array is valid");
+                "constant::constant",
+                "the constant primitive requires that the "
+                    "arguments given by the operands array are valid");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        struct determinant : std::enable_shared_from_this<determinant>
+        struct constant : std::enable_shared_from_this<constant>
         {
-            determinant(std::vector<primitive_argument_type> const& operands)
+            constant(std::vector<primitive_argument_type> const& operands)
               : operands_(operands)
             {}
 
@@ -76,18 +77,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [this_](operands_type&& ops) -> primitive_result_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
+                        if (ops.size() > 1)
+                        {
+                            dims = ops[1].num_dimensions();
+                        }
+
                         switch (dims)
                         {
                         case 0:
-                            return this_->determinant0d(std::move(ops));
+                            return this_->constant0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
+                        case 1:
+                            return this_->constant1d(std::move(ops));
+
                         case 2:
-                            return this_->determinantxd(std::move(ops));
+                            return this_->constant2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "determinant::eval",
+                                "constant::eval",
                                 "left hand side operand has unsupported "
                                     "number of dimensions");
                         }
@@ -100,14 +108,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type determinant0d(operands_type && ops) const
+            primitive_result_type constant0d(operands_type && ops) const
             {
                 return std::move(ops[0]);       // no-op
             }
 
-            primitive_result_type determinantxd(operands_type && ops) const
+            primitive_result_type constant1d(operands_type && ops) const
             {
-                return operand_type(ops[0].matrix().determinant());
+                std::ptrdiff_t dim = ops[0].dimension(0);
+                if (ops.size() > 1)
+                {
+                    dim = ops[1].dimension(0);
+                }
+
+                using vector_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
+                vector_type result =
+                    Eigen::VectorXd::Constant(dim, ops[0][0]);
+                return operand_type(std::move(result));
+            }
+
+            primitive_result_type constant2d(operands_type && ops) const
+            {
+                auto dim = ops[0].dimensions();
+                if (ops.size() > 1)
+                {
+                    dim = ops[1].dimensions();
+                }
+
+                using matrix_type =
+                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+
+                matrix_type result =
+                    Eigen::VectorXd::Constant(dim[0], dim[1], ops[0][0]);
+                return operand_type(std::move(result));
             }
 
         private:
@@ -115,8 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> determinant::eval() const
+    hpx::future<primitive_result_type> constant::eval() const
     {
-        return std::make_shared<detail::determinant>(operands_)->eval();
+        return std::make_shared<detail::constant>(operands_)->eval();
     }
 }}}

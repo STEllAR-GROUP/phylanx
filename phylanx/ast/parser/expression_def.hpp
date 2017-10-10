@@ -78,12 +78,6 @@ namespace phylanx { namespace ast { namespace parser
         keywords.add
             ("true")
             ("false")
-            ("if")
-            ("else")
-            ("while")
-            ("var")
-            ("void")
-            ("return")
             ;
 
         ///////////////////////////////////////////////////////////////////////

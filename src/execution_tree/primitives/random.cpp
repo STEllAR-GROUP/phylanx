@@ -5,7 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
-#include <phylanx/execution_tree/primitives/determinant.hpp>
+#include <phylanx/execution_tree/primitives/random.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/eigen.hpp>
 
@@ -23,49 +23,49 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
-    phylanx::execution_tree::primitives::determinant>
-    determinant_type;
+    phylanx::execution_tree::primitives::random>
+    random_type;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    determinant_type, phylanx_determinant_component,
+    random_type, phylanx_random_component,
     "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(determinant_type::wrapped_type)
+HPX_DEFINE_GET_COMPONENT_TYPE(random_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const determinant::match_data =
+    match_pattern_type const random::match_data =
     {
-        "determinant(_1)", &create<determinant>
+        "random(_1)", &create<random>
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    determinant::determinant(std::vector<primitive_argument_type>&& operands)
+    random::random(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
-        if (operands_.size() != 1)
+        if (operands_.size() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "determinant::determinant",
-                "the determinant primitive requires"
-                "exactly one operand");
+                "random::random",
+                "the random primitive requires"
+                    "at most one operand");
         }
 
         if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "determinant::determinant",
-                "the determinant primitive requires that the "
-                    "argument given by the operands array is valid");
+                "random::random",
+                "the random primitive requires that the "
+                    "arguments given by the operands array are valid");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        struct determinant : std::enable_shared_from_this<determinant>
+        struct random : std::enable_shared_from_this<random>
         {
-            determinant(std::vector<primitive_argument_type> const& operands)
+            random(std::vector<primitive_argument_type> const& operands)
               : operands_(operands)
             {}
 
@@ -75,19 +75,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
                     {
-                        std::size_t dims = ops[0].num_dimensions();
+                        std::size_t dims = 0;
+                        if (!ops.empty())
+                        {
+                            dims = ops[0].num_dimensions();
+                        }
+
                         switch (dims)
                         {
                         case 0:
-                            return this_->determinant0d(std::move(ops));
+                            return this_->random0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
+                        case 1:
+                            return this_->random1d(std::move(ops));
+
                         case 2:
-                            return this_->determinantxd(std::move(ops));
+                            return this_->random2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "determinant::eval",
+                                "random::eval",
                                 "left hand side operand has unsupported "
                                     "number of dimensions");
                         }
@@ -100,14 +107,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type determinant0d(operands_type && ops) const
+            primitive_result_type random0d(operands_type && ops) const
             {
                 return std::move(ops[0]);       // no-op
             }
 
-            primitive_result_type determinantxd(operands_type && ops) const
+            primitive_result_type random1d(operands_type && ops) const
             {
-                return operand_type(ops[0].matrix().determinant());
+                std::ptrdiff_t dim = ops[0].dimension(0);
+
+                using vector_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
+                vector_type result = Eigen::VectorXd::Random(dim);
+                return operand_type(std::move(result));
+            }
+
+            primitive_result_type random2d(operands_type && ops) const
+            {
+                auto dim = ops[0].dimensions();
+
+                using matrix_type =
+                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+
+                matrix_type result = Eigen::VectorXd::Random(dim[0], dim[1]);
+                return operand_type(std::move(result));
             }
 
         private:
@@ -115,8 +138,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> determinant::eval() const
+    hpx::future<primitive_result_type> random::eval() const
     {
-        return std::make_shared<detail::determinant>(operands_)->eval();
+        return std::make_shared<detail::random>(operands_)->eval();
     }
 }}}
