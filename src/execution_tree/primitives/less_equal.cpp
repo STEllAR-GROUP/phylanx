@@ -29,9 +29,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(less_equal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const less_equal::match_data =
+    std::vector<match_pattern_type> const less_equal::match_data =
     {
-        "_1 <= _2", &create<less_equal>
+        {"_1 <= _2", &create<less_equal>}
     };
 
     ///////////////////////////////////////////////////////////////////////////

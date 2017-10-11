@@ -222,6 +222,30 @@ void test_store_primitive()
     test_generate_tree("store(C, A + B)", patterns, variables, 42.0);
 }
 
+void test_multi_patterns()
+{
+    using phylanx::execution_tree::create;
+
+    phylanx::execution_tree::pattern_list patterns = {
+        std::vector<phylanx::execution_tree::match_pattern_type>{
+            {"block(_1, _2, __3)",
+                &create<phylanx::execution_tree::primitives::block_operation>},
+            {"block(__1)",
+                &create<phylanx::execution_tree::primitives::block_operation>},
+        }
+    };
+
+    phylanx::execution_tree::variables variables = {
+        {"A", create_literal_value(41.0)},
+        {"B", create_literal_value(1.0)},
+        {"C", create_literal_value(42.0)},
+    };
+
+    test_generate_tree("block(A)", patterns, variables, 41.0);
+    test_generate_tree("block(A, B)", patterns, variables, 1.0);
+    test_generate_tree("block(A, B, C)", patterns, variables, 42.0);
+}
+
 int main(int argc, char* argv[])
 {
     test_add_primitive();
@@ -232,6 +256,8 @@ int main(int argc, char* argv[])
     test_boolean_primitives();
     test_block_primitives();
     test_store_primitive();
+
+    test_multi_patterns();
 
     return hpx::util::report_errors();
 }

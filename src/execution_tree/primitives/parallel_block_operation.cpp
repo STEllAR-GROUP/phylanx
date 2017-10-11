@@ -32,9 +32,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(parallel_block_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const parallel_block_operation::match_data =
+    std::vector<match_pattern_type> const parallel_block_operation::match_data =
     {
-        "parallel_block(__1)", &create<parallel_block_operation>
+        {"parallel_block(__1)", &create<parallel_block_operation>}
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
-        if (operands_.size() <= 1)
+        if (operands_.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"

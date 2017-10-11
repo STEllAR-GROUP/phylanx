@@ -33,15 +33,19 @@ namespace phylanx { namespace execution_tree
                 hpx::util::tuple<std::string, ast::expression, factory_function_type
             >>;
 
-        expression_pattern_list generate_patterns(pattern_list const& patterns)
+        expression_pattern_list generate_patterns(
+            pattern_list const& patterns_list)
         {
             expression_pattern_list result;
-            result.reserve(patterns.size());
+            result.reserve(patterns_list.size());
 
-            for (auto const& pattern : patterns)
+            for (auto const& patterns : patterns_list)
             {
-                result.push_back(hpx::util::make_tuple(pattern.first,
-                    ast::generate_ast(pattern.first), pattern.second));
+                for (auto const& pattern : patterns)
+                {
+                    result.push_back(hpx::util::make_tuple(pattern.first,
+                        ast::generate_ast(pattern.first), pattern.second));
+                }
             }
 
             return result;

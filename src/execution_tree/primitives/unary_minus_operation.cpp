@@ -33,9 +33,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(unary_minus_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const unary_minus_operation::match_data =
+    std::vector<match_pattern_type> const unary_minus_operation::match_data =
     {
-        "-_1", &create<unary_minus_operation>
+        {"-_1", &create<unary_minus_operation>}
     };
 
     ///////////////////////////////////////////////////////////////////////////

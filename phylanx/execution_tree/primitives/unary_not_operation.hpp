@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using operands_type = std::vector<std::uint8_t>;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         unary_not_operation() = default;
 
