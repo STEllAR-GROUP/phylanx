@@ -24,9 +24,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         : public base_primitive
         , public hpx::components::component_base<and_operation>
     {
-    private:
-        using operands_type = std::vector<std::uint8_t>;
-
     public:
         static match_pattern_type const match_data;
 

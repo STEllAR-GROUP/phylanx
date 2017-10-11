@@ -21,13 +21,9 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT div_operation
-        : public base_primitive
-        , public hpx::components::component_base<div_operation>
+      : public base_primitive
+      , public hpx::components::component_base<div_operation>
     {
-    private:
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -36,20 +32,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         div_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval() const override;
-
-    protected:
-        ir::node_data<double> div0d(operands_type && ops) const;
-        ir::node_data<double> div0d0d(operands_type && ops) const;
-        ir::node_data<double> div0d1d(operands_type && ops) const;
-        ir::node_data<double> div0d2d(operands_type && ops) const;
-
-        ir::node_data<double> div1d(operands_type && ops) const;
-        ir::node_data<double> div1d0d(operands_type && ops) const;
-        ir::node_data<double> div1d1d(operands_type && ops) const;
-
-        ir::node_data<double> div2d(operands_type && ops) const;
-        ir::node_data<double> div2d0d(operands_type && ops) const;
-        ir::node_data<double> div2d2d(operands_type && ops) const;
 
     private:
         std::vector<primitive_argument_type> operands_;
