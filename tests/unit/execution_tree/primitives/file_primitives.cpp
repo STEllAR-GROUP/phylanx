@@ -22,7 +22,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
     // write to file
     {
         phylanx::execution_tree::primitive litval =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), in);
 
         phylanx::execution_tree::primitive outfile =

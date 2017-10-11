@@ -19,7 +19,6 @@
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
 #include <phylanx/execution_tree/primitives/less.hpp>
 #include <phylanx/execution_tree/primitives/less_equal.hpp>
-#include <phylanx/execution_tree/primitives/literal_value.hpp>
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
@@ -28,6 +27,7 @@
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_not_operation.hpp>
+#include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/execution_tree/primitives/while_operation.hpp>
 
 #endif
