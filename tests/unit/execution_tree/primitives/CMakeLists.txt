@@ -20,6 +20,7 @@ set(tests
     not_equal_operation
     or_operation
     parallel_block_operation
+    store_operation
     sub_operation
     unary_minus_operation
     unary_not_operation

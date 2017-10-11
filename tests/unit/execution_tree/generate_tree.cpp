@@ -205,6 +205,23 @@ void test_block_primitives()
         variables, 55.0);
 }
 
+void test_store_primitive()
+{
+    phylanx::execution_tree::pattern_list patterns = {
+        phylanx::execution_tree::primitives::add_operation::match_data,
+        phylanx::execution_tree::primitives::store_operation::match_data,
+    };
+
+    phylanx::execution_tree::variables variables = {
+        {"A", create_literal_value(41.0)},
+        {"B", create_literal_value(1.0)},
+        {"C", create_literal_value(13.0)}
+    };
+
+    test_generate_tree("store(C, A)", patterns, variables, 41.0);
+    test_generate_tree("store(C, A + B)", patterns, variables, 42.0);
+}
+
 int main(int argc, char* argv[])
 {
     test_add_primitive();
@@ -214,6 +231,7 @@ int main(int argc, char* argv[])
     test_file_io_primitives();
     test_boolean_primitives();
     test_block_primitives();
+    test_store_primitive();
 
     return hpx::util::report_errors();
 }

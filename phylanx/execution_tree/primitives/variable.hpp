@@ -20,7 +20,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT variable
       : public base_primitive
-      , public hpx::components::component_base<variable>
+      , public hpx::components::locking_hook<
+          hpx::components::component_base<variable>>
     {
     public:
         variable() = default;
@@ -29,9 +30,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         variable(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval() const override;
+        void store(primitive_result_type const& data) override;
 
     private:
-        primitive_argument_type operand_;
+        primitive_result_type data_;
     };
 }}}
 
