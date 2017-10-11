@@ -222,6 +222,30 @@ void test_store_primitive()
     test_generate_tree("store(C, A + B)", patterns, variables, 42.0);
 }
 
+void test_complex_expression()
+{
+    phylanx::execution_tree::pattern_list patterns = {
+        phylanx::execution_tree::primitives::add_operation::match_data,
+        phylanx::execution_tree::primitives::div_operation::match_data,
+        phylanx::execution_tree::primitives::dot_operation::match_data,
+        phylanx::execution_tree::primitives::exponential_operation::match_data,
+        phylanx::execution_tree::primitives::unary_minus_operation::match_data
+    };
+
+    phylanx::execution_tree::variables variables = {
+        {"A", create_literal_value(2.0)},
+        {"B", create_literal_value(3.0)},
+    };
+
+    test_generate_tree("dot(A, B)", patterns, variables, 6.0);
+    test_generate_tree("-dot(A, B)", patterns, variables, -6.0);
+    test_generate_tree("exp(-dot(A, B))", patterns, variables, std::exp(-6.0));
+    test_generate_tree("1.0 + exp(-dot(A, B))",
+        patterns, variables, 1.0 + std::exp(-6.0));
+    test_generate_tree("1.0 / (1.0 + exp(-dot(A, B)))",
+        patterns, variables, 1.0 / (1.0 + std::exp(-6.0)));
+}
+
 int main(int argc, char* argv[])
 {
     test_add_primitive();
@@ -232,6 +256,8 @@ int main(int argc, char* argv[])
     test_boolean_primitives();
     test_block_primitives();
     test_store_primitive();
+
+    test_complex_expression();
 
     return hpx::util::report_errors();
 }

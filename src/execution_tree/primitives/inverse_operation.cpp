@@ -19,8 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include <unsupported/Eigen/MatrixFunctions>
-
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::inverse_operation>

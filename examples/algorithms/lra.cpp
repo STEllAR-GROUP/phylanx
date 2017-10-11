@@ -10,17 +10,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const lra_code = R"(
-    /*
-      The logistic regression analysis algorithm assumes to be invoked with
-      the following variables predefined:
-
-            iterations: the number of iterations to be performed
-            alpha:      the error residual
-            x, y:       the data to analyze
-     */
+    //
+    // The logistic regression analysis algorithm assumes to be invoked with
+    // the following variables predefined:
+    //
+    //       iterations: the number of iterations to be performed
+    //       alpha:      the error residual
+    //       x, y:       the data to analyze
+    //
     block(
         store(weights, constant(0, x)),
         store(transx, transpose(x)),
+        store(step, 0),
         while(
             step < iterations,
             block(

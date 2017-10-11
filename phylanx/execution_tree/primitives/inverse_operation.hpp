@@ -13,21 +13,20 @@
 
 #include <hpx/include/components.hpp>
 
-#include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT inverse_operation
-        : public base_primitive
-        , public hpx::components::component_base<inverse_operation>
+      : public base_primitive
+      , public hpx::components::component_base<inverse_operation>
     {
     public:
         static match_pattern_type const match_data;
 
         inverse_operation() = default;
 
-        inverse_operation(
-            std::vector<primitive_argument_type>&& operands);
+        inverse_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval() const override;
 

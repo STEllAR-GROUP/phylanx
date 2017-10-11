@@ -33,7 +33,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::_4_type _4;
 
         qi::char_type char_;
-        qi::double_type double_;
+        qi::real_parser<double, qi::strict_real_policies<double> > strict_double;
         qi::_val_type _val;
         qi::raw_type raw;
         qi::lexeme_type lexeme;
@@ -93,7 +93,7 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
         primary_expr =
-                double_
+                strict_double
             |   function_call
             |   as<ast::identifier>()[identifier]
             |   bool_

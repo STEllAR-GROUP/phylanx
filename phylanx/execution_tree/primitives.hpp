@@ -12,6 +12,7 @@
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/execution_tree/primitives/determinant.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
+#include <phylanx/execution_tree/primitives/dot_operation.hpp>
 #include <phylanx/execution_tree/primitives/equal.hpp>
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
