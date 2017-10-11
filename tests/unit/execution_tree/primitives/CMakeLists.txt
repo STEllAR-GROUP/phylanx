@@ -6,6 +6,7 @@
 set(tests
     add_operation
     and_operation
+    block_operation
     determinant
     div_operation
     equal_operation
@@ -20,6 +21,8 @@ set(tests
     mul_operation
     not_equal_operation
     or_operation
+    parallel_block_operation
+    store_operation
     sub_operation
     transpose_operation
     unary_minus_operation
