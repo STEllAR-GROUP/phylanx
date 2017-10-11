@@ -22,14 +22,14 @@ foreach(example_program ${example_programs})
                      FOLDER "Examples/Algorithms")
 
   # add a custom target for this example
-  add_phylanx_pseudo_target(examples.ast_.${example_program})
+  add_phylanx_pseudo_target(examples.algorithms_.${example_program})
 
   # make pseudo-targets depend on master pseudo-target
-  add_phylanx_pseudo_dependencies(examples.ast_
-                              examples.ast_.${example_program})
+  add_phylanx_pseudo_dependencies(examples.algorithms_
+                              examples.algorithms_.${example_program})
 
   # add dependencies to pseudo-target
-  add_phylanx_pseudo_dependencies(examples.ast_.${example_program}
+  add_phylanx_pseudo_dependencies(examples.algorithms_.${example_program}
                               ${example_program}_exe)
 endforeach()
 
