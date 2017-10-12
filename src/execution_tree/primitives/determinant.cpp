@@ -40,8 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    determinant::determinant(
-            std::vector<primitive_argument_type>&& operands)
+    determinant::determinant(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
         if (operands_.size() != 1)
@@ -57,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "determinant::determinant",
                 "the determinant primitive requires that the "
-                    "arguments given by the operands array is valid");
+                    "argument given by the operands array is valid");
         }
     }
 

@@ -15,14 +15,13 @@
 
 #include <hpx/include/components.hpp>
 
-#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT unary_not_operation
-        : public base_primitive
-        , public hpx::components::component_base<unary_not_operation>
+      : public base_primitive
+      , public hpx::components::component_base<unary_not_operation>
     {
     private:
         using operands_type = std::vector<std::uint8_t>;

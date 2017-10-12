@@ -30,6 +30,7 @@ namespace phylanx { namespace ast
         return false;       // by default things don't match
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename Ast1, typename Ast2, typename F, typename... Ts>
     bool match_ast(phylanx::util::recursive_wrapper<Ast1> const& ast1,
         Ast2 const& ast2, F&& f, Ts const&... ts)
@@ -58,6 +59,9 @@ namespace phylanx { namespace ast
     template <typename F, typename... Ts>
     bool match_ast(identifier const&, identifier const&, F&&, Ts const&...);
 
+    template <typename F, typename... Ts>
+    bool match_ast(ir::node_data<double> const&, identifier const&, F&&,
+        Ts const&...);
     template <typename F, typename... Ts>
     bool match_ast(primary_expr const&, identifier const&, F&&, Ts const&...);
     template <typename F, typename... Ts>
@@ -153,6 +157,30 @@ namespace phylanx { namespace ast
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename F, typename... Ts>
+    bool match_ast(ir::node_data<double> const& nd, identifier const& id, F&& f,
+        Ts const&... ts)
+    {
+        // handle placeholder
+        if (detail::is_placeholder(id))
+        {
+            return hpx::util::invoke(std::forward<F>(f), nd, id, ts...);
+        }
+        return false;
+    }
+
+    template <typename F, typename... Ts>
+    bool match_ast(
+        primary_expr const& pe, identifier const& id, F&& f, Ts const&... ts)
+    {
+        // handle placeholder
+        if (detail::is_placeholder(id))
+        {
+            return hpx::util::invoke(std::forward<F>(f), pe, id, ts...);
+        }
+        return false;
+    }
+
+    template <typename F, typename... Ts>
     bool match_ast(primary_expr const& pe1, primary_expr const& pe2, F&& f,
         Ts const&... ts)
     {
@@ -182,6 +210,18 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename F, typename... Ts>
+    bool match_ast(
+        unary_expr const& ue, identifier const& id, F&& f, Ts const&... ts)
+    {
+        // handle placeholder
+        if (detail::is_placeholder(id))
+        {
+            return hpx::util::invoke(std::forward<F>(f), ue, id, ts...);
+        }
+        return false;
+    }
+
     template <typename F, typename... Ts>
     bool match_ast(
         unary_expr const& pe1, unary_expr const& pe2, F&& f, Ts const&... ts)

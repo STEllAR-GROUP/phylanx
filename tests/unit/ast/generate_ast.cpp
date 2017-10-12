@@ -140,7 +140,21 @@ int main(int argc, char* argv[])
 
     test_expression(
         "\"test\"",
-            "test\n");
+            "test\n"
+    );
+
+    test_expression(
+        "1.0 / (1.0 + exp(-dot(A, B)))",
+            "1.000000\n"
+            "1.000000\n"
+            "exp\n"
+            "dot\n"
+            "A\n"
+            "B\n"
+            "-\n"
+            "+\n"
+            "/\n"
+    );
 
     return hpx::util::report_errors();
 }

@@ -5,7 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
-#include <phylanx/execution_tree/primitives/inverse_operation.hpp>
+#include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/eigen.hpp>
 
@@ -19,52 +19,54 @@
 #include <utility>
 #include <vector>
 
+#include <unsupported/Eigen/MatrixFunctions>
+
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
-    phylanx::execution_tree::primitives::inverse_operation>
-    inverse_operation_type;
+    phylanx::execution_tree::primitives::constant>
+    constant_type;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    inverse_operation_type, phylanx_inverse_operation_component,
+    constant_type, phylanx_constant_component,
     "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(inverse_operation_type::wrapped_type)
+HPX_DEFINE_GET_COMPONENT_TYPE(constant_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const inverse_operation::match_data =
+    match_pattern_type const constant::match_data =
     {
-        "inverse(_1)", &create<inverse_operation>
+        "constant(_1, _2)", &create<constant>
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    inverse_operation::inverse_operation(
-            std::vector<primitive_argument_type>&& operands)
+    constant::constant(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
-        if (operands_.size() != 1)
+        if (operands_.size() != 1 && operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "inverse_operation::inverse_operation",
-                "the inverse_operation primitive requires"
-                "exactly one operand");
+                "constant::constant",
+                "the constant primitive requires"
+                    "at least one annd at most 2 operands");
         }
 
-        if (!valid(operands_[0]))
+        if (!valid(operands_[0]) ||
+            (operands_.size() == 2 && !valid(operands_[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "inverse_operation::inverse_operation",
-                "the inverse_operation primitive requires that the "
-                    "arguments given by the operands array is valid");
+                "constant::constant",
+                "the constant primitive requires that the "
+                    "arguments given by the operands array are valid");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        struct inverse : std::enable_shared_from_this<inverse>
+        struct constant : std::enable_shared_from_this<constant>
         {
-            inverse(std::vector<primitive_argument_type> const& operands)
+            constant(std::vector<primitive_argument_type> const& operands)
               : operands_(operands)
             {}
 
@@ -75,18 +77,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [this_](operands_type&& ops) -> primitive_result_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
+                        if (ops.size() > 1)
+                        {
+                            dims = ops[1].num_dimensions();
+                        }
+
                         switch (dims)
                         {
                         case 0:
-                            return this_->inverse0d(std::move(ops));
+                            return this_->constant0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
+                        case 1:
+                            return this_->constant1d(std::move(ops));
+
                         case 2:
-                            return this_->inversexd(std::move(ops));
+                            return this_->constant2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "inverse_operation::eval",
+                                "constant::eval",
                                 "left hand side operand has unsupported "
                                     "number of dimensions");
                         }
@@ -99,19 +108,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type inverse0d(operands_type && ops) const
+            primitive_result_type constant0d(operands_type && ops) const
             {
-                ops[0][0] = 1 / ops[0][0];
-                return std::move(ops[0]);
+                return std::move(ops[0]);       // no-op
             }
 
-            primitive_result_type inversexd(operands_type && ops) const
+            primitive_result_type constant1d(operands_type && ops) const
             {
+                std::ptrdiff_t dim = ops[0].dimension(0);
+                if (ops.size() > 1)
+                {
+                    dim = ops[1].dimension(0);
+                }
+
+                using vector_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
+                vector_type result =
+                    Eigen::VectorXd::Constant(dim, ops[0][0]);
+                return operand_type(std::move(result));
+            }
+
+            primitive_result_type constant2d(operands_type && ops) const
+            {
+                auto dim = ops[0].dimensions();
+                if (ops.size() > 1)
+                {
+                    dim = ops[1].dimensions();
+                }
+
                 using matrix_type =
                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
-                matrix_type result = ops[0].matrix().inverse();
-                return ir::node_data<double>(std::move(result));
+                matrix_type result =
+                    Eigen::VectorXd::Constant(dim[0], dim[1], ops[0][0]);
+                return operand_type(std::move(result));
             }
 
         private:
@@ -119,8 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> inverse_operation::eval() const
+    hpx::future<primitive_result_type> constant::eval() const
     {
-        return std::make_shared<detail::inverse>(operands_)->eval();
+        return std::make_shared<detail::constant>(operands_)->eval();
     }
 }}}
