@@ -229,7 +229,9 @@ PYBIND11_MODULE(_phylanx, m)
     pybind11::class_<phylanx::ast::primary_expr>(
             ast, "primary_expr", "AST node representing a primary_expr")
         .def(pybind11::init<bool>(),
-            "initialize primary_expr instance with a boolean value")
+            "initialize primary_expr instance with a Boolean value")
+        .def(pybind11::init<std::int64_t>(),
+            "initialize primary_expr instance with an integer value")
         .def(pybind11::init<double>(),
             "initialize primary_expr instance with a floating point value")
         .def(pybind11::init<std::string const&>(),
@@ -238,6 +240,8 @@ PYBIND11_MODULE(_phylanx, m)
             "initialize primary_expr instance with an value")
         .def(pybind11::init<phylanx::ast::expression>(),
             "initialize primary_expr instance with an expression value")
+        .def(pybind11::init<phylanx::ast::function_call>(),
+            "initialize primary_expr instance with a function call")
         .def_property_readonly("value",
             [](phylanx::ast::primary_expr const& pe)
             ->  phylanx::ast::expr_node_type const&
@@ -255,10 +259,16 @@ PYBIND11_MODULE(_phylanx, m)
     // phylanx::ast::operand
     pybind11::class_<phylanx::ast::operand>(
             ast, "operand", "AST node representing an operand")
+        .def(pybind11::init<bool>(),
+            "initialize operand instance with a Boolean value")
+        .def(pybind11::init<std::int64_t>(),
+            "initialize operand instance with an integer value")
         .def(pybind11::init<double>(),
             "initialize operand instance with a floating point value")
         .def(pybind11::init<std::string const&>(),
             "initialize operand instance with a primary_expr (identifier) name")
+        .def(pybind11::init<phylanx::ast::identifier>(),
+            "initialize operand instance with a primary_expr value")
         .def(pybind11::init<phylanx::ast::primary_expr>(),
             "initialize operand instance with a primary_expr value")
         .def(pybind11::init<phylanx::ast::unary_expr>(),
@@ -296,6 +306,8 @@ PYBIND11_MODULE(_phylanx, m)
     // phylanx::ast::operation
     pybind11::class_<phylanx::ast::operation>(
             ast, "operation", "AST node representing an operation")
+        .def(pybind11::init<phylanx::ast::optoken, phylanx::ast::identifier>(),
+            "initialize operation instance with an operator and an operand")
         .def(pybind11::init<phylanx::ast::optoken, phylanx::ast::operand>(),
             "initialize operation instance with an operator and an operand")
         .def_readonly("operator", &phylanx::ast::operation::operator_,
@@ -314,6 +326,22 @@ PYBIND11_MODULE(_phylanx, m)
             ast, "expression", "AST node representing an expression")
         .def(pybind11::init<phylanx::ast::operand>(),
             "initialize expression instance with an operand")
+        .def(pybind11::init<phylanx::ast::identifier>(),
+            "initialize expression instance with an identifier")
+        .def(pybind11::init<phylanx::ast::primary_expr>(),
+            "initialize expression instance with a primary expression")
+        .def(pybind11::init<phylanx::ast::primary_expr>(),
+            "initialize expression instance with a unary expression")
+        .def(pybind11::init<phylanx::ast::function_call>(),
+            "initialize expression instance with a unary expression")
+        .def(pybind11::init<bool>(),
+            "initialize expression instance with a Boolean value")
+        .def("append",
+            [](phylanx::ast::expression& e, phylanx::ast::operation const& op)
+            {
+                e.rest.push_back(op);
+            },
+            "append a operand to this expression")
         .def_readonly("first", &phylanx::ast::expression::first,
             "the first operand of the expression")
         .def_readwrite("rest", &phylanx::ast::expression::rest,
@@ -326,24 +354,50 @@ PYBIND11_MODULE(_phylanx, m)
             &phylanx::bindings::unpickle_helper<phylanx::ast::expression>));
 
     // list of phylanx::ast::operations
-    pybind11::class_<std::list<phylanx::ast::operation>>(ast,"operation_list","A list of operations")
+    pybind11::class_<std::list<phylanx::ast::operation>>(
+            ast, "operation_list", "A list of operations")
         .def(pybind11::init<>())
-        .def("pop_back",&std::list<phylanx::ast::operation>::pop_back)
-        .def("append",[](std::list<phylanx::ast::operation>& v,const phylanx::ast::operation& f) { v.push_back(f); })
-        .def("__len__",[](const std::list<phylanx::ast::operation>& v) { return v.size(); })
-        .def("__iter__",[](std::list<phylanx::ast::operation>& v) {
-            return pybind11::make_iterator(v.begin(), v.end());
-        }, pybind11::keep_alive<0,1>());
+        .def("pop_back", &std::list<phylanx::ast::operation>::pop_back)
+        .def("append",
+            [](std::list<phylanx::ast::operation>& v,
+               phylanx::ast::operation const& f)
+            {
+                v.push_back(f);
+            })
+        .def("__len__",
+            [](const std::list<phylanx::ast::operation>& v)
+            {
+                return v.size();
+            })
+        .def("__iter__",
+            [](std::list<phylanx::ast::operation>& v)
+            {
+                return pybind11::make_iterator(v.begin(), v.end());
+            },
+            pybind11::keep_alive<0, 1>());
 
     // list of phylanx::ast::expressions
-    pybind11::class_<std::list<phylanx::ast::expression>>(ast,"expression_list","A list of expressions")
+    pybind11::class_<std::list<phylanx::ast::expression>>(
+        ast, "expression_list", "A list of expressions")
         .def(pybind11::init<>())
-        .def("pop_back",&std::list<phylanx::ast::expression>::pop_back)
-        .def("append",[](std::list<phylanx::ast::expression>& v,const phylanx::ast::expression& f) { v.push_back(f); })
-        .def("__len__",[](const std::list<phylanx::ast::expression>& v) { return v.size(); })
-        .def("__iter__",[](std::list<phylanx::ast::expression>& v) {
-            return pybind11::make_iterator(v.begin(), v.end());
-        }, pybind11::keep_alive<0,1>());
+        .def("pop_back", &std::list<phylanx::ast::expression>::pop_back)
+        .def("append",
+            [](std::list<phylanx::ast::expression>& v,
+               phylanx::ast::expression const& f)
+            {
+                v.push_back(f);
+            })
+        .def("__len__",
+            [](const std::list<phylanx::ast::expression>& v)
+            {
+                return v.size();
+            })
+        .def("__iter__",
+            [](std::list<phylanx::ast::expression>& v)
+            {
+                return pybind11::make_iterator(v.begin(), v.end());
+            },
+            pybind11::keep_alive<0, 1>());
 
     // phylanx::ast::function_call
     pybind11::class_<phylanx::ast::function_call>(
@@ -354,6 +408,13 @@ PYBIND11_MODULE(_phylanx, m)
             "the name of the function to invoke")
         .def_readwrite("args", &phylanx::ast::function_call::args,
             "the (optional) list of arguments for the function")
+        .def("append",
+            [](phylanx::ast::function_call& e,
+               phylanx::ast::expression const& expr)
+            {
+                e.args.push_back(expr);
+            },
+            "append a operand to this expression")
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::function_call>)
