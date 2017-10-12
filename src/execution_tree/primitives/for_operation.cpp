@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
+#include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
@@ -70,10 +71,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             hpx::future<primitive_result_type> init()
             {
-                auto this_ = this->shared_from_this();
-                return literal_operand(operands_[0]).then(
-                //do eval for initialization
-                );
+              phylanx::execution_tree::primitive store =
+                  hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+                  hpx::find_here(),
+                  std::vector<phylanx::execution_tree::primitive_argument_type>{
+                      operands_[0]}
+              );
+              return store.eval();
             }
 
             hpx::future<primitive_result_type> body(
