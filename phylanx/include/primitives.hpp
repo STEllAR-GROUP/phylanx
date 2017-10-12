@@ -15,6 +15,7 @@
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/execution_tree/primitives/file_write.hpp>
+#include <phylanx/execution_tree/primitives/for_operation.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
 #include <phylanx/execution_tree/primitives/less.hpp>
