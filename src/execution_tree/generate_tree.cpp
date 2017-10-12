@@ -11,8 +11,7 @@
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/execution_tree/generate_tree.hpp>
-#include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/throw_exception.hpp>
@@ -93,12 +92,12 @@ namespace phylanx { namespace execution_tree
             }
         };
 
-        primitive generate_tree(
+        primitive_argument_type generate_tree(
             ast::expression const& expr,
             expression_pattern_list const& patterns,
-            phylanx::execution_tree::variables const& variables)
+            phylanx::execution_tree::variables& variables)
         {
-            primitive result;
+            primitive_argument_type result;
             for (auto const& pattern : patterns)
             {
                 std::multimap<std::string, ast::expression> placeholders;
@@ -137,15 +136,39 @@ namespace phylanx { namespace execution_tree
             // remaining expression could refer to a variable
             if (ast::detail::is_identifier(expr))
             {
-                auto it = variables.find(ast::detail::identifier_name(expr));
+                std::string name = ast::detail::identifier_name(expr);
+                auto it = variables.find(name);
                 if (it != variables.end())
                 {
+                    if (!is_primitive_operand(it->second))
+                    {
+                        // create a new variable from the given value, replace
+                        // entry in symbol table
+                        it->second =
+                            hpx::new_<primitives::variable>(hpx::find_here(),
+                                std::move(it->second), std::move(name));
+                    }
                     return it->second;
                 }
                 else
                 {
                     // create an empty variable
-                    return hpx::new_<primitives::variable>(hpx::find_here());
+                    primitive p = hpx::new_<primitives::variable>(
+                        hpx::find_here(), name);
+
+                    // attempt to insert the new variable into the symbol
+                    // table
+                    auto r = variables.insert(
+                        execution_tree::variables::value_type(
+                            std::move(name), p));
+                    if (!r.second)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::generate_tree",
+                            "couldn't insert variable into symbol "
+                                "table: " + name);
+                    }
+                    return p;
                 }
             }
 
@@ -158,20 +181,79 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive generate_tree(ast::expression const& expr,
-        pattern_list const& patterns,
-        phylanx::execution_tree::variables const& variables)
+    pattern_list const& get_all_known_patterns()
     {
-        return detail::generate_tree(
-            expr, detail::generate_patterns(patterns), variables);
+        static pattern_list patterns = {
+            // variadic functions
+            primitives::block_operation::match_data,
+            primitives::parallel_block_operation::match_data,
+            // binary functions
+            primitives::dot_operation::match_data,
+            primitives::file_read::match_data,
+            primitives::file_write::match_data,
+            primitives::while_operation::match_data,
+            // unary functions
+            primitives::constant::match_data,
+            primitives::determinant::match_data,
+            primitives::exponential_operation::match_data,
+            primitives::inverse_operation::match_data,
+            primitives::transpose_operation::match_data,
+            primitives::random::match_data,
+            // variadic operations
+            primitives::add_operation::match_data,
+            primitives::and_operation::match_data,
+            primitives::div_operation::match_data,
+            primitives::mul_operation::match_data,
+            primitives::or_operation::match_data,
+            primitives::sub_operation::match_data,
+            // binary operations
+            primitives::equal::match_data,
+            primitives::greater::match_data,
+            primitives::greater_equal::match_data,
+            primitives::less::match_data,
+            primitives::less_equal::match_data,
+            primitives::not_equal::match_data,
+            primitives::store_operation::match_data,
+            // unary operations
+            primitives::unary_minus_operation::match_data,
+            primitives::unary_not_operation::match_data
+        };
+
+        return patterns;
     }
 
-    primitive generate_tree(std::string const& exprstr,
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type generate_tree(std::string const& exprstr)
+    {
+        phylanx::execution_tree::variables vars;
+        return detail::generate_tree(ast::generate_ast(exprstr),
+            detail::generate_patterns(get_all_known_patterns()), vars);
+    }
+
+    primitive_argument_type generate_tree(std::string const& exprstr,
+        phylanx::execution_tree::variables const& variables)
+    {
+        phylanx::execution_tree::variables vars(variables);
+        return detail::generate_tree(ast::generate_ast(exprstr),
+            detail::generate_patterns(get_all_known_patterns()), vars);
+    }
+
+    primitive_argument_type generate_tree(ast::expression const& expr,
         pattern_list const& patterns,
         phylanx::execution_tree::variables const& variables)
     {
+        phylanx::execution_tree::variables vars(variables);
+        return detail::generate_tree(
+            expr, detail::generate_patterns(patterns), vars);
+    }
+
+    primitive_argument_type generate_tree(std::string const& exprstr,
+        pattern_list const& patterns,
+        phylanx::execution_tree::variables const& variables)
+    {
+        phylanx::execution_tree::variables vars(variables);
         return detail::generate_tree(ast::generate_ast(exprstr),
-            detail::generate_patterns(patterns), variables);
+            detail::generate_patterns(patterns), vars);
     }
 }}
 

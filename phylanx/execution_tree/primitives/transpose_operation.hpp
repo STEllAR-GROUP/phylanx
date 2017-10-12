@@ -13,13 +13,13 @@
 
 #include <hpx/include/components.hpp>
 
-#include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT transpose_operation
-        : public base_primitive
-        , public hpx::components::component_base<transpose_operation>
+      : public base_primitive
+      , public hpx::components::component_base<transpose_operation>
     {
     public:
         static match_pattern_type const match_data;

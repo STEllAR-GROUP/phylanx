@@ -1,10 +1,11 @@
 //  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017 Alireza Kheirkhahan
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_AND_OPERATION_OCT_06_2017_0522PM)
-#define PHYLANX_PRIMITIVES_AND_OPERATION_OCT_06_2017_0522PM
+#if !defined(PHYLANX_PRIMITIVES_DOT_OPERATION_OCT_10_2017_0501PM)
+#define PHYLANX_PRIMITIVES_DOT_OPERATION_OCT_10_2017_0501PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
@@ -15,23 +16,25 @@
 
 #include <hpx/include/components.hpp>
 
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT and_operation
+    class HPX_COMPONENT_EXPORT dot_operation
       : public base_primitive
-      , public hpx::components::component_base<and_operation>
+      , public hpx::components::component_base<dot_operation>
     {
     private:
-        using operands_type = std::vector<std::uint8_t>;
+        using operand_type = ir::node_data<double>;
+        using operands_type = std::vector<operand_type>;
 
     public:
         static match_pattern_type const match_data;
 
-        and_operation() = default;
+        dot_operation() = default;
 
-        and_operation(std::vector<primitive_argument_type>&& operands);
+        dot_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval() const override;
 
@@ -41,5 +44,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
 }}}
 
 #endif
-
-

@@ -3,8 +3,8 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_INVERSE_OPERATION_OCT_09_2017_0154PM)
-#define PHYLANX_PRIMITIVES_INVERSE_OPERATION_OCT_09_2017_0154PM
+#if !defined(PHYLANX_PRIMITIVES_RANDOM_OCT_10_2017_0258PM)
+#define PHYLANX_PRIMITIVES_RANDOM_OCT_10_2017_0258PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
@@ -17,16 +17,16 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT inverse_operation
+    class HPX_COMPONENT_EXPORT random
       : public base_primitive
-      , public hpx::components::component_base<inverse_operation>
+      , public hpx::components::component_base<random>
     {
     public:
         static match_pattern_type const match_data;
 
-        inverse_operation() = default;
+        random() = default;
 
-        inverse_operation(std::vector<primitive_argument_type>&& operands);
+        random(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval() const override;
 
