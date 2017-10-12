@@ -68,6 +68,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
               , result_(hpx::make_ready_future(primitive_result_type{}))
             {}
 
+            hpx::future<primitive_result_type> init()
+            {
+                auto this_ = this->shared_from_this();
+                return literal_operand(operands_[0]).then(
+                //do eval for initialization
+                );
+            }
+
             hpx::future<primitive_result_type> body(
                 hpx::future<primitive_result_type>&& cond)
             {
@@ -75,7 +83,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     // evaluate body of for statement
                     auto this_ = this->shared_from_this();
-                    return literal_operand(operands_[1]).then(
+                    return literal_operand(operands_[2]).then(
                         [this_](
                             hpx::future<primitive_result_type> && result
                         ) mutable
@@ -91,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // evaluate condition of for statement
                 auto this_ = this->shared_from_this();
-                return literal_operand(operands_[0]).then(
+                return literal_operand(operands_[1]).then(
                     [this_](hpx::future<primitive_result_type> && cond)
                     {
                         return this_->body(std::move(cond));
