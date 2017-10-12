@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Bibek Wagle
+//   Copyright (c) 2017 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,47 +9,47 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <unsupported/Eigen/MatrixFunctions>
-
 #include <vector>
 #include <utility>
 
-void test_exponential_operation_0d()
+void test_transpose_operation_0d()
 {
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
-    phylanx::execution_tree::primitive exponential =
-        hpx::new_<phylanx::execution_tree::primitives::exponential_operation>(
+    phylanx::execution_tree::primitive transpose =
+        hpx::new_<phylanx::execution_tree::primitives::transpose_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        exponential.eval();
-    HPX_TEST_EQ(std::exp(5.0),
-        phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+        transpose.eval();
+
+    HPX_TEST_EQ(
+        5.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
-void test_exponential_operation_0d_lit()
+void test_transpose_operation_0d_lit()
 {
     phylanx::ir::node_data<double> lhs(5.0);
 
-    phylanx::execution_tree::primitive exponential =
-        hpx::new_<phylanx::execution_tree::primitives::exponential_operation>(
+    phylanx::execution_tree::primitive transpose =
+        hpx::new_<phylanx::execution_tree::primitives::transpose_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        exponential.eval();
-    HPX_TEST_EQ(std::exp(5.0),
-        phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+        transpose.eval();
+
+    HPX_TEST_EQ(
+        5.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
-void test_exponential_operation_2d()
+void test_transpose_operation_2d()
 {
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
 
@@ -57,17 +57,17 @@ void test_exponential_operation_2d()
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
-    phylanx::execution_tree::primitive exponential =
-        hpx::new_<phylanx::execution_tree::primitives::exponential_operation>(
+    phylanx::execution_tree::primitive transpose =
+        hpx::new_<phylanx::execution_tree::primitives::transpose_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        exponential.eval();
+        transpose.eval();
 
-    Eigen::MatrixXd expected = m.exp();
+    Eigen::MatrixXd expected = m.transpose();
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -75,10 +75,10 @@ void test_exponential_operation_2d()
 
 int main(int argc, char* argv[])
 {
-    test_exponential_operation_0d();
-    test_exponential_operation_0d_lit();
+    test_transpose_operation_0d();
+    test_transpose_operation_0d_lit();
 
-    test_exponential_operation_2d();
+    test_transpose_operation_2d();
 
     return hpx::util::report_errors();
 }
