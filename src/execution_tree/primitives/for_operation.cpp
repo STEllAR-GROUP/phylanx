@@ -69,15 +69,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
               , result_(hpx::make_ready_future(primitive_result_type{}))
             {}
 
-            hpx::future<primitive_result_type> init()
+            auto init()
             {
-              phylanx::execution_tree::primitive store =
-                  hpx::new_<phylanx::execution_tree::primitives::store_operation>(
-                  hpx::find_here(),
-                  std::vector<phylanx::execution_tree::primitive_argument_type>{
-                      operands_[0]}
-              );
-              return store.eval();
+                return numeric_operand(operands_[0]);
             }
 
             hpx::future<primitive_result_type> body(
