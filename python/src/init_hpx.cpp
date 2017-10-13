@@ -196,7 +196,16 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 // This global object will initialize HPX in its constructor and make sure HPX
 // stops running in its destructor.
+manage_global_runtime* rts = nullptr;
+
 void init_hpx_runtime()
 {
-    static manage_global_runtime init;
+    rts = new manage_global_runtime;
+}
+
+void stop_hpx_runtime()
+{
+    manage_global_runtime* r = rts;
+    rts = nullptr;
+    delete r;
 }

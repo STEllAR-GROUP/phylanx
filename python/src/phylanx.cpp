@@ -166,6 +166,7 @@ namespace phylanx { namespace bindings
 
 ///////////////////////////////////////////////////////////////////////////////
 void init_hpx_runtime();
+void stop_hpx_runtime();
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(_DEBUG)
@@ -190,6 +191,7 @@ PYBIND11_MODULE(_phylanx, m)
     m.def("full_version_as_string", &phylanx::full_version_as_string);
 
     m.def("init_hpx_runtime", &init_hpx_runtime);
+    m.def("stop_hpx_runtime", &stop_hpx_runtime);
 
     ///////////////////////////////////////////////////////////////////////////
     // expose AST submodule
