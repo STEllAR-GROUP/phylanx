@@ -13,21 +13,20 @@
 
 #include <hpx/include/components.hpp>
 
-#include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT determinant
-        : public base_primitive
-        , public hpx::components::component_base<determinant>
+      : public base_primitive
+      , public hpx::components::component_base<determinant>
     {
     public:
         static std::vector<match_pattern_type> const match_data;
 
         determinant() = default;
 
-        determinant(
-            std::vector<primitive_argument_type>&& operands);
+        determinant(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval() const override;
 

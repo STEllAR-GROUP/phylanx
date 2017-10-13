@@ -9,8 +9,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <unsupported/Eigen/MatrixFunctions>
-
 #include <vector>
 #include <utility>
 

@@ -14,7 +14,8 @@
 
 #include <hpx/include/components.hpp>
 
-#include <utility>
+#include <string>
+#include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
@@ -25,15 +26,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         variable() = default;
+        variable(std::string name);
 
         variable(primitive_argument_type&& operand);
         variable(std::vector<primitive_argument_type>&& operands);
+
+        variable(primitive_argument_type&& operand, std::string name);
+        variable(
+            std::vector<primitive_argument_type>&& operands, std::string name);
 
         hpx::future<primitive_result_type> eval() const override;
         void store(primitive_result_type const& data) override;
 
     private:
         primitive_result_type data_;
+        std::string name_;
     };
 }}}
 

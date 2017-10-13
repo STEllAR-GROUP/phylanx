@@ -25,10 +25,12 @@ namespace phylanx { namespace ast { namespace parser
         {
             qi::char_type char_;
             ascii::space_type space;
+            qi::eol_type eol;
 
             start =
                     space                               // tab/space/cr/lf
                 |   "/*" >> *(char_ - "*/") >> "*/"     // C-style comments
+                |   "//" >> *(char_ - eol) >> eol       // C++-style comments
                 ;
         }
 

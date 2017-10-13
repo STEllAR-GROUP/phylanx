@@ -13,14 +13,13 @@
 
 #include <hpx/include/components.hpp>
 
-#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT not_equal
-        : public base_primitive
-        , public hpx::components::component_base<not_equal>
+      : public base_primitive
+      , public hpx::components::component_base<not_equal>
     {
     private:
         using operand_type = ir::node_data<double>;
@@ -35,6 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_result_type> eval() const override;
 
+    protected:
         bool not_equal0d(operand_type&& lhs, operand_type&& rhs) const;
         bool not_equal1d(operand_type&& lhs, operand_type&& rhs) const;
         bool not_equal2d(operand_type&& lhs, operand_type&& rhs) const;
