@@ -179,7 +179,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-        protected:
+     protected:
             struct visit_equal
             {
                 template <typename T1, typename T2>
@@ -195,6 +195,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 bool operator()(T && lhs, T && rhs) const
                 {
                     return lhs == rhs;
+                }
+
+                bool operator()(
+                    ir::node_data<double>&& lhs, std::int64_t rhs) const
+                {
+                    if (lhs.num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::eval",
+                            "left hand side and right hand side are "
+                                "incompatible and can't be compared");
+                    }
+                    return lhs[0] == rhs;
+                }
+
+                bool operator()(
+                    std::int64_t&& lhs, ir::node_data<double> rhs) const
+                {
+                    if (rhs.num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::eval",
+                            "left hand side and right hand side are "
+                                "incompatible and can't be compared");
+                    }
+                    return lhs == rhs[0];
                 }
 
                 bool operator()(operand_type&& lhs, operand_type&& rhs) const

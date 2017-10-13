@@ -15,6 +15,7 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -53,10 +54,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
     public:
-        HPX_DEFINE_COMPONENT_ACTION(base_primitive,
-            eval_nonvirtual, eval_action);
-        HPX_DEFINE_COMPONENT_ACTION(
-            base_primitive, store_nonvirtual, store_action);
+        HPX_DEFINE_COMPONENT_ACTION(base_primitive, eval_nonvirtual, eval_action);
+        HPX_DEFINE_COMPONENT_ACTION(base_primitive, store_nonvirtual, store_action);
     };
 }}}
 

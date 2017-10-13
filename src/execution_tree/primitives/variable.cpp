@@ -21,11 +21,37 @@ HPX_DEFINE_GET_COMPONENT_TYPE(literal_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    variable::variable(std::string name)
+      : name_(std::move(name))
+    {}
+
     variable::variable(primitive_argument_type&& operand)
       : data_(extract_literal_value(operand))
     {}
 
     variable::variable(std::vector<primitive_argument_type>&& operands)
+    {
+        if (operands.size() > 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "variable::variable",
+                "the variable primitive requires at most one operand");
+        }
+
+        if (!operands.empty())
+        {
+            data_ = extract_literal_value(operands[0]);
+        }
+    }
+
+    variable::variable(primitive_argument_type&& operand, std::string name)
+      : data_(extract_literal_value(operand))
+      , name_(std::move(name))
+    {}
+
+    variable::variable(std::vector<primitive_argument_type>&& operands,
+            std::string name)
+      : name_(std::move(name))
     {
         if (operands.size() > 1)
         {

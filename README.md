@@ -15,6 +15,9 @@ The [CircleCI](https://circleci.com/gh/STEllAR-GROUP/phylanx) contiguous integra
 The [AppVeyor](https://ci.appveyor.com/project/hkaiser/phylanx) contiguous integration tracks the status for Windows builds using the native Visual Studio toolchain: 
 [![Build status](https://ci.appveyor.com/api/projects/status/2ewum879yi7akxc1?svg=true)](https://ci.appveyor.com/project/hkaiser/phylanx).
 
+The [Buildbot](http://ktau.nic.uoregon.edu:8020/tgrid) continuous integration service tracks the current build status on several platforms and compilers:
+[![Build status](http://ktau.nic.uoregon.edu:8020/status.png)](http://ktau.nic.uoregon.edu:8020/status.png?1234)
+
 ### Acknowledgements
 
 We would like to acknowledge the NSF, DoD, the Center for Computation
