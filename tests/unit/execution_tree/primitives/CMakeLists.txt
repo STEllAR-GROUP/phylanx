@@ -27,6 +27,7 @@ set(tests
     transpose_operation
     unary_minus_operation
     unary_not_operation
+    while_operation
    )
 
 foreach(test ${tests})

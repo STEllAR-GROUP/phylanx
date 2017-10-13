@@ -116,6 +116,12 @@ namespace phylanx { namespace execution_tree
     {
         return val.index() != 0;
     }
+    inline bool valid(primitive_argument_type && val)
+    {
+        return val.index() != 0;
+    }
+
+    using ast::valid;
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
