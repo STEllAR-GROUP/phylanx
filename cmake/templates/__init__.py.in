@@ -54,3 +54,5 @@ except Exception:
 
         sys.exit(1)
 
+# load and initialize the HPX runtime
+init_hpx_runtime()

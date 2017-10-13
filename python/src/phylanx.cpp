@@ -9,6 +9,10 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
+#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
+#include <hpx/runtime/components/new.hpp>
+
+#include <map>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -137,7 +141,31 @@ namespace phylanx { namespace bindings
         phylanx::util::detail::unserialize(data, ast);
         return ast;
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    phylanx::execution_tree::primitive generate_tree(std::string const& expr,
+        pybind11::dict const& dict)
+    {
+        using var_type = phylanx::execution_tree::variables;
+
+        var_type variables;
+
+        for (auto const& item : dict)
+        {
+            std::string key = pybind11::str(item.first);
+            phylanx::execution_tree::primitive value =
+                item.second.cast<phylanx::execution_tree::primitive>();
+            variables.insert(
+                var_type::value_type(std::move(key), std::move(value)));
+        }
+
+        return phylanx::execution_tree::primitive_operand(
+            phylanx::execution_tree::generate_tree(expr, variables));
+    }
 }}
+
+///////////////////////////////////////////////////////////////////////////////
+void init_hpx_runtime();
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(_DEBUG)
@@ -160,6 +188,8 @@ PYBIND11_MODULE(_phylanx, m)
     m.def("subminor_version", &phylanx::subminor_version);
     m.def("full_version", &phylanx::full_version);
     m.def("full_version_as_string", &phylanx::full_version_as_string);
+
+    m.def("init_hpx_runtime", &init_hpx_runtime);
 
     ///////////////////////////////////////////////////////////////////////////
     // expose AST submodule
@@ -422,6 +452,7 @@ PYBIND11_MODULE(_phylanx, m)
             &phylanx::bindings::pickle_helper<phylanx::ast::function_call>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::function_call>));
 
+    ///////////////////////////////////////////////////////////////////////////
     // phylanx::ast::generate_ast()
     ast.def("generate_ast", &phylanx::ast::generate_ast,
         "generate an AST from the given expression string");
@@ -448,6 +479,48 @@ PYBIND11_MODULE(_phylanx, m)
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::function_call>,
         "traverse the given AST expression and call the provided function "
             "on each part of it");
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // expose expression tree
+    auto execution_tree = m.def_submodule("execution_tree");
+
+    execution_tree.def("generate_tree", &phylanx::bindings::generate_tree,
+        "generate expression tree from given expression");
+
+    execution_tree.def("var",
+        [](double d)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return primitive{
+                        hpx::local_new<primitives::variable>(
+                            phylanx::ir::node_data<double>{d})};
+                });
+        },
+        "create a new variable from a floating point value");
+
+    pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
+        "primitive", "type representing an arbitrary execution tree")
+        .def("eval", [](phylanx::execution_tree::primitive const& p)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        return numeric_operand(p).get()[0];
+                    });
+            },
+            "evaluate execution tree")
+        .def("assign", [](phylanx::execution_tree::primitive p, double d)
+            {
+                hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        p.store(hpx::launch::sync,
+                            phylanx::ir::node_data<double>{d});
+                    });
+            },
+            "assign another value to variable");
 
     ///////////////////////////////////////////////////////////////////////////
     // expose util submodule
