@@ -29,9 +29,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(equal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const equal::match_data =
+    std::vector<match_pattern_type> const equal::match_data =
     {
-        "_1 == _2", &create<equal>
+        {"_1 == _2", &create<equal>}
     };
 
     ///////////////////////////////////////////////////////////////////////////

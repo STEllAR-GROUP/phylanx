@@ -34,9 +34,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(determinant_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const determinant::match_data =
+    std::vector<match_pattern_type> const determinant::match_data =
     {
-        "determinant(_1)", &create<determinant>
+        {"determinant(_1)", &create<determinant>}
     };
 
     ///////////////////////////////////////////////////////////////////////////

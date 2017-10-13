@@ -169,9 +169,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
-        hpx::util::function_nonser<
-            primitive(hpx::id_type, std::vector<primitive_argument_type>&&)
-        >;
+        primitive (*)(hpx::id_type, std::vector<primitive_argument_type>&&);
 
     template <typename Primitive>
     primitive create(hpx::id_type locality,
@@ -182,7 +180,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     using match_pattern_type = std::pair<std::string, factory_function_type>;
-    using pattern_list = std::vector<match_pattern_type>;
+    using pattern_list = std::vector<std::vector<match_pattern_type>>;
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
