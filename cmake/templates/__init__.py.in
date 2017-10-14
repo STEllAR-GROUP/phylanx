@@ -54,3 +54,12 @@ except Exception:
 
         sys.exit(1)
 
+# make sure hpx is stopped when the module is unloaded
+import atexit
+
+@atexit.register
+def stop_hpx():
+    stop_hpx_runtime()
+
+# load and initialize the HPX runtime
+init_hpx_runtime()
