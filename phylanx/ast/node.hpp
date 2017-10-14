@@ -217,6 +217,10 @@ namespace phylanx { namespace ast
     {
         return val.index() != 0;
     }
+    inline bool valid(literal_value_type && val)
+    {
+        return val.index() != 0;
+    }
 
     struct primary_expr : tagged, expr_node_type
     {

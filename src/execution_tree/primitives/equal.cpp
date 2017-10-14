@@ -12,6 +12,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <memory>
 #include <numeric>
 #include <utility>
 #include <vector>
@@ -55,188 +56,204 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    bool equal::equal0d(operand_type&& lhs, operand_type&& rhs) const
-    {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch(rhs_dims)
-        {
-        case 0:
-            return lhs[0] == rhs[0];
-
-        case 1: HPX_FALLTHROUGH;
-        case 2: HPX_FALLTHROUGH;
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "equal::equal0d",
-                "the operands have incompatible number of dimensions");
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    bool equal::equal1d1d(operand_type&& lhs, operand_type&& rhs) const
-    {
-        std::size_t lhs_size = lhs.dimension(0);
-        std::size_t rhs_size = rhs.dimension(0);
-
-        if (lhs_size != rhs_size)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "equal::equal1d1d",
-                "the dimensions of the operands do not match");
-        }
-
-        lhs.matrix().array() =
-            (lhs.matrix().array() == rhs.matrix().array()).cast<double>();
-
-        return lhs.matrix().norm() != 0.0;
-    }
-
-    bool equal::equal1d(operand_type&& lhs, operand_type&& rhs) const
-    {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch(rhs_dims)
-        {
-        case 1:
-            return equal1d1d(std::move(lhs), std::move(rhs));
-
-        case 0: HPX_FALLTHROUGH;
-        case 2: HPX_FALLTHROUGH;
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "equal::equal1d",
-                "the operands have incompatible number of dimensions");
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    bool equal::equal2d2d(operand_type&& lhs, operand_type&& rhs) const
-    {
-        auto lhs_size = lhs.dimensions();
-        auto rhs_size = rhs.dimensions();
-
-        if (lhs_size != rhs_size)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "equal::equal2d2d",
-                "the dimensions of the operands do not match");
-        }
-
-        lhs.matrix().array() =
-            (lhs.matrix().array() == rhs.matrix().array()).cast<double>();
-
-        return lhs.matrix().norm() != 0.0;
-    }
-
-    bool equal::equal2d(operand_type&& lhs, operand_type&& rhs) const
-    {
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch(rhs_dims)
-        {
-        case 2:
-            return equal2d2d(std::move(lhs), std::move(rhs));
-
-        case 0: HPX_FALLTHROUGH;
-        case 1: HPX_FALLTHROUGH;
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "equal::equal2d",
-                "the operands have incompatible number of dimensions");
-        }
-    }
-
-    bool equal::equal_all(operand_type&& lhs, operand_type&& rhs) const
-    {
-        std::size_t lhs_dims = lhs.num_dimensions();
-        switch (lhs_dims)
-        {
-        case 0:
-            return equal0d(std::move(lhs), std::move(rhs));
-
-        case 1:
-            return equal1d(std::move(lhs), std::move(rhs));
-
-        case 2:
-            return equal2d(std::move(lhs), std::move(rhs));
-
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "equal::equal_all",
-                "left hand side operand has unsupported number of "
-                "dimensions");
-        }
-    }
-
     namespace detail
     {
-        struct visit_equal
+        struct equal : std::enable_shared_from_this<equal>
         {
-            using operand_type = ir::node_data<double>;
-
-            visit_equal(equal const& this_)
-              : equal_(this_)
+            equal(std::vector<primitive_argument_type> const& operands)
+              : operands_(operands)
             {}
 
-            template <typename T1, typename T2>
-            bool operator()(T1, T2) const
+        protected:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<primitive_result_type>;
+
+            bool equal0d(operand_type&& lhs, operand_type&& rhs) const
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "equal::eval",
-                    "left hand side and right hand side are incompatible and "
-                        "can't be compared");
+                std::size_t rhs_dims = rhs.num_dimensions();
+                switch(rhs_dims)
+                {
+                case 0:
+                    return lhs[0] == rhs[0];
+
+                case 1: HPX_FALLTHROUGH;
+                case 2: HPX_FALLTHROUGH;
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal0d",
+                        "the operands have incompatible number of dimensions");
+                }
             }
 
-            bool operator()(
-                ir::node_data<double>&& lhs, std::int64_t&& rhs) const
+            bool equal1d1d(operand_type&& lhs, operand_type&& rhs) const
             {
-                if (lhs.num_dimensions() != 0)
+                std::size_t lhs_size = lhs.dimension(0);
+                std::size_t rhs_size = rhs.dimension(0);
+
+                if (lhs_size != rhs_size)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal1d1d",
+                        "the dimensions of the operands do not match");
+                }
+
+                lhs.matrix().array() =
+                    (lhs.matrix().array() == rhs.matrix().array())
+                        .cast<double>();
+
+                return lhs.matrix().norm() != 0.0;
+            }
+
+            bool equal1d(operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t rhs_dims = rhs.num_dimensions();
+                switch(rhs_dims)
+                {
+                case 1:
+                    return equal1d1d(std::move(lhs), std::move(rhs));
+
+                case 0: HPX_FALLTHROUGH;
+                case 2: HPX_FALLTHROUGH;
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal1d",
+                        "the operands have incompatible number of dimensions");
+                }
+            }
+
+            bool equal2d2d(operand_type&& lhs, operand_type&& rhs) const
+            {
+                auto lhs_size = lhs.dimensions();
+                auto rhs_size = rhs.dimensions();
+
+                if (lhs_size != rhs_size)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal2d2d",
+                        "the dimensions of the operands do not match");
+                }
+
+                lhs.matrix().array() =
+                    (lhs.matrix().array() == rhs.matrix().array()).cast<double>();
+
+                return lhs.matrix().norm() != 0.0;
+            }
+
+            bool equal2d(operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t rhs_dims = rhs.num_dimensions();
+                switch(rhs_dims)
+                {
+                case 2:
+                    return equal2d2d(std::move(lhs), std::move(rhs));
+
+                case 0: HPX_FALLTHROUGH;
+                case 1: HPX_FALLTHROUGH;
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal2d",
+                        "the operands have incompatible number of dimensions");
+                }
+            }
+
+        public:
+            bool equal_all(operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t lhs_dims = lhs.num_dimensions();
+                switch (lhs_dims)
+                {
+                case 0:
+                    return equal0d(std::move(lhs), std::move(rhs));
+
+                case 1:
+                    return equal1d(std::move(lhs), std::move(rhs));
+
+                case 2:
+                    return equal2d(std::move(lhs), std::move(rhs));
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal_all",
+                        "left hand side operand has unsupported number of "
+                        "dimensions");
+                }
+            }
+
+     protected:
+            struct visit_equal
+            {
+                template <typename T1, typename T2>
+                bool operator()(T1, T2) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::eval",
                         "left hand side and right hand side are incompatible "
                             "and can't be compared");
                 }
-                return lhs[0] == rhs;
-            }
 
-            bool operator()(
-                std::int64_t&& lhs, ir::node_data<double>&& rhs) const
-            {
-                if (rhs.num_dimensions() != 0)
+                template <typename T>
+                bool operator()(T && lhs, T && rhs) const
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "equal::eval",
-                        "left hand side and right hand side are incompatible "
-                            "and can't be compared");
+                    return lhs == rhs;
                 }
-                return lhs == rhs[0];
-            }
 
-            template <typename T>
-            bool operator()(T && lhs, T && rhs) const
+                bool operator()(
+                    ir::node_data<double>&& lhs, std::int64_t rhs) const
+                {
+                    if (lhs.num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::eval",
+                            "left hand side and right hand side are "
+                                "incompatible and can't be compared");
+                    }
+                    return lhs[0] == rhs;
+                }
+
+                bool operator()(
+                    std::int64_t&& lhs, ir::node_data<double> rhs) const
+                {
+                    if (rhs.num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::eval",
+                            "left hand side and right hand side are "
+                                "incompatible and can't be compared");
+                    }
+                    return lhs == rhs[0];
+                }
+
+                bool operator()(operand_type&& lhs, operand_type&& rhs) const
+                {
+                    return equal_.equal_all(std::move(lhs), std::move(rhs));
+                }
+
+                equal const& equal_;
+            };
+
+        public:
+            hpx::future<primitive_result_type> eval() const
             {
-                return lhs == rhs;
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type && ops)
+                    {
+                        return primitive_result_type(
+                            util::visit(visit_equal{*this_},
+                                std::move(ops[0]), std::move(ops[1])));
+                    }),
+                    detail::map_operands(operands_, literal_operand)
+                );
             }
 
-            bool operator()(operand_type&& lhs, operand_type&& rhs) const
-            {
-                return equal_.equal_all(std::move(lhs), std::move(rhs));
-            }
-
-            equal const& equal_;
+        private:
+            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '==' for all possible combinations of lhs and rhs
     hpx::future<primitive_result_type> equal::eval() const
     {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type && ops)
-            {
-                return primitive_result_type(
-                    util::visit(detail::visit_equal(*this),
-                        std::move(ops[0]), std::move(ops[1])));
-            }),
-            detail::map_operands(operands_, literal_operand)
-        );
+        return std::make_shared<detail::equal>(operands_)->eval();
     }
 }}}

@@ -23,9 +23,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<unary_not_operation>
     {
-    private:
-        using operands_type = std::vector<std::uint8_t>;
-
     public:
         static std::vector<match_pattern_type> const match_data;
 
