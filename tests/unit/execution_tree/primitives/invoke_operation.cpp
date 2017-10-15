@@ -24,6 +24,14 @@ int main(int argc, char* argv[])
         )
     )", 3.14);
 
+    // variables can be invoked as nullary functions
+    test_invoke_operation(R"(
+        block(
+            define(x, 3.14),
+            x()
+        )
+    )", 3.14);
+
     test_invoke_operation(R"(
         block(
             define(y, x, x + 1),

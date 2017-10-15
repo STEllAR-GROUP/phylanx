@@ -35,18 +35,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string* name = util::get_if<std::string>(&args[0]);
         if (name == nullptr)
         {
-            // function name is invalid
+            if (args.size() != 1 || !is_primitive_operand(args[0]))
+            {
+                // function name is invalid
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "phylanx::execution_tree::primitives::"
+                        "create_function_invocation",
+                    "the given function name is invalid");
+            }
+            return primitive_operand(args[0]);
         }
 
         auto it = funcs.find(*name);
-        if (it != funcs.end())
+        if (it == funcs.end())
         {
             // function was not defined
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::execution_tree::primitives::"
+                    "create_function_invocation",
+                "the function to invoke was not defined: " + *name);
         }
 
         if (it->second.first.size() != args.size() - 1)
         {
             // argument number mismatch
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                    "create_function_invocation",
+                "the number of given arguments does not match the expected "
+                    "number of formal parameters for function: " + *name);
         }
 
         // create a copy of the symbol and function tables
@@ -61,6 +78,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             if (!ast::detail::is_identifier(it->second.first[i]))
             {
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "phylanx::execution_tree::primitives::"
+                        "create_function_invocation",
+                    "the formal parameter does not represent a valid variable "
+                        "name");
             }
 
             std::string argname =
