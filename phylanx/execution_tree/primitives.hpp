@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
+#include <phylanx/execution_tree/primitives/define.hpp>
 #include <phylanx/execution_tree/primitives/determinant.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>

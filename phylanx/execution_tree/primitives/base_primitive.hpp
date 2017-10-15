@@ -15,6 +15,7 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -173,21 +174,35 @@ namespace phylanx { namespace execution_tree
         boolean_operand(primitive_argument_type const& val);
 
     ///////////////////////////////////////////////////////////////////////////
+    // Symbol table
+    using variables = std::map<std::string, primitive_argument_type>;
+
+    // Function definition table
+    using functions = std::map<
+            std::string,
+            std::pair<std::vector<ast::expression>, ast::expression>
+        >;
+
+    ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
         hpx::util::function_nonser<
-            primitive(hpx::id_type, std::vector<primitive_argument_type>&&)
+            primitive(hpx::id_type, std::vector<primitive_argument_type>&&,
+                variables const&, functions const&)
         >;
 
+    // Generic creation helper for creating an instance of the given primitive.
     template <typename Primitive>
     primitive create(hpx::id_type locality,
-        std::vector<primitive_argument_type>&& operands)
+        std::vector<primitive_argument_type>&& operands, variables const&,
+        functions const&)
     {
         return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    using match_pattern_type = std::pair<std::string, factory_function_type>;
+    using match_pattern_type =
+        hpx::util::tuple<std::string, std::string, factory_function_type>;
     using pattern_list = std::vector<std::vector<match_pattern_type>>;
 }}
 

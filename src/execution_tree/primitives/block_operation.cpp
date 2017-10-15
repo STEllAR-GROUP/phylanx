@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const block_operation::match_data =
     {
-        {"block(__1)", &create<block_operation>}
+        hpx::util::make_tuple("block", "block(__1)", &create<block_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -48,24 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "block_operation",
                 "the block_operation primitive requires at least one argument");
         }
-
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands_.size(); ++i)
-        {
-            if (!valid(operands_[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::block_operation::"
-                    "block_operation",
-                "the block_operation primitive requires that the arguments "
-                    "given by the operands array are valid");
-        }
     }
 
     namespace detail
@@ -78,6 +60,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             void next(std::size_t i)
             {
+                // skip statements that don't return anything
+                while (i != operands_.size() && !valid(operands_[i]))
+                    ++i;
+
                 if (i == operands_.size())
                     return;
 

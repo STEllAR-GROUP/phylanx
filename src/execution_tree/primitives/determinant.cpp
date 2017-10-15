@@ -36,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const determinant::match_data =
     {
-        {"determinant(_1)", &create<determinant>}
+        hpx::util::make_tuple(
+            "determinant", "determinant(_1)", &create<determinant>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

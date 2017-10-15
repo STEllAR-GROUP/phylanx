@@ -36,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const unary_minus_operation::match_data =
     {
-        {"-_1", &create<unary_minus_operation>}
+        hpx::util::make_tuple(
+            "unary_minus", "-_1", &create<unary_minus_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
