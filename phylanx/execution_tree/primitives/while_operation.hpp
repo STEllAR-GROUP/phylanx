@@ -26,7 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using operands_type = std::vector<primitive_result_type>;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         while_operation() = default;
 

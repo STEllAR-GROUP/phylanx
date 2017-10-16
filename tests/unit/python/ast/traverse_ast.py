@@ -11,6 +11,7 @@ class traverse_ast:
         pass
 
     def on_enter(self, ast):
+        print(str(ast))
         return True
 
     # optional, can be ommitted
@@ -26,3 +27,4 @@ def test_traverse(expr):
 
 ###############################################################################
 test_traverse('A + B')
+test_traverse('A + B - C')

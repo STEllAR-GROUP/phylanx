@@ -32,9 +32,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(exponential_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const exponential_operation::match_data =
+    std::vector<match_pattern_type> const exponential_operation::match_data =
     {
-        "exp(_1)", &create<exponential_operation>
+        hpx::util::make_tuple("exp", "exp(_1)", &create<exponential_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

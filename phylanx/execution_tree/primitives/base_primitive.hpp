@@ -15,6 +15,8 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 
+#include <initializer_list>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -116,6 +118,12 @@ namespace phylanx { namespace execution_tree
     {
         return val.index() != 0;
     }
+    inline bool valid(primitive_argument_type && val)
+    {
+        return val.index() != 0;
+    }
+
+    using ast::valid;
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
@@ -167,22 +175,139 @@ namespace phylanx { namespace execution_tree
         boolean_operand(primitive_argument_type const& val);
 
     ///////////////////////////////////////////////////////////////////////////
+    // Symbol table
+    struct variables
+    {
+        using map_type = std::map<std::string, primitive_argument_type>;
+        using value_type = typename map_type::value_type;
+        using iterator = typename map_type::iterator;
+
+        variables(variables* prev = nullptr)
+          : previous_(prev)
+        {}
+
+        variables(map_type const& vars)
+          : variables_(vars)
+          , previous_(nullptr)
+        {}
+        variables(map_type && vars)
+          : variables_(std::move(vars))
+          , previous_(nullptr)
+        {}
+        variables(std::initializer_list<value_type> ilist)
+          : variables_(ilist)
+          , previous_(nullptr)
+        {}
+
+        std::size_t size() const { return variables_.size(); }
+
+        std::pair<iterator, iterator> find(std::string const& name)
+        {
+            iterator it = variables_.find(name);
+            if (it == variables_.end())
+            {
+                if (previous_ != nullptr)
+                {
+                    return previous_->find(name);
+                }
+            }
+            return std::make_pair(it, variables_.end());
+        }
+
+        std::pair<iterator, bool> insert(value_type const& val)
+        {
+            return variables_.insert(val);
+        }
+        std::pair<iterator, bool> insert(value_type && val)
+        {
+            return variables_.insert(std::move(val));
+        }
+
+    private:
+        map_type variables_;
+        variables* previous_;
+    };
+
+    // Function definition table
+    struct functions
+    {
+        using map_type = std::map<std::string,
+            std::pair<std::vector<ast::expression>, ast::expression>>;
+        using value_type = typename map_type::value_type;
+        using iterator = typename map_type::iterator;
+
+        functions(functions* prev = nullptr)
+          : previous_(prev)
+        {}
+
+        functions(map_type const& vars)
+          : functions_(vars)
+          , previous_(nullptr)
+        {}
+        functions(map_type && vars)
+          : functions_(std::move(vars))
+          , previous_(nullptr)
+        {}
+        functions(std::initializer_list<value_type> ilist)
+          : functions_(ilist)
+          , previous_(nullptr)
+        {}
+
+        std::size_t size() const { return functions_.size(); }
+
+        std::pair<iterator, iterator> find(std::string const& name)
+        {
+            iterator it = functions_.find(name);
+            if (it == functions_.end())
+            {
+                if (previous_ != nullptr)
+                {
+                    return previous_->find(name);
+                }
+            }
+            return std::make_pair(it, functions_.end());
+        }
+
+        std::pair<iterator, bool> insert(value_type const& val)
+        {
+            return functions_.insert(val);
+        }
+        std::pair<iterator, bool> insert(value_type && val)
+        {
+            return functions_.insert(std::move(val));
+        }
+
+    private:
+        map_type functions_;
+        functions* previous_;
+    };
+
+    template <typename Iterator>
+    bool is_empty_range(std::pair<Iterator, Iterator> const& p)
+    {
+        return p.first == p.second;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
         hpx::util::function_nonser<
-            primitive(hpx::id_type, std::vector<primitive_argument_type>&&)
+            primitive(hpx::id_type, std::vector<primitive_argument_type>&&,
+                variables&, functions&)
         >;
 
+    // Generic creation helper for creating an instance of the given primitive.
     template <typename Primitive>
     primitive create(hpx::id_type locality,
-        std::vector<primitive_argument_type>&& operands)
+        std::vector<primitive_argument_type>&& operands, variables&, functions&)
     {
         return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    using match_pattern_type = std::pair<std::string, factory_function_type>;
-    using pattern_list = std::vector<match_pattern_type>;
+    using match_pattern_type =
+        hpx::util::tuple<std::string, std::string, factory_function_type>;
+    using pattern_list = std::vector<std::vector<match_pattern_type>>;
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives

@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -32,9 +33,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(and_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const and_operation::match_data =
+    std::vector<match_pattern_type> const and_operation::match_data =
     {
-        "_1 && __2", &create<and_operation>
+        hpx::util::make_tuple("and", "_1 && __2", &create<and_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -67,26 +68,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        struct and_ : std::enable_shared_from_this<and_>
+        {
+            and_(std::vector<primitive_argument_type> const& operands)
+              : operands_(operands)
+            {}
+
+        private:
+            using operands_type = std::vector<std::uint8_t>;
+
+        public:
+            hpx::future<primitive_result_type> eval() const
+            {
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type && ops)
+                    {
+                        if (ops.size() == 2)
+                        {
+                            return primitive_result_type(
+                                ops[0] != 0 && ops[1] != 0);
+                        }
+
+                        return primitive_result_type(
+                            std::all_of(
+                                ops.begin(), ops.end(),
+                                [](std::uint8_t curr)
+                                {
+                                    return curr != 0;
+                                }));
+                    }),
+                    detail::map_operands(operands_, boolean_operand)
+                );
+            }
+
+        private:
+            std::vector<primitive_argument_type> operands_;
+        };
+    }
+
     // implement '&&' for all possible combinations of lhs and rhs
     hpx::future<primitive_result_type> and_operation::eval() const
     {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type && ops)
-            {
-                if (ops.size() == 2)
-                {
-                    return primitive_result_type(ops[0] != 0 && ops[1] != 0);
-                }
-
-                return primitive_result_type(
-                    std::all_of(
-                        ops.begin(), ops.end(),
-                        [](std::uint8_t curr)
-                        {
-                            return curr != 0;
-                        }));
-            }),
-            detail::map_operands(operands_, boolean_operand)
-        );
+        return std::make_shared<detail::and_>(operands_)->eval();
     }
 }}}

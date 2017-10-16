@@ -34,9 +34,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(random_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const random::match_data =
+    std::vector<match_pattern_type> const random::match_data =
     {
-        "random(_1)", &create<random>
+        hpx::util::make_tuple("random", "random(_1)", &create<random>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

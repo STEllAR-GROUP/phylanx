@@ -33,9 +33,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_write_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const file_write::match_data =
+    std::vector<match_pattern_type> const file_write::match_data =
     {
-        "file_write(_1, _2)", &create<file_write>
+        hpx::util::make_tuple(
+            "file_write", "file_write(_1, _2)", &create<file_write>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

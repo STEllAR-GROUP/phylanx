@@ -34,9 +34,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(constant_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const constant::match_data =
+    std::vector<match_pattern_type> const constant::match_data =
     {
-        "constant(_1, _2)", &create<constant>
+        hpx::util::make_tuple("constant", "constant(_1, _2)", &create<constant>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

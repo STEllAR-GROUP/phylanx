@@ -31,9 +31,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(while_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const while_operation::match_data =
+    std::vector<match_pattern_type> const while_operation::match_data =
     {
-        "while(_1, _2)", &create<while_operation>
+        hpx::util::make_tuple(
+            "while", "while(_1, _2)", &create<while_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -65,7 +66,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             iteration(std::vector<primitive_argument_type> const& operands)
               : operands_(operands)
-              , result_(hpx::make_ready_future(primitive_result_type{}))
             {}
 
             hpx::future<primitive_result_type> body(
@@ -80,11 +80,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             hpx::future<primitive_result_type> && result
                         ) mutable
                         {
-                            this_->result_ = std::move(result);
+                            this_->result_ = result.get();
                             return this_->loop();
                         });
                 }
-                return std::move(result_);
+
+                hpx::future<primitive_result_type> f = p_.get_future();
+                p_.set_value(std::move(result_));
+                return f;
             }
 
             hpx::future<primitive_result_type> loop()
@@ -100,7 +103,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         private:
             std::vector<primitive_argument_type> operands_;
-            hpx::future<primitive_result_type> result_;
+            hpx::promise<primitive_result_type> p_;
+            primitive_result_type result_;
         };
     }
 

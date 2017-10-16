@@ -217,6 +217,10 @@ namespace phylanx { namespace ast
     {
         return val.index() != 0;
     }
+    inline bool valid(literal_value_type && val)
+    {
+        return val.index() != 0;
+    }
 
     struct primary_expr : tagged, expr_node_type
     {
@@ -352,6 +356,15 @@ namespace phylanx { namespace ast
         {
         }
 
+        explicit operand(identifier const& val)
+          : operand_node_type(primary_expr(val))
+        {
+        }
+        explicit operand(identifier && val)
+          : operand_node_type(primary_expr(std::move(val)))
+        {
+        }
+
         explicit operand(primary_expr const& val)
           : operand_node_type(val)
         {
@@ -422,6 +435,15 @@ namespace phylanx { namespace ast
     {
         operation()
           : operator_(optoken::op_unknown)
+        {}
+
+        operation(optoken id, identifier const& ident)
+          : operator_(id)
+          , operand_(ident)
+        {}
+        operation(optoken id, identifier && ident)
+          : operator_(id)
+          , operand_(std::move(ident))
         {}
 
         operation(optoken id, operand const& op)

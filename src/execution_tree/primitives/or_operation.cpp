@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -32,9 +33,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(or_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const or_operation::match_data =
+    std::vector<match_pattern_type> const or_operation::match_data =
     {
-        "_1 || __2", &create<or_operation>
+        hpx::util::make_tuple("or", "_1 || __2", &create<or_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -45,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::or_operation",
-                "the or_operation primitive requires at least two operors");
+                "the or_operation primitive requires at least two operands");
         }
 
         bool arguments_valid = true;
@@ -67,26 +68,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // implement '||' for all possible combinations of lhs or rhs
+    namespace detail
+    {
+        struct or_ : std::enable_shared_from_this<or_>
+        {
+            or_(std::vector<primitive_argument_type> const& operands)
+              : operands_(operands)
+            {}
+
+        private:
+            using operands_type = std::vector<std::uint8_t>;
+
+        public:
+            hpx::future<primitive_result_type> eval() const
+            {
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type && ops)
+                    {
+                        if (ops.size() == 2)
+                        {
+                            return primitive_result_type(
+                                ops[0] != 0 || ops[1] != 0);
+                        }
+
+                        return primitive_result_type(
+                            std::any_of(
+                                ops.begin(), ops.end(),
+                                [](std::uint8_t curr)
+                                {
+                                    return curr != 0;
+                                }));
+                    }),
+                    detail::map_operands(operands_, boolean_operand)
+                );
+            }
+
+        private:
+            std::vector<primitive_argument_type> operands_;
+        };
+    }
+
+    // implement '||' for all possible combinations of lhs and rhs
     hpx::future<primitive_result_type> or_operation::eval() const
     {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type && ops)
-            {
-                if (ops.size() == 2)
-                {
-                    return primitive_result_type(ops[0] != 0 || ops[1] != 0);
-                }
-
-                return primitive_result_type(
-                    std::any_of(
-                        ops.begin(), ops.end(),
-                        [](std::uint8_t curr)
-                        {
-                            return curr != 0;
-                        }));
-            }),
-            detail::map_operands(operands_, boolean_operand)
-        );
+        return std::make_shared<detail::or_>(operands_)->eval();
     }
 }}}

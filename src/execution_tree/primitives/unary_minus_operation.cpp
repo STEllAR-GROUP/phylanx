@@ -16,6 +16,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <memory>
 #include <numeric>
 #include <utility>
 #include <vector>
@@ -33,9 +34,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(unary_minus_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const unary_minus_operation::match_data =
+    std::vector<match_pattern_type> const unary_minus_operation::match_data =
     {
-        "-_1", &create<unary_minus_operation>
+        hpx::util::make_tuple(
+            "unary_minus", "-_1", &create<unary_minus_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -60,43 +62,66 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    ir::node_data<double> unary_minus_operation::neg0d(
-        operands_type&& ops) const
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
     {
-        ops[0][0] = -ops[0][0];
-        return std::move(ops[0]);
-    }
+        struct unary_minus : std::enable_shared_from_this<unary_minus>
+        {
+            unary_minus(std::vector<primitive_argument_type> const& operands)
+              : operands_(operands)
+            {}
 
-    ir::node_data<double> unary_minus_operation::negxd(
-        operands_type&& ops) const
-    {
-        ops[0].matrix().array() = -ops[0].matrix().array();
-        return std::move(ops[0]);
+        protected:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<operand_type>;
+
+            primitive_result_type neg0d(operands_type&& ops) const
+            {
+                ops[0][0] = -ops[0][0];
+                return primitive_result_type(std::move(ops[0]));
+            }
+
+            primitive_result_type negxd(operands_type&& ops) const
+            {
+                ops[0].matrix().array() = -ops[0].matrix().array();
+                return primitive_result_type(std::move(ops[0]));
+            }
+
+        public:
+            hpx::future<primitive_result_type> eval() const
+            {
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type && ops) -> primitive_result_type
+                    {
+                        std::size_t lhs_dims = ops[0].num_dimensions();
+                        switch (lhs_dims)
+                        {
+                        case 0:
+                            return this_->neg0d(std::move(ops));
+
+                        case 1: HPX_FALLTHROUGH;
+                        case 2:
+                            return this_->negxd(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "unary_minus_operation::eval",
+                                "operand has unsupported number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(operands_, numeric_operand)
+                );
+            }
+
+        private:
+            std::vector<primitive_argument_type> operands_;
+        };
     }
 
     // implement unary '-' for all possible combinations of lhs and rhs
     hpx::future<primitive_result_type> unary_minus_operation::eval() const
     {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type && ops) -> primitive_result_type
-            {
-                std::size_t lhs_dims = ops[0].num_dimensions();
-                switch (lhs_dims)
-                {
-                case 0:
-                    return primitive_result_type(neg0d(std::move(ops)));
-
-                case 1: HPX_FALLTHROUGH;
-                case 2:
-                    return primitive_result_type(negxd(std::move(ops)));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "unary_minus_operation::eval",
-                        "operand has unsupported number of dimensions");
-                }
-            }),
-            detail::map_operands(operands_, numeric_operand)
-        );
+        return std::make_shared<detail::unary_minus>(operands_)->eval();
     }
 }}}

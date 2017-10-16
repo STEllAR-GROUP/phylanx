@@ -32,9 +32,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(inverse_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const inverse_operation::match_data =
+    std::vector<match_pattern_type> const inverse_operation::match_data =
     {
-        "inverse(_1)", &create<inverse_operation>
+        hpx::util::make_tuple(
+            "inverse", "inverse(_1)", &create<inverse_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
