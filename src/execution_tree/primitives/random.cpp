@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const random::match_data =
     {
-        {"random(_1)", &create<random>}
+        hpx::util::make_tuple("random", "random(_1)", &create<random>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -34,7 +34,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const inverse_operation::match_data =
     {
-        {"inverse(_1)", &create<inverse_operation>}
+        hpx::util::make_tuple(
+            "inverse", "inverse(_1)", &create<inverse_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

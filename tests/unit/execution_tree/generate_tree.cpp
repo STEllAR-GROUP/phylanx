@@ -252,10 +252,10 @@ void test_multi_patterns()
 
     phylanx::execution_tree::pattern_list patterns = {
         std::vector<phylanx::execution_tree::match_pattern_type>{
-            {"block(_1, _2, __3)",
-                &create<phylanx::execution_tree::primitives::block_operation>},
-            {"block(__1)",
-                &create<phylanx::execution_tree::primitives::block_operation>},
+            hpx::util::make_tuple("block1", "block(_1, _2, __3)",
+                &create<phylanx::execution_tree::primitives::block_operation>),
+            hpx::util::make_tuple("block2", "block(__1)",
+                &create<phylanx::execution_tree::primitives::block_operation>)
         }
     };
 

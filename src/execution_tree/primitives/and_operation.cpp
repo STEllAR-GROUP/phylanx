@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const and_operation::match_data =
     {
-        {"_1 && __2", &create<and_operation>}
+        hpx::util::make_tuple("and", "_1 && __2", &create<and_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

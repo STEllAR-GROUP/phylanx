@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const file_read::match_data =
     {
-        {"file_read(_1)", &create<file_read>}
+        hpx::util::make_tuple("file_read", "file_read(_1)", &create<file_read>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const constant::match_data =
     {
-        {"constant(_1, _2)", &create<constant>}
+        hpx::util::make_tuple("constant", "constant(_1, _2)", &create<constant>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -7,6 +7,7 @@ set(tests
     add_operation
     and_operation
     block_operation
+    define_operation
     determinant
     div_operation
     equal_operation
@@ -15,6 +16,7 @@ set(tests
     greater_operation
     greater_equal_operation
     inverse_operation
+    invoke_operation
     less_operation
     less_equal_operation
     literal_value

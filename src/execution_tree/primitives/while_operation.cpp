@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const while_operation::match_data =
     {
-        {"while(_1, _2)", &create<while_operation>}
+        hpx::util::make_tuple(
+            "while", "while(_1, _2)", &create<while_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -35,7 +35,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const file_write::match_data =
     {
-        {"file_write(_1, _2)", &create<file_write>}
+        hpx::util::make_tuple(
+            "file_write", "file_write(_1, _2)", &create<file_write>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
