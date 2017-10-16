@@ -140,7 +140,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
                 matrix_type result =
-                    Eigen::VectorXd::Constant(dim[0], dim[1], ops[0][0]);
+                    Eigen::MatrixXd::Constant(dim[0], dim[1], ops[0][0]);
                 return operand_type(std::move(result));
             }
 

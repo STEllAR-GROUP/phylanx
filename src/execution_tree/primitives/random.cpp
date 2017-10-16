@@ -129,7 +129,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 using matrix_type =
                     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 
-                matrix_type result = Eigen::VectorXd::Random(dim[0], dim[1]);
+                matrix_type result = Eigen::MatrixXd::Random(dim[0], dim[1]);
                 return operand_type(std::move(result));
             }
 

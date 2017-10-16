@@ -7,6 +7,7 @@ set(tests
     add_operation
     and_operation
     block_operation
+    constant
     define_operation
     determinant
     div_operation
@@ -24,6 +25,7 @@ set(tests
     not_equal_operation
     or_operation
     parallel_block_operation
+    random
     store_operation
     sub_operation
     transpose_operation

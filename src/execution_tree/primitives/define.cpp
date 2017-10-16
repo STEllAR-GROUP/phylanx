@@ -72,7 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         phylanx::execution_tree::functions functions(&funcs);
 
         // replace formal arguments
-        for (std::size_t i = 0; i != args.size() - 1 ; ++i)
+        for (std::size_t i = 0; i != args.size() - 1; ++i)
         {
             using value_type =
                 typename phylanx::execution_tree::variables::value_type;
