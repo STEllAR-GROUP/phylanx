@@ -25,8 +25,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive create_function_invocation(hpx::id_type where,
-        std::vector<primitive_argument_type>&& args, variables const& vars,
-        functions const& funcs)
+        std::vector<primitive_argument_type>&& args, variables& vars,
+        functions& funcs)
     {
         // args[0] represents the function name the remaining elements in args
         // refer to the parameters (variables) or literal values to use while
@@ -46,8 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_operand(args[0]);
         }
 
-        auto it = funcs.find(*name);
-        if (it == funcs.end())
+        auto p = funcs.find(*name);
+        if (is_empty_range(p))
         {
             // function was not defined
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -56,6 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the function to invoke was not defined: " + *name);
         }
 
+        auto it = p.first;
         if (it->second.first.size() != args.size() - 1)
         {
             // argument number mismatch
@@ -66,9 +67,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "number of formal parameters for function: " + *name);
         }
 
-        // create a copy of the symbol and function tables
-        phylanx::execution_tree::variables variables(vars);
-        phylanx::execution_tree::functions functions(funcs);
+        // augment the symbol and function tables
+        phylanx::execution_tree::variables variables(&vars);
+        phylanx::execution_tree::functions functions(&funcs);
 
         // replace formal arguments
         for (std::size_t i = 0; i != args.size() - 1 ; ++i)
@@ -88,15 +89,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string argname =
                 ast::detail::identifier_name(it->second.first[i]);
 
-            auto varit = variables.find(argname);
-            if (varit == variables.end())
+            auto pvar = variables.find(argname);
+            if (is_empty_range(pvar))
             {
                 variables.insert(
                     value_type(std::move(argname), std::move(args[i + 1])));
             }
             else
             {
-                varit->second = std::move(args[i + 1]);
+                pvar.first->second = std::move(args[i + 1]);
             }
         }
 

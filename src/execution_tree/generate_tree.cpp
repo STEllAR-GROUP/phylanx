@@ -133,20 +133,20 @@ namespace phylanx { namespace execution_tree
             phylanx::execution_tree::functions& functions)
         {
             std::string name = ast::detail::identifier_name(expr);
-            auto it = variables.find(name);
-            if (it != variables.end())
+            auto p = variables.find(name);
+            if (is_empty_range(p))
             {
-                if (!is_primitive_operand(it->second))
+                if (!is_primitive_operand(p.first->second))
                 {
                     // create a new variable from the given value, replace
                     // entry in symbol table
-                    it->second =
+                    p.first->second =
                         hpx::new_<primitives::variable>(hpx::find_here(),
-                            std::move(it->second), std::move(name));
+                            std::move(p.first->second), std::move(name));
                 }
-                return it->second;
+                return p.first->second;
             }
-            else if (functions.find(name) != functions.end())
+            else if (is_empty_range(functions.find(name)))
             {
                 return primitive_argument_type{std::move(name)};
             }
@@ -246,9 +246,8 @@ namespace phylanx { namespace execution_tree
             expression_pattern_list const& patterns)
         {
             std::string name = ast::detail::identifier_name(nameexpr);
-            auto it = variables.find(name);
-
-            if (it != variables.end())
+            auto pv = variables.find(name);
+            if (!is_empty_range(pv))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::detail::handle_define_variable",

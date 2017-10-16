@@ -24,8 +24,8 @@ void test_define_operation(char const* expr, char const* name,
     HPX_TEST_EQ(functions.size(), std::size_t(1));
 
     // verify function name
-    auto it = functions.find(name);
-    HPX_TEST(it != functions.end());
+    auto p = functions.find(name);
+    HPX_TEST(p.first != p.second);
 
     // verify arguments
     std::vector<phylanx::ast::expression> argexprs;
@@ -35,11 +35,11 @@ void test_define_operation(char const* expr, char const* name,
         argexprs.push_back(phylanx::ast::generate_ast(s));
     }
 
-    HPX_TEST(it->second.first == argexprs);
+    HPX_TEST(p.first->second.first == argexprs);
 
     // verify body
     phylanx::ast::expression bodyexpr = phylanx::ast::generate_ast(body);
-    HPX_TEST(it->second.second == bodyexpr);
+    HPX_TEST(p.first->second.second == bodyexpr);
 }
 
 int main(int argc, char* argv[])
