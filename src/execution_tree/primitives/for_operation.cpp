@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
           hpx::future<primitive_result_type> init()
           {
             auto this_ = this->shared_from_this();
-            return numeric_operand(operands_[0]).then(
+            return literal_operand(operands_[0]).then(
                 [this_](auto val)
                 {
                   val.get(); //this future should already be ready and hence not block
