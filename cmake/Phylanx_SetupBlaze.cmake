@@ -10,21 +10,21 @@
 macro(phylanx_setup_blaze)
 
   if(blaze_INCLUDE_DIR)
-	list(APPEND CMAKE_REQUIRED_INCLUDES ${blaze_INCLUDE_DIR})
-	include_directories(${blaze_INCLUDE_DIR})
+    list(APPEND CMAKE_REQUIRED_INCLUDES ${blaze_INCLUDE_DIR})
+    include_directories(${blaze_INCLUDE_DIR})
   elseif(blaze_DIR)
-	find_package(blaze)
+    find_package(blaze)
   endif()
   
   include(CheckIncludeFileCXX)
-	check_include_file_cxx(blaze/Math.h HAVE_BLAZE_MATH_H)
+    check_include_file_cxx(blaze/Math.h HAVE_BLAZE_MATH_H)
   # HACK: PHYLANX_SKIP_BLAZE_CHECK - If Blaze is available through vcpkg, vcpkg's toolchain script does not offer any variables to detect blaze's location when this script is running.
   if(NOT HAVE_BLAZE_MATH_H)
     if(NOT PHYLANX_SKIP_BLAZE_CHECK)
-	  phylanx_error("Blaze could not be found. Please set blaze_DIR to help locating it.")
-	else()
-	  phylanx_info("Skipping Blaze presence check.")
-	endif()
+      phylanx_error("Blaze could not be found. Please set blaze_DIR to help locating it.")
+    else()
+      phylanx_info("Skipping Blaze presence check.")
+    endif()
   endif()
 
 
