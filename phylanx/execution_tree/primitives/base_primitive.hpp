@@ -291,10 +291,10 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type =
-        hpx::util::function_nonser<
-            primitive(hpx::id_type, std::vector<primitive_argument_type>&&,
-                variables&, functions&)
-        >;
+        primitive(*)(
+            hpx::id_type, std::vector<primitive_argument_type>&&,
+            variables&, functions&
+        );
 
     // Generic creation helper for creating an instance of the given primitive.
     template <typename Primitive>
