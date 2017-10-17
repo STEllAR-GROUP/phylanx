@@ -98,10 +98,15 @@ set_target_properties(
     CLEAN_DIRECT_OUTPUT 1
     FOLDER "Core")
 
-# NOMINMAX is needed for Windows to circumvent issues with std::numeric_limits<T>
 set_property(TARGET phylanx_component APPEND
   PROPERTY COMPILE_DEFINITIONS
-  "PHYLANX_EXPORTS;NOMINMAX")
+  "PHYLANX_EXPORTS")
+
+if(WIN32)# NOMINMAX is needed to resolve a conflict between Windows.h and std::numeric_limits
+set_property(TARGET phylanx_component APPEND
+  PROPERTY COMPILE_DEFINITIONS
+  "NOMINMAX")
+endif()
 
 set(phylanx_targets ${phylanx_targets} phylanx_component)
 
