@@ -6,8 +6,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
