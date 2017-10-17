@@ -10,6 +10,7 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
+#include <hpx/runtime/find_here.hpp>
 #include <hpx/util/tuple.hpp>
 
 #include <string>
@@ -38,28 +39,31 @@ namespace phylanx { namespace execution_tree
             ast::expression const& expr,
             expression_pattern_list const& patterns,
             phylanx::execution_tree::variables& variables,
-            phylanx::execution_tree::functions& functions);
+            phylanx::execution_tree::functions& functions,
+            hpx::id_type const& default_locality);
     }
 
     /// Generate an expression tree corresponding to the given textual
     /// expression. All variables used by the expression will be implicitly
     /// created.
     PHYLANX_EXPORT primitive_argument_type generate_tree(
-        std::string const& exprstr);
+        std::string const& exprstr,
+        hpx::id_type default_locality = hpx::find_here());
 
     /// Generate an expression tree corresponding to the given textual
     /// expression. The given symbol-table is used to populate variables used
     /// in the expression. Unknown variables will be implicitly created.
     PHYLANX_EXPORT primitive_argument_type generate_tree(
-        std::string const& exprstr, variables const& variables);
+        std::string const& exprstr, variables variables,
+        hpx::id_type default_locality = hpx::find_here());
 
     PHYLANX_EXPORT primitive_argument_type generate_tree(
         std::string const& exprstr, pattern_list const& patterns,
-        variables const& variables);
+        variables variables, hpx::id_type default_locality = hpx::find_here());
 
     PHYLANX_EXPORT primitive_argument_type generate_tree(
         ast::expression const& expr, pattern_list const& patterns,
-        variables const& variables);
+        variables variables, hpx::id_type default_locality = hpx::find_here());
 
     /// Generate an expression tree corresponding to the given textual
     /// expression. The given symbol-table is used to populate variables used
@@ -67,16 +71,18 @@ namespace phylanx { namespace execution_tree
     /// The given function table is used to expand invocations of unknown
     /// functions.
     PHYLANX_EXPORT primitive_argument_type generate_tree(
-        std::string const& exprstr, variables const& variables,
-        functions const& funcs);
+        std::string const& exprstr, variables variables, functions funcs,
+        hpx::id_type default_locality = hpx::find_here());
 
     PHYLANX_EXPORT primitive_argument_type generate_tree(
         std::string const& exprstr, pattern_list const& patterns,
-        variables const& variables, functions const& funcs);
+        variables variables, functions funcs,
+        hpx::id_type default_locality = hpx::find_here());
 
     PHYLANX_EXPORT primitive_argument_type generate_tree(
         ast::expression const& expr, pattern_list const& patterns,
-        variables const& variables, functions const& funcs);
+        variables variables, functions funcs,
+        hpx::id_type default_locality = hpx::find_here());
 }}
 
 #endif

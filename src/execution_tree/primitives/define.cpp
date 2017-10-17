@@ -24,7 +24,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_function_invocation(hpx::id_type where,
+    primitive create_function_invocation(hpx::id_type where_,
         std::vector<primitive_argument_type>&& args, variables& vars,
         functions& funcs)
     {
@@ -104,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // instantiate the new function
         auto result = execution_tree::detail::generate_tree(it->second.second,
             execution_tree::detail::generate_patterns(get_all_known_patterns()),
-            variables, functions);
+            variables, functions, where_);
 
         return primitive_operand(result);
     }
