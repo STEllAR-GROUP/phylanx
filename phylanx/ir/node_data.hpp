@@ -247,10 +247,14 @@ namespace phylanx { namespace ir
             return end();
         }
 
-//         T const* data() const
-//         {
-//             return data_.data();
-//         }
+        T* data()
+        {
+            return data_.data();
+        }
+        T const* data() const
+        {
+            return data_.data();
+        }
         std::size_t size() const
         {
             return data_.size();

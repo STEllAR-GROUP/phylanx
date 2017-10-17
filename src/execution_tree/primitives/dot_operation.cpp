@@ -82,7 +82,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 1:
                             return this_->dot1d(std::move(ops));
 
-                        case 2: HPX_FALLTHROUGH;
+                        case 2:
+                            return this_->dot2d(std::move(ops));
+
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "dot_operation::eval",
@@ -111,24 +113,92 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(ops[0]);
             }
 
+            // lhs_num_dims == 1
             primitive_result_type dot1d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                if (lhs.dimension(0) != rhs.dimension(0))
+                std::size_t rhs_num_dims = rhs.num_dimensions();
+                if (rhs_num_dims == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::dot1d",
-                        "the operands have incompatible number of dimensions");
+                        "the operands have incompatible number of "
+                            "dimensions");
+                }
+                else if (rhs_num_dims == 1)
+                {
+                    if (lhs.dimension(0) != rhs.dimension(0))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dot_operation::dot1d",
+                            "the operands have incompatible number of "
+                                "dimensions");
+                    }
+
+                    double result =
+                        Eigen::Map<Eigen::VectorXd>(lhs.data(), lhs.size()).dot(
+                            Eigen::Map<Eigen::VectorXd>(rhs.data(), rhs.size()));
+
+                    return ir::node_data<double>(result);
                 }
 
-                using matrix_type =
-                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+                // lhs_num_dims == 1 && rhs_num_dims == 2
+                if (rhs.dimension(0) == 1 &&
+                    lhs.dimension(0) != rhs.dimension(1))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::dot1d",
+                        "the operands have incompatible number of "
+                            "dimensions");
+                }
+                else if (rhs.dimension(1) == 1 &&
+                    lhs.dimension(0) != rhs.dimension(0))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::dot1d",
+                        "the operands have incompatible number of "
+                            "dimensions");
+                }
 
-                lhs.matrix().adjointInPlace();
-                lhs.matrix() *= rhs.matrix();
-                return ir::node_data<double>(lhs.matrix()(0, 0));
+                double result =
+                    Eigen::Map<Eigen::VectorXd>(lhs.data(), lhs.size()).dot(
+                        Eigen::Map<Eigen::VectorXd>(rhs.data(), rhs.size()));
+
+                return ir::node_data<double>(result);
+            }
+
+            // lhs_num_dims == 2
+            primitive_result_type dot2d(operands_type && ops) const
+            {
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                std::size_t rhs_num_dims = rhs.num_dimensions();
+                if (rhs_num_dims == 0 || rhs_num_dims == 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::dot2d",
+                        "the operands have incompatible number of "
+                            "dimensions");
+                }
+                else
+                {
+                    if (lhs.dimension(1) != rhs.dimension(0))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "dot_operation::dot2d",
+                            "the operands have incompatible number of "
+                                "dimensions");
+                    }
+
+                    double result =
+                        Eigen::Map<Eigen::VectorXd>(lhs.data(), lhs.size()).dot(
+                            Eigen::Map<Eigen::VectorXd>(rhs.data(), rhs.size()));
+
+                    return ir::node_data<double>(result);
+                }
             }
 
         private:

@@ -11,6 +11,7 @@ set(tests
     define_operation
     determinant
     div_operation
+    dot_operation
     equal_operation
     exponential_operation
     file_primitives
