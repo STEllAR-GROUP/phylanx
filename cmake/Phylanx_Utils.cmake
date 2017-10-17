@@ -30,8 +30,10 @@ phylanx_include(
   ShortenPseudoTarget
 )
 
+# TODO (#blazemig): Remove "SetupEigen3\n" after migration
 phylanx_include(
   SetupHPX
   SetupEigen3
+  SetupBlaze
   SetupPybind11
 )
