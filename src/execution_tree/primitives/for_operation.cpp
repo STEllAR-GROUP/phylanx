@@ -34,7 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     std::vector<match_pattern_type> const for_operation::match_data =
     {
         hpx::util::make_tuple(
-            "for", "for(_1, _2, _3)", &create<for_operation>)
+            "for", "for(_1, _2, _3, _4)", &create<for_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -42,15 +42,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
-        if (operands_.size() != 3)
+        if (operands_.size() != 4)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::for_operation::"
                     "for_operation",
-                "the for_operation primitive requires exactly three arguments");
+                "the for_operation primitive requires exactly four arguments");
         }
 
-        if (!valid(operands_[0]) || !valid(operands_[1]) || !valid(operands_[2]))
+        if (!valid(operands_[0]) || !valid(operands_[1])
+            || !valid(operands_[2]) || !valid(operands_[3]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::for_operation::"
@@ -79,6 +80,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 });
           }
 
+          hpx::future<primitive_result_type> reinit()
+          {
+            auto this_ = this->shared_from_this();
+            return literal_operand(operands_[2]).then(
+                [this_](auto val)
+                {
+                  return val.get(); //this future should already be ready
+                  // and hence not block
+                });
+          }
 
             hpx::future<primitive_result_type> body(
                 hpx::future<primitive_result_type>&& cond)
@@ -87,12 +98,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     // evaluate body of for statement
                     auto this_ = this->shared_from_this();
-                    return literal_operand(operands_[2]).then(
+                    return literal_operand(operands_[3]).then(
                         [this_](
                             hpx::future<primitive_result_type> && result
                         ) mutable
                         {
                             this_->result_ = result.get();
+                            //do the reinit statement
+                            auto hold = this_->reinit().get();
+                            //call the loop again
                             return this_->loop();
                         });
                 }
