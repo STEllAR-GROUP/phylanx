@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const mul_operation::match_data =
     {
-        hpx::util::make_tuple("mul", "_1 * __2", &create<mul_operation>)
+        hpx::util::make_tuple("*", "_1 * __2", &create<mul_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

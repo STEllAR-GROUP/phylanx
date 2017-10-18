@@ -25,7 +25,38 @@ namespace phylanx { namespace execution_tree
 {
     class HPX_COMPONENT_EXPORT primitive;
 
-    using primitive_result_type = ast::literal_value_type;
+    ///////////////////////////////////////////////////////////////////////////
+    struct primitive_result_type;
+
+    using result_value_type =
+        phylanx::util::variant<
+            ast::nil
+          , bool
+          , std::int64_t
+          , std::string
+          , phylanx::ir::node_data<double>
+          , std::vector<ast::expression>
+          , phylanx::util::recursive_wrapper<std::vector<primitive_result_type>>
+        >;
+
+    struct primitive_result_type : result_value_type
+    {
+        // poor man's forwarding constructor
+        template <typename ... Ts>
+        primitive_result_type(Ts &&... ts)
+          : result_value_type{std::forward<Ts>(ts)...}
+        {}
+    };
+
+    // a result value is valid of its not nil{}
+    inline bool valid(primitive_result_type const& val)
+    {
+        return val.index() != 0;
+    }
+    inline bool valid(primitive_result_type && val)
+    {
+        return val.index() != 0;
+    }
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -103,17 +134,30 @@ namespace phylanx { namespace execution_tree
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    using primitive_argument_type = phylanx::util::variant<
+    struct primitive_argument_type;
+
+    using argument_value_type =
+        phylanx::util::variant<
             phylanx::ast::nil
           , bool
           , std::int64_t
           , std::string
           , phylanx::ir::node_data<double>
           , primitive
+          , std::vector<ast::expression>
+          , phylanx::util::recursive_wrapper<std::vector<primitive_argument_type>>
         >;
 
-    ///////////////////////////////////////////////////////////////////////////
-    // a literal value is valid of its not nil{}
+    struct primitive_argument_type : argument_value_type
+    {
+        // poor man's forwarding constructor
+        template <typename ... Ts>
+        primitive_argument_type(Ts &&... ts)
+          : argument_value_type{std::forward<Ts>(ts)...}
+        {}
+    };
+
+    // a argument is valid of its not nil{}
     inline bool valid(primitive_argument_type const& val)
     {
         return val.index() != 0;
@@ -123,11 +167,9 @@ namespace phylanx { namespace execution_tree
         return val.index() != 0;
     }
 
-    using ast::valid;
-
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
-        primitive_result_type && val);
+        ast::literal_value_type && val);
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a literal type from a given primitive_argument_type, throw
@@ -149,7 +191,21 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT std::uint8_t extract_boolean_value(
         primitive_argument_type const& val);
     PHYLANX_EXPORT std::uint8_t extract_boolean_value(
-        primitive_result_type const& val);
+        primitive_result_type && val);
+
+    // Extract an AST type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(
+        primitive_result_type && val);
+
+    // Extract a list type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::vector<primitive_result_type> extract_list_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT std::vector<primitive_result_type> extract_list_value(
+        primitive_result_type && val);
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a primitive from a given primitive_argument_type, throw
@@ -174,6 +230,16 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT hpx::future<std::uint8_t>
         boolean_operand(primitive_argument_type const& val);
 
+    // Extract an AST from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<std::vector<ast::expression>>
+        ast_operand(primitive_argument_type const& val);
+
+    // Extract a list from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<std::vector<primitive_result_type>>
+        list_operand(primitive_argument_type const& val);
+
     ///////////////////////////////////////////////////////////////////////////
     // Symbol table
     struct variables
@@ -186,11 +252,11 @@ namespace phylanx { namespace execution_tree
           : previous_(prev)
         {}
 
-        variables(map_type const& vars)
+        explicit variables(map_type const& vars)
           : variables_(vars)
           , previous_(nullptr)
         {}
-        variables(map_type && vars)
+        explicit variables(map_type && vars)
           : variables_(std::move(vars))
           , previous_(nullptr)
         {}
@@ -228,11 +294,43 @@ namespace phylanx { namespace execution_tree
         variables* previous_;
     };
 
+    ///////////////////////////////////////////////////////////////////////////
+    struct functions;
+
+    // Factory functions
+    using factory_function_type =
+        primitive(*)(
+            hpx::id_type, std::vector<primitive_argument_type>&&,
+            variables&, functions&
+        );
+
+    // Function description
+    struct function_description
+    {
+        explicit function_description(std::vector<ast::expression> const& ast,
+                factory_function_type factory = nullptr)
+          : ast_(ast)
+          , factory_(factory)
+        {}
+
+        explicit function_description(std::vector<ast::expression> && ast,
+                factory_function_type factory = nullptr)
+          : ast_(std::move(ast))
+          , factory_(factory)
+        {}
+
+        std::vector<ast::expression> const& ast() const { return ast_; }
+        factory_function_type const& factory() const { return factory_; }
+
+    private:
+        std::vector<ast::expression> ast_;
+        factory_function_type factory_;
+    };
+
     // Function definition table
     struct functions
     {
-        using map_type = std::map<std::string,
-            std::pair<std::vector<ast::expression>, ast::expression>>;
+        using map_type = std::map<std::string, function_description>;
         using value_type = typename map_type::value_type;
         using iterator = typename map_type::iterator;
 
@@ -240,11 +338,11 @@ namespace phylanx { namespace execution_tree
           : previous_(prev)
         {}
 
-        functions(map_type const& vars)
+        explicit functions(map_type const& vars)
           : functions_(vars)
           , previous_(nullptr)
         {}
-        functions(map_type && vars)
+        explicit functions(map_type && vars)
           : functions_(std::move(vars))
           , previous_(nullptr)
         {}
@@ -289,13 +387,6 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Factory functions
-    using factory_function_type =
-        primitive(*)(
-            hpx::id_type, std::vector<primitive_argument_type>&&,
-            variables&, functions&
-        );
-
     // Generic creation helper for creating an instance of the given primitive.
     template <typename Primitive>
     primitive create(hpx::id_type locality,

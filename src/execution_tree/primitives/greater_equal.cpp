@@ -32,8 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const greater_equal::match_data =
     {
-        hpx::util::make_tuple(
-            "greater_equal", "_1 >= _2", &create<greater_equal>)
+        hpx::util::make_tuple(">=", "_1 >= _2", &create<greater_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -193,10 +192,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
+                bool operator()(std::vector<ast::expression>&&,
+                    std::vector<ast::expression>&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
+                bool operator()(ast::expression&&, ast::expression&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
                 template <typename T>
                 bool operator()(T && lhs, T && rhs) const
                 {
                     return lhs >= rhs;
+                }
+
+                bool operator()(
+                    util::recursive_wrapper<
+                        std::vector<primitive_result_type>>&&,
+                    util::recursive_wrapper<
+                        std::vector<primitive_result_type>>&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
                 }
 
                 bool operator()(
@@ -227,7 +255,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 bool operator()(operand_type&& lhs, operand_type&& rhs) const
                 {
-                    return greater_equal_.greater_equal_all(std::move(lhs), std::move(rhs));
+                    return greater_equal_.greater_equal_all(
+                        std::move(lhs), std::move(rhs));
                 }
 
                 greater_equal const& greater_equal_;

@@ -51,6 +51,35 @@ namespace phylanx { namespace execution_tree
             return result;
         }
 
+        execution_tree::functions builtin_functions(
+            pattern_list const& patterns_list)
+        {
+            execution_tree::functions result;
+
+            using value_type = execution_tree::functions::value_type;
+            for (auto const& patterns : patterns_list)
+            {
+                for (auto const& pattern : patterns)
+                {
+                    std::string name = hpx::util::get<0>(pattern);
+
+                    std::vector<ast::expression> function_ast;
+                    function_ast.push_back(
+                        ast::expression{ast::identifier{name}});
+                    function_ast.push_back(ast::generate_ast(
+                        hpx::util::get<1>(pattern)));
+
+                    execution_tree::function_description desc{
+                        std::move(function_ast), hpx::util::get<2>(pattern)
+                    };
+
+                    result.insert(value_type{std::move(name), std::move(desc)});
+                }
+            }
+
+            return result;
+        }
+
         ///////////////////////////////////////////////////////////////////////
         struct on_placeholder_match
         {
@@ -130,7 +159,8 @@ namespace phylanx { namespace execution_tree
         }
 
         ///////////////////////////////////////////////////////////////////////
-        primitive_argument_type handle_variable(ast::expression const& expr,
+        primitive_argument_type handle_variable_or_function(
+            ast::expression const& expr,
             phylanx::execution_tree::variables& variables,
             phylanx::execution_tree::functions& functions,
             hpx::id_type const& default_locality)
@@ -139,6 +169,7 @@ namespace phylanx { namespace execution_tree
             auto p = variables.find(name);
             if (!is_empty_range(p))
             {
+                // the given name refers to a known variable
                 if (!is_primitive_operand(p.first->second))
                 {
                     // create a new variable from the given value, replace
@@ -149,27 +180,28 @@ namespace phylanx { namespace execution_tree
                 }
                 return p.first->second;
             }
-            else if (!is_empty_range(functions.find(name)))
-            {
-                return primitive_argument_type{std::move(name)};
-            }
-            else
-            {
-                // create an empty variable
-                primitive p =
-                    hpx::new_<primitives::variable>(default_locality, name);
 
-                // attempt to insert the new variable into the symbol table
-                auto r = variables.insert(
-                    execution_tree::variables::value_type(std::move(name), p));
-                if (!r.second)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::extract_arguments",
-                        "couldn't insert variable into symbol table: " + name);
-                }
-                return p;
+            auto fp = functions.find(name);
+            if (!is_empty_range(fp))
+            {
+                // the given name refers to a known function, return its AST
+                return primitive_argument_type{fp.first->second.ast()};
             }
+
+            // create an empty variable
+            primitive pr =
+                hpx::new_<primitives::variable>(default_locality, name);
+
+            // attempt to insert the new variable into the symbol table
+            auto r = variables.insert(
+                execution_tree::variables::value_type(std::move(name), pr));
+            if (!r.second)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::extract_arguments",
+                    "couldn't insert variable into symbol table: " + name);
+            }
+            return pr;
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -196,7 +228,7 @@ namespace phylanx { namespace execution_tree
         }
 
         template <typename Iterator>
-        std::vector<ast::expression> extract_arguments(
+        std::vector<ast::expression> extract_function_definition(
             std::pair<Iterator, Iterator> const& p)
         {
             std::ptrdiff_t size = std::distance(p.first, p.second);
@@ -208,13 +240,13 @@ namespace phylanx { namespace execution_tree
             }
 
             std::vector<ast::expression> args;
-            args.reserve(size - 2);
+            args.reserve(size);
 
-            auto first = p.first; ++first;
-            auto last = p.second; --last;
-            for (auto it = first; it != last; ++it)
+            std::size_t count = 0;
+            for (auto it = p.first; it != p.second; ++it, ++count)
             {
-                if (!ast::detail::is_identifier(it->second))
+                if (count != 0 && count != size-1 &&
+                    !ast::detail::is_identifier(it->second))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::detail::extract_arguments",
@@ -297,11 +329,11 @@ namespace phylanx { namespace execution_tree
 
             // extract expressions representing the newly defined function
             ast::expression name = extract_name(p);
-            std::vector<ast::expression> args = extract_arguments(p);
+            std::vector<ast::expression> func = extract_function_definition(p);
             ast::expression body = extract_body(p);
 
             // a define() without arguments defines a variable
-            if (args.empty())
+            if (func.size() <= 2)
             {
                 return handle_define_variable(std::move(name), std::move(body),
                     variables, functions, patterns, default_locality);
@@ -311,8 +343,7 @@ namespace phylanx { namespace execution_tree
             using value_type =
                 typename phylanx::execution_tree::functions::value_type;
             auto result = functions.insert(value_type(
-                    ast::detail::identifier_name(name),
-                    std::make_pair(std::move(args), std::move(body))
+                    ast::detail::identifier_name(name), std::move(func)
                 ));
             if (!result.second)
             {
@@ -356,7 +387,7 @@ namespace phylanx { namespace execution_tree
             // remaining expression could refer to a variable
             if (ast::detail::is_identifier(expr))
             {
-                return handle_variable(
+                return handle_variable_or_function(
                     expr, variables, functions, default_locality);
             }
 
@@ -425,10 +456,12 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type generate_tree(std::string const& exprstr,
         hpx::id_type default_locality)
     {
+        auto const& patterns = get_all_known_patterns();
         phylanx::execution_tree::variables vars;
-        phylanx::execution_tree::functions funcs;
+        phylanx::execution_tree::functions funcs(
+            detail::builtin_functions(patterns));
         return detail::generate_tree(ast::generate_ast(exprstr),
-            detail::generate_patterns(get_all_known_patterns()), vars, funcs,
+            detail::generate_patterns(patterns), vars, funcs,
             default_locality);
     }
 
@@ -437,8 +470,10 @@ namespace phylanx { namespace execution_tree
         phylanx::execution_tree::variables variables,
         hpx::id_type default_locality)
     {
+        auto const& patterns = get_all_known_patterns();
         phylanx::execution_tree::variables vars(std::move(variables));
-        phylanx::execution_tree::functions funcs;
+        phylanx::execution_tree::functions funcs(
+            detail::builtin_functions(patterns));
         return detail::generate_tree(ast::generate_ast(exprstr),
             detail::generate_patterns(get_all_known_patterns()), vars, funcs,
             default_locality);
@@ -450,7 +485,8 @@ namespace phylanx { namespace execution_tree
         hpx::id_type default_locality)
     {
         phylanx::execution_tree::variables vars(std::move(variables));
-        phylanx::execution_tree::functions funcs;
+        phylanx::execution_tree::functions funcs(
+            detail::builtin_functions(patterns));
         return detail::generate_tree(
             expr, detail::generate_patterns(patterns), vars, funcs,
             default_locality);
@@ -462,7 +498,8 @@ namespace phylanx { namespace execution_tree
         hpx::id_type default_locality)
     {
         phylanx::execution_tree::variables vars(std::move(variables));
-        phylanx::execution_tree::functions funcs;
+        phylanx::execution_tree::functions funcs(
+            detail::builtin_functions(patterns));
         return detail::generate_tree(ast::generate_ast(exprstr),
             detail::generate_patterns(patterns), vars, funcs,
             default_locality);

@@ -7,6 +7,7 @@
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/ast.hpp>
+#include <phylanx/util/serialization/execution_tree.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -94,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // assume data in file is result of a serialized primitive_result_type
         primitive_result_type val;
-        phylanx::util::detail::unserialize(data, val);
+        phylanx::util::unserialize(data, val);
 
         return hpx::make_ready_future(std::move(val));
     }

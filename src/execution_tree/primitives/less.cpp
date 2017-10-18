@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const less::match_data =
     {
-        hpx::util::make_tuple("less", "_1 < _2", &create<less>)
+        hpx::util::make_tuple("<", "_1 < _2", &create<less>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -192,10 +192,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
+                bool operator()(std::vector<ast::expression>&&,
+                    std::vector<ast::expression>&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
+                bool operator()(ast::expression&&, ast::expression&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
                 template <typename T>
                 bool operator()(T && lhs, T && rhs) const
                 {
                     return lhs < rhs;
+                }
+
+                bool operator()(
+                    util::recursive_wrapper<
+                        std::vector<primitive_result_type>>&&,
+                    util::recursive_wrapper<
+                        std::vector<primitive_result_type>>&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
                 }
 
                 bool operator()(

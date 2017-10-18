@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const not_equal::match_data =
     {
-        hpx::util::make_tuple("not_equal", "_1 != _2", &create<not_equal>)
+        hpx::util::make_tuple("!=", "_1 != _2", &create<not_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

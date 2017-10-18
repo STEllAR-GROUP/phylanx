@@ -8,6 +8,7 @@
 
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
+#include <phylanx/execution_tree/primitives/apply_operation.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/execution_tree/primitives/define.hpp>

@@ -35,6 +35,9 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT expression_pattern_list generate_patterns(
             pattern_list const& patterns_list);
 
+        PHYLANX_EXPORT phylanx::execution_tree::functions builtin_functions(
+            pattern_list const& patterns_list);
+
         PHYLANX_EXPORT primitive_argument_type generate_tree(
             ast::expression const& expr,
             expression_pattern_list const& patterns,

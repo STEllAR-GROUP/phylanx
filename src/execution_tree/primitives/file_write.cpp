@@ -7,6 +7,7 @@
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/ast.hpp>
+#include <phylanx/util/serialization/execution_tree.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/components.hpp>
