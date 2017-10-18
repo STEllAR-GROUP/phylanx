@@ -275,6 +275,26 @@ void test_multi_patterns()
     test_generate_tree("block(A, B, C)", patterns, variables, 42.0);
 }
 
+void test_if_conditional()
+{
+    phylanx::execution_tree::pattern_list patterns = {
+        phylanx::execution_tree::primitives::if_conditional::match_data
+    };
+
+    phylanx::execution_tree::variables variables = {
+        {"cond", create_literal_value(1.0)},
+        {"A", create_literal_value(42.0)},
+        {"B", create_literal_value(54.0)}
+    };
+
+    test_generate_tree(
+        "if(cond, A, B)"
+      , patterns
+      , variables
+      , 42.0);
+
+}
+
 int main(int argc, char* argv[])
 {
     test_add_primitive();
@@ -287,6 +307,7 @@ int main(int argc, char* argv[])
     test_store_primitive();
     test_complex_expression();
     test_multi_patterns();
+    test_if_conditional();
 
     return hpx::util::report_errors();
 }
