@@ -22,7 +22,11 @@ macro(phylanx_setup_blaze)
     endif()
     # Check if Math.h is available
     include(CheckIncludeFileCXX)
-    set(CMAKE_REQUIRED_FLAGS "-std=c++14")
+    if(MSCVC)
+      set(CMAKE_REQUIRED_FLAGS "/std:c++14")
+    else()
+      set(CMAKE_REQUIRED_FLAGS "-std=c++14")
+    endif()
     check_include_file_cxx(blaze/Math.h HAVE_BLAZE_MATH_H)
     if(NOT HAVE_BLAZE_MATH_H)
        # HACK: PHYLANX_SKIP_BLAZE_CHECK
