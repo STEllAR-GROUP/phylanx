@@ -8,28 +8,36 @@
 # TODO: We don't use `phylanx_setup_eigen3`. We can remove `Phylanx_SetupEigen3.cmake`.
 
 macro(phylanx_setup_blaze)
-
-  if(blaze_INCLUDE_DIR)
-    list(APPEND CMAKE_REQUIRED_INCLUDES ${blaze_INCLUDE_DIR})
-    include_directories(${blaze_INCLUDE_DIR})
-  elseif(blaze_DIR)
-    find_package( blaze )
-    if( blaze_FOUND )
-     add_library( blaze_target INTERFACE )
-     target_link_libraries( blaze_target INTERFACE blaze::blaze )
+  # Method 1: find_package
+  # NOTE: `blaze_DIR` being set assists this step.
+  find_package(blaze)
+  if(blaze_FOUND)
+    add_library(blaze_target INTERFACE)
+    target_link_libraries(blaze_target INTERFACE blaze::blaze)
+  else()
+    # Method 2: Specify the include directory `blaze_INCLUDE_DIR`
+    if(blaze_INCLUDE_DIR)
+      list(APPEND CMAKE_REQUIRED_INCLUDES ${blaze_INCLUDE_DIR})
+      include_directories(${blaze_INCLUDE_DIR})
     endif()
-  endif()
-  
-  include(CheckIncludeFileCXX)
+    # Check if Math.h is available
+    include(CheckIncludeFileCXX)
+    set(CMAKE_REQUIRED_FLAGS "-std=c++14")
     check_include_file_cxx(blaze/Math.h HAVE_BLAZE_MATH_H)
-  # HACK: PHYLANX_SKIP_BLAZE_CHECK - If Blaze is available through vcpkg, vcpkg's toolchain script does not offer any variables to detect blaze's location when this script is running.
-  if(NOT HAVE_BLAZE_MATH_H)
-    if(NOT PHYLANX_SKIP_BLAZE_CHECK)
-      phylanx_error("Blaze could not be found. Please set blaze_DIR to help locating it.")
-    else()
-      phylanx_info("Skipping Blaze presence check.")
+    if(NOT HAVE_BLAZE_MATH_H)
+       # HACK: PHYLANX_SKIP_BLAZE_CHECK
+       # - If Blaze is available through vcpkg, vcpkg's toolchain script does
+       #   not offer any variables to detect blaze's location when this script
+       #   is running.
+      if(NOT PHYLANX_SKIP_BLAZE_CHECK)
+        phylanx_error("Blaze could not be found. Please set blaze_DIR to help locating it.")
+      else()
+        phylanx_info("Warning: Was not able to verify Blaze's presence through CMake. Skipping the error.")
+      endif()
     endif()
   endif()
+
+  
 
 
   phylanx_info("Blaze was found.")
