@@ -209,7 +209,9 @@ void test_store_primitive()
 {
     phylanx::execution_tree::pattern_list patterns = {
         phylanx::execution_tree::primitives::add_operation::match_data,
-        phylanx::execution_tree::primitives::store_operation::match_data,
+        phylanx::execution_tree::primitives::block_operation::match_data,
+        phylanx::execution_tree::primitives::constant::match_data,
+        phylanx::execution_tree::primitives::store_operation::match_data
     };
 
     phylanx::execution_tree::variables variables = {
@@ -220,6 +222,9 @@ void test_store_primitive()
 
     test_generate_tree("store(C, A)", patterns, variables, 41.0);
     test_generate_tree("store(C, A + B)", patterns, variables, 42.0);
+
+    test_generate_tree("block(store(B, constant(0, A)), B)", patterns, variables, 0.0);
+    test_generate_tree("store(D, 0)", patterns, variables, 0.0);
 }
 
 void test_complex_expression()
