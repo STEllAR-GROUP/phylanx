@@ -35,7 +35,10 @@ namespace execution_tree {
     ///////////////////////////////////////////////////////////////////////////
         std::vector<match_pattern_type> const if_conditional::match_data = {
             hpx::util::make_tuple(
-                "if", "if(_1, __2)", &create<if_conditional>)};
+                "if", "if(_1, _2, _3)", &create<if_conditional>)
+          , hpx::util::make_tuple(
+                "if", "if(_1, _2)", &create<if_conditional>)
+        };
 
     ///////////////////////////////////////////////////////////////////////////
         if_conditional::if_conditional(
