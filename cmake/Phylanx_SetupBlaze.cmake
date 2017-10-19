@@ -10,7 +10,7 @@
 macro(phylanx_setup_blaze)
   # Method 1: find_package
   # NOTE: `blaze_DIR` being set assists this step.
-  find_package(blaze)
+  find_package(blaze NO_CMAKE_PACKAGE_REGISTRY)
   if(blaze_FOUND)
     add_library(blaze_target INTERFACE)
     target_link_libraries(blaze_target INTERFACE blaze::blaze)
