@@ -329,7 +329,7 @@ void test_if_conditional()
       , patterns3
       , variables3
       , 42.0);
-/*
+
     // Test 4 
     //  one outcome false case
     phylanx::execution_tree::pattern_list patterns4 = {
@@ -344,6 +344,9 @@ void test_if_conditional()
     phylanx::execution_tree::primitive_argument_type p =
         phylanx::execution_tree::generate_tree("if(cond, true_case)", patterns, variables);
 
+    std::cout<<"Test 4:"<<std::endl
+             <<"Index Value of primitive_argument_type= "<<p.index()<<std::endl;
+/*
     HPX_TEST(
         !phylanx::execution_tree::valid(phylanx::execution_tree::extract_literal_value(p))
     );
