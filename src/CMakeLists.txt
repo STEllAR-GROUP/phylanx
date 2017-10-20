@@ -102,6 +102,12 @@ set_property(TARGET phylanx_component APPEND
   PROPERTY COMPILE_DEFINITIONS
   "PHYLANX_EXPORTS")
 
+if(WIN32)# NOMINMAX is needed to resolve a conflict between Windows.h and std::numeric_limits
+set_property(TARGET phylanx_component APPEND
+  PROPERTY COMPILE_DEFINITIONS
+  "NOMINMAX")
+endif()
+
 set(phylanx_targets ${phylanx_targets} phylanx_component)
 
 install(

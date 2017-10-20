@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 # setup Eigen3 as a dependency
+# TODO (#blazemig): Remove this file after migration
 macro(phylanx_setup_eigen3)
 
   find_package(Eigen3 REQUIRED NO_CMAKE_PACKAGE_REGISTRY)

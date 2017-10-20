@@ -22,7 +22,7 @@ dependencies:
         - mkdir -p build
 
     override:
-        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_CMAKE_LOGLEVEL=Debug -DHPX_DIR=/usr/local/lib/cmake/HPX -DEigen3_DIR=/eigen/3.3.4/share/eigen3/cmake/ -DEigen3_INCLUDE_DIRS=/eigen/3.3.4/include/eigen3 -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
+        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_CMAKE_LOGLEVEL=Debug -DHPX_DIR=/usr/local/lib/cmake/HPX -DEigen3_DIR=/eigen/3.3.4/share/eigen3/cmake/ -DEigen3_INCLUDE_DIRS=/eigen/3.3.4/include/eigen3 -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2
         # TODO replace this line with "docker build" once docker managed to
         # introduce temporal file copies that don't show in the resulting image
