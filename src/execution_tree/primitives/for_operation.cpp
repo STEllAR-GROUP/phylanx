@@ -63,9 +63,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     namespace detail
     {
-        struct iteration : std::enable_shared_from_this<iteration>
+        struct iteration_for : std::enable_shared_from_this<iteration_for>
         {
-            iteration(std::vector<primitive_argument_type> const& operands)
+            iteration_for(std::vector<primitive_argument_type> const& operands)
               : operands_(operands)
             {}
 
@@ -138,6 +138,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // start iteration over given for statement
     hpx::future<primitive_result_type> for_operation::eval() const
     {
-      return std::make_shared<detail::iteration>(operands_)->init();
+      return std::make_shared<detail::iteration_for>(operands_)->init();
     }
 }}}
