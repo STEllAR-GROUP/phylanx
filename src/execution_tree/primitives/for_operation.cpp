@@ -86,8 +86,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return literal_operand(operands_[2]).then(
                 [this_](auto val)
                 {
-                  return val.get(); //this future should already be ready
+                  val.get(); //this future should already be ready
                   // and hence not block
+
+                  //call the loop again
+                  return this_->loop();
                 });
           }
 
@@ -105,9 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             this_->result_ = result.get();
                             //do the reinit statement
-                            auto hold = this_->reinit().get();
-                            //call the loop again
-                            return this_->loop();
+                            return  this_->reinit();
                         });
                 }
 

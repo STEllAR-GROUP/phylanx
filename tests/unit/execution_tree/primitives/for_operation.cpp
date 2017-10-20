@@ -147,7 +147,7 @@ void test_for_operation_42()
             });
 
     // when the loop ends the value obtained as the result
-    // should be 42.0 as the condition will fail when
+    // should be 41.0 as the condition will fail when
     // init is equal to 42.0
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         for_.eval();
