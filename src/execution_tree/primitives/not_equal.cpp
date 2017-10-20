@@ -97,11 +97,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                lhs.matrix().array() =
-                    (lhs.matrix().array() != rhs.matrix().array())
-                        .cast<double>();
-
-                return lhs.matrix().norm() != 0.0;
+                return lhs.matrix() != rhs.matrix();
             }
 
             bool not_equal1d(operand_type&& lhs, operand_type&& rhs) const
@@ -133,10 +129,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                lhs.matrix().array() =
-                    (lhs.matrix().array() != rhs.matrix().array()).cast<double>();
-
-                return lhs.matrix().norm() != 0.0;
+                return lhs.matrix() != rhs.matrix();
             }
 
             bool not_equal2d(operand_type&& lhs, operand_type&& rhs) const
