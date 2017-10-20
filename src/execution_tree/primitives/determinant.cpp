@@ -107,7 +107,8 @@
 
 //            primitive_result_type determinantxd(operands_type && ops) const
 //            {
-//                return operand_type(ops[0].matrix().determinant());
+//                double d = .0;// blaze::det(ops[0].matrix());
+//                return operand_type(d);
 //            }
 
 //        private:
