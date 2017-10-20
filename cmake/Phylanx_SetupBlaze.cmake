@@ -5,7 +5,6 @@
 
 # setup Blaze as a dependency
 
-# TODO: We don't use `phylanx_setup_eigen3`. We can remove `Phylanx_SetupEigen3.cmake`.
 
 macro(phylanx_setup_blaze)
   # Method 2: Specify the include directory `blaze_INCLUDE_DIR`

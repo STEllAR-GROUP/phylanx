@@ -193,11 +193,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::not_implemented,
                         "dot_operation::dot2d",
                         "fix this at some point");
-                    //double result =
-                    //    Eigen::Map<Eigen::VectorXd>(lhs.data(), lhs.size()).dot(
-                    //        Eigen::Map<Eigen::VectorXd>(rhs.data(), rhs.size()));
 
-                    //return ir::node_data<double>(result);
+                    std::vector<double> dot_prods(lhs.matrix().columns());
+                    for (std::size_t i = 0UL; i < lhs.matrix().columns(); ++i) {
+                        dot_prods[i] = blaze::dot(
+                            blaze::row(lhs.matrix(), i),
+                            blaze::row(rhs.matrix(), i));
+                    }
+                    double result = std::accumulate(dot_prods.begin(), dot_prods.end(), 0.0);
+                    return ir::node_data<double>(result);
                 }
             }
 
