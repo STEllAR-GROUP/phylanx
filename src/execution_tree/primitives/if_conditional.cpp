@@ -72,25 +72,47 @@ namespace execution_tree {
         }
 
     ///////////////////////////////////////////////////////////////////////////
+    // struct containing implementation of evaluate 
+    // (used to resolve lifetime issues)
+    namespace detail
+    {
+        struct loop : std::enable_shared_from_this<loop>
+        {
+            loop(std::vector<primitive_argument_type> const& operands)
+              : operands_(operands)
+            {}
+
+            hpx::future<primitive_result_type> body()
+            {
+                // Keep data alive with a shared pointer
+                auto this_ = this -> shared_from_this();
+                hpx::future<std::uint8_t> cond_eval = boolean_operand(operands_[0]);
+                return cond_eval.then(
+                    [this_](hpx::future<std::uint8_t>&& cond_eval) {
+                        if (cond_eval.get() != 0)
+                        {
+                            return literal_operand(this_->operands_[1]);
+                        }
+                        else if (this_->operands_.size() > 2)
+                        {
+                            return literal_operand(this_->operands_[2]);
+                        }
+                        else
+                        {
+                            return hpx::make_ready_future(primitive_result_type{});
+                        }
+                    });
+            }
+
+        private:
+            std::vector<primitive_argument_type> operands_;
+        };
+    }
+    ///////////////////////////////////////////////////////////////////////////
     // evaluate 'true_case' or 'false_case' based on 'cond'
         hpx::future<primitive_result_type> if_conditional::eval() const
         {
-            hpx::future<std::uint8_t> cond_eval = boolean_operand(operands_[0]);
-            return cond_eval.then(
-                [this](hpx::future<std::uint8_t>&& cond_eval) {
-                    if (cond_eval.get() != 0)
-                    {
-                        return literal_operand(operands_[1]);
-                    }
-                    else if (operands_.size() > 2)
-                    {
-                        return literal_operand(operands_[2]);
-                    }
-                    else
-                    {
-                        return hpx::make_ready_future(primitive_result_type{});
-                    }
-                });
+            return std::make_shared<detail::loop>(operands_)->body();
         }
     }
 }
