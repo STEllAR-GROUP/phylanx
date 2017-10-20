@@ -10,13 +10,13 @@
 macro(phylanx_setup_blaze)
   # Method 2: Specify the include directory `blaze_INCLUDE_DIR`
   if(blaze_INCLUDE_DIR)
-    message("Adding defined blaze_INCLUDE_DIR to header include directories.")
+    phylanx_info("Adding defined blaze_INCLUDE_DIR to header include directories.")
     list(APPEND CMAKE_REQUIRED_INCLUDES ${blaze_INCLUDE_DIR})
     include_directories(${blaze_INCLUDE_DIR})
   endif()
   # Method 3: Vcpkg
   if(_VCPKG_ROOT_DIR)
-    message("Vcpkg found. Adding to header include directory: " ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+    phylanx_info("Vcpkg found. Adding to header include directory: " ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
     list(APPEND CMAKE_REQUIRED_INCLUDES "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
     include_directories("${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
   endif()
@@ -37,15 +37,7 @@ macro(phylanx_setup_blaze)
       add_library(blaze_target INTERFACE)
       target_link_libraries(blaze_target INTERFACE blaze::blaze)
     else()
-      # HACK: PHYLANX_SKIP_BLAZE_CHECK
-      # - If Blaze is available through vcpkg, vcpkg's toolchain script does
-      #   not offer any variables to detect blaze's location when this script
-      #   is running.
-      if(NOT PHYLANX_SKIP_BLAZE_CHECK)
-        phylanx_error("Blaze could not be found. Please set blaze_DIR to help locating it.")
-      else()
-        phylanx_info("Warning: Was not able to verify Blaze's presence through CMake. Skipping the error.")
-      endif()
+      phylanx_error("Blaze could not be found. Please set blaze_DIR to help locating it.")
     endif()
   endif()
 
