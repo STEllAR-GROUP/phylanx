@@ -7,7 +7,7 @@
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>

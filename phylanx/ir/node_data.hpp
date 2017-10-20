@@ -7,12 +7,12 @@
 #define PHYLANX_IR_NODE_DATA_AUG_26_2017_0924AM
 
 #include <phylanx/config.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 
-#include <Eigen/Dense>
+#include <blaze/Math.h>
 
 #include <boost/intrusive_ptr.hpp>
 
@@ -37,7 +37,7 @@ namespace phylanx { namespace ir
                 T,
                 std::random_access_iterator_tag,
                 T const&,
-                std::ptrdiff_t,
+                std::size_t,
                 T const*>
         {
         private:
@@ -46,7 +46,7 @@ namespace phylanx { namespace ir
                     T,
                     std::random_access_iterator_tag,
                     T const&,
-                    std::ptrdiff_t,
+                    std::size_t,
                     T const*>;
 
         public:
@@ -102,11 +102,9 @@ namespace phylanx { namespace ir
     public:
         constexpr static std::size_t const max_dimensions = 2;
 
-        using dimensions_type = std::array<std::ptrdiff_t, max_dimensions>;
-        using storage_type = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
-        using constant_type = Eigen::DenseBase<storage_type>;
-
-        using storage1d_type = Eigen::Matrix<T, Eigen::Dynamic, 1>;
+        using dimensions_type = std::array<std::size_t, max_dimensions>;
+        using storage_type = blaze::DynamicMatrix<T>;
+        using storage1d_type = blaze::DynamicVector<T, blaze::rowVector>;
 
         node_data() = default;
 
@@ -114,15 +112,15 @@ namespace phylanx { namespace ir
         {
             if (dims[1] != 1)
             {
-                data_ = constant_type::Constant(dims[0], dims[1]);
+                data_ = storage_type(dims[0], dims[1]);
             }
             else if (dims[0] != 1)
             {
-                data_ = constant_type::Constant(dims[0], 1);
+                data_ = storage_type(dims[0], 1UL);
             }
             else
             {
-                data_ = constant_type::Constant(1, 1);
+                data_ = storage_type(1UL, 1UL);
             }
         }
 
@@ -130,40 +128,41 @@ namespace phylanx { namespace ir
         {
             if (dims[1] != 1)
             {
-                data_ = constant_type::Constant(dims[0], dims[1], default_value);
+                data_ = storage_type(dims[0], dims[1], default_value);
             }
             else if (dims[0] != 1)
             {
-                data_ = constant_type::Constant(dims[0], 1, default_value);
+                data_ = storage_type(dims[0], 1UL, default_value);
             }
             else
             {
-                data_ = constant_type::Constant(1, 1, default_value);
+                data_ = storage_type(1UL, 1UL, default_value);
             }
         }
 
         /// Create node data for a 0-dimensional value
         node_data(T const& value)
-          : data_(constant_type::Constant(1, 1, value))
+          : data_(storage_type(1UL, 1UL, value))
         {
         }
         node_data(T && value)
-          : data_(constant_type::Constant(1, 1, std::move(value)))
+          : data_(storage_type(1UL, 1UL, std::move(value)))
         {
         }
 
         /// Create node data for a 1-dimensional value
         node_data(storage1d_type const& values)
-          : data_(values)
+          : data_(storage_type(1UL, values.size()))
         {
+            blaze::row(data_, 0UL) = values;
         }
         node_data(storage1d_type && values)
-          : data_(std::move(values))
+          : data_(storage_type(1UL, values.size()))
         {
+            blaze::row(data_, 0UL) = std::move(values);
         }
         node_data(std::vector<T> const& values)
-          : data_(Eigen::Map<storage1d_type const, Eigen::Unaligned>(
-                values.data(), values.size()))
+          : data_(storage_type(1UL, values.size(), values.data()))
         {
         }
 
@@ -205,59 +204,60 @@ namespace phylanx { namespace ir
 
 
         /// Access a specific element of the underlying N-dimensional array
-        T& operator[](std::ptrdiff_t index)
+        T& operator[](std::size_t index)
         {
-            return data_.data()[index];
+            std::size_t idx_m = index / data_.columns();
+            std::size_t idx_n = index % data_.rows();
+            return data_(idx_m, idx_n);
         }
         T& operator[](dimensions_type const& indicies)
         {
             return data_(indicies[0], indicies[1]);
         }
 
-        T const& operator[](std::ptrdiff_t index) const
+        T const& operator[](std::size_t index) const
         {
-            return data_.data()[index];
+            std::size_t idx_m = index / data_.columns();
+            std::size_t idx_n = index % data_.rows();
+            return data_(idx_m, idx_n);
         }
         T const& operator[](dimensions_type const& indicies) const
         {
             return data_(indicies[0], indicies[1]);
         }
 
-        using iterator = detail::node_value_iterator<T>;
-        using const_iterator = detail::node_value_iterator<T>;
-
         /// Get iterator referring to the beginning of the underlying data
-        iterator begin() const
+        blaze::DenseIterator<const T, true> begin() const
         {
-            return iterator{data_.data()};
+            return data_.begin(0UL);
         }
         /// Get iterator referring to the end of the underlying data
-        iterator end() const
+        blaze::DenseIterator<const T, true> end() const
         {
-            return iterator{data_.data() + data_.size()};
+            return data_.end(data_.rows() - 1UL);
         }
 
-        iterator cbegin() const
+        blaze::DenseIterator<const T, true> cbegin() const
         {
-            return begin();
+            return data_.cbegin(0UL);
         }
         /// Get iterator referring to the end of the underlying data
-        iterator cend() const
+        blaze::DenseIterator<const T, true> cend() const
         {
-            return end();
+            return data_.cend(data_.rows() - 1UL);
         }
 
-        T* data()
-        {
-            return data_.data();
-        }
-        T const* data() const
-        {
-            return data_.data();
-        }
+        //T* data()
+        //{
+        //    return data_.data();
+        //}
+        //T const* data() const
+        //{
+        //    return data_.data();
+        //}
         std::size_t size() const
         {
-            return data_.size();
+            return data_.rows() * data_.columns();
         }
 
         storage_type& matrix()
@@ -272,11 +272,11 @@ namespace phylanx { namespace ir
         /// Extract the dimensionality of the underlying data array.
         std::size_t num_dimensions() const
         {
-            if (data_.cols() != 1)
+            if (data_.rows() != 1)
             {
                 return 2;
             }
-            if (data_.rows() != 1)
+            if (data_.columns() != 1)
             {
                 return 1;
             }
@@ -286,11 +286,11 @@ namespace phylanx { namespace ir
         /// Extract the dimensional extends of the underlying data array.
         dimensions_type dimensions() const
         {
-            return dimensions_type{data_.rows(), data_.cols()};
+            return dimensions_type{data_.columns(), data_.rows()};
         }
         std::size_t dimension(std::size_t dim) const
         {
-            return (dim == 0) ? data_.rows() : data_.cols();
+            return (dim == 0) ? data_.columns() : data_.rows();
         }
 
         explicit operator bool() const;
@@ -323,8 +323,7 @@ namespace phylanx { namespace ir
             return false;
         }
 
-        return std::equal(hpx::util::begin(lhs), hpx::util::end(lhs),
-            hpx::util::begin(rhs), hpx::util::end(rhs));
+        return lhs.matrix() == rhs.matrix();
     }
 
     template <typename T>

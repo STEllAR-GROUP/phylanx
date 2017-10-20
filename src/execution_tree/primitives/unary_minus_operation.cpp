@@ -8,7 +8,7 @@
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
@@ -83,7 +83,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type negxd(operands_type&& ops) const
             {
-                ops[0].matrix().array() = -ops[0].matrix().array();
+                ops[0].matrix() = -ops[0].matrix();
                 return primitive_result_type(std::move(ops[0]));
             }
 

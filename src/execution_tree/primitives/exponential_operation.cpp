@@ -6,7 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -17,7 +17,6 @@
 #include <utility>
 #include <vector>
 
-#include <unsupported/Eigen/MatrixFunctions>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -72,16 +71,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         operands_type && ops) const
     {
         auto const& val = ops[0].matrix();
-        if (val.rows() != val.cols())
+        if (val.rows() != val.columns())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "exponential_operation::exponential1d",
                 "matrix exponentiation requires quadratic matrices");
         }
 
-        using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+        using matrix_type = blaze::DynamicMatrix<double>;
 
-        matrix_type result = ops[0].matrix().exp();
+        matrix_type result = blaze::exp(ops[0].matrix());
         return ir::node_data<double>(std::move(result));
     }
 
@@ -89,17 +88,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         operands_type && ops) const
     {
         auto const& val = ops[0].matrix();
-        if (val.rows() != val.cols())
+        if (val.rows() != val.columns())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "exponential_operation::exponential1d",
                 "matrix exponentiation requires quadratic matrices");
         }
 
-        using matrix_type =
-            Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+        using matrix_type = blaze::DynamicMatrix<double>;
 
-        matrix_type result = ops[0].matrix().exp();
+        matrix_type result = blaze::exp(ops[0].matrix());
         return ir::node_data<double>(std::move(result));
     }
 
