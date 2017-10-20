@@ -134,7 +134,7 @@ namespace phylanx { namespace execution_tree
         {
             std::string name = ast::detail::identifier_name(expr);
             auto p = variables.find(name);
-            if (is_empty_range(p))
+            if (!is_empty_range(p))
             {
                 if (!is_primitive_operand(p.first->second))
                 {
@@ -146,7 +146,7 @@ namespace phylanx { namespace execution_tree
                 }
                 return p.first->second;
             }
-            else if (is_empty_range(functions.find(name)))
+            else if (!is_empty_range(functions.find(name)))
             {
                 return primitive_argument_type{std::move(name)};
             }
