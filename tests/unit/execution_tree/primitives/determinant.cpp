@@ -51,7 +51,8 @@ void test_determinant_0d_lit()
 
 void test_determinant_2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -67,7 +68,7 @@ void test_determinant_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         determinant.eval();
 
-    double expected = m.determinant();
+    double expected = blaze::det(m);
     HPX_TEST_EQ(
         expected, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }

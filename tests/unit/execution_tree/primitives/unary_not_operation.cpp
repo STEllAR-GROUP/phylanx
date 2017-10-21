@@ -49,7 +49,8 @@ void test_unary_not_operation_0d_lit()
 
 void test_unary_not_operation_2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -66,7 +67,7 @@ void test_unary_not_operation_2d()
         unary_minus.eval();
 
     HPX_TEST_EQ(
-        m.norm() == 0.0,
+        m.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 

@@ -9,8 +9,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <unsupported/Eigen/MatrixFunctions>
-
 #include <vector>
 #include <utility>
 
@@ -53,7 +51,8 @@ void test_transpose_operation_0d_lit()
 
 void test_transpose_operation_2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -69,7 +68,8 @@ void test_transpose_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         transpose.eval();
 
-    Eigen::MatrixXd expected = m.transpose();
+    blaze::DynamicMatrix<double> expected = m;
+    blaze::transpose(expected);
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));

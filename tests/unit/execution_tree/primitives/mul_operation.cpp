@@ -10,8 +10,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <Eigen/Dense>
-
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -62,7 +60,8 @@ void test_mul_operation_0d_lit()
 
 void test_mul_operation_0d1d()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -82,7 +81,7 @@ void test_mul_operation_0d1d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::VectorXd expected = 6.0 * v;
+    blaze::DynamicVector<double, blaze::rowVector> expected = 6.0 * v;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -90,7 +89,8 @@ void test_mul_operation_0d1d()
 
 void test_mul_operation_0d1d_lit()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(6.0);
 
@@ -108,7 +108,7 @@ void test_mul_operation_0d1d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::VectorXd expected = 6.0 * v;
+    blaze::DynamicVector<double, blaze::rowVector> expected = 6.0 * v;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -116,7 +116,8 @@ void test_mul_operation_0d1d_lit()
 
 void test_mul_operation_0d2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -136,7 +137,7 @@ void test_mul_operation_0d2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::MatrixXd expected = 6.0 * m;
+    blaze::DynamicMatrix<double> expected = 6.0 * m;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -144,7 +145,8 @@ void test_mul_operation_0d2d()
 
 void test_mul_operation_0d2d_lit()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL);
 
     phylanx::ir::node_data<double> lhs(6.0);
 
@@ -162,7 +164,7 @@ void test_mul_operation_0d2d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::MatrixXd expected = 6.0 * m;
+    blaze::DynamicMatrix<double> expected = m * 6.0;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -170,7 +172,8 @@ void test_mul_operation_0d2d_lit()
 
 void test_mul_operation_1d0d()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -190,7 +193,7 @@ void test_mul_operation_1d0d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::VectorXd expected = v * 6.0;
+    blaze::DynamicVector<double, blaze::rowVector> expected = v * 6.0;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -198,7 +201,8 @@ void test_mul_operation_1d0d()
 
 void test_mul_operation_1d0d_lit()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v);
 
@@ -216,7 +220,7 @@ void test_mul_operation_1d0d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::VectorXd expected = v * 6.0;
+    blaze::DynamicVector<double, blaze::rowVector> expected = v * 6.0
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -224,7 +228,8 @@ void test_mul_operation_1d0d_lit()
 
 void test_mul_operation_2d0d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -244,7 +249,7 @@ void test_mul_operation_2d0d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::MatrixXd expected = m * 6.0;
+    blaze::DynamicMatrix<double> expected = m * 6.0;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -252,7 +257,8 @@ void test_mul_operation_2d0d()
 
 void test_mul_operation_2d0d_lit()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::ir::node_data<double> lhs(m);
 
@@ -270,7 +276,7 @@ void test_mul_operation_2d0d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::MatrixXd expected = m * 6.0;
+    blaze::DynamicMatrix<double> expected = m * 6.0;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -278,8 +284,9 @@ void test_mul_operation_2d0d_lit()
 
 void test_mul_operation_2d()
 {
-    Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(42, 42);
-    Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -299,7 +306,7 @@ void test_mul_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::MatrixXd expected = m1 * m2;
+    blaze::DynamicMatrix<double> expected = m1 * m2;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -307,8 +314,9 @@ void test_mul_operation_2d()
 
 void test_mul_operation_2d_lit()
 {
-    Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(42, 42);
-    Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(42UL, 42UL);
 
     phylanx::ir::node_data<double> lhs(m1);
 
@@ -326,7 +334,7 @@ void test_mul_operation_2d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    Eigen::MatrixXd expected = m1 * m2;
+    blaze::DynamicMatrix<double> expected = m1 * m2;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));

@@ -9,8 +9,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <Eigen/Dense>
-
 #include <utility>
 #include <vector>
 
@@ -37,7 +35,8 @@ void test_random_0d()
 
 void test_random_1d()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive dim =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -61,7 +60,8 @@ void test_random_1d()
 
 void test_random_2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 105);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(105UL, 105UL);
 
     phylanx::execution_tree::primitive dim =
         hpx::new_<phylanx::execution_tree::primitives::variable>(

@@ -9,8 +9,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <Eigen/Dense>
-
 #include <utility>
 #include <vector>
 
@@ -42,7 +40,8 @@ void test_constant_0d()
 
 void test_constant_1d()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -62,7 +61,7 @@ void test_constant_1d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         const_.eval();
 
-    Eigen::VectorXd expected = Eigen::VectorXd::Constant(1007, 42.0);
+    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::DynamicVector<double, blaze::rowVector>(1007UL, 42.0);
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 1);
@@ -72,7 +71,8 @@ void test_constant_1d()
 
 void test_constant_2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 105);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(101UL, 105UL);
 
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -92,7 +92,7 @@ void test_constant_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         const_.eval();
 
-    Eigen::MatrixXd expected = Eigen::MatrixXd::Constant(101, 105, 42.0);
+    blaze::DynamicMatrix<double> expected = blaze::DynamicMatrix<double>(101UL, 105UL, 42.0);
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 2);

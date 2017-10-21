@@ -9,8 +9,6 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <Eigen/Dense>
-
 #include <algorithm>
 #include <cstdio>
 #include <vector>
@@ -99,16 +97,20 @@ void test_file_io(phylanx::ir::node_data<double> const& in)
 
 int main(int argc, char* argv[])
 {
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+
     test_file_io(phylanx::ir::node_data<double>(42.0));
 
-    Eigen::VectorXd ev = Eigen::VectorXd::Random(1007);
+    blaze::DynamicVector<double, blaze::rowVector> ev = gen.generate(1007UL);
     test_file_io(phylanx::ir::node_data<double>(std::move(ev)));
 
     std::vector<double> v(1007);
     std::generate(v.begin(), v.end(), std::rand);
     test_file_io(phylanx::ir::node_data<double>(std::move(v)));
 
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen2{};
+
+    blaze::DynamicMatrix<double> m = gen2.generate(101UL, 101UL);
     test_file_io(phylanx::ir::node_data<double>(std::move(m)));
 
     return hpx::util::report_errors();

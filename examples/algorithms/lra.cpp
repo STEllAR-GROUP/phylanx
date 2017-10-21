@@ -38,11 +38,9 @@ char const* const lra_code = R"(
 
 int main(int argc, char* argv[])
 {
-    Eigen::VectorXd v1(8, 1);
-    v1 << 17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71;
+    blaze::DynamicVector<double, blaze::rowVector> v1({ 17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71});
 
-    Eigen::VectorXd v2(8, 1);
-    v2 << 0, 0, 0, 0, 1, 1, 0, 0;
+    blaze::DynamicVector<double, blaze::rowVector v2({ 0, 0, 0, 0, 1, 1, 0, 0 });
 
     phylanx::execution_tree::variables variables = {
         {"iterations", std::int64_t{750}},

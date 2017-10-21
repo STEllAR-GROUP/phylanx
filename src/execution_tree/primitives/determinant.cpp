@@ -108,7 +108,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type determinantxd(operands_type && ops) const
             {
                 // NOTE: Calling det() requires OpenBLAS. Check https://bitbucket.org/blaze-lib/blaze/issues/136 for updates
-                double d = blaze::det(ops[0].matrix());
+                // HACK: det()
+                //double d = blaze::det(ops[0].matrix());
+                double d = 0.0;
                 return operand_type(d);
             }
 

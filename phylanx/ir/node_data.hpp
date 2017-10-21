@@ -24,6 +24,10 @@
 #include <iterator>
 #include <vector>
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 namespace phylanx { namespace ir
 {
     ///////////////////////////////////////////////////////////////////////////

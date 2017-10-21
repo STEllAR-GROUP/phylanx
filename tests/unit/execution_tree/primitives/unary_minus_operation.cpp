@@ -51,7 +51,8 @@ void test_unary_minus_operation_0d_lit()
 
 void test_unary_minus_operation_2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -67,7 +68,7 @@ void test_unary_minus_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         unary_minus.eval();
 
-    Eigen::MatrixXd expected = -m;
+    blaze::DynamicMatrix<double> expected = -m;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
