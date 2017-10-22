@@ -18,6 +18,7 @@ set(tests
     for_operation
     greater_operation
     greater_equal_operation
+    if_conditional
     inverse_operation
     invoke_operation
     less_operation

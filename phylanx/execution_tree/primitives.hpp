@@ -21,6 +21,7 @@
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
+#include <phylanx/execution_tree/primitives/if_conditional.hpp>
 #include <phylanx/execution_tree/primitives/inverse_operation.hpp>
 #include <phylanx/execution_tree/primitives/less.hpp>
 #include <phylanx/execution_tree/primitives/less_equal.hpp>
