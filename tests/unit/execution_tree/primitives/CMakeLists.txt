@@ -15,8 +15,10 @@ set(tests
     equal_operation
     exponential_operation
     file_primitives
+    for_operation
     greater_operation
     greater_equal_operation
+    if_conditional
     inverse_operation
     invoke_operation
     less_operation

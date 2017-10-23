@@ -275,6 +275,84 @@ void test_multi_patterns()
     test_generate_tree("block(A, B, C)", patterns, variables, 42.0);
 }
 
+void test_if_conditional()
+{
+    // Test 1 
+    //  two outcome true case
+    phylanx::execution_tree::pattern_list patterns = {
+        phylanx::execution_tree::primitives::if_conditional::match_data
+    };
+
+    phylanx::execution_tree::variables variables = {
+        {"cond", create_literal_value(1.0)},
+        {"true_case", create_literal_value(42.0)},
+        {"false_case", create_literal_value(54.0)}
+    };
+
+    test_generate_tree(
+        "if(cond, true_case, false_case)"
+      , patterns
+      , variables
+      , 42.0);
+
+    // Test 2 
+    //  two outcome false case
+    phylanx::execution_tree::pattern_list patterns2 = {
+        phylanx::execution_tree::primitives::if_conditional::match_data
+    };
+
+    phylanx::execution_tree::variables variables2 = {
+        {"cond", create_literal_value(false)},
+        {"true_case", create_literal_value(42.0)},
+        {"false_case", create_literal_value(54.0)}
+    };
+
+    test_generate_tree(
+        "if(cond, true_case, false_case)"
+      , patterns2
+      , variables2
+      , 54.0);
+
+    // Test 3 
+    //  one outcome true case
+    phylanx::execution_tree::pattern_list patterns3 = {
+        phylanx::execution_tree::primitives::if_conditional::match_data
+    };
+
+    phylanx::execution_tree::variables variables3 = {
+        {"cond", create_literal_value(true)},
+        {"true_case", create_literal_value(42.0)},
+    };
+
+    test_generate_tree(
+        "if(cond, true_case)"
+      , patterns3
+      , variables3
+      , 42.0);
+
+    // Test 4 
+    //  one outcome false case
+    phylanx::execution_tree::pattern_list patterns4 = {
+        phylanx::execution_tree::primitives::if_conditional::match_data
+    };
+
+    phylanx::execution_tree::variables variables4 = {
+        {"cond", create_literal_value(false)},
+        {"true_case", create_literal_value(42.0)},
+    };
+
+    phylanx::execution_tree::primitive_argument_type p =
+        phylanx::execution_tree::generate_tree("if(cond, true_case)", patterns, variables);
+
+    std::cout<<"Test 4:"<<std::endl
+             <<"Index Value of primitive_argument_type= "<<p.index()<<std::endl;
+/*
+    HPX_TEST(
+        !phylanx::execution_tree::valid(phylanx::execution_tree::extract_literal_value(p))
+    );
+*/
+}
+
 int main(int argc, char* argv[])
 {
     test_add_primitive();
@@ -287,6 +365,7 @@ int main(int argc, char* argv[])
     test_store_primitive();
     test_complex_expression();
     test_multi_patterns();
+    test_if_conditional();
 
     return hpx::util::report_errors();
 }
