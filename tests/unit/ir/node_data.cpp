@@ -8,13 +8,8 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <blaze/Math.h>
-
 #include <algorithm>
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {

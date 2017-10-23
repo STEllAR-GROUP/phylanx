@@ -8,7 +8,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/if_conditional.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>

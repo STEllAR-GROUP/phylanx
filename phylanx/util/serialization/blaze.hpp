@@ -9,7 +9,6 @@
 #include <phylanx/config.hpp>
 #include <hpx/include/serialization.hpp>
 #include <blaze/Math.h>
-#include <blaze/math/Serialization.h>
 
 
 namespace hpx { namespace serialization

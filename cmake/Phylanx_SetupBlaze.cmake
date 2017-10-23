@@ -41,5 +41,5 @@ macro(phylanx_setup_blaze)
   endif()
 
   phylanx_info("Blaze was found.")
-
+  
 endmacro()

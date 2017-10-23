@@ -4,6 +4,10 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
@@ -17,11 +21,11 @@
 void test_div_operation_0d()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(7.0));
 
     phylanx::execution_tree::primitive div =
@@ -42,7 +46,7 @@ void test_div_operation_0d_lit()
     phylanx::ir::node_data<double> lhs(42.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(7.0));
 
     phylanx::execution_tree::primitive div =
@@ -64,11 +68,11 @@ void test_div_operation_0d1d()
     blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive div =
@@ -96,7 +100,7 @@ void test_div_operation_0d1d_lit()
     phylanx::ir::node_data<double> lhs(42.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive div =
@@ -121,11 +125,11 @@ void test_div_operation_0d2d()
     blaze::DynamicMatrix<double, blaze::rowVector> m = gen.generate(101UL, 101UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive div =
@@ -152,7 +156,7 @@ void test_div_operation_0d2d_lit()
     phylanx::ir::node_data<double> lhs(6.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive div =
@@ -177,11 +181,11 @@ void test_div_operation_1d0d()
     blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive div =
@@ -208,7 +212,7 @@ void test_div_operation_1d0d_lit()
     phylanx::ir::node_data<double> lhs(v);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive div =
@@ -233,11 +237,11 @@ void test_div_operation_2d0d()
     blaze::DynamicMatrix<double, blaze::rowVector> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive div =
@@ -264,7 +268,7 @@ void test_div_operation_2d0d_lit()
     phylanx::ir::node_data<double> lhs(m);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(6.0));
 
     phylanx::execution_tree::primitive div =
@@ -290,11 +294,11 @@ void test_div_operation_2d()
     blaze::DynamicMatrix<double> m2 = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive div =
@@ -322,7 +326,7 @@ void test_div_operation_2d_lit()
     phylanx::ir::node_data<double> lhs(m1);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive div =

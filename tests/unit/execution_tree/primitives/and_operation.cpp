@@ -3,6 +3,10 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
@@ -48,7 +52,7 @@ void test_and_operation_0d_lit_false()
     phylanx::ir::node_data<double> lhs(0.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive and_ =
@@ -69,7 +73,7 @@ void test_and_operation_0d_lit_true()
     phylanx::ir::node_data<double> lhs(41.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive and_ =
@@ -92,11 +96,11 @@ void test_and_operation_1d()
     blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive and_ =
@@ -123,7 +127,7 @@ void test_and_operation_1d_lit()
     phylanx::ir::node_data<double> lhs(v1);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive and_ =
@@ -148,11 +152,11 @@ void test_and_operation_2d()
     blaze::DynamicMatrix<double> m2 = gen.generate(101UL, 101UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive and_ =
@@ -179,7 +183,7 @@ void test_and_operation_2d_lit()
     phylanx::ir::node_data<double> lhs(m1);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::literal_value>(
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive and_ =
