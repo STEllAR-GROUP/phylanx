@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type transposexd(operands_type && ops) const
             {
-                blaze::trans(ops[0].matrix());
+                blaze::transpose(ops[0].matrix());
                 return std::move(ops[0]);
             }
 

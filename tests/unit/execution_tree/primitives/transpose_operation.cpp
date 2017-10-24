@@ -69,8 +69,7 @@ void test_transpose_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         transpose.eval();
 
-    blaze::DynamicMatrix<double> expected = m;
-    blaze::transpose(expected);
+    blaze::DynamicMatrix<double> expected = blaze::trans(m);
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
