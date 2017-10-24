@@ -11,4 +11,8 @@
 #include <phylanx/config/export_definitions.hpp>
 #include <phylanx/config/version.hpp>
 
+#if defined(_MSC_VER) && !defined(NOMINMAX)
+#define NOMINMAX
+#endif
+
 #endif
