@@ -3,8 +3,8 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <phylanx/phylanx.hpp>
 #include <hpx/hpx_main.hpp>
+#include <phylanx/phylanx.hpp>
 
 #include <iostream>
 
@@ -38,16 +38,16 @@ char const* const lra_code = R"(
 
 int main(int argc, char* argv[])
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1({ 17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71});
+    blaze::DynamicVector<double, blaze::rowVector> v1(
+        {17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71});
 
-    blaze::DynamicVector<double, blaze::rowVector> v2({ 0, 0, 0, 0, 1, 1, 0, 0 });
+    blaze::DynamicVector<double, blaze::rowVector> v2({0, 0, 0, 0, 1, 1, 0, 0});
 
     phylanx::execution_tree::variables variables = {
         {"iterations", std::int64_t{750}},
         {"alpha", phylanx::ir::node_data<double>{1e-5}},
         {"x", phylanx::ir::node_data<double>(v1)},
-        {"y", phylanx::ir::node_data<double>(v2)}
-    };
+        {"y", phylanx::ir::node_data<double>(v2)}};
 
     // generate an execution tree from the given code
     phylanx::execution_tree::primitive_argument_type p =
@@ -61,4 +61,3 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-

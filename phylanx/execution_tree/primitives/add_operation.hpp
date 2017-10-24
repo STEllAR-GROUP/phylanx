@@ -17,26 +17,27 @@
 
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    class HPX_COMPONENT_EXPORT add_operation
-        : public base_primitive
-        , public hpx::components::component_base<add_operation>
-    {
-    public:
-        static std::vector<match_pattern_type> const match_data;
+namespace phylanx {
+namespace execution_tree {
+    namespace primitives {
+        class HPX_COMPONENT_EXPORT add_operation
+          : public base_primitive
+          , public hpx::components::component_base<add_operation>
+        {
+        public:
+            static std::vector<match_pattern_type> const match_data;
 
-        add_operation() = default;
+            add_operation() = default;
 
-        add_operation(std::vector<primitive_argument_type>&& operands);
+            add_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_result_type> eval() const override;
+            hpx::future<primitive_result_type> eval() const override;
 
-    private:
-        std::vector<primitive_argument_type> operands_;
-    };
-}}}
+        private:
+            std::vector<primitive_argument_type> operands_;
+        };
+    }
+}
+}
 
 #endif
-
-

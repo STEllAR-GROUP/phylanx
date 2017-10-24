@@ -180,14 +180,14 @@ void test_add_operation_2d_lit()
 
 int main(int argc, char* argv[])
 {
-    //test_add_operation_0d();
-    //test_add_operation_0d_lit();
+    test_add_operation_0d();
+    test_add_operation_0d_lit();
 
-    //test_add_operation_1d();
-    //test_add_operation_1d_lit();
+    test_add_operation_1d();
+    test_add_operation_1d_lit();
 
-    //test_add_operation_2d();
-    //test_add_operation_2d_lit();
+    test_add_operation_2d();
+    test_add_operation_2d_lit();
 
     return hpx::util::report_errors();
 }
