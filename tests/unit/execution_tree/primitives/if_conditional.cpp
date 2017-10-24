@@ -14,7 +14,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <Eigen/Dense>
+#include <blaze/Math.h>
 
 #include <iostream>
 #include <utility>

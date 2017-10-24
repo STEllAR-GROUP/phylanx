@@ -14,8 +14,8 @@
 namespace hpx { namespace serialization
 {
     template <typename T>
-    void load(input_archive& ar,
-        blaze::DynamicVector<T, blaze::rowVector>& m,
+    void load(input_archive& archive,
+        blaze::DynamicVector<T, blaze::rowVector>& mat,
         unsigned)
     {
         // DeserializeHeader
@@ -61,16 +61,16 @@ namespace hpx { namespace serialization
     }
 
     template <typename T>
-    void save(output_archive& ar,
+    void save(output_archive& archive,
         blaze::DynamicVector<T, blaze::rowVector> const& v,
         unsigned)
     {
-        // SerializeHeader
+        // SerializeVector
         archive << v.size() << ',';
 
-        // SerializeMatrix
+        // SerializeVector
         for (size_t j = 0UL; j < v.size(); ++j) {
-            archive << mat(i, j);
+            archive << v(j);
         }
     }
 
@@ -79,11 +79,11 @@ namespace hpx { namespace serialization
         blaze::DynamicMatrix<T> const& mat,
         unsigned)
     {
-        // SerializeHeader
+        // SerializeVector
         archive << mat.rows() << ','
                 << mat.columns() << ',';
 
-        // SerializeMatrix
+        // SerializeVector
         for (size_t i = 0UL; i < mat.rows(); ++i) {
             for (size_t j = 0UL; j < mat.columns(); ++j) {
                 archive << mat(i, j);

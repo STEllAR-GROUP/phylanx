@@ -224,7 +224,7 @@ void test_mul_operation_1d0d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         mul.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = v * 6.0
+    blaze::DynamicVector<double, blaze::rowVector> expected = v * 6.0;
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
