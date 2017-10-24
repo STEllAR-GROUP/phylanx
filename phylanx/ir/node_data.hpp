@@ -138,7 +138,7 @@ namespace phylanx { namespace ir
         T& operator[](std::size_t index)
         {
             std::size_t idx_m = index / data_.columns();
-            std::size_t idx_n = index % data_.rows();
+            std::size_t idx_n = index % data_.columns();
             return data_(idx_m, idx_n);
         }
         T& operator[](dimensions_type const& indicies)
@@ -149,7 +149,7 @@ namespace phylanx { namespace ir
         T const& operator[](std::size_t index) const
         {
             std::size_t idx_m = index / data_.columns();
-            std::size_t idx_n = index % data_.rows();
+            std::size_t idx_n = index % data_.columns();
             return data_(idx_m, idx_n);
         }
         T const& operator[](dimensions_type const& indicies) const
