@@ -111,7 +111,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(ops[1].matrix(), [&](double x) { return ops[0][0] + x; });
+                ops[1].matrix() = blaze::map(
+                        ops[1].matrix(),
+                        [&](double x) { return ops[0][0] + x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -125,7 +127,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(ops[1].matrix(), [&](double x) { return ops[0][0] + x; });
+                ops[1].matrix() = blaze::map(
+                        ps[1].matrix(),
+                        [&](double x) { return ops[0][0] + x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -161,7 +165,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(ops[0].matrix(), [&](double x) { return x + ops[1][0]; });
+                ops[0].matrix() = blaze::map(
+                        ps[0].matrix(),
+                        [&](double x) { return x + ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -227,7 +233,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(ops[0].matrix(), [&](double x) { return x + ops[1][0]; });
+                ops[0].matrix() = blaze::map(
+                        ps[0].matrix(),
+                        [&](double x) { return x + ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
