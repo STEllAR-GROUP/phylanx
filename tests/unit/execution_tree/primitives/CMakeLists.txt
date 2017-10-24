@@ -29,6 +29,7 @@ set(tests
     or_operation
     parallel_block_operation
     random
+    slicing_operation
     store_operation
     sub_operation
     transpose_operation
