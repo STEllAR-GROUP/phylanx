@@ -92,9 +92,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<primitive_result_type> file_write::eval() const
+    hpx::future<primitive_result_type> file_write::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return literal_operand(operand_).then(hpx::util::unwrapping(
+        return literal_operand(operand_, args).then(hpx::util::unwrapping(
             [this](primitive_result_type && val) -> primitive_result_type
             {
                 if (!valid(val))

@@ -40,36 +40,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     constant::constant(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() != 1 && operands_.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "constant::constant",
-                "the constant primitive requires"
-                    "at least one annd at most 2 operands");
-        }
-
-        if (!valid(operands_[0]) ||
-            (operands_.size() == 2 && !valid(operands_[1])))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "constant::constant",
-                "the constant primitive requires that the "
-                    "arguments given by the operands array are valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct constant : std::enable_shared_from_this<constant>
         {
-            constant(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            constant() = default;
 
-            hpx::future<primitive_result_type> eval()
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args)
             {
+                if (operands.size() != 1 && operands.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "constant::eval",
+                        "the constant primitive requires"
+                            "at least one and at most 2 operands");
+                }
+
+                if (!valid(operands[0]) ||
+                    (operands.size() == 2 && !valid(operands[1])))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "constant::eval",
+                        "the constant primitive requires that the "
+                            "arguments given by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
@@ -98,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
 
@@ -138,14 +138,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 matrix_type result = matrix_type(dim[0], dim[1], ops[0][0]);
                 return operand_type(std::move(result));
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
-    hpx::future<primitive_result_type> constant::eval() const
+    hpx::future<primitive_result_type> constant::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::constant>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::constant>()->eval(args, {});
+        }
+
+        return std::make_shared<detail::constant>()->eval(operands_, args);
     }
 }}}

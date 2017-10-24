@@ -6,7 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
+#include <phylanx/util/serialization/eigen.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include <unsupported/Eigen/MatrixFunctions>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -40,92 +41,120 @@ namespace phylanx { namespace execution_tree { namespace primitives
     exponential_operation::exponential_operation(
             std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "exponential_operation::exponential_operation",
-                "the exponential_operation primitive requires"
-                "exactly one operand");
-        }
-
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "exponential_operation::exponential_operation",
-                "the exponential_operation primitive requires "
-                "that the arguments given by the operands array"
-                " is valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> exponential_operation::exponential0d(
-        operands_type && ops) const
+    namespace detail
     {
-        ops[0][0] = std::exp(ops[0][0]);
-        return std::move(ops[0]);
-    }
-
-    ir::node_data<double> exponential_operation::exponential1d(
-        operands_type && ops) const
-    {
-        auto const& val = ops[0].matrix();
-        if (val.rows() != val.columns())
+        struct exp : std::enable_shared_from_this<exp>
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "exponential_operation::exponential1d",
-                "matrix exponentiation requires quadratic matrices");
-        }
+            exp() = default;
 
-        using matrix_type = blaze::DynamicMatrix<double>;
+        private:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<operand_type>;
 
-        matrix_type result = blaze::exp(ops[0].matrix());
-        return ir::node_data<double>(std::move(result));
-    }
-
-    ir::node_data<double> exponential_operation::exponentialxd(
-        operands_type && ops) const
-    {
-        auto const& val = ops[0].matrix();
-        if (val.rows() != val.columns())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "exponential_operation::exponential1d",
-                "matrix exponentiation requires quadratic matrices");
-        }
-
-        using matrix_type = blaze::DynamicMatrix<double>;
-
-        matrix_type result = blaze::exp(ops[0].matrix());
-        return ir::node_data<double>(std::move(result));
-    }
-
-    hpx::future<primitive_result_type> exponential_operation::eval() const
-    {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type&& ops) -> primitive_result_type
+        protected:
+            ir::node_data<double> exponential0d(operands_type&& ops) const
             {
-                std::size_t dims = ops[0].num_dimensions();
-                switch (dims)
+                ops[0][0] = std::exp(ops[0][0]);
+                return std::move(ops[0]);
+            }
+
+            ir::node_data<double> exponential1d(operands_type&& ops) const
+            {
+                auto const& val = ops[0].matrix();
+                if (val.rows() != val.cols())
                 {
-                case 0:
-                    return primitive_result_type(exponential0d(std::move(ops)));
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "exponential_operation::exponential1d",
+                        "matrix exponentiation requires quadratic matrices");
+                }
 
-                case 1:
-                    return primitive_result_type(exponential1d(std::move(ops)));
+                using matrix_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
 
-                case 2:
-                    return primitive_result_type(exponentialxd(std::move(ops)));
+                matrix_type result = ops[0].matrix().exp();
+                return ir::node_data<double>(std::move(result));
+            }
 
-                default:
+            ir::node_data<double> exponentialxd(operands_type&& ops) const
+            {
+                auto const& val = ops[0].matrix();
+                if (val.rows() != val.cols())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "exponential_operation::exponential1d",
+                        "matrix exponentiation requires quadratic matrices");
+                }
+
+                using matrix_type =
+                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+
+                matrix_type result = ops[0].matrix().exp();
+                return ir::node_data<double>(std::move(result));
+            }
+
+        public:
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
+            {
+                if (operands.size() != 1)
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "exponential_operation::eval",
-                        "left hand side operand has unsupported number of "
-                            "dimensions");
+                        "the exponential_operation primitive requires"
+                        "exactly one operand");
                 }
-            }),
-            detail::map_operands(operands_, numeric_operand)
-        );
+
+                if (!valid(operands[0]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "exponential_operation::eval",
+                        "the exponential_operation primitive requires "
+                        "that the arguments given by the operands array"
+                        " is valid");
+                }
+
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& ops) -> primitive_result_type
+                    {
+                        std::size_t dims = ops[0].num_dimensions();
+                        switch (dims)
+                        {
+                        case 0:
+                            return this_->exponential0d(std::move(ops));
+
+                        case 1:
+                            return this_->exponential1d(std::move(ops));
+
+                        case 2:
+                            return this_->exponentialxd(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "exponential_operation::eval",
+                                "left hand side operand has unsupported "
+                                    "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(operands, numeric_operand, args)
+                );
+            }
+        };
+    }
+
+    // implement 'exp' for all possible combinations of lhs and rhs
+    hpx::future<primitive_result_type> exponential_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::exp>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::exp>()->eval(operands_, args);
     }
 }}}

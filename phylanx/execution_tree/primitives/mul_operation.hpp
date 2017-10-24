@@ -22,10 +22,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<mul_operation>
     {
-    private:
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
-
     public:
         static std::vector<match_pattern_type> const match_data;
 
@@ -33,11 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         mul_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_result_type> eval() const override;
-
-    protected:
-        ir::node_data<double> mul0d(operands_type && ops) const;
-        ir::node_data<double> mulxd(operands_type && ops) const;
+        hpx::future<primitive_result_type> eval(
+            std::vector<primitive_argument_type> const& args) const override;
 
     private:
         std::vector<primitive_argument_type> operands_;

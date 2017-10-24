@@ -41,58 +41,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
     for_operation::for_operation(
             std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() != 4)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::for_operation::"
-                    "for_operation",
-                "the for_operation primitive requires exactly four arguments");
-        }
-
-        if (!valid(operands_[0]) || !valid(operands_[1])
-            || !valid(operands_[2]) || !valid(operands_[3]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::for_operation::"
-                    "for_operation",
-                "the for_operation primitive requires that the arguments "
-                    "given by the operands array are valid");
-        }
-    }
+    {}
 
     namespace detail
     {
         struct iteration_for : std::enable_shared_from_this<iteration_for>
         {
-            iteration_for(std::vector<primitive_argument_type> const& operands)
+            iteration_for(std::vector<primitive_argument_type> const& operands,
+                    std::vector<primitive_argument_type> const& args)
               : operands_(operands)
-            {}
-
-          hpx::future<primitive_result_type> init()
-          {
-            auto this_ = this->shared_from_this();
-            return literal_operand(operands_[0]).then(
-                [this_](auto val)
+              , args_(args)
+            {
+                if (operands_.size() != 4)
                 {
-                  val.get(); //this future should already be ready and hence not block
-                  return this_->loop();
-                });
-          }
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::for_operation::"
+                            "eval",
+                        "the for_operation primitive requires exactly four "
+                            "arguments");
+                }
 
-          hpx::future<primitive_result_type> reinit()
-          {
-            auto this_ = this->shared_from_this();
-            return literal_operand(operands_[2]).then(
-                [this_](auto val)
+                if (!valid(operands_[0]) || !valid(operands_[1])
+                    || !valid(operands_[2]) || !valid(operands_[3]))
                 {
-                  val.get(); //this future should already be ready
-                  // and hence not block
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::for_operation::"
+                            "eval",
+                        "the for_operation primitive requires that the arguments "
+                            "given by the operands array are valid");
+                }
+            }
 
-                  //call the loop again
-                  return this_->loop();
-                });
-          }
+            hpx::future<primitive_result_type> init()
+            {
+                auto this_ = this->shared_from_this();
+                return literal_operand(operands_[0], args_).then(
+                    [this_](auto val)
+                    {
+                        val.get();
+                        return this_->loop();
+                    });
+            }
+
+            hpx::future<primitive_result_type> reinit()
+            {
+                auto this_ = this->shared_from_this();
+                return literal_operand(operands_[2], args_).then(
+                    [this_](hpx::future<primitive_result_type> && val)
+                    {
+                        val.get();
+                        return this_->loop();   // call the loop again
+                    });
+            }
 
             hpx::future<primitive_result_type> body(
                 hpx::future<primitive_result_type>&& cond)
@@ -101,14 +101,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     // evaluate body of for statement
                     auto this_ = this->shared_from_this();
-                    return literal_operand(operands_[3]).then(
+                    return literal_operand(operands_[3], args_).then(
                         [this_](
                             hpx::future<primitive_result_type> && result
                         ) mutable
                         {
                             this_->result_ = result.get();
-                            //do the reinit statement
-                            return  this_->reinit();
+                            return this_->reinit();    // do the reinit statement
                         });
                 }
 
@@ -121,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // evaluate condition of for statement
                 auto this_ = this->shared_from_this();
-                return literal_operand(operands_[1]).then(
+                return literal_operand(operands_[1], args_).then(
                     [this_](hpx::future<primitive_result_type> && cond)
                     {
                         return this_->body(std::move(cond));
@@ -130,14 +129,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         private:
             std::vector<primitive_argument_type> operands_;
+            std::vector<primitive_argument_type> args_;
             hpx::promise<primitive_result_type> p_;
             primitive_result_type result_;
         };
     }
 
     // start iteration over given for statement
-    hpx::future<primitive_result_type> for_operation::eval() const
+    hpx::future<primitive_result_type> for_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-      return std::make_shared<detail::iteration_for>(operands_)->init();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::iteration_for>(args, noargs)->init();
+        }
+
+        return std::make_shared<detail::iteration_for>(operands_, args)->init();
     }
 }}}

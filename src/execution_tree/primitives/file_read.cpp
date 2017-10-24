@@ -67,7 +67,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<primitive_result_type> file_read::eval() const
+    hpx::future<primitive_result_type> file_read::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
         std::ifstream infile(filename_.c_str(),
             std::ios::binary | std::ios::in | std::ios::ate);

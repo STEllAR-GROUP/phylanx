@@ -32,37 +32,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const greater_equal::match_data =
     {
-        hpx::util::make_tuple(">=", "_1 >= _2", &create<greater_equal>)
+        hpx::util::make_tuple("ge", "_1 >= _2", &create<greater_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     greater_equal::greater_equal(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "greater_equal::greater_equal",
-                "the greater_equal primitive requires exactly two operands");
-        }
-
-        if (!valid(operands_[0]) || !valid(operands_[1]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "greater_equal::greater_equal",
-                "the greater_equal primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct greater_equal : std::enable_shared_from_this<greater_equal>
         {
-            greater_equal(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            greater_equal() = default;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -209,6 +192,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
+                bool operator()(primitive&&, primitive&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
                 template <typename T>
                 bool operator()(T && lhs, T && rhs) const
                 {
@@ -263,8 +254,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             };
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::eval",
+                        "the greater_equal primitive requires exactly two "
+                            "operands");
+                }
+
+                if (!valid(operands[0]) || !valid(operands[1]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::eval",
+                        "the greater_equal primitive requires that the "
+                            "arguments given by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type && ops)
@@ -273,18 +282,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             util::visit(visit_greater_equal{*this_},
                                 std::move(ops[0]), std::move(ops[1])));
                     }),
-                    detail::map_operands(operands_, literal_operand)
+                    detail::map_operands(operands, literal_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '>=' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> greater_equal::eval() const
+    hpx::future<primitive_result_type> greater_equal::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::greater_equal>(operands_)->eval();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::greater_equal>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::greater_equal>()->eval(operands_, args);
     }
 }}}

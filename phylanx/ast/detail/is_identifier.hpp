@@ -8,25 +8,12 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/util/variant.hpp>
 
 #include <string>
 
 namespace phylanx { namespace ast { namespace detail
 {
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Ast>
-    bool is_identifier(Ast const&)
-    {
-        return false;
-    }
-
-    template <typename Ast>
-    std::string identifier_name(Ast const&)
-    {
-        return "";
-    }
-
     inline bool is_identifier(identifier const& id);
     inline std::string identifier_name(identifier const& id);
 
@@ -41,6 +28,18 @@ namespace phylanx { namespace ast { namespace detail
 
     inline bool is_identifier(expression const& expr);
     inline std::string identifier_name(expression const& expr);
+
+    template <typename Ast>
+    bool is_identifier(Ast const&)
+    {
+        return false;
+    }
+
+    template <typename Ast>
+    std::string identifier_name(Ast const&)
+    {
+        return "";
+    }
 
     template <typename Ast>
     bool is_identifier(util::recursive_wrapper<Ast> const& ast)

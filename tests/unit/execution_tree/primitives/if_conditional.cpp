@@ -249,9 +249,8 @@ void test_if_conditional_t6()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         if_prim.eval();
-    HPX_TEST_EQ(false,
-        phylanx::execution_tree::valid(
-            phylanx::execution_tree::to_primitive_value_type(f.get())));
+
+    HPX_TEST(!phylanx::execution_tree::valid(f.get()));
 }
 
 int main(int argc, char* argv[])

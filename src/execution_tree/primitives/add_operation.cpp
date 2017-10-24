@@ -33,75 +33,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const add_operation::match_data =
     {
-        hpx::util::make_tuple("+", "_1 + __2", &create<add_operation>)
+        hpx::util::make_tuple("add", "_1 + __2", &create<add_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    add_operation::add_operation(std::vector<primitive_argument_type>&& operands)
+    add_operation::add_operation(
+            std::vector<primitive_argument_type> && operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "add_operation::add_operation",
-                "the add_operation primitive requires at least two operands");
-        }
-
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands_.size(); ++i)
-        {
-            if (!valid(operands_[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "add_operation::add_operation",
-                "the add_operation primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct add : std::enable_shared_from_this<add>
         {
-            add(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            add() = default;
 
         protected:
-            using operand_type = ir::node_data<double>;
-            using operands_type = std::vector<operand_type>;
+            using arg_type = ir::node_data<double>;
+            using args_type = std::vector<arg_type>;
 
-            primitive_result_type add0d0d(operands_type && ops) const
+            primitive_result_type add0d0d(args_type && args) const
             {
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
+                arg_type& lhs = args[0];
+                arg_type& rhs = args[1];
 
-                if (ops.size() == 2)
+                if (args.size() == 2)
                 {
                     lhs[0] += rhs[0];
                     return primitive_result_type(std::move(lhs));
                 }
 
                 return primitive_result_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(lhs),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
+                    args.begin() + 1, args.end(), std::move(lhs),
+                    [](arg_type& result, arg_type const& curr)
+                    ->  arg_type
                     {
                         result[0] += curr[0];
                         return std::move(result);
                     }));
             }
 
-            primitive_result_type add0d1d(operands_type && ops) const
+            primitive_result_type add0d1d(args_type && args) const
             {
-                if (ops.size() != 2)
+                if (args.size() != 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add0d1d",
@@ -115,9 +90,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_result_type(std::move(ops[1]));
             }
 
-            primitive_result_type add0d2d(operands_type && ops) const
+            primitive_result_type add0d2d(args_type && args) const
             {
-                if (ops.size() != 2)
+                if (args.size() != 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add0d2d",
@@ -131,19 +106,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_result_type(std::move(ops[1]));
             }
 
-            primitive_result_type add0d(operands_type && ops) const
+            primitive_result_type add0d(args_type && args) const
             {
-                std::size_t rhs_dims = ops[1].num_dimensions();
+                std::size_t rhs_dims = args[1].num_dimensions();
                 switch(rhs_dims)
                 {
                 case 0:
-                    return add0d0d(std::move(ops));
+                    return add0d0d(std::move(args));
 
                 case 1:
-                    return add0d1d(std::move(ops));
+                    return add0d1d(std::move(args));
 
                 case 2:
-                    return add0d2d(std::move(ops));
+                    return add0d2d(std::move(args));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -153,9 +128,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             ///////////////////////////////////////////////////////////////////////////
-            primitive_result_type add1d0d(operands_type && ops) const
+            primitive_result_type add1d0d(args_type && args) const
             {
-                if (ops.size() != 2)
+                if (args.size() != 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add0d1d",
@@ -169,10 +144,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_result_type(std::move(ops[0]));
             }
 
-            primitive_result_type add1d1d(operands_type && ops) const
+            primitive_result_type add1d1d(args_type && args) const
             {
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
+                arg_type& lhs = args[0];
+                arg_type& rhs = args[1];
 
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -184,33 +159,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                if (ops.size() == 2)
+                if (args.size() == 2)
                 {
                     lhs.matrix() += rhs.matrix();
                     return primitive_result_type(std::move(lhs));
                 }
 
-                operand_type& first_term = *ops.begin();
+                arg_type& first_term = *args.begin();
                 return primitive_result_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result, operand_type const& curr) -> operand_type
+                    args.begin() + 1, args.end(), std::move(first_term),
+                    [](arg_type& result, arg_type const& curr) -> arg_type
                     {
                         result.matrix() += curr.matrix();
                         return std::move(result);
                     }));
             }
 
-            primitive_result_type add1d(operands_type && ops) const
+            primitive_result_type add1d(args_type && args) const
             {
-                std::size_t rhs_dims = ops[1].num_dimensions();
+                std::size_t rhs_dims = args[1].num_dimensions();
 
                 switch(rhs_dims)
                 {
                 case 0:
-                    return add1d0d(std::move(ops));
+                    return add1d0d(std::move(args));
 
                 case 1:
-                    return add1d1d(std::move(ops));
+                    return add1d1d(std::move(args));
 
                 case 2: HPX_FALLTHROUGH;
                 default:
@@ -221,9 +196,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             ///////////////////////////////////////////////////////////////////////////
-            primitive_result_type add2d0d(operands_type && ops) const
+            primitive_result_type add2d0d(args_type && args) const
             {
-                if (ops.size() != 2)
+                if (args.size() != 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add0d2d",
@@ -237,10 +212,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_result_type(std::move(ops[0]));
             }
 
-            primitive_result_type add2d2d(operands_type && ops) const
+            primitive_result_type add2d2d(args_type && args) const
             {
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
+                arg_type& lhs = args[0];
+                arg_type& rhs = args[1];
 
                 auto lhs_size = lhs.dimensions();
                 auto rhs_size = rhs.dimensions();
@@ -252,33 +227,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                if (ops.size() == 2)
+                if (args.size() == 2)
                 {
                     lhs.matrix() += rhs.matrix();
                     return primitive_result_type(std::move(lhs));
                 }
 
-                operand_type& first_term = *ops.begin();
+                arg_type& first_term = *args.begin();
                 return primitive_result_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
+                    args.begin() + 1, args.end(), std::move(first_term),
+                    [](arg_type& result, arg_type const& curr)
+                    ->  arg_type
                     {
                         result.matrix() += curr.matrix();
                         return std::move(result);
                     }));
             }
 
-            primitive_result_type add2d(operands_type && ops) const
+            primitive_result_type add2d(args_type && args) const
             {
-                std::size_t rhs_dims = ops[1].num_dimensions();
+                std::size_t rhs_dims = args[1].num_dimensions();
                 switch(rhs_dims)
                 {
                 case 0:
-                    return add2d0d(std::move(ops));
+                    return add2d0d(std::move(args));
 
                 case 2:
-                    return add2d2d(std::move(ops));
+                    return add2d2d(std::move(args));
 
                 case 1: HPX_FALLTHROUGH;
                 default:
@@ -289,23 +264,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() < 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_operation::eval",
+                        "the add_operation primitive requires at least two "
+                            "operands");
+                }
+
+                bool arguments_valid = true;
+                for (std::size_t i = 0; i != operands.size(); ++i)
+                {
+                    if (!valid(operands[i]))
+                    {
+                        arguments_valid = false;
+                    }
+                }
+
+                if (!arguments_valid)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_operation::eval",
+                        "the add_operation primitive requires that the "
+                            "arguments given by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops) -> primitive_result_type
+                    [this_](args_type && args) -> primitive_result_type
                     {
-                        std::size_t lhs_dims = ops[0].num_dimensions();
+                        std::size_t lhs_dims = args[0].num_dimensions();
                         switch (lhs_dims)
                         {
                         case 0:
-                            return this_->add0d(std::move(ops));
+                            return this_->add0d(std::move(args));
 
                         case 1:
-                            return this_->add1d(std::move(ops));
+                            return this_->add1d(std::move(args));
 
                         case 2:
-                            return this_->add2d(std::move(ops));
+                            return this_->add2d(std::move(args));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -314,18 +316,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '+' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> add_operation::eval() const
+    hpx::future<primitive_result_type> add_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::add>(operands_)->eval();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::add>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::add>()->eval(operands_, args);
     }
 }}}

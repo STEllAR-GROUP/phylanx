@@ -32,47 +32,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const sub_operation::match_data =
     {
-        hpx::util::make_tuple("-", "_1 - __2", &create<sub_operation>)
+        hpx::util::make_tuple("sub", "_1 - __2", &create<sub_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     sub_operation::sub_operation(
         std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "sub_operation::sub_operation",
-                "the sub_operation primitive requires at least two operands");
-        }
-
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands_.size(); ++i)
-        {
-            if (!valid(operands_[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "sub_operation::sub_operation",
-                "the sub_operation primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct sub : std::enable_shared_from_this<sub>
         {
-            sub(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            sub() = default;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -284,8 +258,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() < 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub_operation",
+                        "the sub_operation primitive requires at least two operands");
+                }
+
+                bool arguments_valid = true;
+                for (std::size_t i = 0; i != operands.size(); ++i)
+                {
+                    if (!valid(operands[i]))
+                    {
+                        arguments_valid = false;
+                    }
+                }
+
+                if (!arguments_valid)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub_operation",
+                        "the sub_operation primitive requires that the arguments given "
+                            "by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(
                     hpx::util::unwrapping([this_](operands_type&& ops)
@@ -309,18 +309,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '-' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> sub_operation::eval() const
+    hpx::future<primitive_result_type> sub_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::sub>(operands_)->eval();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::sub>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::sub>()->eval(operands_, args);
     }
 }}}

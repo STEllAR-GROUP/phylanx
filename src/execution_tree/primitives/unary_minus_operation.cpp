@@ -34,39 +34,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const unary_minus_operation::match_data =
     {
-        hpx::util::make_tuple("-", "-_1", &create<unary_minus_operation>)
+        hpx::util::make_tuple("minus", "-_1", &create<unary_minus_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     unary_minus_operation::unary_minus_operation(
             std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "unary_minus_operation::unary_minus_operation",
-                "the unary_minus_operation primitive requires exactly one "
-                    "operand");
-        }
-
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "unary_minus_operation::unary_minus_operation",
-                "the unary_minus_operation primitive requires that the "
-                    "argument given by the operands array is valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct unary_minus : std::enable_shared_from_this<unary_minus>
         {
-            unary_minus(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            unary_minus() = default;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -85,8 +67,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "unary_minus_operation::eval",
+                        "the unary_minus_operation primitive requires exactly "
+                            "one operand");
+                }
+
+                if (!valid(operands[0]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "unary_minus_operation::eval",
+                        "the unary_minus_operation primitive requires that the "
+                            "argument given by the operands array is valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type && ops) -> primitive_result_type
@@ -107,18 +107,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "operand has unsupported number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement unary '-' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> unary_minus_operation::eval() const
+    hpx::future<primitive_result_type> unary_minus_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::unary_minus>(operands_)->eval();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::unary_minus>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::unary_minus>()->eval(operands_, args);
     }
 }}}

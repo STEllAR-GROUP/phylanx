@@ -16,13 +16,9 @@ namespace phylanx { namespace util
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::vector<char> serialize(
         execution_tree::primitive_argument_type const&);
-    PHYLANX_EXPORT std::vector<char> serialize(
-        execution_tree::primitive_result_type const&);
 
     PHYLANX_EXPORT void unserialize(
         std::vector<char> const&, execution_tree::primitive_argument_type&);
-    PHYLANX_EXPORT void unserialize(
-        std::vector<char> const&, execution_tree::primitive_result_type&);
 }}
 
 #endif

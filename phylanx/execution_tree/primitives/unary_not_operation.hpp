@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         unary_not_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_result_type> eval() const override;
+        hpx::future<primitive_result_type> eval(
+            std::vector<primitive_argument_type> const& params) const override;
 
     private:
         std::vector<primitive_argument_type> operands_;

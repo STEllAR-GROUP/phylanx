@@ -7,7 +7,9 @@
 #define PHYLANX_EXECUTION_TREE_HPP
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/generate_tree.hpp>
-#include <phylanx/include/primitives.hpp>
+#include <phylanx/execution_tree/compiler/actors.hpp>
+#include <phylanx/execution_tree/compiler/compiler.hpp>
+#include <phylanx/execution_tree/compile.hpp>
+#include <phylanx/execution_tree/primitives.hpp>
 
 #endif

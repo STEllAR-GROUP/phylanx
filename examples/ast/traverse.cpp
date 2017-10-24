@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
     phylanx::ast::operation u1{phylanx::ast::optoken::op_plus, std::move(op1)};
     e1.append(u1);
 
-    std::list<phylanx::ast::operation> ops = {u1, u1};
+    std::vector<phylanx::ast::operation> ops = {u1, u1};
     e1.append(ops);
 
     phylanx::ast::traverse(e1, traverse_ast{});

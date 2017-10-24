@@ -146,21 +146,21 @@ namespace phylanx { namespace bindings
     phylanx::execution_tree::primitive generate_tree(std::string const& expr,
         pybind11::dict const& dict)
     {
-        using var_type = phylanx::execution_tree::variables;
-
-        var_type variables;
+        std::vector<phylanx::execution_tree::primitive_argument_type> args;
+        args.reserve(dict.size());
 
         for (auto const& item : dict)
         {
             std::string key = pybind11::str(item.first);
             phylanx::execution_tree::primitive value =
                 item.second.cast<phylanx::execution_tree::primitive>();
-            variables.insert(
-                var_type::value_type(std::move(key), std::move(value)));
+            args.emplace_back(std::move(value));
         }
 
-        return phylanx::execution_tree::primitive_operand(
-            phylanx::execution_tree::generate_tree(expr, variables));
+        phylanx::execution_tree::compiler::function_list snippets;
+        auto f = phylanx::execution_tree::compile(expr, snippets);
+
+        return phylanx::execution_tree::primitive_operand(f.arg_);
     }
 }}
 
@@ -510,7 +510,7 @@ PYBIND11_MODULE(_phylanx, m)
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        return numeric_operand(p).get()[0];
+                        return numeric_operand(p, {}).get()[0];
                     });
             },
             "evaluate execution tree")

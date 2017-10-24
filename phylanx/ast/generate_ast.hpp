@@ -13,7 +13,12 @@
 
 namespace phylanx { namespace ast
 {
+    /// Parse the given string and convert it into an instance of an AST
     PHYLANX_EXPORT ast::expression generate_ast(std::string const& input);
+
+    /// Parse the given string and convert it into a list of AST instances
+    PHYLANX_EXPORT std::vector<ast::expression> generate_asts(
+        std::string const& input);
 }}
 
 #endif

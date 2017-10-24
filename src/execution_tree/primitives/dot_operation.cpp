@@ -38,61 +38,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     dot_operation::dot_operation(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot_operation",
-                "the dot_operation primitive requires exactly two "
-                    "operands");
-        }
-
-        if (!valid(operands_[0]) || !valid(operands_[1]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot_operation",
-                "the dot_operation primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct dot : std::enable_shared_from_this<dot>
         {
-            dot(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
-
-            hpx::future<primitive_result_type> eval()
-            {
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
-                    {
-                        std::size_t dims = ops[0].num_dimensions();
-                        switch (dims)
-                        {
-                        case 0:
-                            return this_->dot0d(std::move(ops));
-
-                        case 1:
-                            return this_->dot1d(std::move(ops));
-
-                        case 2:
-                            return this_->dot2d(std::move(ops));
-
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "dot_operation::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
-                        }
-                    }),
-                    detail::map_operands(operands_, numeric_operand)
-                );
-            }
+            dot() = default;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -238,14 +191,66 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(lhs);
             }
 
-        private:
-            std::vector<primitive_argument_type> operands_;
+        public:
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args)
+            {
+                if (operands.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::eval",
+                        "the dot_operation primitive requires exactly two "
+                            "operands");
+                }
+
+                if (!valid(operands[0]) || !valid(operands[1]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::eval",
+                        "the dot_operation primitive requires that the "
+                            "arguments given by the operands array are valid");
+                }
+
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& ops) -> primitive_result_type
+                    {
+                        std::size_t dims = ops[0].num_dimensions();
+                        switch (dims)
+                        {
+                        case 0:
+                            return this_->dot0d(std::move(ops));
+
+                        case 1:
+                            return this_->dot1d(std::move(ops));
+
+                        case 2:
+                            return this_->dot2d(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "dot_operation::eval",
+                                "left hand side operand has unsupported "
+                                    "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(operands, numeric_operand, args)
+                );
+            }
         };
     }
 
     // implement 'dot' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> dot_operation::eval() const
+    hpx::future<primitive_result_type> dot_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::dot>(operands_)->eval();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::dot>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::dot>()->eval(operands_, args);
     }
 }}}

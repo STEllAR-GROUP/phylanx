@@ -20,7 +20,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     struct define_
     {
         static std::vector<match_pattern_type> const match_data;
-        static std::vector<match_pattern_type> const invocation_match_data;
     };
 }}}
 

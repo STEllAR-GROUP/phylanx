@@ -41,12 +41,6 @@ namespace phylanx { namespace util
         return detail::serialize(ast);
     }
 
-    std::vector<char> serialize(
-        execution_tree::primitive_result_type const& ast)
-    {
-        return detail::serialize(ast);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
@@ -60,12 +54,6 @@ namespace phylanx { namespace util
 
     void unserialize(std::vector<char> const& input,
         execution_tree::primitive_argument_type& ast)
-    {
-        detail::unserialize_helper(input, ast);
-    }
-
-    void unserialize(std::vector<char> const& input,
-        execution_tree::primitive_result_type& ast)
     {
         detail::unserialize_helper(input, ast);
     }

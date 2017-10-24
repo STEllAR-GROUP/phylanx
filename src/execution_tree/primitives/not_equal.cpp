@@ -32,37 +32,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const not_equal::match_data =
     {
-        hpx::util::make_tuple("!=", "_1 != _2", &create<not_equal>)
+        hpx::util::make_tuple("ne", "_1 != _2", &create<not_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     not_equal::not_equal(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "not_equal::not_equal",
-                "the not_equal primitive requires exactly two operands");
-        }
-
-        if (!valid(operands_[0]) || !valid(operands_[1]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "not_equal::not_equal",
-                "the not_equal primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct not_equal : std::enable_shared_from_this<not_equal>
         {
-            not_equal(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            not_equal() = default;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -184,6 +167,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
+                bool operator()(primitive&&, primitive&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "not_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
                 template <typename T>
                 bool operator()(T && lhs, T && rhs) const
                 {
@@ -218,15 +209,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 bool operator()(operand_type&& lhs, operand_type&& rhs) const
                 {
-                    return not_equal_.not_equal_all(std::move(lhs), std::move(rhs));
+                    return not_equal_.not_equal_all(
+                        std::move(lhs), std::move(rhs));
                 }
 
                 not_equal const& not_equal_;
             };
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "not_equal::eval",
+                        "the not_equal primitive requires exactly two operands");
+                }
+
+                if (!valid(operands[0]) || !valid(operands[1]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "not_equal::eval",
+                        "the not_equal primitive requires that the arguments "
+                            "given by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type && ops)
@@ -235,18 +244,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             util::visit(visit_not_equal{*this_},
                                 std::move(ops[0]), std::move(ops[1])));
                     }),
-                    detail::map_operands(operands_, literal_operand)
+                    detail::map_operands(operands, literal_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '!=' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> not_equal::eval() const
+    hpx::future<primitive_result_type> not_equal::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::not_equal>(operands_)->eval();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::not_equal>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::not_equal>()->eval(operands_, args);
     }
 }}}

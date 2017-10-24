@@ -9,6 +9,7 @@
 #include <phylanx/config.hpp>
 
 #include <phylanx/include/ast.hpp>
+#include <phylanx/include/compile.hpp>
 #include <phylanx/include/ir.hpp>
 #include <phylanx/include/execution_tree.hpp>
 #include <phylanx/include/primitives.hpp>

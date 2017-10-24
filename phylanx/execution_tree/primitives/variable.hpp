@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         variable(
             std::vector<primitive_argument_type>&& operands, std::string name);
 
-        hpx::future<primitive_result_type> eval() const override;
+        primitive_result_type eval_direct(
+            std::vector<primitive_argument_type> const& params) const override;
         void store(primitive_result_type const& data) override;
 
     private:
