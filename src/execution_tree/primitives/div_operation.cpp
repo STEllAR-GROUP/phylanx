@@ -110,7 +110,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(ops[1].matrix(), [&](double x) { return ops[0][0] / x; });
+                ops[1].matrix() = blaze::map(
+                        ops[1].matrix(),
+                        [&](double x) { return ops[0][0] / x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -124,7 +126,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(ops[1].matrix(), [&](double x) { return ops[0][0] / x; });
+                ops[1].matrix() = blaze::map(
+                        ops[1].matrix(),
+                        [&](double x) { return ops[0][0] / x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -159,7 +163,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(ops[0].matrix(), [&](double x) { return x / ops[1][0]; });
+                ops[0].matrix() = blaze::map(
+                        ops[0].matrix(),
+                        [&](double x) { return x / ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -180,7 +186,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(), [](double x1, double x2) { return x1 / x2; });
+                    lhs.matrix() = blaze::map(
+                            lhs.matrix(),
+                            rhs.matrix(),
+                            [](double x1, double x2) { return x1 / x2; });
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -190,7 +199,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](operand_type& result, operand_type const& curr)
                     ->  operand_type
                     {
-                        result.matrix() = blaze::map(result.matrix(), curr.matrix(), [](double x1, double x2) { return x1 / x2; });
+                        result.matrix() = blaze::map(
+                                result.matrix(),
+                                curr.matrix(),
+                                [](double x1, double x2) { return x1 / x2; });
                         return std::move(result);
                     }));
             }
@@ -225,7 +237,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(ops[0].matrix(), [&](double x) { return x / ops[1][0]; });
+                ops[0].matrix() = blaze::map(
+                        ops[0].matrix(),
+                        [&](double x) { return x / ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -246,7 +260,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(), [](double x1, double x2) { return x1 / x2; });
+                    lhs.matrix() = blaze::map(
+                            lhs.matrix(),
+                            rhs.matrix(),
+                            [](double x1, double x2) { return x1 / x2; });
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -256,7 +273,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](operand_type& result, operand_type const& curr)
                     ->  operand_type
                     {
-                        result.matrix() = blaze::map(result.matrix(), curr.matrix(), [](double x1, double x2) { return x1 / x2; });
+                        result.matrix() = blaze::map(
+                                result.matrix(),
+                                curr.matrix(),
+                                [](double x1, double x2) { return x1 / x2; });
                         return std::move(result);
                     }));
             }
