@@ -16,6 +16,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <blaze/Math.h>
 
 void test_sub_operation_0d()
 {

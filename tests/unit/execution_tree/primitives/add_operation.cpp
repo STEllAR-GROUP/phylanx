@@ -15,6 +15,7 @@
 
 #include <utility>
 #include <vector>
+#include <blaze/Math.h>
 
 void test_add_operation_0d()
 {

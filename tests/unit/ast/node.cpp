@@ -9,6 +9,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <vector>
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 template <typename Ast>

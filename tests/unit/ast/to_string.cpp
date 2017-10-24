@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 template <typename Ast>

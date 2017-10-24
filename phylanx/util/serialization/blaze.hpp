@@ -19,11 +19,10 @@ namespace hpx { namespace serialization
         unsigned)
     {
         // DeserializeHeader
-        char delineator = ',';
         size_t count_ = 0UL;
 
-        archive >> count_ >> delineator;
-        // DeserializeMatrix
+        archive >> count_;
+        // DeserializeVector
         T value{};
         size_t j = 0UL;
         // NOTE: I've assumed archive >> value always returns something
@@ -40,11 +39,10 @@ namespace hpx { namespace serialization
         unsigned)
     {
         // DeserializeHeader
-        char delineator = ',';
         size_t rows_ = 0UL;
         size_t columns_ = 0UL;
 
-        archive >> rows_ >> delineator >> columns_ >> delineator;
+        archive >> rows_ >> columns_;
         mat = blaze::DynamicMatrix<T>(rows_, columns_);
         // DeserializeMatrix
         T value{};
@@ -66,7 +64,7 @@ namespace hpx { namespace serialization
         unsigned)
     {
         // SerializeVector
-        archive << v.size() << ',';
+        archive << v.size();
 
         // SerializeVector
         for (size_t j = 0UL; j < v.size(); ++j) {
@@ -79,11 +77,10 @@ namespace hpx { namespace serialization
         blaze::DynamicMatrix<T> const& mat,
         unsigned)
     {
-        // SerializeVector
-        archive << mat.rows() << ','
-                << mat.columns() << ',';
+        // Serializeheader
+        archive << mat.rows() << mat.columns();
 
-        // SerializeVector
+        // SerializeMatrix
         for (size_t i = 0UL; i < mat.rows(); ++i) {
             for (size_t j = 0UL; j < mat.columns(); ++j) {
                 archive << mat(i, j);

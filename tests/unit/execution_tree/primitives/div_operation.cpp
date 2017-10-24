@@ -17,6 +17,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <blaze/Math.h>
 
 void test_div_operation_0d()
 {

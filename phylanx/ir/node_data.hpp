@@ -30,77 +30,6 @@
 
 namespace phylanx { namespace ir
 {
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        /// \cond NOINTERNAL
-
-        ///////////////////////////////////////////////////////////////////////
-        template <typename T>
-        class node_value_iterator
-          : public hpx::util::iterator_facade<node_value_iterator<T>,
-                T,
-                std::random_access_iterator_tag,
-                T const&,
-                std::size_t,
-                T const*>
-        {
-        private:
-            using base_type =
-                hpx::util::iterator_facade<node_value_iterator<T>,
-                    T,
-                    std::random_access_iterator_tag,
-                    T const&,
-                    std::size_t,
-                    T const*>;
-
-        public:
-            node_value_iterator(T const* p)
-              : p_(p)
-            {
-            }
-
-        private:
-            friend class hpx::util::iterator_core_access;
-
-            typename base_type::reference dereference() const
-            {
-                return *p_;
-            }
-
-            bool equal(node_value_iterator const& x) const
-            {
-                return p_ == x.p_;
-            }
-
-            void advance(typename base_type::difference_type n)
-            {
-                p_ += n;
-            }
-
-            void increment()
-            {
-                ++p_;
-            }
-
-            void decrement()
-            {
-                --p_;
-            }
-
-            typename base_type::difference_type distance_to(
-                node_value_iterator const& y) const
-            {
-                return y.p_ - p_;
-            }
-
-            T const* p_;
-        };
-
-        /// \endcond
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     class node_data
     {
@@ -231,23 +160,26 @@ namespace phylanx { namespace ir
             return data_(indicies[0], indicies[1]);
         }
 
+        using iterator = blaze::DenseIterator<T, true>;
+        using const_iterator = blaze::DenseIterator<const T, true>;
+
         /// Get iterator referring to the beginning of the underlying data
-        blaze::DenseIterator<const T, true> begin() const
+        const_iterator begin() const
         {
             return data_.begin(0UL);
         }
         /// Get iterator referring to the end of the underlying data
-        blaze::DenseIterator<const T, true> end() const
+        const_iterator end() const
         {
             return data_.end(data_.rows() - 1UL);
         }
 
-        blaze::DenseIterator<const T, true> cbegin() const
+        const_iterator cbegin() const
         {
             return data_.cbegin(0UL);
         }
         /// Get iterator referring to the end of the underlying data
-        blaze::DenseIterator<const T, true> cend() const
+        const_iterator cend() const
         {
             return data_.cend(data_.rows() - 1UL);
         }
