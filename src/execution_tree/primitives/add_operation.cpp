@@ -128,7 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[1].matrix() = blaze::map(
-                        ps[1].matrix(),
+                        ops[1].matrix(),
                         [&](double x) { return ops[0][0] + x; });
                 return primitive_result_type(std::move(ops[1]));
             }
@@ -166,7 +166,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[0].matrix() = blaze::map(
-                        ps[0].matrix(),
+                        ops[0].matrix(),
                         [&](double x) { return x + ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
@@ -234,7 +234,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[0].matrix() = blaze::map(
-                        ps[0].matrix(),
+                        ops[0].matrix(),
                         [&](double x) { return x + ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
