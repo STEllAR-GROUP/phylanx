@@ -68,14 +68,14 @@ void test_unary_not_operation_2d()
         unary_not.eval();
 
     HPX_TEST_EQ(
-        m.nonZeros() > 0,
+        m.nonZeros() == 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 int main(int argc, char* argv[])
 {
-    //test_unary_not_operation_0d();
-    //test_unary_not_operation_0d_lit();
+    test_unary_not_operation_0d();
+    test_unary_not_operation_0d_lit();
 
     test_unary_not_operation_2d();
 
