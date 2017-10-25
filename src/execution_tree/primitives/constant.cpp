@@ -7,7 +7,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
+#include <phylanx/util/serialization/eigen.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -18,6 +18,8 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
+#include <unsupported/Eigen/MatrixFunctions>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -34,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const constant::match_data =
     {
-        hpx::util::make_tuple("constant", "constant(_1, _2)", &create<constant>)
+        hpx::util::make_tuple("constant2", "constant(_1, _2)", &create<constant>),
+        hpx::util::make_tuple("constant1", "constant(_1)", &create<constant>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -45,10 +48,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        std::size_t extract_num_dimensions(
+            std::vector<primitive_argument_type> const& shape)
+        {
+            return shape.size();
+        }
+
+        std::array<std::ptrdiff_t, 2> extract_dimensions(
+            std::vector<primitive_argument_type> const& shape)
+        {
+            std::array<std::ptrdiff_t, 2> result = {0, 0};
+            result[0] = extract_integer_value(shape[0]);
+            if (shape.size() > 1)
+            {
+                result[1] = extract_integer_value(shape[1]);
+            }
+            return result;
+        }
+
         struct constant : std::enable_shared_from_this<constant>
         {
             constant() = default;
 
+        protected:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<operand_type>;
+
+            primitive_result_type constant0d(operand_type && op) const
+            {
+                return std::move(op);       // no-op
+            }
+
+            primitive_result_type constant1d(
+                operand_type&& op, std::ptrdiff_t dim) const
+            {
+                using vector_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+
+                vector_type result = Eigen::VectorXd::Constant(dim, op[0]);
+                return operand_type(std::move(result));
+            }
+
+            primitive_result_type constant2d(operand_type&& op,
+                operand_type::dimensions_type const& dim) const
+            {
+                using matrix_type =
+                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+
+                matrix_type result =
+                    Eigen::MatrixXd::Constant(dim[0], dim[1], op[0]);
+                return operand_type(std::move(result));
+            }
+
+        public:
             hpx::future<primitive_result_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
@@ -57,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "constant::eval",
-                        "the constant primitive requires"
+                        "the constant primitive requires "
                             "at least one and at most 2 operands");
                 }
 
@@ -71,72 +122,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
-                    {
-                        std::size_t dims = ops[0].num_dimensions();
-                        if (ops.size() > 1)
-                        {
-                            dims = ops[1].num_dimensions();
-                        }
-
-                        switch (dims)
-                        {
-                        case 0:
-                            return this_->constant0d(std::move(ops));
-
-                        case 1:
-                            return this_->constant1d(std::move(ops));
-
-                        case 2:
-                            return this_->constant2d(std::move(ops));
-
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "constant::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
-                        }
-                    }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
-            }
-
-        protected:
-            using operand_type = ir::node_data<double>;
-            using operands_type = std::vector<operand_type>;
-
-            primitive_result_type constant0d(operands_type && ops) const
-            {
-                return std::move(ops[0]);       // no-op
-            }
-
-            primitive_result_type constant1d(operands_type && ops) const
-            {
-                std::size_t dim = ops[0].dimension(0);
-                if (ops.size() > 1)
+                if (operands.size() == 2)
                 {
-                    dim = ops[1].dimension(0);
+                    return hpx::dataflow(hpx::util::unwrapping(
+                        [this_](operand_type&& op0,
+                                std::vector<primitive_argument_type>&& op1)
+                        ->  primitive_result_type
+                        {
+                            if (op0.num_dimensions() != 0)
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "constant::eval",
+                                    "the first argument must be a literal "
+                                        "scalar value");
+                            }
+                            if (op1.empty())
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "constant::extract_num_dimensions",
+                                    "the constant primitive requires "
+                                        "for the shape not to be empty");
+                            }
+                            if (op1.size() > 2)
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "constant::extract_num_dimensions",
+                                    "the constant primitive requires "
+                                        "for the shape not to have more than "
+                                        "two entries");
+                            }
+
+                            auto dims = extract_dimensions(op1);
+                            switch (extract_num_dimensions(op1))
+                            {
+                            case 0:
+                                return this_->constant0d(std::move(op0));
+
+                            case 1:
+                                return this_->constant1d(std::move(op0), dims[0]);
+
+                            case 2:
+                                return this_->constant2d(std::move(op0), dims);
+
+                            default:
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "constant::eval",
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions");
+                            }
+                        }),
+                        numeric_operand(operands[0], args),
+                        list_operand(operands[1], args));
                 }
 
-                using vector_type = blaze::DynamicMatrix<double>;
-
-                vector_type result = vector_type(1UL, dim, ops[0][0]);
-                return operand_type(std::move(result));
-            }
-
-            primitive_result_type constant2d(operands_type && ops) const
-            {
-                auto dim = ops[0].dimensions();
-                if (ops.size() > 1)
-                {
-                    dim = ops[1].dimensions();
-                }
-
-                using matrix_type = blaze::DynamicMatrix<double>;
-
-                matrix_type result = matrix_type(dim[0], dim[1], ops[0][0]);
-                return operand_type(std::move(result));
+                // if constant() was invoked with one argument, we simply
+                // provide the argument as the desired result
+                return literal_operand(operands[0], args);
             }
         };
     }

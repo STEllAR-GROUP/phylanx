@@ -198,6 +198,13 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
         primitive_result_type && val);
 
+    // Extract a std::int64_t type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::int64_t extract_integer_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT std::int64_t extract_integer_value(
+        primitive_result_type && val);
+
     // Extract a boolean type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::uint8_t extract_boolean_value(

@@ -281,6 +281,61 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    std::int64_t extract_integer_value(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 1:     // bool
+            return std::int64_t{util::get<1>(val)};
+
+        case 2:     // std::uint64_t
+            return util::get<2>(val);
+
+        case 4:     // phylanx::ir::node_data<double>
+            return std::int64_t(util::get<4>(val)[0]);
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_integer_value",
+            "primitive_argument_type does not hold a numeric value type");
+    }
+
+    std::int64_t extract_integer_value(primitive_argument_type&& val)
+    {
+        switch (val.index())
+        {
+        case 1:     // bool
+            return std::int64_t{util::get<1>(std::move(val))};
+
+        case 2:     // std::uint64_t
+            return util::get<2>(std::move(val));
+
+        case 4:     // phylanx::ir::node_data<double>
+            return std::int64_t(util::get<4>(std::move(val))[0]);
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_numeric_value",
+            "primitive_argument_type does not hold a numeric value type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     std::uint8_t extract_boolean_value(primitive_argument_type const& val)
     {
         switch (val.index())
@@ -439,7 +494,7 @@ namespace phylanx { namespace execution_tree
                 result.reserve(v.size());
                 for (auto const& elem : v)
                 {
-                    result.push_back(extract_list_value(elem));
+                    result.emplace_back(extract_list_value(elem));
                 }
                 return result;
             }
