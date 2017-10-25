@@ -34,11 +34,17 @@ void test_slicing_operation_0d()
       hpx::new_<phylanx::execution_tree::primitives::variable>(
           hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
+  phylanx::execution_tree::primitive fifth =
+      hpx::new_<phylanx::execution_tree::primitives::variable>(
+          hpx::find_here(), phylanx::ir::node_data<double>(15.0));
+
   phylanx::execution_tree::primitive slice =
       hpx::new_<phylanx::execution_tree::primitives::slicing_operation>(
           hpx::find_here(),
           std::vector<phylanx::execution_tree::primitive_argument_type>{
-              std::move(first), std::move(second), std::move(third), std::move(fourth)});
+              std::move(first), std::move(second), std::move(third),
+              std::move(fourth),std::move(fifth)
+          });
 
   hpx::future<phylanx::execution_tree::primitive_result_type> f =
       slice.eval();
