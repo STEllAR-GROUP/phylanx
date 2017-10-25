@@ -16,7 +16,7 @@ char const* const lra_code = R"(
     //
     define(lra, x, y, alpha, iterations,
         block(
-            define(weights, constant(0, x)),
+            define(weights, constant(0, shape(x, 1))),
             define(transx, transpose(x)),
             define(step, 0),
             while(
