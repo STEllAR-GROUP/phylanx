@@ -7,7 +7,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/transpose_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -18,8 +18,6 @@
 #include <memory>
 #include <utility>
 #include <vector>
-
-#include <unsupported/Eigen/MatrixFunctions>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -109,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type transposexd(operands_type && ops) const
             {
-                ops[0].matrix().transposeInPlace();
+                blaze::transpose(ops[0].matrix());
                 return std::move(ops[0]);
             }
 

@@ -17,8 +17,7 @@
 
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx { namespace execution_tree { namespace primitives {
     class HPX_COMPONENT_EXPORT div_operation
       : public base_primitive
       , public hpx::components::component_base<div_operation>
@@ -38,5 +37,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
 }}}
 
 #endif
-
-

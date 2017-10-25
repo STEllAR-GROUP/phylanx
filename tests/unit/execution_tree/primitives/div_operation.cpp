@@ -4,17 +4,17 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <Eigen/Dense>
-
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <blaze/Math.h>
 
 void test_div_operation_0d()
 {
@@ -30,11 +30,9 @@ void test_div_operation_0d()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
     HPX_TEST_EQ(
         6.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
@@ -51,18 +49,17 @@ void test_div_operation_0d_lit()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
     HPX_TEST_EQ(
         6.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
 void test_div_operation_0d1d()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -76,21 +73,21 @@ void test_div_operation_0d1d()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::VectorXd expected = 42.0 / v.array();
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicVector<double, blaze::rowVector> expected =
+        blaze::map(v, [](double x) { return 42.0 / x; });
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_0d1d_lit()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(42.0);
 
@@ -102,21 +99,21 @@ void test_div_operation_0d1d_lit()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::VectorXd expected = 42.0 / v.array();
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicVector<double, blaze::rowVector> expected =
+        blaze::map(v, [](double x) { return 42.0 / x; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_0d2d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double, blaze::rowVector> m =
+        gen.generate(101UL, 101UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -130,21 +127,20 @@ void test_div_operation_0d2d()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::MatrixXd expected = 6.0 / m.array();
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicMatrix<double> expected =
+        blaze::map(m, [](double x) { return 6.0 / x; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_0d2d_lit()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL);
 
     phylanx::ir::node_data<double> lhs(6.0);
 
@@ -156,21 +152,20 @@ void test_div_operation_0d2d_lit()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::MatrixXd expected = 6.0 / m.array();
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicMatrix<double> expected =
+        blaze::map(m, [](double x) { return 6.0 / x; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_1d0d()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -184,21 +179,20 @@ void test_div_operation_1d0d()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::VectorXd expected = v.array() / 6.0;
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicVector<double, blaze::rowVector> expected =
+        blaze::map(v, [](double x) { return x / 6.0; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_1d0d_lit()
 {
-    Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v);
 
@@ -210,21 +204,20 @@ void test_div_operation_1d0d_lit()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::VectorXd expected = v.array() / 6.0;
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicVector<double, blaze::rowVector> expected =
+        blaze::map(v, [](double x) { return x / 6.0; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_2d0d()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double, blaze::rowVector> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -238,21 +231,20 @@ void test_div_operation_2d0d()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::MatrixXd expected = m.array() / 6.0;
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicMatrix<double> expected =
+        blaze::map(m, [](double x) { return x / 6.0; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_2d0d_lit()
 {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::ir::node_data<double> lhs(m);
 
@@ -264,22 +256,21 @@ void test_div_operation_2d0d_lit()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::MatrixXd expected = m.array() / 6.0;
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicMatrix<double> expected =
+        blaze::map(m, [](double x) { return x / 6.0; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_2d()
 {
-    Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(42, 42);
-    Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -293,22 +284,21 @@ void test_div_operation_2d()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::MatrixXd expected = m1.array() / m2.array();
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicMatrix<double> expected =
+        blaze::map(m1, m2, [](double x1, double x2) { return x1 / x2; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_div_operation_2d_lit()
 {
-    Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(42, 42);
-    Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(42, 42);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(42UL, 42UL);
 
     phylanx::ir::node_data<double> lhs(m1);
 
@@ -320,15 +310,13 @@ void test_div_operation_2d_lit()
         hpx::new_<phylanx::execution_tree::primitives::div_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
-            });
+                std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        div.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    Eigen::MatrixXd expected = m1.array() / m2.array();
-    HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(std::move(expected)),
+    blaze::DynamicMatrix<double> expected =
+        blaze::map(m1, m2, [](double x1, double x2) { return x1 / x2; });
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
@@ -354,4 +342,3 @@ int main(int argc, char* argv[])
 
     return hpx::util::report_errors();
 }
-

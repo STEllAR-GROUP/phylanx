@@ -5,42 +5,43 @@
 
 # setup Blaze as a dependency
 
-# TODO: We don't use `phylanx_setup_eigen3`. We can remove `Phylanx_SetupEigen3.cmake`.
 
 macro(phylanx_setup_blaze)
-  # Method 2: Specify the include directory `blaze_INCLUDE_DIR`
+  # Step 1: See Blaze is made available through `blaze_INCLUDE_DIR`
   if(blaze_INCLUDE_DIR)
     phylanx_info("Adding defined blaze_INCLUDE_DIR to header include directories.")
     list(APPEND CMAKE_REQUIRED_INCLUDES ${blaze_INCLUDE_DIR})
     include_directories(${blaze_INCLUDE_DIR})
   endif()
-  # Method 3: Vcpkg
+  # Step 2: See if Vcpkg is being used
   if(_VCPKG_ROOT_DIR)
     phylanx_info("Vcpkg found. Adding to header include directory: " ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
     list(APPEND CMAKE_REQUIRED_INCLUDES "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
     include_directories("${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include")
   endif()
 
-  # Check if Math.h is available
+  # Step 3: Check if Math.h is available
   include(CheckIncludeFileCXX)
+  # Ensure CMake tells the compiler to use C++14 or the Blaze check command will fail
   if(MSCVC)
     set(CMAKE_REQUIRED_FLAGS "/std:c++14")
   else()
     set(CMAKE_REQUIRED_FLAGS "-std=c++14")
   endif()
   check_include_file_cxx(blaze/Math.h HAVE_BLAZE_MATH_H)
-  if(NOT HAVE_BLAZE_MATH_H)
-    # Method 1: find_package
-    # NOTE: `blaze_DIR` being set assists this step.
+  if(HAVE_BLAZE_MATH_H)
+    phylanx_info("Blaze was found.")
+  else()
+    # Step 4: See if Blaze is available through find_package
     find_package(blaze NO_CMAKE_PACKAGE_REGISTRY)
-    if(blaze_FOUND)
-      add_library(blaze_target INTERFACE)
-      target_link_libraries(blaze_target INTERFACE blaze::blaze)
-    else()
-      phylanx_error("Blaze could not be found. Please set blaze_DIR to help locating it.")
+    if(NOT blaze_FOUND)
+      phylanx_error("Blaze could not be found. Please set one of the following flags to help locating it.")
+      phylanx_error("    Specify blaze_DIR if Blaze is available through CMake")
+      phylanx_error("    Specify blaze_INCLUDE_DIR if only Blaze headers are available")
     endif()
   endif()
+  add_library(blaze_target INTERFACE)
+  target_link_libraries(blaze_target INTERFACE blaze::blaze)
 
-  phylanx_info("Blaze was found.")
-
+  
 endmacro()
