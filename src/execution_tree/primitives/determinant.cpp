@@ -7,7 +7,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/determinant.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include <unsupported/Eigen/MatrixFunctions>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -108,7 +107,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type determinantxd(operands_type && ops) const
             {
-                return operand_type(ops[0].matrix().determinant());
+                // HACK: det() distabled because it requires BLAS
+                //double d = blaze::det(ops[0].matrix());
+                double d = 0.0;
+                return operand_type(d);
             }
 
         private:

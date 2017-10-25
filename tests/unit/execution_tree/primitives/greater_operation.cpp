@@ -3,13 +3,12 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
-
-#include <Eigen/Dense>
 
 #include <iostream>
 #include <utility>
@@ -101,8 +100,9 @@ void test_greater_operation_0d_lit_true()
 
 void test_greater_operation_1d()
 {
-    Eigen::VectorXd v1 = Eigen::VectorXd::Random(1007);
-    Eigen::VectorXd v2 = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -122,16 +122,17 @@ void test_greater_operation_1d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater.eval();
 
-    Eigen::VectorXd expected = (v1.array() > v2.array()).cast<double>();
-    HPX_TEST_EQ(
-        expected.norm() != 0.0,
+    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(
+        v1, v2, [](double d1, double d2) { return d1 > d2 ? 1 : 0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 void test_greater_operation_1d_lit()
 {
-    Eigen::VectorXd v1 = Eigen::VectorXd::Random(1007);
-    Eigen::VectorXd v2 = Eigen::VectorXd::Random(1007);
+    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v1);
 
@@ -149,16 +150,17 @@ void test_greater_operation_1d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater.eval();
 
-    Eigen::VectorXd expected = (v1.array() > v2.array()).cast<double>();
-    HPX_TEST_EQ(
-        expected.norm() != 0.0,
+    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(
+        v1, v2, [](double d1, double d2) { return d1 > d2 ? 1 : 0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 void test_greater_operation_2d()
 {
-    Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(101, 101);
-    Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(101, 101);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(101UL, 101UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(101UL, 101UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -178,16 +180,18 @@ void test_greater_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater.eval();
 
-    Eigen::MatrixXd expected = (m1.array() > m2.array()).cast<double>();
-    HPX_TEST_EQ(
-        expected.norm() != 0.0,
+    blaze::DynamicMatrix<double> expected = blaze::map(
+        m1, m2, [](double d1, double d2) { return d1 > d2 ? 1 : 0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
 void test_greater_operation_2d_lit()
 {
-    Eigen::MatrixXd m1 = Eigen::MatrixXd::Random(101, 101);
-    Eigen::MatrixXd m2 = Eigen::MatrixXd::Random(101, 101);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(101UL, 101UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(101UL, 101UL);
+
 
     phylanx::ir::node_data<double> lhs(m1);
 
@@ -205,9 +209,9 @@ void test_greater_operation_2d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater.eval();
 
-    Eigen::MatrixXd expected = (m1.array() > m2.array()).cast<double>();
-    HPX_TEST_EQ(
-        expected.norm() != 0.0,
+    blaze::DynamicMatrix<double> expected = blaze::map(
+        m1, m2, [](double d1, double d2) { return d1 > d2 ? 1 : 0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 

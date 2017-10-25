@@ -8,9 +8,8 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <Eigen/Dense>
-
 #include <algorithm>
+
 
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {
@@ -35,7 +34,7 @@ int main(int argc, char* argv[])
         HPX_TEST_EQ(*begin, 42.0);
         HPX_TEST(++begin == end);
 
-        HPX_TEST_EQ(single_value.num_dimensions(), std::ptrdiff_t(0));
+        HPX_TEST_EQ(single_value.num_dimensions(), std::size_t(0UL));
         HPX_TEST(single_value.dimensions() ==
             phylanx::ir::node_data<double>::dimensions_type({1, 1}));
 
@@ -43,19 +42,21 @@ int main(int argc, char* argv[])
     }
 
     {
-        Eigen::VectorXd v = Eigen::VectorXd::Random(1007);
+        blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+        blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
         phylanx::ir::node_data<double> array_value(v);
 
         auto begin = hpx::util::begin(array_value);
         auto end = hpx::util::end(array_value);
 
-        HPX_TEST_EQ(std::distance(begin, end), v.rows());
-        HPX_TEST(std::equal(begin, end, hpx::util::begin(v), hpx::util::end(v)));
+        HPX_TEST_EQ(std::distance(begin, end), v.size());
+        HPX_TEST(
+            std::equal(begin, end, hpx::util::begin(v), hpx::util::end(v)));
 
-        HPX_TEST_EQ(array_value.num_dimensions(), std::ptrdiff_t(1));
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({v.rows(), 1}));
+            phylanx::ir::node_data<double>::dimensions_type({v.size(), 1UL}));
 
         test_serialization(array_value);
     }
@@ -72,28 +73,32 @@ int main(int argc, char* argv[])
         HPX_TEST_EQ(std::distance(begin, end), v.size());
         HPX_TEST(std::equal(begin, end, std::begin(v), std::end(v)));
 
-        HPX_TEST_EQ(array_value.num_dimensions(), std::ptrdiff_t(1));
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
             phylanx::ir::node_data<double>::dimensions_type(
-                {static_cast<std::ptrdiff_t>(v.size()), 1}));
+                {static_cast<std::size_t>(v.size()), 1UL}));
 
         test_serialization(array_value);
     }
 
     {
-        Eigen::MatrixXd m = Eigen::MatrixXd::Random(101, 101);
+        blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+        blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL);
 
         phylanx::ir::node_data<double> array_value(m);
 
         auto begin = hpx::util::begin(array_value);
         auto end = hpx::util::end(array_value);
 
-        HPX_TEST_EQ(std::distance(begin, end), m.size());
-        HPX_TEST(std::equal(begin, end, hpx::util::begin(m), hpx::util::end(m)));
+        HPX_TEST_EQ(std::distance(begin, end),
+            std::distance(m.begin(0UL), m.end(m.columns() - 1UL)));
+        HPX_TEST(
+            std::equal(begin, end, m.begin(0UL), m.end(m.columns() - 1UL)));
 
-        HPX_TEST_EQ(array_value.num_dimensions(), std::ptrdiff_t(2));
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({m.rows(), m.cols()}));
+            phylanx::ir::node_data<double>::dimensions_type(
+                {m.rows(), m.columns()}));
 
         test_serialization(array_value);
     }

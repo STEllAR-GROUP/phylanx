@@ -7,7 +7,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/inverse_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -108,11 +108,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type inversexd(operands_type && ops) const
             {
-                using matrix_type =
-                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+                using matrix_type = blaze::DynamicMatrix<double>;
 
-                matrix_type result = ops[0].matrix().inverse();
-                return ir::node_data<double>(std::move(result));
+                // HACK: invert() and inv() disabled because they call
+                // determinant, which requires BLAS
+                //blaze::invert(ops[0].matrix());
+                return std::move(ops[0]);
             }
 
         private:

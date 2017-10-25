@@ -1,4 +1,5 @@
 //  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -53,7 +54,8 @@ namespace phylanx { namespace ir
                 {
                     if (row != 0)
                         out << ", ";
-                    detail::print_array(out, data.row(row), data.cols());
+                    detail::print_array(
+                        out, blaze::row(data, row), data.columns());
                 }
             }
             break;
@@ -78,7 +80,7 @@ namespace phylanx { namespace ir
         case 1:
             HPX_FALLTHROUGH;
         case 2:
-            return matrix().norm() != 0;
+            return matrix().nonZeros() > 0;
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,

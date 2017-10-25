@@ -7,7 +7,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -18,8 +18,6 @@
 #include <memory>
 #include <utility>
 #include <vector>
-
-#include <unsupported/Eigen/MatrixFunctions>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -115,16 +113,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type constant1d(operands_type && ops) const
             {
-                std::ptrdiff_t dim = ops[0].dimension(0);
+                std::size_t dim = ops[0].dimension(0);
                 if (ops.size() > 1)
                 {
                     dim = ops[1].dimension(0);
                 }
 
-                using vector_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+                using vector_type = blaze::DynamicMatrix<double>;
 
-                vector_type result =
-                    Eigen::VectorXd::Constant(dim, ops[0][0]);
+                vector_type result = vector_type(1UL, dim, ops[0][0]);
                 return operand_type(std::move(result));
             }
 
@@ -136,11 +133,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     dim = ops[1].dimensions();
                 }
 
-                using matrix_type =
-                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+                using matrix_type = blaze::DynamicMatrix<double>;
 
-                matrix_type result =
-                    Eigen::MatrixXd::Constant(dim[0], dim[1], ops[0][0]);
+                matrix_type result = matrix_type(dim[0], dim[1], ops[0][0]);
                 return operand_type(std::move(result));
             }
 
