@@ -114,12 +114,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             // lhs_num_dims == 1
+            // Case 1: Inner product of two vectors
+            // Case 2: Inner product of a vector and an array of vectors
             primitive_result_type dot1d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
                 std::size_t rhs_num_dims = rhs.num_dimensions();
+                // If is_vector(lhs) && is_scalar(rhs)
                 if (rhs_num_dims == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -127,6 +130,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the operands have incompatible number of "
                             "dimensions");
                 }
+                // If is_vector(lhs) && is_vector(rhs)
                 else if (rhs_num_dims == 1)
                 {
                     if (lhs.dimension(0) != rhs.dimension(0))
@@ -137,22 +141,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "dimensions");
                     }
 
-                    double result = blaze::dot(blaze::row(lhs.matrix(), 0UL), blaze::row(rhs.matrix(), 0UL));
+                    double result = blaze::dot(
+                        blaze::row(lhs.matrix(), 0UL),
+                        blaze::row(rhs.matrix(), 0UL));
 
                     return ir::node_data<double>(result);
                 }
 
                 // lhs_num_dims == 1 && rhs_num_dims == 2
+                // If is_vector(lhs) && is_matrix(rhs)
+                
+                if (rhs_num_dims != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::dot1d",
+                        "the operands have incompatible number of "
+                        "dimensions");
+                }
+
+                // Number of columns has to be identical
                 if (rhs.dimension(0) == 1 &&
-                    lhs.dimension(0) != rhs.dimension(1))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "dot_operation::dot1d",
-                        "the operands have incompatible number of "
-                            "dimensions");
-                }
-                else if (rhs.dimension(1) == 1 &&
-                    lhs.dimension(0) != rhs.dimension(0))
+                    lhs.dimension(1) != rhs.dimension(1))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::dot1d",
@@ -160,19 +169,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "dimensions");
                 }
 
-                double result = blaze::dot(blaze::row(lhs.matrix(), 0UL), blaze::row(rhs.matrix(), 0UL));
+                // The result is always 1D, the size is the number of rows
+                std::vector<double> dot_prods(rhs.matrix().rows());
+                // Iterate over rows
+                for (std::size_t i = 0UL; i < rhs.matrix().rows(); ++i)
+                {
+                dot_prods[i] = blaze::dot(
+                    blaze::row(lhs.matrix(), 0UL),
+                    blaze::row(rhs.matrix(), i));
+                }
 
-                return ir::node_data<double>(result);
+                return ir::node_data<double>(dot_prods);
             }
 
             // lhs_num_dims == 2
+            // Regular matrix multiplication
             primitive_result_type dot2d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
                 std::size_t rhs_num_dims = rhs.num_dimensions();
-                if (rhs_num_dims == 0 || rhs_num_dims == 2)
+                if (rhs_num_dims == 0 || rhs_num_dims == 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::dot2d",
@@ -189,19 +207,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "dimensions");
                     }
 
-                    // HACK: I don't know what this is so disabled it.
-                    HPX_THROW_EXCEPTION(hpx::not_implemented,
-                        "dot_operation::dot2d",
-                        "fix this at some point");
 
-                    std::vector<double> dot_prods(lhs.matrix().columns());
-                    for (std::size_t i = 0UL; i < lhs.matrix().columns(); ++i) {
-                        dot_prods[i] = blaze::dot(
-                            blaze::row(lhs.matrix(), i),
-                            blaze::row(rhs.matrix(), i));
-                    }
-                    double result = std::accumulate(dot_prods.begin(), dot_prods.end(), 0.0);
-                    return ir::node_data<double>(result);
+                    lhs.matrix() *= rhs.matrix();
+                    return std::move(lhs);
                 }
             }
 

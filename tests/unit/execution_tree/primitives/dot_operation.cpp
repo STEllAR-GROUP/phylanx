@@ -65,23 +65,20 @@ void test_dot_operation_1d()
         expected, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
-void test_dot_operation_2d1()
+void test_dot_operation_1d2d()
 {
-    blaze::DynamicVector<double, blaze::rowVector> x1{
-        {17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71}};
-    blaze::DynamicMatrix<double> v1(1UL, x1.size());
-    blaze::row(v1, 0UL) = x1;
-
-    blaze::DynamicMatrix<double> v2 = v1;
-    blaze::transpose(v2);
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> v = gen.generate(1UL, 1007UL);
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 1007UL);
+        
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive rhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v2));
+            hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive dot =
         hpx::new_<phylanx::execution_tree::primitives::dot_operation>(
@@ -93,26 +90,31 @@ void test_dot_operation_2d1()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         dot.eval();
 
-    auto expected = blaze::dot(x1, x1);
+    //////////////////////////////////////////////////////////////////////////
+    blaze::DynamicMatrix<double> expected(1UL, 42UL, 0.0);
+    // Iterate over rows
+    for (std::size_t i = 0UL; i < m.rows(); ++i)
+        expected(0UL, i) = blaze::dot(
+            blaze::row(v, 0UL), blaze::row(m, i));
+    //////////////////////////////////////////////////////////////////////////
 
-    HPX_TEST_EQ(expected,
-        phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
-void test_dot_operation_2d2()
+void test_dot_operation_2d2d()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{
-        17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71};
-
-    blaze::DynamicVector<double, blaze::rowVector> v2 = v1;
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+            hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive rhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v2));
+            hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive dot =
         hpx::new_<phylanx::execution_tree::primitives::dot_operation>(
@@ -124,19 +126,20 @@ void test_dot_operation_2d2()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         dot.eval();
 
-    double expected = blaze::dot(v1, v2);
+    auto expected = m1 * m2;
 
-    HPX_TEST_EQ(expected,
-        phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 int main(int argc, char* argv[])
 {
-    test_dot_operation_0d();
-    test_dot_operation_1d();
-    // HACK: 2D dot products disabled
-    //test_dot_operation_2d1();
-    //test_dot_operation_2d2();
+    // HACK: Disabled to facilitate debugging 1D2D
+    //test_dot_operation_0d();
+    //test_dot_operation_1d();
+    test_dot_operation_1d2d();
+    // HACK: Disabled to facilitate debugging 1D2D
+    //test_dot_operation_2d2d();
 
     return hpx::util::report_errors();
 }
