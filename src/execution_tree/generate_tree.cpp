@@ -385,8 +385,7 @@ namespace phylanx { namespace execution_tree
             primitives::constant::match_data,
             primitives::determinant::match_data,
             primitives::exponential_operation::match_data,
-            // HACK: Disabled. Needs BLAS
-            //primitives::inverse_operation::match_data,
+            primitives::inverse_operation::match_data,
             primitives::transpose_operation::match_data,
             primitives::random::match_data,
             // variadic operations

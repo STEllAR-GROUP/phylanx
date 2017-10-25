@@ -122,9 +122,9 @@ void test_greater_equal_operation_1d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater_equal.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(v1, v2, [](double d1, double d2) { return d1 >= d2 ? 1.0 : 0.0; });
-    HPX_TEST_EQ(
-        expected.nonZeros() > 0,
+    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(
+        v1, v2, [](double d1, double d2) { return d1 >= d2 ? 1.0 : 0.0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
@@ -150,9 +150,9 @@ void test_greater_equal_operation_1d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater_equal.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(v1, v2, [](double d1, double d2) { return d1 >= d2 ? 1 : 0; });
-    HPX_TEST_EQ(
-        expected.nonZeros() > 0,
+    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(
+        v1, v2, [](double d1, double d2) { return d1 >= d2 ? 1 : 0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
@@ -180,9 +180,9 @@ void test_greater_equal_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater_equal.eval();
 
-    blaze::DynamicMatrix<double> expected = blaze::map(m1, m2, [](double d1, double d2) { return d1 >= d2 ? 1 : 0; });
-    HPX_TEST_EQ(
-        expected.nonZeros() > 0,
+    blaze::DynamicMatrix<double> expected = blaze::map(
+        m1, m2, [](double d1, double d2) { return d1 >= d2 ? 1 : 0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
@@ -208,9 +208,9 @@ void test_greater_equal_operation_2d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         greater_equal.eval();
 
-    blaze::DynamicMatrix<double> expected = blaze::map(m1, m2, [](double d1, double d2) { return d1 >= d2 ? 1 : 0; });
-    HPX_TEST_EQ(
-        expected.nonZeros() > 0,
+    blaze::DynamicMatrix<double> expected = blaze::map(
+        m1, m2, [](double d1, double d2) { return d1 >= d2 ? 1 : 0; });
+    HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 

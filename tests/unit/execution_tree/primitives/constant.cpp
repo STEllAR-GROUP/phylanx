@@ -94,7 +94,8 @@ void test_constant_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         const_.eval();
 
-    blaze::DynamicMatrix<double> expected = blaze::DynamicMatrix<double>(105UL, 101UL, 42.0);
+    blaze::DynamicMatrix<double> expected =
+        blaze::DynamicMatrix<double>(105UL, 101UL, 42.0);
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 2);

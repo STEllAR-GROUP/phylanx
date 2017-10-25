@@ -51,7 +51,8 @@ int main(int argc, char* argv[])
         auto end = hpx::util::end(array_value);
 
         HPX_TEST_EQ(std::distance(begin, end), v.size());
-        HPX_TEST(std::equal(begin, end, hpx::util::begin(v), hpx::util::end(v)));
+        HPX_TEST(
+            std::equal(begin, end, hpx::util::begin(v), hpx::util::end(v)));
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
@@ -89,12 +90,15 @@ int main(int argc, char* argv[])
         auto begin = hpx::util::begin(array_value);
         auto end = hpx::util::end(array_value);
 
-        HPX_TEST_EQ(std::distance(begin, end), std::distance(m.begin(0UL), m.end(m.columns() - 1UL)));
-        HPX_TEST(std::equal(begin, end, m.begin(0UL), m.end(m.columns() - 1UL)));
+        HPX_TEST_EQ(std::distance(begin, end),
+            std::distance(m.begin(0UL), m.end(m.columns() - 1UL)));
+        HPX_TEST(
+            std::equal(begin, end, m.begin(0UL), m.end(m.columns() - 1UL)));
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({m.rows(), m.columns()}));
+            phylanx::ir::node_data<double>::dimensions_type(
+                {m.rows(), m.columns()}));
 
         test_serialization(array_value);
     }

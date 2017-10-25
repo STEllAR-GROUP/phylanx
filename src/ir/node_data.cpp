@@ -54,7 +54,8 @@ namespace phylanx { namespace ir
                 {
                     if (row != 0)
                         out << ", ";
-                    detail::print_array(out, blaze::row(data, row), data.columns());
+                    detail::print_array(
+                        out, blaze::row(data, row), data.columns());
                 }
             }
             break;

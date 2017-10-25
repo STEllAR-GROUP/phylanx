@@ -322,8 +322,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "div_operation::eval",
-                                "left hand side operand has unsupported number of "
-                                "dimensions");
+                                "left hand side operand has unsupported number "
+                                "of dimensions");
                         }
                     }),
                     detail::map_operands(operands_, numeric_operand)
