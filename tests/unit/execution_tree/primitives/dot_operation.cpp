@@ -134,12 +134,10 @@ void test_dot_operation_2d2d()
 
 int main(int argc, char* argv[])
 {
-    // HACK: Disabled to facilitate debugging 1D2D
-    //test_dot_operation_0d();
-    //test_dot_operation_1d();
+    test_dot_operation_0d();
+    test_dot_operation_1d();
     test_dot_operation_1d2d();
-    // HACK: Disabled to facilitate debugging 1D2D
-    //test_dot_operation_2d2d();
+    test_dot_operation_2d2d();
 
     return hpx::util::report_errors();
 }
