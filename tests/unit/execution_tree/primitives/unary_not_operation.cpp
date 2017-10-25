@@ -18,7 +18,7 @@ void test_unary_not_operation_0d()
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), true);
 
-    phylanx::execution_tree::primitive unary_minus =
+    phylanx::execution_tree::primitive unary_not =
         hpx::new_<phylanx::execution_tree::primitives::unary_not_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
@@ -26,7 +26,7 @@ void test_unary_not_operation_0d()
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        unary_minus.eval();
+        unary_not.eval();
 
     HPX_TEST_EQ(
         false, phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
@@ -34,7 +34,7 @@ void test_unary_not_operation_0d()
 
 void test_unary_not_operation_0d_lit()
 {
-    phylanx::execution_tree::primitive unary_minus =
+    phylanx::execution_tree::primitive unary_not =
         hpx::new_<phylanx::execution_tree::primitives::unary_not_operation>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
@@ -42,7 +42,7 @@ void test_unary_not_operation_0d_lit()
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
-        unary_minus.eval();
+        unary_not.eval();
 
     HPX_TEST_EQ(
         true, phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
