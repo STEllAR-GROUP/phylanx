@@ -7,7 +7,6 @@
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
 #include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
@@ -39,7 +38,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    sub_operation::sub_operation(std::vector<primitive_argument_type>&& operands)
+    sub_operation::sub_operation(
+        std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
     {
         if (operands_.size() < 2)
@@ -108,10 +108,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub0d1d",
                         "the sub_operation primitive can sub a single value "
-                            "to a vector only if there are exactly 2 operands");
+                        "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix().array() = ops[0][0] - ops[1].matrix().array();
+                ops[1].matrix() = blaze::map(ops[1].matrix(),
+                    [&](double x) { return ops[0][0] - x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -122,10 +123,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub0d2d",
                         "the sub_operation primitive can sub a single value "
-                            "to a matrix only if there are exactly 2 operands");
+                        "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix().array() = ops[0][0] - ops[1].matrix().array();
+                ops[1].matrix() = blaze::map(ops[1].matrix(),
+                    [&](double x) { return ops[0][0] - x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -158,10 +160,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub0d1d",
                         "the sub_operation primitive can sub a single value "
-                            "to a vector only if there are exactly 2 operands");
+                        "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix().array() -= ops[1][0];
+                ops[0].matrix() = blaze::map(ops[0].matrix(),
+                    [&](double x) { return x - ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -182,16 +185,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix().array() -= rhs.matrix().array();
+                    lhs.matrix() -= rhs.matrix();
                     return primitive_result_type(std::move(lhs));
                 }
 
                 operand_type& first_term = *ops.begin();
                 return primitive_result_type(std::accumulate(
                     ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result, operand_type const& curr) -> operand_type
-                    {
-                        result.matrix().array() -= curr.matrix().array();
+                    [](operand_type& result,
+                        operand_type const& curr) -> operand_type {
+                        result.matrix() -= curr.matrix();
                         return std::move(result);
                     }));
             }
@@ -224,10 +227,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub0d2d",
                         "the sub_operation primitive can sub a single value "
-                            "to a matrix only if there are exactly 2 operands");
+                        "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix().array() -= ops[1][0];
+                ops[0].matrix() = blaze::map(ops[0].matrix(),
+                    [&](double x) { return x - ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -248,17 +252,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix().array() -= rhs.matrix().array();
+                    lhs.matrix() -= rhs.matrix();
                     return primitive_result_type(std::move(lhs));
                 }
 
                 operand_type& first_term = *ops.begin();
                 return primitive_result_type(std::accumulate(
                     ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
-                    {
-                        result.matrix().array() -= curr.matrix().array();
+                    [](operand_type& result,
+                        operand_type const& curr) -> operand_type {
+                        result.matrix() -= curr.matrix();
                         return std::move(result);
                     }));
             }
@@ -286,9 +289,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             hpx::future<primitive_result_type> eval() const
             {
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops) -> primitive_result_type
-                    {
+                return hpx::dataflow(
+                    hpx::util::unwrapping([this_](operands_type&& ops)
+                                              -> primitive_result_type {
                         std::size_t lhs_dims = ops[0].num_dimensions();
                         switch (lhs_dims)
                         {
@@ -305,7 +308,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "sub_operation::eval",
                                 "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                "number of dimensions");
                         }
                     }),
                     detail::map_operands(operands_, numeric_operand)

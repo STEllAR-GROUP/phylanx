@@ -7,7 +7,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/random.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include <unsupported/Eigen/MatrixFunctions>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -114,23 +113,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type random1d(operands_type && ops) const
             {
-                std::ptrdiff_t dim = ops[0].dimension(0);
+                std::size_t dim = ops[0].dimension(0);
 
-                using vector_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+                blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 
-                vector_type result = Eigen::VectorXd::Random(dim);
-                return operand_type(std::move(result));
+                return operand_type(gen.generate(1UL, dim));
             }
 
             primitive_result_type random2d(operands_type && ops) const
             {
                 auto dim = ops[0].dimensions();
 
-                using matrix_type =
-                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+                blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 
-                matrix_type result = Eigen::MatrixXd::Random(dim[0], dim[1]);
-                return operand_type(std::move(result));
+                return operand_type(gen.generate(dim[0], dim[1]));
             }
 
         private:

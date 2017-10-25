@@ -7,7 +7,6 @@
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
 #include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
@@ -111,7 +110,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix().array() = ops[0][0] / ops[1].matrix().array();
+                ops[1].matrix() = blaze::map(
+                        ops[1].matrix(),
+                        [&](double x) { return ops[0][0] / x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -125,7 +126,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix().array() = ops[0][0] / ops[1].matrix().array();
+                ops[1].matrix() = blaze::map(
+                        ops[1].matrix(),
+                        [&](double x) { return ops[0][0] / x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -160,7 +163,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix().array() /= ops[1][0];
+                ops[0].matrix() = blaze::map(
+                        ops[0].matrix(),
+                        [&](double x) { return x / ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -181,7 +186,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix().array() /= rhs.matrix().array();
+                    lhs.matrix() = blaze::map(
+                            lhs.matrix(),
+                            rhs.matrix(),
+                            [](double x1, double x2) { return x1 / x2; });
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -191,7 +199,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](operand_type& result, operand_type const& curr)
                     ->  operand_type
                     {
-                        result.matrix().array() /= curr.matrix().array();
+                        result.matrix() = blaze::map(
+                                result.matrix(),
+                                curr.matrix(),
+                                [](double x1, double x2) { return x1 / x2; });
                         return std::move(result);
                     }));
             }
@@ -226,7 +237,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix().array() /= ops[1][0];
+                ops[0].matrix() = blaze::map(
+                        ops[0].matrix(),
+                        [&](double x) { return x / ops[1][0]; });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -247,7 +260,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix().array() /= rhs.matrix().array();
+                    lhs.matrix() = blaze::map(
+                            lhs.matrix(),
+                            rhs.matrix(),
+                            [](double x1, double x2) { return x1 / x2; });
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -257,7 +273,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](operand_type& result, operand_type const& curr)
                     ->  operand_type
                     {
-                        result.matrix().array() /= curr.matrix().array();
+                        result.matrix() = blaze::map(
+                                result.matrix(),
+                                curr.matrix(),
+                                [](double x1, double x2) { return x1 / x2; });
                         return std::move(result);
                     }));
             }
@@ -303,8 +322,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "div_operation::eval",
-                                "left hand side operand has unsupported number of "
-                                "dimensions");
+                                "left hand side operand has unsupported number "
+                                "of dimensions");
                         }
                     }),
                     detail::map_operands(operands_, numeric_operand)

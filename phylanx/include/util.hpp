@@ -7,10 +7,9 @@
 #define PHYLANX_UTIL_HPP
 
 #include <phylanx/config.hpp>
-#include <phylanx/util/eigen_range.hpp>
 #include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
+#include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/serialization/optional.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 #include <phylanx/util/variant.hpp>

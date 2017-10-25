@@ -72,8 +72,6 @@ phylanx_info("Phylanx version: " ${PHYLANX_VERSION})
 # Locate dependencies
 phylanx_setup_hpx()
 phylanx_setup_blaze()
-# TODO (#blazemig): Remove this line after migration
-phylanx_setup_eigen3()
 phylanx_setup_pybind11()
 
 ################################################################################
