@@ -37,7 +37,8 @@ void test_dot_operation_0d()
 
 void test_dot_operation_1d()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{ 17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71 };
+    blaze::DynamicVector<double, blaze::rowVector> v1{
+        17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71};
 
     blaze::DynamicVector<double, blaze::rowVector> v2 = v1;
 
@@ -66,7 +67,8 @@ void test_dot_operation_1d()
 
 void test_dot_operation_2d1()
 {
-    blaze::DynamicVector<double, blaze::rowVector> x1{ { 17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71 } };
+    blaze::DynamicVector<double, blaze::rowVector> x1{
+        {17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71}};
     blaze::DynamicMatrix<double> v1(1UL, x1.size());
     blaze::row(v1, 0UL) = x1;
 
@@ -99,7 +101,8 @@ void test_dot_operation_2d1()
 
 void test_dot_operation_2d2()
 {
-    blaze::DynamicVector<double, blaze::rowVector > v1{ 17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71 };
+    blaze::DynamicVector<double, blaze::rowVector> v1{
+        17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71};
 
     blaze::DynamicVector<double, blaze::rowVector> v2 = v1;
 

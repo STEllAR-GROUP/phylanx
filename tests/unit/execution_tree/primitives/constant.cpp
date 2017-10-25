@@ -62,7 +62,8 @@ void test_constant_1d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         const_.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::DynamicVector<double, blaze::rowVector>(1007UL, 42.0);
+    blaze::DynamicVector<double, blaze::rowVector> expected =
+        blaze::DynamicVector<double, blaze::rowVector>(1007UL, 42.0);
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 1);
