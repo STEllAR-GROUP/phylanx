@@ -79,8 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
           primitive_result_type slice0d(operands_type && ops) const
           {
-            HPX_THROW_EXCEPTION(hpx::not_implemented, "slice0d",
-            "slice0d not implemented yet");
+            //return the input as it is if the input is of zero dimensions
+            return primitive_result_type(ops[0]);
           }
 
           primitive_result_type slice1d(operands_type && ops) const
@@ -99,12 +99,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
           hpx::future<primitive_result_type> eval() const
           {
             auto this_ = this->shared_from_this();
-            std::cout<<"HI"<<std::endl;
             return hpx::dataflow(hpx::util::unwrapping(
                 [this_](operands_type && ops) -> primitive_result_type
                 {
                   std::size_t input_dims = ops[0].num_dimensions();
-                  std::cout<<"Innput_dims"<<input_dims<<std::endl;
                   switch (input_dims)
                   {
                     case 0:

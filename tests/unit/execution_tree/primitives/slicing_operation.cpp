@@ -20,7 +20,7 @@ void test_slicing_operation_0d()
 {
   phylanx::execution_tree::primitive first =
       hpx::new_<phylanx::execution_tree::primitives::variable>(
-          hpx::find_here(), phylanx::ir::node_data<double>(47.0));
+          hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
   phylanx::execution_tree::primitive second =
       hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -49,8 +49,7 @@ void test_slicing_operation_0d()
   hpx::future<phylanx::execution_tree::primitive_result_type> f =
       slice.eval();
   
-  /*HPX_TEST_EQ(
-      42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);*/
+  HPX_TEST_EQ(42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
 int main(int argc, char* argv[])
