@@ -62,7 +62,7 @@ void test_random_1d()
 void test_random_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<double> m = gen.generate(105UL, 105UL);
+    blaze::DynamicMatrix<double> m = gen.generate(101UL, 105UL);
 
     phylanx::execution_tree::primitive dim =
         hpx::new_<phylanx::execution_tree::primitives::variable>(

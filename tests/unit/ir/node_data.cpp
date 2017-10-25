@@ -89,9 +89,8 @@ int main(int argc, char* argv[])
         auto begin = hpx::util::begin(array_value);
         auto end = hpx::util::end(array_value);
 
-        HPX_TEST_EQ(std::distance(begin, end), m.rows() * m.columns());
-        // HACK: hpx::util::begin does not work with Blaze types. What is this supposed to do?
-        //HPX_TEST(std::equal(begin, end, hpx::util::begin(m), hpx::util::end(m)));
+        HPX_TEST_EQ(std::distance(begin, end), std::distance(m.begin(0UL), m.end(m.columns() - 1UL)));
+        HPX_TEST(std::equal(begin, end, m.begin(0UL), m.end(m.columns() - 1UL)));
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
