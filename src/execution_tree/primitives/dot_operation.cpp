@@ -177,7 +177,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "dimensions");
                 }
 
-                // The result is always 1D, the size is the number of rows
+                // The result is a vector of dot products
                 std::vector<double> dot_prods(rhs.matrix().columns());
                 // Iterate over rows
                 for (std::size_t i = 0UL; i < rhs.matrix().columns(); ++i)
@@ -223,7 +223,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type dot2d1d(operand_type &lhs, operand_type &rhs) const
             {
-                return dot1d2d(rhs, lhs);
+                std::size_t rhs_num_dims = rhs.num_dimensions();
+
+                // Number of columns has to be identical
+                if (lhs.dimension(0) != rhs.dimension(1))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::dot1d",
+                        "the operands have incompatible number of "
+                        "dimensions");
+                }
+
+                // The result is always 1D, the size is the number of rows
+                std::vector<double> dot_prods(lhs.matrix().rows());
+                // Iterate over rows
+                for (std::size_t i = 0UL; i < lhs.matrix().rows(); ++i)
+                {
+                    dot_prods[i] = blaze::dot(
+                        blaze::row(lhs.matrix(), i),
+                        blaze::column(rhs.matrix(), 0UL));
+                }
+
+                return ir::node_data<double>(dot_prods);
             }
 
             primitive_result_type dot2d2d(operand_type &lhs, operand_type &rhs) const
