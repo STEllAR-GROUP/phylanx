@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (c) 2017 Hartmut Kaiser                                      -->
+
+<!-- Use, modification and distribution are subject to the Boost Software   -->
+<!-- License, Version 1.0. (See accompanying file LICENSE_1_0.txt           -->
+<!-- or copy at http://www.boost.org/LICENSE_1_0.txt)                       -->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="blaze::DynamicMatrix&lt;*,0&gt;">
+        <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <ArrayItems>
+                <Direction>Forward</Direction>
+                <Rank>2</Rank>
+                <Size>$i == 0 ? (int)n_ : (int)m_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="blaze::DynamicMatrix&lt;*,1&gt;">
+        <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <ArrayItems>
+                <Direction>Backward</Direction>
+                <Rank>2</Rank>
+                <Size>$i == 0 ? (int)m_ : (int)n_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+</AutoVisualizer>
+
