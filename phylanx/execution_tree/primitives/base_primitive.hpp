@@ -150,7 +150,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
     public:
-        HPX_DEFINE_COMPONENT_ACTION(
+        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_direct_nonvirtual, eval_direct_action);

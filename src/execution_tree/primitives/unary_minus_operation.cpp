@@ -19,6 +19,8 @@
 #include <utility>
 #include <vector>
 
+#include <blaze/Math.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::unary_minus_operation>

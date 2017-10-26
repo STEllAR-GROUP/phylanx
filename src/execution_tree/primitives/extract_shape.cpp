@@ -82,13 +82,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             // return a list of numbers representing the
                             // dimensions of the first argument
-                            std::vector<primitive_result_type> result = {
-                                dims[0], dims[1]};
+                            std::vector<primitive_result_type> result{
+                                std::int64_t(dims[0]), std::int64_t(dims[1])
+                            };
                             return primitive_result_type{std::move(result)};
                         }
 
                         return primitive_result_type{
-                            dims[std::size_t(args[1][0])]};
+                            std::int64_t(dims[std::size_t(args[1][0])])};
                     }),
                     detail::map_operands(operands, numeric_operand, args)
                 );

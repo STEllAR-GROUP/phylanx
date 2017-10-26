@@ -18,7 +18,9 @@
 #include <utility>
 #include <vector>
 
-///////////////////////////////////////////////////////////////////////////////
+#include <blaze/Math.h>
+
+//////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::add_operation>
     add_operation_type;
@@ -84,10 +86,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(
-                        ops[1].matrix(),
-                        [&](double x) { return ops[0][0] + x; });
-                return primitive_result_type(std::move(ops[1]));
+                args[1].matrix() = blaze::map(
+                        args[1].matrix(),
+                        [&](double x) { return args[0][0] + x; });
+                return primitive_result_type(std::move(args[1]));
             }
 
             primitive_result_type add0d2d(args_type && args) const
@@ -100,10 +102,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(
-                        ops[1].matrix(),
-                        [&](double x) { return ops[0][0] + x; });
-                return primitive_result_type(std::move(ops[1]));
+                args[1].matrix() = blaze::map(
+                        args[1].matrix(),
+                        [&](double x) { return args[0][0] + x; });
+                return primitive_result_type(std::move(args[1]));
             }
 
             primitive_result_type add0d(args_type && args) const
@@ -138,10 +140,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(
-                        ops[0].matrix(),
-                        [&](double x) { return x + ops[1][0]; });
-                return primitive_result_type(std::move(ops[0]));
+                args[0].matrix() = blaze::map(
+                        args[0].matrix(),
+                        [&](double x) { return x + args[1][0]; });
+                return primitive_result_type(std::move(args[0]));
             }
 
             primitive_result_type add1d1d(args_type && args) const
@@ -206,10 +208,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(
-                        ops[0].matrix(),
-                        [&](double x) { return x + ops[1][0]; });
-                return primitive_result_type(std::move(ops[0]));
+                args[0].matrix() = blaze::map(
+                        args[0].matrix(),
+                        [&](double x) { return x + args[1][0]; });
+                return primitive_result_type(std::move(args[0]));
             }
 
             primitive_result_type add2d2d(args_type && args) const

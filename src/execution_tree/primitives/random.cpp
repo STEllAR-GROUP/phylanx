@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<

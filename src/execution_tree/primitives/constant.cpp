@@ -7,7 +7,6 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/eigen.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -19,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-#include <unsupported/Eigen/MatrixFunctions>
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -54,10 +53,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return shape.size();
         }
 
-        std::array<std::ptrdiff_t, 2> extract_dimensions(
+        std::array<std::size_t, 2> extract_dimensions(
             std::vector<primitive_argument_type> const& shape)
         {
-            std::array<std::ptrdiff_t, 2> result = {0, 0};
+            std::array<std::size_t, 2> result = {0, 0};
             result[0] = extract_integer_value(shape[0]);
             if (shape.size() > 1)
             {
@@ -80,23 +79,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             primitive_result_type constant1d(
-                operand_type&& op, std::ptrdiff_t dim) const
+                operand_type&& op, std::size_t dim) const
             {
-                using vector_type = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-
-                vector_type result = Eigen::VectorXd::Constant(dim, op[0]);
-                return operand_type(std::move(result));
+                using vector_type = blaze::DynamicMatrix<double>;
+                return operand_type{vector_type{1UL, dim, op[0]}};
             }
 
             primitive_result_type constant2d(operand_type&& op,
                 operand_type::dimensions_type const& dim) const
             {
-                using matrix_type =
-                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-
-                matrix_type result =
-                    Eigen::MatrixXd::Constant(dim[0], dim[1], op[0]);
-                return operand_type(std::move(result));
+                using matrix_type = blaze::DynamicMatrix<double>;
+                return operand_type{matrix_type{dim[0], dim[1], op[0]}};
             }
 
         public:
