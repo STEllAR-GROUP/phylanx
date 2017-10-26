@@ -35,9 +35,9 @@ macro(phylanx_setup_blaze)
     # Step 4: See if Blaze is available through find_package
     find_package(blaze NO_CMAKE_PACKAGE_REGISTRY)
     if(NOT blaze_FOUND)
-      phylanx_error("Blaze could not be found. Please set one of the following flags to help locating it.")
-      phylanx_error("    Specify blaze_DIR if Blaze is available through CMake")
-      phylanx_error("    Specify blaze_INCLUDE_DIR if only Blaze headers are available")
+      phylanx_error("Blaze could not be found. Please set one of the following flags to help locating it. \n"
+                    "    Specify blaze_DIR if Blaze is available through CMake\n"
+                    "    Specify blaze_INCLUDE_DIR if only Blaze headers are available")
     endif()
   endif()
   add_library(blaze_target INTERFACE)
