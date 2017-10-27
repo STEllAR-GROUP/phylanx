@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const hstack_operation::match_data =
         {
         hpx::util::make_tuple("hstack",
-            std::vector<std::string>{"hstack(_1, _2)"},
+            std::vector<std::string>{"hstack(_1, __2)"},
             &create<hstack_operation>)
         };
 
