@@ -18,9 +18,7 @@ RUN apt-get -y install wget &&                                                  
     make &&                                                                      \
     make install &&                                                              \
     cd / &&                                                                      \
-    mkdir blaze &&                                                               \
-    git clone https://bitbucket.org/blaze-lib/blaze.git blaze-src &&             \
-    cd blaze-src &&                                                              \
-    mkdir build && cd build &&                                                   \
-    cmake -DCMAKE_INSTALL_PREFIX=/blaze .. &&                                    \
-    make install
+    git clone https://bitbucket.org/blaze-lib/blaze.git blaze &&                 \
+    cd blaze &&                                                                  \
+    cmake -DBLAZE_SMP_THREADS=Boost .. &&                                        \
+    make
