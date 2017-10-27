@@ -34,13 +34,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     phylanx::ast::expression,
     (phylanx::ast::operand, first)
-    (std::list<phylanx::ast::operation>, rest)
+    (std::vector<phylanx::ast::operation>, rest)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
     phylanx::ast::function_call,
     (phylanx::ast::identifier, function_name)
-    (std::list<phylanx::ast::expression>, args)
+    (std::vector<phylanx::ast::expression>, args)
 )
 
 // BOOST_FUSION_ADAPT_STRUCT(

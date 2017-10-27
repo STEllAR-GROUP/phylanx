@@ -6,8 +6,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -40,47 +38,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     and_operation::and_operation(std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.size() < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "and_operation::and_operation",
-                "the and_operation primitive requires at least two operands");
-        }
-
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands_.size(); ++i)
-        {
-            if (!valid(operands_[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "and_operation::and_operation",
-                "the and_operation primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct and_ : std::enable_shared_from_this<and_>
         {
-            and_(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            and_() = default;
 
         private:
             using operands_type = std::vector<std::uint8_t>;
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() < 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "and_operation::eval",
+                        "the and_operation primitive requires at least "
+                            "two operands");
+                }
+
+                bool arguments_valid = true;
+                for (std::size_t i = 0; i != operands.size(); ++i)
+                {
+                    if (!valid(operands[i]))
+                    {
+                        arguments_valid = false;
+                    }
+                }
+
+                if (!arguments_valid)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "and_operation::eval",
+                        "the and_operation primitive requires that the "
+                            "arguments given by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type && ops)
@@ -99,18 +98,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     return curr != 0;
                                 }));
                     }),
-                    detail::map_operands(operands_, boolean_operand)
+                    detail::map_operands(operands, boolean_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '&&' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> and_operation::eval() const
+    hpx::future<primitive_result_type> and_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::and_>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::and_>()->eval(args, {});
+        }
+
+        return std::make_shared<detail::and_>()->eval(operands_, args);
     }
 }}}

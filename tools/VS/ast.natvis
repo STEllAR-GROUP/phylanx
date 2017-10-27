@@ -29,6 +29,7 @@
         <DisplayString Condition="(var.impl_.index_ == 5)">std::int64_t({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 6)">expression({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 7)">function_call({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 8)">expression_list({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <Expand>
             <Item Name="[tagged]" Condition="(id != 0)">id</Item>
             <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
@@ -37,8 +38,9 @@
             <Item Name="[identifier]" Condition="(var.impl_.index_ == 3)">var.impl_.data_.tail_.tail_.tail_.head_.value</Item>
             <Item Name="[string]" Condition="(var.impl_.index_ == 4)">var.impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
             <Item Name="[std::int64_t]" Condition="(var.impl_.index_ == 5)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
-            <Item Name="[expression]" Condition="(var.impl_.index_ == 6)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
-            <Item Name="[function_call]" Condition="(var.impl_.index_ == 7)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[expression]" Condition="(var.impl_.index_ == 6)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[function_call]" Condition="(var.impl_.index_ == 7)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[expression_list]" Condition="(var.impl_.index_ == 8)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
         </Expand>
     </Type>
 

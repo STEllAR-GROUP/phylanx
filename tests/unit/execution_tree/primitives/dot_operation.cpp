@@ -3,7 +3,6 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
@@ -13,6 +12,8 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
 
 void test_dot_operation_0d()
 {
@@ -70,7 +71,6 @@ void test_dot_operation_1d2d()
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
     blaze::DynamicMatrix<double> v = gen.generate(1UL, 1007UL);
     blaze::DynamicMatrix<double> m = gen.generate(1007UL, 42UL);
-        
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(

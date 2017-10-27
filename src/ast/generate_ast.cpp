@@ -49,6 +49,38 @@ namespace phylanx { namespace ast
 
         return ast;
     }
+
+    std::vector<ast::expression> generate_asts(std::string const& input)
+    {
+        using iterator = std::string::const_iterator;
+
+        iterator first = input.begin();
+        iterator last = input.end();
+
+        std::stringstream strm;
+        ast::parser::error_handler<iterator> error_handler(first, last, strm);
+
+        ast::parser::expression<iterator> expr(error_handler);
+        ast::parser::skipper<iterator> skipper;
+
+        std::vector<ast::expression> asts;
+
+        if (!boost::spirit::qi::phrase_parse(first, last, +expr, skipper, asts))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::ast::generate_asts", strm.str());
+        }
+
+        if (first != last)
+        {
+            error_handler("Error! ", "Incomplete parse:", first);
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::ast::generate_asts", strm.str());
+        }
+
+        return asts;
+    }
 }}
 
 

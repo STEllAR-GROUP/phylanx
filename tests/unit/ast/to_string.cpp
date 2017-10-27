@@ -107,7 +107,7 @@ void test_expression()
     phylanx::ast::operation u1(phylanx::ast::optoken::op_plus, std::move(op1));
     e1.append(u1);
 
-    std::list<phylanx::ast::operation> ops = {u1, u1};
+    std::vector<phylanx::ast::operation> ops = {u1, u1};
     e1.append(ops);
 
     test_to_string(e1, "(true + true + true + true)");
@@ -127,13 +127,35 @@ void test_function_call()
 
     fc.append(e1);
 
-    std::list<phylanx::ast::expression> exprs = {e1, e1};
+    std::vector<phylanx::ast::expression> exprs = {e1, e1};
     fc.append(exprs);
 
     test_to_string(fc, "function_name(true, true, true)");
 
     phylanx::ast::primary_expr p2(std::move(fc));
     test_to_string(p2, "function_name(true, true, true)");
+}
+
+void test_list()
+{
+    phylanx::ast::identifier id("function_name");
+    phylanx::ast::function_call fc(std::move(id));
+
+    phylanx::ast::primary_expr p1(true);
+    phylanx::ast::operand op1(p1);
+    phylanx::ast::expression e1(std::move(p1));
+
+    fc.append(e1);
+
+    std::vector<phylanx::ast::expression> exprs = {e1, e1};
+    fc.append(exprs);
+
+    std::vector<phylanx::ast::expression> list = {
+        phylanx::ast::expression{op1},
+        phylanx::ast::expression{fc}
+    };
+
+    test_to_string(list, "'(true, function_name(true, true, true))");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,6 +167,7 @@ int main(int argc, char* argv[])
     test_unary_expr();
     test_expression();
     test_function_call();
+    test_list();
 
     return hpx::util::report_errors();
 }
