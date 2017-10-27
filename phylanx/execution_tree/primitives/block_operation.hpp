@@ -10,8 +10,6 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -24,8 +22,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<block_operation>
     {
-        using operands_type = std::vector<primitive_result_type>;
-
     public:
         static std::vector<match_pattern_type> const match_data;
 
@@ -33,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         block_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_result_type> eval() const override;
+        hpx::future<primitive_result_type> eval(
+            std::vector<primitive_argument_type> const& args) const override;
 
     private:
         std::vector<primitive_argument_type> operands_;

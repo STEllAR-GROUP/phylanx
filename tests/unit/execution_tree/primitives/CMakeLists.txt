@@ -14,6 +14,7 @@ set(tests
     dot_operation
     equal_operation
     exponential_operation
+    extract_shape
     file_primitives
     for_operation
     greater_operation

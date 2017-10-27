@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_SERIALIZE_HPP)
-#define PHYLANX_SERIALIZE_HPP
+#if !defined(PHYLANX_SERIALIZE_AST_HPP)
+#define PHYLANX_SERIALIZE_AST_HPP
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
@@ -32,10 +32,10 @@ namespace phylanx { namespace util
     PHYLANX_EXPORT std::vector<char> serialize(ast::operation const&);
     PHYLANX_EXPORT std::vector<char> serialize(ast::expression const&);
     PHYLANX_EXPORT std::vector<char> serialize(ast::function_call const&);
+    PHYLANX_EXPORT std::vector<char> serialize(
+        std::vector<ast::expression> const&);
 
     PHYLANX_EXPORT std::vector<char> serialize(ast::literal_value_type const&);
-
-    PHYLANX_EXPORT void append_operation(ast::expression &,ast::operation const &);
 
     namespace detail
     {
@@ -55,6 +55,8 @@ namespace phylanx { namespace util
             std::vector<char> const&, ast::expression&);
         PHYLANX_EXPORT void unserialize(
             std::vector<char> const&, ast::function_call&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, std::vector<ast::expression>&);
 
         PHYLANX_EXPORT void unserialize(
             std::vector<char> const&, ast::literal_value_type&);

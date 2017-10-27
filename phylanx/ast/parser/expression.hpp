@@ -45,7 +45,10 @@ namespace phylanx { namespace ast { namespace parser
         qi::rule<Iterator, ast::function_call(), skipper<Iterator>>
             function_call;
 
-        qi::rule<Iterator, std::list<ast::expression>(), skipper<Iterator>>
+        qi::rule<Iterator, std::vector<ast::expression>(), skipper<Iterator>>
+            list;
+
+        qi::rule<Iterator, std::vector<ast::expression>(), skipper<Iterator>>
             argument_list;
 
         qi::rule<Iterator, std::string(), skipper<Iterator>> identifier;

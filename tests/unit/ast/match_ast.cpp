@@ -178,6 +178,12 @@ int main(int argc, char* argv[])
         "func(_1, __2)", "func(A, B, C, D)", "A",
         std::vector<std::string>{"B", "C", "D"});
 
+    // matching lists
+    test_placeholder_matching("_1 + _2", "A + '()", "A", "'()");
+    test_placeholder_matching("_1 + _2", "A + '(B)", "A", "'(B)");
+    test_placeholder_matching("_1 + _2", "A + '(A, B)", "A", "'(A, B)");
+    test_placeholder_matching("func(_1 + _2)", "func(A + '(A, B))", "A", "'(A, B)");
+
     return hpx::util::report_errors();
 }
 

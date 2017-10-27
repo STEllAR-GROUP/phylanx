@@ -9,6 +9,10 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::variable>
@@ -26,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     variable::variable(primitive_argument_type&& operand)
-      : data_(extract_literal_value(operand))
+      : data_(std::move(operand))
     {}
 
     variable::variable(std::vector<primitive_argument_type>&& operands)
@@ -40,12 +44,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands.empty())
         {
-            data_ = extract_literal_value(operands[0]);
+            data_ = std::move(operands[0]);
         }
     }
 
     variable::variable(primitive_argument_type&& operand, std::string name)
-      : data_(extract_literal_value(operand))
+      : data_(std::move(operand))
       , name_(std::move(name))
     {}
 
@@ -62,13 +66,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands.empty())
         {
-            data_ = extract_literal_value(operands[0]);
+            data_ = std::move(operands[0]);
         }
     }
 
-    hpx::future<primitive_result_type> variable::eval() const
+    primitive_result_type variable::eval_direct(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return hpx::make_ready_future(data_);
+        return value_operand_sync(data_, args);
     }
 
     void variable::store(primitive_result_type const& data)
