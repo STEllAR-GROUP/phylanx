@@ -9,58 +9,58 @@
 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
-  <Type Name="blaze::DynamicMatrix&lt;*,0&gt;">
-    <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
-    <Expand>
-      <Item Name="[rows]">m_</Item>
-      <Item Name="[columns]">n_</Item>
-      <ArrayItems>
-        <Direction>Forward</Direction>
-        <Rank>2</Rank>
-        <Size>$i == 0 ? (int)n_ : (int)m_</Size>
-        <ValuePointer>($T1*)v_</ValuePointer>
-      </ArrayItems>
-    </Expand>
-  </Type>
+    <Type Name="blaze::DynamicMatrix&lt;*,0&gt;">
+        <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <ArrayItems>
+                <Direction>Forward</Direction>
+                <Rank>2</Rank>
+                <Size>$i == 0 ? (int)n_ : (int)m_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
 
-  <Type Name="blaze::DynamicMatrix&lt;*,1&gt;">
-    <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
-    <Expand>
-      <Item Name="[rows]">m_</Item>
-      <Item Name="[columns]">n_</Item>
-      <ArrayItems>
-        <Direction>Backward</Direction>
-        <Rank>2</Rank>
-        <Size>$i == 0 ? (int)m_ : (int)n_</Size>
-        <ValuePointer>($T1*)v_</ValuePointer>
-      </ArrayItems>
-    </Expand>
-  </Type>
+    <Type Name="blaze::DynamicMatrix&lt;*,1&gt;">
+        <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <ArrayItems>
+                <Direction>Backward</Direction>
+                <Rank>2</Rank>
+                <Size>$i == 0 ? (int)m_ : (int)n_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
 
-  <Type Name="blaze::DynamicVector&lt;*,0&gt;">
-    <DisplayString>{{size={size_}}}</DisplayString>
-    <Expand>
-      <Item Name="[size]">size_</Item>
-      <ArrayItems>
-        <Direction>Forward</Direction>
-        <Rank>1</Rank>
-        <Size>size_</Size>
-        <ValuePointer>($T1*)v_</ValuePointer>
-      </ArrayItems>
-    </Expand>
-  </Type>
+    <Type Name="blaze::DynamicVector&lt;*,0&gt;">
+        <DisplayString>{{size={size_}}}</DisplayString>
+        <Expand>
+            <Item Name="[size]">size_</Item>
+            <ArrayItems>
+                <Direction>Forward</Direction>
+                <Rank>1</Rank>
+                <Size>size_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
 
-  <Type Name="blaze::DynamicVector&lt;*,1&gt;">
-    <DisplayString>{{size={size_}}}</DisplayString>
-    <Expand>
-      <Item Name="[size]">size_</Item>
-      <ArrayItems>
-        <Direction>Backward</Direction>
-        <Rank>1</Rank>
-        <Size>size_</Size>
-        <ValuePointer>($T1*)v_</ValuePointer>
-      </ArrayItems>
-    </Expand>
-  </Type>
+    <Type Name="blaze::DynamicVector&lt;*,1&gt;">
+        <DisplayString>{{size={size_}}}</DisplayString>
+        <Expand>
+            <Item Name="[size]">size_</Item>
+            <ArrayItems>
+                <Direction>Backward</Direction>
+                <Rank>1</Rank>
+                <Size>size_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
 
 </AutoVisualizer>

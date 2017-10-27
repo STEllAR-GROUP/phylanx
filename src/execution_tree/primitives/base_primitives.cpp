@@ -488,16 +488,17 @@ namespace phylanx { namespace execution_tree
             return {util::get<6>(val)};
 
         case 7:     // std::vector<primitive_argument_type>
-            {
-                auto const& v = util::get<7>(val).get();
-                std::vector<primitive_argument_type> result;
-                result.reserve(v.size());
-                for (auto const& elem : v)
-                {
-                    result.emplace_back(extract_list_value(elem));
-                }
-                return result;
-            }
+//             {
+//                 auto const& v = util::get<7>(val).get();
+//                 std::vector<primitive_argument_type> result;
+//                 result.reserve(v.size());
+//                 for (auto const& elem : v)
+//                 {
+//                     result.emplace_back(extract_list_value(elem));
+//                 }
+//                 return result;
+//             }
+            return util::get<7>(val).get();
 
         case 5: HPX_FALLTHROUGH;    // primitive
         default:
