@@ -204,11 +204,11 @@ namespace phylanx { namespace ir
         /// Extract the dimensionality of the underlying data array.
         std::size_t num_dimensions() const
         {
-            if (data_.rows() != 1)
+            if (data_.rows() > 1)
             {
                 return 2;
             }
-            if (data_.columns() != 1)
+            if (data_.columns() > 1)
             {
                 return 1;
             }
@@ -218,11 +218,11 @@ namespace phylanx { namespace ir
         /// Extract the dimensional extends of the underlying data array.
         dimensions_type dimensions() const
         {
-            return dimensions_type{data_.columns(), data_.rows()};
+            return dimensions_type{ data_.rows(), data_.columns()};
         }
         std::size_t dimension(std::size_t dim) const
         {
-            return (dim == 0) ? data_.columns() : data_.rows();
+            return (dim == 0) ? data_.rows() : data_.columns();
         }
 
         explicit operator bool() const;

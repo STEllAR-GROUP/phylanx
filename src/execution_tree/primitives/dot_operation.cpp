@@ -1,4 +1,5 @@
 //  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -149,7 +150,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type dot2d2d(operand_type &lhs, operand_type &rhs) const
             {
-                if (lhs.dimension(0) != rhs.dimension(1))
+                if (lhs.dimension(1) != rhs.dimension(0))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::dot2d",
