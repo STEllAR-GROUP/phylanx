@@ -76,52 +76,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    struct on_placeholder_match
-    {
-        std::multimap<std::string, ast::expression>& placeholders;
-
-        template <typename Ast1, typename Ast2, typename... Ts>
-        bool operator()(
-            Ast1 const& ast1, Ast2 const& ast2, Ts const&... ts) const
-        {
-            using value_type = typename std::multimap<std::string,
-                ast::expression>::value_type;
-
-            if (ast::detail::is_placeholder(ast1))
-            {
-                if (ast::detail::is_placeholder_ellipses(ast1))
-                {
-                    placeholders.insert(value_type(
-                        ast::detail::identifier_name(ast1).substr(1),
-                        ast::expression(ast2)));
-                }
-                else
-                {
-                    placeholders.insert(
-                        value_type(ast::detail::identifier_name(ast1),
-                            ast::expression(ast2)));
-                }
-            }
-            else if (ast::detail::is_placeholder(ast2))
-            {
-                if (ast::detail::is_placeholder_ellipses(ast1))
-                {
-                    placeholders.insert(value_type(
-                        ast::detail::identifier_name(ast2).substr(1),
-                        ast::expression(ast1)));
-                }
-                else
-                {
-                    placeholders.insert(
-                        value_type(ast::detail::identifier_name(ast2),
-                            ast::expression(ast1)));
-                }
-            }
-            return true;
-        }
-    };
-
-    ///////////////////////////////////////////////////////////////////////////
     template <typename Iterator>
     ast::expression extract_name(std::pair<Iterator, Iterator> const& p)
     {
@@ -335,7 +289,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 std::multimap<std::string, ast::expression> placeholders;
                 if (!ast::match_ast(expr, hpx::util::get<2>(pattern),
-                        on_placeholder_match{placeholders}))
+                        ast::detail::on_placeholder_match{placeholders}))
                 {
                     continue;   // no match found for the current pattern
                 }

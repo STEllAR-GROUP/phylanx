@@ -376,29 +376,29 @@ namespace phylanx { namespace ast
         {
         }
 
-        explicit operand(identifier const& val)
+        operand(identifier const& val)
           : operand_node_type(primary_expr(val))
         {
         }
-        explicit operand(identifier && val)
+        operand(identifier && val)
           : operand_node_type(primary_expr(std::move(val)))
         {
         }
 
-        explicit operand(primary_expr const& val)
+        operand(primary_expr const& val)
           : operand_node_type(val)
         {
         }
-        explicit operand(primary_expr && val)
+        operand(primary_expr && val)
           : operand_node_type(std::move(val))
         {
         }
 
-        explicit operand(unary_expr const& val)
+        operand(unary_expr const& val)
           : operand_node_type(val)
         {
         }
-        explicit operand(unary_expr && val)
+        operand(unary_expr && val)
           : operand_node_type(std::move(val))
         {
         }
@@ -577,6 +577,10 @@ namespace phylanx { namespace ast
           : first(primary_expr(std::move(l)))
         {}
 
+        explicit expression(operand && first, std::vector<operation> && ops)
+          : first(std::move(first)), rest(std::move(ops))
+        {}
+
         void append(operation const& op)
         {
             rest.push_back(op);
@@ -625,6 +629,11 @@ namespace phylanx { namespace ast
         {}
         explicit function_call(identifier && name)
           : function_name(std::move(name))
+        {}
+
+        explicit function_call(identifier name, std::vector<expression>&& exprs)
+          : function_name(std::move(name))
+          , args(std::move(exprs))
         {}
 
         void append(expression const& expr)

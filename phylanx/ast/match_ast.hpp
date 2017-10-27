@@ -7,6 +7,7 @@
 #define PHYLANX_AST_MATCH_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/is_identifier.hpp>
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/ast/node.hpp>
@@ -23,6 +24,55 @@
 
 namespace phylanx { namespace ast
 {
+    namespace detail
+    {
+        ///////////////////////////////////////////////////////////////////////
+        struct on_placeholder_match
+        {
+            std::multimap<std::string, ast::expression>& placeholders;
+
+            template <typename Ast1, typename Ast2, typename... Ts>
+            bool operator()(
+                Ast1 const& ast1, Ast2 const& ast2, Ts const&... ts) const
+            {
+                using value_type = typename std::multimap<std::string,
+                    ast::expression>::value_type;
+
+                if (ast::detail::is_placeholder(ast1))
+                {
+                    if (ast::detail::is_placeholder_ellipses(ast1))
+                    {
+                        placeholders.insert(value_type(
+                            ast::detail::identifier_name(ast1).substr(1),
+                            ast::expression(ast2)));
+                    }
+                    else
+                    {
+                        placeholders.insert(
+                            value_type(ast::detail::identifier_name(ast1),
+                                ast::expression(ast2)));
+                    }
+                }
+                else if (ast::detail::is_placeholder(ast2))
+                {
+                    if (ast::detail::is_placeholder_ellipses(ast1))
+                    {
+                        placeholders.insert(value_type(
+                            ast::detail::identifier_name(ast2).substr(1),
+                            ast::expression(ast1)));
+                    }
+                    else
+                    {
+                        placeholders.insert(
+                            value_type(ast::detail::identifier_name(ast2),
+                                ast::expression(ast1)));
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Ast1, typename Ast2, typename F, typename ... Ts>
     bool match_ast(Ast1 const& ast1, Ast2 const& ast2, F && f, Ts const&... ts)
