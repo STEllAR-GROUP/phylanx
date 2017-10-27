@@ -20,5 +20,5 @@ RUN apt-get -y install wget &&                                                  
     cd / &&                                                                      \
     git clone https://bitbucket.org/blaze-lib/blaze.git blaze &&                 \
     cd blaze &&                                                                  \
-    cmake -DBLAZE_SMP_THREADS=Boost .. &&                                        \
+    cmake -DBLAZE_SMP_THREADS=Boost . &&                                        \
     make
