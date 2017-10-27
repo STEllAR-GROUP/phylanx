@@ -286,8 +286,8 @@ void test_mul_operation_2d0d_lit()
 void test_mul_operation_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 42UL);
-    blaze::DynamicMatrix<double> m2 = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 40UL);
+    blaze::DynamicMatrix<double> m2 = gen.generate(40UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(

@@ -91,7 +91,7 @@ void test_dot_operation_1d2d()
         dot.eval();
 
     //////////////////////////////////////////////////////////////////////////
-    blaze::DynamicMatrix<double> expected(1UL, 42UL, 0.0);
+    blaze::DynamicMatrix<double> expected = v * m;
     // Iterate over rows
     for (std::size_t i = 0UL; i < m.columns(); ++i)
         expected(0UL, i) = blaze::dot(
@@ -106,7 +106,7 @@ void test_dot_operation_2d1d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
     blaze::DynamicMatrix<double> m = gen.generate(1007UL, 42UL);
-    blaze::DynamicMatrix<double> v = gen.generate(1UL, 1007UL);
+    blaze::DynamicMatrix<double> v = gen.generate(42UL, 1UL);
 
 
     phylanx::execution_tree::primitive lhs =
@@ -127,13 +127,7 @@ void test_dot_operation_2d1d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         dot.eval();
 
-    //////////////////////////////////////////////////////////////////////////
-    blaze::DynamicMatrix<double> expected(1UL, 42UL, 0.0);
-    // Iterate over rows
-    for (std::size_t i = 0UL; i < m.columns(); ++i)
-        expected(0UL, i) = blaze::dot(
-            blaze::column(m, i), blaze::row(v, 0UL));
-    //////////////////////////////////////////////////////////////////////////
+    blaze::DynamicMatrix<double> expected = m * v;
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -171,12 +165,11 @@ void test_dot_operation_2d2d()
 
 int main(int argc, char* argv[])
 {
-    // HACK: Disabled to facilitate debugging 1D2D
-    //test_dot_operation_0d();
-    //test_dot_operation_1d();
-    //test_dot_operation_1d2d();
+    test_dot_operation_0d();
+    test_dot_operation_1d();
+    test_dot_operation_1d2d();
     test_dot_operation_2d1d();
-    //test_dot_operation_2d2d();
+    test_dot_operation_2d2d();
 
     return hpx::util::report_errors();
 }
