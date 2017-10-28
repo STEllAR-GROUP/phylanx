@@ -7,6 +7,8 @@
 
 
 macro(phylanx_setup_blaze)
+  find_package(BLAS)
+
   find_package(blaze NO_CMAKE_PACKAGE_REGISTRY)
   if(NOT blaze_FOUND)
     phylanx_error("Blaze could not be found. Please specify blaze_DIR to assist locating it.")
