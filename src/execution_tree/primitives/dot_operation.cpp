@@ -114,6 +114,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::row(rhs.matrix(), 0UL));
 
                 return ir::node_data<double>(result);
+            }
 
             // lhs_num_dims == 2
             // Regular matrix multiplication
