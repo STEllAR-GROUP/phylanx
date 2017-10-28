@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({v.size(), 1UL}));
+            phylanx::ir::node_data<double>::dimensions_type({1UL, v.size()}));
 
         test_serialization(array_value);
     }
@@ -75,15 +75,14 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type(
-                {static_cast<std::size_t>(v.size()), 1UL}));
+            phylanx::ir::node_data<double>::dimensions_type({1UL, v.size()}));
 
         test_serialization(array_value);
     }
 
     {
         blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-        blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL);
+        blaze::DynamicMatrix<double> m = gen.generate(42UL, 101UL);
 
         phylanx::ir::node_data<double> array_value(m);
 
@@ -91,9 +90,9 @@ int main(int argc, char* argv[])
         auto end = hpx::util::end(array_value);
 
         HPX_TEST_EQ(std::distance(begin, end),
-            std::distance(m.begin(0UL), m.end(m.columns() - 1UL)));
+            std::distance(m.begin(0UL), m.end(m.rows() - 1UL)));
         HPX_TEST(
-            std::equal(begin, end, m.begin(0UL), m.end(m.columns() - 1UL)));
+            std::equal(begin, end, m.begin(0UL), m.end(m.rows() - 1UL)));
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
