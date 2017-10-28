@@ -120,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t rhs_num_dims = rhs.num_dimensions();
 
                 // Number of columns has to be identical
-                if (lhs.dimension(0) != rhs.dimension(1))
+                if (lhs.dimension(1) != rhs.dimension(0))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::dot1d",
