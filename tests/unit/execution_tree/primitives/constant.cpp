@@ -42,21 +42,16 @@ void test_constant_0d()
 void test_constant_1d()
 {
     blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
-    phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v));
-
     phylanx::execution_tree::primitive const_ =
         hpx::new_<phylanx::execution_tree::primitives::constant>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(val), std::move(dim)
+                std::move(val), std::int64_t(1007)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
@@ -74,21 +69,19 @@ void test_constant_1d()
 void test_constant_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<double> m = gen.generate(101UL, 105UL);
 
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
-    phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(m));
-
     phylanx::execution_tree::primitive const_ =
         hpx::new_<phylanx::execution_tree::primitives::constant>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(val), std::move(dim)
+                std::move(val),
+                std::vector<phylanx::execution_tree::primitive_argument_type>{
+                    std::int64_t(105), std::int64_t(101)
+                }
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =

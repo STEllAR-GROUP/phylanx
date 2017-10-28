@@ -21,12 +21,14 @@ macro(phylanx_get_python_extension_location suffix result)
 	      _result ${suffix})
 
 	else()
+        # Pybind gets the architecture wrong for POWER8.
+        string(REPLACE "powerpc64le" "ppc64le" _suffix ${suffix})
 		# suffix will be something like '.cpython-35m-x86_64-linux-gnu.so'
 		# result should be something like 'lib.linux-x86_64-3.5'
 		string(REGEX REPLACE
 			"\\..*([0-9])([0-9]).*-(.*)-(.*)-.*"
 			"lib.\\4-\\3-\\1.\\2"
-		_result ${suffix})
+		_result ${_suffix})
 	endif()
 
 	# compose full path

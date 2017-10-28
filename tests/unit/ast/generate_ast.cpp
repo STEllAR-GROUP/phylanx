@@ -9,6 +9,7 @@
 #include <hpx/include/serialization.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
@@ -34,6 +35,12 @@ struct traverse_ast
 
     // skip function calls
     bool operator()(phylanx::ast::function_call const& val) const
+    {
+        return true;
+    }
+
+    // skip lists
+    bool operator()(std::vector<phylanx::ast::expression> const& val) const
     {
         return true;
     }
@@ -69,6 +76,14 @@ struct traverse_ast_enter_exit
         return true;
     }
 
+    // skip lists
+    template <typename... Ts>
+    bool on_enter(std::vector<phylanx::ast::expression> const& val,
+        Ts const&... ts) const
+    {
+        return true;
+    }
+
     template <typename T, typename ... Ts>
     bool on_exit(T && val, Ts const&... ts) const
     {
@@ -83,12 +98,14 @@ void test_expression(std::string const& expr, std::string const& expected)
     {
         phylanx::ast::expression ast = phylanx::ast::generate_ast(expr);
         std::stringstream strm;
+        strm << std::boolalpha;
         phylanx::ast::traverse(ast, traverse_ast{strm});
         HPX_TEST_EQ(strm.str(), expected);
     }
     {
         phylanx::ast::expression ast = phylanx::ast::generate_ast(expr);
         std::stringstream strm;
+        strm << std::boolalpha;
         phylanx::ast::traverse(ast, traverse_ast_enter_exit{strm});
         HPX_TEST_EQ(strm.str(), expected);
     }
@@ -154,6 +171,33 @@ int main(int argc, char* argv[])
             "-\n"
             "+\n"
             "/\n"
+    );
+
+    test_expression(
+        "'()",
+            ""
+    );
+
+    test_expression(
+        "'(true, 1, 1.0, A, A + B)",
+            "true\n"
+            "1\n"
+            "1.000000\n"
+            "A\n"
+            "A\n"
+            "B\n"
+            "+\n"
+    );
+
+    test_expression(
+        "'(true, 1, '(1.0, A, A + B))",
+            "true\n"
+            "1\n"
+            "1.000000\n"
+            "A\n"
+            "A\n"
+            "B\n"
+            "+\n"
     );
 
     return hpx::util::report_errors();

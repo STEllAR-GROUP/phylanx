@@ -18,8 +18,8 @@
 #include <vector>
 
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
-PYBIND11_MAKE_OPAQUE(std::list<phylanx::ast::operation>);
-PYBIND11_MAKE_OPAQUE(std::list<phylanx::ast::expression>);
+PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::operation>);
+PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::expression>);
 
 // older versions of pybind11 don't support variant-like types
 namespace pybind11 { namespace detail
@@ -146,21 +146,21 @@ namespace phylanx { namespace bindings
     phylanx::execution_tree::primitive generate_tree(std::string const& expr,
         pybind11::dict const& dict)
     {
-        using var_type = phylanx::execution_tree::variables;
-
-        var_type variables;
+        std::vector<phylanx::execution_tree::primitive_argument_type> args;
+        args.reserve(dict.size());
 
         for (auto const& item : dict)
         {
             std::string key = pybind11::str(item.first);
             phylanx::execution_tree::primitive value =
                 item.second.cast<phylanx::execution_tree::primitive>();
-            variables.insert(
-                var_type::value_type(std::move(key), std::move(value)));
+            args.emplace_back(std::move(value));
         }
 
-        return phylanx::execution_tree::primitive_operand(
-            phylanx::execution_tree::generate_tree(expr, variables));
+        phylanx::execution_tree::compiler::function_list snippets;
+        auto f = phylanx::execution_tree::compile(expr, snippets);
+
+        return phylanx::execution_tree::primitive_operand(f.arg_);
     }
 }}
 
@@ -386,46 +386,46 @@ PYBIND11_MODULE(_phylanx, m)
             &phylanx::bindings::unpickle_helper<phylanx::ast::expression>));
 
     // list of phylanx::ast::operations
-    pybind11::class_<std::list<phylanx::ast::operation>>(
+    pybind11::class_<std::vector<phylanx::ast::operation>>(
             ast, "operation_list", "A list of operations")
         .def(pybind11::init<>())
-        .def("pop_back", &std::list<phylanx::ast::operation>::pop_back)
+        .def("pop_back", &std::vector<phylanx::ast::operation>::pop_back)
         .def("append",
-            [](std::list<phylanx::ast::operation>& v,
+            [](std::vector<phylanx::ast::operation>& v,
                phylanx::ast::operation const& f)
             {
                 v.push_back(f);
             })
         .def("__len__",
-            [](const std::list<phylanx::ast::operation>& v)
+            [](const std::vector<phylanx::ast::operation>& v)
             {
                 return v.size();
             })
         .def("__iter__",
-            [](std::list<phylanx::ast::operation>& v)
+            [](std::vector<phylanx::ast::operation>& v)
             {
                 return pybind11::make_iterator(v.begin(), v.end());
             },
             pybind11::keep_alive<0, 1>());
 
     // list of phylanx::ast::expressions
-    pybind11::class_<std::list<phylanx::ast::expression>>(
+    pybind11::class_<std::vector<phylanx::ast::expression>>(
         ast, "expression_list", "A list of expressions")
         .def(pybind11::init<>())
-        .def("pop_back", &std::list<phylanx::ast::expression>::pop_back)
+        .def("pop_back", &std::vector<phylanx::ast::expression>::pop_back)
         .def("append",
-            [](std::list<phylanx::ast::expression>& v,
+            [](std::vector<phylanx::ast::expression>& v,
                phylanx::ast::expression const& f)
             {
                 v.push_back(f);
             })
         .def("__len__",
-            [](const std::list<phylanx::ast::expression>& v)
+            [](const std::vector<phylanx::ast::expression>& v)
             {
                 return v.size();
             })
         .def("__iter__",
-            [](std::list<phylanx::ast::expression>& v)
+            [](std::vector<phylanx::ast::expression>& v)
             {
                 return pybind11::make_iterator(v.begin(), v.end());
             },
@@ -510,7 +510,7 @@ PYBIND11_MODULE(_phylanx, m)
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        return numeric_operand(p).get()[0];
+                        return numeric_operand(p, {}).get()[0];
                     });
             },
             "evaluate execution tree")
@@ -547,7 +547,4 @@ PYBIND11_MODULE(_phylanx, m)
 
     util.def("unserialize", &phylanx::util::unserialize,
         "un-serialize a byte-stream into an AST expression object");
-
-    util.def("append_operation",&phylanx::util::append_operation,
-        "append an operand to an expression");
 }

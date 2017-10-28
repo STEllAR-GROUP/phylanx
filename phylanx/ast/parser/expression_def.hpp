@@ -33,6 +33,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::_4_type _4;
 
         qi::char_type char_;
+        qi::lit_type lit;
         qi::real_parser<double, qi::strict_real_policies<double> > strict_double;
         qi::_val_type _val;
         qi::raw_type raw;
@@ -95,6 +96,7 @@ namespace phylanx { namespace ast { namespace parser
         primary_expr =
                 strict_double
             |   function_call
+            |   list
             |   as<ast::identifier>()[identifier]
             |   bool_
             |   ulong_long
@@ -104,6 +106,12 @@ namespace phylanx { namespace ast { namespace parser
 
         function_call =
                 (identifier >> '(')
+            >   argument_list
+            >   ')'
+            ;
+
+        list =
+                (lit('\'') >> '(')
             >   argument_list
             >   ')'
             ;

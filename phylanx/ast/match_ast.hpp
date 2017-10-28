@@ -95,6 +95,13 @@ namespace phylanx { namespace ast
     bool match_ast(
         function_call const&, function_call const&, F&&, Ts const&...);
 
+    template <typename F, typename... Ts>
+    bool match_ast(std::vector<ast::expression> const&, identifier const&, F&&,
+        Ts const&...);
+    template <typename F, typename... Ts>
+    bool match_ast(std::vector<ast::expression> const&,
+        std::vector<ast::expression> const&, F&&, Ts const&...);
+
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
@@ -276,8 +283,8 @@ namespace phylanx { namespace ast
         template <typename Ast>
         expression extract_subexpression(
             Ast const& ast, int prec,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end)
+            std::vector<operation>::const_iterator& it,
+            std::vector<operation>::const_iterator end)
         {
             expression result(it->operand_);
             while (++it != end && precedence_of(it->operator_) > prec)
@@ -289,17 +296,17 @@ namespace phylanx { namespace ast
 
         inline expression extract_subexpression(
             primary_expr const& pe, int prec,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end);
+            std::vector<operation>::const_iterator& it,
+            std::vector<operation>::const_iterator end);
         inline expression extract_subexpression(
             operand const& op, int prec,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end);
+            std::vector<operation>::const_iterator& it,
+            std::vector<operation>::const_iterator end);
 
         inline expression extract_subexpression(
             expression const& expr, int prec,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end)
+            std::vector<operation>::const_iterator& it,
+            std::vector<operation>::const_iterator end)
         {
             if (expr.rest.empty())
             {
@@ -315,8 +322,8 @@ namespace phylanx { namespace ast
 
         inline expression extract_subexpression(
             primary_expr const& pe, int prec,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end)
+            std::vector<operation>::const_iterator& it,
+            std::vector<operation>::const_iterator end)
         {
             // primary expression refers to an expression itself
             if (pe.index() == 6)
@@ -335,8 +342,8 @@ namespace phylanx { namespace ast
 
         inline expression extract_subexpression(
             operand const& op, int prec,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end)
+            std::vector<operation>::const_iterator& it,
+            std::vector<operation>::const_iterator end)
         {
             // operand may refer to primary expression
             if (op.index() == 1)
@@ -410,10 +417,10 @@ namespace phylanx { namespace ast
         template <typename F, typename ... Ts>
         bool match_expression(
             int min_precedence,
-            std::list<operation>::const_iterator& it1,
-            std::list<operation>::const_iterator end1,
-            std::list<operation>::const_iterator& it2,
-            std::list<operation>::const_iterator end2,
+            std::vector<operation>::const_iterator& it1,
+            std::vector<operation>::const_iterator end1,
+            std::vector<operation>::const_iterator& it2,
+            std::vector<operation>::const_iterator end2,
             F && f, Ts const&... ts)
         {
             while (it1 != end1 && it2 != end2 &&
@@ -608,6 +615,40 @@ namespace phylanx { namespace ast
         else if (it2 == end2)
         {
             return detail::is_placeholder_ellipses(*it1);
+        }
+
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename F, typename... Ts>
+    bool match_ast(std::vector<ast::expression> const& l, identifier const& id,
+        F&& f, Ts const&... ts)
+    {
+        // handle placeholder
+        if (detail::is_placeholder(id))
+        {
+            return hpx::util::invoke(std::forward<F>(f), l, id, ts...);
+        }
+        return false;
+    }
+
+    template <typename F, typename... Ts>
+    bool match_ast(std::vector<ast::expression> const& l1,
+        std::vector<ast::expression> const& l2, F&& f, Ts const&... ts)
+    {
+        if (l1.size() != l2.size())
+        {
+            return false;
+        }
+
+        auto end1 = l1.end();
+        for (auto it1 = l1.begin(), it2 = l2.begin(); it1 != end1; ++it1, ++it2)
+        {
+            if (!match_ast(*it1, *it2, std::forward<F>(f), ts...))
+            {
+                return false;
+            }
         }
 
         return true;

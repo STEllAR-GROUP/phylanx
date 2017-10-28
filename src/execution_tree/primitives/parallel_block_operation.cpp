@@ -6,9 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/parallel_block_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -42,27 +40,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
     parallel_block_operation::parallel_block_operation(
             std::vector<primitive_argument_type>&& operands)
       : operands_(std::move(operands))
-    {
-        if (operands_.empty())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "parallel_block_operation::parallel_block_operation",
-                "the parallel_block_operation primitive requires at least one "
-                    "argument");
-        }
-    }
+    {}
 
     namespace detail
     {
         struct block : std::enable_shared_from_this<block>
         {
-            block(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            block() = default;
 
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                    std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.empty())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                            "parallel_block_operation::eval",
+                        "the parallel_block_operation primitive requires at "
+                            "least one argument");
+                }
+
                 // evaluate condition of while statement
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
@@ -70,18 +68,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         return ops.back();
                     }),
-                    detail::map_operands(operands_, literal_operand)
+                    detail::map_operands(operands, literal_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
-    // start iteration over given while statement
-    hpx::future<primitive_result_type> parallel_block_operation::eval() const
+    // start iteration over given parallel-block statement
+    hpx::future<primitive_result_type> parallel_block_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::block>(operands_)->eval();
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::block>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::block>()->eval(operands_, args);
     }
 }}}
