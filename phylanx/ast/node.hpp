@@ -21,9 +21,9 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <list>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace phylanx { namespace ast
 {
@@ -202,6 +202,7 @@ namespace phylanx { namespace ast
           , std::int64_t
           , phylanx::util::recursive_wrapper<expression>
           , phylanx::util::recursive_wrapper<function_call>
+          , phylanx::util::recursive_wrapper<std::vector<ast::expression>>
         >;
 
     using literal_value_type = phylanx::util::variant<
@@ -299,6 +300,15 @@ namespace phylanx { namespace ast
         {
         }
 
+        primary_expr(std::vector<ast::expression> const& l)
+          : expr_node_type(l)
+        {
+        }
+        primary_expr(std::vector<ast::expression> && l)
+          : expr_node_type(std::move(l))
+        {
+        }
+
     private:
         friend class hpx::serialization::access;
 
@@ -319,14 +329,24 @@ namespace phylanx { namespace ast
     {
         operand() = default;
 
-        operand(bool const val)
+        operand(bool val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
         {
         }
-        operand(double const val)
+        operand(double val)
           : operand_node_type(
                 phylanx::util::recursive_wrapper<primary_expr>(val))
+        {
+        }
+        operand(ir::node_data<double> const& val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(val))
+        {
+        }
+        operand(ir::node_data<double> && val)
+          : operand_node_type(
+                phylanx::util::recursive_wrapper<primary_expr>(std::move(val)))
         {
         }
 
@@ -497,7 +517,29 @@ namespace phylanx { namespace ast
         {}
 
         explicit expression(bool b)
-          : first(operand(primary_expr(b)))
+          : first(operand(b))
+        {}
+        explicit expression(std::int64_t v)
+          : first(operand(v))
+        {}
+        explicit expression(double d)
+          : first(operand(d))
+        {}
+        explicit expression(ir::node_data<double> const& nd)
+          : first(operand(nd))
+        {}
+        explicit expression(ir::node_data<double> && nd)
+          : first(operand(std::move(nd)))
+        {}
+
+        explicit expression(char const* str)
+          : first(str)
+        {}
+        explicit expression(std::string const& str)
+          : first(str)
+        {}
+        explicit expression(std::string && str)
+          : first(std::move(str))
         {}
 
         explicit expression(primary_expr const& pe)
@@ -528,6 +570,13 @@ namespace phylanx { namespace ast
           : first(primary_expr(std::move(fc)))
         {}
 
+        explicit expression(std::vector<ast::expression> const& l)
+          : first(primary_expr(l))
+        {}
+        explicit expression(std::vector<ast::expression> && l)
+          : first(primary_expr(std::move(l)))
+        {}
+
         void append(operation const& op)
         {
             rest.push_back(op);
@@ -536,17 +585,17 @@ namespace phylanx { namespace ast
         {
             rest.emplace_back(std::move(op));
         }
-        void append(std::list<operation> const& l)
+        void append(std::vector<operation> const& l)
         {
             std::copy(l.begin(), l.end(), std::back_inserter(rest));
         }
-        void append(std::list<operation> && l)
+        void append(std::vector<operation> && l)
         {
             std::move(l.begin(), l.end(), std::back_inserter(rest));
         }
 
         operand first;
-        std::list<operation> rest;
+        std::vector<operation> rest;
 
     private:
         friend class hpx::serialization::access;
@@ -586,17 +635,17 @@ namespace phylanx { namespace ast
         {
             args.emplace_back(std::move(expr));
         }
-        void append(std::list<expression> const& l)
+        void append(std::vector<expression> const& l)
         {
             std::copy(l.begin(), l.end(), std::back_inserter(args));
         }
-        void append(std::list<expression> && l)
+        void append(std::vector<expression> && l)
         {
             std::move(l.begin(), l.end(), std::back_inserter(args));
         }
 
         identifier function_name;
-        std::list<expression> args;
+        std::vector<expression> args;
 
     private:
         friend class hpx::serialization::access;
@@ -854,6 +903,8 @@ namespace phylanx { namespace ast
         std::ostream& out, expression const& expr);
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, function_call const& fc);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, std::vector<ast::expression> const& fc);
 //     PHYLANX_EXPORT std::ostream& operator<<(
 //         std::ostream& out, assignment const& assign);
 //     PHYLANX_EXPORT std::ostream& operator<<(

@@ -15,8 +15,6 @@
 
 #include <blaze/Math.h>
 
-#include <boost/intrusive_ptr.hpp>
-
 #include <algorithm>
 #include <array>
 #include <cstddef>

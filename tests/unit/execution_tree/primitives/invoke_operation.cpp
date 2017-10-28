@@ -11,9 +11,13 @@
 
 void test_invoke_operation(char const* expr, double expected)
 {
-    auto p = phylanx::execution_tree::generate_tree(expr);
+    phylanx::execution_tree::compiler::function_list snippets;
+    auto f = phylanx::execution_tree::compile(expr, snippets);
 
-    HPX_TEST_EQ(expected, phylanx::execution_tree::numeric_operand(p).get()[0]);
+    HPX_TEST_EQ(expected,
+        phylanx::execution_tree::extract_numeric_value(
+            f()
+        )[0]);
 }
 
 int main(int argc, char* argv[])
@@ -42,17 +46,17 @@ int main(int argc, char* argv[])
 
     test_invoke_operation(R"(
         block(
-            define(add, x, y, x + y),
-            add(41.0, 1.0)
+            define(add1, x, y, x + y),
+            add1(41.0, 1.0)
         )
     )", 42.0);
 
     test_invoke_operation(R"(
         block(
-            define(add, x, y, x + y),
+            define(add1, x, y, x + y),
             define(x1, 41.0),
             define(x2, 1.0),
-            add(x1, x2)
+            add1(x1, x2)
         )
     )", 42.0);
 

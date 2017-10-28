@@ -540,6 +540,24 @@ namespace phylanx { namespace ast
         return out;
     }
 
+    std::ostream& operator<<(
+        std::ostream& out, std::vector<ast::expression> const& l)
+    {
+        out << "'(";
+        bool first = true;
+        for (auto const& arg : l)
+        {
+            if (!first)
+            {
+                out << ", ";
+            }
+            first = false;
+            out << arg;
+        }
+        out << ")";
+        return out;
+    }
+
     std::string to_string(expression const& expr)
     {
         std::ostringstream str;

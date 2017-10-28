@@ -6,9 +6,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
-#include <phylanx/util/serialization/optional.hpp>
+#include <phylanx/util/serialization/execution_tree.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -68,7 +67,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // read data from given file and return content
-    hpx::future<primitive_result_type> file_read::eval() const
+    hpx::future<primitive_result_type> file_read::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
         std::ifstream infile(filename_.c_str(),
             std::ios::binary | std::ios::in | std::ios::ate);
@@ -96,7 +96,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // assume data in file is result of a serialized primitive_result_type
         primitive_result_type val;
-        phylanx::util::detail::unserialize(data, val);
+        phylanx::util::unserialize(data, val);
 
         return hpx::make_ready_future(std::move(val));
     }

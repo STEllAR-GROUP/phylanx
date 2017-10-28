@@ -27,7 +27,7 @@ void test_store_operation()
                 lhs, std::move(rhs)
             });
 
-    HPX_TEST_EQ(0.0, phylanx::execution_tree::numeric_operand(lhs).get()[0]);
+    HPX_TEST_EQ(0.0, phylanx::execution_tree::numeric_operand_sync(lhs, {})[0]);
 
     hpx::future<phylanx::execution_tree::primitive_result_type> result =
         store.eval();
