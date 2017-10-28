@@ -114,7 +114,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type random1d(operands_type && ops) const
             {
-                std::size_t dim = ops[0].dimension(0);
+                std::size_t dim = ops[0].dimension(1);
 
                 blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 
