@@ -75,6 +75,10 @@ void test_slicing_operation_1d()
             hpx::new_<phylanx::execution_tree::primitives::variable>(
                     hpx::find_here(), phylanx::ir::node_data<double>(15.0));
 
+    // row_start an row_stop does not have any effect on the output.
+    // row_start and row_stop is set to 0 and 1 repectively internally.
+    // any user input for these parameters is ignored internally.
+    
     phylanx::execution_tree::primitive slice =
             hpx::new_<phylanx::execution_tree::primitives::slicing_operation>(
                     hpx::find_here(),
