@@ -29,7 +29,7 @@ void test_transpose_operation_0d()
         transpose.eval();
 
     HPX_TEST_EQ(
-        5.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+        0.2, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
 void test_transpose_operation_0d_lit()
@@ -47,7 +47,7 @@ void test_transpose_operation_0d_lit()
         transpose.eval();
 
     HPX_TEST_EQ(
-        5.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+        0.2, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
 void test_transpose_operation_2d()
