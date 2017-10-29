@@ -73,7 +73,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_result_type variable::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
-        return value_operand_sync(data_, args);
+        while (true)
+        {
+            primitive const* p = util::get_if<primitive>(&data_);
+            if (p == nullptr)
+                break;
+
+            data_ = p->eval_direct(args);
+        }
+        return data_;
     }
 
     void variable::store(primitive_result_type const& data)

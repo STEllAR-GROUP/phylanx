@@ -256,16 +256,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // recursion
 
                 // define function
-                f = primitive_function{default_locality_}(name);
-
-                // set the target for the compiled function
-                wrapped_primitive(f.arg_).set_target(
-                    hpx::launch::sync, handle_lambda(args, body).arg_);
+                f = primitive_function{default_locality_}(
+                        std::move(handle_lambda(args, body).arg_), name);
             }
 
-            // define shouldn't return a function that evaluates to itself, let
-            // it return nil{} instead
-            return always_nil{}(std::move(name));
+            return f;
         }
 
         function handle_variable_reference(std::string const& name)

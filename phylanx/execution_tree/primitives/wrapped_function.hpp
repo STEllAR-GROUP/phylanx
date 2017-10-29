@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_VARIABLE_SEP_05_2017_1105AM)
-#define PHYLANX_PRIMITIVES_VARIABLE_SEP_05_2017_1105AM
+#if !defined(PHYLANX_PRIMITIVES_WRAPPED_PRIMITIVE_OCT_22_2017_0111PM)
+#define PHYLANX_PRIMITIVES_WRAPPED_PRIMITIVE_OCT_22_2017_0111PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
@@ -17,32 +17,33 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT variable
+    class HPX_COMPONENT_EXPORT wrapped_function
       : public base_primitive
       , public hpx::components::locking_hook<
-          hpx::components::component_base<variable>>
+          hpx::components::component_base<wrapped_function>>
     {
     public:
-        variable() = default;
-        variable(std::string name);
+        wrapped_function() = default;
 
-        variable(primitive_argument_type&& operand);
-        variable(std::vector<primitive_argument_type>&& operands);
+        wrapped_function(std::string name);
 
-        variable(primitive_argument_type&& operand, std::string name);
-        variable(
+        wrapped_function(primitive_argument_type target);
+        wrapped_function(primitive_argument_type target, std::string name);
+
+        wrapped_function(primitive_argument_type target,
+            std::vector<primitive_argument_type>&& operands);
+        wrapped_function(primitive_argument_type target,
             std::vector<primitive_argument_type>&& operands, std::string name);
 
-        primitive_result_type eval_direct(
+        hpx::future<primitive_result_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
-        void store(primitive_result_type const& data) override;
 
     private:
-        mutable primitive_result_type data_;
+        primitive_argument_type target_;
+        std::vector<primitive_argument_type> args_;
         std::string name_;
     };
 }}}
 
 #endif
-
 

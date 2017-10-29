@@ -10,8 +10,10 @@
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/define_variable.hpp>
+#include <phylanx/execution_tree/primitives/define_function.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
-#include <phylanx/execution_tree/primitives/wrapped_primitive.hpp>
+#include <phylanx/execution_tree/primitives/wrapped_function.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
@@ -137,14 +139,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(argument_type && arg) const
         {
-            return function{hpx::new_<primitives::variable>(
+            return function{hpx::new_<primitives::define_variable>(
                 locality_, std::move(arg)), "primitive_variable"};
         }
         function operator()(argument_type && arg, std::string const& name) const
         {
-            return function{hpx::new_<primitives::variable>(
+            return function{hpx::new_<primitives::define_variable>(
                                 locality_, std::move(arg), name),
-                                "primitive_variable: " + name};
+                "primitive_variable: " + name};
         }
 
     private:
@@ -176,19 +178,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(argument_type && arg) const
         {
-            return function{hpx::new_<primitives::wrapped_primitive>(
+            return function{hpx::new_<primitives::define_function>(
                 locality_, std::move(arg)), "primitive_function"};
-        }
-        function operator()(std::string const& name) const
-        {
-            return function{hpx::new_<primitives::wrapped_primitive>(
-                locality_, name), "primitive_function"};
         }
         function operator()(argument_type && arg, std::string const& name) const
         {
-            return function{hpx::new_<primitives::wrapped_primitive>(
+            return function{hpx::new_<primitives::define_function>(
                                 locality_, std::move(arg), name),
-                                "primitive_function: " + name};
+                "primitive_function: " + name};
         }
 
     private:
@@ -238,7 +235,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             return function{
-                    hpx::new_<primitives::wrapped_primitive>(
+                    hpx::new_<primitives::wrapped_function>(
                         this->locality_, f_.get().arg_, std::move(fargs)),
                     "external_function"
                 };

@@ -60,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return;
 
                 auto this_ = this->shared_from_this();
-                literal_operand(operands_[i], args_).then(
+                value_operand(operands_[i], args_).then(
                     [this_, i](hpx::future<primitive_result_type> && step)
                     {
                         try

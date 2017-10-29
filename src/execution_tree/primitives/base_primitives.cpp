@@ -77,36 +77,15 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
-            return ast::nil{};
-
         case 1:     // bool
-            return util::get<1>(val);
-
         case 2:     // std::uint64_t
-            return util::get<2>(val);
-
         case 3:     // std::string
-            return util::get<3>(val);
-
         case 4:     // phylanx::ir::node_data<double>
-            return util::get<4>(val);
-
-        case 6:     // std::vector<ast::expression>
-            return util::get<6>(val);
-
-        case 7:     // std::vector<primitive_argument_type>
-            {
-                auto const& v = util::get<7>(val).get();
-                std::vector<primitive_argument_type> result;
-                result.reserve(v.size());
-                for (auto const& elem : v)
-                {
-                    result.push_back(extract_value(elem));
-                }
-                return result;
-            }
-
         case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return val;
+
         default:
             break;
         }
@@ -116,41 +95,20 @@ namespace phylanx { namespace execution_tree
             "primitive_argument_type does not hold a value type");
     }
 
-    primitive_argument_type extract_value(primitive_argument_type&& val)
+    primitive_argument_type && extract_value(primitive_argument_type&& val)
     {
         switch (val.index())
         {
         case 0:     // nil
-            return ast::nil{};
-
         case 1:     // bool
-            return util::get<1>(std::move(val));
-
         case 2:     // std::uint64_t
-            return util::get<2>(std::move(val));
-
         case 3:     // std::string
-            return util::get<3>(std::move(val));
-
         case 4:     // phylanx::ir::node_data<double>
-            return util::get<4>(std::move(val));
-
-        case 6:     // std::vector<ast::expression>
-            return util::get<6>(std::move(val));
-
-        case 7:     // std::vector<primitive_argument_type>
-            {
-                auto && v = util::get<7>(std::move(val)).get();
-                std::vector<primitive_argument_type> result;
-                result.reserve(v.size());
-                for (auto && elem : v)
-                {
-                    result.push_back(extract_value(std::move(elem)));
-                }
-                return result;
-            }
-
         case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return std::move(val);
+
         default:
             break;
         }
