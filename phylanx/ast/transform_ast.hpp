@@ -62,8 +62,9 @@ namespace phylanx { namespace ast
 
             if(cgrammar_count > 0) {
                 expr = phylanx::ast::transform_ast(match, cgrammar.composed_grammars[0]);
+
                 for(size_t i = 1; i < cgrammar_count; ++i) {
-                    expr = phylanx::ast::transform_ast(match, expr);
+                    expr = phylanx::ast::transform_ast(expr, cgrammar.composed_grammars[i]);
                 }
             }
 
