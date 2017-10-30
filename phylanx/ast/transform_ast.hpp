@@ -65,17 +65,17 @@ namespace phylanx { namespace ast
     }
 
 
-    template<node_type=transform_rule>
+    template<typename node_type=transform_rule>
     struct treetransducer_t {
 
-        using value_type = node_type;
+        typedef node_type value_type;
 
-        using equal_t = std::equal_to<node_type, node_type, bool>;
-        using notequal_t = std::not_equal_to<node_type, node_type, bool>;
-        using less_t = std::less<node_type, node_type, bool>;
-        using lessequal_t = std::less_equal<node_type, node_type, bool>;
-        using greater_t = std::greater<node_type, node_type, bool>;
-        using greaterequal_t = std::greater_equal<node_type, node_type, bool>;
+        typedef typename std::equal_to<node_type, node_type, bool> equal_t
+        typedef typename std::not_equal_to<node_type, node_type, bool> notequal_t;
+        typedef typename std::less<node_type, node_type, bool> less_t;
+        typedef typename std::less_equal<node_type, node_type, bool> lessequal_t;
+        typedef typename std::greater<node_type, node_type, bool> greater_t;
+        typedef typename std::greater_equal<node_type, node_type, bool> greaterequal_t;
 
         treetransducer_t( std::set<transform_rule> input_rules ) {
           // TODO: overload operator+ to do a 'reduction' 
