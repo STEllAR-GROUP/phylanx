@@ -12,9 +12,12 @@
 #include <vector>
 #include <utility>
 #include <functional>
+#include <iterator>
 
 namespace phylanx { namespace ast
 {
+    using transform_rule = std::pair<transform_expression, transform_expression>;
+
     // need a struct to represent a
     // transform_expression has to
     // be able to compose multiple
@@ -28,129 +31,57 @@ namespace phylanx { namespace ast
     //
     struct composable_grammar {
 
+       composable_grammar() {}
+
        composable_grammar( qi::grammar & input ) {
-          // TODO ?
+          composed_grammars.push_back(input);
        }
 
-       composable_grammar operator+( qi::grammar & other ) {
-          // TODO ?
+       composable_grammar( std::vector<qi::grammar> & input ) {
+          std::copy(std::begin(input), std::end(intput), std::back_inserter(composed_grammars));
        }
+
 
        composable_grammar operator+=( qi::grammar & other ) {
-          // TODO ?
-       }
-    };
-
-    template <typename Iterator>
-    struct transform_expression 
-       : expression<Iterator> {
-
-       transform_expression( expression & const expr )
-           : cgrammar(expr)
-       {
+         composed_grammars.push_back(other);
+         return (*this);
        }
 
-       composable_grammar cgrammar;
+       std::vector<phylanx::ast::transform_rule> composed_grammars;
+
     };
 
-    using transform_rule = std::pair<transform_expression, transform_expression>;
-    using weighted_transform_rule = std::pair< transform_rule, double >;
-
-    double get_weight(weighted_transform_rule & rule) {
-        return std::get<1>(rule);
-    }
-
-    transform_rule get_rule(weighted_transform_rule & rule) {
-        return std::get<0>(rule);
-    }
-
-
-    template<typename node_type=transform_rule>
     struct treetransducer_t {
 
-        typedef node_type value_type;
+        treetransducer_t() {}
 
-        typedef typename std::equal_to<node_type, node_type, bool> equal_t
-        typedef typename std::not_equal_to<node_type, node_type, bool> notequal_t;
-        typedef typename std::less<node_type, node_type, bool> less_t;
-        typedef typename std::less_equal<node_type, node_type, bool> lessequal_t;
-        typedef typename std::greater<node_type, node_type, bool> greater_t;
-        typedef typename std::greater_equal<node_type, node_type, bool> greaterequal_t;
-
-        treetransducer_t( std::set<transform_rule> input_rules ) {
-          // TODO: overload operator+ to do a 'reduction' 
-          // over the input_rules to build the finite state 
-          // tree
-          //
+        treetransducer_t(qi::grammar & input)
+            : cgrammar(input) {
         }
  
-        treetransducer_t( std::vector<transform_rule> rules ) {
-          // TODO: overload operator+ to do a 'reduction' 
-          // over the input_rules to build the finite state 
-          // tree
-          //
+        treetransducer_t(std::vector<qi::grammar> & input)
+            : cgrammar(input) {
         }
-
+        
         // initializer_list
-        //treetransducer_t( std::vector<transform_rule> rules ) {
-        //}
+        //treetransducer_t() {}
 
-        template<Comapare>
-        bool apply_operator(treetransducer_t & other, Compare &cmp) {
-            if(cmp(node, other.node)) {
-                for(auto child : children) {
-                    if( !(child.apply_operator<Compare>(other, cmp)) ) {
-                        return false;
-                    }
+        phylanx::ast::expression result operator()(char * const match) {
+
+            phylanx::ast::expression expr;
+            const size_t cgrammar_count = cgrammar.composed_grammars.size();
+
+            if(cgrammar_count > 0) {
+                expr = phylanx::ast::transform_ast(match, cgrammar.composed_grammars[0]);
+                for(size_t i = 1; i < cgrammar_count; ++i) {
+                    expr = phylanx::ast::transform_ast(match, expr);
                 }
-                return true;
             }
-            return false;
+
+            return expr;
         }
 
-        bool operator==(treetransducer_t & other) {
-            equal_t cmp;
-            return apply_operator<equal_t>(other, cmp);
-        }
-
-        bool operator!=(treetransducer_t & other) {
-            notequal_t cmp;
-            return apply_operator<equal_t>(other, cmp);
-        }
-
-        bool operator<(treetransducer_t & other) {
-            less_t cmp;
-            return apply_operator<equal_t>(other, cmp);
-        }
-
-        bool operator<=(treetransducer_t & other) {
-            lessequal_t cmp;
-            return apply_operator<equal_t>(other, cmp);
-        }
-
-        bool operator>(treetransducer_t & other) {
-            greater_t cmp;
-            return apply_operator<equal_t>(other, cmp);
-        }
-
-        bool operator>=(treetransducer_t & other) {
-            greaterequal_t cmp;
-            apply_operator<equal_t>(other, cmp);
-        }
-
-        // need to figure out how to compose
-        // the expression trees for a rule
-        // into a finite state automaton
-        //
-        // keep transform_rule a tuple but
-        // compose the match and transform
-        // rules into 1 transform_rule
-        //
-        void operator+(transform_rule & rule) {
-        }
-
-        node_type node;
-        std::vector<node_type> children; 
+        composable_grammar cgrammar;
     };
 
 
