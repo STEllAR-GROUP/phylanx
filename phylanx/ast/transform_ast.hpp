@@ -11,11 +11,90 @@
 
 #include <vector>
 #include <utility>
+#include <functional>
 
 namespace phylanx { namespace ast
 {
     using transform_rule = std::pair<expression, expression>;
     using weighted_transform_rule = std::pair< std::pair<expression, expression>, double >;
+
+    template<node_type>
+    struct treetransducer_t {
+
+        using value_type = node_type;
+
+        using equal_t = std::equal_to<node_type, node_type, bool>;
+        using notequal_t = std::not_equal_to<node_type, node_type, bool>;
+        using less_t = std::less<node_type, node_type, bool>;
+        using lessequal_t = std::less_equal<node_type, node_type, bool>;
+        using greater_t = std::greater<node_type, node_type, bool>;
+        using greaterequal_t = std::greater_equal<node_type, node_type, bool>;
+
+        treetransducer_t( std::set<transform_rule> input_rules ) {
+          // TODO: overload operator+ to do a 'reduction' 
+          // over the input_rules to build the finite state 
+          // tree
+          //
+        }
+ 
+        treetransducer_t( std::vector<transform_rule> rules ) {
+          // TODO: overload operator+ to do a 'reduction' 
+          // over the input_rules to build the finite state 
+          // tree
+          //
+        }
+
+        // initializer_list
+        //treetransducer_t( std::vector<transform_rule> rules ) {
+        //}
+
+        template<Comapare>
+        bool apply_operator(treetransducer_t & other, Compare &cmp) {
+            if(cmp(node, other.node)) {
+                for(auto child : children) {
+                    if( !(child.apply_operator<Compare>(other, cmp)) ) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        bool operator==(treetransducer_t & other) {
+            equal_t cmp;
+            return apply_operator<equal_t>(other, cmp);
+        }
+
+        bool operator!=(treetransducer_t & other) {
+            notequal_t cmp;
+            return apply_operator<equal_t>(other, cmp);
+        }
+
+        bool operator<(treetransducer_t & other) {
+            less_t cmp;
+            return apply_operator<equal_t>(other, cmp);
+        }
+
+        bool operator<=(treetransducer_t & other) {
+            lessequal_t cmp;
+            return apply_operator<equal_t>(other, cmp);
+        }
+
+        bool operator>(treetransducer_t & other) {
+            greater_t cmp;
+            return apply_operator<equal_t>(other, cmp);
+        }
+
+        bool operator>=(treetransducer_t & other) {
+            greaterequal_t cmp;
+            apply_operator<equal_t>(other, cmp);
+        }
+
+        node_type node;
+        std::vector<node_type> children; 
+    };
+
 
     /// Traverse the given AST expression and replace nodes in the AST based
     /// on the given transformation rules.
