@@ -78,8 +78,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto col_start  = extract_integer_value(args[3]);
                 auto col_stop = extract_integer_value(args[4]);
 
+                // parameters required by blaze to create a submatrix is as follows:
+                // submatrix(matrix,row,column,m,n)
+                // matrix The matrix containing the submatrix.
+                // row The index of the first row of the submatrix.
+                // column The index of the first column of the submatrix.
+                // m The number of rows of the submatrix.
+                // n The number of columns of the submatrix.
+                // return View on the specific submatrix of the matrix.
+
+                // The following math is a result of converting the arguments
+                // provided in slice primitive so that equivalent operation is
+                // performed in blaze.
+                // matrix = matrix
+                // row = 0
+                // column = col_start
+                // m = 1
+                // n = (col_stop - col_start)+1
+
                 submatrix_type sm = blaze::submatrix(args[0].matrix()
-                        ,0,col_start,1,col_stop);
+                        ,0,col_start,1,(col_stop-col_start)+1);
 
                 matrix_type result = sm;
                 return primitive_result_type(std::move(result));
@@ -89,14 +107,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 //returns the sliced matrix, depending uopn the values
                 //provided in row_start, row_stop, col_start, col_stop
+
+                // parameters required by phylanx to create a slice is as follows:
+                // matrix The matrix containing the submatrix.
+                // row_start The index of the first row of the submatrix.
+                // row_stop The index of the last row of the submatrix.
+                // col_start The index of the first column of the submatrix.
+                // col_start The index of the last column of the submatrix.
                 
                 auto row_start = extract_integer_value(args[1]);
                 auto row_stop = extract_integer_value(args[2]);
                 auto col_start  = extract_integer_value(args[3]);
                 auto col_stop = extract_integer_value(args[4]);
 
+                // parameters required by blaze to create a submatrix is as follows:
+                // submatrix(matrix,row,column,m,n)
+                // matrix The matrix containing the submatrix.
+                // row The index of the first row of the submatrix.
+                // column The index of the first column of the submatrix.
+                // m The number of rows of the submatrix.
+                // n The number of columns of the submatrix.
+                // return View on the specific submatrix of the matrix.
+
+                // The following math is a result of converting the arguments
+                // provided in slice primitive so that equivalent operation is
+                // performed in blaze.
+                // matrix = matrix
+                // row = row_start
+                // column = col_start
+                // m = (row_stop - row_start)+1
+                // n = (col_stop - col_start)+1
+
                 submatrix_type sm = blaze::submatrix(args[0].matrix()
-                        ,row_start,col_start,row_stop,col_stop);
+                        ,row_start,col_start
+                        ,(row_stop-row_start)+1
+                        ,(col_stop-col_start) +1 );
                 matrix_type result = sm;
                 return primitive_result_type(std::move(result));
             }
