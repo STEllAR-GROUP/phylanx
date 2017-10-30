@@ -16,9 +16,17 @@
 namespace phylanx { namespace ast
 {
     using transform_rule = std::pair<expression, expression>;
-    using weighted_transform_rule = std::pair< std::pair<expression, expression>, double >;
+    using weighted_transform_rule = std::pair< transform_rule, double >;
 
-    template<node_type>
+    double get_weight(weighted_transform_rule & rule) {
+        return std::get<1>(rule);
+    }
+
+    transform_rule get_rule(weighted_transform_rule & rule) {
+        return std::get<0>(rule);
+    }
+
+    template<node_type=transform_rule>
     struct treetransducer_t {
 
         using value_type = node_type;
@@ -89,6 +97,9 @@ namespace phylanx { namespace ast
         bool operator>=(treetransducer_t & other) {
             greaterequal_t cmp;
             apply_operator<equal_t>(other, cmp);
+        }
+
+        void operator+(transform_rule & rule) {
         }
 
         node_type node;
