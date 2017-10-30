@@ -15,6 +15,7 @@
 namespace phylanx { namespace ast
 {
     using transform_rule = std::pair<expression, expression>;
+    using weighted_transform_rule = std::pair< std::pair<expression, expression>, double >;
 
     /// Traverse the given AST expression and replace nodes in the AST based
     /// on the given transformation rules.
