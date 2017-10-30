@@ -62,7 +62,7 @@ void test_constant_1d()
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 1);
-    HPX_TEST_EQ(result.dimension(0), 1007);
+    HPX_TEST_EQ(result.dimension(1), 1007);
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
 }
 
@@ -92,8 +92,8 @@ void test_constant_2d()
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 2);
-    HPX_TEST_EQ(result.dimension(0), 101);
-    HPX_TEST_EQ(result.dimension(1), 105);
+    HPX_TEST_EQ(result.dimension(0), 105);
+    HPX_TEST_EQ(result.dimension(1), 101);
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
 }
 
