@@ -15,7 +15,45 @@
 
 namespace phylanx { namespace ast
 {
-    using transform_rule = std::pair<expression, expression>;
+    // need a struct to represent a
+    // transform_expression has to
+    // be able to compose multiple
+    // expression trees into a k-ary
+    // tree
+    //
+    // this would require being able to 
+    // support an operation like this:
+    //
+    // add(qi::grammar a, qi::grammar b)
+    //
+    struct composable_grammar {
+
+       composable_grammar( qi::grammar & input ) {
+          // TODO ?
+       }
+
+       composable_grammar operator+( qi::grammar & other ) {
+          // TODO ?
+       }
+
+       composable_grammar operator+=( qi::grammar & other ) {
+          // TODO ?
+       }
+    };
+
+    template <typename Iterator>
+    struct transform_expression 
+       : expression<Iterator> {
+
+       transform_expression( expression & const expr )
+           : cgrammar(expr)
+       {
+       }
+
+       composable_grammar cgrammar;
+    };
+
+    using transform_rule = std::pair<transform_expression, transform_expression>;
     using weighted_transform_rule = std::pair< transform_rule, double >;
 
     double get_weight(weighted_transform_rule & rule) {
@@ -25,6 +63,7 @@ namespace phylanx { namespace ast
     transform_rule get_rule(weighted_transform_rule & rule) {
         return std::get<0>(rule);
     }
+
 
     template<node_type=transform_rule>
     struct treetransducer_t {
@@ -99,6 +138,14 @@ namespace phylanx { namespace ast
             apply_operator<equal_t>(other, cmp);
         }
 
+        // need to figure out how to compose
+        // the expression trees for a rule
+        // into a finite state automaton
+        //
+        // keep transform_rule a tuple but
+        // compose the match and transform
+        // rules into 1 transform_rule
+        //
         void operator+(transform_rule & rule) {
         }
 
