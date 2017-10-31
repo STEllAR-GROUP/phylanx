@@ -51,6 +51,13 @@ macro(phylanx_setup_compiler_flags)
         phylanx_add_target_compile_option(-Zc:rvalueCast)
         phylanx_add_target_compile_option(-Zc:strictStrings)
       endif()
+	  
+	  # Suppress Blaze warnings
+	  # Description: Without suppressing them MSVC generates a plethora of warnings that have nothing to do with HPX and Phylanx
+	  # warning C4146: unary minus operator applied to unsigned type, result still unsigned
+	  phylanx_add_target_compile_option(/wd4146)
+	  # warning C4244: 'argument': conversion from 'uint64_t' to 'int', possible loss of data
+	  phylanx_add_target_compile_option(/wd4244)
 
       # Runtime type information
       phylanx_add_target_compile_option(-GR)
