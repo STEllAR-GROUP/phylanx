@@ -88,7 +88,7 @@ else()
     HEADERS ${phylanx_HEADERS})
 endif()
 
-target_link_libraries(phylanx_component ${HPX_LIBRARIES} blaze::blaze)
+target_link_libraries(phylanx_component ${HPX_LIBRARIES} blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 set_target_properties(
   phylanx_component PROPERTIES

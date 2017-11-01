@@ -8,6 +8,9 @@
 
 macro(phylanx_setup_blaze)
   find_package(LAPACK REQUIRED)
+  phylanx_info("LAPACK_FOUND=${LAPACK_FOUND}")
+  phylanx_info("LAPACK_LIBRARIES=${LAPACK_LIBRARIES}")
+  include_directories(${BLAS_INCLUDE_DIR})
 
   find_package(blaze NO_CMAKE_PACKAGE_REGISTRY)
   if(NOT blaze_FOUND)
