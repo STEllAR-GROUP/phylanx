@@ -21,23 +21,40 @@ struct transition_table {
    using state_table = std::map<entry_key, entry_value>;
 
    state_table transition_tbl;
-   size_t current_state;
 
-   transition_table()
-      : current_state(0) {
+   transition_table() {
    }
  
-   void add(size_t s, size_t ns, InputSymbolType is, entry_logic logic, double w) {
+   void add(size_t s, size_t ns, InputSymbolType is, entry_logic logic, double w=1.0) {
        entry_key ik = std::make_tuple(s, is);
        entry_value iv = std::make_tuple(ns, logic, w);
        transition_tbl[ik] = iv;
    }
 
-   bool consume(InputSymbolType & symbol) {
+};
+
+// nodes in the expression tree 
+//
+template<typename InputSymbolType, typename EntryLogicType>
+struct transducer {
+
+    using entry_logic = EntryLogicType;
+
+    transition_table<InputSymbolType, entry_logic> tableau;
+
+    size_t current_state;
+
+    transducer(transition_table<InputSymbolType, EntryLogicType> table)
+        : tableau(table)
+        , current_state(0) {
+    }
+
+    bool consume(InputSymbolType & symbol) {
+       using entry_key = typename transition_table<InputSymbolType, EntryLogicType>::entry_key;
        entry_key key = std::make_pair(current_state, symbol);
 
-       auto end = transition_tbl.end();
-       auto value = transition_tbl.find(key);
+       auto end = tableau.transition_tbl.end();
+       auto value = tableau.transition_tbl.find(key);
 
        // is the input symbol in the transition table
        //
@@ -59,24 +76,7 @@ struct transition_table {
        //
        return false;
    }
-};
 
-// nodes in the expression tree 
-//
-template<typename Variant, typename EntryLogicType>
-struct transducer {
-
-    using entry_logic = EntryLogicType;
-
-    transition_table<Variant, entry_logic> tableau;
-
-     void add(size_t s, size_t ns, Variant is, EntryLogicType logic, double w=1.0) {
-         tableau.add(s, ns, is, logic, w);
-     }
-
-     bool consume(Variant & v) {
-         return tableau.consume(v);
-     }
 };
 
 // add a new token to the grammar for transducer creation
