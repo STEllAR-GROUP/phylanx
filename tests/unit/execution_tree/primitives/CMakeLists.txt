@@ -16,6 +16,7 @@ set(tests
     exponential_operation
     extract_shape
     file_primitives
+    file_csv_primitives
     for_operation
     greater_operation
     greater_equal_operation
