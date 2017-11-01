@@ -14,8 +14,10 @@ template<typename InputSymbolType, typename EntryLogicType>
 struct transition_table {
 
    using entry_logic = EntryLogicType;
+
    using entry_key = std::tuple<size_t, InputSymbolType>;
    using entry_value = std::tuple<size_t, entry_logic, double>;
+
    using state_table = std::map<entry_key, entry_value>;
 
    state_table transition_tbl;
