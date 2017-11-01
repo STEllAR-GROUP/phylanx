@@ -18,17 +18,6 @@ namespace phylanx { namespace ast
 {
     using transform_rule = std::pair<transform_expression, transform_expression>;
 
-    // need a struct to represent a
-    // transform_expression has to
-    // be able to compose multiple
-    // expression trees into a k-ary
-    // tree
-    //
-    // this would require being able to 
-    // support an operation like this:
-    //
-    // add(qi::grammar a, qi::grammar b)
-    //
     struct composable_grammar {
 
        composable_grammar() {}
@@ -73,8 +62,9 @@ namespace phylanx { namespace ast
 
             if(cgrammar_count > 0) {
                 expr = phylanx::ast::transform_ast(match, cgrammar.composed_grammars[0]);
+
                 for(size_t i = 1; i < cgrammar_count; ++i) {
-                    expr = phylanx::ast::transform_ast(match, expr);
+                    expr = phylanx::ast::transform_ast(expr, cgrammar.composed_grammars[i]);
                 }
             }
 
