@@ -23,8 +23,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<slicing_operation>
     {
-        using operands_type = std::vector<primitive_result_type>;
-
     public:
         static std::vector<match_pattern_type> const match_data;
 
@@ -33,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         slicing_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_result_type> eval(
-                std::vector<primitive_argument_type> const& params) const override;
+            std::vector<primitive_argument_type> const& params) const override;
 
     private:
         std::vector<primitive_argument_type> operands_;
