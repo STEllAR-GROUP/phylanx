@@ -40,11 +40,11 @@ struct transducer {
 
     using entry_logic = EntryLogicType;
 
-    transition_table<InputSymbolType, entry_logic> tableau;
+    const transition_table<InputSymbolType, entry_logic> tableau;
 
     size_t current_state;
 
-    transducer(transition_table<InputSymbolType, EntryLogicType> table)
+    transducer(const transition_table<InputSymbolType, EntryLogicType> table)
         : tableau(table)
         , current_state(0) {
     }
