@@ -4,6 +4,9 @@
 #include <map>
 #include <functional>
 
+// function that mutates the input value
+// to another value of interest
+//
 void default_logic(size_t & s) {
   s = 42;
 }

@@ -44,9 +44,14 @@ struct transition_table {
        if(end != value) { 
            size_t next_state = std::get<0>(std::get<1>(*value));
            entry_logic fn = std::get<1>(std::get<1>(*value));
-           //auto weight = std::get<2>(value);
+           //double weight = std::get<2>(std::get<1>(*value));
+
+           // mutate input symbol
            fn(symbol);
+
+           // update state of transducer
            current_state = next_state; 
+
            return true;
        }
 
@@ -54,7 +59,6 @@ struct transition_table {
        //
        return false;
    }
-
 };
 
 // nodes in the expression tree 
