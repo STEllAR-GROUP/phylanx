@@ -13,14 +13,16 @@ void default_logic(size_t & s) {
  
 int main(int argc, char ** argv) {
 
-  std::function<void (size_t &)> logic(&default_logic);
+  using mutator = std::function<void (size_t &)>;
+  mutator logic(&default_logic);
 
-  transition_table< size_t, std::function<void (size_t &)> > table;
+  transition_table< size_t, mutator> table;
+
   // state, transition state, input symbol, mutator
   //
   table.add(0,1, 2, logic);
 
-  transducer< size_t, std::function<void (size_t &)> > t(table);
+  transducer< size_t, mutator> t(table);
 
   size_t i = 2;
 
