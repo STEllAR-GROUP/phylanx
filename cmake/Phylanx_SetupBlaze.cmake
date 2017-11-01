@@ -7,11 +7,7 @@
 
 
 macro(phylanx_setup_blaze)
-  if(WIN32)
-    find_package(LAPACK NO_CMAKE_PACKAGE_REGISTRY REQUIRED)
-  else()
-    find_package(LAPACK REQUIRED)
-  endif()
+  find_package(LAPACK REQUIRED)
 
   find_package(blaze NO_CMAKE_PACKAGE_REGISTRY)
   if(NOT blaze_FOUND)
