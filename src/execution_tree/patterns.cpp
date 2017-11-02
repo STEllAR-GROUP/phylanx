@@ -25,6 +25,7 @@ namespace phylanx { namespace execution_tree
             primitives::if_conditional::match_data,
             primitives::for_operation::match_data,
             // binary functions
+            primitives::cross_operation::match_data,
             primitives::dot_operation::match_data,
             primitives::file_read::match_data,
             primitives::file_write::match_data,

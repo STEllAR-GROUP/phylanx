@@ -13,6 +13,7 @@ set(tests
     determinant
     div_operation
     dot_operation
+    cross_operation
     equal_operation
     exponential_operation
     extract_shape

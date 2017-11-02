@@ -12,6 +12,7 @@
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
+#include <phylanx/execution_tree/primitives/cross_operation.hpp>
 #include <phylanx/execution_tree/primitives/define.hpp>
 #include <phylanx/execution_tree/primitives/determinant.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
