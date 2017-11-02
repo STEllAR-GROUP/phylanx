@@ -110,9 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 using matrix_type = blaze::DynamicMatrix<double>;
 
-                // HACK: invert() and inv() disabled because they call
-                // determinant, which requires BLAS
-                //blaze::invert(ops[0].matrix());
+                blaze::invert(ops[0].matrix());
                 return std::move(ops[0]);
             }
         };

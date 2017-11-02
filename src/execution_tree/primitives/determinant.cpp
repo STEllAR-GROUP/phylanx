@@ -110,9 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type determinantxd(operands_type && ops) const
             {
-                // HACK: det() distabled because it requires BLAS
-                //double d = blaze::det(ops[0].matrix());
-                double d = 0.0;
+                double d = blaze::det(ops[0].matrix());
                 return operand_type(d);
             }
         };
