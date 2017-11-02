@@ -7,6 +7,7 @@ set(tests
     add_operation
     and_operation
     block_operation
+    column_slicing
     constant
     define_operation
     determinant
@@ -31,6 +32,7 @@ set(tests
     or_operation
     parallel_block_operation
     random
+    row_slicing
     slicing_operation
     store_operation
     sub_operation

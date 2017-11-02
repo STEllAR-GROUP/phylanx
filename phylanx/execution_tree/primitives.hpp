@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
+#include <phylanx/execution_tree/primitives/column_slicing.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/execution_tree/primitives/define.hpp>
 #include <phylanx/execution_tree/primitives/determinant.hpp>
@@ -34,6 +35,7 @@
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
 #include <phylanx/execution_tree/primitives/parallel_block_operation.hpp>
 #include <phylanx/execution_tree/primitives/random.hpp>
+#include <phylanx/execution_tree/primitives/row_slicing.hpp>
 #include <phylanx/execution_tree/primitives/slicing_operation.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
