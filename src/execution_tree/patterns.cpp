@@ -18,6 +18,7 @@ namespace phylanx { namespace execution_tree
             primitives::block_operation::match_data,
             primitives::parallel_block_operation::match_data,
             primitives::define_::match_data,
+            primitives::slicing_operation::match_data,
             // n-nary functions
             primitives::if_conditional::match_data,
             primitives::for_operation::match_data,
@@ -25,6 +26,8 @@ namespace phylanx { namespace execution_tree
             primitives::dot_operation::match_data,
             primitives::file_read::match_data,
             primitives::file_write::match_data,
+            primitives::file_read_csv::match_data,
+            primitives::file_write_csv::match_data,
             primitives::while_operation::match_data,
             // unary functions
             primitives::constant::match_data,
