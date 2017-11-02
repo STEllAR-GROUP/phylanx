@@ -32,6 +32,13 @@ macro(phylanx_setup_hpx)
 
     phylanx_info("HPX version: " ${HPX_VERSION_STRING})
 
+    # make sure that HPX is not configured with jemalloc 
+    if(${HPX_WITH_MALLOC} STREQUAL "jemalloc")
+        phylanx_warn(
+          "HPX is configured with: ${HPX_WITH_MALLOC}. Phylanx will fail for some tests."
+          "Please use TCMALLOC to configure HPX.")
+    endif()
+
   else()
     phylanx_error("HPX_DIR has not been specified, please set it to help locating HPX")
   endif()
