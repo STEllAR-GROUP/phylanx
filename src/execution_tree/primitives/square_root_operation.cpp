@@ -27,23 +27,24 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(square_root_operation_type,
     hpx::components::factory_enabled)
     HPX_DEFINE_GET_COMPONENT_TYPE(square_root_operation_type::wrapped_type)
 
-    ///////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     namespace phylanx {
     namespace execution_tree {
         namespace primitives
         {
-            ///////////////////////////////////////////////////////////////////////////
-            std::vector<match_pattern_type> const square_root_operation::match_data =
-            {
-                hpx::util::make_tuple("square_root", "square_root(_1, _2)", &create<square_root_operation>)
-            };
+            ////////////////////////////////////////////////////////////////////
+            std::vector<match_pattern_type> const
+                square_root_operation::match_data = {
+                    hpx::util::make_tuple("square_root", "square_root(_1, _2)",
+                        &create<square_root_operation>)};
 
-            ///////////////////////////////////////////////////////////////////////////
-            square_root_operation::square_root_operation(std::vector<primitive_argument_type>&& operands)
+            ////////////////////////////////////////////////////////////////////
+            square_root_operation::square_root_operation(
+                std::vector<primitive_argument_type>&& operands)
                 : operands_(std::move(operands))
             {}
 
-            ///////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////
             namespace detail
             {
                 struct square_root : std::enable_shared_from_this<square_root>
@@ -60,7 +61,6 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(square_root_operation_type,
                         return std::move(ops[0]);
                     }
 
-                    // lhs_num_dims == 1
                     primitive_result_type square_root_xd(operands_type && ops) const
                     {
                         ops[0].matrix() = blaze::sqrt(ops[0].matrix());
@@ -85,8 +85,9 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(square_root_operation_type,
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "square_root_operation::eval",
-                                "the square_root_operation primitive requires that the "
-                                "arguments given by the operands array are valid");
+                                "the square_root_operation primitive requires "
+                                "that the arguments given by the operands "
+                                "array are valid");
                         }
 
                         auto this_ = this->shared_from_this();
@@ -116,7 +117,6 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(square_root_operation_type,
                 };
             }
 
-            // implement 'square_root' for all possible combinations of lhs and rhs
             hpx::future<primitive_result_type> square_root_operation::eval(
                 std::vector<primitive_argument_type> const& args) const
             {

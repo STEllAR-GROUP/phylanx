@@ -58,7 +58,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(ops[0]);
             }
 
-            // lhs_num_dims == 1
             primitive_result_type powerxd(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
@@ -124,7 +123,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    // implement 'power' for all possible combinations of lhs and rhs
     hpx::future<primitive_result_type> power_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
