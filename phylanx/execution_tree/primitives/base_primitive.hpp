@@ -69,6 +69,10 @@ namespace phylanx { namespace execution_tree
 
         hpx::future<void> store(primitive_argument_type const&);
         void store(hpx::launch::sync_policy, primitive_argument_type const&);
+
+        hpx::future<bool> bind(std::vector<primitive_argument_type> const&);
+        bool bind(hpx::launch::sync_policy,
+            std::vector<primitive_argument_type> const&);
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -131,6 +135,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         base_primitive() = default;
+
+        base_primitive(std::vector<primitive_argument_type> && operands)
+          : operands_(std::move(operands))
+        {}
+
         virtual ~base_primitive() = default;
 
         hpx::future<primitive_result_type> eval_nonvirtual(
@@ -166,6 +175,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store function should only be called in store_primitive");
         }
 
+        bool bind_nonvirtual(std::vector<primitive_argument_type> const& args)
+        {
+            return bind(args);
+        }
+        virtual bool bind(std::vector<primitive_argument_type> const& args);
+
     public:
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
@@ -173,6 +188,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             base_primitive, eval_direct_nonvirtual, eval_direct_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
+        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
+            base_primitive, bind_nonvirtual, bind_action);
+
+    protected:
+        static std::vector<primitive_argument_type> noargs;
+        std::vector<primitive_argument_type> operands_;
     };
 }}}
 
@@ -186,6 +207,9 @@ HPX_REGISTER_ACTION_DECLARATION(
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::store_action,
     phylanx_primitive_store_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::base_primitive::bind_action,
+    phylanx_primitive_bind_action);
 
 namespace phylanx { namespace execution_tree
 {

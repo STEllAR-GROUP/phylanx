@@ -37,8 +37,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    power_operation::power_operation(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+    power_operation::power_operation(
+            std::vector<primitive_argument_type>&& operands)
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -128,7 +129,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::power>()->eval(args, noargs);
         }
 

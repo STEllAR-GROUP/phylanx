@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     or_operation::or_operation(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::or_>()->eval(args, {});
+            return std::make_shared<detail::or_>()->eval(args, noargs);
         }
 
         return std::make_shared<detail::or_>()->eval(operands_, args);

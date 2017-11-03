@@ -11,6 +11,7 @@
 #include <hpx/include/components.hpp>
 
 #include <string>
+#include <vector>
 #include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,7 +28,45 @@ HPX_REGISTER_ACTION(base_primitive_type::eval_direct_action,
     phylanx_primitive_eval_direct_action)
 HPX_REGISTER_ACTION(base_primitive_type::store_action,
     phylanx_primitive_store_action)
+HPX_REGISTER_ACTION(base_primitive_type::bind_action,
+    phylanx_primitive_bind_action)
 HPX_DEFINE_GET_COMPONENT_TYPE(base_primitive_type)
+
+///////////////////////////////////////////////////////////////////////////////
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    std::vector<primitive_argument_type> base_primitive::noargs{};
+
+    bool base_primitive::bind(std::vector<primitive_argument_type> const& args)
+    {
+        if (operands_.empty())
+        {
+            return true;
+        }
+
+        // by default simply call bind on all dependents
+        std::vector<hpx::future<bool>> results;
+        results.reserve(operands_.size());
+
+        for (auto& operand : operands_)
+        {
+            primitive* p = util::get_if<primitive>(&operand);
+            if (p != nullptr)
+            {
+                results.push_back(p->bind(args));
+            }
+        }
+
+        hpx::wait_all(results);
+
+        bool result = true;
+        for (auto& r : results)
+        {
+            result = r.get() && result;
+        }
+        return result;
+    }
+}}}
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
@@ -69,6 +108,19 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& data)
     {
         return store(data).get();
+    }
+
+    hpx::future<bool> primitive::bind(
+        std::vector<primitive_argument_type> const& args)
+    {
+        using action_type = primitives::base_primitive::bind_action;
+        return hpx::async(action_type(), this->base_type::get_id(), args);
+    }
+
+    bool primitive::bind(hpx::launch::sync_policy,
+        std::vector<primitive_argument_type> const& args)
+    {
+        return bind(args).get();
     }
 
     ///////////////////////////////////////////////////////////////////////////

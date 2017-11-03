@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -209,11 +209,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_result_type> slicing_operation::eval(
-            std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::slicing>()->eval(args, noargs);
         }
 

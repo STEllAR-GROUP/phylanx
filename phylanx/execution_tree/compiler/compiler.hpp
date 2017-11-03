@@ -176,15 +176,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
           : locality_(locality)
         {}
 
-        function operator()(argument_type && arg) const
+        function operator()(std::string const& name) const
         {
-            return function{hpx::new_<primitives::define_function>(
-                locality_, std::move(arg)), "primitive_function"};
-        }
-        function operator()(argument_type && arg, std::string const& name) const
-        {
-            return function{hpx::new_<primitives::define_function>(
-                                locality_, std::move(arg), name),
+            return function{
+                hpx::new_<primitives::define_function>(locality_, name),
                 "primitive_function: " + name};
         }
 

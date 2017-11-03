@@ -37,4 +37,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return value_operand_sync(params[argnum_], params);
     }
+
+    // Return whether this object could be evaluated using the given arguments
+    bool access_argument::bind(
+        std::vector<primitive_argument_type> const& params)
+    {
+        return argnum_ < params.size();
+    }
 }}}

@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     define_variable::define_variable(
-            primitive_argument_type&& operand, std::string&& name)
+            primitive_argument_type&& operand, std::string name)
       : body_(std::move(operand))
       , name_(std::move(name))
     {}
@@ -54,8 +54,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 hpx::find_here(), std::move(operand), name_));
 
             // bind this name to the result of the expression right away
-            primitive const* p = util::get_if<primitive>(&target_);
-            if (p != nullptr)
+            primitive* p = util::get_if<primitive>(&target_);
+            if (p != nullptr && p->bind(hpx::launch::sync, args))
             {
                 p->eval_direct(args);
             }

@@ -255,9 +255,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // two-step initialization of the wrapped_function to support
                 // recursion
 
-                // define function
-                f = primitive_function{default_locality_}(
-                        std::move(handle_lambda(args, body).arg_), name);
+                // create define_function helper object
+                f = primitive_function{default_locality_}(name);
+
+                // set the body for the compiled function
+                define_function(f.arg_).set_body(hpx::launch::sync,
+                    std::move(handle_lambda(args, body).arg_));
             }
 
             return f;

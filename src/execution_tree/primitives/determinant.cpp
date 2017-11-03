@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     determinant::determinant(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::determinant>()->eval(args, {});
+            return std::make_shared<detail::determinant>()->eval(args, noargs);
         }
 
         return std::make_shared<detail::determinant>()->eval(operands_, args);

@@ -21,33 +21,39 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
     "phylanx_primitive_component", hpx::components::factory_enabled)
 HPX_DEFINE_GET_COMPONENT_TYPE(define_function_type::wrapped_type)
 
+HPX_REGISTER_ACTION(define_function_type::set_body_action,
+    phylanx_define_function_set_body_action)
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    define_function::define_function(primitive_argument_type&& operand)
-      : body_(std::move(operand))
-    {}
-
-    define_function::define_function(
-            primitive_argument_type&& operand, std::string&& name)
-      : body_(std::move(operand))
-      , name_(std::move(name))
+    define_function::define_function(std::string name)
+      : name_(std::move(name))
     {}
 
     primitive_result_type define_function::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
-        // this proxy was created where the function should be created on.
+        // This proxy was created on the locality where the function should be
+        // created on.
         if (!valid(target_))
         {
+            if(!valid(body_))
+            {
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "define_function::eval_direct",
+                    "expression representing the function body was not "
+                        "initialized yet");
+            }
+
             primitive_argument_type operand = body_;
             target_ = primitive(hpx::new_<primitives::wrapped_function>(
                 hpx::find_here(), std::move(operand), name_));
 
             // bind this name to the result of the expression right away
-            primitive const* p = util::get_if<primitive>(&target_);
-            if (p != nullptr)
+            primitive* p = util::get_if<primitive>(&target_);
+            if (p != nullptr && p->bind(hpx::launch::sync, args))
             {
                 p->eval_direct(args);
             }
@@ -63,4 +69,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         return extract_value(target_);
     }
+
+    void define_function::set_body(primitive_argument_type&& body)
+    {
+        body_ = std::move(body);
+    }
 }}}
+
+///////////////////////////////////////////////////////////////////////////////
+namespace phylanx { namespace execution_tree
+{
+    void define_function::set_body(hpx::launch::sync_policy,
+        primitive_argument_type&& body)
+    {
+        using action_type = primitives::define_function::set_body_action;
+        action_type()(this->primitive::get_id(), std::move(body));
+    }
+}}
