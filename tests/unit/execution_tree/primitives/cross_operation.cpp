@@ -15,10 +15,12 @@
 
 #include <blaze/Math.h>
 
-void test_cross_operation_1d()
+void test_vector_cross_product()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{17.99, 20.57, 19.69};
-    blaze::DynamicVector<double, blaze::rowVector> v2{11.42, 20.29, 12.45};
+    blaze::DynamicVector<double, blaze::rowVector> v1{1.0, 2.0, 3.0};
+    blaze::DynamicVector<double, blaze::rowVector> v2{4.0, 5.0, 6.0};
+
+    blaze::DynamicMatrix<double> expected{{-3.0, 6.0, -3.0}};
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -37,16 +39,42 @@ void test_cross_operation_1d()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         cross.eval();
-    blaze::DynamicMatrix<double, blaze::rowVector> expected(1UL, 3UL);
-    blaze::row(expected, 0UL) = blaze::cross(v1, v2);
+
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_one_vector_with_dimension_2()
+{
+    blaze::DynamicVector<double, blaze::rowVector> v1{1.0, 2.0};
+    blaze::DynamicVector<double, blaze::rowVector> v2{4.0, 5.0, 6.0};
+
+    blaze::DynamicMatrix<double> expected{{12.0, -6.0, -3.0}};
+}
+
+void test_both_vectors_with_dimension_2()
+{
+    blaze::DynamicVector<double, blaze::rowVector> v1{1.0, 2.0};
+    blaze::DynamicVector<double, blaze::rowVector> v2{4.0, 5.0};
+
+    blaze::DynamicMatrix<double> expected{{-3.0, 0.0, 0.0}};
+}
+
+void test_multiple_vector_cross_products()
+{
+    blaze::DynamicMatrix<double> v1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
+    blaze::DynamicMatrix<double> v2{{4.0, 5.0, 6.0}, {1.0, 2.0, 3.0}};
+
+    blaze::DynamicMatrix<double> expected{{-3.0, 6.0, -3.0}, {3.0, -6.0, 3.0}};
+}
+
 int main(int argc, char* argv[])
 {
-    test_cross_operation_1d();
+    test_vector_cross_product();
+    test_one_vector_with_dimension_2();
+    test_both_vectors_with_dimension_2();
+    //test_multiple_vector_cross_products();
 
     return hpx::util::report_errors();
 }
