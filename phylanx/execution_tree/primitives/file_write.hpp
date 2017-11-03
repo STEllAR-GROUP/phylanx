@@ -31,8 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        std::string filename_;
-        primitive_argument_type operand_;
+        std::vector<primitive_argument_type> operands_;
     };
 }}}
 

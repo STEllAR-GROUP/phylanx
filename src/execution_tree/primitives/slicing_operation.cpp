@@ -34,16 +34,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const slicing_operation::match_data =
-            {
-                    hpx::util::make_tuple(
-                            "slice", "slice(_1, _2, _3, _4, _5)",
-                            &create<slicing_operation>)
-            };
+    {
+        hpx::util::make_tuple(
+            "slice", "slice(_1, _2, _3, _4, _5)", &create<slicing_operation>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
-            std::vector<primitive_argument_type> && operands)
-            : operands_(std::move(operands))
+            std::vector<primitive_argument_type>&& operands)
+      : operands_(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -96,16 +95,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // m = 1
                 // n = (col_stop - col_start)+1
 
-                submatrix_type sm = blaze::submatrix(args[0].matrix()
-                        ,0,col_start,1,(col_stop-col_start)+1);
+                submatrix_type sm =
+                    blaze::submatrix(args[0].matrix(),
+                        0, col_start,
+                        1, (col_stop - col_start) + 1);
 
-                matrix_type result = sm;
+                matrix_type result(std::move(sm));
                 return primitive_result_type(std::move(result));
             }
 
             primitive_result_type slicing2d(args_type && args) const
             {
-                //returns the sliced matrix, depending uopn the values
+                //returns the sliced matrix, depending upon the values
                 //provided in row_start, row_stop, col_start, col_stop
 
                 // parameters required by phylanx to create a slice is as follows:
@@ -114,10 +115,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // row_stop The index of the last row of the submatrix.
                 // col_start The index of the first column of the submatrix.
                 // col_start The index of the last column of the submatrix.
-                
+
                 auto row_start = extract_integer_value(args[1]);
                 auto row_stop = extract_integer_value(args[2]);
-                auto col_start  = extract_integer_value(args[3]);
+                auto col_start = extract_integer_value(args[3]);
                 auto col_stop = extract_integer_value(args[4]);
 
                 // parameters required by blaze to create a submatrix is as follows:
@@ -138,14 +139,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // m = (row_stop - row_start)+1
                 // n = (col_stop - col_start)+1
 
-                submatrix_type sm = blaze::submatrix(args[0].matrix()
-                        ,row_start,col_start
-                        ,(row_stop-row_start)+1
-                        ,(col_stop-col_start) +1 );
-                matrix_type result = sm;
+                submatrix_type sm =
+                    blaze::submatrix(args[0].matrix(),
+                        row_start, col_start,
+                        (row_stop - row_start) + 1,
+                        (col_stop - col_start) + 1);
+
+                matrix_type result(std::move(sm));
                 return primitive_result_type(std::move(result));
             }
-
 
         public:
             hpx::future<primitive_result_type> eval(
@@ -155,10 +157,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (operands.size() != 5)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "phylanx::execution_tree::primitives"
-                                        "::slicing_operation::slicing_operation",
-                                        "the slicing_operation primitive requires "
-                                        "exactly five arguments");
+                        "phylanx::execution_tree::primitives::"
+                            "slicing_operation::slicing_operation",
+                        "the slicing_operation primitive requires exactly "
+                            "five arguments");
                 }
 
                 bool arguments_valid = true;
@@ -173,37 +175,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (!arguments_valid)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "slicing_operation::eval", "the "
-                                         "slicing_operation primitive requires that "
-                                         "the arguments given by the operands array "
-                                         "are valid");
+                        "slicing_operation::eval",
+                        "the slicing_operation primitive requires that the "
+                            "arguments given by the operands array are valid");
                 }
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                        [this_](args_type && args) -> primitive_result_type
+                    [this_](args_type&& args) -> primitive_result_type
+                    {
+                        std::size_t lhs_dims = args[0].num_dimensions();
+                        switch (lhs_dims)
                         {
-                            std::size_t lhs_dims = args[0].num_dimensions();
-                            switch (lhs_dims)
-                            {
-                                case 0:
-                                    return this_->slicing0d(std::move(args));
+                        case 0:
+                            return this_->slicing0d(std::move(args));
 
-                                case 1:
-                                    return this_->slicing1d(std::move(args));
+                        case 1:
+                            return this_->slicing1d(std::move(args));
 
-                                case 2:
-                                    return this_->slicing2d(std::move(args));
+                        case 2:
+                            return this_->slicing2d(std::move(args));
 
-                                default:
-                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                                        "slicing_operation::eval",
-                                                        "left hand side operand "
-                                                        "has unsupported number "
-                                                        "of dimensions");
-                            }
-                        }), detail::map_operands(operands, numeric_operand, args)
-                );
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "slicing_operation::eval",
+                                "left hand side operand has unsupported "
+                                    "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(operands, numeric_operand, args));
             }
         };
     }

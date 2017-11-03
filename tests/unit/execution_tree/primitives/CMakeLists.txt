@@ -31,9 +31,11 @@ set(tests
     not_equal_operation
     or_operation
     parallel_block_operation
+    power_operation
     random
     row_slicing
     slicing_operation
+    square_root_operation
     store_operation
     sub_operation
     transpose_operation
