@@ -58,8 +58,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "cross_operation::cross1d",
-                        "right hand side operand has unsupported "
-                        "number of dimensions");
+                        "right hand side operand has unsupported number of "
+                        "dimensions");
                 }
 
                 cross_operation_per_row(lhs, rhs, 0UL);
@@ -73,8 +73,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "cross_operation::cross2d",
-                        "right hand side operand has unsupported "
-                        "number of dimensions");
+                        "right hand side operand has unsupported number of "
+                        "dimensions");
+                }
+
+                if (lhs.dimension(0) != rhs.dimension(0))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "cross_operation::cross2d",
+                        "left hand side operand has a different number of "
+                        "rows that the right hand side operator");
+                }
+
+                if (lhs.dimension(1) != rhs.dimension(1))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "cross_operation::cross2d",
+                        "left hand side operand has a different number of "
+                        "columns that the right hand side operator");
+                }
+                
+                if (lhs.dimension(1) != 3UL)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "cross_operation::cross2d",
+                        "operands have an invalid number of columns");
+                }
+
+                for (size_t idx_row = 0; idx_row < lhs.dimension(0); idx_row++)
+                {
+                    blaze::row(lhs.matrix(), idx_row) = blaze::cross(
+                        blaze::row(lhs.matrix(), idx_row),
+                        blaze::row(rhs.matrix(), idx_row));
                 }
 
                 blaze::row(lhs.matrix(), 0UL) = blaze::cross(
@@ -84,7 +114,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(lhs);
             }
 
-            void cross_operation_per_row(operand_type &lhs, operand_type &rhs, size_t current_row) const
+            void cross_operation_per_row(
+                operand_type& lhs, operand_type& rhs, size_t current_row) const
             {
                 size_t lhs_vector_dims = lhs.dimension(1);
                 size_t rhs_vector_dims = rhs.dimension(1);

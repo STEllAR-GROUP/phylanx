@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     test_vector_cross_product();
     test_one_vector_with_dimension_2();
     test_both_vectors_with_dimension_2();
-    //test_multiple_vector_cross_products();
+    test_multiple_vector_cross_products();
 
     return hpx::util::report_errors();
 }
