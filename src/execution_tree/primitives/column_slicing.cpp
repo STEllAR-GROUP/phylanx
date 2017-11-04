@@ -36,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     std::vector<match_pattern_type> const column_slicing_operation::match_data =
     {
         hpx::util::make_tuple(
-            "slice_column", "slice_column(_1, _2, _3)", &create<column_slicing_operation>)
+            "slice_column", "slice_column(_1, _2, _3)",
+            &create<column_slicing_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
