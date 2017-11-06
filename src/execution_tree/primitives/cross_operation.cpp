@@ -207,12 +207,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     for (size_t i = 0UL; i < lhs.matrix().rows(); ++i)
                     {
                         blaze::row(lhs.matrix(), i) = blaze::cross(
-                            blaze::row(lhs.matrix(), 0UL),
-                            blaze::row(rhs.matrix(), i));
+                            blaze::row(lhs.matrix(), i),
+                            blaze::row(rhs.matrix(), 0UL));
                     }
                 }
 
-                return std::move(rhs);
+                return std::move(lhs);
             }
 
             primitive_result_type cross2d2d(operand_type &lhs, operand_type &rhs) const
