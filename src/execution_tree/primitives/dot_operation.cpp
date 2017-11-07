@@ -117,6 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             // lhs_num_dims == 2
+            // Multiply a matrix with a vector
             // Regular matrix multiplication
             primitive_result_type dot2d(operands_type && ops) const
             {
