@@ -45,7 +45,7 @@ namespace phylanx { namespace ir
             }
             else if (dims[0] != 1)
             {
-                data_ = storage_type(dims[0], 1UL);
+                data_ = storage_type(1UL, dims[0]);
             }
             else
             {
@@ -61,7 +61,7 @@ namespace phylanx { namespace ir
             }
             else if (dims[0] != 1)
             {
-                data_ = storage_type(dims[0], 1UL, default_value);
+                data_ = storage_type(1UL, dims[0], default_value);
             }
             else
             {
@@ -130,7 +130,6 @@ namespace phylanx { namespace ir
             }
             return *this;
         }
-
 
         /// Access a specific element of the underlying N-dimensional array
         T& operator[](std::size_t index)
@@ -204,6 +203,8 @@ namespace phylanx { namespace ir
         /// Extract the dimensionality of the underlying data array.
         std::size_t num_dimensions() const
         {
+            // One-dimensional matrices (vectors) are represented by data
+            // stored as the first (and only) row of the matrix.
             if (data_.rows() > 1)
             {
                 return 2;
