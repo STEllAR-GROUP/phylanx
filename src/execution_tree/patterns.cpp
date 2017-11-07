@@ -21,6 +21,7 @@ namespace phylanx { namespace execution_tree
             primitives::slicing_operation::match_data,
             primitives::row_slicing_operation::match_data,
             primitives::column_slicing_operation::match_data,
+            primitives::console_output::match_data,
             // n-nary functions
             primitives::if_conditional::match_data,
             primitives::for_operation::match_data,

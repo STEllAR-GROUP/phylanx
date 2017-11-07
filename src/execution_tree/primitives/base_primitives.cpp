@@ -10,6 +10,7 @@
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
 
+#include <iosfwd>
 #include <string>
 #include <utility>
 
@@ -797,6 +798,60 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::to_primitive_value_type",
             "unsupported primitive_argument_type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::ostream& operator<<(std::ostream& os,
+        primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+            return os;  // no output
+
+        case 1:     // bool
+            os << util::get<1>(val);
+            return os;
+
+        case 2:     // std::uint64_t
+            os << util::get<2>(val);
+            return os;
+
+        case 3:     // std::string
+            os << util::get<3>(val);
+            return os;
+
+        case 4:     // phylanx::ir::node_data<double>
+            os << util::get<4>(val);
+            return os;
+
+        case 5:
+            os << value_operand_sync(util::get<5>(val), {});
+            return os;
+
+        case 6:     // std::vector<ast::expression>
+            for (auto const& ast : util::get<6>(val))
+            {
+                os << ast;
+            }
+            return os;
+
+        case 7:     // std::vector<primitive_argument_type>
+            for (auto const& elem : util::get<7>(val).get())
+            {
+                os << elem;
+            }
+            return os;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::operator<<(primitive_argument_type)",
+            "primitive_argument_type does not hold a value type");
+
+        return os;
     }
 }}
 
