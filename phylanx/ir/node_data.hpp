@@ -220,7 +220,8 @@ namespace phylanx { namespace ir
         {
             return dimensions_type{data_.rows(), data_.columns()};
         }
-        std::size_t dimension(std::size_t dim) const
+
+        std::size_t dimension(int dim) const
         {
             return (dim == 0) ? data_.rows() : data_.columns();
         }
