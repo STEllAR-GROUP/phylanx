@@ -72,6 +72,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             hpx::cout << arg;
                         }
+                        hpx::cout << hpx::flush;
+
                         return primitive_result_type(std::move(args.back()));
                     }),
                     detail::map_operands(operands, value_operand, args)
