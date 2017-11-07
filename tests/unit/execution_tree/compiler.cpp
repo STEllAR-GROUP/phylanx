@@ -416,24 +416,24 @@ void test_recursive_function()
 
 int main(int argc, char* argv[])
 {
-//     test_builtin_environment();
-//     test_builtin_environment_vars();
-//
-//     test_define_variable();
-//     test_define_variable_block();
-//     test_define_variable_ref();
-//     test_define_variable_ref_expr();
-//
-//     test_define_constant_function();
-//     test_define_simple_function();
-//     test_define_simple_function_arg1();
-//     test_define_simple_function_arg2();
+    test_builtin_environment();
+    test_builtin_environment_vars();
 
-//     test_define_return_function();
-//     test_define_call_function();
+    test_define_variable();
+    test_define_variable_block();
+    test_define_variable_ref();
+    test_define_variable_ref_expr();
 
-//     test_use_builtin_function();
-//     test_use_builtin_function_ind();
+    test_define_constant_function();
+    test_define_simple_function();
+    test_define_simple_function_arg1();
+    test_define_simple_function_arg2();
+
+    test_define_return_function();
+    test_define_call_function();
+
+    test_use_builtin_function();
+    test_use_builtin_function_ind();
 
 //     test_define_curry_function();
 
