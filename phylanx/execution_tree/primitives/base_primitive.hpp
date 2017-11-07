@@ -16,6 +16,7 @@
 #include <hpx/include/util.hpp>
 
 #include <initializer_list>
+#include <iosfwd>
 #include <map>
 #include <string>
 #include <utility>
@@ -125,6 +126,9 @@ namespace phylanx { namespace execution_tree
     {
         return val.index() != 0;
     }
+
+    PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
+        primitive_argument_type const&);
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives

@@ -26,6 +26,7 @@ char const* const lra_code = R"(block(
             while(
                 step < iterations,
                 block(
+                    cout("step: ", step, "\n"),
                     define(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),  // exp(-dot(x, weights)): [30], pred: [30]
                     define(error, pred - y),                            // error: [30]
                     define(gradient, dot(transx, error)),               // gradient: [2]
