@@ -10,21 +10,22 @@
 #include <hpx/include/serialization.hpp>
 #include <blaze/Math.h>
 
+#include <cstddef>
 
 namespace hpx { namespace serialization
 {
     template <typename T>
     void load(input_archive& archive,
-        blaze::DynamicVector<T, blaze::rowVector>& mat,
+        blaze::DynamicVector<T, blaze::columnVector>& mat,
         unsigned)
     {
-        // DeserializeHeader
-        size_t count_ = 0UL;
-
+        // De-serialize Header
+        std::size_t count_ = 0UL;
         archive >> count_;
+
         // DeserializeVector
         T value{};
-        size_t j = 0UL;
+        std::size_t j = 0UL;
         // NOTE: I've assumed archive >> value always returns something
         while (j != count_) {
             archive >> value;
@@ -39,16 +40,17 @@ namespace hpx { namespace serialization
         unsigned)
     {
         // DeserializeHeader
-        size_t rows_ = 0UL;
-        size_t columns_ = 0UL;
+        std::size_t rows_ = 0UL;
+        std::size_t columns_ = 0UL;
 
         archive >> rows_ >> columns_;
         mat = blaze::DynamicMatrix<T>(rows_, columns_);
+
         // DeserializeMatrix
         T value{};
-        for (size_t i = 0UL; i < rows_; ++i)
+        for (std::size_t i = 0UL; i < rows_; ++i)
         {
-            size_t j = 0UL;
+            std::size_t j = 0UL;
             // NOTE: I've assumed archive >> value always returns something
             while (j != columns_) {
                 archive >> value;
@@ -60,15 +62,16 @@ namespace hpx { namespace serialization
 
     template <typename T>
     void save(output_archive& archive,
-        blaze::DynamicVector<T, blaze::rowVector> const& v,
+        blaze::DynamicVector<T, blaze::columnVector> const& v,
         unsigned)
     {
         // SerializeVector
         archive << v.size();
 
         // SerializeVector
-        for (size_t j = 0UL; j < v.size(); ++j) {
-            archive << v(j);
+        for (std::size_t j = 0UL; j < v.size(); ++j)
+        {
+            archive << v[j];
         }
     }
 
@@ -77,12 +80,14 @@ namespace hpx { namespace serialization
         blaze::DynamicMatrix<T> const& mat,
         unsigned)
     {
-        // Serializeheader
+        // Serialize header
         archive << mat.rows() << mat.columns();
 
         // SerializeMatrix
-        for (size_t i = 0UL; i < mat.rows(); ++i) {
-            for (size_t j = 0UL; j < mat.columns(); ++j) {
+        for (std::size_t i = 0UL; i < mat.rows(); ++i)
+        {
+            for (std::size_t j = 0UL; j < mat.columns(); ++j)
+            {
                 archive << mat(i, j);
             }
         }
@@ -90,7 +95,7 @@ namespace hpx { namespace serialization
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
         (template <typename T>),
-        (blaze::DynamicVector<T, blaze::rowVector>));
+        (blaze::DynamicVector<T, blaze::columnVector>));
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
         (template <typename T>),

@@ -44,7 +44,7 @@ namespace phylanx { namespace ir
             break;
 
         case 1:
-            detail::print_array(out, nd, nd.size());
+            detail::print_array(out, nd.vector(), nd.size());
             break;
 
         case 2:
