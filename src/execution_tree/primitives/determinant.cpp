@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "determinant::eval",
                         "the determinant primitive requires"
-                        "exactly one operand");
+                            "exactly one operand");
                 }
 
                 if (!valid(operands[0]))
@@ -87,10 +87,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->determinant0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
                         case 2:
-                            return this_->determinantxd(std::move(ops));
+                            return this_->determinant2d(std::move(ops));
 
+                        case 1: HPX_FALLTHROUGH;
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "determinant::eval",
@@ -108,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(ops[0]);       // no-op
             }
 
-            primitive_result_type determinantxd(operands_type && ops) const
+            primitive_result_type determinant2d(operands_type && ops) const
             {
                 double d = blaze::det(ops[0].matrix());
                 return operand_type(d);
