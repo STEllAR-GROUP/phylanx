@@ -121,6 +121,34 @@ namespace phylanx { namespace ir
         {
         }
 
+        node_data& operator=(storage2d_type const& val)
+        {
+            data_ = val;
+            return *this;
+        }
+        node_data& operator=(storage2d_type && val)
+        {
+            data_ = std::move(val);
+            return *this;
+        }
+
+        node_data& operator=(storage1d_type const& val)
+        {
+            data_ = val;
+            return *this;
+        }
+        node_data& operator=(storage1d_type && val)
+        {
+            data_ = std::move(val);
+            return *this;
+        }
+
+        node_data& operator=(storage0d_type val)
+        {
+            data_ = val;
+            return *this;
+        }
+
         node_data& operator=(node_data const& d)
         {
             if (this != &d)
