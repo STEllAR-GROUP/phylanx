@@ -41,8 +41,6 @@ void test_constant_0d()
 
 void test_constant_1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
@@ -68,8 +66,6 @@ void test_constant_1d()
 
 void test_constant_2d()
 {
-    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));

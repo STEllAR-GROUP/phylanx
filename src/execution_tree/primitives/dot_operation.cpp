@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     dot_operation::dot_operation(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -117,6 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             // lhs_num_dims == 2
+            // Multiply a matrix with a vector
             // Regular matrix multiplication
             primitive_result_type dot2d(operands_type && ops) const
             {
@@ -211,7 +212,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::dot>()->eval(args, noargs);
         }
 

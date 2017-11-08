@@ -36,8 +36,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("cross", "cross(_1, _2)", &create<cross_operation>)
     };
 
-    cross_operation::cross_operation(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+    cross_operation::cross_operation(
+            std::vector<primitive_argument_type>&& operands)
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -53,25 +54,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using data_type = blaze::DynamicMatrix<double>;
             using vector_type = blaze::DynamicVector<double, blaze::rowVector>;
 
-            primitive_result_type cross1d(operand_type &lhs, operand_type &rhs) const
+            primitive_result_type cross1d(
+                operand_type& lhs, operand_type& rhs) const
             {
                 switch (rhs.num_dimensions())
                 {
                 case 1:
                     return cross1d1d(lhs, rhs);
+
                 case 2:
                     return cross1d2d(lhs, rhs);
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "cross_operation::cross1d",
+                        "right hand side operand has unsupported number of "
+                        "dimensions");
                 }
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "cross_operation::cross1d",
-                    "right hand side operand has unsupported number of "
-                    "dimensions");
             }
 
             primitive_result_type cross1d1d(operand_type& lhs, operand_type& rhs) const
             {
-                size_t lhs_vector_dims = lhs.dimension(1);
-                size_t rhs_vector_dims = rhs.dimension(1);
+                std::size_t lhs_vector_dims = lhs.dimension(1);
+                std::size_t rhs_vector_dims = rhs.dimension(1);
 
                 if (lhs_vector_dims < 2UL || rhs_vector_dims < 2UL)
                 {
@@ -87,7 +92,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     lhs.matrix()(0UL, 2UL) = 0.0;
                 }
 
-
                 // Only rhs has 2 elements
                 if (rhs_vector_dims < 3UL)
                 {
@@ -95,9 +99,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::row(lhs.matrix(), 0UL),
                         get_3d_vector_from_2d(rhs.matrix(), 0UL));
                 }
-                // Both vectors have 3 elements
                 else
                 {
+                    // Both vectors have 3 elements
                     blaze::row(lhs.matrix(), 0UL) = blaze::cross(
                         blaze::row(lhs.matrix(), 0UL),
                         blaze::row(rhs.matrix(), 0UL));
@@ -106,11 +110,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(lhs);
             }
 
-            primitive_result_type cross1d2d(operand_type &lhs, operand_type &rhs) const
+            primitive_result_type cross1d2d(
+                operand_type& lhs, operand_type& rhs) const
             {
-
-                size_t lhs_vector_dims = lhs.dimension(1);
-                size_t rhs_vector_dims = rhs.dimension(1);
+                std::size_t lhs_vector_dims = lhs.dimension(1);
+                std::size_t rhs_vector_dims = rhs.dimension(1);
 
                 if (lhs_vector_dims < 2UL || rhs_vector_dims < 2UL)
                 {
@@ -130,7 +134,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (lhs_vector_dims < 3UL)
                 {
                     auto left_op = get_3d_vector_from_2d(lhs.matrix(), 0UL);
-                    for (size_t i = 0UL; i < rhs.matrix().rows(); ++i)
+                    for (std::size_t i = 0UL; i != rhs.matrix().rows(); ++i)
                     {
                         blaze::row(rhs.matrix(), i) = blaze::cross(
                             left_op,
@@ -140,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Both vectors have 3 elements
                 else
                 {
-                    for (size_t i = 0UL; i < rhs.matrix().rows(); ++i)
+                    for (std::size_t i = 0UL; i != rhs.matrix().rows(); ++i)
                     {
                         blaze::row(rhs.matrix(), i) = blaze::cross(
                             blaze::row(lhs.matrix(), 0UL),
@@ -151,30 +155,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(rhs);
             }
 
-            vector_type get_3d_vector_from_2d(data_type &m, size_t idx) const
+            vector_type get_3d_vector_from_2d(data_type &m, std::size_t idx) const
             {
                 return vector_type{ m(0UL, 0UL), m(0UL, 1UL), 0.0 };
             }
 
-            primitive_result_type cross2d(operand_type &lhs, operand_type &rhs) const
+            primitive_result_type cross2d(
+                operand_type& lhs, operand_type& rhs) const
             {
                 switch (rhs.num_dimensions())
                 {
                 case 1:
                     return cross2d1d(lhs, rhs);
+
                 case 2:
                     return cross2d2d(lhs, rhs);
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "cross_operation::cross2d",
+                        "right hand side operand has unsupported number of "
+                        "dimensions");
                 }
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "cross_operation::cross2d",
-                    "right hand side operand has unsupported number of "
-                    "dimensions");
             }
 
-            primitive_result_type cross2d1d(operand_type &lhs, operand_type &rhs) const
+            primitive_result_type cross2d1d(
+                operand_type& lhs, operand_type& rhs) const
             {
-                size_t lhs_vector_dims = lhs.dimension(1);
-                size_t rhs_vector_dims = rhs.dimension(1);
+                std::size_t lhs_vector_dims = lhs.dimension(1);
+                std::size_t rhs_vector_dims = rhs.dimension(1);
 
                 if (lhs_vector_dims < 2UL || rhs_vector_dims < 2UL)
                 {
@@ -194,17 +203,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (rhs_vector_dims < 3UL)
                 {
                     auto right_op = get_3d_vector_from_2d(rhs.matrix(), 0UL);
-                    for (size_t i = 0UL; i < lhs.matrix().rows(); ++i)
+                    for (std::size_t i = 0UL; i != lhs.matrix().rows(); ++i)
                     {
                         blaze::row(lhs.matrix(), i) = blaze::cross(
                             blaze::row(lhs.matrix(), i),
                             right_op);
                     }
                 }
-                // Both vectors have 3 elements
                 else
                 {
-                    for (size_t i = 0UL; i < lhs.matrix().rows(); ++i)
+                    // Both vectors have 3 elements
+                    for (std::size_t i = 0UL; i != lhs.matrix().rows(); ++i)
                     {
                         blaze::row(lhs.matrix(), i) = blaze::cross(
                             blaze::row(lhs.matrix(), i),
@@ -215,9 +224,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(lhs);
             }
 
-            primitive_result_type cross2d2d(operand_type &lhs, operand_type &rhs) const
+            primitive_result_type cross2d2d(
+                operand_type& lhs, operand_type& rhs) const
             {
-                for (size_t idx_row = 0; idx_row < lhs.dimension(0); ++idx_row)
+                for (std::size_t idx_row = 0; idx_row != lhs.dimension(0);
+                     ++idx_row)
                 {
                     blaze::row(lhs.matrix(), idx_row) = blaze::cross(
                         blaze::row(lhs.matrix(), idx_row),
@@ -256,14 +267,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                         case 1:
                             return this_->cross1d(ops[0], ops[1]);
+
                         case 2:
                             return this_->cross2d(ops[0], ops[1]);
-                        }
 
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "cross_operation::eval",
-                            "left hand side operand has unsupported "
-                            "number of dimensions");
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "cross_operation::eval",
+                                "left hand side operand has unsupported "
+                                "number of dimensions");
+                        }
                     }),
                     detail::map_operands(operands, numeric_operand, args)
                 );
@@ -276,10 +289,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::cross>()->eval(args, noargs);
         }
-
         return std::make_shared<detail::cross>()->eval(operands_, args);
     }
 }}}
+

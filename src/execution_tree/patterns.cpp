@@ -17,7 +17,7 @@ namespace phylanx { namespace execution_tree
             // variadic functions
             primitives::block_operation::match_data,
             primitives::parallel_block_operation::match_data,
-            primitives::define_::match_data,
+            primitives::define_variable::match_data,
             primitives::slicing_operation::match_data,
             primitives::row_slicing_operation::match_data,
             primitives::column_slicing_operation::match_data,

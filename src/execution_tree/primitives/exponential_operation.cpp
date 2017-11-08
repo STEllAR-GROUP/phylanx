@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     exponential_operation::exponential_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -149,7 +149,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::exp>()->eval(args, noargs);
         }
 
