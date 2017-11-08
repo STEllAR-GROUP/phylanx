@@ -55,16 +55,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type power0d(operands_type && ops) const
             {
-                ops[0][0] = std::pow(ops[0][0], ops[1][0]);
+                ops[0].scalar(std::pow(ops[0].scalar(), ops[1][0]));
                 return std::move(ops[0]);
             }
 
-            primitive_result_type powerxd(operands_type && ops) const
+            primitive_result_type power1d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs.matrix() = blaze::pow(lhs.matrix(), rhs[0]);
+                lhs.vector(blaze::pow(lhs.vector(), rhs[0]));
+
+                return std::move(lhs);
+            }
+
+            primitive_result_type power2d(operands_type && ops) const
+            {
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                lhs.matrix(blaze::pow(lhs.matrix(), rhs[0]));
 
                 return std::move(lhs);
             }
@@ -107,9 +117,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->power0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
+                        case 1:
+                            return this_->power1d(std::move(ops));
+
                         case 2:
-                            return this_->powerxd(std::move(ops));
+                            return this_->power2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,

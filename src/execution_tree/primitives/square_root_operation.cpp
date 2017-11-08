@@ -55,13 +55,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type square_root_0d(operands_type && ops) const
             {
-                ops[0][0] = std::sqrt(ops[0][0]);
+                ops[0].scalar(std::sqrt(ops[0].scalar()));
                 return std::move(ops[0]);
             }
 
-            primitive_result_type square_root_xd(operands_type && ops) const
+            primitive_result_type square_root_1d(operands_type && ops) const
             {
-                ops[0].matrix() = blaze::sqrt(ops[0].matrix());
+                ops[0].vector(blaze::sqrt(ops[0].vector()));
+
+                return std::move(ops[0]);
+            }
+
+            primitive_result_type square_root_2d(operands_type && ops) const
+            {
+                ops[0].matrix(blaze::sqrt(ops[0].matrix()));
 
                 return std::move(ops[0]);
             }
@@ -98,9 +105,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     case 0:
                         return this_->square_root_0d(std::move(ops));
 
-                    case 1: HPX_FALLTHROUGH;
+                    case 1:
+                        return this_->square_root_1d(std::move(ops));
+
                     case 2:
-                        return this_->square_root_xd(std::move(ops));
+                        return this_->square_root_2d(std::move(ops));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
