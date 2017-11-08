@@ -100,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::subvector(args[0].vector(),
                         col_start, (col_stop - col_start) + 1);
 
-                return primitive_result_type(vector_type(std::move(sv)));
+                return ir::node_data<double>{vector_type{std::move(sv)}};
             }
 
             primitive_result_type slicing2d(args_type && args) const
@@ -143,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         row_start, col_start,
                         (row_stop - row_start) + 1, (col_stop - col_start) + 1);
 
-                return primitive_result_type(matrix_type(std::move(sm)));
+                return ir::node_data<double>{matrix_type{std::move(sm)}};
             }
 
         public:

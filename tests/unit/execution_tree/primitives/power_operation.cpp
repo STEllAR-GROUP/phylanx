@@ -38,7 +38,7 @@ void test_power_operation_0d()
 
 void test_power_operation_1d()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{
+    blaze::DynamicVector<double> v1{
         1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
 
     phylanx::execution_tree::primitive lhs =
@@ -58,8 +58,7 @@ void test_power_operation_1d()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         power.eval();
-    blaze::DynamicVector<double, blaze::rowVector> expected =
-        blaze::pow(v1, 2.0);
+    blaze::DynamicVector<double> expected = blaze::pow(v1, 2.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));

@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // one dimension. The values passed to row_start, row_stop
                 // does not have an effect on the result.
 
-                return primitive_result_type(std::move(args[0]));
+                return primitive_result_type{std::move(args[0])};
             }
 
             primitive_result_type row_slicing2d(args_type && args) const
@@ -105,8 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         row_start, 0,
                         (row_stop - row_start) + 1, num_matrix_cols);
 
-                matrix_type result(std::move(sm));
-                return primitive_result_type(std::move(result));
+                return ir::node_data<double>{matrix_type{std::move(sm)}};
             }
 
         public:

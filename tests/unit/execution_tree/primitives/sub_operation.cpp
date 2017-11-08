@@ -57,9 +57,9 @@ void test_sub_operation_0d_lit()
 
 void test_sub_operation_1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -77,16 +77,16 @@ void test_sub_operation_1d()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = v1 - v2;
+    blaze::DynamicVector<double> expected = v1 - v2;
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_sub_operation_1d_lit()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v1);
 
@@ -102,7 +102,7 @@ void test_sub_operation_1d_lit()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = v1 - v2;
+    blaze::DynamicVector<double> expected = v1 - v2;
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }

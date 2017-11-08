@@ -100,9 +100,9 @@ void test_equal_operation_0d_lit_true()
 
 void test_equal_operation_1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -130,9 +130,9 @@ void test_equal_operation_1d()
 
 void test_equal_operation_1d_lit()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v1);
 

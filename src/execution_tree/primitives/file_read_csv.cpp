@@ -128,8 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicMatrix<double> matrix(
             n_rows, n_cols, matrix_array.data());
 
-        primitive_result_type val(std::move(matrix));
-
-        return hpx::make_ready_future(std::move(val));
+        return hpx::make_ready_future(
+            primitive_result_type{ir::node_data<double>{std::move(matrix)}});
     }
 }}}
