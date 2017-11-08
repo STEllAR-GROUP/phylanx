@@ -58,55 +58,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using args_type = std::vector<arg_type>;
 
             using matrix_type = blaze::DynamicMatrix<double>;
-            using submatrix_type = blaze::Submatrix<matrix_type> ;
+            using submatrix_type = blaze::Submatrix<matrix_type>;
+
+            using vector_type = blaze::DynamicVector<double>;
+            using subvector_type = blaze::Subvector<vector_type>;
 
             primitive_result_type column_slicing0d(args_type && args) const
             {
-                //return the input as it is if the input is of zero dimension or
-                //one dimension. The values passed to col_start, col_stop
-                //does not have an effect on the result.
+                // return the input as it is if the input is of zero dimension or
+                // one dimension. The values passed to col_start, col_stop
+                // does not have an effect on the result.
 
                 return primitive_result_type(std::move(args[0]));
             }
 
             primitive_result_type column_slicing1d(args_type && args) const
             {
-                //return elements starting from col_start to col_stop
+                // return elements starting from col_start to col_stop
 
                 auto col_start  = extract_integer_value(args[1]);
                 auto col_stop = extract_integer_value(args[2]);
 
                 // parameters required by blaze to create a submatrix is as follows:
-                // submatrix(matrix,row,column,m,n)
-                // matrix The matrix containing the submatrix.
-                // row The index of the first row of the submatrix.
-                // column The index of the first column of the submatrix.
-                // m The number of rows of the submatrix.
-                // n The number of columns of the submatrix.
-                // return View on the specific submatrix of the matrix.
+                // subvector(vector,column,n)
+                // vector The vector containing the subvector.
+                // column The index of the first column of the subvector.
+                // n The number of columns of the subvector.
+                // return View on the specific subvector of the vector.
 
                 // The following math is a result of converting the arguments
                 // provided in slice primitive so that equivalent operation is
                 // performed in blaze.
-                // matrix = matrix
-                // row = 0
+                // vector = vector
                 // column = col_start
-                // m = 1
                 // n = (col_stop - col_start)+1
 
-                submatrix_type sm =
-                    blaze::submatrix(args[0].matrix(),
-                        0, col_start,
-                        1, (col_stop - col_start) + 1);
+                subvector_type sv =
+                    blaze::subvector(args[0].vector(),
+                        col_start, (col_stop - col_start) + 1);
 
-                matrix_type result(std::move(sm));
-                return primitive_result_type(std::move(result));
+                return primitive_result_type(vector_type(std::move(sv)));
             }
 
             primitive_result_type column_slicing2d(args_type && args) const
             {
-                //returns the sliced matrix, depending upon the values
-                //provided in col_start, col_stop.
+                // returns the sliced matrix, depending upon the values
+                // provided in col_start, col_stop.
 
                 // parameters required by phylanx to create a slice is as follows:
                 // matrix The matrix containing the submatrix.
@@ -138,17 +135,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 submatrix_type sm =
                     blaze::submatrix(args[0].matrix(),
                         0, col_start,
-                        num_matrix_rows,
-                        (col_stop - col_start) + 1);
+                        num_matrix_rows, (col_stop - col_start) + 1);
 
-                matrix_type result(std::move(sm));
-                return primitive_result_type(std::move(result));
+                return primitive_result_type(matrix_type(std::move(sm)));
             }
 
         public:
             hpx::future<primitive_result_type> eval(
-                    std::vector<primitive_argument_type> const& operands,
-                    std::vector<primitive_argument_type> const& args) const
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
                 if (operands.size() != 3)
                 {

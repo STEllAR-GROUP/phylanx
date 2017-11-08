@@ -22,11 +22,11 @@
 
 //////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
-        phylanx::execution_tree::primitives::row_slicing_operation>
-        row_slicing_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-        row_slicing_operation_type, phylanx_row_slicing_operation_component,
-        "phylanx_primitive_component", hpx::components::factory_enabled)
+    phylanx::execution_tree::primitives::row_slicing_operation>
+    row_slicing_operation_type;
+HPX_REGISTER_DERIVED_COMPONENT_FACTORY(row_slicing_operation_type,
+    phylanx_row_slicing_operation_component, "phylanx_primitive_component",
+    hpx::components::factory_enabled)
 HPX_DEFINE_GET_COMPONENT_TYPE(row_slicing_operation_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,21 +57,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using args_type = std::vector<arg_type>;
 
             using matrix_type = blaze::DynamicMatrix<double>;
-            using submatrix_type = blaze::Submatrix<matrix_type> ;
+            using submatrix_type = blaze::Submatrix<matrix_type>;
 
             primitive_result_type row_slicing0or1d(args_type && args) const
             {
-                //return the input as it is if the input is of zero dimension or
-                //one dimension. The values passed to row_start, row_stop
-                //does not have an effect on the result.
+                // return the input as it is if the input is of zero dimension or
+                // one dimension. The values passed to row_start, row_stop
+                // does not have an effect on the result.
 
                 return primitive_result_type(std::move(args[0]));
             }
 
             primitive_result_type row_slicing2d(args_type && args) const
             {
-                //returns the sliced matrix, depending upon the values
-                //provided in row_start, row_stop.
+                // returns the sliced matrix, depending upon the values
+                // provided in row_start, row_stop.
 
                 // parameters required by phylanx to create a slice is as follows:
                 // matrix The matrix containing the submatrix.
@@ -103,8 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 submatrix_type sm =
                     blaze::submatrix(args[0].matrix(),
                         row_start, 0,
-                        (row_stop - row_start) + 1,
-                        num_matrix_cols);
+                        (row_stop - row_start) + 1, num_matrix_cols);
 
                 matrix_type result(std::move(sm));
                 return primitive_result_type(std::move(result));
@@ -112,8 +111,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         public:
             hpx::future<primitive_result_type> eval(
-                    std::vector<primitive_argument_type> const& operands,
-                    std::vector<primitive_argument_type> const& args) const
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
                 if (operands.size() != 3)
                 {
@@ -148,9 +147,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::size_t matrix_dims = args[0].num_dimensions();
                         switch (matrix_dims)
                         {
-                        case 0:
-                            return this_->row_slicing0or1d(std::move(args));
-
+                        case 0: HPX_FALLTHROUGH;
                         case 1:
                             return this_->row_slicing0or1d(std::move(args));
 
@@ -164,7 +161,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args));
+                    detail::map_operands(operands, numeric_operand, args)
+                );
             }
         };
     }

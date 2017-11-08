@@ -43,33 +43,33 @@ void test_row_slicing_operation_0d()
 
 void test_row_slicing_operation_1d()
 {
-  blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-  blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
 
-  phylanx::execution_tree::primitive input_vector =
-      hpx::new_<phylanx::execution_tree::primitives::variable>(
-          hpx::find_here(), phylanx::ir::node_data<double>(v1));
+    phylanx::execution_tree::primitive input_vector =
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
+            hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
-  phylanx::execution_tree::primitive second =
-      hpx::new_<phylanx::execution_tree::primitives::variable>(
-          hpx::find_here(), phylanx::ir::node_data<double>(5.0));
+    phylanx::execution_tree::primitive second =
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
+            hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
-  phylanx::execution_tree::primitive third =
-      hpx::new_<phylanx::execution_tree::primitives::variable>(
-          hpx::find_here(), phylanx::ir::node_data<double>(47.0));
+    phylanx::execution_tree::primitive third =
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
+            hpx::find_here(), phylanx::ir::node_data<double>(47.0));
 
-  phylanx::execution_tree::primitive slice =
-      hpx::new_<phylanx::execution_tree::primitives::row_slicing_operation>(
-          hpx::find_here(),
-          std::vector<phylanx::execution_tree::primitive_argument_type>{
-              std::move(input_vector), std::move(second), std::move(third)
-          });
+    phylanx::execution_tree::primitive slice =
+        hpx::new_<phylanx::execution_tree::primitives::row_slicing_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(input_vector), std::move(second), std::move(third)
+            });
 
-  hpx::future<phylanx::execution_tree::primitive_result_type> f =
-      slice.eval();
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+        slice.eval();
 
-  HPX_TEST_EQ(phylanx::ir::node_data<double>(v1),
-              phylanx::execution_tree::extract_numeric_value(f.get()));
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(v1),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
 void test_row_slicing_operation_2d()
@@ -87,21 +87,20 @@ void test_row_slicing_operation_2d()
                   hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive row_start =
-          hpx::new_<phylanx::execution_tree::primitives::variable>(
-                  hpx::find_here(), phylanx::ir::node_data<double>(5.0));
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
+            hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
     phylanx::execution_tree::primitive row_stop =
-          hpx::new_<phylanx::execution_tree::primitives::variable>(
-                  hpx::find_here(), phylanx::ir::node_data<double>(47.0));
-
+        hpx::new_<phylanx::execution_tree::primitives::variable>(
+            hpx::find_here(), phylanx::ir::node_data<double>(47.0));
 
     phylanx::execution_tree::primitive slice =
-          hpx::new_<phylanx::execution_tree::primitives::row_slicing_operation>(
-                  hpx::find_here(),
-                  std::vector<phylanx::execution_tree::primitive_argument_type>{
-                          std::move(input_matrix), std::move(row_start)
-                          , std::move(row_stop)
-                  });
+        hpx::new_<phylanx::execution_tree::primitives::row_slicing_operation>(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(input_matrix), std::move(row_start),
+                std::move(row_stop)
+            });
 
     // parameters required by blaze to create a submatrix is as follows:
     // matrix The matrix containing the submatrix.
