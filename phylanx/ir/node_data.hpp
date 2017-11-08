@@ -18,13 +18,10 @@
 
 #include <blaze/Math.h>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <iosfwd>
-#include <iterator>
 #include <vector>
-
 
 namespace phylanx { namespace ir
 {
@@ -45,7 +42,7 @@ namespace phylanx { namespace ir
 
         node_data() = default;
 
-        node_data(dimensions_type const& dims)
+        explicit node_data(dimensions_type const& dims)
         {
             if (dims[1] != 1)
             {
@@ -61,7 +58,7 @@ namespace phylanx { namespace ir
             }
         }
 
-        node_data(dimensions_type const& dims, T default_value)
+        explicit node_data(dimensions_type const& dims, T default_value)
         {
             if (dims[1] != 1)
             {
@@ -78,35 +75,35 @@ namespace phylanx { namespace ir
         }
 
         /// Create node data for a 0-dimensional value
-        node_data(storage0d_type const& value)
+        explicit node_data(storage0d_type const& value)
           : data_(value)
         {
         }
-        node_data(storage0d_type && value)
+        explicit node_data(storage0d_type && value)
           : data_(std::move(value))
         {
         }
 
         /// Create node data for a 1-dimensional value
-        node_data(storage1d_type const& values)
+        explicit node_data(storage1d_type const& values)
           : data_(values)
         {
         }
-        node_data(storage1d_type && values)
+        explicit node_data(storage1d_type && values)
           : data_(std::move(values))
         {
         }
-        node_data(std::vector<T> const& values)
+        explicit node_data(std::vector<T> const& values)
           : data_(storage1d_type(values.size(), values.data()))
         {
         }
 
         /// Create node data for a 2-dimensional value
-        node_data(storage2d_type const& values)
+        explicit node_data(storage2d_type const& values)
           : data_(values)
         {
         }
-        node_data(storage2d_type && values)
+        explicit node_data(storage2d_type && values)
           : data_(std::move(values))
         {
         }
@@ -121,14 +118,9 @@ namespace phylanx { namespace ir
         {
         }
 
-        node_data& operator=(storage2d_type const& val)
+        node_data& operator=(storage0d_type val)
         {
             data_ = val;
-            return *this;
-        }
-        node_data& operator=(storage2d_type && val)
-        {
-            data_ = std::move(val);
             return *this;
         }
 
@@ -143,9 +135,14 @@ namespace phylanx { namespace ir
             return *this;
         }
 
-        node_data& operator=(storage0d_type val)
+        node_data& operator=(storage2d_type const& val)
         {
             data_ = val;
+            return *this;
+        }
+        node_data& operator=(storage2d_type && val)
+        {
+            data_ = std::move(val);
             return *this;
         }
 
@@ -262,30 +259,6 @@ namespace phylanx { namespace ir
                 "phylanx::ir::node_data<T>::operator[]()",
                 "node_data object holds unsupported data type");
         }
-
-        using iterator = blaze::DenseIterator<T, true>;
-        using const_iterator = blaze::DenseIterator<T const, true>;
-
-//         /// Get iterator referring to the beginning of the underlying data
-//         const_iterator begin() const
-//         {
-//             return data_.begin(0UL);
-//         }
-//         /// Get iterator referring to the end of the underlying data
-//         const_iterator end() const
-//         {
-//             return data_.end(data_.rows() - 1UL);
-//         }
-//
-//         const_iterator cbegin() const
-//         {
-//             return data_.cbegin(0UL);
-//         }
-//         /// Get iterator referring to the end of the underlying data
-//         const_iterator cend() const
-//         {
-//             return data_.cend(data_.rows() - 1UL);
-//         }
 
         std::size_t size() const
         {
@@ -433,7 +406,7 @@ namespace phylanx { namespace ir
                 "node_data object holds unsupported data type");
         }
 
-        size_t dimension(int dim) const
+        std::size_t dimension(int dim) const
         {
             switch(data_.index())
             {
