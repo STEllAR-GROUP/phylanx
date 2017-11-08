@@ -11,6 +11,7 @@
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
+#include <phylanx/execution_tree/primitives/console_output.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/execution_tree/primitives/cross_operation.hpp>
 #include <phylanx/execution_tree/primitives/define.hpp>
@@ -39,8 +40,8 @@
 #include <phylanx/execution_tree/primitives/random.hpp>
 #include <phylanx/execution_tree/primitives/row_slicing.hpp>
 #include <phylanx/execution_tree/primitives/slicing_operation.hpp>
-#include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/square_root_operation.hpp>
+#include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/execution_tree/primitives/transpose_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
