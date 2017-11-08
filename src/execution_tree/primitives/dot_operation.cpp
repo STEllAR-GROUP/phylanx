@@ -81,12 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return dot1d1d(lhs, rhs);
 
                 case 2UL:
-                    // lhs_order == 1 && rhs_order == 2
                     // If is_vector(lhs) && is_matrix(rhs)
-                    // We can treat this like 2d matrix multiplication
-                    // e.g. [2].[2x5]->[5]
-                    //    [1x2].[2x5]->[1x5]
-                    return dot2d2d(lhs, rhs);
+                    return dot1d2d(lhs, rhs);
 
                 default:
                     // lhs_order == 1 && rhs_order != 2
@@ -99,9 +95,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type dot1d1d(
                 operand_type& lhs, operand_type& rhs) const
             {
+                if (lhs.size() != rhs.size())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::dot1d1d",
+                        "the operands have incompatible number of dimensions");
+                }
+
                 // lhs.dimension(0) == rhs.dimension(0)
                 lhs.scalar(blaze::dot(lhs.vector(), rhs.vector()));
 
+                return std::move(lhs);
+            }
+
+            primitive_result_type dot1d2d(
+                operand_type& lhs, operand_type& rhs) const
+            {
+                if (lhs.size() != rhs.dimension(0))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "dot_operation::dot1d2d",
+                        "the operands have incompatible number of dimensions");
+                }
+
+                lhs.vector() =
+                    blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
                 return std::move(lhs);
             }
 
@@ -131,7 +149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type dot2d1d(
                 operand_type& lhs, operand_type& rhs) const
             {
-                if (lhs.dimension(1) != rhs.dimension(0))
+                if (lhs.dimension(1) != rhs.size())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::dot2d1d",
