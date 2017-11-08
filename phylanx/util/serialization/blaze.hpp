@@ -16,12 +16,13 @@ namespace hpx { namespace serialization
 {
     template <typename T>
     void load(input_archive& archive,
-        blaze::DynamicVector<T, blaze::columnVector>& mat,
+        blaze::DynamicVector<T, blaze::columnVector>& target,
         unsigned)
     {
         // De-serialize Header
         std::size_t count_ = 0UL;
         archive >> count_;
+        target = blaze::DynamicVector<T, blaze::columnVector>(count_);
 
         // DeserializeVector
         T value{};
@@ -29,14 +30,14 @@ namespace hpx { namespace serialization
         // NOTE: I've assumed archive >> value always returns something
         while (j != count_) {
             archive >> value;
-            mat[j] = value;
+            target[j] = value;
             ++j;
         }
     }
 
     template <typename T>
     void load(input_archive& archive,
-        blaze::DynamicMatrix<T>& mat,
+        blaze::DynamicMatrix<T>& target,
         unsigned)
     {
         // DeserializeHeader
@@ -44,7 +45,7 @@ namespace hpx { namespace serialization
         std::size_t columns_ = 0UL;
 
         archive >> rows_ >> columns_;
-        mat = blaze::DynamicMatrix<T>(rows_, columns_);
+        target = blaze::DynamicMatrix<T>(rows_, columns_);
 
         // DeserializeMatrix
         T value{};
@@ -54,7 +55,7 @@ namespace hpx { namespace serialization
             // NOTE: I've assumed archive >> value always returns something
             while (j != columns_) {
                 archive >> value;
-                mat(i, j) = value;
+                target(i, j) = value;
                 ++j;
             }
         }
@@ -62,33 +63,33 @@ namespace hpx { namespace serialization
 
     template <typename T>
     void save(output_archive& archive,
-        blaze::DynamicVector<T, blaze::columnVector> const& v,
+        blaze::DynamicVector<T, blaze::columnVector> const& target,
         unsigned)
     {
         // SerializeVector
-        archive << v.size();
+        archive << target.size();
 
         // SerializeVector
-        for (std::size_t j = 0UL; j < v.size(); ++j)
+        for (std::size_t j = 0UL; j < target.size(); ++j)
         {
-            archive << v[j];
+            archive << target[j];
         }
     }
 
     template <typename T>
     void save(output_archive& archive,
-        blaze::DynamicMatrix<T> const& mat,
+        blaze::DynamicMatrix<T> const& target,
         unsigned)
     {
         // Serialize header
-        archive << mat.rows() << mat.columns();
+        archive << target.rows() << target.columns();
 
         // SerializeMatrix
-        for (std::size_t i = 0UL; i < mat.rows(); ++i)
+        for (std::size_t i = 0UL; i < target.rows(); ++i)
         {
-            for (std::size_t j = 0UL; j < mat.columns(); ++j)
+            for (std::size_t j = 0UL; j < target.columns(); ++j)
             {
-                archive << mat(i, j);
+                archive << target(i, j);
             }
         }
     }

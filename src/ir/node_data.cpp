@@ -76,11 +76,13 @@ namespace phylanx { namespace ir
         switch (dims)
         {
         case 0:
-            HPX_FALLTHROUGH;
+            return scalar() != 0;
+
         case 1:
-            HPX_FALLTHROUGH;
+            return !blaze::isZero(vector());
+
         case 2:
-            return matrix().nonZeros() > 0;
+            return !blaze::isZero(matrix());
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
