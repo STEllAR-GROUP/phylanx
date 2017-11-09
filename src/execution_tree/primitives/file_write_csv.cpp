@@ -68,15 +68,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::numeric_limits<long double>::digits10 + 1);
                 outfile << std::scientific;
 
-                blaze::DynamicMatrix<double> const& matrix = val.matrix();
-                for (std::size_t i = 0UL; i != matrix.rows(); ++i)
+                switch (val.num_dimensions())
                 {
-                    outfile << matrix(i, 0);
-                    for (std::size_t j = 1UL; j != matrix.columns(); ++j)
+                case 0:
+                    outfile << val.scalar() << '\n';
+                    break;
+
+                case 1:
                     {
-                        outfile << ',' << matrix(i, j);
+                        blaze::DynamicVector<double> const& v = val.vector();
+                        for (std::size_t i = 0UL; i != v.size(); ++i)
+                        {
+                            if (i != 0)
+                            {
+                                outfile << ',';
+                            }
+                            outfile << v[i];
+                        }
+                        outfile << '\n';
                     }
-                    outfile << '\n';
+                    break;
+
+                case 2:
+                    {
+                        blaze::DynamicMatrix<double> const& matrix = val.matrix();
+                        for (std::size_t i = 0UL; i != matrix.rows(); ++i)
+                        {
+                            outfile << matrix(i, 0);
+                            for (std::size_t j = 1UL; j != matrix.columns(); ++j)
+                            {
+                                outfile << ',' << matrix(i, j);
+                            }
+                            outfile << '\n';
+                        }
+                    }
+                    break;
                 }
             }
 

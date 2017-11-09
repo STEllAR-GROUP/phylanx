@@ -125,6 +125,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
+        if (n_rows == 1)
+        {
+            if (n_cols == 1)
+            {
+                // scalar value
+                return hpx::make_ready_future(primitive_result_type{
+                    ir::node_data<double>{matrix_array[0]}});
+            }
+
+            // vector
+            blaze::DynamicVector<double> vector(
+                n_cols, matrix_array.data());
+
+            return hpx::make_ready_future(primitive_result_type{
+                ir::node_data<double>{std::move(vector)}});
+        }
+
+        // matrix
         blaze::DynamicMatrix<double> matrix(
             n_rows, n_cols, matrix_array.data());
 
