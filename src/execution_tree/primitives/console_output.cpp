@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     console_output::console_output(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     namespace detail
@@ -93,7 +93,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::console_output>()->eval(args, noargs);
         }
 
