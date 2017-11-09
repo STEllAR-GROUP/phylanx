@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch(rhs_dims)
                 {
                 case 0:
-                    return lhs[0] < rhs[0];
+                    return lhs.scalar() < rhs.scalar();
 
                 case 1: HPX_FALLTHROUGH;
                 case 2: HPX_FALLTHROUGH;
@@ -80,11 +80,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                lhs.matrix() = blaze::map(
-                    lhs.matrix(), rhs.matrix(),
+                lhs = blaze::map(lhs.vector(), rhs.vector(),
                     [](double x1, double x2) { return x1 < x2 ? 1.0 : 0.0; });
 
-                return lhs.matrix().nonZeros() > 0;
+                return lhs.vector().nonZeros() > 0;
             }
 
             bool less1d(operand_type&& lhs, operand_type&& rhs) const
@@ -116,8 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                lhs.matrix() = blaze::map(
-                    lhs.matrix(), rhs.matrix(),
+                lhs = blaze::map(lhs.matrix(), rhs.matrix(),
                     [](double x1, double x2) { return x1 < x2 ? 1.0 : 0.0; });
 
                 return lhs.matrix().nonZeros() > 0;
@@ -159,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::less_all",
                         "left hand side operand has unsupported number of "
-                        "dimensions");
+                            "dimensions");
                 }
             }
 

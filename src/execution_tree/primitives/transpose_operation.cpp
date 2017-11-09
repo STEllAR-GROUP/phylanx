@@ -81,9 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->transpose0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
                         case 2:
-                            return this_->transposexd(std::move(ops));
+                            return this_->transpose2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -105,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(ops[0]);       // no-op
             }
 
-            primitive_result_type transposexd(operands_type && ops) const
+            primitive_result_type transpose2d(operands_type && ops) const
             {
                 blaze::transpose(ops[0].matrix());
                 return std::move(ops[0]);

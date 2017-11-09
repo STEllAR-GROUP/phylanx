@@ -35,7 +35,7 @@ void test_square_root_operation_0d()
 
 void test_square_root_operation_1d()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{
+    blaze::DynamicVector<double> v1{
         17.99, 20.57, 19.69, 11.42, 20.29, 12.45, 18.25, 13.71};
 
     phylanx::execution_tree::primitive lhs =
@@ -51,7 +51,7 @@ void test_square_root_operation_1d()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         square_root.eval();
-    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::sqrt(v1);
+    blaze::DynamicVector<double> expected = blaze::sqrt(v1);
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));

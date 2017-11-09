@@ -51,8 +51,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         protected:
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
-            using data_type = blaze::DynamicMatrix<double>;
-            using vector_type = blaze::DynamicVector<double, blaze::rowVector>;
 
             primitive_result_type cross1d(
                 operand_type& lhs, operand_type& rhs) const
@@ -75,10 +73,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type cross1d1d(operand_type& lhs, operand_type& rhs) const
             {
-                std::size_t lhs_vector_dims = lhs.dimension(1);
-                std::size_t rhs_vector_dims = rhs.dimension(1);
+                std::size_t lhs_vector_dims = lhs.size();
+                std::size_t rhs_vector_dims = rhs.size();
 
-                if (lhs_vector_dims < 2UL || rhs_vector_dims < 2UL)
+                if (lhs_vector_dims < 2ul || rhs_vector_dims < 2ul)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "cross_operation::cross1d1d",
@@ -86,26 +84,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // lhs vector has 2 elements
-                if (lhs_vector_dims < 3UL)
+                if (lhs_vector_dims < 3ul)
                 {
-                    lhs.matrix().resize(1UL, 3UL);
-                    lhs.matrix()(0UL, 2UL) = 0.0;
+                    lhs.vector().resize(3ul);
+                    lhs[2ul] = 0.0;
                 }
 
                 // Only rhs has 2 elements
-                if (rhs_vector_dims < 3UL)
+                if (rhs_vector_dims < 3ul)
                 {
-                    blaze::row(lhs.matrix(), 0UL) = blaze::cross(
-                        blaze::row(lhs.matrix(), 0UL),
-                        get_3d_vector_from_2d(rhs.matrix(), 0UL));
+                    rhs.vector().resize(3ul);
+                    rhs[2ul] = 0.0;
                 }
-                else
-                {
-                    // Both vectors have 3 elements
-                    blaze::row(lhs.matrix(), 0UL) = blaze::cross(
-                        blaze::row(lhs.matrix(), 0UL),
-                        blaze::row(rhs.matrix(), 0UL));
-                }
+                // Both vectors have 3 elements
+                lhs.vector() %= rhs.vector();
 
                 return std::move(lhs);
             }
@@ -113,51 +105,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type cross1d2d(
                 operand_type& lhs, operand_type& rhs) const
             {
-                std::size_t lhs_vector_dims = lhs.dimension(1);
-                std::size_t rhs_vector_dims = rhs.dimension(1);
-
-                if (lhs_vector_dims < 2UL || rhs_vector_dims < 2UL)
+                if (lhs.size() == 2ul)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "cross_operation::cross1d1d",
-                        "operands have an invalid number of columns");
+                    lhs.vector().resize(3ul);
+                    lhs[2ul] = 0.0;
                 }
 
-                // rhs vector has 2 elements
-                if (rhs_vector_dims < 3UL)
+                // lhs has to have 3 elements
+                if (lhs.size() == 3ul)
                 {
-                    rhs.matrix().resize(rhs.matrix().rows(), 3UL);
-                    blaze::column(rhs.matrix(), 2UL) = 0.0;
-                }
-
-                // Only lhs has 2 elements
-                if (lhs_vector_dims < 3UL)
-                {
-                    auto left_op = get_3d_vector_from_2d(lhs.matrix(), 0UL);
-                    for (std::size_t i = 0UL; i != rhs.matrix().rows(); ++i)
+                    // rhs has 2 columns per vector
+                    if (rhs.dimension(1) == 2ul)
                     {
-                        blaze::row(rhs.matrix(), i) = blaze::cross(
-                            left_op,
-                            blaze::row(rhs.matrix(), i));
+                        rhs.matrix().resize(rhs.dimension(0), 3ul);
+                        blaze::column(rhs.matrix(), 2ul) = 0.0;
                     }
-                }
-                // Both vectors have 3 elements
-                else
-                {
-                    for (std::size_t i = 0UL; i != rhs.matrix().rows(); ++i)
+
+                    for (std::size_t i = 0ul; i < rhs.dimension(0); ++i)
                     {
-                        blaze::row(rhs.matrix(), i) = blaze::cross(
-                            blaze::row(lhs.matrix(), 0UL),
-                            blaze::row(rhs.matrix(), i));
+                        blaze::DynamicVector<double> rhs_op_vec{
+                            rhs[{i, 0ul}], rhs[{i, 1ul}], rhs[{i, 2ul}]};
+
+                        auto i_vector = lhs.vector() % rhs_op_vec;
+
+                        rhs[{i, 0ul}] = i_vector[0ul];
+                        rhs[{i, 1ul}] = i_vector[1ul];
+                        rhs[{i, 2ul}] = i_vector[2ul];
                     }
+
+                    return std::move(rhs);
                 }
 
-                return std::move(rhs);
-            }
-
-            vector_type get_3d_vector_from_2d(data_type &m, std::size_t idx) const
-            {
-                return vector_type{ m(0UL, 0UL), m(0UL, 1UL), 0.0 };
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "cross_operation::cross1d2d",
+                    "operand vectors have an invalid number of elements");
             }
 
             primitive_result_type cross2d(
@@ -182,60 +163,99 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type cross2d1d(
                 operand_type& lhs, operand_type& rhs) const
             {
-                std::size_t lhs_vector_dims = lhs.dimension(1);
-                std::size_t rhs_vector_dims = rhs.dimension(1);
-
-                if (lhs_vector_dims < 2UL || rhs_vector_dims < 2UL)
+                if (rhs.size() == 2ul)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "cross_operation::cross1d1d",
-                        "operands have an invalid number of columns");
+                    rhs.vector().resize(3ul);
+                    rhs[2ul] = 0.0;
                 }
 
-                // lhs vector has 2 elements
-                if (lhs_vector_dims < 3UL)
+                // rhs has to have 3 elements
+                if (rhs.size() == 3ul)
                 {
-                    lhs.matrix().resize(lhs.matrix().rows(), 3UL);
-                    blaze::column(lhs.matrix(), 2UL) = 0.0;
-                }
-
-                // Only rhs has 2 elements
-                if (rhs_vector_dims < 3UL)
-                {
-                    auto right_op = get_3d_vector_from_2d(rhs.matrix(), 0UL);
-                    for (std::size_t i = 0UL; i != lhs.matrix().rows(); ++i)
+                    // lhs has 2 columns per vector
+                    if (lhs.dimension(1) == 2ul)
                     {
+                        lhs.matrix().resize(lhs.dimension(0), 3ul);
+                        blaze::column(lhs.matrix(), 2ul) = 0.0;
+                    }
+
+                    for (std::size_t i = 0ul; i < lhs.dimension(0); ++i)
+                    {
+                        blaze::DynamicMatrix<double> rhs_op_mat{{
+                                rhs[0ul], rhs[1ul], rhs[2ul]}};
+
                         blaze::row(lhs.matrix(), i) = blaze::cross(
                             blaze::row(lhs.matrix(), i),
-                            right_op);
+                            blaze::row(rhs_op_mat, 0ul));
                     }
-                }
-                else
-                {
-                    // Both vectors have 3 elements
-                    for (std::size_t i = 0UL; i != lhs.matrix().rows(); ++i)
-                    {
-                        blaze::row(lhs.matrix(), i) = blaze::cross(
-                            blaze::row(lhs.matrix(), i),
-                            blaze::row(rhs.matrix(), 0UL));
-                    }
+
+                    return std::move(lhs);
                 }
 
-                return std::move(lhs);
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "cross_operation::cross2d1d",
+                    "operand vectors have an invalid number of elements");
             }
 
             primitive_result_type cross2d2d(
                 operand_type& lhs, operand_type& rhs) const
             {
-                for (std::size_t idx_row = 0; idx_row != lhs.dimension(0);
-                     ++idx_row)
+                // Both matrices have to have the same number of rows
+                if (lhs.dimension(0) != rhs.dimension(0))
                 {
-                    blaze::row(lhs.matrix(), idx_row) = blaze::cross(
-                        blaze::row(lhs.matrix(), idx_row),
-                        blaze::row(rhs.matrix(), idx_row));
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "cross_operation::cross2d",
+                        "operands have non-matching number of rows");
                 }
 
-                return std::move(lhs);
+                // If both have 2 elements per vector
+                if (lhs.dimension(1) == 2ul)
+                {
+                    // If rhs has 2 elements per vector
+                    if (rhs.dimension(1) == 2ul)
+                    {
+                        for (std::size_t idx_row = 0; idx_row != lhs.dimension(0);
+                            ++idx_row)
+                        {
+                            blaze::row(lhs.matrix(), idx_row) = blaze::cross(
+                                blaze::row(lhs.matrix(), idx_row),
+                                blaze::row(rhs.matrix(), idx_row));
+                        }
+
+                        return std::move(lhs);
+                    }
+
+                    // If only lhs has 2 elements per vector
+                    else
+                    {
+                        lhs.matrix().resize(lhs.dimension(0), 3ul);
+                        blaze::column(lhs.matrix(), 2ul) = 0.0;
+                    }
+                }
+                // If lhs has 3 elements per vector
+                if (lhs.dimension(1) == 3ul)
+                {
+                    // If rhs has 2 elements per vector
+                    if (rhs.dimension(1) == 2ul)
+                    {
+                        rhs.matrix().resize(rhs.dimension(0), 3ul);
+                        blaze::column(rhs.matrix(), 2ul) = 0.0;
+                    }
+                    // Both have 3 elements per vector
+                    for (std::size_t idx_row = 0; idx_row != lhs.dimension(0);
+                        ++idx_row)
+                    {
+                        blaze::row(lhs.matrix(), idx_row) = blaze::cross(
+                            blaze::row(lhs.matrix(), idx_row),
+                            blaze::row(rhs.matrix(), idx_row));
+                    }
+
+                    return std::move(lhs);
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "cross_operation::cross2d2d",
+                    "operand vectors have an invalid number of elements");
             }
 
         public:

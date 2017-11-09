@@ -81,8 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type constant1d(
                 operand_type&& op, std::size_t dim) const
             {
-                using vector_type = blaze::DynamicMatrix<double>;
-                return operand_type{vector_type{1UL, dim, op[0]}};
+                using vector_type = blaze::DynamicVector<double>;
+                return operand_type{vector_type(dim, op[0])};
             }
 
             primitive_result_type constant2d(operand_type&& op,

@@ -56,36 +56,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         protected:
             ir::node_data<double> exponential0d(operands_type&& ops) const
             {
-                ops[0][0] = std::exp(ops[0][0]);
+                ops[0].scalar(std::exp(ops[0].scalar()));
                 return std::move(ops[0]);
             }
 
             ir::node_data<double> exponential1d(operands_type&& ops) const
             {
-//                 auto const& val = ops[0].matrix();
-//                 if (val.rows() != val.columns())
-//                 {
-//                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-//                         "exponential_operation::exponential1d",
-//                         "matrix exponentiation requires quadratic matrices");
-//                 }
+                using vector_type = blaze::DynamicVector<double>;
 
-                using matrix_type = blaze::DynamicMatrix<double>;
-
-                matrix_type result = blaze::exp(ops[0].matrix());
+                vector_type result = blaze::exp(ops[0].vector());
                 return ir::node_data<double>(std::move(result));
             }
 
             ir::node_data<double> exponentialxd(operands_type&& ops) const
             {
-//                 auto const& val = ops[0].matrix();
-//                 if (val.rows() != val.columns())
-//                 {
-//                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-//                         "exponential_operation::exponential1d",
-//                         "matrix exponentiation requires quadratic matrices");
-//                 }
-
                 using matrix_type = blaze::DynamicMatrix<double>;
 
                 matrix_type result = blaze::exp(ops[0].matrix());
@@ -102,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "exponential_operation::eval",
                         "the exponential_operation primitive requires"
-                        "exactly one operand");
+                            "exactly one operand");
                 }
 
                 if (!valid(operands[0]))
@@ -110,8 +94,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "exponential_operation::eval",
                         "the exponential_operation primitive requires "
-                        "that the arguments given by the operands array"
-                        " is valid");
+                            "that the arguments given by the operands array"
+                            " is valid");
                 }
 
                 auto this_ = this->shared_from_this();

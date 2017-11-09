@@ -17,10 +17,10 @@
 
 void test_vector_cross_product()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{1.0, 2.0, 3.0};
-    blaze::DynamicVector<double, blaze::rowVector> v2{4.0, 5.0, 6.0};
+    blaze::DynamicVector<double> v1{1.0, 2.0, 3.0};
+    blaze::DynamicVector<double> v2{4.0, 5.0, 6.0};
 
-    blaze::DynamicMatrix<double> expected{{-3.0, 6.0, -3.0}};
+    blaze::DynamicVector<double> expected{{-3.0, 6.0, -3.0}};
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -47,10 +47,10 @@ void test_vector_cross_product()
 
 void test_one_vector_with_dimension_2()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{1.0, 2.0};
-    blaze::DynamicVector<double, blaze::rowVector> v2{4.0, 5.0, 6.0};
+    blaze::DynamicVector<double> v1{1.0, 2.0};
+    blaze::DynamicVector<double> v2{4.0, 5.0, 6.0};
 
-    blaze::DynamicMatrix<double> expected{{12.0, -6.0, -3.0}};
+    blaze::DynamicVector<double> expected{12.0, -6.0, -3.0};
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -77,10 +77,10 @@ void test_one_vector_with_dimension_2()
 
 void test_both_vectors_with_dimension_2()
 {
-    blaze::DynamicVector<double, blaze::rowVector> v1{1.0, 2.0};
-    blaze::DynamicVector<double, blaze::rowVector> v2{4.0, 5.0};
+    blaze::DynamicVector<double> v1{1.0, 2.0};
+    blaze::DynamicVector<double> v2{4.0, 5.0};
 
-    blaze::DynamicMatrix<double> expected{{0.0, 0.0, -3.0}};
+    blaze::DynamicVector<double> expected{0.0, 0.0, -3.0};
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -137,7 +137,7 @@ void test_multiple_vector_cross_products()
 
 void test_cross_product_1d2d()
 {
-    blaze::DynamicMatrix<double> v1{{1.0, 2.0}};
+    blaze::DynamicVector<double> v1{1.0, 2.0};
     blaze::DynamicMatrix<double> v2{{4.0, 5.0}, {7.0, 8.0}, {1.0, 2.0}};
 
     blaze::DynamicMatrix<double> expected{
@@ -169,7 +169,7 @@ void test_cross_product_1d2d()
 void test_cross_product_2d1d()
 {
     blaze::DynamicMatrix<double> v1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
-    blaze::DynamicMatrix<double> v2{{4.0, 5.0, 8.0}};
+    blaze::DynamicVector<double> v2{4.0, 5.0, 8.0};
 
     blaze::DynamicMatrix<double> expected{{1.0, 4.0, -3.0}, {10.0, -8.0, 0.0}};
 
@@ -198,7 +198,7 @@ void test_cross_product_2d1d()
 
 void test_cross_product_vector_by_2col_matrix()
 {
-    blaze::DynamicMatrix<double> v1{{1.0, 2.0, 3.0}};
+    blaze::DynamicVector<double> v1{{1.0, 2.0, 3.0}};
     blaze::DynamicMatrix<double> v2{{4.0, 5.0}, {7.0, 8.0}, {1.0, 2.0}};
 
     blaze::DynamicMatrix<double> expected{

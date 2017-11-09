@@ -68,7 +68,7 @@ void test_unary_not_operation_2d()
         unary_not.eval();
 
     HPX_TEST_EQ(
-        m.nonZeros() == 0,
+        blaze::isZero(m),
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 

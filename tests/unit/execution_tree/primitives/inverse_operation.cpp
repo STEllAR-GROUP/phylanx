@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 {
     test_inversion_0d();
     test_inversion_0d_lit();
-    
+
     test_inversion_2d();
 
     return hpx::util::report_errors();
