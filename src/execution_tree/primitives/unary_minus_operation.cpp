@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type neg1d(operands_type&& ops) const
             {
-                ops[0].scalar(-ops[0].scalar());
+                ops[0].vector(-ops[0].vector());
                 return primitive_result_type(std::move(ops[0]));
             }
 

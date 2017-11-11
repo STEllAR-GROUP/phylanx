@@ -72,7 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             hpx::cout << arg;
                         }
-                        hpx::cout << hpx::flush;
+                        hpx::cout << std::endl;
 
                         return primitive_result_type(std::move(args.back()));
                     }),

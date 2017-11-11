@@ -62,8 +62,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return mul0d0d(std::move(ops));
+
                 case 1:
                     return mul0d1d(std::move(ops));
+
                 case 2:
                     return mul0d2d(std::move(ops));
 
@@ -140,8 +142,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return mul1d0d(std::move(ops));
+
                 case 1:
                     return mul1d1d(std::move(ops));
+
                 case 2:
                     return mul1d2d(std::move(ops));
 
@@ -177,11 +181,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         ops[0].vector() *= ops[1].vector();
                         return std::move(ops[0]);
                     }
-                
+
                     ops[0].vector() *= ops[1].vector();
                     return primitive_result_type{std::move(ops[0])};
                 }
-                
+
                 return primitive_result_type{std::accumulate(
                     ops.begin() + 1, ops.end(), std::move(ops[0]),
                     [](operand_type& result, operand_type const& curr)
@@ -221,8 +225,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return mul2d0d(std::move(ops));
+
                 case 1:
                     return mul2d1d(std::move(ops));
+
                 case 2:
                     return mul2d2d(std::move(ops));
 
@@ -332,6 +338,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                         case 1:
                             return this_->mul1d(std::move(ops));
+
                         case 2:
                             return this_->mul2d(std::move(ops));
 
