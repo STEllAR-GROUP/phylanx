@@ -35,8 +35,7 @@ macro(phylanx_setup_hpx)
     # make sure that HPX is not configured with jemalloc 
     if(${HPX_WITH_MALLOC} STREQUAL "jemalloc")
         phylanx_warn(
-          "HPX is configured with: ${HPX_WITH_MALLOC}. Phylanx will fail for some tests."
-          "Please use TCMALLOC to configure HPX.")
+          "HPX is configured with: ${HPX_WITH_MALLOC}. Due to incompatibilities between the Python runtime and jemalloc, application execution will fail unless the jemalloc library is preloaded with LD_PRELOAD. For more reliable execution, we recommend reconfiguring HPX and Phylanx with TCMalloc")
     endif()
 
   else()
