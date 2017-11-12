@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     random::random(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -109,16 +109,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type random0d(operands_type && ops) const
             {
-                return std::move(ops[0]);       // no-op
+                blaze::Rand<double> gen{};
+                return operand_type{gen.generate()};
             }
 
             primitive_result_type random1d(operands_type && ops) const
             {
-                std::size_t dim = ops[0].dimension(1);
+                std::size_t dim = ops[0].dimension(0);
 
-                blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+                blaze::Rand<blaze::DynamicVector<double>> gen{};
 
-                return operand_type(gen.generate(1UL, dim));
+                return operand_type{gen.generate(dim)};
             }
 
             primitive_result_type random2d(operands_type && ops) const
@@ -127,7 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 
-                return operand_type(gen.generate(dim[0], dim[1]));
+                return operand_type{gen.generate(dim[0], dim[1])};
             }
         };
     }
@@ -137,7 +138,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::random>()->eval(args, noargs);
         }
 

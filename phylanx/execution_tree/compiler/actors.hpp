@@ -83,11 +83,21 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         result_type call(arguments_type && args) const
         {
-            return value_operand_sync(arg_, std::move(args));
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                return p->eval_direct(std::move(args));
+            }
+            return arg_;
         }
         hpx::future<result_type> eval(arguments_type && args) const
         {
-            return value_operand(arg_, std::move(args));
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                return p->eval(std::move(args));
+            }
+            return hpx::make_ready_future(arg_);
         }
 
         void set_name(std::string && name)

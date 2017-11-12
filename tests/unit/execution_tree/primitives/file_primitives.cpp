@@ -98,11 +98,11 @@ void test_file_io(phylanx::ir::node_data<double> const& in)
 
 int main(int argc, char* argv[])
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
 
     test_file_io(phylanx::ir::node_data<double>(42.0));
 
-    blaze::DynamicVector<double, blaze::rowVector> ev = gen.generate(1007UL);
+    blaze::DynamicVector<double> ev = gen.generate(1007UL);
     test_file_io(phylanx::ir::node_data<double>(std::move(ev)));
 
     std::vector<double> v(1007);

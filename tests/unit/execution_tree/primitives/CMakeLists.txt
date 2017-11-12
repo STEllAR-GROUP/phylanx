@@ -7,11 +7,13 @@ set(tests
     add_operation
     and_operation
     block_operation
+    column_slicing
     constant
     define_operation
     determinant
     div_operation
     dot_operation
+    cross_operation
     equal_operation
     exponential_operation
     extract_shape
@@ -30,8 +32,11 @@ set(tests
     not_equal_operation
     or_operation
     parallel_block_operation
+    power_operation
     random
+    row_slicing
     slicing_operation
+    square_root_operation
     store_operation
     sub_operation
     transpose_operation

@@ -16,6 +16,7 @@
 #include <hpx/include/util.hpp>
 
 #include <initializer_list>
+#include <iosfwd>
 #include <map>
 #include <string>
 #include <utility>
@@ -69,6 +70,10 @@ namespace phylanx { namespace execution_tree
 
         hpx::future<void> store(primitive_argument_type const&);
         void store(hpx::launch::sync_policy, primitive_argument_type const&);
+
+        hpx::future<bool> bind(std::vector<primitive_argument_type> const&);
+        bool bind(hpx::launch::sync_policy,
+            std::vector<primitive_argument_type> const&);
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -84,6 +89,14 @@ namespace phylanx { namespace execution_tree
           , phylanx::util::recursive_wrapper<std::vector<primitive_argument_type>>
         >;
 
+    struct primitive_argument_type;
+    using primitive_result_type = primitive_argument_type;
+
+
+    PHYLANX_EXPORT primitive_result_type value_operand_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args);
+
     struct primitive_argument_type : argument_value_type
     {
         // poor man's forwarding constructor
@@ -91,9 +104,18 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type(Ts &&... ts)
           : argument_value_type{std::forward<Ts>(ts)...}
         {}
-    };
 
-    using primitive_result_type = primitive_argument_type;
+        primitive_result_type operator()() const
+        {
+            return value_operand_sync(*this, {});
+        }
+
+        primitive_result_type
+        operator()(std::vector<primitive_argument_type> const& args) const
+        {
+            return value_operand_sync(*this, args);
+        }
+    };
 
     // a argument is valid of its not nil{}
     inline bool valid(primitive_argument_type const& val)
@@ -104,6 +126,9 @@ namespace phylanx { namespace execution_tree
     {
         return val.index() != 0;
     }
+
+    PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
+        primitive_argument_type const&);
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -114,6 +139,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         base_primitive() = default;
+
+        base_primitive(std::vector<primitive_argument_type> && operands)
+          : operands_(std::move(operands))
+        {}
+
         virtual ~base_primitive() = default;
 
         hpx::future<primitive_result_type> eval_nonvirtual(
@@ -149,6 +179,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store function should only be called in store_primitive");
         }
 
+        bool bind_nonvirtual(std::vector<primitive_argument_type> const& args)
+        {
+            return bind(args);
+        }
+        virtual bool bind(std::vector<primitive_argument_type> const& args);
+
     public:
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
@@ -156,6 +192,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             base_primitive, eval_direct_nonvirtual, eval_direct_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
+        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
+            base_primitive, bind_nonvirtual, bind_action);
+
+    protected:
+        static std::vector<primitive_argument_type> noargs;
+        std::vector<primitive_argument_type> operands_;
     };
 }}}
 
@@ -169,6 +211,9 @@ HPX_REGISTER_ACTION_DECLARATION(
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::store_action,
     phylanx_primitive_store_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::base_primitive::bind_action,
+    phylanx_primitive_bind_action);
 
 namespace phylanx { namespace execution_tree
 {
@@ -181,7 +226,7 @@ namespace phylanx { namespace execution_tree
     // if it doesn't hold one.
     PHYLANX_EXPORT primitive_result_type extract_value(
         primitive_argument_type const& val);
-    PHYLANX_EXPORT primitive_result_type extract_value(
+    PHYLANX_EXPORT primitive_result_type && extract_value(
         primitive_result_type && val);
 
     // Extract a literal type from a given primitive_argument_type, throw
@@ -239,16 +284,16 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT hpx::future<primitive_result_type> value_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
-    PHYLANX_EXPORT primitive_result_type value_operand_sync(
-        primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args);
+// was declared above
+//     PHYLANX_EXPORT primitive_result_type value_operand_sync(
+//         primitive_argument_type const& val,
+//         std::vector<primitive_argument_type> const& args);
 
     // Extract a primitive_result_type from a primitive_argument_type (that
     // could be a primitive or a literal value).
     PHYLANX_EXPORT hpx::future<primitive_result_type> literal_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
-
     PHYLANX_EXPORT primitive_argument_type literal_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);

@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     constant::constant(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -81,8 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type constant1d(
                 operand_type&& op, std::size_t dim) const
             {
-                using vector_type = blaze::DynamicMatrix<double>;
-                return operand_type{vector_type{1UL, dim, op[0]}};
+                using vector_type = blaze::DynamicVector<double>;
+                return operand_type{vector_type(dim, op[0])};
             }
 
             primitive_result_type constant2d(operand_type&& op,
@@ -180,7 +180,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::constant>()->eval(args, {});
+            return std::make_shared<detail::constant>()->eval(args, noargs);
         }
 
         return std::make_shared<detail::constant>()->eval(operands_, args);

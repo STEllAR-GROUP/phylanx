@@ -10,7 +10,9 @@
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
 
+#include <iosfwd>
 #include <string>
+#include <vector>
 #include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,7 +29,45 @@ HPX_REGISTER_ACTION(base_primitive_type::eval_direct_action,
     phylanx_primitive_eval_direct_action)
 HPX_REGISTER_ACTION(base_primitive_type::store_action,
     phylanx_primitive_store_action)
+HPX_REGISTER_ACTION(base_primitive_type::bind_action,
+    phylanx_primitive_bind_action)
 HPX_DEFINE_GET_COMPONENT_TYPE(base_primitive_type)
+
+///////////////////////////////////////////////////////////////////////////////
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    std::vector<primitive_argument_type> base_primitive::noargs{};
+
+    bool base_primitive::bind(std::vector<primitive_argument_type> const& args)
+    {
+        if (operands_.empty())
+        {
+            return true;
+        }
+
+        // by default simply call bind on all dependents
+        std::vector<hpx::future<bool>> results;
+        results.reserve(operands_.size());
+
+        for (auto& operand : operands_)
+        {
+            primitive* p = util::get_if<primitive>(&operand);
+            if (p != nullptr)
+            {
+                results.push_back(p->bind(args));
+            }
+        }
+
+        hpx::wait_all(results);
+
+        bool result = true;
+        for (auto& r : results)
+        {
+            result = r.get() && result;
+        }
+        return result;
+    }
+}}}
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
@@ -71,42 +111,34 @@ namespace phylanx { namespace execution_tree
         return store(data).get();
     }
 
+    hpx::future<bool> primitive::bind(
+        std::vector<primitive_argument_type> const& args)
+    {
+        using action_type = primitives::base_primitive::bind_action;
+        return hpx::async(action_type(), this->base_type::get_id(), args);
+    }
+
+    bool primitive::bind(hpx::launch::sync_policy,
+        std::vector<primitive_argument_type> const& args)
+    {
+        return bind(args).get();
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type extract_value(primitive_argument_type const& val)
     {
         switch (val.index())
         {
         case 0:     // nil
-            return ast::nil{};
-
         case 1:     // bool
-            return util::get<1>(val);
-
         case 2:     // std::uint64_t
-            return util::get<2>(val);
-
         case 3:     // std::string
-            return util::get<3>(val);
-
         case 4:     // phylanx::ir::node_data<double>
-            return util::get<4>(val);
-
-        case 6:     // std::vector<ast::expression>
-            return util::get<6>(val);
-
-        case 7:     // std::vector<primitive_argument_type>
-            {
-                auto const& v = util::get<7>(val).get();
-                std::vector<primitive_argument_type> result;
-                result.reserve(v.size());
-                for (auto const& elem : v)
-                {
-                    result.push_back(extract_value(elem));
-                }
-                return result;
-            }
-
         case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return val;
+
         default:
             break;
         }
@@ -116,41 +148,20 @@ namespace phylanx { namespace execution_tree
             "primitive_argument_type does not hold a value type");
     }
 
-    primitive_argument_type extract_value(primitive_argument_type&& val)
+    primitive_argument_type && extract_value(primitive_argument_type&& val)
     {
         switch (val.index())
         {
         case 0:     // nil
-            return ast::nil{};
-
         case 1:     // bool
-            return util::get<1>(std::move(val));
-
         case 2:     // std::uint64_t
-            return util::get<2>(std::move(val));
-
         case 3:     // std::string
-            return util::get<3>(std::move(val));
-
         case 4:     // phylanx::ir::node_data<double>
-            return util::get<4>(std::move(val));
-
-        case 6:     // std::vector<ast::expression>
-            return util::get<6>(std::move(val));
-
-        case 7:     // std::vector<primitive_argument_type>
-            {
-                auto && v = util::get<7>(std::move(val)).get();
-                std::vector<primitive_argument_type> result;
-                result.reserve(v.size());
-                for (auto && elem : v)
-                {
-                    result.push_back(extract_value(std::move(elem)));
-                }
-                return result;
-            }
-
         case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return std::move(val);
+
         default:
             break;
         }
@@ -797,6 +808,60 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::to_primitive_value_type",
             "unsupported primitive_argument_type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::ostream& operator<<(std::ostream& os,
+        primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+            return os;  // no output
+
+        case 1:     // bool
+            os << util::get<1>(val);
+            return os;
+
+        case 2:     // std::uint64_t
+            os << util::get<2>(val);
+            return os;
+
+        case 3:     // std::string
+            os << util::get<3>(val);
+            return os;
+
+        case 4:     // phylanx::ir::node_data<double>
+            os << util::get<4>(val);
+            return os;
+
+        case 5:
+            os << value_operand_sync(util::get<5>(val), {});
+            return os;
+
+        case 6:     // std::vector<ast::expression>
+            for (auto const& ast : util::get<6>(val))
+            {
+                os << ast;
+            }
+            return os;
+
+        case 7:     // std::vector<primitive_argument_type>
+            for (auto const& elem : util::get<7>(val).get())
+            {
+                os << elem;
+            }
+            return os;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::operator<<(primitive_argument_type)",
+            "primitive_argument_type does not hold a value type");
+
+        return os;
     }
 }}
 

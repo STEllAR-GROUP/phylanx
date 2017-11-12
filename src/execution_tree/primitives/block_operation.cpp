@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     block_operation::block_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     namespace detail
@@ -60,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return;
 
                 auto this_ = this->shared_from_this();
-                literal_operand(operands_[i], args_).then(
+                value_operand(operands_[i], args_).then(
                     [this_, i](hpx::future<primitive_result_type> && step)
                     {
                         try
@@ -110,7 +110,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::step>(args, noargs)->eval();
         }
 

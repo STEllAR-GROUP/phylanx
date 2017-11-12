@@ -88,9 +88,9 @@ void test_or_operation_0d_lit_true()
 
 void test_or_operation_1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -117,9 +117,9 @@ void test_or_operation_1d()
 
 void test_or_operation_1d_lit()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v1);
 
@@ -138,7 +138,7 @@ void test_or_operation_1d_lit()
         or_.eval();
 
     HPX_TEST_EQ(
-        (v1.nonZeros() > 0) || (v2.nonZeros() > 0),
+        (!blaze::isZero(v1) || !blaze::isZero(v2)),
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
@@ -167,7 +167,7 @@ void test_or_operation_2d()
         or_.eval();
 
     HPX_TEST_EQ(
-        (m1.nonZeros() > 0) || (m2.nonZeros() > 0),
+        (!blaze::isZero(m1) || !blaze::isZero(m2)),
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
@@ -194,7 +194,7 @@ void test_or_operation_2d_lit()
         or_.eval();
 
     HPX_TEST_EQ(
-        (m1.nonZeros() > 0) || (m2.nonZeros() > 0),
+        (!blaze::isZero(m1) || !blaze::isZero(m2)),
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 

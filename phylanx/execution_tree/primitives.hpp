@@ -10,8 +10,13 @@
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
+#include <phylanx/execution_tree/primitives/column_slicing.hpp>
+#include <phylanx/execution_tree/primitives/console_output.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
-#include <phylanx/execution_tree/primitives/define.hpp>
+#include <phylanx/execution_tree/primitives/cross_operation.hpp>
+#include <phylanx/execution_tree/primitives/define_function.hpp>
+#include <phylanx/execution_tree/primitives/define_variable.hpp>
+
 #include <phylanx/execution_tree/primitives/determinant.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>
@@ -33,8 +38,11 @@
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
 #include <phylanx/execution_tree/primitives/parallel_block_operation.hpp>
+#include <phylanx/execution_tree/primitives/power_operation.hpp>
 #include <phylanx/execution_tree/primitives/random.hpp>
+#include <phylanx/execution_tree/primitives/row_slicing.hpp>
 #include <phylanx/execution_tree/primitives/slicing_operation.hpp>
+#include <phylanx/execution_tree/primitives/square_root_operation.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/execution_tree/primitives/transpose_operation.hpp>
@@ -42,6 +50,6 @@
 #include <phylanx/execution_tree/primitives/unary_not_operation.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/execution_tree/primitives/while_operation.hpp>
-#include <phylanx/execution_tree/primitives/wrapped_primitive.hpp>
+#include <phylanx/execution_tree/primitives/wrapped_function.hpp>
 
 #endif

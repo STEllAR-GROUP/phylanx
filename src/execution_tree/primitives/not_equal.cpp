@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     not_equal::not_equal(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch(rhs_dims)
                 {
                 case 0:
-                    return lhs[0] != rhs[0];
+                    return lhs.scalar() != rhs.scalar();
 
                 case 1: HPX_FALLTHROUGH;
                 case 2: HPX_FALLTHROUGH;
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                return lhs.matrix() != rhs.matrix();
+                return lhs.vector() != rhs.vector();
             }
 
             bool not_equal1d(operand_type&& lhs, operand_type&& rhs) const
@@ -151,7 +151,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "not_equal::not_equal_all",
                         "left hand side operand has unsupported number of "
-                        "dimensions");
+                            "dimensions");
                 }
             }
 
@@ -256,7 +256,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::not_equal>()->eval(args, noargs);
         }
 

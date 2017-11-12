@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     inverse_operation::inverse_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -81,9 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->inverse0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
                         case 2:
-                            return this_->inversexd(std::move(ops));
+                            return this_->inverse2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -102,12 +101,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type inverse0d(operands_type && ops) const
             {
-                ops[0][0] = 1 / ops[0][0];
+                ops[0].scalar() = 1 / ops[0].scalar();
                 return std::move(ops[0]);
             }
 
-            primitive_result_type inversexd(operands_type && ops) const
+            primitive_result_type inverse2d(operands_type && ops) const
             {
+                if (ops[0].dimension(0) != ops[0].dimension(1))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "inverse::inverse2d",
+                        "matrices to inverse have to be quadratic");
+                }
+
                 using matrix_type = blaze::DynamicMatrix<double>;
 
                 blaze::invert(ops[0].matrix());
@@ -121,7 +127,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::inverse>()->eval(args, noargs);
         }
 

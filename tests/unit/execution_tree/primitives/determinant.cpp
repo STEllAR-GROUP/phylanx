@@ -70,8 +70,9 @@ void test_determinant_2d()
         determinant.eval();
 
     double expected = blaze::det(m);
-    HPX_TEST_EQ(
-        expected, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+    double result =
+        phylanx::execution_tree::extract_numeric_value(f.get()).scalar();
+    HPX_TEST(expected - result < 1e-6);
 }
 
 int main(int argc, char* argv[])

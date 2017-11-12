@@ -58,8 +58,8 @@ void test_div_operation_0d_lit()
 
 void test_div_operation_0d1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -77,7 +77,7 @@ void test_div_operation_0d1d()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected =
+    blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return 42.0 / x; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -86,8 +86,8 @@ void test_div_operation_0d1d()
 
 void test_div_operation_0d1d_lit()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(42.0);
 
@@ -103,7 +103,7 @@ void test_div_operation_0d1d_lit()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected =
+    blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return 42.0 / x; });
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -112,7 +112,7 @@ void test_div_operation_0d1d_lit()
 void test_div_operation_0d2d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<double, blaze::rowVector> m =
+    blaze::DynamicMatrix<double> m =
         gen.generate(101UL, 101UL);
 
     phylanx::execution_tree::primitive lhs =
@@ -164,8 +164,8 @@ void test_div_operation_0d2d_lit()
 
 void test_div_operation_1d0d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -183,7 +183,7 @@ void test_div_operation_1d0d()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected =
+    blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return x / 6.0; });
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -191,8 +191,8 @@ void test_div_operation_1d0d()
 
 void test_div_operation_1d0d_lit()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v);
 
@@ -208,7 +208,7 @@ void test_div_operation_1d0d_lit()
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f = div.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected =
+    blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return x / 6.0; });
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -217,7 +217,7 @@ void test_div_operation_1d0d_lit()
 void test_div_operation_2d0d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<double, blaze::rowVector> m = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(

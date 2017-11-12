@@ -21,6 +21,7 @@ void test_define_operation_var(
     std::size_t num_entries = env.size();
 
     auto f = phylanx::execution_tree::compile(expr, snippets, env);
+    f();        // bind expressions
 
     HPX_TEST_EQ(env.size(), num_entries + 1);
 
@@ -28,10 +29,12 @@ void test_define_operation_var(
     auto p = env.find(name);
     HPX_TEST(p != nullptr);
 
+    auto var = (*p)(phylanx::execution_tree::compiler::function_list{});
+
     // evaluate expression
     HPX_TEST_EQ(expected,
         phylanx::execution_tree::extract_numeric_value(
-            f()
+            var()
         )[0]);
 }
 
@@ -45,11 +48,14 @@ void test_define_operation(char const* expr, char const* name, double expected,
     std::size_t num_entries = env.size();
 
     auto f = phylanx::execution_tree::compile(expr, snippets, env);
+    f();        // bind expressions
 
     HPX_TEST_EQ(env.size(), num_entries + 1);
 
     auto p = env.find(name);
     HPX_TEST(p != nullptr);
+
+    auto var = (*p)(phylanx::execution_tree::compiler::function_list{});
 
     // evaluate expression
     std::vector<phylanx::execution_tree::primitive_argument_type> values;
@@ -57,9 +63,10 @@ void test_define_operation(char const* expr, char const* name, double expected,
     {
         values.push_back(phylanx::ir::node_data<double>{d});
     }
+
     HPX_TEST_EQ(expected,
         phylanx::execution_tree::extract_numeric_value(
-            f(std::move(values))
+            var(std::move(values))
         )[0]);
 }
 

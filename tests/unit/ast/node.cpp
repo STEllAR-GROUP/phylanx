@@ -40,8 +40,8 @@ void test_primary_expr()
         phylanx::ast::identifier("some_name"));
     test_serialization(p2);
 
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
     phylanx::ast::primary_expr p3{
         phylanx::ir::node_data<double>{v}};
     test_serialization(p3);

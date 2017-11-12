@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     unary_minus_operation::unary_minus_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -58,13 +58,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type neg0d(operands_type&& ops) const
             {
-                ops[0][0] = -ops[0][0];
+                ops[0].scalar() = -ops[0].scalar();
                 return primitive_result_type(std::move(ops[0]));
             }
 
-            primitive_result_type negxd(operands_type&& ops) const
+            primitive_result_type neg1d(operands_type&& ops) const
             {
-                ops[0].matrix() = -ops[0].matrix();
+                ops[0].vector(-ops[0].vector());
+                return primitive_result_type(std::move(ops[0]));
+            }
+
+            primitive_result_type neg2d(operands_type&& ops) const
+            {
+                ops[0].matrix(-ops[0].matrix());
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -99,9 +105,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->neg0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
+                        case 1:
+                            return this_->neg1d(std::move(ops));
+
                         case 2:
-                            return this_->negxd(std::move(ops));
+                            return this_->neg2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -121,7 +129,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::unary_minus>()->eval(args, noargs);
         }
 

@@ -39,8 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     sub_operation::sub_operation(
-        std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+            std::vector<primitive_argument_type>&& operands)
+      : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs[0] -= rhs[0];
+                    lhs.scalar() -= rhs.scalar();
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -70,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](operand_type& result, operand_type const& curr)
                     ->  operand_type
                     {
-                        result[0] -= curr[0];
+                        result.scalar() -= curr.scalar();
                         return std::move(result);
                     }));
             }
@@ -85,8 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(ops[1].matrix(),
-                    [&](double x) { return ops[0][0] - x; });
+                ops[1].vector() = blaze::map(ops[1].vector(),
+                    [&](double x) { return ops[0].scalar() - x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[1].matrix() = blaze::map(ops[1].matrix(),
-                    [&](double x) { return ops[0][0] - x; });
+                    [&](double x) { return ops[0].scalar() - x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -137,8 +137,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(ops[0].matrix(),
-                    [&](double x) { return x - ops[1][0]; });
+                ops[0].vector() = blaze::map(ops[0].vector(),
+                    [&](double x) { return x - ops[1].scalar(); });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -147,10 +147,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                std::size_t lhs_size = lhs.dimension(0);
-                std::size_t rhs_size = rhs.dimension(0);
-
-                if (lhs_size != rhs_size)
+                if (lhs.size() != rhs.size())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub1d1d",
@@ -159,7 +156,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix() -= rhs.matrix();
+                    lhs.vector() -= rhs.vector();
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -168,7 +165,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ops.begin() + 1, ops.end(), std::move(first_term),
                     [](operand_type& result,
                         operand_type const& curr) -> operand_type {
-                        result.matrix() -= curr.matrix();
+                        result.vector() -= curr.vector();
                         return std::move(result);
                     }));
             }
@@ -205,7 +202,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[0].matrix() = blaze::map(ops[0].matrix(),
-                    [&](double x) { return x - ops[1][0]; });
+                    [&](double x) { return x - ops[1].scalar(); });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -323,7 +320,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::sub>()->eval(args, noargs);
         }
 

@@ -22,21 +22,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         : public base_primitive
         , public hpx::components::component_base<if_conditional>
     {
-    private:
-        using operands_type = std::vector<ir::node_data<double>>;
-
     public:
+        static std::vector<match_pattern_type> const match_data;
+
         if_conditional() = default;
 
         if_conditional(std::vector<primitive_argument_type>&& operand);
 
         hpx::future<primitive_result_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
-
-        static std::vector<match_pattern_type> const match_data;
-
-    private:
-        std::vector<primitive_argument_type> operands_;
     };
 }}}
 
