@@ -32,6 +32,12 @@ macro(phylanx_setup_hpx)
 
     phylanx_info("HPX version: " ${HPX_VERSION_STRING})
 
+    # make sure that HPX is not configured with jemalloc 
+    if(${HPX_WITH_MALLOC} STREQUAL "jemalloc")
+        phylanx_warn(
+          "HPX is configured with: ${HPX_WITH_MALLOC}. Due to incompatibilities between the Python runtime and jemalloc, application execution will fail unless the jemalloc library is preloaded with LD_PRELOAD. For more reliable execution, we recommend reconfiguring HPX and Phylanx with TCMalloc")
+    endif()
+
   else()
     phylanx_error("HPX_DIR has not been specified, please set it to help locating HPX")
   endif()
