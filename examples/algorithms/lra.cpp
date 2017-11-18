@@ -21,8 +21,8 @@ char const* const lra_code = R"(block(
         block(
             define(weights, constant(0.0, shape(x, 1))),                // weights: [2]
             define(transx, transpose(x)),                               // transx:  [2, 30]
-            define(pred, constant(0.0,shape(x,0))),
-            define(error, constant(0.0,shape(x,0))),
+            define(pred, constant(0.0, shape(x, 0))),
+            define(error, constant(0.0, shape(x, 0))),
             define(gradient, constant(0.0, shape(x, 1))),
             define(step, 0),
             while(
