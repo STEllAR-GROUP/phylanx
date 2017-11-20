@@ -6,9 +6,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
-#include <phylanx/util/serialization/optional.hpp>
+#include <phylanx/util/serialization/execution_tree.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/components.hpp>
@@ -17,8 +16,10 @@
 
 #include <cstddef>
 #include <fstream>
+#include <memory>
 #include <vector>
 #include <string>
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -41,73 +42,109 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     file_write::file_write(std::vector<primitive_argument_type>&& operands)
+      : operands_(std::move(operands))
+    {}
+
+    namespace detail
     {
-        if (operands.size() != 2)
+        struct file_write : std::enable_shared_from_this<file_write>
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::file_write",
-                "the file_write primitive requires exactly two operands");
-        }
+            file_write() = default;
 
-        if (!valid(operands[0]) || !valid(operands[1]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::file_write",
-                "the file_write primitive requires that the given operands "
-                    "are valid");
-        }
-
-        std::string* name = util::get_if<std::string>(&operands[0]);
-        if (name == nullptr)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::file_write",
-                "the first literal argument must be a string representing a "
-                    "valid file name");
-        }
-
-        filename_ = std::move(*name);
-        operand_ = std::move(operands[1]);
-    }
-
-    void write_to_file(
-        std::string const& filename, primitive_result_type const& val)
-    {
-        std::ofstream outfile(filename.c_str(),
-            std::ios::binary | std::ios::out | std::ios::trunc);
-        if (!outfile.is_open())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::eval",
-                "couldn't open file: " + filename);
-        }
-
-        std::vector<char> data = phylanx::util::serialize(val);
-        if (!outfile.write(data.data(), data.size()))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::eval",
-                "couldn't read expected number of bytes from file: " +
-                    filename);
-        }
-    }
-
-    // read data from given file and return content
-    hpx::future<primitive_result_type> file_write::eval() const
-    {
-        return literal_operand(operand_).then(hpx::util::unwrapping(
-            [this](primitive_result_type && val) -> primitive_result_type
+        protected:
+            void write_to_file(primitive_result_type const& val)
             {
-                if (!valid(val))
+                std::ofstream outfile(filename_.c_str(),
+                    std::ios::binary | std::ios::out | std::ios::trunc);
+                if (!outfile.is_open())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "file_write::eval",
-                        "the file_write primitive requires that the argument"
-                            " value given by the operand is non-empty");
+                        "phylanx::execution_tree::primitives::file_write::eval",
+                        "couldn't open file: " + filename_);
                 }
 
-                write_to_file(filename_, val);
-                return primitive_result_type(std::move(val));
-            }));
+                std::vector<char> data = phylanx::util::serialize(val);
+                if (!outfile.write(data.data(), data.size()))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::file_write::eval",
+                        "couldn't read expected number of bytes from file: " +
+                            filename_);
+                }
+            }
+
+        public:
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args)
+            {
+                if (operands.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::file_write::"
+                            "file_write",
+                        "the file_write primitive requires exactly two operands");
+                }
+
+                if (!valid(operands[0]) || !valid(operands[1]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::file_write::"
+                            "file_write",
+                        "the file_write primitive requires that the given "
+                            "operands are valid");
+                }
+
+                std::string const* name =
+                    util::get_if<std::string>(&operands[0]);
+                if (name == nullptr)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::file_write::"
+                            "file_write",
+                        "the first literal argument must be a string "
+                            "representing a valid file name");
+                }
+
+                filename_ = std::move(*name);
+
+                auto this_ = this->shared_from_this();
+                return literal_operand(operands[1], args)
+                    .then(hpx::util::unwrapping(
+                        [this_](primitive_result_type && val)
+                        ->  primitive_result_type
+                        {
+                            if (!valid(val))
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "file_write::eval",
+                                    "the file_write primitive requires that the "
+                                        "argument value given by the operand is "
+                                        "non-empty");
+                            }
+
+                            this_->write_to_file(val);
+                            return primitive_result_type(std::move(val));
+                        }));
+            }
+
+        private:
+            std::string filename_;
+            primitive_argument_type operand_;
+        };
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // write data to given file and return content
+    hpx::future<primitive_result_type> file_write::eval(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands_.empty())
+        {
+            static std::vector<primitive_argument_type> noargs;
+            return std::make_shared<detail::file_write>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::file_write>()->eval(operands_, args);
     }
 }}}

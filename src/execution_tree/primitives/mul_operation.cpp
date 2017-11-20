@@ -1,5 +1,6 @@
 //  Copyright (c) 2017 Hartmut Kaiser
 //  Copyright (c) 2017 Alireza Kheirkhahan
+//  Copyright (c) 2017 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,17 +8,18 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <memory>
 #include <numeric>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -39,141 +41,329 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     mul_operation::mul_operation(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.size() < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul_operation",
-                "the mul_operation primitive requires at least two "
-                "operands");
-        }
-
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands_.size(); ++i)
-        {
-            if (!valid(operands_[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul_operation",
-                "the mul_operation primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> mul_operation::mul0d(operands_type && ops) const
+    namespace detail
     {
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
-        std::size_t rhs_dims = rhs.num_dimensions();
-        switch (rhs_dims)
+        struct mul : std::enable_shared_from_this<mul>
         {
-        case 0:
+            mul() = default;
+
+        private:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<operand_type>;
+
+        private:
+            primitive_result_type mul0d(operands_type && ops) const
             {
+                switch (ops[1].num_dimensions())
+                {
+                case 0:
+                    return mul0d0d(std::move(ops));
+
+                case 1:
+                    return mul0d1d(std::move(ops));
+
+                case 2:
+                    return mul0d2d(std::move(ops));
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul0d",
+                        "the operands have incompatible number of dimensions");
+                }
+            }
+
+            primitive_result_type mul0d0d(operands_type && ops) const
+            {
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
                 if (ops.size() == 2)
                 {
-                    lhs[0] *= rhs[0];
-                    return std::move(lhs);
+                    lhs.scalar() *= rhs.scalar();
+                    return primitive_result_type{ std::move(lhs) };
                 }
 
-                return std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(lhs),
-                    [](operand_type& result, operand_type const& curr)
-                    {
-                        result.matrix() *= curr[0];
-                        return std::move(result);
-                    });
-            }
-            break;
+                return primitive_result_type{
+                    std::accumulate(ops.begin() + 1, ops.end(), std::move(lhs),
+                        [](operand_type& result, operand_type const& curr) {
 
-        case 1: HPX_FALLTHROUGH;
-        case 2:
+                            if (curr.num_dimensions() != 0)
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "mul_operation::mul0d0d",
+                                    "all operands must be scalars");
+                            }
+                            result.scalar() *= curr.scalar();
+                            return std::move(result);
+                        }) };
+            }
+
+            primitive_result_type mul0d1d(operands_type && ops) const
             {
                 if (ops.size() > 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "mul_operation::mul0d",
-                        "can't handle more than 2 operands when first operand "
-                        "is not a matrix");
+                        "mul_operation::mul0d1d",
+                        "can't handle more than 2 operands");
                 }
 
-                rhs.matrix() = lhs[0] * rhs.matrix();
-                return std::move(rhs);
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                rhs.vector() = lhs.scalar() * rhs.vector();
+                return primitive_result_type{ std::move(rhs) };
             }
 
-        default:
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul0d",
-                "the operands have incompatible number of dimensions");
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<double> mul_operation::mulxd(operands_type && ops) const
-    {
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
-        if (ops.size() == 2)
-        {
-            if (rhs.num_dimensions() == 0)
+            primitive_result_type mul0d2d(operands_type && ops) const
             {
-                lhs.matrix() *= rhs[0];
-                return std::move(lhs);
+
+                if (ops.size() > 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul0d2d",
+                        "can't handle more than 2 operands");
+                }
+
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                rhs.matrix() = lhs.scalar() * rhs.matrix();
+                return primitive_result_type{ std::move(rhs) };
             }
 
-            lhs.matrix() *= rhs.matrix();
-            return std::move(lhs);
-        }
-
-        return std::accumulate(
-            ops.begin() + 1, ops.end(), std::move(lhs),
-            [](operand_type& result, operand_type const& curr) -> operand_type
+            ///////////////////////////////////////////////////////////////////
+            primitive_result_type mul1d(operands_type && ops) const
             {
-                if (curr.num_dimensions() == 0)
-                {
-                    result.matrix() *= curr[0];
-                }
-                else
-                {
-                    result.matrix() *= curr.matrix();
-                }
-                return std::move(result);
-            });
-    }
-
-    // implement '*' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> mul_operation::eval() const
-    {
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this](operands_type&& ops) -> primitive_result_type
-            {
-                std::size_t lhs_dims = ops[0].num_dimensions();
-                switch (lhs_dims)
+                switch (ops[1].num_dimensions())
                 {
                 case 0:
-                    return primitive_result_type(mul0d(std::move(ops)));
+                    return mul1d0d(std::move(ops));
 
-                case 1: HPX_FALLTHROUGH;
+                case 1:
+                    return mul1d1d(std::move(ops));
+
                 case 2:
-                    return primitive_result_type(mulxd(std::move(ops)));
+                    return mul1d2d(std::move(ops));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "mul_operation::eval",
-                        "left hand side operand has unsupported number of "
-                        "dimensions");
+                        "mul_operation::mul1d",
+                        "the operands have incompatible number of dimensions");
                 }
-            }),
-            detail::map_operands(operands_, numeric_operand)
-        );
+            }
+
+            primitive_result_type mul1d0d(operands_type && ops) const
+            {
+                if (ops.size() > 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul1d0d",
+                        "can't handle more than 2 operands");
+                }
+
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                lhs.vector() *= rhs.scalar();
+                return primitive_result_type{ std::move(lhs) };
+            }
+
+            primitive_result_type mul1d1d(operands_type && ops) const
+            {
+                if (ops.size() == 2)
+                {
+                    if (ops[1].num_dimensions() == 0)
+                    {
+                        ops[0].vector() *= ops[1].vector();
+                        return std::move(ops[0]);
+                    }
+
+                    ops[0].vector() *= ops[1].vector();
+                    return primitive_result_type{std::move(ops[0])};
+                }
+
+                return primitive_result_type{std::accumulate(
+                    ops.begin() + 1, ops.end(), std::move(ops[0]),
+                    [](operand_type& result, operand_type const& curr)
+                    ->  operand_type
+                    {
+                        if (curr.num_dimensions() != 1)
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "mul_operation::mul1d1d",
+                                "all operands must be vectors");
+                        }
+                        result.vector() *= curr.vector();
+                        return std::move(result);
+                    })};
+            }
+
+            primitive_result_type mul1d2d(operands_type && ops) const
+            {
+                if (ops.size() > 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul1d2d",
+                        "can't handle more than 2 operands");
+                }
+
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                rhs.vector() =
+                    blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
+                return primitive_result_type{std::move(rhs)};
+            }
+
+            primitive_result_type mul2d(operands_type && ops) const
+            {
+                switch (ops[1].num_dimensions())
+                {
+                case 0:
+                    return mul2d0d(std::move(ops));
+
+                case 1:
+                    return mul2d1d(std::move(ops));
+
+                case 2:
+                    return mul2d2d(std::move(ops));
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul2d",
+                        "the operands have incompatible number of dimensions");
+                }
+            }
+
+            primitive_result_type mul2d0d(operands_type && ops) const
+            {
+                if (ops.size() > 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul2d0d",
+                        "can't handle more than 2 operands");
+                }
+
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                lhs.matrix() *= rhs.scalar();
+                return primitive_result_type{ std::move(lhs) };
+            }
+
+            primitive_result_type mul2d1d(operands_type && ops) const
+            {
+                if (ops.size() > 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul2d1d",
+                        "can't handle more than 2 operands");
+                }
+
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                rhs.vector() = lhs.matrix() * rhs.vector();
+                return primitive_result_type{ std::move(rhs) };
+            }
+
+            primitive_result_type mul2d2d(operands_type && ops) const
+            {
+                if (ops.size() == 2)
+                {
+                    ops[0].matrix() *= ops[1].matrix();
+                    return primitive_result_type{ std::move(ops[0]) };
+                }
+
+                return primitive_result_type{ std::accumulate(
+                    ops.begin() + 1, ops.end(), std::move(ops[0]),
+                    [](operand_type& result, operand_type const& curr)
+                    ->  operand_type
+                {
+                    if (curr.num_dimensions() != 2)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "mul_operation::mul2d2d",
+                            "all operands must be matrices");
+                    }
+
+                    result.matrix() *= curr.matrix();
+                    return std::move(result);
+                }) };
+            }
+
+        public:
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
+            {
+                if (operands.size() < 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul_operation",
+                        "the mul_operation primitive requires at least two "
+                        "operands");
+                }
+
+                bool arguments_valid = true;
+                for (std::size_t i = 0; i != operands.size(); ++i)
+                {
+                    if (!valid(operands[i]))
+                    {
+                        arguments_valid = false;
+                    }
+                }
+
+                if (!arguments_valid)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul_operation",
+                        "the mul_operation primitive requires that the "
+                            "arguments given by the operands array are valid");
+                }
+
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& ops) -> primitive_result_type
+                    {
+                        std::size_t lhs_dims = ops[0].num_dimensions();
+                        switch (lhs_dims)
+                        {
+                        case 0:
+                            return this_->mul0d(std::move(ops));
+
+                        case 1:
+                            return this_->mul1d(std::move(ops));
+
+                        case 2:
+                            return this_->mul2d(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "mul_operation::eval",
+                                "left hand side operand has unsupported "
+                                    "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(operands, numeric_operand , args)
+                );
+            }
+        };
+    }
+
+    // implement '*' for all possible combinations of lhs and rhs
+    hpx::future<primitive_result_type> mul_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::mul>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::mul>()->eval(operands_, args);
     }
 }}}

@@ -9,6 +9,10 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::variable>
@@ -23,13 +27,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     variable::variable(std::string name)
       : name_(std::move(name))
+      , evaluated_(false)
     {}
 
     variable::variable(primitive_argument_type&& operand)
-      : data_(extract_literal_value(operand))
+      : data_(std::move(operand))
+      , evaluated_(false)
     {}
 
     variable::variable(std::vector<primitive_argument_type>&& operands)
+      : evaluated_(false)
     {
         if (operands.size() > 1)
         {
@@ -40,18 +47,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands.empty())
         {
-            data_ = extract_literal_value(operands[0]);
+            data_ = std::move(operands[0]);
         }
     }
 
     variable::variable(primitive_argument_type&& operand, std::string name)
-      : data_(extract_literal_value(operand))
+      : data_(std::move(operand))
       , name_(std::move(name))
+      , evaluated_(false)
     {}
 
     variable::variable(std::vector<primitive_argument_type>&& operands,
             std::string name)
       : name_(std::move(name))
+      , evaluated_(false)
     {
         if (operands.size() > 1)
         {
@@ -62,18 +71,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands.empty())
         {
-            data_ = extract_literal_value(operands[0]);
+            data_ = std::move(operands[0]);
         }
     }
 
-    hpx::future<primitive_result_type> variable::eval() const
+    primitive_result_type variable::eval_direct(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return hpx::make_ready_future(data_);
+        primitive const* p = util::get_if<primitive>(&data_);
+        if (!evaluated_ && p != nullptr)
+        {
+            evaluated_ = true;
+            data_ = p->eval_direct(args);
+        }
+        return data_;
     }
 
     void variable::store(primitive_result_type const& data)
     {
         data_ = data;
+    }
+
+    bool variable::bind(std::vector<primitive_argument_type> const& params)
+    {
+        primitive* p = util::get_if<primitive>(&data_);
+        return (p != nullptr) ? p->bind(hpx::launch::sync, params) : true;
     }
 }}}
 

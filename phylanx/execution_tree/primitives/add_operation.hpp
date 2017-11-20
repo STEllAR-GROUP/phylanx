@@ -27,12 +27,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         add_operation() = default;
 
-        add_operation(std::vector<primitive_argument_type>&& operands);
+        add_operation(std::vector<primitive_argument_type> && operands);
 
-        hpx::future<primitive_result_type> eval() const override;
-
-    private:
-        std::vector<primitive_argument_type> operands_;
+        hpx::future<primitive_result_type> eval(
+            std::vector<primitive_argument_type> const& params) const override;
     };
 }}}
 

@@ -81,15 +81,16 @@ if(phylanx_external_OBJECTS)
   add_hpx_component(phylanx SHARED
     SOURCES ${phylanx_SOURCES}
     HEADERS ${phylanx_HEADERS}
-    AUXILIARY ${phylanx_external_OBJECTS})
+    AUXILIARY ${phylanx_external_OBJECTS}
+    COMPONENT_DEPENDENCIES iostreams)
 else()
   add_hpx_component(phylanx SHARED
     SOURCES ${phylanx_SOURCES}
-    HEADERS ${phylanx_HEADERS})
+    HEADERS ${phylanx_HEADERS}
+    COMPONENT_DEPENDENCIES iostreams)
 endif()
 
-
-target_link_libraries(phylanx_component ${HPX_LIBRARIES})
+target_link_libraries(phylanx_component ${HPX_LIBRARIES} blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 set_target_properties(
   phylanx_component PROPERTIES

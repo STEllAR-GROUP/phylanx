@@ -19,15 +19,11 @@ void test_constant_0d()
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
-    phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(1.0));
-
     phylanx::execution_tree::primitive const_ =
         hpx::new_<phylanx::execution_tree::primitives::constant>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(val), std::move(dim)
+                std::move(val)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
@@ -41,29 +37,22 @@ void test_constant_0d()
 
 void test_constant_1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
-
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
-
-    phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive const_ =
         hpx::new_<phylanx::execution_tree::primitives::constant>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(val), std::move(dim)
+                std::move(val), std::int64_t(1007)
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         const_.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected =
-        blaze::DynamicVector<double, blaze::rowVector>(1007UL, 42.0);
+    blaze::DynamicVector<double> expected =
+        blaze::DynamicVector<double>(1007UL, 42.0);
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 1);
@@ -73,22 +62,18 @@ void test_constant_1d()
 
 void test_constant_2d()
 {
-    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<double> m = gen.generate(101UL, 105UL);
-
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
-
-    phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive const_ =
         hpx::new_<phylanx::execution_tree::primitives::constant>(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(val), std::move(dim)
+                std::move(val),
+                std::vector<phylanx::execution_tree::primitive_argument_type>{
+                    std::int64_t(105), std::int64_t(101)
+                }
             });
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
@@ -99,8 +84,8 @@ void test_constant_2d()
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(result.num_dimensions(), 2);
-    HPX_TEST_EQ(result.dimension(0), 101);
-    HPX_TEST_EQ(result.dimension(1), 105);
+    HPX_TEST_EQ(result.dimension(0), 105);
+    HPX_TEST_EQ(result.dimension(1), 101);
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
 }
 

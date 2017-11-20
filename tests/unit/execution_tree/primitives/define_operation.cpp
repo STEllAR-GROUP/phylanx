@@ -9,65 +9,74 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-void test_define_operation_var(char const* expr, char const* name,
-    std::vector<char const*> const& args, char const* body)
+#include <vector>
+
+void test_define_operation_var(
+    char const* expr, char const* name, double expected)
 {
-    phylanx::execution_tree::variables variables;
-    phylanx::execution_tree::functions functions;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+    phylanx::execution_tree::compiler::function_list snippets;
 
-    auto result = phylanx::execution_tree::detail::generate_tree(
-        phylanx::ast::generate_ast(expr),
-        phylanx::execution_tree::detail::generate_patterns(
-            phylanx::execution_tree::get_all_known_patterns()),
-        variables, functions);
+    std::size_t num_entries = env.size();
 
-    HPX_TEST_EQ(variables.size(), std::size_t(1));
-    HPX_TEST_EQ(functions.size(), std::size_t(0));
+    auto f = phylanx::execution_tree::compile(expr, snippets, env);
+    f();        // bind expressions
+
+    HPX_TEST_EQ(env.size(), num_entries + 1);
 
     // verify function name
-    auto p = functions.find(name);
-    HPX_TEST(p.first == p.second);
+    auto p = env.find(name);
+    HPX_TEST(p != nullptr);
+
+    auto var = (*p)(phylanx::execution_tree::compiler::function_list{});
+
+    // evaluate expression
+    HPX_TEST_EQ(expected,
+        phylanx::execution_tree::extract_numeric_value(
+            var()
+        )[0]);
 }
 
-void test_define_operation(char const* expr, char const* name,
-    std::vector<char const*> const& args, char const* body)
+void test_define_operation(char const* expr, char const* name, double expected,
+    std::vector<double> const& argvalues)
 {
-    phylanx::execution_tree::variables variables;
-    phylanx::execution_tree::functions functions;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+    phylanx::execution_tree::compiler::function_list snippets;
 
-    auto result = phylanx::execution_tree::detail::generate_tree(
-        phylanx::ast::generate_ast(expr),
-        phylanx::execution_tree::detail::generate_patterns(
-            phylanx::execution_tree::get_all_known_patterns()),
-        variables, functions);
+    std::size_t num_entries = env.size();
 
-    HPX_TEST_EQ(variables.size(), std::size_t(0));
-    HPX_TEST_EQ(functions.size(), std::size_t(1));
+    auto f = phylanx::execution_tree::compile(expr, snippets, env);
+    f();        // bind expressions
 
-    // verify function name
-    auto p = functions.find(name);
-    HPX_TEST(p.first != p.second);
+    HPX_TEST_EQ(env.size(), num_entries + 1);
 
-    // verify arguments
-    std::vector<phylanx::ast::expression> argexprs;
-    argexprs.reserve(args.size());
-    for (auto const& s : args)
+    auto p = env.find(name);
+    HPX_TEST(p != nullptr);
+
+    auto var = (*p)(phylanx::execution_tree::compiler::function_list{});
+
+    // evaluate expression
+    std::vector<phylanx::execution_tree::primitive_argument_type> values;
+    for (double d : argvalues)
     {
-        argexprs.push_back(phylanx::ast::generate_ast(s));
+        values.push_back(phylanx::ir::node_data<double>{d});
     }
 
-    HPX_TEST(p.first->second.first == argexprs);
-
-    // verify body
-    phylanx::ast::expression bodyexpr = phylanx::ast::generate_ast(body);
-    HPX_TEST(p.first->second.second == bodyexpr);
+    HPX_TEST_EQ(expected,
+        phylanx::execution_tree::extract_numeric_value(
+            var(std::move(values))
+        )[0]);
 }
 
 int main(int argc, char* argv[])
 {
-    test_define_operation_var("define(x, 3.14)", "x", {}, "3.14");
-    test_define_operation("define(y, x, x + 1)", "y", {"x"}, "x + 1");
-    test_define_operation("define(add, x, y, x + y)", "add", {"x", "y"}, "x + y");
+    test_define_operation_var("define(x, 3.14)", "x", 3.14);
+
+    test_define_operation("define(y, x, x + 1)", "y", 2.0, {1.0});
+    test_define_operation(
+        "define(add1, x, y, x + y)", "add1", 42.0, {41.0, 1.0});
 
     return hpx::util::report_errors();
 }

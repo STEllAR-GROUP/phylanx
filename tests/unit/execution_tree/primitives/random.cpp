@@ -36,8 +36,8 @@ void test_random_0d()
 
 void test_random_1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive dim =
         hpx::new_<phylanx::execution_tree::primitives::variable>(

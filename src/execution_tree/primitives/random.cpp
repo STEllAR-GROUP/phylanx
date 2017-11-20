@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -40,36 +41,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     random::random(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.size() > 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "random::random",
-                "the random primitive requires"
-                    "at most one operand");
-        }
-
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "random::random",
-                "the random primitive requires that the "
-                    "arguments given by the operands array are valid");
-        }
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct random : std::enable_shared_from_this<random>
         {
-            random(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            random() = default;
 
-            hpx::future<primitive_result_type> eval()
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args)
             {
+                if (operands.size() > 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "random::eval",
+                        "the random primitive requires"
+                            "at most one operand");
+                }
+
+                if (!valid(operands[0]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "random::eval",
+                        "the random primitive requires that the "
+                            "arguments given by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
@@ -98,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
 
@@ -108,16 +109,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type random0d(operands_type && ops) const
             {
-                return std::move(ops[0]);       // no-op
+                blaze::Rand<double> gen{};
+                return operand_type{gen.generate()};
             }
 
             primitive_result_type random1d(operands_type && ops) const
             {
                 std::size_t dim = ops[0].dimension(0);
 
-                blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+                blaze::Rand<blaze::DynamicVector<double>> gen{};
 
-                return operand_type(gen.generate(1UL, dim));
+                return operand_type{gen.generate(dim)};
             }
 
             primitive_result_type random2d(operands_type && ops) const
@@ -126,16 +128,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 
-                return operand_type(gen.generate(dim[0], dim[1]));
+                return operand_type{gen.generate(dim[0], dim[1])};
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
-    hpx::future<primitive_result_type> random::eval() const
+    hpx::future<primitive_result_type> random::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::random>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::random>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::random>()->eval(operands_, args);
     }
 }}}

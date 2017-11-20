@@ -40,8 +40,8 @@ void test_primary_expr()
         phylanx::ast::identifier("some_name"));
     test_serialization(p2);
 
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v = gen.generate(1007UL);
     phylanx::ast::primary_expr p3{
         phylanx::ir::node_data<double>{v}};
     test_serialization(p3);
@@ -116,7 +116,7 @@ void test_expression()
     phylanx::ast::operation u1(phylanx::ast::optoken::op_plus, op1);
     e1.append(u1);
 
-    std::list<phylanx::ast::operation> ops = {u1, u1};
+    std::vector<phylanx::ast::operation> ops = {u1, u1};
     e1.append(ops);
 
     test_serialization(e1);
@@ -136,13 +136,34 @@ void test_function_call()
 
     fc.append(e1);
 
-    std::list<phylanx::ast::expression> exprs = {e1, e1};
+    std::vector<phylanx::ast::expression> exprs = {e1, e1};
     fc.append(exprs);
 
     test_serialization(fc);
 
     phylanx::ast::primary_expr p2(std::move(fc));
     test_serialization(p2);
+}
+
+void test_lists()
+{
+    phylanx::ast::identifier id("function_name");
+    phylanx::ast::function_call fc(std::move(id));
+
+    phylanx::ast::primary_expr p1(true);
+    phylanx::ast::operand op1(p1);
+    phylanx::ast::expression e1(std::move(p1));
+    fc.append(e1);
+
+    std::vector<phylanx::ast::expression> exprs = {e1, e1};
+    fc.append(exprs);
+
+    std::vector<phylanx::ast::expression> list = {
+        phylanx::ast::expression{fc},
+        phylanx::ast::expression{op1}
+    };
+
+    test_serialization(list);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,6 +176,7 @@ int main(int argc, char* argv[])
     test_operation();
     test_expression();
     test_function_call();
+    test_lists();
 
     return hpx::util::report_errors();
 }

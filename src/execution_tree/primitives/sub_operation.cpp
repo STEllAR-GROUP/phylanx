@@ -6,8 +6,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -18,6 +16,8 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -39,42 +39,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     sub_operation::sub_operation(
-        std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.size() < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "sub_operation::sub_operation",
-                "the sub_operation primitive requires at least two operands");
-        }
-
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands_.size(); ++i)
-        {
-            if (!valid(operands_[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "sub_operation::sub_operation",
-                "the sub_operation primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+            std::vector<primitive_argument_type>&& operands)
+      : base_primitive(std::move(operands))
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct sub : std::enable_shared_from_this<sub>
         {
-            sub(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            sub() = default;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -87,7 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs[0] -= rhs[0];
+                    lhs.scalar() -= rhs.scalar();
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -96,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](operand_type& result, operand_type const& curr)
                     ->  operand_type
                     {
-                        result[0] -= curr[0];
+                        result.scalar() -= curr.scalar();
                         return std::move(result);
                     }));
             }
@@ -111,8 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(ops[1].matrix(),
-                    [&](double x) { return ops[0][0] - x; });
+                ops[1].vector() = blaze::map(ops[1].vector(),
+                    [&](double x) { return ops[0].scalar() - x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -127,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[1].matrix() = blaze::map(ops[1].matrix(),
-                    [&](double x) { return ops[0][0] - x; });
+                    [&](double x) { return ops[0].scalar() - x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -163,8 +137,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(ops[0].matrix(),
-                    [&](double x) { return x - ops[1][0]; });
+                ops[0].vector() = blaze::map(ops[0].vector(),
+                    [&](double x) { return x - ops[1].scalar(); });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -173,10 +147,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                std::size_t lhs_size = lhs.dimension(0);
-                std::size_t rhs_size = rhs.dimension(0);
-
-                if (lhs_size != rhs_size)
+                if (lhs.size() != rhs.size())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub1d1d",
@@ -185,7 +156,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix() -= rhs.matrix();
+                    lhs.vector() -= rhs.vector();
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -194,7 +165,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ops.begin() + 1, ops.end(), std::move(first_term),
                     [](operand_type& result,
                         operand_type const& curr) -> operand_type {
-                        result.matrix() -= curr.matrix();
+                        result.vector() -= curr.vector();
                         return std::move(result);
                     }));
             }
@@ -231,7 +202,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[0].matrix() = blaze::map(ops[0].matrix(),
-                    [&](double x) { return x - ops[1][0]; });
+                    [&](double x) { return x - ops[1].scalar(); });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -286,8 +257,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() < 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub_operation",
+                        "the sub_operation primitive requires at least two operands");
+                }
+
+                bool arguments_valid = true;
+                for (std::size_t i = 0; i != operands.size(); ++i)
+                {
+                    if (!valid(operands[i]))
+                    {
+                        arguments_valid = false;
+                    }
+                }
+
+                if (!arguments_valid)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub_operation",
+                        "the sub_operation primitive requires that the arguments given "
+                            "by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(
                     hpx::util::unwrapping([this_](operands_type&& ops)
@@ -311,18 +308,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '-' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> sub_operation::eval() const
+    hpx::future<primitive_result_type> sub_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::sub>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::sub>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::sub>()->eval(operands_, args);
     }
 }}}

@@ -41,36 +41,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     inverse_operation::inverse_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "inverse_operation::inverse_operation",
-                "the inverse_operation primitive requires"
-                "exactly one operand");
-        }
-
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "inverse_operation::inverse_operation",
-                "the inverse_operation primitive requires that the "
-                    "arguments given by the operands array is valid");
-        }
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct inverse : std::enable_shared_from_this<inverse>
         {
-            inverse(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            inverse() = default;
 
-            hpx::future<primitive_result_type> eval()
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args)
             {
+                if (operands.size() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "inverse_operation::eval",
+                        "the inverse_operation primitive requires"
+                        "exactly one operand");
+                }
+
+                if (!valid(operands[0]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "inverse_operation::eval",
+                        "the inverse_operation primitive requires that the "
+                            "arguments given by the operands array is valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
@@ -81,9 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->inverse0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
                         case 2:
-                            return this_->inversexd(std::move(ops));
+                            return this_->inverse2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -92,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
 
@@ -102,27 +101,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type inverse0d(operands_type && ops) const
             {
-                ops[0][0] = 1 / ops[0][0];
+                ops[0].scalar() = 1 / ops[0].scalar();
                 return std::move(ops[0]);
             }
 
-            primitive_result_type inversexd(operands_type && ops) const
+            primitive_result_type inverse2d(operands_type && ops) const
             {
+                if (ops[0].dimension(0) != ops[0].dimension(1))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "inverse::inverse2d",
+                        "matrices to inverse have to be quadratic");
+                }
+
                 using matrix_type = blaze::DynamicMatrix<double>;
 
-                // HACK: invert() and inv() disabled because they call
-                // determinant, which requires BLAS
-                //blaze::invert(ops[0].matrix());
+                blaze::invert(ops[0].matrix());
                 return std::move(ops[0]);
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
-    hpx::future<primitive_result_type> inverse_operation::eval() const
+    hpx::future<primitive_result_type> inverse_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::inverse>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::inverse>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::inverse>()->eval(operands_, args);
     }
 }}}

@@ -32,37 +32,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const less_equal::match_data =
     {
-        hpx::util::make_tuple("less_equal", "_1 <= _2", &create<less_equal>)
+        hpx::util::make_tuple("le", "_1 <= _2", &create<less_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     less_equal::less_equal(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "less_equal::less_equal",
-                "the less_equal primitive requires exactly two operands");
-        }
-
-        if (!valid(operands_[0]) || !valid(operands_[1]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "less_equal::less_equal",
-                "the less_equal primitive requires that the arguments given "
-                    "by the operands array are valid");
-        }
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct less_equal : std::enable_shared_from_this<less_equal>
         {
-            less_equal(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            less_equal() = default;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -74,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch(rhs_dims)
                 {
                 case 0:
-                    return lhs[0] <= rhs[0];
+                    return lhs.scalar() <= rhs.scalar();
 
                 case 1: HPX_FALLTHROUGH;
                 case 2: HPX_FALLTHROUGH;
@@ -97,11 +80,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                lhs.matrix() = blaze::map(
-                    lhs.matrix(), rhs.matrix(),
+                lhs = blaze::map(lhs.vector(), rhs.vector(),
                     [](double x1, double x2) { return x1 <= x2 ? 1.0 : 0.0; });
 
-                return lhs.matrix().nonZeros() > 0;
+                return lhs.vector().nonZeros() > 0;
             }
 
             bool less_equal1d(operand_type&& lhs, operand_type&& rhs) const
@@ -133,8 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                lhs.matrix() = blaze::map(
-                    lhs.matrix(), rhs.matrix(),
+                lhs = blaze::map(lhs.matrix(), rhs.matrix(),
                     [](double x1, double x2) { return x1 <= x2 ? 1 : 0; });
 
                 return lhs.matrix().nonZeros() > 0;
@@ -176,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less_equal::less_equal_all",
                         "left hand side operand has unsupported number of "
-                        "dimensions");
+                            "dimensions");
                 }
             }
 
@@ -192,10 +173,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
+                bool operator()(std::vector<ast::expression>&&,
+                    std::vector<ast::expression>&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
+                bool operator()(ast::expression&&, ast::expression&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
+                bool operator()(primitive&&, primitive&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
+                }
+
                 template <typename T>
                 bool operator()(T && lhs, T && rhs) const
                 {
                     return lhs <= rhs;
+                }
+
+                bool operator()(
+                    util::recursive_wrapper<
+                        std::vector<primitive_result_type>>&&,
+                    util::recursive_wrapper<
+                        std::vector<primitive_result_type>>&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less::eval",
+                        "left hand side and right hand side are incompatible "
+                            "and can't be compared");
                 }
 
                 bool operator()(
@@ -233,8 +251,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             };
 
         public:
-            hpx::future<primitive_result_type> eval() const
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args) const
             {
+                if (operands.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less_equal::eval",
+                        "the less_equal primitive requires exactly two operands");
+                }
+
+                if (!valid(operands[0]) || !valid(operands[1]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "less_equal::eval",
+                        "the less_equal primitive requires that the arguments "
+                            "given by the operands array are valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type && ops)
@@ -243,18 +278,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             util::visit(visit_less_equal{*this_},
                                 std::move(ops[0]), std::move(ops[1])));
                     }),
-                    detail::map_operands(operands_, literal_operand)
+                    detail::map_operands(operands, literal_operand, args)
                 );
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
     // implement '<=' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> less_equal::eval() const
+    hpx::future<primitive_result_type> less_equal::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::less_equal>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::less_equal>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::less_equal>()->eval(operands_, args);
     }
 }}}

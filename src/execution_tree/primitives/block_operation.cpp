@@ -6,9 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
 #include <phylanx/util/serialization/ast.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -39,23 +37,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     block_operation::block_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.empty())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::block_operation::"
-                    "block_operation",
-                "the block_operation primitive requires at least one argument");
-        }
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     namespace detail
     {
         struct step : std::enable_shared_from_this<step>
         {
-            step(std::vector<primitive_argument_type> const& operands)
+            step(std::vector<primitive_argument_type> const& operands,
+                    std::vector<primitive_argument_type> const& args)
               : operands_(operands)
+              , args_(args)
             {}
 
             void next(std::size_t i)
@@ -68,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return;
 
                 auto this_ = this->shared_from_this();
-                literal_operand(operands_[i]).then(
+                value_operand(operands_[i], args_).then(
                     [this_, i](hpx::future<primitive_result_type> && step)
                     {
                         try
@@ -92,19 +84,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             hpx::future<primitive_result_type> eval()
             {
+                if (operands_.empty())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                            "block_operation::eval",
+                        "the block_operation primitive requires at least one "
+                            "argument");
+                }
+
                 next(0);            // trigger first step
                 return result_.get_future();
             }
 
         private:
             std::vector<primitive_argument_type> operands_;
+            std::vector<primitive_argument_type> args_;
             hpx::promise<primitive_result_type> result_;
         };
     }
 
-    // start iteration over given while statement
-    hpx::future<primitive_result_type> block_operation::eval() const
+    // start iteration over given block statement
+    hpx::future<primitive_result_type> block_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::step>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::step>(args, noargs)->eval();
+        }
+
+        return std::make_shared<detail::step>(operands_, args)->eval();
     }
 }}}

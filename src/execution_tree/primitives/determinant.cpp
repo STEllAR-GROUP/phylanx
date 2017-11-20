@@ -19,11 +19,12 @@
 #include <utility>
 #include <vector>
 
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
-    phylanx::execution_tree::primitives::determinant>
-    determinant_type;
+        phylanx::execution_tree::primitives::determinant
+    > determinant_type;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
     determinant_type, phylanx_determinant_component,
     "phylanx_primitive_component", hpx::components::factory_enabled)
@@ -41,36 +42,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     determinant::determinant(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "determinant::determinant",
-                "the determinant primitive requires"
-                "exactly one operand");
-        }
-
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "determinant::determinant",
-                "the determinant primitive requires that the "
-                    "argument given by the operands array is valid");
-        }
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct determinant : std::enable_shared_from_this<determinant>
         {
-            determinant(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            determinant() = default;
 
-            hpx::future<primitive_result_type> eval()
+        private:
+            using operand_type = ir::node_data<double>;
+            using operands_type = std::vector<operand_type>;
+
+        public:
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args)
             {
+                if (operands.size() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "determinant::eval",
+                        "the determinant primitive requires"
+                            "exactly one operand");
+                }
+
+                if (!valid(operands[0]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "determinant::eval",
+                        "the determinant primitive requires that the "
+                            "argument given by the operands array is valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
@@ -81,10 +87,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->determinant0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
                         case 2:
-                            return this_->determinantxd(std::move(ops));
+                            return this_->determinant2d(std::move(ops));
 
+                        case 1: HPX_FALLTHROUGH;
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "determinant::eval",
@@ -92,34 +98,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
 
         protected:
-            using operand_type = ir::node_data<double>;
-            using operands_type = std::vector<operand_type>;
-
             primitive_result_type determinant0d(operands_type && ops) const
             {
                 return std::move(ops[0]);       // no-op
             }
 
-            primitive_result_type determinantxd(operands_type && ops) const
+            primitive_result_type determinant2d(operands_type && ops) const
             {
-                // HACK: det() distabled because it requires BLAS
-                //double d = blaze::det(ops[0].matrix());
-                double d = 0.0;
+                double d = blaze::det(ops[0].matrix());
                 return operand_type(d);
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
-    hpx::future<primitive_result_type> determinant::eval() const
+    hpx::future<primitive_result_type> determinant::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::determinant>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::determinant>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::determinant>()->eval(operands_, args);
     }
 }}}

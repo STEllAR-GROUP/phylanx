@@ -36,9 +36,7 @@ class Ops:
         e1 = ast.expression(oper(a.value))
         op2 = oper(b.value)
         op3 = ast.operation(self.code(),op2)
-        # ** rest.append does not work! **
-        # e1.rest.append([self.code(), op2])
-        util.append_operation(e1,op3)
+        e1.append(op3)
         self.value = e1
 
     def __str__(self):

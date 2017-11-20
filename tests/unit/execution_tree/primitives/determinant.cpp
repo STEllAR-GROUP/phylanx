@@ -69,18 +69,18 @@ void test_determinant_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         determinant.eval();
 
-    double expected = 0.0; // blaze::det(m);
-    HPX_TEST_EQ(
-        expected, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+    double expected = blaze::det(m);
+    double result =
+        phylanx::execution_tree::extract_numeric_value(f.get()).scalar();
+    HPX_TEST(expected - result < 1e-6);
 }
 
 int main(int argc, char* argv[])
 {
-    // HACK: det disabled (needs BLAS)
-    //test_determinant_0d();
-    //test_determinant_0d_lit();
+    test_determinant_0d();
+    test_determinant_0d_lit();
 
-    //test_determinant_2d();
+    test_determinant_2d();
 
     return hpx::util::report_errors();
 }

@@ -10,37 +10,28 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/components.hpp>
 
 #include <utility>
 #include <vector>
 
-namespace phylanx {
-namespace execution_tree {
-    namespace primitives {
-        class HPX_COMPONENT_EXPORT if_conditional
-          : public base_primitive
-          , public hpx::components::component_base<if_conditional>
-        {
-        private:
-            using operands_type = std::vector<ir::node_data<double>>;
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    class HPX_COMPONENT_EXPORT if_conditional
+        : public base_primitive
+        , public hpx::components::component_base<if_conditional>
+    {
+    public:
+        static std::vector<match_pattern_type> const match_data;
 
-        public:
-            if_conditional() = default;
+        if_conditional() = default;
 
-            if_conditional(std::vector<primitive_argument_type>&& operand_);
+        if_conditional(std::vector<primitive_argument_type>&& operand);
 
-            hpx::future<primitive_result_type> eval() const override;
-
-            static std::vector<match_pattern_type> const match_data;
-
-        private:
-            std::vector<primitive_argument_type> operands_;
-        };
-    }
-}
-}
+        hpx::future<primitive_result_type> eval(
+            std::vector<primitive_argument_type> const& args) const override;
+    };
+}}}
 
 #endif

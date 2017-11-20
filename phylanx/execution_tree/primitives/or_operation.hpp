@@ -10,8 +10,6 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -33,10 +31,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         or_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_result_type> eval() const override;
-
-    private:
-        std::vector<primitive_argument_type> operands_;
+        hpx::future<primitive_result_type> eval(
+            std::vector<primitive_argument_type> const& args) const override;
     };
 }}}
 

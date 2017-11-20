@@ -103,7 +103,7 @@ namespace phylanx { namespace ast
     }
 
     template <typename F, typename T, typename ... Ts>
-    bool traverse(std::list<T> const& l, F && f, Ts const&... ts)
+    bool traverse(std::vector<T> const& l, F && f, Ts const&... ts)
     {
         for (auto const& val : l)
         {
@@ -207,26 +207,30 @@ namespace phylanx { namespace ast
     template <typename F, typename ... Ts>
     bool traverse(function_call const& expr, F && f, Ts const&... ts);
 
-//     template <typename F>
-//     bool traverse(assignment const& op, F && f);
-//
-//     template <typename F>
-//     bool traverse(variable_declaration const& op, F && f);
-//
-//     template <typename F>
-//     bool traverse(statement const& op, F && f);
-//
-//     template <typename F>
-//     bool traverse(if_statement const& op, F && f);
-//
-//     template <typename F>
-//     bool traverse(while_statement const& op, F && f);
-//
-//     template <typename F>
-//     bool traverse(return_statement const& op, F && f);
-//
-//     template <typename F>
-//     bool traverse(function const& op, F && f);
+    template <typename F, typename... Ts>
+    bool traverse(
+        std::vector<ast::expression> const& expr, F&& f, Ts const&... ts);
+
+    //     template <typename F>
+    //     bool traverse(assignment const& op, F && f);
+    //
+    //     template <typename F>
+    //     bool traverse(variable_declaration const& op, F && f);
+    //
+    //     template <typename F>
+    //     bool traverse(statement const& op, F && f);
+    //
+    //     template <typename F>
+    //     bool traverse(if_statement const& op, F && f);
+    //
+    //     template <typename F>
+    //     bool traverse(while_statement const& op, F && f);
+    //
+    //     template <typename F>
+    //     bool traverse(return_statement const& op, F && f);
+    //
+    //     template <typename F>
+    //     bool traverse(function const& op, F && f);
 
     namespace detail
     {
@@ -284,8 +288,8 @@ namespace phylanx { namespace ast
         template <typename F, typename ... Ts>
         bool traverse_expression(
             int min_precedence,
-            std::list<operation>::const_iterator& it,
-            std::list<operation>::const_iterator end,
+            std::vector<operation>::const_iterator& it,
+            std::vector<operation>::const_iterator end,
             F && f, Ts const&... ts)
         {
             return detail::on_visit(
@@ -360,6 +364,24 @@ namespace phylanx { namespace ast
                 }
             },
             fc, std::forward<F>(f), ts...);
+    }
+
+    template <typename F, typename ... Ts>
+    bool traverse(std::vector<ast::expression> const& l, F && f, Ts const&... ts)
+    {
+        return detail::on_visit(
+            [](std::vector<ast::expression> const& l, F && f, Ts const&... ts)
+            {
+                if (detail::on_enter::call(f, l, ts...))
+                {
+                    for (auto const& arg : l)
+                    {
+                        if (!traverse(arg, std::forward<F>(f), ts...))
+                            break;
+                    }
+                }
+            },
+            l, std::forward<F>(f), ts...);
     }
 
 //     template <typename F>

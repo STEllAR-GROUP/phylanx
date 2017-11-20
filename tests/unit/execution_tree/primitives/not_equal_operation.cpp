@@ -100,9 +100,9 @@ void test_not_equal_operation_0d_lit_true()
 
 void test_not_equal_operation_1d()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
@@ -122,7 +122,7 @@ void test_not_equal_operation_1d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         not_equal.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(
+    blaze::DynamicVector<double> expected = blaze::map(
         v1, v2, [](double d1, double d2) { return d1 != d2 ? 1.0 : 0.0; });
     HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
@@ -130,9 +130,9 @@ void test_not_equal_operation_1d()
 
 void test_not_equal_operation_1d_lit()
 {
-    blaze::Rand<blaze::DynamicVector<double, blaze::rowVector>> gen{};
-    blaze::DynamicVector<double, blaze::rowVector> v1 = gen.generate(1007UL);
-    blaze::DynamicVector<double, blaze::rowVector> v2 = gen.generate(1007UL);
+    blaze::Rand<blaze::DynamicVector<double>> gen{};
+    blaze::DynamicVector<double> v1 = gen.generate(1007UL);
+    blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::ir::node_data<double> lhs(v1);
 
@@ -150,7 +150,7 @@ void test_not_equal_operation_1d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         not_equal.eval();
 
-    blaze::DynamicVector<double, blaze::rowVector> expected = blaze::map(
+    blaze::DynamicVector<double> expected = blaze::map(
         v1, v2, [](double d1, double d2) { return d1 != d2 ? 1 : 0; });
     HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
@@ -180,7 +180,7 @@ void test_not_equal_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         not_equal.eval();
 
-    blaze::DynamicMatrix<double, blaze::rowVector> expected = blaze::map(
+    blaze::DynamicMatrix<double> expected = blaze::map(
         m1, m2, [](double d1, double d2) { return d1 != d2 ? 1 : 0; });
     HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
@@ -208,7 +208,7 @@ void test_not_equal_operation_2d_lit()
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         not_equal.eval();
 
-    blaze::DynamicMatrix<double, blaze::rowVector> expected = blaze::map(
+    blaze::DynamicMatrix<double> expected = blaze::map(
         m1, m2, [](double d1, double d2) { return d1 != d2 ? 1 : 0; });
     HPX_TEST_EQ(expected.nonZeros() > 0,
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);

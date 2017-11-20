@@ -1,10 +1,9 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+// Copyright (c) 2017 Bibek Wagle
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#if !defined(PHYLANX_PRIMITIVES_DEF_OPERATION_OCT_13_2017_1120AM)
-#define PHYLANX_PRIMITIVES_DEF_OPERATION_OCT_13_2017_1120AM
+#ifndef PHYLANX_ROW_SLICING_HPP
+#define PHYLANX_ROW_SLICING_HPP
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
@@ -19,13 +18,20 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    struct define_
+    class HPX_COMPONENT_EXPORT row_slicing_operation
+      : public base_primitive
+      , public hpx::components::component_base<row_slicing_operation>
     {
+    public:
         static std::vector<match_pattern_type> const match_data;
-        static std::vector<match_pattern_type> const invocation_match_data;
+
+        row_slicing_operation() = default;
+
+        row_slicing_operation(std::vector<primitive_argument_type>&& operands);
+
+        hpx::future<primitive_result_type> eval(
+            std::vector<primitive_argument_type> const& params) const override;
     };
 }}}
 
-#endif
-
-
+#endif //PHYLANX_ROW_SLICING_HPP

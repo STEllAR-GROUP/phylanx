@@ -41,36 +41,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     transpose_operation::transpose_operation(
             std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
-    {
-        if (operands_.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "transpose_operation::transpose_operation",
-                "the transpose_operation primitive requires"
-                "exactly one operand");
-        }
-
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "transpose_operation::transpose_operation",
-                "the transpose_operation primitive requires that the "
-                    "arguments given by the operands array is valid");
-        }
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct transpose : std::enable_shared_from_this<transpose>
         {
-            transpose(std::vector<primitive_argument_type> const& operands)
-              : operands_(operands)
-            {}
+            transpose() = default;
 
-            hpx::future<primitive_result_type> eval()
+            hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
+                std::vector<primitive_argument_type> const& args)
             {
+                if (operands.size() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "transpose_operation::transpose_operation",
+                        "the transpose_operation primitive requires"
+                        "exactly one operand");
+                }
+
+                if (!valid(operands[0]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "transpose_operation::transpose_operation",
+                        "the transpose_operation primitive requires that the "
+                            "arguments given by the operands array is valid");
+                }
+
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
@@ -81,9 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 0:
                             return this_->transpose0d(std::move(ops));
 
-                        case 1: HPX_FALLTHROUGH;
                         case 2:
-                            return this_->transposexd(std::move(ops));
+                            return this_->transpose2d(std::move(ops));
 
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -92,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands_, numeric_operand)
+                    detail::map_operands(operands, numeric_operand, args)
                 );
             }
 
@@ -105,19 +104,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return std::move(ops[0]);       // no-op
             }
 
-            primitive_result_type transposexd(operands_type && ops) const
+            primitive_result_type transpose2d(operands_type && ops) const
             {
                 blaze::transpose(ops[0].matrix());
                 return std::move(ops[0]);
             }
-
-        private:
-            std::vector<primitive_argument_type> operands_;
         };
     }
 
-    hpx::future<primitive_result_type> transpose_operation::eval() const
+    hpx::future<primitive_result_type> transpose_operation::eval(
+        std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::transpose>(operands_)->eval();
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::transpose>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::transpose>()->eval(operands_, args);
     }
 }}}

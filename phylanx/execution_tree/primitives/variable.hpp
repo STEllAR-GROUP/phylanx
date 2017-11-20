@@ -9,8 +9,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 
@@ -35,12 +33,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         variable(
             std::vector<primitive_argument_type>&& operands, std::string name);
 
-        hpx::future<primitive_result_type> eval() const override;
+        primitive_result_type eval_direct(
+            std::vector<primitive_argument_type> const& params) const override;
         void store(primitive_result_type const& data) override;
+        bool bind(std::vector<primitive_argument_type> const& params) override;
 
     private:
-        primitive_result_type data_;
+        mutable primitive_result_type data_;
         std::string name_;
+        mutable bool evaluated_;
     };
 }}}
 

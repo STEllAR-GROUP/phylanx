@@ -7,7 +7,9 @@
 #define PHYLANX_AST_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/is_function_call.hpp>
 #include <phylanx/ast/detail/is_identifier.hpp>
+#include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/ast/generate_ast.hpp>
