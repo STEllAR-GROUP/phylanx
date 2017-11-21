@@ -4,10 +4,11 @@
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
-#include <hpx/hpx_main.hpp>
+#include <hpx/hpx_init.hpp>
 
 #include <iostream>
 
+#include <boost/program_options.hpp>
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,7 +18,7 @@ char const* const lra_code = R"(block(
     //
     //   x: [30, 2]
     //   y: [30]
-    define(lra, x, y, alpha, iterations,
+    define(lra, x, y, alpha, iterations, enable_output,
         block(
             define(weights, constant(0.0, shape(x, 1))),                // weights: [2]
             define(transx, transpose(x)),                               // transx:  [2, 30]
@@ -28,7 +29,7 @@ char const* const lra_code = R"(block(
             while(
                 step < iterations,
                 block(
-                    cout("step: ", step, ", ", weights),
+                    if(enable_output, cout("step: ", step, ", ", weights)),
                     store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),  // exp(-dot(x, weights)): [30], pred: [30]
                     store(error, pred - y),                            // error: [30]
                     store(gradient, dot(transx, error)),               // gradient: [2]
@@ -44,7 +45,7 @@ char const* const lra_code = R"(block(
     lra
 ))";
 
-int main(int argc, char* argv[])
+int hpx_main(boost::program_options::variables_map& vm)
 {
     blaze::DynamicMatrix<double> v1{
         {15.04, 16.74}, {13.82, 24.49}, {12.54, 16.32}, {23.09, 19.83},
@@ -67,13 +68,30 @@ int main(int argc, char* argv[])
     auto x = phylanx::ir::node_data<double>{v1};
     auto y = phylanx::ir::node_data<double>{v2};
     auto alpha = phylanx::ir::node_data<double>{1e-5};
-    auto iterations = std::int64_t{750};
 
-    auto result = lra(x, y, alpha, iterations);
+    auto iterations = vm["num_iterations"].as<std::int64_t>();
+    bool enable_output = vm.count("enable_output") != 0;
+
+    auto result = lra(x, y, alpha, iterations, enable_output);
 
     std::cout << "Result: \n"
               << phylanx::execution_tree::extract_numeric_value(result)
               << std::endl;
 
-    return 0;
+    return hpx::finalize();
 }
+
+int main(int argc, char* argv[])
+{
+    // command line handling
+    boost::program_options::options_description desc("usage: lra [options]");
+    desc.add_options()
+        ("enable_output,e", "enable progress output (default: false)")
+        ("num_iterations,n",
+            boost::program_options::value<std::int64_t>()->default_value(750),
+            "number of iterations (default: 750)")
+        ;
+
+    return hpx::init(desc, argc, argv);
+}
+
