@@ -19,6 +19,8 @@
 
 #include <blaze/Math.h>
 
+
+
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::sub_operation>
@@ -27,6 +29,63 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
     sub_operation_type, phylanx_sub_operation_component,
     "phylanx_primitive_component", hpx::components::factory_enabled)
 HPX_DEFINE_GET_COMPONENT_TYPE(sub_operation_type::wrapped_type)
+///////////////////////////////////////////////////////////////////////////////
+
+
+struct SubScalar_0dnd
+{
+public:
+    explicit inline SubScalar_0dnd( double scalar )
+            : scalar_( scalar )
+    {}
+
+    template< typename T >
+    BLAZE_ALWAYS_INLINE decltype(auto) operator()( const T& a ) const
+    {
+        return scalar_ - a;
+    }
+
+    template< typename T >
+    static constexpr bool simdEnabled() { return blaze::HasSIMDSub<T,double>::value; }
+
+    template< typename T >
+    BLAZE_ALWAYS_INLINE decltype(auto) load( const T& a ) const
+    {
+        BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK( T );
+        return blaze::set( scalar_ ) - a;
+    }
+
+private:
+    double scalar_;
+};
+
+struct SubScalar_nd0d
+{
+public:
+    explicit inline SubScalar_nd0d( double scalar )
+            : scalar_( scalar )
+    {}
+
+    template< typename T >
+    BLAZE_ALWAYS_INLINE decltype(auto) operator()( const T& a ) const
+    {
+        return a - scalar_;
+    }
+
+    template< typename T >
+    static constexpr bool simdEnabled() { return blaze::HasSIMDSub<T,double>::value; }
+
+    template< typename T >
+    BLAZE_ALWAYS_INLINE decltype(auto) load( const T& a ) const
+    {
+        BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK( T );
+        return a - blaze::set( scalar_ );
+    }
+
+private:
+    double scalar_;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -84,9 +143,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the sub_operation primitive can sub a single value "
                         "to a vector only if there are exactly 2 operands");
                 }
+                ops[1].vector() = blaze::map(ops[1].vector(),SubScalar_0dnd(ops[0].scalar()));
 
-                ops[1].vector() = blaze::map(ops[1].vector(),
-                    [&](double x) { return ops[0].scalar() - x; });
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -100,8 +158,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(ops[1].matrix(),
-                    [&](double x) { return ops[0].scalar() - x; });
+                ops[1].matrix() = blaze::map(ops[1].matrix(),SubScalar_0dnd(ops[0].scalar()));
+
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -136,9 +194,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the sub_operation primitive can sub a single value "
                         "to a vector only if there are exactly 2 operands");
                 }
+                ops[0].vector() = blaze::map(ops[0].vector(),SubScalar_nd0d(ops[1].scalar()));
 
-                ops[0].vector() = blaze::map(ops[0].vector(),
-                    [&](double x) { return x - ops[1].scalar(); });
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -201,8 +258,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(ops[0].matrix(),
-                    [&](double x) { return x - ops[1].scalar(); });
+                ops[0].matrix() = blaze::map(ops[0].matrix(),SubScalar_nd0d(ops[1].scalar()));
+
                 return primitive_result_type(std::move(ops[0]));
             }
 
