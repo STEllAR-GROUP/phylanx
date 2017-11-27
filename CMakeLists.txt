@@ -103,11 +103,11 @@ phylanx_option(
   ON ADVANCED CATEGORY "Build")
 
 if(MSVC)
-  hpx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
+  phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
     "Force creating pseudo targets and pseudo dependencies (default OFF)."
     OFF CATEGORY "Build Targets")
 else()
-  hpx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
+  phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
     "Force creating pseudo targets and pseudo dependencies (default ON)."
     ON CATEGORY "Build Targets")
 endif()

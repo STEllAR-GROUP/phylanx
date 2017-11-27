@@ -90,7 +90,9 @@ else()
     COMPONENT_DEPENDENCIES iostreams)
 endif()
 
-target_link_libraries(phylanx_component ${HPX_LIBRARIES} blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(phylanx_component
+    ${HPX_LIBRARIES}
+    blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 set_target_properties(
   phylanx_component PROPERTIES
@@ -102,12 +104,6 @@ set_target_properties(
 set_property(TARGET phylanx_component APPEND
   PROPERTY COMPILE_DEFINITIONS
   "PHYLANX_EXPORTS")
-
-if(WIN32)# NOMINMAX is needed to resolve a conflict between Windows.h and std::numeric_limits
-set_property(TARGET phylanx_component APPEND
-  PROPERTY COMPILE_DEFINITIONS
-  "NOMINMAX")
-endif()
 
 set(phylanx_targets ${phylanx_targets} phylanx_component)
 

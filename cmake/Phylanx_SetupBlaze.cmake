@@ -13,4 +13,12 @@ macro(phylanx_setup_blaze)
   if(NOT blaze_FOUND)
     phylanx_error("Blaze could not be found. Please specify blaze_DIR to assist locating it.")
   endif()
+
+  # Make sure HPX is used as the parallelization target for Blaze
+  add_definitions(-DBLAZE_USE_HPX_THREADS)
+  add_definitions(-DBLAZE_USE_SHARED_MEMORY_PARALLELIZATION=1)
+  if(MSVC)
+    add_definitions(-DNOMINMAX)
+  endif()
+
 endmacro()
