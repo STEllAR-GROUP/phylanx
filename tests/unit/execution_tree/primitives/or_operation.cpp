@@ -138,7 +138,7 @@ void test_or_operation_1d_lit()
         or_.eval();
 
     HPX_TEST_EQ(
-        (!blaze::isZero(v1) || !blaze::isZero(v2)),
+        (v1.nonZeros() > 0) && (v2.nonZeros() > 0),
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
@@ -167,7 +167,7 @@ void test_or_operation_2d()
         or_.eval();
 
     HPX_TEST_EQ(
-        (!blaze::isZero(m1) || !blaze::isZero(m2)),
+        (m1.nonZeros() > 0) && (m2.nonZeros() > 0),
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 
@@ -194,7 +194,7 @@ void test_or_operation_2d_lit()
         or_.eval();
 
     HPX_TEST_EQ(
-        (!blaze::isZero(m1) || !blaze::isZero(m2)),
+        (m1.nonZeros() > 0) && (m2.nonZeros() > 0),
         phylanx::execution_tree::extract_boolean_value(f.get()) != 0);
 }
 

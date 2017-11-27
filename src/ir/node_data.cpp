@@ -79,10 +79,10 @@ namespace phylanx { namespace ir
             return scalar() != 0;
 
         case 1:
-            return !blaze::isZero(vector());
+            return vector().nonZeros() > 0;
 
         case 2:
-            return !blaze::isZero(matrix());
+            return matrix().nonZeros() > 0;
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
