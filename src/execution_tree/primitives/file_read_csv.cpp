@@ -89,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         std::string line;
-        std::vector<double> matrix_array;
+        std::vector<double> matrix_array, current_line;
         std::size_t n_rows = 0, n_cols = 0;
         std::size_t before_readln = 0, after_readln = 0;
 
@@ -97,24 +97,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             before_readln = matrix_array.size();
 
-            if (boost::spirit::qi::parse(line.begin(), line.end(),
-                    boost::spirit::qi::double_ % ',', matrix_array))
+            auto begin_local = line.begin();
+            if (boost::spirit::qi::parse(begin_local, line.end(),
+                    boost::spirit::qi::double_ % ',', current_line))
             {
-                after_readln = matrix_array.size();
-                if (n_rows == 0)
+                if (begin_local == line.end())
                 {
-                    n_cols = matrix_array.size();
-                }
-                else if (n_cols != (after_readln - before_readln))
-                {
-                    HPX_THROW_EXCEPTION(hpx::invalid_data,
-                        "phylanx::execution_tree::primitives::file_read_csv::"
-                            "eval",
-                        "wrong data format, different number of element in "
+                    matrix_array.insert(matrix_array.end(), current_line.begin(),
+                                        current_line.end());
+
+                    after_readln = matrix_array.size();
+                    if (n_rows == 0)
+                    {
+                        n_cols = matrix_array.size();
+                    }
+                    else if (n_cols != (after_readln - before_readln))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::invalid_data,
+                            "phylanx::execution_tree::primitives::file_read_"
+                            "csv::eval",
+                            "wrong data format, different number of element in "
                             "this row " +
-                            filename_ + ':' + std::to_string(n_rows));
+                                filename_ + ':' + std::to_string(n_rows));
+                    }
+                    n_rows++;
                 }
-                n_rows++;
+                current_line.clear();
             }
             else
             {
