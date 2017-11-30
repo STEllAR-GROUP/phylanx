@@ -20,9 +20,7 @@ char const* const lra_code = R"(block(
     define(lra, alpha, iterations,enable_output,
         block(
             define(data,file_read_csv("/usr/lib/python3.5/site-packages/sklearn/datasets/data/breast_cancer.csv")),
-            cout("data = ", data),
             define(x,slice(data,500,529,0,1)),
-            cout("x = ",x),
             define(y,slice(data,500,529,30,30)),
             define(weights, constant(0.0, shape(x, 1))),                // weights: [2]
             define(transx, transpose(x)),                               // transx:  [2, 30]

@@ -139,11 +139,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // n = (col_stop - col_start)+1
 
                 submatrix_type sm =
-                    blaze::submatrix(args[0].matrix(),
-                        row_start, col_start,
+                    blaze::submatrix(args[0].matrix(), row_start, col_start,
                         (row_stop - row_start) + 1, (col_stop - col_start) + 1);
 
-                return ir::node_data<double>{matrix_type{std::move(sm)}};
+                if ((row_start == row_stop))
+                {
+                    //return a vector in this case and not a matrix
+                    return ir::node_data<double>{
+                        std::move(blaze::trans(row(sm, 0)))};
+                }
+                else if (col_start == col_stop)
+                {
+                    return ir::node_data<double>{std::move(column(sm, 0))};
+                }
+                else
+                {
+                    return ir::node_data<double>{matrix_type{std::move(sm)}};
+                }
             }
 
         public:
