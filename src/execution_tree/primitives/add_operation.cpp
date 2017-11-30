@@ -47,6 +47,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        struct add_simd
+        {
+        public:
+            explicit inline add_simd(double scalar)
+              : scalar_(scalar)
+            {
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const
+            {
+                return a + scalar_;
+            }
+
+            template <typename T>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDAdd<T, double>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return a + blaze::set(scalar_);
+            }
+
+        private:
+            double scalar_;
+        };
+
         struct add : std::enable_shared_from_this<add>
         {
             add() = default;
@@ -86,8 +117,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                args[1].vector(blaze::map(args[1].vector(),
-                    [&](double x) { return args[0].scalar() + x; }));
+                args[1].vector(
+                    blaze::map(args[1].vector(), add_simd(args[0].scalar())));
 
                 return primitive_result_type(std::move(args[1]));
             }
@@ -102,8 +133,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                args[1].matrix(blaze::map(args[1].matrix(),
-                    [&](double x) { return args[0].scalar() + x; }));
+                args[1].matrix(
+                    blaze::map(args[1].matrix(), add_simd(args[0].scalar())));
 
                 return primitive_result_type(std::move(args[1]));
             }
