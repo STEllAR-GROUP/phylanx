@@ -89,6 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         std::string line;
+        bool header_parsed = false;
         std::vector<double> matrix_array, current_line;
         std::size_t n_rows = 0, n_cols = 0;
         std::size_t before_readln = 0, after_readln = 0;
@@ -101,10 +102,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (boost::spirit::qi::parse(begin_local, line.end(),
                     boost::spirit::qi::double_ % ',', current_line))
             {
-                if (begin_local == line.end())
+                if (begin_local == line.end() || header_parsed)
                 {
-                    matrix_array.insert(matrix_array.end(), current_line.begin(),
-                                        current_line.end());
+                    header_parsed = true;
+
+                    matrix_array.insert(matrix_array.end(),
+                        current_line.begin(), current_line.end());
 
                     after_readln = matrix_array.size();
                     if (n_rows == 0)
