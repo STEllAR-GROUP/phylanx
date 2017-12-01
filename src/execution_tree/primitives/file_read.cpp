@@ -37,47 +37,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     file_read::file_read(std::vector<primitive_argument_type>&& operands)
-    {
-        if (operands.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read::file_read",
-                "the file_read primitive requires exactly one literal "
-                    "argument");
-        }
-
-        if (!valid(operands[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read::file_read",
-                "the file_read primitive requires that the given operand is "
-                    "valid");
-        }
-
-        std::string* name = util::get_if<std::string>(&operands[0]);
-        if (name == nullptr)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read::file_read",
-                "the first literal argument must be a string representing a "
-                    "valid file name");
-        }
-
-        filename_ = std::move(*name);
-    }
+      : base_primitive(std::move(operands))
+    {}
 
     // read data from given file and return content
     hpx::future<primitive_result_type> file_read::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        std::ifstream infile(filename_.c_str(),
+        if (operands_.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_read::eval",
+                "the file_read primitive requires exactly one literal "
+                    "argument");
+        }
+
+        if (!valid(operands_[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_read::eval",
+                "the file_read primitive requires that the given operand is "
+                    "valid");
+        }
+
+        std::string filename = string_operand_sync(operands_[0], args);
+        std::ifstream infile(filename.c_str(),
             std::ios::binary | std::ios::in | std::ios::ate);
 
         if (!infile.is_open())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                "couldn't open file: " + filename_);
+                "couldn't open file: " + filename);
         }
 
         std::streamsize count = infile.tellg();
@@ -91,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
                 "couldn't read expected number of bytes from file: " +
-                    filename_);
+                    filename);
         }
 
         // assume data in file is result of a serialized primitive_result_type

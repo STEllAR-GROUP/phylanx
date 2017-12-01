@@ -374,7 +374,7 @@ namespace phylanx { namespace execution_tree
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_numeric_value",
+            "phylanx::execution_tree::extract_boolean_value",
             "primitive_argument_type does not hold a boolean value type");
     }
 
@@ -405,8 +405,55 @@ namespace phylanx { namespace execution_tree
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_numeric_value",
+            "phylanx::execution_tree::extract_boolean_value",
             "primitive_argument_type does not hold a boolean value type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::string extract_string_value(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 3:     // string
+            return util::get<3>(val);
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // bool
+        case 2: HPX_FALLTHROUGH;    // std::uint64_t
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_string_value",
+            "primitive_argument_type does not hold a string value type");
+    }
+
+    std::string extract_string_value(primitive_argument_type && val)
+    {
+        switch (val.index())
+        {
+        case 3:     // string
+            return util::get<3>(std::move(val));
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // bool
+        case 2: HPX_FALLTHROUGH;    // std::uint64_t
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_string_value",
+            "primitive_argument_type does not hold a string value type");
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -712,6 +759,38 @@ namespace phylanx { namespace execution_tree
 
         HPX_ASSERT(valid(val));
         return extract_boolean_value(val);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::future<std::string> string_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            return p->eval(args).then(
+                [](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_string_value(f.get());
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(extract_string_value(val));
+    }
+
+    std::string string_operand_sync(primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            return extract_string_value(p->eval_direct(args));
+        }
+
+        HPX_ASSERT(valid(val));
+        return extract_string_value(val);
     }
 
     ///////////////////////////////////////////////////////////////////////////

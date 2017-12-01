@@ -105,6 +105,10 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{std::forward<Ts>(ts)...}
         {}
 
+        primitive_argument_type(double val)
+          : argument_value_type{phylanx::ir::node_data<double>{val}}
+        {}
+
         primitive_result_type operator()() const
         {
             return value_operand_sync(*this, {});
@@ -265,6 +269,13 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT std::uint8_t extract_boolean_value(
         primitive_result_type && val);
 
+    // Extract a std::string type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::string extract_string_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT std::string extract_string_value(
+        primitive_result_type && val);
+
     // Extract an AST type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(
@@ -321,6 +332,15 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
     PHYLANX_EXPORT std::uint8_t boolean_operand_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args);
+
+    // Extract a std::string from a primitive_argument_type (that
+    // could be a primitive or a string value).
+    PHYLANX_EXPORT hpx::future<std::string> string_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT std::string string_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
 
