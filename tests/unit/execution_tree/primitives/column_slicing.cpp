@@ -80,10 +80,10 @@ void test_column_slicing_operation_1d()
     // performed in blaze.
     // vector = v1
     // index = col_start
-    // size = (col_stop - col_start)+1
+    // size = (col_stop - col_start)
 
-    // Here, matrix = m1 , column = 5, n = 11
-    auto sm = blaze::subvector(v1, 5, 11);
+    // Here, matrix = m1 , column = 5, n = 10
+    auto sm = blaze::subvector(v1, 5, 10);
     auto expected = sm;
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
@@ -139,11 +139,11 @@ void test_column_slicing_operation_2d()
     // row = 0
     // column = col_start
     // m = number of rows in the input matrix
-    // n = (col_stop - col_start)+1
+    // n = (col_stop - col_start)
     // the input matrix respectively
     // Here, matrix = m1 , column = 5, n = 43
 
-    auto sm = blaze::submatrix(m1,0,5,90,43);
+    auto sm = blaze::submatrix(m1,0,5,90,42);
     auto expected = sm;
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =

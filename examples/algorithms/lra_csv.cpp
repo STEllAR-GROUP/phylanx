@@ -17,7 +17,7 @@ char const* const read_x_code = R"(block(
     // Read X-data from given CSV file
     //
     define(read_x, filepath,
-        slice(file_read_csv(filepath), 500, 529, 0, 1)
+        slice(file_read_csv(filepath), 500, 530, 0, 2)
     ),
     read_x
 ))";
@@ -27,7 +27,7 @@ char const* const read_y_code = R"(block(
     // Read Y-data from given CSV file
     //
     define(read_y, filepath,
-        slice(file_read_csv(filepath), 500, 529,30,30)
+        slice(file_read_csv(filepath), 500, 530,30,31)
     ),
     read_y
 ))";
