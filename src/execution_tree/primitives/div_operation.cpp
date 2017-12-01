@@ -45,6 +45,97 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        struct divndnd_simd
+        {
+            divndnd_simd() = default;
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a, T const& b) const
+            ->  decltype(a / b)
+            {
+                return a / b;
+            }
+
+            template <typename T1, typename T2>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDDiv<T1, T2>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(
+                T const& a, T const& b) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return a / b;
+            }
+        };
+
+        struct divnd0d_simd
+        {
+        public:
+            explicit divnd0d_simd(double scalar)
+              : scalar_(scalar)
+            {
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(a / std::declval<double>())
+            {
+                return a / scalar_;
+            }
+
+            template <typename T>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDDiv<T, double>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return a / blaze::set(scalar_);
+            }
+
+        private:
+            double scalar_;
+        };
+
+        struct div0dnd_simd
+        {
+        public:
+            explicit div0dnd_simd(double scalar)
+              : scalar_(scalar)
+            {
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(std::declval<double>() / a)
+            {
+                return scalar_ / a;
+            }
+
+            template <typename T>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDDiv<T, double>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return blaze::set(scalar_) / a;
+            }
+
+        private:
+            double scalar_;
+        };
+
+        ///////////////////////////////////////////////////////////////////////
         struct div : std::enable_shared_from_this<div>
         {
             div() = default;
@@ -84,9 +175,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[1].vector() = blaze::map(
-                        ops[1].vector(),
-                        [&](double x) { return ops[0].scalar() / x; });
+                ops[1].vector() =
+                    blaze::map(ops[1].vector(), div0dnd_simd(ops[0].scalar()));
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -100,9 +190,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[1].matrix() = blaze::map(
-                        ops[1].matrix(),
-                        [&](double x) { return ops[0].scalar() / x; });
+                ops[1].matrix() =
+                    blaze::map(ops[1].matrix(), div0dnd_simd(ops[0].scalar()));
                 return primitive_result_type(std::move(ops[1]));
             }
 
@@ -137,9 +226,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                ops[0].vector() = blaze::map(
-                        ops[0].vector(),
-                        [&](double x) { return x / ops[1].scalar(); });
+                ops[0].vector() =
+                    blaze::map(ops[0].vector(), divnd0d_simd(ops[1].scalar()));
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -160,23 +248,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.vector() = blaze::map(
-                            lhs.vector(),
-                            rhs.vector(),
-                            [](double x1, double x2) { return x1 / x2; });
+                    lhs.vector() =
+                        blaze::map(lhs.vector(), rhs.vector(), divndnd_simd());
                     return primitive_result_type(std::move(lhs));
                 }
 
                 operand_type& first_term = *ops.begin();
-                return primitive_result_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
-                    {
+                return primitive_result_type(std::accumulate(ops.begin() + 1,
+                    ops.end(), std::move(first_term),
+                    [](operand_type& result,
+                        operand_type const& curr) -> operand_type {
                         result.vector() = blaze::map(
-                                result.vector(),
-                                curr.vector(),
-                                [](double x1, double x2) { return x1 / x2; });
+                            result.vector(), curr.vector(), divndnd_simd());
                         return std::move(result);
                     }));
             }
@@ -211,9 +294,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                ops[0].matrix() = blaze::map(
-                        ops[0].matrix(),
-                        [&](double x) { return x / ops[1].scalar(); });
+                ops[0].matrix() =
+                    blaze::map(ops[0].matrix(), divnd0d_simd(ops[1].scalar()));
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -242,15 +324,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 operand_type& first_term = *ops.begin();
-                return primitive_result_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
-                    {
+                return primitive_result_type(std::accumulate(ops.begin() + 1,
+                    ops.end(), std::move(first_term),
+                    [](operand_type& result,
+                        operand_type const& curr) -> operand_type {
                         result.matrix() = blaze::map(
-                                result.matrix(),
-                                curr.matrix(),
-                                [](double x1, double x2) { return x1 / x2; });
+                            result.matrix(), curr.matrix(), divndnd_simd());
                         return std::move(result);
                     }));
             }
