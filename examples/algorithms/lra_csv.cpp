@@ -9,21 +9,41 @@
 #include <iostream>
 
 #include <boost/program_options.hpp>
+#include <blaze/Math.h>
+
+///////////////////////////////////////////////////////////////////////////////
+char const* const read_x_code = R"(block(
+    //
+    // Read X-data from given CSV file
+    //
+    define(read_x, filepath,
+        slice(file_read_csv(filepath), 500, 529, 0, 1)
+    ),
+    read_x
+))";
+
+char const* const read_y_code = R"(block(
+    //
+    // Read Y-data from given CSV file
+    //
+    define(read_y, filepath,
+        slice(file_read_csv(filepath), 500, 529,30,30)
+    ),
+    read_y
+))";
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const lra_code = R"(block(
     //
     // Logistic regression analysis algorithm
     //
-    //   x: [30, 2]
-    //   y: [30]
-    define(lra, alpha, iterations,enable_output,
+    //   x: [N, M]
+    //   y: [N]
+    //
+    define(lra, x, y, alpha, iterations, enable_output,
         block(
-            define(data,file_read_csv("/usr/lib/python3.5/site-packages/sklearn/datasets/data/breast_cancer.csv")),
-            define(x,slice(data,500,529,0,1)),
-            define(y,slice(data,500,529,30,30)),
-            define(weights, constant(0.0, shape(x, 1))),                // weights: [2]
-            define(transx, transpose(x)),                               // transx:  [2, 30]
+            define(weights, constant(0.0, shape(x, 1))),                // weights: [M]
+            define(transx, transpose(x)),                               // transx:  [M, N]
             define(pred, constant(0.0, shape(x, 0))),
             define(error, constant(0.0, shape(x, 0))),
             define(gradient, constant(0.0, shape(x, 1))),
@@ -32,9 +52,9 @@ char const* const lra_code = R"(block(
                 step < iterations,
                 block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
-                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),  // exp(-dot(x, weights)): [30], pred: [30]
-                    store(error, pred - y),                            // error: [30]
-                    store(gradient, dot(transx, error)),               // gradient: [2]
+                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),  // exp(-dot(x, weights)): [N], pred: [N]
+                    store(error, pred - y),                            // error: [N]
+                    store(gradient, dot(transx, error)),               // gradient: [M]
                     parallel_block(
                         store(weights, weights - (alpha * gradient)),
                         store(step, step + 1)
@@ -49,17 +69,31 @@ char const* const lra_code = R"(block(
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
+  if (vm.count("data_csv") == 0)
+  {
+    std::cerr
+            << "Please specify '--data_csv=data-file'";
+    return hpx::finalize();
+  }
+
   // compile the given code
   phylanx::execution_tree::compiler::function_list snippets;
-  auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+  auto read_x = phylanx::execution_tree::compile(read_x_code, snippets);
+  auto read_y = phylanx::execution_tree::compile(read_y_code, snippets);
 
-  // evaluate generated execution tree
-  auto alpha = phylanx::ir::node_data<double>{1e-5};
+  // read the data from the files
+  auto x = read_x(vm["data_csv"].as<std::string>());
+  auto y = read_y(vm["data_csv"].as<std::string>());
+
+  auto alpha = vm["alpha"].as<double>();
 
   auto iterations = vm["num_iterations"].as<std::int64_t>();
   bool enable_output = vm.count("enable_output") != 0;
 
-  auto result = lra( alpha, iterations, enable_output);
+  // evaluate LRA using the read data
+  auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+  auto result =
+          lra(std::move(x), std::move(y), alpha, iterations, enable_output);
 
   std::cout << "Result: \n"
             << phylanx::execution_tree::extract_numeric_value(result)
@@ -73,11 +107,16 @@ int main(int argc, char* argv[])
   // command line handling
   boost::program_options::options_description desc("usage: lra [options]");
   desc.add_options()
-      ("enable_output,e", "enable progress output (default: false)")
-      ("num_iterations,n",
-       boost::program_options::value<std::int64_t>()->default_value(750),
-       "number of iterations (default: 750)")
-      ;
+          ("enable_output,e", "enable progress output (default: false)")
+          ("num_iterations,n",
+           boost::program_options::value<std::int64_t>()->default_value(750),
+           "number of iterations (default: 750)")
+          ("alpha,a",
+           boost::program_options::value<double>()->default_value(1e-5),
+           "alpha (default: 1e-5)")
+          ("data_csv", boost::program_options::value<std::string>(),
+           "file name for reading data")
+          ;
 
   return hpx::init(desc, argc, argv);
 }
