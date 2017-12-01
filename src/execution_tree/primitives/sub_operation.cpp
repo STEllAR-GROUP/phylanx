@@ -46,52 +46,71 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-    struct sub0dnd_simd {
-    public:
-      explicit inline sub0dnd_simd(double scalar) : scalar_(scalar) {}
+        struct sub0dnd_simd
+        {
+        public:
+            explicit sub0dnd_simd(double scalar)
+              : scalar_(scalar)
+            {
+            }
 
-      template <typename T>
-      BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T &a) const {
-        return scalar_ - a;
-      }
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(std::declval<double>() - a)
+            {
+                return scalar_ - a;
+            }
 
-      template <typename T> static constexpr bool simdEnabled() {
-        return blaze::HasSIMDSub<T, double>::value;
-      }
+            template <typename T>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDSub<T, double>::value;
+            }
 
-      template <typename T>
-      BLAZE_ALWAYS_INLINE decltype(auto) load(const T &a) const {
-        BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-        return blaze::set(scalar_) - a;
-      }
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return blaze::set(scalar_) - a;
+            }
 
-    private:
-      double scalar_;
-    };
-
-    struct subnd0d_simd {
-    public:
-      explicit inline subnd0d_simd(double scalar) : scalar_(scalar) {}
-
-      template <typename T>
-      BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T &a) const {
-        return a - scalar_;
-      }
-
-      template <typename T> static constexpr bool simdEnabled() {
-        return blaze::HasSIMDSub<T, double>::value;
-      }
-
-      template <typename T>
-      BLAZE_ALWAYS_INLINE decltype(auto) load(const T &a) const {
-        BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-        return a - blaze::set(scalar_);
-      }
-
-    private:
-      double scalar_;
+        private:
+            double scalar_;
         };
 
+        struct subnd0d_simd
+        {
+        public:
+            explicit subnd0d_simd(double scalar)
+              : scalar_(scalar)
+            {
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(a - std::declval<double>())
+            {
+                return a - scalar_;
+            }
+
+            template <typename T>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDSub<T, double>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return a - blaze::set(scalar_);
+            }
+
+        private:
+            double scalar_;
+        };
+
+        ///////////////////////////////////////////////////////////////////////
         struct sub : std::enable_shared_from_this<sub>
         {
             sub() = default;

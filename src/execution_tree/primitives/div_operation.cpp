@@ -45,17 +45,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-
         struct divndnd_simd
         {
-            explicit inline divndnd_simd() {}
+            divndnd_simd() = default;
 
             template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a,
-                const T& b) const
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a, T const& b) const
+            ->  decltype(a / b)
             {
                 return a / b;
             }
+
             template <typename T1, typename T2>
             static constexpr bool simdEnabled()
             {
@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             template <typename T>
             BLAZE_ALWAYS_INLINE decltype(auto) load(
-                const T& a, const T& b) const
+                T const& a, T const& b) const
             {
                 BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
                 return a / b;
@@ -74,15 +74,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct divnd0d_simd
         {
         public:
-            explicit inline divnd0d_simd(double scalar)
+            explicit divnd0d_simd(double scalar)
               : scalar_(scalar)
             {
             }
+
             template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(a / std::declval<double>())
             {
                 return a / scalar_;
             }
+
             template <typename T>
             static constexpr bool simdEnabled()
             {
@@ -90,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
             {
                 BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
                 return a / blaze::set(scalar_);
@@ -103,15 +106,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct div0dnd_simd
         {
         public:
-            explicit inline div0dnd_simd(double scalar)
+            explicit div0dnd_simd(double scalar)
               : scalar_(scalar)
             {
             }
+
             template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(std::declval<double>() / a)
             {
                 return scalar_ / a;
             }
+
             template <typename T>
             static constexpr bool simdEnabled()
             {
@@ -119,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
             {
                 BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
                 return blaze::set(scalar_) / a;
@@ -129,6 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             double scalar_;
         };
 
+        ///////////////////////////////////////////////////////////////////////
         struct div : std::enable_shared_from_this<div>
         {
             div() = default;

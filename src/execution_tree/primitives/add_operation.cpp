@@ -30,57 +30,6 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
 HPX_DEFINE_GET_COMPONENT_TYPE(add_operation_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
-struct AddScalar
-{
-public:
-    explicit inline AddScalar( double scalar )
-            : scalar_( scalar )
-    {}
-
-    template< typename T >
-    BLAZE_ALWAYS_INLINE decltype(auto) operator()( const T& a ) const
-    {
-        return a + scalar_;
-    }
-
-    template< typename T >
-    static constexpr bool simdEnabled() { return blaze::HasSIMDAdd<T,double>::value; }
-
-    template< typename T >
-    BLAZE_ALWAYS_INLINE decltype(auto) load( const T& a ) const
-    {
-        BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK( T );
-        return a + blaze::set( scalar_ );
-    }
-
-private:
-    double scalar_;
-};
-
-
-struct Add
-{
-    template< typename T >
-    BLAZE_ALWAYS_INLINE auto operator()( const T& a ,const T& b) const -> decltype( a+b )
-    {
-        return a+b;
-    }
-
-    template< typename T1,typename T2 >
-    static constexpr bool simdEnabled() { return blaze::HasSIMDAdd<T1,T2>::value; }
-
-    template< typename T >
-    BLAZE_ALWAYS_INLINE auto load( const T& a ,const T& b) const -> decltype( a+b )
-    {
-        BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK( T );
-        return a+b;
-    }
-};
-
-
-
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -101,13 +50,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct add_simd
         {
         public:
-            explicit inline add_simd(double scalar)
+            explicit add_simd(double scalar)
               : scalar_(scalar)
             {
             }
 
             template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(a + std::declval<double>())
             {
                 return a + scalar_;
             }
@@ -119,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
             {
                 BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
                 return a + blaze::set(scalar_);

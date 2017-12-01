@@ -79,7 +79,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "less_equal::less_equal1d1d",
                         "the dimensions of the operands do not match");
                 }
-                // TODO: SIMD functionality should be added, blaze implementation is not currently available
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                //       is not currently available
                 lhs = blaze::map(lhs.vector(), rhs.vector(),
                     [](double x1, double x2) { return x1 <= x2 ? 1.0 : 0.0; });
 
@@ -114,7 +116,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "less_equal::less_equal2d2d",
                         "the dimensions of the operands do not match");
                 }
-                // TODO: SIMD functionality should be added, blaze implementation is not currently available
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                //       is not currently available
                 lhs = blaze::map(lhs.matrix(), rhs.matrix(),
                     [](double x1, double x2) { return x1 <= x2 ? 1 : 0; });
 
