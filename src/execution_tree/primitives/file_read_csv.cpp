@@ -42,50 +42,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     file_read_csv::file_read_csv(
-        std::vector<primitive_argument_type> && operands)
-    {
-        if (operands.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_csv::"
-                    "file_read_csv",
-                "the file_read_csv primitive requires exactly one literal "
-                    "argument");
-        }
-
-        if (!valid(operands[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_csv::"
-                    "file_read_csv",
-                "the file_read_csv primitive requires that the given operand "
-                    "is valid");
-        }
-
-        std::string* name = util::get_if<std::string>(&operands[0]);
-        if (name == nullptr)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_csv::"
-                    "file_read_csv",
-                "the first literal argument must be a string representing a "
-                    "valid file name");
-        }
-
-        filename_ = std::move(*name);
-    }
+            std::vector<primitive_argument_type> && operands)
+      : base_primitive(std::move(operands))
+    {}
 
     // read data from given file and return content
     hpx::future<primitive_result_type> file_read_csv::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        std::ifstream infile(filename_.c_str(), std::ios::in);
+        if (operands_.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_read_csv::"
+                    "eval",
+                "the file_read_csv primitive requires exactly one literal "
+                    "argument");
+        }
+
+        if (!valid(operands_[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_read_csv::"
+                    "eval",
+                "the file_read_csv primitive requires that the given operand "
+                    "is valid");
+        }
+
+        std::string filename = string_operand_sync(operands_[0], args);
+        std::ifstream infile(filename.c_str(), std::ios::in);
 
         if (!infile.is_open())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::eval",
-                "couldn't open file: " + filename_);
+                "couldn't open file: " + filename);
         }
 
         std::string line;
@@ -112,7 +102,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "eval",
                         "wrong data format, different number of element in "
                             "this row " +
-                            filename_ + ':' + std::to_string(n_rows));
+                            filename + ':' + std::to_string(n_rows));
                 }
                 n_rows++;
             }
@@ -120,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::invalid_data,
                     "phylanx::execution_tree::primitives::file_read_csv::eval",
-                    "wrong data format " + filename_ + ':' +
+                    "wrong data format " + filename + ':' +
                         std::to_string(n_rows));
             }
         }
