@@ -5,6 +5,7 @@
 
 set(example_programs
     lra
+    lra_csv
    )
 
 foreach(example_program ${example_programs})

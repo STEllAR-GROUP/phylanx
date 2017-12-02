@@ -71,12 +71,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type row_slicing2d(args_type && args) const
             {
                 // returns the sliced matrix, depending upon the values
-                // provided in row_start, row_stop.
+                // provided in row_start, row_stop(exclusive)
 
                 // parameters required by phylanx to create a slice is as follows:
                 // matrix The matrix containing the submatrix.
                 // row_start The index of the first row of the submatrix.
-                // row_stop The index of the last row of the submatrix.
+                // row_stop The index of the last row(exclusive) of the submatrix.
 
                 auto row_start = extract_integer_value(args[1]);
                 auto row_stop = extract_integer_value(args[2]);
@@ -97,13 +97,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // matrix = matrix
                 // row = row_start
                 // column = 0
-                // m = (row_stop - row_start)+1
+                // m = (row_stop - row_start)
                 // n = number of columns in the input matrix
 
                 submatrix_type sm =
                     blaze::submatrix(args[0].matrix(),
                         row_start, 0,
-                        (row_stop - row_start) + 1, num_matrix_cols);
+                        (row_stop - row_start), num_matrix_cols);
 
                 return ir::node_data<double>{matrix_type{std::move(sm)}};
             }
