@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type column_slicing1d(args_type && args) const
             {
-                // return elements starting from col_start to col_stop
+                // return elements starting from col_start to col_stop(exclusive)
 
                 auto col_start  = extract_integer_value(args[1]);
                 auto col_stop = extract_integer_value(args[2]);
@@ -91,11 +91,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // performed in blaze.
                 // vector = vector
                 // column = col_start
-                // n = (col_stop - col_start)+1
+                // n = (col_stop - col_start)
 
                 subvector_type sv =
                     blaze::subvector(args[0].vector(),
-                        col_start, (col_stop - col_start) + 1);
+                        col_start, (col_stop - col_start));
 
                 return ir::node_data<double>(vector_type(std::move(sv)));
             }
@@ -108,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // parameters required by phylanx to create a slice is as follows:
                 // matrix The matrix containing the submatrix.
                 // col_start The index of the first column of the submatrix.
-                // col_stop The index of the last column of the submatrix.
+                // col_stop The index of the last column(exclusive) of the submatrix.
 
                 auto col_start = extract_integer_value(args[1]);
                 auto col_stop = extract_integer_value(args[2]);
@@ -130,12 +130,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // row = 0
                 // column = col_start
                 // m = number of rows in the input matrix
-                // n = (col_stop - col_start)+1
+                // n = (col_stop - col_start)
 
                 submatrix_type sm =
                     blaze::submatrix(args[0].matrix(),
                         0, col_start,
-                        num_matrix_rows, (col_stop - col_start) + 1);
+                        num_matrix_rows, (col_stop - col_start));
 
                 return ir::node_data<double>(matrix_type(std::move(sm)));
             }

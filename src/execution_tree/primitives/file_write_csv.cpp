@@ -128,18 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "operands are valid");
                 }
 
-                std::string const* name =
-                    util::get_if<std::string>(&operands[0]);
-                if (name == nullptr)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_write::"
-                            "file_write_csv",
-                        "the first literal argument must be a string "
-                            "representing a valid file name");
-                }
-
-                filename_ = std::move(*name);
+                filename_ = string_operand_sync(operands[0], args);
 
                 auto this_ = this->shared_from_this();
                 return numeric_operand(operands[1], args)
@@ -174,7 +163,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            static std::vector<primitive_argument_type> noargs;
             return std::make_shared<detail::file_write_csv>()->eval(args, noargs);
         }
 
