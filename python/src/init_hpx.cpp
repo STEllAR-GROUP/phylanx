@@ -37,14 +37,17 @@ struct get_command_line
     get_command_line()
     {
         // parse the command line proc file
-        std::ifstream cmdline("/proc/self/cmdline");
-        std::string tmpstr((std::istreambuf_iterator<char>(cmdline)),
-                         std::istreambuf_iterator<char>());
-        // make a stringstream and split into a vector of strings
-        std::stringstream ss(tmpstr);
-        std::istream_iterator<std::string> begin(ss);
+        std::ifstream cmdline("/proc/self/cmdline"); 
+        if (!cmdline.is_open())
+        {
+            // If we are on Linux and there is no proc filesystem, 
+            // something bad has happened
+            std::cerr << "Cannot access file: /proc/self/cmdline" << std::endl;
+            std::abort();
+        }
+        std::istream_iterator<std::string> begin(cmdline);
         std::istream_iterator<std::string> end;
-        std::vector<std::string> args_(begin, end);
+        std::vector<std::string> args_(begin,end);
 
         argv_.resize(args_.size() + 1);
 
