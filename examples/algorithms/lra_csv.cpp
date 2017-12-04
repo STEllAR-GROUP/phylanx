@@ -39,7 +39,7 @@ char const* const read_y_code = R"(block(
     // Read Y-data from given CSV file
     //
     define(read_y, filepath,
-        slice(file_read_csv(filepath), 500, 530,30,31)
+        slice(file_read_csv(filepath), 500, 530, 30, 31)
     ),
     read_y
 ))";
