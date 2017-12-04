@@ -16,17 +16,59 @@
 
 #if defined(linux) || defined(__linux) || defined(__linux__)
 
+#include <sstream>
+#include <fstream>
+#include <streambuf>
+
 int __argc = 0;
 char** __argv = nullptr;
 
-void set_argv_argv(int argc, char* argv[], char* env[])
+void set_argc_argv(int argc, char* argv[], char* env[])
 {
     __argc = argc;
     __argv = argv;
 }
 
 __attribute__((section(".init_array")))
-    void (*set_global_argc_argv)(int, char*[], char*[]) = &set_argv_argv;
+    void (*set_global_argc_argv)(int, char*[], char*[]) = &set_argc_argv;
+
+struct get_command_line
+{
+    get_command_line()
+    {
+        // parse the command line proc file
+        std::ifstream cmdline("/proc/self/cmdline");
+        std::string tmpstr((std::istreambuf_iterator<char>(cmdline)),
+                         std::istreambuf_iterator<char>());
+        // make a stringstream and split into a vector of strings
+        std::stringstream ss(tmpstr);
+        std::istream_iterator<std::string> begin(ss);
+        std::istream_iterator<std::string> end;
+        std::vector<std::string> args_(begin, end);
+
+        argv_.resize(args_.size() + 1);
+
+        std::size_t argcount = 0;
+        for (std::size_t i = 0; i != args_.size(); ++i)
+        {
+            argv_[argcount++] = const_cast<char*>(args_[i].data());
+        }
+
+        // add a single nullptr in the end as some application rely on that
+        argv_[argcount] = nullptr;
+
+        __argc = int(args_.size());
+        __argv = argv_.data();
+    }
+
+    std::vector<char*> argv_;
+};
+
+get_command_line const& init_command_line()
+{
+    static get_command_line cmdline;
+    return cmdline;
+}
 
 #elif defined(__APPLE__)
 
@@ -98,6 +140,11 @@ struct manage_global_runtime
 #if defined(HPX_WINDOWS)
         hpx::detail::init_winsocket();
         init_command_line();
+#elif defined(linux) || defined(__linux) || defined(__linux__)
+        if (__argv == nullptr && __argc == 0) {
+            // when python forked this process, .init_array didn't work. Bummer.
+            init_command_line();
+        }
 #endif
 
         std::vector<std::string> const cfg = {
