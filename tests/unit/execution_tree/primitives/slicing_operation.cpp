@@ -53,11 +53,11 @@ void test_slicing_operation_0d()
 void test_slicing_operation_1d()
 {
     // parameters required by phylanx to create a slice is as follows:
-    // vector : v1 in this testcase
+    // vector : v1 in this test case
     // row_start : set to zero internally
     // row_stop : set to 1 internally
-    // col_start The index of the first element to extract.
-    // col_start The index of the last element to extract.
+    // col_start : The index of the first element to extract.
+    // col_stop : The index of the last element(exclusive) to extract.
 
     blaze::Rand<blaze::DynamicVector<double>> gen{};
     blaze::DynamicVector<double> v1 = gen.generate(1007UL);
@@ -83,7 +83,7 @@ void test_slicing_operation_1d()
             hpx::find_here(), phylanx::ir::node_data<double>(15.0));
 
     // row_start an row_stop does not have any effect on the output.
-    // row_start and row_stop is set to 0 and 1 repectively internally.
+    // row_start and row_stop is set to 0 and 1 respectively internally.
     // any user input for these parameters is ignored internally.
 
     phylanx::execution_tree::primitive slice =
@@ -108,7 +108,7 @@ void test_slicing_operation_1d()
     // size = (col_stop - col_start)
 
     // Here, matrix = m1 , row = 5, column = 5, m = 43, n = 10
-    auto sm = blaze::subvector(v1,5,10);
+    auto sm = blaze::subvector(v1, 5, 10);
     auto expected = sm;
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
@@ -121,11 +121,11 @@ void test_slicing_operation_1d()
 void test_slicing_operation_1d_zero_start()
 {
     // parameters required by phylanx to create a slice is as follows:
-    // vector : v1 in this testcase
+    // vector : v1 in this test case
     // row_start : set to zero internally
     // row_stop : set to 1 internally
-    // col_start The index of the first element to extract.
-    // col_start The index of the last element to extract(exclusive).
+    // col_start : The index of the first element to extract.
+    // col_stop : The index of the last element(exclusive) to extract.
 
     blaze::Rand<blaze::DynamicVector<double>> gen{};
     blaze::DynamicVector<double> v1 = gen.generate(1007UL);
@@ -176,7 +176,7 @@ void test_slicing_operation_1d_zero_start()
     // size = (col_stop - col_start)
 
     // Here, matrix = m1 , row = 5, column = 5, m = 43, n = 10
-    auto sm = blaze::subvector(v1,0,15);
+    auto sm = blaze::subvector(v1, 0, 15);
     auto expected = sm;
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
@@ -193,7 +193,7 @@ void test_slicing_operation_2d()
     // row_start The index of the first row of the submatrix.
     // row_stop The index of the last row(exclusive) of the submatrix.
     // col_start The index of the first column of the submatrix.
-    // col_start The index of the last column of the submatrix.
+    // col_stop The index of the last column(exclusive) of the submatrix.
 
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
     blaze::DynamicMatrix<double> m1 = gen.generate(101UL, 101UL);
@@ -313,12 +313,12 @@ void test_slicing_operation_2d_zero_start()
     // matrix = matrix
     // row = row_start
     // column = col_start
-    // m = (row_stop - row_start)+1
-    // n = (col_stop - col_start)+1
+    // m = (row_stop - row_start)
+    // n = (col_stop - col_start)
 
     // Here, matrix = m1 , row = 0, column = 0, m = 47, n = 15
 
-    auto sm = blaze::submatrix(m1,0,0,47,15);
+    auto sm = blaze::submatrix(m1, 0, 0, 47, 15);
     auto expected = sm;
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =

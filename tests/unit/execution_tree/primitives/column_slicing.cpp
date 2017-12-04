@@ -143,7 +143,7 @@ void test_column_slicing_operation_2d()
     // the input matrix respectively
     // Here, matrix = m1 , column = 5, n = 43
 
-    auto sm = blaze::submatrix(m1,0,5,90,42);
+    auto sm = blaze::submatrix(m1, 0, 5, 90, 42);
     auto expected = sm;
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
