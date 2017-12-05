@@ -29,7 +29,7 @@ char const* const read_x_code = R"(block(
     // Read X-data from given CSV file
     //
     define(read_x, filepath,
-        slice(file_read_csv(filepath), 500, 530, 0, 2)
+        slice(file_read_csv(filepath), 0, 569, 0, 30)
     ),
     read_x
 ))";
@@ -39,7 +39,7 @@ char const* const read_y_code = R"(block(
     // Read Y-data from given CSV file
     //
     define(read_y, filepath,
-        slice(file_read_csv(filepath), 500, 530, 30, 31)
+        slice(file_read_csv(filepath), 0, 569, 30, 31)
     ),
     read_y
 ))";
@@ -87,6 +87,9 @@ int hpx_main(boost::program_options::variables_map& vm)
         return hpx::finalize();
     }
 
+    // Add high resolution timer
+    hpx::util::high_resolution_timer t;
+
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
     auto read_x = phylanx::execution_tree::compile(read_x_code, snippets);
@@ -102,13 +105,19 @@ int hpx_main(boost::program_options::variables_map& vm)
     bool enable_output = vm.count("enable_output") != 0;
 
     // evaluate LRA using the read data
+    // time the execution
+    t.restart();
+
     auto lra = phylanx::execution_tree::compile(lra_code, snippets);
     auto result =
         lra(std::move(x), std::move(y), alpha, iterations, enable_output);
 
+    auto elapsed = t.elapsed();
+
     std::cout << "Result: \n"
               << phylanx::execution_tree::extract_numeric_value(result)
-              << std::endl;
+              << std::endl
+              << "Calculated in :" << elapsed << " seconds" << std::endl;
 
     return hpx::finalize();
 }
