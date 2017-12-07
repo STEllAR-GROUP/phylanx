@@ -7,8 +7,7 @@ machine:
     services:
         - docker
     environment:
-        IMAGE_NAME: stellargroup/phylanx:debian_clang
-        TARGET_IMAGE_NAME: stellargroup/phylanx:dev
+        IMAGE_NAME: stellargroup/phylanx:dev
 
 general:
     branches:
@@ -24,17 +23,6 @@ dependencies:
     override:
         - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_CMAKE_LOGLEVEL=Debug -DHPX_DIR=/usr/local/lib/cmake/HPX -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2
-        # TODO replace this line with "docker build" once docker managed to
-        # introduce temporal file copies that don't show in the resulting image
-        # size.
-        # The problem is the "ADD/COPY" and "RUN rm" in Dockerfile. Those count
-        # as separate steps and keep the temporal files stored as part of the
-        # image, expanding it by about 500 MB.
-        # docker-compile.pl is a dirty workaround, and shall be removed ASAP.
-        - cp tools/docker/Dockerfile.post Dockerfile
-        - cp tools/docker/.dockerignore .
-        - ./tools/docker/docker-compile.pl ${TARGET_IMAGE_NAME}:
-            timeout: 1200   # increase timeout to avoid failure
 
 test:
     override:
@@ -45,5 +33,5 @@ deployment:
         branch: master
         commands:
             - docker login -e ${DOCKER_EMAIL} -u ${DOCKER_USER} -p ${DOCKER_PASS}
-            - docker push ${TARGET_IMAGE_NAME}
+            - docker push ${IMAGE_NAME}
 
