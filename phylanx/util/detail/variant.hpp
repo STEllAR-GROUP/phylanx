@@ -202,562 +202,9 @@ namespace std {
 #include <type_traits>
 #include <utility>
 
-// MPark.Variant
-//
-// Copyright Michael Park, 2015-2017
-//
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
-
-#ifndef MPARK_CONFIG_HPP
-#define MPARK_CONFIG_HPP
-
-// MSVC 2015 Update 3.
-#if __cplusplus < 201103L && (!defined(_MSC_VER) || _MSC_FULL_VER < 190024215)
-#error "MPark.Variant requires C++11 support."
-#endif
-
-#ifndef __has_builtin
-#define __has_builtin(x) 0
-#endif
-
-#ifndef __has_feature
-#define __has_feature(x) 0
-#endif
-
-#if __has_builtin(__builtin_addressof) || \
-    (defined(__GNUC__) && __GNUC__ >= 7) || defined(_MSC_VER)
-#define MPARK_BUILTIN_ADDRESSOF
-#endif
-
-#if __has_builtin(__type_pack_element)
-#define MPARK_TYPE_PACK_ELEMENT
-#endif
-
-#if defined(__cpp_constexpr) && __cpp_constexpr >= 201304
-#define MPARK_CPP14_CONSTEXPR
-#endif
-
-#if __has_feature(cxx_exceptions) || defined(__cpp_exceptions)
-#define MPARK_EXCEPTIONS
-#endif
-
-#if defined(__cpp_generic_lambdas) || defined(_MSC_VER)
-#define MPARK_GENERIC_LAMBDAS
-#endif
-
-#if defined(__cpp_lib_integer_sequence)
-#define MPARK_INTEGER_SEQUENCE
-#endif
-
-#if defined(__cpp_return_type_deduction) || defined(_MSC_VER)
-#define MPARK_RETURN_TYPE_DEDUCTION
-#endif
-
-#if defined(__cpp_lib_transparent_operators) || defined(_MSC_VER)
-#define MPARK_TRANSPARENT_OPERATORS
-#endif
-
-#if defined(__cpp_variable_templates) || defined(_MSC_VER)
-#define MPARK_VARIABLE_TEMPLATES
-#endif
-
-#if !defined(__GLIBCXX__)
-#define MPARK_TRIVIALITY_TYPE_TRAITS
-#elif defined(__has_include) && __has_include(<codecvt>)  // >= libstdc++-5
-#define MPARK_TRIVIALITY_TYPE_TRAITS
-#endif
-
-#endif  // MPARK_CONFIG_HPP
-
-// MPark.Variant
-//
-// Copyright Michael Park, 2015-2017
-//
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
-
-#ifndef MPARK_IN_PLACE_HPP
-#define MPARK_IN_PLACE_HPP
-
-#include <cstddef>
-
-
-namespace mpark {
-
-  struct in_place_t { explicit in_place_t() = default; };
-
-  template <std::size_t I>
-  struct in_place_index_t { explicit in_place_index_t() = default; };
-
-  template <typename T>
-  struct in_place_type_t { explicit in_place_type_t() = default; };
-
-#ifdef MPARK_VARIABLE_TEMPLATES
-  constexpr in_place_t in_place{};
-
-  template <std::size_t I> constexpr in_place_index_t<I> in_place_index{};
-
-  template <typename T> constexpr in_place_type_t<T> in_place_type{};
-#endif
-
-}  // namespace mpark
-
-#endif  // MPARK_IN_PLACE_HPP
-
-// MPark.Variant
-//
-// Copyright Michael Park, 2015-2017
-//
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
-
-#ifndef MPARK_LIB_HPP
-#define MPARK_LIB_HPP
-
-#include <memory>
-#include <functional>
-#include <type_traits>
-#include <utility>
-
-
-#define RETURN(...)                                          \
-  noexcept(noexcept(__VA_ARGS__)) -> decltype(__VA_ARGS__) { \
-    return __VA_ARGS__;                                      \
-  }
-
-namespace mpark {
-  namespace lib {
-    template <typename T>
-    struct identity { using type = T; };
-
-    inline namespace cpp14 {
-      template <typename T, std::size_t N>
-      struct array {
-        constexpr const T &operator[](std::size_t index) const {
-          return data[index];
-        }
-
-        T data[N == 0 ? 1 : N];
-      };
-
-      template <typename T>
-      using add_pointer_t = typename std::add_pointer<T>::type;
-
-      template <typename... Ts>
-      using common_type_t = typename std::common_type<Ts...>::type;
-
-      template <typename T>
-      using decay_t = typename std::decay<T>::type;
-
-      template <bool B, typename T = void>
-      using enable_if_t = typename std::enable_if<B, T>::type;
-
-      template <typename T>
-      using remove_const_t = typename std::remove_const<T>::type;
-
-      template <typename T>
-      using remove_reference_t = typename std::remove_reference<T>::type;
-
-      template <typename T>
-      inline constexpr T &&forward(remove_reference_t<T> &t) noexcept {
-        return static_cast<T &&>(t);
-      }
-
-      template <typename T>
-      inline constexpr T &&forward(remove_reference_t<T> &&t) noexcept {
-        static_assert(!std::is_lvalue_reference<T>::value,
-                      "can not forward an rvalue as an lvalue");
-        return static_cast<T &&>(t);
-      }
-
-      template <typename T>
-      inline constexpr remove_reference_t<T> &&move(T &&t) noexcept {
-        return static_cast<remove_reference_t<T> &&>(t);
-      }
-
-#ifdef MPARK_INTEGER_SEQUENCE
-      template <typename T, T... Is>
-      using integer_sequence = std::integer_sequence<T, Is...>;
-
-      template <std::size_t... Is>
-      using index_sequence = std::index_sequence<Is...>;
-
-      template <std::size_t N>
-      using make_index_sequence = std::make_index_sequence<N>;
-
-      template <typename... Ts>
-      using index_sequence_for = std::index_sequence_for<Ts...>;
-#else
-      template <typename T, T... Is>
-      struct integer_sequence {
-        using value_type = T;
-        static constexpr std::size_t size() noexcept { return sizeof...(Is); }
-      };
-
-      template <std::size_t... Is>
-      using index_sequence = integer_sequence<std::size_t, Is...>;
-
-      template <typename Lhs, typename Rhs>
-      struct make_index_sequence_concat;
-
-      template <std::size_t... Lhs, std::size_t... Rhs>
-      struct make_index_sequence_concat<index_sequence<Lhs...>,
-                                        index_sequence<Rhs...>>
-          : identity<index_sequence<Lhs..., (sizeof...(Lhs) + Rhs)...>> {};
-
-      template <std::size_t N>
-      struct make_index_sequence_impl;
-
-      template <std::size_t N>
-      using make_index_sequence = typename make_index_sequence_impl<N>::type;
-
-      template <std::size_t N>
-      struct make_index_sequence_impl
-          : make_index_sequence_concat<make_index_sequence<N / 2>,
-                                       make_index_sequence<N - (N / 2)>> {};
-
-      template <>
-      struct make_index_sequence_impl<0> : identity<index_sequence<>> {};
-
-      template <>
-      struct make_index_sequence_impl<1> : identity<index_sequence<0>> {};
-
-      template <typename... Ts>
-      using index_sequence_for = make_index_sequence<sizeof...(Ts)>;
-#endif
-
-      // <functional>
-#ifdef MPARK_TRANSPARENT_OPERATORS
-      using equal_to = std::equal_to<>;
-#else
-      struct equal_to {
-        template <typename Lhs, typename Rhs>
-        inline constexpr auto operator()(Lhs &&lhs, Rhs &&rhs) const
-          RETURN(lib::forward<Lhs>(lhs) == lib::forward<Rhs>(rhs))
-      };
-#endif
-
-#ifdef MPARK_TRANSPARENT_OPERATORS
-      using not_equal_to = std::not_equal_to<>;
-#else
-      struct not_equal_to {
-        template <typename Lhs, typename Rhs>
-        inline constexpr auto operator()(Lhs &&lhs, Rhs &&rhs) const
-          RETURN(lib::forward<Lhs>(lhs) != lib::forward<Rhs>(rhs))
-      };
-#endif
-
-#ifdef MPARK_TRANSPARENT_OPERATORS
-      using less = std::less<>;
-#else
-      struct less {
-        template <typename Lhs, typename Rhs>
-        inline constexpr auto operator()(Lhs &&lhs, Rhs &&rhs) const
-          RETURN(lib::forward<Lhs>(lhs) < lib::forward<Rhs>(rhs))
-      };
-#endif
-
-#ifdef MPARK_TRANSPARENT_OPERATORS
-      using greater = std::greater<>;
-#else
-      struct greater {
-        template <typename Lhs, typename Rhs>
-        inline constexpr auto operator()(Lhs &&lhs, Rhs &&rhs) const
-          RETURN(lib::forward<Lhs>(lhs) > lib::forward<Rhs>(rhs))
-      };
-#endif
-
-#ifdef MPARK_TRANSPARENT_OPERATORS
-      using less_equal = std::less_equal<>;
-#else
-      struct less_equal {
-        template <typename Lhs, typename Rhs>
-        inline constexpr auto operator()(Lhs &&lhs, Rhs &&rhs) const
-          RETURN(lib::forward<Lhs>(lhs) <= lib::forward<Rhs>(rhs))
-      };
-#endif
-
-#ifdef MPARK_TRANSPARENT_OPERATORS
-      using greater_equal = std::greater_equal<>;
-#else
-      struct greater_equal {
-        template <typename Lhs, typename Rhs>
-        inline constexpr auto operator()(Lhs &&lhs, Rhs &&rhs) const
-          RETURN(lib::forward<Lhs>(lhs) >= lib::forward<Rhs>(rhs))
-      };
-#endif
-    }  // namespace cpp14
-
-    inline namespace cpp17 {
-
-      // <type_traits>
-      template <bool B>
-      using bool_constant = std::integral_constant<bool, B>;
-
-      template <typename...>
-      struct voider : identity<void> {};
-
-      template <typename... Ts>
-      using void_t = typename voider<Ts...>::type;
-
-      namespace detail {
-        namespace swappable {
-
-          using std::swap;
-
-          template <typename T>
-          struct is_swappable_impl {
-            private:
-            template <typename U,
-                      typename = decltype(swap(std::declval<U &>(),
-                                               std::declval<U &>()))>
-            inline static std::true_type test(int);
-
-            template <typename U>
-            inline static std::false_type test(...);
-
-            public:
-            using type = decltype(test<T>(0));
-          };
-
-          template <typename T>
-          using is_swappable = typename is_swappable_impl<T>::type;
-
-          template <typename T, bool = is_swappable<T>::value>
-          struct is_nothrow_swappable {
-            static constexpr bool value =
-                noexcept(swap(std::declval<T &>(), std::declval<T &>()));
-          };
-
-          template <typename T>
-          struct is_nothrow_swappable<T, false> : std::false_type {};
-
-        }  // namespace swappable
-      }  // namespace detail
-
-      template <typename T>
-      using is_swappable = detail::swappable::is_swappable<T>;
-
-      template <typename T>
-      using is_nothrow_swappable = detail::swappable::is_nothrow_swappable<T>;
-
-      // <functional>
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4100)
-#endif
-      template <typename F, typename... As>
-      inline constexpr auto invoke(F &&f, As &&... as)
-          RETURN(lib::forward<F>(f)(lib::forward<As>(as)...))
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-      template <typename B, typename T, typename D>
-      inline constexpr auto invoke(T B::*pmv, D &&d)
-          RETURN(lib::forward<D>(d).*pmv)
-
-      template <typename Pmv, typename Ptr>
-      inline constexpr auto invoke(Pmv pmv, Ptr &&ptr)
-          RETURN((*lib::forward<Ptr>(ptr)).*pmv)
-
-      template <typename B, typename T, typename D, typename... As>
-      inline constexpr auto invoke(T B::*pmf, D &&d, As &&... as)
-          RETURN((lib::forward<D>(d).*pmf)(lib::forward<As>(as)...))
-
-      template <typename Pmf, typename Ptr, typename... As>
-      inline constexpr auto invoke(Pmf pmf, Ptr &&ptr, As &&... as)
-          RETURN(((*lib::forward<Ptr>(ptr)).*pmf)(lib::forward<As>(as)...))
-
-      namespace detail {
-
-        template <typename Void, typename, typename...>
-        struct invoke_result {};
-
-        template <typename F, typename... Args>
-        struct invoke_result<void_t<decltype(lib::invoke(
-                                 std::declval<F>(), std::declval<Args>()...))>,
-                             F,
-                             Args...>
-            : identity<decltype(
-                  lib::invoke(std::declval<F>(), std::declval<Args>()...))> {};
-
-      }  // namespace detail
-
-      template <typename F, typename... Args>
-      using invoke_result = detail::invoke_result<void, F, Args...>;
-
-      template <typename F, typename... Args>
-      using invoke_result_t = typename invoke_result<F, Args...>::type;
-
-      namespace detail {
-
-        template <typename Void, typename, typename...>
-        struct is_invocable : std::false_type {};
-
-        template <typename F, typename... Args>
-        struct is_invocable<void_t<invoke_result_t<F, Args...>>, F, Args...>
-            : std::true_type {};
-
-        template <typename Void, typename, typename, typename...>
-        struct is_invocable_r : std::false_type {};
-
-        template <typename R, typename F, typename... Args>
-        struct is_invocable_r<void_t<invoke_result_t<F, Args...>>,
-                              R,
-                              F,
-                              Args...>
-            : std::is_convertible<invoke_result_t<F, Args...>, R> {};
-
-      }  // namespace detail
-
-      template <typename F, typename... Args>
-      using is_invocable = detail::is_invocable<void, F, Args...>;
-
-      template <typename R, typename F, typename... Args>
-      using is_invocable_r = detail::is_invocable_r<void, R, F, Args...>;
-
-      // <memory>
-#ifdef MPARK_BUILTIN_ADDRESSOF
-      template <typename T>
-      inline constexpr T *addressof(T &arg) {
-        return __builtin_addressof(arg);
-      }
-#else
-      namespace detail {
-
-        namespace has_addressof_impl {
-
-          struct fail;
-
-          template <typename T>
-          inline fail operator&(T &&);
-
-          template <typename T>
-          inline static constexpr bool impl() {
-            return (std::is_class<T>::value || std::is_union<T>::value) &&
-                   !std::is_same<decltype(&std::declval<T &>()), fail>::value;
-          }
-
-        }  // namespace has_addressof_impl
-
-        template <typename T>
-        using has_addressof = bool_constant<has_addressof_impl::impl<T>()>;
-
-        template <typename T>
-        inline constexpr T *addressof(T &arg, std::true_type) {
-          return std::addressof(arg);
-        }
-
-        template <typename T>
-        inline constexpr T *addressof(T &arg, std::false_type) {
-          return &arg;
-        }
-
-      }  // namespace detail
-
-      template <typename T>
-      inline constexpr T *addressof(T &arg) {
-        return detail::addressof(arg, detail::has_addressof<T>{});
-      }
-#endif
-
-      template <typename T>
-      inline constexpr T *addressof(const T &&) = delete;
-
-    }  // namespace cpp17
-
-    template <typename T>
-    struct remove_all_extents : identity<T> {};
-
-    template <typename T, std::size_t N>
-    struct remove_all_extents<array<T, N>> : remove_all_extents<T> {};
-
-    template <typename T>
-    using remove_all_extents_t = typename remove_all_extents<T>::type;
-
-    template <std::size_t N>
-    using size_constant = std::integral_constant<std::size_t, N>;
-
-    template <bool... Bs>
-    using bool_sequence = integer_sequence<bool, Bs...>;
-
-    template <std::size_t I, typename T>
-    struct indexed_type : size_constant<I>, identity<T> {};
-
-    template <bool... Bs>
-    using all =
-        std::is_same<bool_sequence<true, Bs...>, bool_sequence<Bs..., true>>;
-
-#ifdef MPARK_TYPE_PACK_ELEMENT
-    template <std::size_t I, typename... Ts>
-    using type_pack_element_t = __type_pack_element<I, Ts...>;
-#else
-    template <std::size_t I, typename... Ts>
-    struct type_pack_element_impl {
-      private:
-      template <typename>
-      struct set;
-
-      template <std::size_t... Is>
-      struct set<index_sequence<Is...>> : indexed_type<Is, Ts>... {};
-
-      template <typename T>
-      inline static std::enable_if<true, T> impl(indexed_type<I, T>);
-
-      inline static std::enable_if<false> impl(...);
-
-      public:
-      using type = decltype(impl(set<index_sequence_for<Ts...>>{}));
-    };
-
-    template <std::size_t I, typename... Ts>
-    using type_pack_element = typename type_pack_element_impl<I, Ts...>::type;
-
-    template <std::size_t I, typename... Ts>
-    using type_pack_element_t = typename type_pack_element<I, Ts...>::type;
-#endif
-
-#ifdef MPARK_TRIVIALITY_TYPE_TRAITS
-    template <typename T>
-    using is_trivially_copy_constructible =
-        std::is_trivially_copy_constructible<T>;
-
-    template <typename T>
-    using is_trivially_move_constructible =
-        std::is_trivially_move_constructible<T>;
-
-    template <typename T>
-    using is_trivially_copy_assignable = std::is_trivially_copy_assignable<T>;
-
-    template <typename T>
-    using is_trivially_move_assignable = std::is_trivially_move_assignable<T>;
-#else
-    template <typename T>
-    struct is_trivially_copy_constructible
-        : bool_constant<
-              std::is_copy_constructible<T>::value && __has_trivial_copy(T)> {};
-
-    template <typename T>
-    struct is_trivially_move_constructible : bool_constant<__is_trivial(T)> {};
-
-    template <typename T>
-    struct is_trivially_copy_assignable
-        : bool_constant<
-              std::is_copy_assignable<T>::value && __has_trivial_assign(T)> {};
-
-    template <typename T>
-    struct is_trivially_move_assignable : bool_constant<__is_trivial(T)> {};
-#endif
-
-  }  // namespace lib
-}  // namespace mpark
-
-#undef RETURN
-
-#endif  // MPARK_LIB_HPP
-
+#include "config.hpp"
+#include "in_place.hpp"
+#include "lib.hpp"
 
 namespace mpark {
 
@@ -801,6 +248,9 @@ namespace mpark {
     throw bad_variant_access{};
 #else
     std::terminate();
+#ifdef MPARK_BUILTIN_UNREACHABLE
+    __builtin_unreachable();
+#endif
 #endif
   }
 
@@ -846,22 +296,15 @@ namespace mpark {
       : std::add_cv<variant_alternative_t<I, T>> {};
 
   template <std::size_t I, typename... Ts>
-  struct variant_alternative<I, variant<Ts...>>
-      : lib::identity<lib::type_pack_element_t<I, Ts...>> {
+  struct variant_alternative<I, variant<Ts...>> {
     static_assert(I < sizeof...(Ts),
-                  "`variant_alternative` index out of range.");
+                  "Index out of bounds in std::variant_alternative<>");
+    using type = lib::type_pack_element_t<I, Ts...>;
   };
 
   constexpr std::size_t variant_npos = static_cast<std::size_t>(-1);
 
   namespace detail {
-
-    inline constexpr bool all() { return true; }
-
-    template <typename... Bs>
-    inline constexpr bool all(bool b, Bs... bs) {
-      return b && all(bs...);
-    }
 
     constexpr std::size_t not_found = static_cast<std::size_t>(-1);
     constexpr std::size_t ambiguous = static_cast<std::size_t>(-2);
@@ -1061,7 +504,7 @@ namespace mpark {
 
         template <typename F, typename... Fs>
         inline static constexpr int visit_visitor_return_type_check() {
-          static_assert(all(std::is_same<F, Fs>::value...),
+          static_assert(lib::all<std::is_same<F, Fs>::value...>::value,
                         "`mpark::visit` requires the visitor to have a single "
                         "return type.");
           return 0;
@@ -1107,9 +550,9 @@ namespace mpark {
         inline static constexpr /* auto * */ auto make_fdiagonal()
             -> decltype(make_fdiagonal_impl<F, V, Vs...>(
                 lib::make_index_sequence<lib::decay_t<V>::size()>{})) {
-          static_assert(
-              all((lib::decay_t<V>::size() == lib::decay_t<Vs>::size())...),
-              "all of the variants must be the same size.");
+          static_assert(lib::all<(lib::decay_t<V>::size() ==
+                                  lib::decay_t<Vs>::size())...>::value,
+                        "all of the variants must be the same size.");
           return make_fdiagonal_impl<F, V, Vs...>(
               lib::make_index_sequence<lib::decay_t<V>::size()>{});
         }
@@ -1516,7 +959,7 @@ namespace mpark {
     MPARK_VARIANT_MOVE_CONSTRUCTOR(
         Trait::Available,
         move_constructor(move_constructor &&that) noexcept(
-            all(std::is_nothrow_move_constructible<Ts>::value...))
+            lib::all<std::is_nothrow_move_constructible<Ts>::value...>::value)
             : move_constructor(valueless_t{}) {
           this->generic_construct(*this, lib::move(that));
         });
@@ -1675,8 +1118,8 @@ namespace mpark {
         Trait::Available,
         move_assignment &
         operator=(move_assignment &&that) noexcept(
-            all((std::is_nothrow_move_constructible<Ts>::value &&
-                 std::is_nothrow_move_assignable<Ts>::value)...)) {
+            lib::all<(std::is_nothrow_move_constructible<Ts>::value &&
+                      std::is_nothrow_move_assignable<Ts>::value)...>::value) {
           this->generic_assign(lib::move(that));
           return *this;
         });
@@ -1800,21 +1243,42 @@ namespace mpark {
       }
     };
 
-    template <typename... Ts>
-    struct overload;
-
-    template <>
-    struct overload<> { void operator()() const {} };
-
-    template <typename T, typename... Ts>
-    struct overload<T, Ts...> : overload<Ts...> {
-      using overload<Ts...>::operator();
-      lib::identity<T> operator()(T) const { return {}; }
+    template <std::size_t I, typename T>
+    struct overload_leaf {
+      using F = lib::size_constant<I> (*)(T);
+      operator F() const { return nullptr; }
     };
 
+    template <typename... Ts>
+    struct overload_impl {
+      private:
+      template <typename>
+      struct impl;
+
+      template <std::size_t... Is>
+      struct impl<lib::index_sequence<Is...>> : overload_leaf<Is, Ts>... {};
+
+      public:
+      using type = impl<lib::index_sequence_for<Ts...>>;
+    };
+
+    template <typename... Ts>
+    using overload = typename overload_impl<Ts...>::type;
+
     template <typename T, typename... Ts>
-    using best_match_t =
-        typename lib::invoke_result_t<overload<Ts...>, T &&>::type;
+    using best_match = lib::invoke_result_t<overload<Ts...>, T &&>;
+
+    template <typename T>
+    struct is_in_place_index : std::false_type {};
+
+    template <std::size_t I>
+    struct is_in_place_index<in_place_index_t<I>> : std::true_type {};
+
+    template <typename T>
+    struct is_in_place_type : std::false_type {};
+
+    template <typename T>
+    struct is_in_place_type<in_place_type_t<T>> : std::true_type {};
 
   }  // detail
 
@@ -1843,12 +1307,15 @@ namespace mpark {
     variant(const variant &) = default;
     variant(variant &&) = default;
 
-    template <typename Arg,
-              lib::enable_if_t<!std::is_same<lib::decay_t<Arg>, variant>::value,
-                               int> = 0,
-              typename T = detail::best_match_t<Arg, Ts...>,
-              std::size_t I = detail::find_index_sfinae<T, Ts...>::value,
-              lib::enable_if_t<std::is_constructible<T, Arg>::value, int> = 0>
+    template <
+        typename Arg,
+        typename Decayed = lib::decay_t<Arg>,
+        lib::enable_if_t<!std::is_same<Decayed, variant>::value, int> = 0,
+        lib::enable_if_t<!detail::is_in_place_index<Decayed>::value, int> = 0,
+        lib::enable_if_t<!detail::is_in_place_type<Decayed>::value, int> = 0,
+        std::size_t I = detail::best_match<Arg, Ts...>::value,
+        typename T = lib::type_pack_element_t<I, Ts...>,
+        lib::enable_if_t<std::is_constructible<T, Arg>::value, int> = 0>
     inline constexpr variant(Arg &&arg) noexcept(
         std::is_nothrow_constructible<T, Arg>::value)
         : impl_(in_place_index_t<I>{}, lib::forward<Arg>(arg)) {}
@@ -1921,8 +1388,8 @@ namespace mpark {
     template <typename Arg,
               lib::enable_if_t<!std::is_same<lib::decay_t<Arg>, variant>::value,
                                int> = 0,
-              typename T = detail::best_match_t<Arg, Ts...>,
-              std::size_t I = detail::find_index_sfinae<T, Ts...>::value,
+              std::size_t I = detail::best_match<Arg, Ts...>::value,
+              typename T = lib::type_pack_element_t<I, Ts...>,
               lib::enable_if_t<(std::is_assignable<T &, Arg>::value &&
                                 std::is_constructible<T, Arg>::value),
                                int> = 0>
@@ -1985,12 +1452,14 @@ namespace mpark {
       return impl_.index();
     }
 
-    template <
-        bool Dummy = true,
-        lib::enable_if_t<lib::all<Dummy,
-                                  (std::is_move_constructible<Ts>::value &&
-                                   lib::is_swappable<Ts>::value)...>::value,
-                         int> = 0>
+    template <bool Dummy = true,
+              lib::enable_if_t<
+                  lib::all<Dummy,
+                           (lib::dependent_type<std::is_move_constructible<Ts>,
+                                                Dummy>::value &&
+                            lib::dependent_type<lib::is_swappable<Ts>,
+                                                Dummy>::value)...>::value,
+                  int> = 0>
     inline void swap(variant &that) noexcept(
         lib::all<(std::is_nothrow_move_constructible<Ts>::value &&
                   lib::is_nothrow_swappable<Ts>::value)...>::value) {
@@ -2221,15 +1690,6 @@ namespace mpark {
 #endif
   }
 
-  template <typename Visitor, typename... Vs>
-  inline constexpr DECLTYPE_AUTO visit(Visitor &&visitor, Vs &&... vs)
-    DECLTYPE_AUTO_RETURN(
-        (detail::all(!vs.valueless_by_exception()...)
-             ? (void)0
-             : throw_bad_variant_access()),
-        detail::visitation::variant::visit_value(lib::forward<Visitor>(visitor),
-                                                 lib::forward<Vs>(vs)...))
-
   struct monostate {};
 
   inline constexpr bool operator<(monostate, monostate) noexcept {
@@ -2255,6 +1715,55 @@ namespace mpark {
   inline constexpr bool operator!=(monostate, monostate) noexcept {
     return false;
   }
+
+#ifdef MPARK_CPP14_CONSTEXPR
+  namespace detail {
+
+    inline constexpr bool all(std::initializer_list<bool> bs) {
+      for (bool b : bs) {
+        if (!b) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+  }  // namespace detail
+
+  template <typename Visitor, typename... Vs>
+  inline constexpr decltype(auto) visit(Visitor &&visitor, Vs &&... vs) {
+    return (detail::all({!vs.valueless_by_exception()...})
+                ? (void)0
+                : throw_bad_variant_access()),
+           detail::visitation::variant::visit_value(
+               lib::forward<Visitor>(visitor), lib::forward<Vs>(vs)...);
+  }
+#else
+  namespace detail {
+
+    template <std::size_t N>
+    inline constexpr bool all_impl(const lib::array<bool, N> &bs,
+                                   std::size_t idx) {
+      return idx >= N || (bs[idx] && all_impl(bs, idx + 1));
+    }
+
+    template <std::size_t N>
+    inline constexpr bool all(const lib::array<bool, N> &bs) {
+      return all_impl(bs, 0);
+    }
+
+  }  // namespace detail
+
+  template <typename Visitor, typename... Vs>
+  inline constexpr DECLTYPE_AUTO visit(Visitor &&visitor, Vs &&... vs)
+    DECLTYPE_AUTO_RETURN(
+        (detail::all(
+             lib::array<bool, sizeof...(Vs)>{{!vs.valueless_by_exception()...}})
+             ? (void)0
+             : throw_bad_variant_access()),
+        detail::visitation::variant::visit_value(lib::forward<Visitor>(visitor),
+                                                 lib::forward<Vs>(vs)...))
+#endif
 
   template <typename... Ts>
   inline auto swap(variant<Ts...> &lhs,

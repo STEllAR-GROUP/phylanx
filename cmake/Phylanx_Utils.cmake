@@ -20,6 +20,7 @@ phylanx_include(
   AddTest
   AddPythonTest
   CreateSymbolicLink
+  DetectCppDialect
   ExportTargets
   ForceOutOfTreeBuild
   GetPythonExtensionLocation
