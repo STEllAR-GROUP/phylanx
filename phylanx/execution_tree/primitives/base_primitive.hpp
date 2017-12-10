@@ -119,6 +119,11 @@ namespace phylanx { namespace execution_tree
         {
             return value_operand_sync(*this, args);
         }
+
+        // workaround for problem in implementation of MSVC14.12
+        // variant::visit
+        argument_value_type& variant() { return *this; }
+        argument_value_type const& variant() const { return *this; }
     };
 
     // a argument is valid of its not nil{}

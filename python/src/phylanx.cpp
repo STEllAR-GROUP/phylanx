@@ -24,6 +24,7 @@ PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::expression>);
 // older versions of pybind11 don't support variant-like types
 namespace pybind11 { namespace detail
 {
+#if !defined(_MSC_VER) || _MSC_VER < 1912
     ///////////////////////////////////////////////////////////////////////////
     // Expose phylanx::util::variant and phylanx::ast::parser::extended_variant
     template <typename... Ts>
@@ -31,6 +32,7 @@ namespace pybind11 { namespace detail
       : variant_caster<phylanx::util::variant<Ts...>>
     {
     };
+#endif
 
     template <typename... Ts>
     struct type_caster<phylanx::ast::parser::extended_variant<Ts...>>
