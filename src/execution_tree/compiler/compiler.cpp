@@ -9,6 +9,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
+#include <phylanx/ast/detail/tagged_id.hpp>
 #include <phylanx/ast/generate_ast.hpp>
 #include <phylanx/ast/match_ast.hpp>
 #include <phylanx/ast/node.hpp>
@@ -22,6 +23,8 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <cstdint>
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -207,16 +210,23 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
     private:
+        std::string annotation(std::int64_t id)
+        {
+            return "/" + std::to_string(snippets_.compile_id_) + "#" +
+                std::to_string(id);
+        }
+
         function handle_lambda(
             std::vector<ast::expression> const& args,
             ast::expression const& body) const
         {
+            argument arg(default_locality_);
             environment env(&env_);
             for (std::size_t i = 0; i != args.size(); ++i)
             {
                 HPX_ASSERT(ast::detail::is_identifier(args[i]));
                 env.define(ast::detail::identifier_name(args[i]),
-                    hpx::util::bind(arg, i));
+                    hpx::util::bind(arg, i, hpx::util::placeholders::_2));
             }
             return compile(body, snippets_, env, patterns_, default_locality_);
         }
@@ -232,11 +242,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined function
             // and store new function description for later use
-            snippets_.emplace_back(function{});
-            function& f = snippets_.back();
+            snippets_.defines_.emplace_back(function{});
+            function& f = snippets_.defines_.back();
 
-            std::string name = ast::detail::identifier_name(extract_name(p));
+            ast::expression name_expr = extract_name(p);
+            std::string name = ast::detail::identifier_name(name_expr);
             env_.define(name, external_function(f, default_locality_));
+
+            // get global name of the component created
+            std::int64_t id = ast::detail::tagged_id(name_expr);
+            if (id != 0)
+            {
+                name += annotation(id);
+            }
 
             auto args = extract_arguments(p);
             auto body = extract_body(p);
@@ -248,7 +266,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     default_locality_);
 
                 f = primitive_variable{default_locality_}(
-                        std::move(bf.arg_), name);
+                        std::move(bf.arg_), "define-variable:" + name);
             }
             else
             {
@@ -256,7 +274,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // recursion
 
                 // create define_function helper object
-                f = primitive_function{default_locality_}(name);
+                f = primitive_function{default_locality_}(
+                        "define-function:" + name);
 
                 // set the body for the compiled function
                 define_function(f.arg_).set_body(hpx::launch::sync,
@@ -266,11 +285,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return f;
         }
 
-        function handle_variable_reference(std::string const& name)
+        function handle_variable_reference(std::string name,
+            ast::expression const& expr)
         {
-            if (compiled_function* mf = env_.find(name))
+            std::int64_t id = ast::detail::tagged_id(expr);
+            if (compiled_function* cf = env_.find(name))
             {
-                return (*mf)(function_list{});
+                if (id != 0)
+                {
+                    name += annotation(id);
+                }
+                return (*cf)(std::list<function>{}, name);
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -278,22 +303,28 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 "couldn't find given name in symbol table: " + name);
         }
 
-        function handle_function_call(std::string const& name,
+        function handle_function_call(std::string name,
             ast::expression const& expr)
         {
+            std::int64_t id = ast::detail::tagged_id(expr);
             if (compiled_function* cf = env_.find(name))
             {
                 std::vector<ast::expression> argexprs =
                     ast::detail::function_arguments(expr);
 
-                function_list args;
+                std::list<function> args;
                 for (auto const& argexpr : argexprs)
                 {
                     environment env(&env_);
                     args.push_back(compile(argexpr, snippets_, env, patterns_,
                         default_locality_));
                 }
-                return (*cf)(std::move(args));
+
+                if (id != 0)
+                {
+                    name += annotation(id);
+                }
+                return (*cf)(std::move(args), name);
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -303,11 +334,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function handle_placeholders(
             std::multimap<std::string, ast::expression>& placeholders,
-            std::string const& name)
+            std::string const& name, std::string const& global_name)
         {
             if (compiled_function* cf = env_.find(name))
             {
-                function_list args;
+                std::list<function> args;
                 environment env(&env_);
 
                 for (auto const& placeholder : placeholders)
@@ -317,7 +348,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
 
                 // create primitive with given arguments
-                return (*cf)(std::move(args));
+                return (*cf)(std::move(args), global_name);
             }
 
             // otherwise the match was not complete, bail out
@@ -329,6 +360,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
     public:
         function operator()(ast::expression const& expr)
         {
+            // get global name of the component created
+            std::int64_t id = ast::detail::tagged_id(expr);
+
             for (auto const& pattern : patterns_)
             {
                 std::multimap<std::string, ast::expression> placeholders;
@@ -339,20 +373,26 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
 
                 // Handle define(__1)
-                if (hpx::util::get<0>(pattern) == "define")
+                std::string name = hpx::util::get<0>(pattern);
+                if (name == "define")
                 {
                     return handle_define(placeholders, pattern);
                 }
 
+                if (id != 0)
+                {
+                    name += annotation(id);
+                }
+
                 return handle_placeholders(
-                    placeholders, hpx::util::get<0>(pattern));
+                    placeholders, hpx::util::get<0>(pattern), name);
             }
 
             // remaining expression could refer to a variable
             if (ast::detail::is_identifier(expr))
             {
                 return handle_variable_reference(
-                    ast::detail::identifier_name(expr));
+                    ast::detail::identifier_name(expr), expr);
             }
 
             // ... or a function call

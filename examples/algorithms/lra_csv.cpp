@@ -113,9 +113,11 @@ int hpx_main(boost::program_options::variables_map& vm)
     hpx::util::high_resolution_timer t;
 
     // evaluate LRA using the read data
-    // time the execution
-
     auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+
+    // time the execution
+    hpx::util::high_resolution_timer t;
+
     auto result =
         lra(std::move(x), std::move(y), alpha, iterations, enable_output);
 

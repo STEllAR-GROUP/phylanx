@@ -13,6 +13,7 @@
 
 #include <hpx/include/components.hpp>
 
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -42,6 +43,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             define_function, set_body, set_body_action);
+
+    protected:
+        std::string extract_function_name() const;
 
     private:
         primitive_argument_type body_;

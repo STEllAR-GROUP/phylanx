@@ -18,7 +18,8 @@
 
 namespace phylanx { namespace ast
 {
-    ast::expression generate_ast(std::string const& input)
+    ast::expression generate_ast(std::string const& input,
+        std::vector<std::string::const_iterator>& iters)
     {
         using iterator = std::string::const_iterator;
 
@@ -26,7 +27,8 @@ namespace phylanx { namespace ast
         iterator last = input.end();
 
         std::stringstream strm;
-        ast::parser::error_handler<iterator> error_handler(first, last, strm);
+        ast::parser::error_handler<iterator> error_handler(
+            first, last, strm, iters);
 
         ast::parser::expression<iterator> expr(error_handler);
         ast::parser::skipper<iterator> skipper;
@@ -50,7 +52,15 @@ namespace phylanx { namespace ast
         return ast;
     }
 
-    std::vector<ast::expression> generate_asts(std::string const& input)
+    ast::expression generate_ast(std::string const& input)
+    {
+        std::vector<std::string::const_iterator> iters;
+        return generate_ast(input, iters);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::vector<ast::expression> generate_asts(std::string const& input,
+        std::vector<std::string::const_iterator>& iters)
     {
         using iterator = std::string::const_iterator;
 
@@ -58,7 +68,8 @@ namespace phylanx { namespace ast
         iterator last = input.end();
 
         std::stringstream strm;
-        ast::parser::error_handler<iterator> error_handler(first, last, strm);
+        ast::parser::error_handler<iterator> error_handler(
+            first, last, strm, iters);
 
         ast::parser::expression<iterator> expr(error_handler);
         ast::parser::skipper<iterator> skipper;
@@ -80,6 +91,12 @@ namespace phylanx { namespace ast
         }
 
         return asts;
+    }
+
+    std::vector<ast::expression> generate_asts(std::string const& input)
+    {
+        std::vector<std::string::const_iterator> iters;
+        return generate_asts(input, iters);
     }
 }}
 
