@@ -177,7 +177,8 @@ void print_instrumentation(char const* const name, int compile_id,
             continue;
 
         // find real position of given symbol in source code
-        if (tags.second >= 0 && tags.second < iterators.size())
+        if (tags.second >= 0 &&
+            tags.second < static_cast<std::int64_t>(iterators.size()))
         {
             auto pos = get_pos(code, iterators[tags.second]);
             std::cout << e.first << ": " << name << "(" << pos.first << ", "
