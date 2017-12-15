@@ -36,6 +36,9 @@ namespace phylanx { namespace ast { namespace detail
     PHYLANX_EXPORT bool is_literal_value(operand const& op);
     PHYLANX_EXPORT literal_value_type literal_value(operand const& op);
 
+    inline bool is_literal_value(unary_expr const& ue);
+    inline literal_value_type literal_value(unary_expr const& ue);
+
     inline bool is_literal_value(operation const& op);
     inline literal_value_type literal_value(operation const& op);
 
@@ -52,6 +55,15 @@ namespace phylanx { namespace ast { namespace detail
     literal_value_type literal_value(util::recursive_wrapper<Ast> const& ast)
     {
         return literal_value(ast.get());
+    }
+
+    inline bool is_literal_value(unary_expr const& ue)
+    {
+        return is_literal_value(ue.operand_);
+    }
+    inline literal_value_type literal_value(unary_expr const& ue)
+    {
+        return is_literal_value(ue.operand_);
     }
 
     inline bool is_literal_value(operation const& op)
