@@ -328,6 +328,103 @@ void test_slicing_operation_2d_zero_start()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_col_slicing_operation_from_end()
+{
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(101UL, 101UL);
+
+    phylanx::execution_tree::primitive input_matrix =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(m1));
+
+    phylanx::execution_tree::primitive row_start =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(0.0));
+
+    phylanx::execution_tree::primitive row_stop =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(47.0));
+
+    phylanx::execution_tree::primitive col_start =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(-2.0));
+
+    //col_stop has has no effect as the total number of columns in the matrix
+    //is calculated internally in the slicing primitive
+    phylanx::execution_tree::primitive col_stop =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(0.0));
+
+    phylanx::execution_tree::primitive slice =
+            hpx::new_<phylanx::execution_tree::primitives::slicing_operation>(
+                    hpx::find_here(),
+                    std::vector<phylanx::execution_tree::primitive_argument_type>{
+                            std::move(input_matrix), std::move(row_start),
+                            std::move(row_stop), std::move(col_start),
+                            std::move(col_stop)
+                    });
+
+
+    auto sm = blaze::submatrix(m1, 0, 99, 47, 2);
+    auto expected = sm;
+
+
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+            slice.eval();
+
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+                phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_row_slicing_operation_from_end()
+{
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(101UL, 101UL);
+
+    phylanx::execution_tree::primitive input_matrix =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(m1));
+
+    phylanx::execution_tree::primitive row_start =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(-5.0));
+
+    //row_stop has has no effect as the total number of rows in the matrix
+    //is calculated internally in the slicing primitive
+    phylanx::execution_tree::primitive row_stop =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(0.0));
+
+    phylanx::execution_tree::primitive col_start =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(6.0));
+
+    phylanx::execution_tree::primitive col_stop =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(16.0));
+
+    phylanx::execution_tree::primitive slice =
+            hpx::new_<phylanx::execution_tree::primitives::slicing_operation>(
+                    hpx::find_here(),
+                    std::vector<phylanx::execution_tree::primitive_argument_type>{
+                            std::move(input_matrix), std::move(row_start),
+                            std::move(row_stop), std::move(col_start),
+                            std::move(col_stop)
+                    });
+
+
+    auto sm = blaze::submatrix(m1, 96, 6, 5, 10);
+    auto expected = sm;
+
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+            slice.eval();
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+                phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+
 int main(int argc, char* argv[])
 {
     test_slicing_operation_0d();
@@ -336,6 +433,9 @@ int main(int argc, char* argv[])
 
     test_slicing_operation_1d_zero_start();
     test_slicing_operation_2d_zero_start();
+
+    test_col_slicing_operation_from_end();
+    test_row_slicing_operation_from_end();
 
     return hpx::util::report_errors();
 }
