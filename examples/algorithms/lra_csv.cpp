@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
             "row_stop (default: 569)")
         ("col_stop",
             boost::program_options::value<std::int64_t>()->default_value(30),
-            "col_stop (default: 10000)")
+            "col_stop (default: 30)")
         ;
 
     return hpx::init(desc, argc, argv);
