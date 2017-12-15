@@ -91,7 +91,7 @@ phylanx_option(
 phylanx_option(
   PHYLANX_WITH_TESTS_REGRESSIONS BOOL
   "Enable or disable the compilation of regression tests"
-  OFF ADVANCED CATEGORY "Build")
+  ON ADVANCED CATEGORY "Build")
 
 phylanx_option(
   PHYLANX_WITH_TESTS_UNIT BOOL
