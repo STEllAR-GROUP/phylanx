@@ -84,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return extract_value(target_);
     }
 
-    void define_variable::store(primitive_result_type const& val)
+    void define_variable::store(primitive_result_type && val)
     {
         if (!valid(target_))
         {
@@ -102,6 +102,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the variable associated with this define has not been "
                     "properly initialized");
         }
-        p->store(hpx::launch::sync, val);
+        p->store(hpx::launch::sync, std::move(val));
     }
 }}}

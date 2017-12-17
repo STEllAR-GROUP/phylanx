@@ -118,8 +118,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                args[1].vector(
-                    blaze::map(args[1].vector(), add_simd(args[0].scalar())));
+                args[1] =
+                    blaze::map(args[1].vector(), add_simd(args[0].scalar()));
 
                 return primitive_result_type(std::move(args[1]));
             }
@@ -134,8 +134,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                args[1].matrix(
-                    blaze::map(args[1].matrix(), add_simd(args[0].scalar())));
+                args[1] =
+                    blaze::map(args[1].matrix(), add_simd(args[0].scalar()));
 
                 return primitive_result_type(std::move(args[1]));
             }
@@ -172,8 +172,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a vector only if there are exactly 2 operands");
                 }
 
-                args[0].vector(
-                    blaze::map(args[0].vector(), add_simd(args[1].scalar())));
+                args[0] =
+                    blaze::map(args[0].vector(), add_simd(args[1].scalar()));
 
                 return primitive_result_type(std::move(args[0]));
             }
@@ -195,7 +195,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (args.size() == 2)
                 {
-                    lhs.vector() += rhs.vector();
+                    lhs.custom_vector() += rhs.custom_vector();
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -204,7 +204,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     args.begin() + 1, args.end(), std::move(first_term),
                     [](arg_type& result, arg_type const& curr) -> arg_type
                     {
-                        result.vector() += curr.vector();
+                        result.custom_vector() += curr.custom_vector();
                         return std::move(result);
                     }));
             }
@@ -266,7 +266,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "to a matrix only if there are exactly 2 operands");
                 }
 
-                args[0].matrix() =
+                args[0] =
                     blaze::map(args[0].matrix(), add_simd(args[1].scalar()));
                 return primitive_result_type(std::move(args[0]));
             }
@@ -313,7 +313,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (args.size() == 2)
                 {
-                    lhs.matrix() += rhs.matrix();
+                    lhs.custom_matrix() += rhs.custom_matrix();
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -323,7 +323,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](arg_type& result, arg_type const& curr)
                     ->  arg_type
                     {
-                        result.matrix() += curr.matrix();
+                        result.custom_matrix() += curr.custom_matrix();
                         return std::move(result);
                     }));
             }

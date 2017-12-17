@@ -87,9 +87,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return data_;
     }
 
-    void variable::store(primitive_result_type const& data)
+    void variable::store(primitive_result_type && data)
     {
-        data_ = data;
+        data_ = std::move(data);
     }
 
     bool variable::bind(std::vector<primitive_argument_type> const& params)

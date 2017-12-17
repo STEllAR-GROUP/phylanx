@@ -37,8 +37,12 @@ namespace phylanx { namespace ir
         using storage1d_type = blaze::DynamicVector<T>;
         using storage2d_type = blaze::DynamicMatrix<T>;
 
+        using custom_storage1d_type = blaze::CustomVector<T, true, true>;
+        using custom_storage2d_type = blaze::CustomMatrix<T, true, true>;
+
         using storage_type =
-            util::variant<storage0d_type, storage1d_type, storage2d_type>;
+            util::variant<storage0d_type, storage1d_type, storage2d_type,
+                custom_storage1d_type, custom_storage2d_type>;
 
         node_data() = default;
 
@@ -98,12 +102,30 @@ namespace phylanx { namespace ir
         {
         }
 
+        explicit node_data(custom_storage1d_type const& values)
+          : data_(values)
+        {
+        }
+        explicit node_data(custom_storage1d_type && values)
+          : data_(std::move(values))
+        {
+        }
+
         /// Create node data for a 2-dimensional value
         explicit node_data(storage2d_type const& values)
           : data_(values)
         {
         }
         explicit node_data(storage2d_type && values)
+          : data_(std::move(values))
+        {
+        }
+
+        explicit node_data(custom_storage2d_type const& values)
+          : data_(values)
+        {
+        }
+        explicit node_data(custom_storage2d_type && values)
           : data_(std::move(values))
         {
         }
@@ -135,12 +157,34 @@ namespace phylanx { namespace ir
             return *this;
         }
 
+        node_data& operator=(custom_storage1d_type const& val)
+        {
+            data_ = val;
+            return *this;
+        }
+        node_data& operator=(custom_storage1d_type && val)
+        {
+            data_ = std::move(val);
+            return *this;
+        }
+
         node_data& operator=(storage2d_type const& val)
         {
             data_ = val;
             return *this;
         }
         node_data& operator=(storage2d_type && val)
+        {
+            data_ = std::move(val);
+            return *this;
+        }
+
+        node_data& operator=(custom_storage2d_type const& val)
+        {
+            data_ = val;
+            return *this;
+        }
+        node_data& operator=(custom_storage2d_type && val)
         {
             data_ = std::move(val);
             return *this;
@@ -182,6 +226,17 @@ namespace phylanx { namespace ir
                     return m(idx_m, idx_n);
                 }
 
+            case 3:
+                return custom_vector()[index];
+
+            case 4:
+                {
+                    auto& m = custom_matrix();
+                    std::size_t idx_m = index / m.columns();
+                    std::size_t idx_n = index % m.columns();
+                    return m(idx_m, idx_n);
+                }
+
             default:
                 break;
             }
@@ -202,6 +257,12 @@ namespace phylanx { namespace ir
 
             case 2:
                 return matrix()(indicies[0], indicies[1]);
+
+            case 3:
+                return custom_vector()[indicies[0]];
+
+            case 4:
+                return custom_matrix()(indicies[0], indicies[1]);
 
             default:
                 break;
@@ -230,6 +291,17 @@ namespace phylanx { namespace ir
                     return m(idx_m, idx_n);
                 }
 
+            case 3:
+                return custom_vector()[index];
+
+            case 4:
+                {
+                    auto const& m = custom_matrix();
+                    std::size_t idx_m = index / m.columns();
+                    std::size_t idx_n = index % m.columns();
+                    return m(idx_m, idx_n);
+                }
+
             default:
                 break;
             }
@@ -250,6 +322,12 @@ namespace phylanx { namespace ir
 
             case 2:
                 return matrix()(indicies[0], indicies[1]);
+
+            case 3:
+                return custom_vector()[indicies[0]];
+
+            case 4:
+                return custom_matrix()(indicies[0], indicies[1]);
 
             default:
                 break;
@@ -273,6 +351,15 @@ namespace phylanx { namespace ir
             case 2:
                 {
                     auto const& m = matrix();
+                    return m.rows() * m.columns();
+                }
+
+            case 3:
+                return custom_vector().size();
+
+            case 4:
+                {
+                    auto const& m = custom_matrix();
                     return m.rows() * m.columns();
                 }
 
@@ -307,6 +394,47 @@ namespace phylanx { namespace ir
             }
             return *m;
         }
+
+        custom_storage2d_type custom_matrix()
+        {
+            custom_storage2d_type* cm =
+                util::get_if<custom_storage2d_type>(&data_);
+            if (cm != nullptr)
+                return *cm;
+
+            storage2d_type* m = util::get_if<storage2d_type>(&data_);
+            if (m != nullptr)
+            {
+                return custom_storage2d_type(
+                    m->data(), m->rows(), m->columns(), m->spacing());
+            }
+
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::custom_matrix()",
+                "node_data object holds unsupported data type");
+        }
+        custom_storage2d_type custom_matrix() const
+        {
+            custom_storage2d_type const* cm =
+                util::get_if<custom_storage2d_type>(&data_);
+            if (cm != nullptr)
+            {
+                return custom_storage2d_type(const_cast<T*>(cm->data()),
+                    cm->rows(), cm->columns(), cm->spacing());
+            }
+
+            storage2d_type const* m = util::get_if<storage2d_type>(&data_);
+            if (m != nullptr)
+            {
+                return custom_storage2d_type(const_cast<T*>(m->data()),
+                    m->rows(), m->columns(), m->spacing());
+            }
+
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::custom_matrix()",
+                "node_data object holds unsupported data type");
+        }
+
         void matrix(storage2d_type const& val)
         {
             data_ = val;
@@ -338,6 +466,46 @@ namespace phylanx { namespace ir
             }
             return *v;
         }
+
+        custom_storage1d_type custom_vector()
+        {
+            custom_storage1d_type* cv =
+                util::get_if<custom_storage1d_type>(&data_);
+            if (cv != nullptr)
+                return *cv;
+
+            storage1d_type* v = util::get_if<storage1d_type>(&data_);
+            if (v != nullptr)
+            {
+                return custom_storage1d_type(v->data(), v->size(), v->spacing());
+            }
+
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::custom_vector()",
+                "node_data object holds unsupported data type");
+        }
+        custom_storage1d_type custom_vector() const
+        {
+            custom_storage1d_type const* cv =
+                util::get_if<custom_storage1d_type>(&data_);
+            if (cv != nullptr)
+            {
+                return custom_storage1d_type{
+                    const_cast<T*>(cv->data()), cv->size(), cv->spacing()};
+            }
+
+            storage1d_type const* v = util::get_if<storage1d_type>(&data_);
+            if (v != nullptr)
+            {
+                return custom_storage1d_type{
+                    const_cast<T*>(v->data()), v->size(), v->spacing()};
+            }
+
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::custom_vector()",
+                "node_data object holds unsupported data type");
+        }
+
         void vector(storage1d_type const& val)
         {
             data_ = val;
@@ -397,6 +565,15 @@ namespace phylanx { namespace ir
                     return dimensions_type{m.rows(), m.columns()};
                 }
 
+            case 3:
+                return dimensions_type{custom_vector().size(), 1ul};
+
+            case 4:
+                {
+                    auto const& m = custom_matrix();
+                    return dimensions_type{m.rows(), m.columns()};
+                }
+
             default:
                 break;
             }
@@ -419,6 +596,15 @@ namespace phylanx { namespace ir
             case 2:
                 {
                     auto const& m = matrix();
+                    return (dim == 0) ? m.rows() : m.columns();
+                }
+
+            case 3:
+                return (dim == 0) ? custom_vector().size() : 1ul;
+
+            case 4:
+                {
+                    auto const& m = custom_matrix();
                     return (dim == 0) ? m.rows() : m.columns();
                 }
 
@@ -467,10 +653,10 @@ namespace phylanx { namespace ir
             return lhs.scalar() == rhs.scalar();
 
         case 1:
-            return lhs.vector() == rhs.vector();
+            return lhs.custom_vector() == rhs.custom_vector();
 
         case 2:
-            return lhs.matrix() == rhs.matrix();
+            return lhs.custom_matrix() == rhs.custom_matrix();
 
         default:
             break;

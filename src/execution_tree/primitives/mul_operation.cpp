@@ -88,7 +88,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 return primitive_result_type{
-                    std::accumulate(ops.begin() + 1, ops.end(), std::move(lhs),
+                    std::accumulate(
+                        ops.begin() + 1, ops.end(), std::move(lhs),
                         [](operand_type& result, operand_type const& curr) {
 
                             if (curr.num_dimensions() != 0)
@@ -99,7 +100,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             }
                             result.scalar() *= curr.scalar();
                             return std::move(result);
-                        }) };
+                        })
+                    };
             }
 
             primitive_result_type mul0d1d(operands_type && ops) const
@@ -114,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs.vector() = lhs.scalar() * rhs.vector();
+                rhs.custom_vector() *= lhs.scalar();
                 return primitive_result_type{ std::move(rhs) };
             }
 
@@ -131,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs.matrix() = lhs.scalar() * rhs.matrix();
+                rhs.custom_matrix() *= lhs.scalar();
                 return primitive_result_type{ std::move(rhs) };
             }
 
@@ -168,7 +170,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs.vector() *= rhs.scalar();
+                lhs.custom_vector() *= rhs.scalar();
                 return primitive_result_type{ std::move(lhs) };
             }
 
@@ -176,30 +178,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (ops.size() == 2)
                 {
-                    if (ops[1].num_dimensions() == 0)
-                    {
-                        ops[0].vector() *= ops[1].vector();
-                        return std::move(ops[0]);
-                    }
-
-                    ops[0].vector() *= ops[1].vector();
-                    return primitive_result_type{std::move(ops[0])};
+                    ops[0].custom_vector() *= ops[1].custom_vector();
+                    return primitive_result_type{ std::move(ops[0]) };
                 }
 
-                return primitive_result_type{std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(ops[0]),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
-                    {
-                        if (curr.num_dimensions() != 1)
+                return primitive_result_type{
+                    std::accumulate(
+                        ops.begin() + 1, ops.end(), std::move(ops[0]),
+                        [](operand_type& result, operand_type const& curr)
+                        ->  operand_type
                         {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "mul_operation::mul1d1d",
-                                "all operands must be vectors");
-                        }
-                        result.vector() *= curr.vector();
-                        return std::move(result);
-                    })};
+                            if (curr.num_dimensions() != 1)
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "mul_operation::mul1d1d",
+                                    "all operands must be vectors");
+                            }
+                            result.custom_vector() *= curr.custom_vector();
+                            return std::move(result);
+                        })
+                    };
             }
 
             primitive_result_type mul1d2d(operands_type && ops) const
@@ -214,9 +212,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs.vector() =
-                    blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
-                return primitive_result_type{std::move(rhs)};
+                rhs = blaze::trans(
+                    blaze::trans(lhs.custom_vector()) * rhs.custom_matrix());
+                return primitive_result_type{ std::move(rhs) };
             }
 
             primitive_result_type mul2d(operands_type && ops) const
@@ -251,7 +249,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs.matrix() *= rhs.scalar();
+                lhs.custom_matrix() *= rhs.scalar();
                 return primitive_result_type{ std::move(lhs) };
             }
 
@@ -267,7 +265,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs.vector() = lhs.matrix() * rhs.vector();
+                rhs = lhs.custom_matrix() * rhs.custom_vector();
                 return primitive_result_type{ std::move(rhs) };
             }
 
@@ -275,25 +273,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (ops.size() == 2)
                 {
-                    ops[0].matrix() *= ops[1].matrix();
+                    ops[0].custom_matrix() *= ops[1].custom_matrix();
                     return primitive_result_type{ std::move(ops[0]) };
                 }
 
-                return primitive_result_type{ std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(ops[0]),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
-                {
-                    if (curr.num_dimensions() != 2)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "mul_operation::mul2d2d",
-                            "all operands must be matrices");
-                    }
+                return primitive_result_type{
+                    std::accumulate(
+                        ops.begin() + 1, ops.end(), std::move(ops[0]),
+                        [](operand_type& result, operand_type const& curr)
+                        ->  operand_type
+                        {
+                            if (curr.num_dimensions() != 2)
+                            {
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "mul_operation::mul2d2d",
+                                    "all operands must be matrices");
+                            }
 
-                    result.matrix() *= curr.matrix();
-                    return std::move(result);
-                }) };
+                            result.custom_matrix() *= curr.custom_matrix();
+                            return std::move(result);
+                        })
+                    };
             }
 
         public:

@@ -44,12 +44,12 @@ namespace phylanx { namespace ir
             break;
 
         case 1:
-            detail::print_array(out, nd.vector(), nd.size());
+            detail::print_array(out, nd.custom_vector(), nd.size());
             break;
 
         case 2:
             {
-                auto const& data = nd.matrix();
+                auto const& data = nd.custom_matrix();
                 for (std::size_t row = 0; row != data.rows(); ++row)
                 {
                     if (row != 0)
@@ -79,10 +79,10 @@ namespace phylanx { namespace ir
             return scalar() != 0;
 
         case 1:
-            return vector().nonZeros() > 0;
+            return custom_vector().nonZeros() > 0;
 
         case 2:
-            return matrix().nonZeros() > 0;
+            return custom_matrix().nonZeros() > 0;
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,

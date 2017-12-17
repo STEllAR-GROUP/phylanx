@@ -108,16 +108,17 @@ namespace phylanx { namespace execution_tree
         return eval_direct(params);
     }
 
-    hpx::future<void> primitive::store(primitive_argument_type const& data)
+    hpx::future<void> primitive::store(primitive_argument_type data)
     {
         using action_type = primitives::base_primitive::store_action;
-        return hpx::async(action_type(), this->base_type::get_id(), data);
+        return hpx::async(
+            action_type(), this->base_type::get_id(), std::move(data));
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        primitive_argument_type const& data)
+        primitive_argument_type data)
     {
-        return store(data).get();
+        return store(std::move(data)).get();
     }
 
     hpx::future<bool> primitive::bind(

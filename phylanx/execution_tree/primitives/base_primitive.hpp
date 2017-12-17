@@ -62,8 +62,8 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& args) const;
 
-        hpx::future<void> store(primitive_argument_type const&);
-        void store(hpx::launch::sync_policy, primitive_argument_type const&);
+        hpx::future<void> store(primitive_argument_type);
+        void store(hpx::launch::sync_policy, primitive_argument_type);
 
         hpx::future<bool> bind(std::vector<primitive_argument_type> const&);
         bool bind(hpx::launch::sync_policy,
@@ -171,11 +171,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return eval(params).get();
         }
 
-        void store_nonvirtual(primitive_result_type const& data)
+        void store_nonvirtual(primitive_result_type data)
         {
-            store(data);
+            store(std::move(data));
         }
-        virtual void store(primitive_result_type const&)
+        virtual void store(primitive_result_type &&)
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "phylanx::execution_tree::primitives::base_primitive",
