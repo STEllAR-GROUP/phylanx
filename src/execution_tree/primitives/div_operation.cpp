@@ -316,10 +316,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix() = blaze::map(
-                            lhs.matrix(),
-                            rhs.matrix(),
-                            [](double x1, double x2) { return x1 / x2; });
+                    lhs.matrix() =
+                        blaze::map(lhs.matrix(), rhs.matrix(), divndnd_simd());
                     return primitive_result_type(std::move(lhs));
                 }
 
