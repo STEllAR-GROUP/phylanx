@@ -349,8 +349,7 @@ void test_col_slicing_operation_from_end()
             hpx::new_<phylanx::execution_tree::primitives::variable>(
                     hpx::find_here(), phylanx::ir::node_data<double>(-2.0));
 
-    //col_stop has has no effect as the total number of columns in the matrix
-    //is calculated internally in the slicing primitive
+
     phylanx::execution_tree::primitive col_stop =
             hpx::new_<phylanx::execution_tree::primitives::variable>(
                     hpx::find_here(), phylanx::ir::node_data<double>(0.0));
@@ -390,8 +389,7 @@ void test_row_slicing_operation_from_end()
             hpx::new_<phylanx::execution_tree::primitives::variable>(
                     hpx::find_here(), phylanx::ir::node_data<double>(-5.0));
 
-    //row_stop has has no effect as the total number of rows in the matrix
-    //is calculated internally in the slicing primitive
+
     phylanx::execution_tree::primitive row_stop =
             hpx::new_<phylanx::execution_tree::primitives::variable>(
                     hpx::find_here(), phylanx::ir::node_data<double>(0.0));

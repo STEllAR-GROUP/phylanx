@@ -96,17 +96,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // column = col_start
                 // n = (col_stop - col_start)
 
-                if (col_start < 0 && col_stop >= 0)    //slice from the end
+                if (col_start < 0 && col_stop > 0)    //slice from the end
                 {
-                    auto size = args[0].vector().size();
-
-                    subvector_type sv = blaze::subvector(
-                        args[0].vector(), size + col_start, (-col_start));
-
-                    return ir::node_data<double>{vector_type{std::move(sv)}};
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "phylanx::execution_tree::primitives::"
+                                                "slicing_operation::slicing_operation",
+                                        "col_stop can not be positive if col_start is negative");
                 }
 
-                if (col_start < 0 && col_stop < 0)    //slice from the end
+                if (col_start < 0 && col_stop <= 0)    //slice from the end
                 {
                     auto size = args[0].vector().size();
 
@@ -157,33 +155,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // m = (row_stop - row_start)
                 // n = (col_stop - col_start)
 
-                if (col_start < 0 && col_stop >= 0 && row_start >= 0 &&
-                    row_stop > 0)    //column slice from the end
+                if ((col_start < 0 && col_stop > 0) ||
+                    (row_start < 0 && row_stop > 0))
                 {
-                    auto num_cols = args[0].matrix().columns();
-
-                    submatrix_type sm = blaze::submatrix(args[0].matrix(),
-                        row_start, num_cols + col_start, (row_stop - row_start),
-                        -(col_start));
-
-                    if ((row_stop - row_start) == 1)
-                    {
-                        //return a vector in this case and not a matrix
-                        return ir::node_data<double>{
-                            std::move(blaze::trans(row(sm, 0)))};
-                    }
-                    else if (col_start == -1)
-                    {
-                        return ir::node_data<double>{std::move(column(sm, 0))};
-                    }
-                    else
-                    {
-                        return ir::node_data<double>{
-                            matrix_type{std::move(sm)}};
-                    }
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "slicing_operation::slicing_operation",
+                        "col_stop/row_stop can not be positive if "
+                        "col_start/row_start is negative");
                 }
-                else if (col_start < 0 && col_stop < 0 && row_start >= 0 &&
-                    row_stop > 0)
+
+                if (col_start < 0 && col_stop <= 0 && row_start >= 0 &&
+                    row_stop > 0)    //column slice from the end
                 {
                     auto num_cols = args[0].matrix().columns();
 
@@ -208,32 +191,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
 
-                if (row_start < 0 && row_stop >= 0 && col_start >= 0 &&
-                    col_stop > 0)    //row slice from the end
-                {
-                    auto num_rows = args[0].matrix().rows();
-
-                    submatrix_type sm =
-                        blaze::submatrix(args[0].matrix(), num_rows + row_start,
-                            col_start, -(row_start), (col_stop - col_start));
-
-                    if (row_start == -1)
-                    {
-                        //return a vector in this case and not a matrix
-                        return ir::node_data<double>{
-                            std::move(blaze::trans(row(sm, 0)))};
-                    }
-                    else if ((col_stop - col_start) == 1)
-                    {
-                        return ir::node_data<double>{std::move(column(sm, 0))};
-                    }
-                    else
-                    {
-                        return ir::node_data<double>{
-                            matrix_type{std::move(sm)}};
-                    }
-                }
-                else if (row_start < 0 && row_stop < 0 && col_start >= 0 &&
+                if (row_start < 0 && row_stop <= 0 && col_start >= 0 &&
                     col_stop > 0)    //row slice from the end
                 {
                     auto num_rows = args[0].matrix().rows();
@@ -259,8 +217,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
 
-                if (row_start < 0 && row_stop < 0 && col_start < 0 &&
-                    col_stop < 0)
+                if (row_start < 0 && row_stop <= 0 && col_start < 0 &&
+                    col_stop <= 0)    //row and column , both, slice from end
                 {
                     auto num_rows = args[0].matrix().rows();
                     auto num_cols = args[0].matrix().columns();
