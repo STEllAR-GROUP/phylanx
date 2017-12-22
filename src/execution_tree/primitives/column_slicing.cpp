@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         "col_stop can not be positive if col_start is negative");
                 }
 
-                if (col_start < 0 && col_stop < 0)    //slice from the end
+                if (col_start < 0 && col_stop <= 0)    //slice from the end
                 {
                     auto size = args[0].vector().size();
 
