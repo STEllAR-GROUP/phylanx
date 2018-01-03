@@ -17,6 +17,8 @@
 #include <sstream>
 #include <vector>
 
+#include <phylanx/execution_tree/primitives/file_read_csv.hpp>
+
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
 PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::operation>);
 PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::expression>);
@@ -549,6 +551,19 @@ PYBIND11_MODULE(_phylanx, m)
         },
         "create a new variable from a new matrix from linear coefficients m0, dx, and dy");
 
+    execution_tree.def("file_read_csv",
+        [](std::string fname)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    auto frc = phylanx::execution_tree::primitives::file_read_csv{{fname}};
+                    std::vector<primitive_argument_type> args;
+                    primitive_argument_type result = frc.eval(args).get();
+                    return primitive{hpx::local_new<primitives::variable>(result.variant())};
+                });
+        },
+        "Read in the contents of a csv file");
     execution_tree.def("zeros",
         [](std::size_t nx)
         {
