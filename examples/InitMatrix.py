@@ -42,5 +42,6 @@ phy_print(m)
 print("Breast Cancer")
 
 m = et.file_read_csv("./examples/algorithms/breast_cancer.csv")
-
+print(m)
 phy_print(m)
+phy_print(et.slice(m,0,3,0,3));

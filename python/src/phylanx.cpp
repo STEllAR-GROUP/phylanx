@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <phylanx/execution_tree/primitives/file_read_csv.hpp>
+#include <phylanx/execution_tree/primitives/slicing_operation.hpp>
 
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
 PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::operation>);
@@ -564,6 +565,19 @@ PYBIND11_MODULE(_phylanx, m)
                 });
         },
         "Read in the contents of a csv file");
+    execution_tree.def("slice",
+        [](phylanx::execution_tree::primitive const & obj,std::int64_t x0,std::int64_t xN,std::int64_t y0,std::int64_t yN)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    auto frc = phylanx::execution_tree::primitives::slicing_operation{{obj,x0,xN,y0,yN}};
+                    std::vector<primitive_argument_type> args;
+                    primitive_argument_type result = frc.eval(args).get();
+                    return primitive{hpx::local_new<primitives::variable>(result.variant())};
+                });
+        },
+        "Take a slice of a 2d array");
     execution_tree.def("zeros",
         [](std::size_t nx)
         {
