@@ -280,7 +280,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         return primitive_result_type(
                             util::visit(visit_less{*this_},
-                                std::move(ops[0]), std::move(ops[1])));
+                                std::move(ops[0].variant()),
+                                std::move(ops[1].variant())));
                     }),
                     detail::map_operands(operands, literal_operand, args)
                 );

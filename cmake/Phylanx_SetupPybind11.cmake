@@ -6,6 +6,10 @@
 # setup pybind11 as a dependency
 macro(phylanx_setup_pybind11)
 
+  if(MSVC AND PHYLANX_WITH_CXX17)
+    set(PYBIND11_CPP_STANDARD /std:c++17)
+  endif()
+
   find_package(pybind11 REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
   if(NOT pybind11_FOUND)
     phylanx_error("pybind11 could not be found, please set pybind11_DIR to help locating it.")

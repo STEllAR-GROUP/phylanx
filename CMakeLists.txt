@@ -20,7 +20,7 @@ endif()
 ################################################################################
 # project metadata
 ################################################################################
-project(Phylanx CXX)
+project(Phylanx C CXX)
 
 set(PHYLANX_MAJOR_VERSION 0)
 set(PHYLANX_MINOR_VERSION 0)
@@ -69,15 +69,16 @@ phylanx_info("CMake version: " ${CMAKE_VERSION})
 phylanx_info("Phylanx version: " ${PHYLANX_VERSION})
 
 ################################################################################
+# Special compiler flags
+phylanx_setup_compiler_flags()
+phylanx_setup_output_paths()
+phylanx_detect_cpp_dialect()
+
+################################################################################
 # Locate dependencies
 phylanx_setup_hpx()
 phylanx_setup_blaze()
 phylanx_setup_pybind11()
-
-################################################################################
-# Special compiler flags
-phylanx_setup_compiler_flags()
-phylanx_setup_output_paths()
 
 ################################################################################
 # Build options
@@ -90,7 +91,7 @@ phylanx_option(
 phylanx_option(
   PHYLANX_WITH_TESTS_REGRESSIONS BOOL
   "Enable or disable the compilation of regression tests"
-  OFF ADVANCED CATEGORY "Build")
+  ON ADVANCED CATEGORY "Build")
 
 phylanx_option(
   PHYLANX_WITH_TESTS_UNIT BOOL

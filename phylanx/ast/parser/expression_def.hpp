@@ -41,7 +41,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::alpha_type alpha;
         qi::alnum_type alnum;
         qi::bool_type bool_;
-        qi::uint_parser<std::uint64_t> ulong_long;
+        qi::int_parser<std::int64_t> long_long;
 
         using qi::on_error;
         using qi::on_success;
@@ -99,7 +99,7 @@ namespace phylanx { namespace ast { namespace parser
             |   list
             |   as<ast::identifier>()[identifier]
             |   bool_
-            |   ulong_long
+            |   long_long
             |   string
             |   '(' > expr > ')'
             ;

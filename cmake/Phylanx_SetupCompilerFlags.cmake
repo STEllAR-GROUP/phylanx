@@ -39,7 +39,7 @@ macro(phylanx_setup_compiler_flags)
       phylanx_add_target_compile_option(-EHsc)
       if(MSVC14)
         # assume conforming (throwing) operator new implementations
-        phylanx_add_target_compile_option(-Zc:throwingNew)
+        phylanx_add_target_compile_option(/Zc:throwingNew)
 
         # enable faster linking (requires VS2015 Update1)
         # disabled for now as this flag crashes debugger
@@ -48,8 +48,8 @@ macro(phylanx_setup_compiler_flags)
 
         # Update 3 allows to flag rvalue misuses and enforces strict string const-
         # qualification conformance
-        phylanx_add_target_compile_option(-Zc:rvalueCast)
-        phylanx_add_target_compile_option(-Zc:strictStrings)
+        phylanx_add_target_compile_option(/Zc:rvalueCast)
+        phylanx_add_target_compile_option(/Zc:strictStrings)
       endif()
 
       # Suppress Blaze warnings
