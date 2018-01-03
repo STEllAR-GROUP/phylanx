@@ -5,9 +5,10 @@
 
 FROM stellargroup/hpx:dev
 
-RUN apt-get --fix-missing -y install wget &&                                     \
-    apt-get --fix-missing -y install python3 python3-dev python3-pip &&          \
-    apt-get --fix-missing -y install libblas-dev liblapack-dev &&                \
+RUN apt-get update                                                               \
+    apt-get -y install wget &&                                                   \
+    apt-get -y install python3 python3-dev python3-pip &&                        \
+    apt-get -y install libblas-dev liblapack-dev &&                              \
     pip3 install setuptools &&                                                   \
     pip3 install pytest &&                                                       \
     cd / &&                                                                      \
