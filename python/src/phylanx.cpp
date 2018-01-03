@@ -24,6 +24,7 @@ PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::expression>);
 // older versions of pybind11 don't support variant-like types
 namespace pybind11 { namespace detail
 {
+#if !defined(_MSC_VER) || _MSC_VER < 1912
     ///////////////////////////////////////////////////////////////////////////
     // Expose phylanx::util::variant and phylanx::ast::parser::extended_variant
     template <typename... Ts>
@@ -31,6 +32,7 @@ namespace pybind11 { namespace detail
       : variant_caster<phylanx::util::variant<Ts...>>
     {
     };
+#endif
 
     template <typename... Ts>
     struct type_caster<phylanx::ast::parser::extended_variant<Ts...>>
@@ -503,6 +505,79 @@ PYBIND11_MODULE(_phylanx, m)
         },
         "create a new variable from a floating point value");
 
+    execution_tree.def("linspace",
+        [](double xmin,double xmax,std::size_t nx)
+        {
+            std::vector<double> v;
+            if(nx < 1) {
+              ;
+            } else if(nx==1) {
+              v.push_back(xmin);
+            } else {
+              double dx = (xmax-xmin)/(nx-1);
+              for(std::size_t i=0;i<nx;i++) {
+                double x = xmin+dx*i;
+                v.push_back(x);
+              }
+            }
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return primitive{
+                        hpx::local_new<primitives::variable>(
+                            phylanx::ir::node_data<double>{v})};
+                });
+        },
+        "create a new variable from a vector of floating point values");
+
+    execution_tree.def("linearmatrix",
+        [](std::size_t nx,std::size_t ny,double m0,double dx,double dy)
+        {
+            blaze::DynamicMatrix<double> m{nx,ny};
+            for(int i=0;i<nx;i++) {
+              for(int j=0;j<ny;j++) {
+                m(i,j) = m0 + dx*i + dy*j;
+              }
+            }
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return primitive{
+                        hpx::local_new<primitives::variable>(
+                            phylanx::ir::node_data<double>{m})};
+                });
+        },
+        "create a new variable from a new matrix from linear coefficients m0, dx, and dy");
+
+    execution_tree.def("zeros",
+        [](std::size_t nx)
+        {
+            blaze::DynamicVector<double> v;
+            v.resize(nx);
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return primitive{
+                        hpx::local_new<primitives::variable>(
+                            phylanx::ir::node_data<double>{v})};
+                });
+        },
+        "create a new variable from a vector of zeros");
+    execution_tree.def("zeros",
+        [](std::size_t nx,std::size_t ny)
+        {
+            blaze::DynamicMatrix<double> m{nx,ny};
+            m = 0.0;
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    return primitive{
+                        hpx::local_new<primitives::variable>(
+                            phylanx::ir::node_data<double>{m})};
+                });
+        },
+        "create a new variable from a matrix of zeros");
+
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")
         .def("eval", [](phylanx::execution_tree::primitive const& p)
@@ -510,10 +585,56 @@ PYBIND11_MODULE(_phylanx, m)
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        return numeric_operand(p, {}).get()[0];
+                        auto n = numeric_operand(p, {}).get();
+                        std::cout << "n[0]=" << n[0] << std::endl;
+                        std::cout << "n[1]=" << n[1] << std::endl;
+                        std::cout << "n.size()=" << n.size() << std::endl;
+                        std::cout << "n.num_dimensions()=" << n.num_dimensions() << std::endl;
+                        return n[0];
                     });
             },
             "evaluate execution tree")
+        .def("num_dimensions", [](phylanx::execution_tree::primitive const& p)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(p, {}).get();
+                        return n.num_dimensions();
+                    });
+            },
+            "get the number of dimensions")
+        .def("get", [](phylanx::execution_tree::primitive const& p,int index)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(p, {}).get();
+                        return n[index];
+                    });
+            },
+            "get the number of dimensions")
+        .def("get", [](phylanx::execution_tree::primitive const& p,int index1,int index2)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(p, {}).get();
+                        phylanx::ir::node_data<double>::dimensions_type indicies{std::size_t(index1),std::size_t(index2)};
+                        return n[indicies];
+                    });
+            },
+            "get the number of dimensions")
+        .def("dimension", [](phylanx::execution_tree::primitive const& p,int index)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(p, {}).get();
+                        return n.dimension(index);
+                    });
+            },
+            "get the number of dimensions")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
             {
                 hpx::threads::run_as_hpx_thread(
