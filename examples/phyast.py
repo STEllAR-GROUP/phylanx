@@ -25,6 +25,25 @@ def phy_print(m):
   else:
     print("ndim=",ndim)
 
+def lisp_fmt(src):
+    pat = re.compile(r'"[^"]*"|\([^()]*\)|.')
+    indent = 0
+    for s in re.findall(pat,src):
+        if s == '(':
+            print(s,end="")
+            indent += 1
+        elif s == ')':
+            indent -= 1
+            print("")
+            print(" " * indent * 2,end="")
+            print(s,end="")
+        elif s == ',':
+            print(s)
+            print(" " * indent * 2,end="")
+        else:
+            print(s,end="")
+    print("")
+
 def get_info(a,depth=0):
     nm = a.__class__.__name__
     print("  "*depth,end="")
@@ -64,15 +83,14 @@ def recompile(a,depth=0):
         return '"'+a.s+'"'
     elif nm == "Name":
         return a.id
-    elif nm == "For":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        argname = args[0].id
-        rexpr = args[1]
-        body = args[2]
-        return "for("+recompile(rexpr)+", lambda "+argname+" : "+recompile(body)+")"
     elif nm == "Expr":
         args = [arg for arg in ast.iter_child_nodes(a)]
-        return "("+recompile(args[0])+")"
+        s = ""
+        if len(args)==1:
+            s += recompile(args[0])
+        else:
+            raise Exception()
+        return s
     elif nm == "FunctionDef":
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = "define("
@@ -94,7 +112,9 @@ def recompile(a,depth=0):
         return s
     elif nm == "BinOp":
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = recompile(args[0])
+        s = ""
+        s += "("
+        s += recompile(args[0])
         for i in range(1,len(args),2):
             nm2 = args[i].__class__.__name__
             if nm2 == "Add":
@@ -106,6 +126,7 @@ def recompile(a,depth=0):
             else:
                 raise Exception(nm2)
             s += recompile(args[i+1])
+        s += ")"
         return s
     elif nm == "Call":
         args = [arg for arg in ast.iter_child_nodes(a)]
@@ -206,9 +227,10 @@ class phylanx(object):
         # Create the AST
         tree = ast.parse(src)
         #astdump.indented(tree)
-        get_info(tree)
+        #get_info(tree)
         self.new_src = "block(" + recompile(tree)+')\n'
-        print('new_src =',self.new_src)
+        #print('new_src =',self.new_src)
+        lisp_fmt(self.new_src)
         # Compile the AST
         #tmp_name = "new_func_name"
         #self.f1=compile(tmp_name+"="+new_src,filename='<string>',mode='single')
@@ -291,3 +313,7 @@ for i in range(1,4):
     print("(",i,")","=" * 20)
     phyi = et.phylisp_eval(str(i))
     twof(phyi)
+
+@phylanx
+def cexpr(a,b):
+    return 2*a+3*(b-4)
