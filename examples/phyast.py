@@ -67,7 +67,15 @@ def recompile(a,depth=0):
         for arg in ast.iter_child_nodes(args[0]):
             s += arg.arg
             s += ","
-        s += recompile(args[1])
+        if len(args)==2:
+            s += recompile(args[1])
+        else:
+            tw = "block("
+            for aa in args[1:]:
+                s += tw
+                tw = ","
+                s += recompile(aa)
+            s += ")"
         s += ")," + a.name
         return s
     elif nm == "BinOp":
@@ -100,18 +108,39 @@ def recompile(a,depth=0):
     elif nm == "Return":
         args = [arg for arg in ast.iter_child_nodes(a)]
         return " "+recompile(args[0])
-    else:
-        s = "phyeval."+nm
-        btw='('
-        for n in ast.iter_child_nodes(a):
-            s += btw
-            btw = ','
-            s += recompile(n,depth+1)
-        if btw=='(':
-            s += '()'
+    elif nm == "Assign":
+        args = [arg for arg in ast.iter_child_nodes(a)]
+        return "define("+args[0].id+","+recompile(args[1])+")"
+    elif nm == "AugAssign":
+        args = [arg for arg in ast.iter_child_nodes(a)]
+        sym = "?"
+        nn = args[1].__class__.__name__
+        if nn == "Add":
+            sym = "+"
+        return "store("+args[0].id+","+args[0].id + sym + recompile(args[2])+")"
+    elif nm == "While":
+        args = [arg for arg in ast.iter_child_nodes(a)]
+        s = "while("+recompile(args[0])+","
+        if len(args)==2:
+            s += recompile(args[1])+")"
         else:
-            s += ')'
+            tw = "block("
+            for aa in args[1:]:
+                s += tw
+                tw = ","
+                s += recompile(aa)
+            s += ")"
+        s += ")"
         return s
+    elif nm == "Compare":
+        args = [arg for arg in ast.iter_child_nodes(a)]
+        sym = "?"
+        nn = args[1].__class__.__name__
+        if nn == "Lt":
+            sym = "<"
+        return recompile(args[0])+"<"+recompile(args[2])
+    else:
+        raise Exception(nm)
 
 local_namespace = {}
 # Create the decorator
@@ -128,7 +157,7 @@ class phylanx(object):
         # Create the AST
         tree = ast.parse(src)
         #astdump.indented(tree)
-        #get_info(tree)
+        get_info(tree)
         self.new_src = "block(" + recompile(tree)+')\n'
         print('new_src =',self.new_src)
         # Compile the AST
@@ -174,3 +203,14 @@ four = et.phylisp_eval("4")
 hello1(four)
 
 phy_print(addme(three,four))
+
+@phylanx
+def sum10():
+    s=0
+    i=0
+    while(i<10):
+        s += i
+        i += 1
+    return s
+
+phy_print(sum10())
