@@ -138,7 +138,17 @@ def recompile(a,depth=0):
         nn = args[1].__class__.__name__
         if nn == "Lt":
             sym = "<"
-        return recompile(args[0])+"<"+recompile(args[2])
+        elif nn == "Gt":
+            sym = ">"
+        elif nn == "LtE":
+            sym = "<="
+        elif nn == "GtE":
+            sym = ">="
+        elif nn == "NotEq":
+            sym = "!="
+        elif nn == "Eq":
+            sym = "=="
+        return recompile(args[0])+sym+recompile(args[2])
     else:
         raise Exception(nm)
 
@@ -208,7 +218,7 @@ phy_print(addme(three,four))
 def sum10():
     s=0
     i=0
-    while(i<10):
+    while i <= 10:
         s += i
         i += 1
     return s
