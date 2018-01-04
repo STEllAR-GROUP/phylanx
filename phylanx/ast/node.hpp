@@ -20,6 +20,7 @@
 #include <boost/spirit/include/support_attributes.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 #include <utility>
@@ -48,13 +49,20 @@ namespace phylanx { namespace ast
     struct tagged
     {
         tagged()
-          : id(0)
+          : id(--next_id)
+        {}
+
+        tagged(int tag)
+          : id(tag)
         {
         }
 
-        std::size_t id; // Used to annotate the AST with the iterator position.
-                        // This id is used as a key to a map<int, Iterator>
-                        // (not really part of the AST.)
+        std::int64_t id; // Used to annotate the AST with the iterator position.
+                         // This id is used as a key to a map<int, Iterator>
+                         // (not really part of the AST.)
+
+        // default-initialized tags are negative
+        PHYLANX_EXPORT static std::int64_t next_id;
     };
 
     enum class optoken
@@ -223,7 +231,7 @@ namespace phylanx { namespace ast
         return val.index() != 0;
     }
 
-    struct primary_expr : tagged, expr_node_type
+    struct primary_expr : expr_node_type, tagged
     {
         primary_expr() = default;
 
@@ -325,54 +333,45 @@ namespace phylanx { namespace ast
           , phylanx::util::recursive_wrapper<unary_expr>
         >;
 
-    struct operand : operand_node_type, tagged
+    struct operand : operand_node_type
     {
         operand() = default;
 
         operand(bool val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(val))
+          : operand_node_type(primary_expr(val))
         {
         }
         operand(double val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(val))
+          : operand_node_type(primary_expr(val))
         {
         }
         operand(ir::node_data<double> const& val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(val))
+          : operand_node_type(primary_expr(val))
         {
         }
         operand(ir::node_data<double> && val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(std::move(val)))
+          : operand_node_type(primary_expr(std::move(val)))
         {
         }
 
         operand(char const* val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(val))
+          : operand_node_type(primary_expr(val))
         {
         }
         operand(std::string const& val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(val))
+          : operand_node_type(primary_expr(val))
         {
         }
         operand(std::string && val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(std::move(val)))
+          : operand_node_type(primary_expr(std::move(val)))
         {
         }
-        operand(std::int64_t const val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(val))
+        operand(std::int64_t val)
+          : operand_node_type(primary_expr(val))
         {
         }
-        operand(std::uint64_t const val)
-          : operand_node_type(
-                phylanx::util::recursive_wrapper<primary_expr>(val))
+        operand(std::uint64_t val)
+          : operand_node_type(primary_expr(val))
         {
         }
 
@@ -390,7 +389,7 @@ namespace phylanx { namespace ast
         {
         }
         explicit operand(primary_expr && val)
-          : operand_node_type(std::move(val))
+          : operand_node_type(primary_expr(std::move(val)))
         {
         }
 
@@ -402,6 +401,7 @@ namespace phylanx { namespace ast
           : operand_node_type(std::move(val))
         {
         }
+
 
     private:
         friend class hpx::serialization::access;

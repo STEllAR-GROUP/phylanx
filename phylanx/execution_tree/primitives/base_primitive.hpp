@@ -47,18 +47,12 @@ namespace phylanx { namespace execution_tree
     public:
         primitive() = default;
 
-        explicit primitive(hpx::id_type const& id)
-          : base_type(id)
-        {
-        }
-        explicit primitive(hpx::id_type && id)
-          : base_type(std::move(id))
-        {
-        }
         primitive(hpx::future<hpx::id_type> && fid)
           : base_type(std::move(fid))
         {
         }
+
+        primitive(hpx::future<hpx::id_type> && fid, std::string const& name);
 
         hpx::future<primitive_argument_type> eval() const;
         hpx::future<primitive_argument_type> eval(
@@ -370,7 +364,8 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type = primitive (*)(
-        hpx::id_type, std::vector<primitive_argument_type>&&);
+        hpx::id_type, std::vector<primitive_argument_type>&&,
+        std::string const&);
 
     using match_pattern_type =
         hpx::util::tuple<std::string, std::string, factory_function_type>;
@@ -381,9 +376,10 @@ namespace phylanx { namespace execution_tree
     // Generic creation helper for creating an instance of the given primitive.
     template <typename Primitive>
     primitive create(hpx::id_type locality,
-        std::vector<primitive_argument_type>&& operands)
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
     {
-        return primitive(hpx::new_<Primitive>(locality, std::move(operands)));
+        return primitive(
+            hpx::new_<Primitive>(locality, std::move(operands)), name);
     }
 }}
 

@@ -96,15 +96,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // column = col_start
                 // n = (col_stop - col_start)
 
-                if (col_start < 0 && col_stop > 0)    //slice from the end
+                if (col_start < 0 && col_stop > 0)    // slice from the end
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "phylanx::execution_tree::primitives::"
-                                                "slicing_operation::slicing_operation",
-                                        "col_stop can not be positive if col_start is negative");
+                        "phylanx::execution_tree::primitives::"
+                            "slicing_operation::slicing_operation",
+                        "col_stop can not be positive if col_start is "
+                            "negative");
                 }
 
-                if (col_start < 0 && col_stop <= 0)    //slice from the end
+                if (col_start < 0 && col_stop <= 0)    // slice from the end
                 {
                     auto size = args[0].vector().size();
 
@@ -123,7 +124,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_result_type slicing2d(args_type&& args) const
             {
                 // returns the sliced matrix, depending upon the values
-                // provided in row_start, row_stop(exclusive), col_start, col_stop(exclusive)
+                // provided in row_start, row_stop(exclusive), col_start,
+                // col_stop(exclusive)
 
                 // parameters required by phylanx to create a slice is as follows:
                 // matrix The matrix containing the submatrix.
@@ -160,9 +162,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "slicing_operation::slicing_operation",
+                            "slicing_operation::slicing_operation",
                         "col_stop/row_stop can not be positive if "
-                        "col_start/row_start is negative");
+                            "col_start/row_start is negative");
+                }
+                if ((col_start >= 0 && col_stop < 0) ||
+                    (row_start >= 0 && row_stop < 0))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                            "slicing_operation::slicing_operation",
+                        "col_stop/row_stop can not be negative if "
+                            "col_start/row_start is positive");
                 }
 
                 if (col_start < 0 && col_stop <= 0 && row_start >= 0 &&
@@ -171,97 +182,83 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     auto num_cols = args[0].matrix().columns();
 
                     submatrix_type sm = blaze::submatrix(args[0].matrix(),
-                        row_start, num_cols + col_start, (row_stop - row_start),
-                        -(col_start) + col_stop);
+                        row_start, num_cols + col_start,
+                        row_stop - row_start, -col_start + col_stop);
 
-                    if ((row_stop - row_start) == 1)
+                    if (row_stop - row_start == 1)
                     {
-                        //return a vector in this case and not a matrix
-                        return ir::node_data<double>{
-                            std::move(blaze::trans(row(sm, 0)))};
+                        // return a vector in this case and not a matrix
+                        return ir::node_data<double>{blaze::trans(row(sm, 0))};
                     }
-                    else if (col_stop - col_start == -1)
+                    if (col_stop - col_start == 1)
                     {
-                        return ir::node_data<double>{std::move(column(sm, 0))};
+                        return ir::node_data<double>{column(sm, 0)};
                     }
-                    else
-                    {
-                        return ir::node_data<double>{
-                            matrix_type{std::move(sm)}};
-                    }
+
+                    return ir::node_data<double>{matrix_type{std::move(sm)}};
                 }
 
                 if (row_start < 0 && row_stop <= 0 && col_start >= 0 &&
-                    col_stop > 0)    //row slice from the end
+                    col_stop > 0)    // row slice from the end
                 {
                     auto num_rows = args[0].matrix().rows();
 
                     submatrix_type sm = blaze::submatrix(args[0].matrix(),
                         num_rows + row_start, col_start,
-                        -(row_start) + row_stop, (col_stop - col_start));
+                        -row_start + row_stop, (col_stop - col_start));
 
-                    if (row_stop - row_start == -1)
+                    if (row_stop - row_start == 1)
                     {
-                        //return a vector in this case and not a matrix
-                        return ir::node_data<double>{
-                            std::move(blaze::trans(row(sm, 0)))};
+                        // return a vector in this case and not a matrix
+                        return ir::node_data<double>{blaze::trans(row(sm, 0))};
                     }
-                    else if ((col_stop - col_start) == 1)
+                    if ((col_stop - col_start) == 1)
                     {
-                        return ir::node_data<double>{std::move(column(sm, 0))};
+                        return ir::node_data<double>{column(sm, 0)};
                     }
-                    else
-                    {
-                        return ir::node_data<double>{
-                            matrix_type{std::move(sm)}};
-                    }
+
+                    return ir::node_data<double>{matrix_type{std::move(sm)}};
                 }
 
                 if (row_start < 0 && row_stop <= 0 && col_start < 0 &&
-                    col_stop <= 0)    //row and column , both, slice from end
+                    col_stop <= 0)    // row and column , both, slice from end
                 {
                     auto num_rows = args[0].matrix().rows();
                     auto num_cols = args[0].matrix().columns();
 
                     submatrix_type sm = blaze::submatrix(args[0].matrix(),
                         num_rows + row_start, num_cols + col_start,
-                        -(row_start) + row_stop, -(col_start) + col_stop);
+                        -row_start + row_stop, -col_start + col_stop);
 
-                    if (row_stop - row_start == -1)
+                    if (row_stop - row_start == 1)
                     {
-                        //return a vector in this case and not a matrix
-                        return ir::node_data<double>{
-                            std::move(blaze::trans(row(sm, 0)))};
+                        // return a vector in this case and not a matrix
+                        return ir::node_data<double>{blaze::trans(row(sm, 0))};
                     }
-                    else if (col_stop - col_start == -1)
+                    if (col_stop - col_start == 1)
                     {
-                        return ir::node_data<double>{std::move(column(sm, 0))};
+                        return ir::node_data<double>{column(sm, 0)};
                     }
-                    else
-                    {
-                        return ir::node_data<double>{
-                            matrix_type{std::move(sm)}};
-                    }
+
+                    return ir::node_data<double>{matrix_type{std::move(sm)}};
                 }
 
                 submatrix_type sm =
-                    blaze::submatrix(args[0].matrix(), row_start, col_start,
-                        (row_stop - row_start), (col_stop - col_start));
+                    blaze::submatrix(args[0].matrix(),
+                        row_start, col_start,
+                        row_stop - row_start, col_stop - col_start);
 
                 if ((row_stop - row_start) == 1)
                 {
-                    //return a vector in this case and not a matrix
-                    return ir::node_data<double>{
-                        std::move(blaze::trans(row(sm, 0)))};
+                    // return a vector in this case and not a matrix
+                    return ir::node_data<double>{blaze::trans(row(sm, 0))};
                 }
-                else if ((col_stop - col_start) == 1)
+                if ((col_stop - col_start) == 1)
                 {
-                    return ir::node_data<double>{std::move(column(sm, 0))};
+                    return ir::node_data<double>{column(sm, 0)};
                 }
-                else
-                {
-                    return ir::node_data<double>{matrix_type{std::move(sm)}};
-                }
+
+                return ir::node_data<double>{matrix_type{std::move(sm)}};
             }
 
         public:

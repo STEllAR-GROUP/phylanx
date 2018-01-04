@@ -113,38 +113,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
 #endif
     };
 
-    // defer the evaluation of a given function
-//     struct c : actor<function>
-//     {
-//         function() = default;
-//
-//         function(stored_function const& f)
-//           : f_(f)
-//         {
-//             HPX_ASSERT(!f_.empty());
-//         }
-//         function(stored_function && f)
-//           : f_(std::move(f))
-//         {
-//             HPX_ASSERT(!f_.empty());
-//         }
-//
-//         bool empty() const
-//         {
-//             return f_.empty();
-//         }
-//
-//         result_type call(arguments_type && args) const
-//         {
-//             return f_(std::move(args));
-//         }
-//
-//         stored_function f_;
-//     };
-
-
     // this must be a list to ensure stable references
-    using function_list = std::list<function>;
+    struct function_list
+    {
+        function_list()
+          : compile_id_(0)
+        {}
+
+        function_list(function_list const&) = delete;
+        function_list(function_list &&) = delete;
+
+        function_list& operator=(function_list const&) = delete;
+        function_list& operator=(function_list &&) = delete;
+
+        std::size_t compile_id_;
+        std::list<function> defines_;
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     // arguments
@@ -171,13 +155,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // lambda
     struct lambda : actor<lambda>
     {
-        function_list elements_;
+        std::list<function> elements_;
 
         // we must hold f by reference because functions can be recursive
         std::reference_wrapper<function const> f_;
 
         lambda(function const& f, function_list const& elements)
-          : elements_(elements)
+          : elements_(elements.defines_)
           , f_(f)
         {}
 

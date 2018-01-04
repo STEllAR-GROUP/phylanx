@@ -98,10 +98,12 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto col_stop = vm["col_stop"].as<std::int64_t>();
 
     // read the data from the files
-    auto x = read_x(vm["data_csv"].as<std::string>(), row_start, row_stop, col_start, col_stop);
+    auto x = read_x(vm["data_csv"].as<std::string>(),
+        row_start, row_stop, col_start, col_stop);
 
-    //col_start and col_stop omitted in this case as we know the last column in our csv file
-    //has the y values.
+    // col_start and col_stop omitted in this case as we know the last column
+    // in our csv file
+    // has the y values.
     auto y = read_y(vm["data_csv"].as<std::string>(), row_start, row_stop);
 
     auto alpha = vm["alpha"].as<double>();
@@ -109,13 +111,12 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto iterations = vm["num_iterations"].as<std::int64_t>();
     bool enable_output = vm.count("enable_output") != 0;
 
-    // Add high resolution timer
+    // evaluate LRA using the read data
+    auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+
+    // time the execution
     hpx::util::high_resolution_timer t;
 
-    // evaluate LRA using the read data
-    // time the execution
-
-    auto lra = phylanx::execution_tree::compile(lra_code, snippets);
     auto result =
         lra(std::move(x), std::move(y), alpha, iterations, enable_output);
 

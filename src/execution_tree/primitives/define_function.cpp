@@ -10,6 +10,7 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 
+#include <string>
 #include <vector>
 #include <utility>
 
@@ -32,6 +33,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : name_(std::move(name))
     {}
 
+    std::string define_function::extract_function_name() const
+    {
+        if (name_.find("define-") == 0)
+        {
+            return name_.substr(7);
+        }
+        return name_;
+    }
+
     primitive_result_type define_function::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
@@ -48,8 +58,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             primitive_argument_type operand = body_;
-            target_ = primitive(hpx::new_<primitives::wrapped_function>(
-                hpx::find_here(), std::move(operand), name_));
+            target_ = primitive(
+                hpx::new_<primitives::wrapped_function>(
+                    hpx::find_here(), std::move(operand), name_),
+                extract_function_name());
 
             // bind this name to the result of the expression right away
             primitive* p = util::get_if<primitive>(&target_);

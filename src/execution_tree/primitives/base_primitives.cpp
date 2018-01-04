@@ -73,6 +73,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive::primitive(hpx::future<hpx::id_type>&& fid, std::string const& name)
+      : base_type(std::move(fid))
+    {
+        if (!name.empty())
+        {
+            this->base_type::register_as("/phylanx/" + name).get();
+        }
+    }
+
     hpx::future<primitive_argument_type> primitive::eval(
         std::vector<primitive_argument_type> const& params) const
     {
