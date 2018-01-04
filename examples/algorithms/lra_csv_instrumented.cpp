@@ -39,8 +39,8 @@ std::string const read_x_code = R"(block(
     //
     // Read X-data from given CSV file
     //
-    define(read_x, filepath,
-        slice(file_read_csv(filepath), 0, 569, 0, 30)
+    define(read_x, filepath, row_start, row_stop, col_start, col_stop,
+        slice(file_read_csv(filepath), row_start, row_stop, col_start, col_stop)
     ),
     read_x
 ))";
@@ -49,8 +49,8 @@ std::string const read_y_code = R"(block(
     //
     // Read Y-data from given CSV file
     //
-    define(read_y, filepath,
-        slice(file_read_csv(filepath), 0, 569, 30, 31)
+    define(read_y, filepath, row_start, row_stop,
+        slice(file_read_csv(filepath), row_start, row_stop, -1, 0)
     ),
     read_y
 ))";
@@ -233,9 +233,15 @@ int hpx_main(boost::program_options::variables_map& vm)
         print_instrumentation("lra", 2, lra_code, iterators, entries);
     }
 
+    auto row_start = vm["row_start"].as<std::int64_t>();
+    auto col_start = vm["col_start"].as<std::int64_t>();
+    auto row_stop = vm["row_stop"].as<std::int64_t>();
+    auto col_stop = vm["col_stop"].as<std::int64_t>();
+
     // read the data from the files
-    auto x = read_x(vm["data_csv"].as<std::string>());
-    auto y = read_y(vm["data_csv"].as<std::string>());
+    auto x = read_x(vm["data_csv"].as<std::string>(), row_start, row_stop,
+        col_start, col_stop);
+    auto y = read_y(vm["data_csv"].as<std::string>(), row_start, row_stop);
 
     // remaining command line options
     auto alpha = vm["alpha"].as<double>();
@@ -275,6 +281,18 @@ int main(int argc, char* argv[])
         ("data_csv",
             boost::program_options::value<std::string>(),
             "file name for reading data")
+        ("row_start",
+            boost::program_options::value<std::int64_t>()->default_value(0),
+            "row_start (default: 0)")
+        ("col_start",
+            boost::program_options::value<std::int64_t>()->default_value(0),
+            "col_start (default: 0)")
+        ("row_stop",
+            boost::program_options::value<std::int64_t>()->default_value(569),
+            "row_stop (default: 569)")
+        ("col_stop",
+            boost::program_options::value<std::int64_t>()->default_value(30),
+            "col_stop (default: 30)")
         ;
 
     return hpx::init(desc, argc, argv);
