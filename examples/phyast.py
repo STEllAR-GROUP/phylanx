@@ -28,19 +28,33 @@ def phy_print(m):
 def get_info(a,depth=0):
     nm = a.__class__.__name__
     print("  "*depth,end="")
+    iter_children = True
     if nm == "Num":
         if type(a.n)==int:
             print("%s=%d" % (nm,a.n))
         else:
             print("%s=%f" % (nm,a.n))
+    elif nm == "Str":
+        print("%s='%s'" % (nm,a.s))
     elif nm == "Name":
         print("%s='%s'" %(nm,a.id))
     elif nm == "arg":
         print("%s='%s'" %(nm,a.arg))
+    elif nm == "If":
+        iter_children = False
+        print(nm)
+        for n in a.body:
+            get_info(n,depth+1)
+        if len(a.orelse)>0:
+            print("  "*depth,end="")
+            print("Else")
+            for n in a.orelse:
+                get_info(n,depth+1)
     else:
         print(nm)
-    for n in ast.iter_child_nodes(a):
-        get_info(n,depth+1)
+    if iter_children:
+        for n in ast.iter_child_nodes(a):
+            get_info(n,depth+1)
 
 def recompile(a,depth=0):
     nm = a.__class__.__name__
@@ -135,8 +149,27 @@ def recompile(a,depth=0):
         s += ")"
         return s
     elif nm == "If":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        s = "if("+recompile(args[0])+","+recompile(args[1])+","+recompile(args[2])+")"
+        s = "if("+recompile(a.test)+","
+        if len(a.body)>1:
+            tw = "block("
+            for aa in a.body:
+                s += tw
+                tw = ","
+                s += recompile(aa)
+            s += ")"
+        else:
+            s += recompile(a.body[0])
+        s += ","
+        if len(a.orelse)>1:
+            tw = "block("
+            for aa in a.orelse:
+                s += tw
+                tw = ","
+                s += recompile(aa)
+            s += ")"
+        else:
+            s += recompile(a.orelse[0])
+        s += ")"
         return s
     elif nm == "Compare":
         args = [arg for arg in ast.iter_child_nodes(a)]
@@ -241,3 +274,20 @@ def fib(n):
 ten = et.phylisp_eval("10")
 
 phy_print(fib(ten))
+
+@phylanx
+def twof(a):
+    if a < 2:
+        print("a less than 2")
+        print("branch 1")
+    elif a==2:
+        print("a equals 2")
+        print("branch 2")
+    else:
+        print("a more than 2")
+        print("branch 3")
+
+for i in range(1,4):
+    print("(",i,")","=" * 20)
+    phyi = et.phylisp_eval(str(i))
+    twof(phyi)
