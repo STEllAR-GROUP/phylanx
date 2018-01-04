@@ -288,7 +288,6 @@ namespace phylanx { namespace ast
         primary_expr(identifier && val)
           : expr_node_type(std::move(val))
         {
-            this->expr_node_type::operator=(std::move(val));
         }
 
         primary_expr(expression const& val)
