@@ -109,9 +109,6 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto iterations = vm["num_iterations"].as<std::int64_t>();
     bool enable_output = vm.count("enable_output") != 0;
 
-    // Add high resolution timer
-    hpx::util::high_resolution_timer t;
-
     // evaluate LRA using the read data
     auto lra = phylanx::execution_tree::compile(lra_code, snippets);
 
