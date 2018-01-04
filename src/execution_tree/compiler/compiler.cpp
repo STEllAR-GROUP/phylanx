@@ -212,7 +212,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
     private:
         std::string annotation(std::int64_t id)
         {
-            return "/" + std::to_string(snippets_.compile_id_) + "#" +
+            // Note: the compile-id needs to be adjusted to be zero-based.
+            return "/" + std::to_string(snippets_.compile_id_ - 1) + "#" +
                 std::to_string(id);
         }
 

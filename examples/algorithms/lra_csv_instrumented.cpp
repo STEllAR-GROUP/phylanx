@@ -228,9 +228,9 @@ int hpx_main(boost::program_options::variables_map& vm)
         auto entries =
             hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*");
 
-        print_instrumentation("read_x", 1, read_x_code, iterators, entries);
-        print_instrumentation("read_y", 2, read_y_code, iterators, entries);
-        print_instrumentation("lra", 3, lra_code, iterators, entries);
+        print_instrumentation("read_x", 0, read_x_code, iterators, entries);
+        print_instrumentation("read_y", 1, read_y_code, iterators, entries);
+        print_instrumentation("lra", 2, lra_code, iterators, entries);
     }
 
     // read the data from the files
