@@ -87,6 +87,8 @@ def recompile(a,depth=0):
                 s += " + "
             elif nm2 == "Mult":
                 s += " * "
+            elif nm2 == "Sub":
+                s += " - "
             else:
                 raise Exception(nm2)
             s += recompile(args[i+1])
@@ -131,6 +133,10 @@ def recompile(a,depth=0):
                 s += recompile(aa)
             s += ")"
         s += ")"
+        return s
+    elif nm == "If":
+        args = [arg for arg in ast.iter_child_nodes(a)]
+        s = "if("+recompile(args[0])+","+recompile(args[1])+","+recompile(args[2])+")"
         return s
     elif nm == "Compare":
         args = [arg for arg in ast.iter_child_nodes(a)]
@@ -224,3 +230,14 @@ def sum10():
     return s
 
 phy_print(sum10())
+
+@phylanx
+def fib(n):
+    if n < 2:
+        return n
+    else:
+        return fib(n-1)+fib(n-2)
+
+ten = et.phylisp_eval("10")
+
+phy_print(fib(ten))
