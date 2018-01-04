@@ -660,6 +660,33 @@ PYBIND11_MODULE(_phylanx, m)
                 });
         },
         "compile and evaluate a numerical expression in Phylanx lisp");
+    execution_tree.def("phylisp_eval",
+        [](std::string xexpr,phylanx::execution_tree::primitive const & arg0,phylanx::execution_tree::primitive const & arg1)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    auto here = hpx::find_here();
+                    phylanx::execution_tree::compiler::function_list eval_snippets;
+                    auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
+
+                    phylanx::execution_tree::primitive_argument_type result;
+                    try {
+                      result = x(arg0,arg1);
+                      int ndx = result.index();
+                      if(ndx == 4) {
+                        auto node_result = phylanx::util::get<phylanx::ir::node_data<double>>(result);
+                        return primitive{hpx::local_new<primitives::variable>(node_result)};
+                      } else if(ndx == 2) {
+                        auto node_result = phylanx::util::get<std::int64_t>(result);
+                        return primitive{hpx::local_new<primitives::variable>(node_result)};
+                      }
+                    } catch(...) {}
+                    std::int64_t node_result = 0;
+                    return primitive{hpx::local_new<primitives::variable>(node_result)};
+                });
+        },
+        "compile and evaluate a numerical expression in Phylanx lisp");
 
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")

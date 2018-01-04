@@ -45,6 +45,8 @@ m = et.file_read_csv("./examples/algorithms/breast_cancer.csv")
 print(m)
 phy_print(m)
 phy_print(et.slice(m,0,3,0,3));
+three = et.phylisp_eval("3")
+four = et.phylisp_eval("4")
 
 print("The answer is 42")
 print(et.phylisp_eval("block(42.0)").get(0))
@@ -60,7 +62,7 @@ print(et.phylisp_eval("""
         ),
         fact(arg0)
     )""").get(0))
-print("3=",et.phylisp_eval("3").get(0))
+print("3=",three.get(0))
 print(et.phylisp_eval("""
     block(
         define(fact,arg0,
@@ -70,5 +72,6 @@ print(et.phylisp_eval("""
             )
         ),
         fact
-    )""",et.phylisp_eval("3")).get(0))
+    )""",three).get(0))
 phy_print(et.phylisp_eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)",m))
+phy_print(et.phylisp_eval("block(define(addme,arg0,arg1,arg0+arg1),addme)",three,four))
