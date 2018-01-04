@@ -75,3 +75,13 @@ print(et.phylisp_eval("""
     )""",three).get(0))
 phy_print(et.phylisp_eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)",m))
 phy_print(et.phylisp_eval("block(define(addme,arg0,arg1,arg0+arg1),addme)",three,four))
+et.phylisp_eval('cout("Hello ",3," - ",4.1-2.9)')
+et.phylisp_eval("""
+    block(
+        define(i,0),
+        while(i<10,
+            block(
+                store(i,i+1)
+            )
+        ),
+        cout(i))""")
