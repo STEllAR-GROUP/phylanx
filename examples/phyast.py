@@ -75,142 +75,160 @@ def get_info(a,depth=0):
         for n in ast.iter_child_nodes(a):
             get_info(n,depth+1)
 
-def recompile(a,depth=0):
-    nm = a.__class__.__name__
-    if nm == "Num":
-        return str(a.n)
-    elif nm == "Str":
-        return '"'+a.s+'"'
-    elif nm == "Name":
-        return a.id
-    elif nm == "Expr":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        s = ""
-        if len(args)==1:
-            s += recompile(args[0])
-        else:
-            raise Exception()
-        return s
-    elif nm == "FunctionDef":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        s = "define("
-        s += a.name
-        s += ","
-        for arg in ast.iter_child_nodes(args[0]):
-            s += arg.arg
-            s += ","
-        if len(args)==2:
-            s += recompile(args[1])
-        else:
-            tw = "block("
-            for aa in args[1:]:
-                s += tw
-                tw = ","
-                s += recompile(aa)
-            s += ")"
-        s += ")," + a.name
-        return s
-    elif nm == "BinOp":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        s = ""
-        s += "("
-        s += recompile(args[0])
-        for i in range(1,len(args),2):
-            nm2 = args[i].__class__.__name__
-            if nm2 == "Add":
-                s += " + "
-            elif nm2 == "Mult":
-                s += " * "
-            elif nm2 == "Sub":
-                s += " - "
-            else:
-                raise Exception(nm2)
-            s += recompile(args[i+1])
-        s += ")"
-        return s
-    elif nm == "Call":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        if args[0].id == "print":
-            args[0].id = "cout"
-        s = args[0].id+'('
-        for n in range(1,len(args)):
-            if n > 1:
-                s += ','
-            s += recompile(args[n])
-        s += ')'
-        return s
-    elif nm == "Module":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        return recompile(args[0])
-    elif nm == "Return":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        return " "+recompile(args[0])
-    elif nm == "Assign":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        return "define("+args[0].id+","+recompile(args[1])+")"
-    elif nm == "AugAssign":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        sym = "?"
-        nn = args[1].__class__.__name__
-        if nn == "Add":
-            sym = "+"
-        return "store("+args[0].id+","+args[0].id + sym + recompile(args[2])+")"
-    elif nm == "While":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        s = "while("+recompile(args[0])+","
-        if len(args)==2:
-            s += recompile(args[1])+")"
-        else:
-            tw = "block("
-            for aa in args[1:]:
-                s += tw
-                tw = ","
-                s += recompile(aa)
-            s += ")"
-        s += ")"
-        return s
-    elif nm == "If":
-        s = "if("+recompile(a.test)+","
-        if len(a.body)>1:
-            tw = "block("
-            for aa in a.body:
-                s += tw
-                tw = ","
-                s += recompile(aa)
-            s += ")"
-        else:
-            s += recompile(a.body[0])
-        s += ","
-        if len(a.orelse)>1:
-            tw = "block("
-            for aa in a.orelse:
-                s += tw
-                tw = ","
-                s += recompile(aa)
-            s += ")"
-        else:
-            s += recompile(a.orelse[0])
-        s += ")"
-        return s
-    elif nm == "Compare":
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        sym = "?"
-        nn = args[1].__class__.__name__
-        if nn == "Lt":
-            sym = "<"
-        elif nn == "Gt":
-            sym = ">"
-        elif nn == "LtE":
-            sym = "<="
-        elif nn == "GtE":
-            sym = ">="
-        elif nn == "NotEq":
-            sym = "!="
-        elif nn == "Eq":
-            sym = "=="
-        return recompile(args[0])+sym+recompile(args[2])
-    else:
-        raise Exception(nm)
+class Recompiler:
+    def __init__(self):
+        self.defs = {}
+    def recompile(self,a,allowreturn=False):
+      nm = a.__class__.__name__
+      if nm == "Num":
+          return str(a.n)
+      elif nm == "Str":
+          return '"'+a.s+'"'
+      elif nm == "Name":
+          return a.id
+      elif nm == "Expr":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          s = ""
+          if len(args)==1:
+              s += self.recompile(args[0])
+          else:
+              raise Exception()
+          return s
+      elif nm == "FunctionDef":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          s = ""
+          s += "define("
+          s += a.name
+          s += ","
+          for arg in ast.iter_child_nodes(args[0]):
+              s += arg.arg
+              s += ","
+          if len(args)==2:
+              s += self.recompile(args[1],True)
+          else:
+              s += "block("
+              #for aa in args[1:]:
+              sargs = args[1:]
+              for i in range(len(sargs)):
+                  aa = sargs[i]
+                  if i+1 == len(sargs):
+                      s += self.recompile(aa,True)
+                  else:
+                      s += self.recompile(aa,False)
+                      s += ","
+              s += ")"
+          s += ")," + a.name
+          return s
+      elif nm == "BinOp":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          s = ""
+          s += "("
+          s += self.recompile(args[0])
+          for i in range(1,len(args),2):
+              nm2 = args[i].__class__.__name__
+              if nm2 == "Add":
+                  s += " + "
+              elif nm2 == "Mult":
+                  s += " * "
+              elif nm2 == "Sub":
+                  s += " - "
+              else:
+                  raise Exception(nm2)
+              s += self.recompile(args[i+1])
+          s += ")"
+          return s
+      elif nm == "Call":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          if args[0].id == "print":
+              args[0].id = "cout"
+          s = args[0].id+'('
+          for n in range(1,len(args)):
+              if n > 1:
+                  s += ','
+              s += self.recompile(args[n])
+          s += ')'
+          return s
+      elif nm == "Module":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          return self.recompile(args[0])
+      elif nm == "Return":
+          if not allowreturn:
+              raise Exception("Return only allowed at end of function: line=%d\n" % a.lineno)
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          return " "+self.recompile(args[0])
+      elif nm == "Assign":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          s = ""
+          if args[0].id in self.defs:
+            s += "store"
+          else:
+            s += "define"
+            self.defs[args[0].id]=1
+          s += "("+args[0].id+","+self.recompile(args[1])+")"
+          return s
+      elif nm == "AugAssign":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          sym = "?"
+          nn = args[1].__class__.__name__
+          if nn == "Add":
+              sym = "+"
+          return "store("+args[0].id+","+args[0].id + sym + self.recompile(args[2])+")"
+      elif nm == "While":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          s = "while("+self.recompile(args[0])+","
+          if len(args)==2:
+              s += self.recompile(args[1])+")"
+          else:
+              tw = "block("
+              for aa in args[1:]:
+                  s += tw
+                  tw = ","
+                  s += self.recompile(aa)
+              s += ")"
+          s += ")"
+          return s
+      elif nm == "If":
+          s = "if("+self.recompile(a.test)+","
+          if len(a.body)>1:
+              tw = "block("
+              for aa in a.body:
+                  s += tw
+                  tw = ","
+                  s += self.recompile(aa)
+              s += ")"
+          else:
+              s += self.recompile(a.body[0])
+          s += ","
+          if len(a.orelse)>1:
+              tw = "block("
+              for aa in a.orelse:
+                  s += tw
+                  tw = ","
+                  s += self.recompile(aa)
+              s += ")"
+          else:
+              s += self.recompile(a.orelse[0])
+          s += ")"
+          return s
+      elif nm == "Compare":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          sym = "?"
+          nn = args[1].__class__.__name__
+          if nn == "Lt":
+              sym = "<"
+          elif nn == "Gt":
+              sym = ">"
+          elif nn == "LtE":
+              sym = "<="
+          elif nn == "GtE":
+              sym = ">="
+          elif nn == "NotEq":
+              sym = "!="
+          elif nn == "Eq":
+              sym = "=="
+          return self.recompile(args[0])+sym+self.recompile(args[2])
+      else:
+          raise Exception(nm)
 
 local_namespace = {}
 # Create the decorator
@@ -223,13 +241,17 @@ class phylanx(object):
         # Before recompiling the code, take
         # off the decorator from the source.
         src = re.sub(r'^\s*@\w+\s*','',src)
+        print(f,type(f),dir(f))
+        print("name:", f.__name__)
 
         # Create the AST
         tree = ast.parse(src)
         #astdump.indented(tree)
-        #get_info(tree)
-        self.new_src = "block(" + recompile(tree)+')\n'
-        #print('new_src =',self.new_src)
+        get_info(tree)
+        #globals()["fn"]=
+        r = Recompiler()
+        self.new_src = "block(" + r.recompile(tree)+')\n'
+        print('new_src =',self.new_src)
         lisp_fmt(self.new_src)
         # Compile the AST
         #tmp_name = "new_func_name"
@@ -288,10 +310,12 @@ phy_print(sum10())
 
 @phylanx
 def fib(n):
+    ret = 0
     if n < 2:
-        return n
+        ret = n
     else:
-        return fib(n-1)+fib(n-2)
+        ret = fib(n-1)+fib(n-2)
+    return ret
 
 ten = et.phylisp_eval("10")
 
@@ -317,3 +341,6 @@ for i in range(1,4):
 @phylanx
 def cexpr(a,b):
     return 2*a+3*(b-4)
+
+one = et.phylisp_eval("1")
+phy_print(cexpr(one,one))

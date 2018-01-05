@@ -613,11 +613,11 @@ PYBIND11_MODULE(_phylanx, m)
                 {
                     using namespace phylanx::execution_tree;
                     auto here = hpx::find_here();
-                    phylanx::execution_tree::compiler::function_list eval_snippets;
-                    auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
-
-                    phylanx::execution_tree::primitive_argument_type result;
                     try {
+                      phylanx::execution_tree::compiler::function_list eval_snippets;
+                      auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
+
+                      phylanx::execution_tree::primitive_argument_type result;
                       result = x();
                       int ndx = result.index();
                       if(ndx == 4) {
@@ -627,7 +627,11 @@ PYBIND11_MODULE(_phylanx, m)
                         auto node_result = phylanx::util::get<std::int64_t>(result);
                         return primitive{hpx::local_new<primitives::variable>(node_result)};
                       }
-                    } catch(...) {}
+                    } catch(const std::exception& ex) {
+                      PyErr_SetString(PyExc_RuntimeError, ex.what());
+                    } catch(...) {
+                      PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+                    }
                     std::int64_t node_result = 0;
                     return primitive{hpx::local_new<primitives::variable>(node_result)};
                 });
@@ -640,11 +644,11 @@ PYBIND11_MODULE(_phylanx, m)
                 {
                     using namespace phylanx::execution_tree;
                     auto here = hpx::find_here();
-                    phylanx::execution_tree::compiler::function_list eval_snippets;
-                    auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
-
-                    phylanx::execution_tree::primitive_argument_type result;
                     try {
+                      phylanx::execution_tree::compiler::function_list eval_snippets;
+                      auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
+
+                      phylanx::execution_tree::primitive_argument_type result;
                       result = x(arg);
                       int ndx = result.index();
                       if(ndx == 4) {
@@ -654,7 +658,11 @@ PYBIND11_MODULE(_phylanx, m)
                         auto node_result = phylanx::util::get<std::int64_t>(result);
                         return primitive{hpx::local_new<primitives::variable>(node_result)};
                       }
-                    } catch(...) {}
+                    } catch(const std::exception& ex) {
+                      PyErr_SetString(PyExc_RuntimeError, ex.what());
+                    } catch(...) {
+                      PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+                    }
                     std::int64_t node_result = 0;
                     return primitive{hpx::local_new<primitives::variable>(node_result)};
                 });
@@ -667,11 +675,11 @@ PYBIND11_MODULE(_phylanx, m)
                 {
                     using namespace phylanx::execution_tree;
                     auto here = hpx::find_here();
-                    phylanx::execution_tree::compiler::function_list eval_snippets;
-                    auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
-
-                    phylanx::execution_tree::primitive_argument_type result;
                     try {
+                      phylanx::execution_tree::compiler::function_list eval_snippets;
+                      auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
+
+                      phylanx::execution_tree::primitive_argument_type result;
                       result = x(arg0,arg1);
                       int ndx = result.index();
                       if(ndx == 4) {
@@ -681,7 +689,11 @@ PYBIND11_MODULE(_phylanx, m)
                         auto node_result = phylanx::util::get<std::int64_t>(result);
                         return primitive{hpx::local_new<primitives::variable>(node_result)};
                       }
-                    } catch(...) {}
+                    } catch(const std::exception& ex) {
+                      PyErr_SetString(PyExc_RuntimeError, ex.what());
+                    } catch(...) {
+                      PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+                    }
                     std::int64_t node_result = 0;
                     return primitive{hpx::local_new<primitives::variable>(node_result)};
                 });
