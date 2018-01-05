@@ -125,13 +125,13 @@ class Recompiler:
           s = ""
           save = self.priority
           nm2 = args[1].__class__.__name__
-          priority = 1
+          priority = 2
           if nm2 == "Add":
               op = " + "
-              priority = 2
+              priority = 1
           elif nm2 == "Sub":
               op = " - "
-              priority = 2
+              priority = 1
           elif nm2 == "Mult":
               op = " * "
           elif nm2 == "Div":
@@ -144,7 +144,7 @@ class Recompiler:
           term1 = self.recompile(args[0])
           self.priority = priority
           term2 = self.recompile(args[2])
-          if priority > save:
+          if priority < save:
             s += "(" + term1 + op + term2 + ")"
           else:
             s += term1 + op + term2
