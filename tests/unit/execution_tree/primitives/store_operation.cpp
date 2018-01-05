@@ -29,11 +29,11 @@ void test_store_operation()
 
     HPX_TEST_EQ(0.0, phylanx::execution_tree::numeric_operand_sync(lhs, {})[0]);
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> result =
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
         store.eval();
 
-    HPX_TEST_EQ(
-        42.0, phylanx::execution_tree::extract_numeric_value(result.get())[0]);
+    HPX_TEST(!phylanx::execution_tree::valid(f.get()));
+    HPX_TEST_EQ(42.0, phylanx::execution_tree::numeric_operand_sync(lhs, {})[0]);
 }
 
 int main(int argc, char* argv[])

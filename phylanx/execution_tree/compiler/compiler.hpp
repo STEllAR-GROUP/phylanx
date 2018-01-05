@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -76,7 +76,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         template <typename ... Ts>
         function operator()(Ts &&... ts) const
         {
-            std::list<function> elements = {std::forward<Ts>(ts)...};
+            std::list<function> elements;
+            int const sequencer_[] = {
+                0, (elements.emplace_back(std::forward<Ts>(ts)), 0)...
+            };
+            (void)sequencer_;
             return derived().compose(std::move(elements));
         }
 

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -31,8 +31,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     variable::variable(primitive_argument_type&& operand)
-      : data_(std::move(operand))
-      , evaluated_(false)
+      : data_(extract_copy_value(std::move(operand)))
+      , evaluated_(true)
     {}
 
     variable::variable(std::vector<primitive_argument_type>&& operands)
@@ -47,7 +47,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands.empty())
         {
-            data_ = std::move(operands[0]);
+            data_ = extract_copy_value(std::move(operands[0]));
+            evaluated_ = true;
         }
     }
 
@@ -71,25 +72,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands.empty())
         {
-            data_ = std::move(operands[0]);
+            data_ = extract_copy_value(std::move(operands[0]));
+            evaluated_ = true;
         }
     }
 
     primitive_result_type variable::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
-        primitive const* p = util::get_if<primitive>(&data_);
-        if (!evaluated_ && p != nullptr)
+        if (!evaluated_)
         {
-            evaluated_ = true;
-            data_ = p->eval_direct(args);
+            primitive const* p = util::get_if<primitive>(&data_);
+            if (p != nullptr)
+            {
+                data_ = extract_copy_value(p->eval_direct(args));
+                evaluated_ = true;
+            }
         }
-        return data_;
+        return extract_ref_value(data_);
     }
 
     void variable::store(primitive_result_type && data)
     {
-        data_ = std::move(data);
+        data_ = extract_copy_value(std::move(data));
+        evaluated_ = true;
     }
 
     bool variable::bind(std::vector<primitive_argument_type> const& params)

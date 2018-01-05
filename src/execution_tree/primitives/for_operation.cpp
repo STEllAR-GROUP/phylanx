@@ -61,8 +61,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "arguments");
                 }
 
-                if (!valid(operands_[0]) || !valid(operands_[1])
-                    || !valid(operands_[2]) || !valid(operands_[3]))
+                if (!valid(operands_[0]) || !valid(operands_[1]) ||
+                    !valid(operands_[2]) || !valid(operands_[3]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::for_operation::"
@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands_[0], args_).then(
-                    [this_](auto val)
+                    [this_](hpx::future<primitive_result_type> && val)
                     {
                         val.get();
                         return this_->loop();

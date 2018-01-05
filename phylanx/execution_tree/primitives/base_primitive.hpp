@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -54,6 +54,12 @@ namespace phylanx { namespace execution_tree
 
         primitive(hpx::future<hpx::id_type> && fid, std::string const& name);
 
+        primitive(primitive const&) = default;
+        primitive(primitive &&) = default;
+
+        primitive& operator=(primitive const&) = default;
+        primitive& operator=(primitive &&) = default;
+
         hpx::future<primitive_argument_type> eval() const;
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const;
@@ -88,6 +94,9 @@ namespace phylanx { namespace execution_tree
 
 
     PHYLANX_EXPORT primitive_result_type value_operand_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT primitive_result_type value_operand_ref_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
 
@@ -237,12 +246,22 @@ namespace phylanx { namespace execution_tree
     // if it doesn't hold one.
     PHYLANX_EXPORT primitive_result_type extract_value(
         primitive_argument_type const& val);
-    PHYLANX_EXPORT primitive_result_type && extract_value(
+    PHYLANX_EXPORT primitive_result_type extract_ref_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT primitive_result_type extract_copy_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT primitive_result_type extract_value(
+        primitive_result_type && val);
+    PHYLANX_EXPORT primitive_result_type extract_ref_value(
+        primitive_result_type && val);
+    PHYLANX_EXPORT primitive_result_type extract_copy_value(
         primitive_result_type && val);
 
     // Extract a literal type from a given primitive_argument_type, throw
     // if it doesn't hold one.
     PHYLANX_EXPORT primitive_result_type extract_literal_value(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT primitive_result_type extract_literal_ref_value(
         primitive_argument_type const& val);
     PHYLANX_EXPORT primitive_result_type extract_literal_value(
         primitive_result_type && val);
@@ -401,6 +420,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (auto const& d : in)
             {
                 out.push_back(hpx::util::invoke(f, d, ts...));
+            }
+            return out;
+        }
+
+        template <typename T, typename F, typename ... Ts>
+        auto map_operands(std::vector<T> && in, F && f, Ts && ... ts)
+        ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>(), ts...))>
+        {
+            std::vector<
+                    decltype(hpx::util::invoke(f, std::declval<T>(), ts...))
+                > out;
+            out.reserve(in.size());
+
+            for (auto && d : in)
+            {
+                out.push_back(hpx::util::invoke(f, std::move(d), ts...));
             }
             return out;
         }

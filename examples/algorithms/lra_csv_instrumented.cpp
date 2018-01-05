@@ -248,6 +248,8 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto iterations = vm["num_iterations"].as<std::int64_t>();
     bool enable_output = vm.count("enable_output") != 0;
 
+    phylanx::ir::reset_node_statistics();
+
     // time execution
     hpx::util::high_resolution_timer t;
 
@@ -258,9 +260,10 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto elapsed = t.elapsed();
 
     std::cout << "Result: \n"
-              << phylanx::execution_tree::extract_numeric_value(result)
-              << std::endl
-              << "Calculated in :" << elapsed << " seconds" << std::endl;
+              << phylanx::execution_tree::extract_numeric_value(result) << "\n"
+              << "Calculated in: " << elapsed << " seconds\n";
+
+    phylanx::ir::print_node_statistics();
 
     return hpx::finalize();
 }

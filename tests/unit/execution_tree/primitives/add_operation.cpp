@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -523,6 +523,8 @@ int main(int argc, char* argv[])
 
     test_add_operation_2d1d();
     test_add_operation_2d1d_lit();
+
+    phylanx::ir::print_node_statistics();
 
     return hpx::util::report_errors();
 }

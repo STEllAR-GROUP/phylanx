@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //  Copyright (c) 2017 Alireza Kheirkhahan
 //  Copyright (c) 2017 Parsa Amini
 //
@@ -116,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs.custom_vector() *= lhs.scalar();
+                rhs = rhs.vector() * lhs.scalar();
                 return primitive_result_type{ std::move(rhs) };
             }
 
@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs.custom_matrix() *= lhs.scalar();
+                rhs = rhs.matrix() * lhs.scalar();
                 return primitive_result_type{ std::move(rhs) };
             }
 
@@ -170,7 +170,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs.custom_vector() *= rhs.scalar();
+                lhs = lhs.vector() * rhs.scalar();
                 return primitive_result_type{ std::move(lhs) };
             }
 
@@ -178,7 +178,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (ops.size() == 2)
                 {
-                    ops[0].custom_vector() *= ops[1].custom_vector();
+                    ops[0] = ops[0].vector() * ops[1].vector();
                     return primitive_result_type{ std::move(ops[0]) };
                 }
 
@@ -194,7 +194,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "mul_operation::mul1d1d",
                                     "all operands must be vectors");
                             }
-                            result.custom_vector() *= curr.custom_vector();
+                            result = result.vector() * curr.vector();
                             return std::move(result);
                         })
                     };
@@ -213,7 +213,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& rhs = ops[1];
 
                 rhs = blaze::trans(
-                    blaze::trans(lhs.custom_vector()) * rhs.custom_matrix());
+                    blaze::trans(lhs.vector()) * rhs.matrix());
                 return primitive_result_type{ std::move(rhs) };
             }
 
@@ -249,7 +249,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs.custom_matrix() *= rhs.scalar();
+                lhs = lhs.matrix() * rhs.scalar();
                 return primitive_result_type{ std::move(lhs) };
             }
 
@@ -265,7 +265,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs = lhs.custom_matrix() * rhs.custom_vector();
+                rhs = lhs.matrix() * rhs.vector();
                 return primitive_result_type{ std::move(rhs) };
             }
 
@@ -273,7 +273,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (ops.size() == 2)
                 {
-                    ops[0].custom_matrix() *= ops[1].custom_matrix();
+                    ops[0] = ops[0].matrix() * ops[1].matrix();
                     return primitive_result_type{ std::move(ops[0]) };
                 }
 
@@ -290,7 +290,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "all operands must be matrices");
                             }
 
-                            result.custom_matrix() *= curr.custom_matrix();
+                            result = result.matrix() * curr.matrix();
                             return std::move(result);
                         })
                     };

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -70,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 p->eval_direct(args);
             }
 
-            return target_;
+            return extract_ref_value(target_);
         }
 
         // just evaluate the expression bound to this name
@@ -79,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return extract_value(p->eval_direct(args));
         }
-        return extract_value(target_);
+        return extract_ref_value(target_);
     }
 
     void define_function::set_body(primitive_argument_type&& body)

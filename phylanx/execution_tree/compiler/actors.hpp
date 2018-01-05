@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -34,9 +34,26 @@ namespace phylanx { namespace execution_tree { namespace compiler
     struct actor
     {
         // direct execution
-        result_type operator()(arguments_type args) const
+        result_type operator()(arguments_type const& args) const
         {
-            return derived().call(std::move(args));
+            arguments_type params;
+            params.reserve(args.size());
+            for (auto const& arg : args)
+            {
+                params.emplace_back(extract_ref_value(arg));
+            }
+            return derived().call(std::move(params));
+        }
+
+        result_type operator()(arguments_type && args) const
+        {
+            arguments_type params;
+            params.reserve(args.size());
+            for (auto && arg : args)
+            {
+                params.emplace_back(extract_ref_value(std::move(arg)));
+            }
+            return derived().call(std::move(params));
         }
 
         result_type operator()() const
@@ -47,7 +64,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
         template <typename ... Ts>
         result_type operator()(Ts &&... ts) const
         {
-            arguments_type elements = {std::forward<Ts>(ts)...};
+            arguments_type elements;
+            elements.reserve(sizeof...(Ts));
+            int const sequencer_[] = {
+                0, (elements.emplace_back(
+                        extract_ref_value(std::forward<Ts>(ts))), 0)...
+            };
+            (void)sequencer_;
             return derived().call(std::move(elements));
         }
 
@@ -86,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return p->eval_direct(std::move(args));
+                return extract_copy_value(p->eval_direct(std::move(args)));
             }
             return arg_;
         }
@@ -174,7 +197,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 for (auto const& element : elements_)
                 {
-                    fargs.push_back(element(std::move(args)));
+                    fargs.push_back(element(args));
                 }
 
                 return f_.get()(std::move(fargs));

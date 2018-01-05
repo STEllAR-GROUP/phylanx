@@ -136,8 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             // vector
-            blaze::DynamicVector<double> vector(
-                n_cols, matrix_array.data());
+            blaze::DynamicVector<double> vector(n_cols, matrix_array.data());
 
             return hpx::make_ready_future(primitive_result_type{
                 ir::node_data<double>{std::move(vector)}});

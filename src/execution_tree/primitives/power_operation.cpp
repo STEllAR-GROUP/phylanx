@@ -1,4 +1,5 @@
 //  Copyright (c) 2017 Parsa Amini
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -6,7 +7,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/power_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type power0d(operands_type && ops) const
             {
-                ops[0].scalar(std::pow(ops[0].scalar(), ops[1][0]));
+                ops[0] = double(std::pow(ops[0].scalar(), ops[1][0]));
                 return std::move(ops[0]);
             }
 
@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs.vector(blaze::pow(lhs.vector(), rhs[0]));
+                lhs = blaze::pow(lhs.vector(), rhs[0]);
 
                 return std::move(lhs);
             }
@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs.matrix(blaze::pow(lhs.matrix(), rhs[0]));
+                lhs = blaze::pow(lhs.matrix(), rhs[0]);
 
                 return std::move(lhs);
             }

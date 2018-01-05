@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 1:
                     {
-                        blaze::DynamicVector<double> const& v = val.vector();
+                        auto v = val.vector();
                         for (std::size_t i = 0UL; i != v.size(); ++i)
                         {
                             if (i != 0)
@@ -91,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 2:
                     {
-                        blaze::DynamicMatrix<double> const& matrix = val.matrix();
+                        auto matrix = val.matrix();
                         for (std::size_t i = 0UL; i != matrix.rows(); ++i)
                         {
                             outfile << matrix(i, 0);
