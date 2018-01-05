@@ -138,6 +138,9 @@ class Recompiler:
               op = " / "
           elif nm2 == "Mod":
               op = " % "
+          elif nm2 == "Pow":
+              op = " ** "
+              priority = 3
           else:
               raise Exception(nm2)
           self.priority = priority
@@ -239,6 +242,13 @@ class Recompiler:
           elif nn == "Eq":
               sym = "=="
           return self.recompile(args[0])+sym+self.recompile(args[2])
+      elif nm == "UnaryOp":
+          args = [arg for arg in ast.iter_child_nodes(a)]
+          nm2 = args[0].__class__.__name__
+          if nm2 == "USub":
+            return "-(" + self.recompile(args[1])+")"
+          else:
+            raise Exception(nm2)
       else:
           raise Exception(nm)
 
@@ -257,7 +267,7 @@ class phylanx(object):
         # Create the AST
         tree = ast.parse(src)
         #astdump.indented(tree)
-        #get_info(tree)
+        get_info(tree)
         #globals()["fn"]=
         r = Recompiler()
         self.new_src = "block(" + r.recompile(tree)+')\n'
@@ -350,7 +360,7 @@ for i in range(1,4):
 
 @phylanx
 def cexpr(a,b):
-    return a+b+3+4*(a-b)
+    return a+ -b +3+4*(a-b**4)
 
 one = et.phylisp_eval("1")
 #phy_print(cexpr(one,one))
