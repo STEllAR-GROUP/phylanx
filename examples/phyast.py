@@ -78,6 +78,7 @@ def get_info(a,depth=0):
 class Recompiler:
     def __init__(self):
         self.defs = {}
+        self.priority = 0
     def recompile(self,a,allowreturn=False):
       nm = a.__class__.__name__
       if nm == "Num":
@@ -122,20 +123,31 @@ class Recompiler:
       elif nm == "BinOp":
           args = [arg for arg in ast.iter_child_nodes(a)]
           s = ""
-          s += "("
-          s += self.recompile(args[0])
-          for i in range(1,len(args),2):
-              nm2 = args[i].__class__.__name__
-              if nm2 == "Add":
-                  s += " + "
-              elif nm2 == "Mult":
-                  s += " * "
-              elif nm2 == "Sub":
-                  s += " - "
-              else:
-                  raise Exception(nm2)
-              s += self.recompile(args[i+1])
-          s += ")"
+          save = self.priority
+          nm2 = args[1].__class__.__name__
+          priority = 1
+          if nm2 == "Add":
+              op = " + "
+              priority = 2
+          elif nm2 == "Sub":
+              op = " - "
+              priority = 2
+          elif nm2 == "Mult":
+              op = " * "
+          elif nm2 == "Div":
+              op = " / "
+          elif nm2 == "Mod":
+              op = " % "
+          else:
+              raise Exception(nm2)
+          self.priority = priority
+          term1 = self.recompile(args[0])
+          self.priority = priority
+          term2 = self.recompile(args[2])
+          if priority > save:
+            s += "(" + term1 + op + term2 + ")"
+          else:
+            s += term1 + op + term2
           return s
       elif nm == "Call":
           args = [arg for arg in ast.iter_child_nodes(a)]
@@ -241,13 +253,11 @@ class phylanx(object):
         # Before recompiling the code, take
         # off the decorator from the source.
         src = re.sub(r'^\s*@\w+\s*','',src)
-        print(f,type(f),dir(f))
-        print("name:", f.__name__)
 
         # Create the AST
         tree = ast.parse(src)
         #astdump.indented(tree)
-        get_info(tree)
+        #get_info(tree)
         #globals()["fn"]=
         r = Recompiler()
         self.new_src = "block(" + r.recompile(tree)+')\n'
@@ -340,7 +350,7 @@ for i in range(1,4):
 
 @phylanx
 def cexpr(a,b):
-    return 2*a+3*(b-4)
+    return a+b+3+4*(a-b)
 
 one = et.phylisp_eval("1")
-phy_print(cexpr(one,one))
+#phy_print(cexpr(one,one))
