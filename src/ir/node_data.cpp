@@ -11,6 +11,7 @@
 
 #include <hpx/exception.hpp>
 #include <hpx/include/serialization.hpp>
+#include <hpx/include/util.hpp>
 
 #include <cstddef>
 #include <iosfwd>
@@ -18,42 +19,62 @@
 
 namespace phylanx { namespace ir
 {
-#if defined(PHYLANX_DEBUG)
     ///////////////////////////////////////////////////////////////////////////
-    std::atomic<std::size_t> count_copy_constructions_;
-    std::atomic<std::size_t> count_move_constructions_;
-    std::atomic<std::size_t> count_copy_assignments_;
-    std::atomic<std::size_t> count_move_assignments_;
+    // performance counter data (for now, counting all node_data<T>)
+    static std::atomic<std::int64_t> count_copy_constructions_;
+    static std::atomic<std::int64_t> count_move_constructions_;
+    static std::atomic<std::int64_t> count_copy_assignments_;
+    static std::atomic<std::int64_t> count_move_assignments_;
 
-    void reset_node_statistics()
+    template <>
+    void node_data<double>::increment_copy_construction_count()
     {
-        count_copy_constructions_ = 0;
-        count_move_constructions_ = 0;
-        count_copy_assignments_ = 0;
-        count_move_assignments_ = 0;
+        ++count_copy_constructions_;
     }
 
-    void print_node_statistics()
+    template <>
+    void node_data<double>::increment_move_construction_count()
     {
-        std::cout << "count_copy_constructions: "
-                  << count_copy_constructions_ << "\n";
-        std::cout << "count_move_constructions: "
-                  << count_move_constructions_ << "\n";
-        std::cout << "count_copy_assignments:   "
-                  << count_copy_assignments_ << "\n";
-        std::cout << "count_move_assignments:   "
-                  << count_move_assignments_ << "\n";
-    }
-#else
-    void reset_node_statistics()
-    {
+        ++count_move_constructions_;
     }
 
-    void print_node_statistics()
+    template <>
+    void node_data<double>::increment_copy_assignment_count()
     {
+        ++count_copy_assignments_;
     }
-#endif
 
+    template <>
+    void node_data<double>::increment_move_assignment_count()
+    {
+        ++count_move_assignments_;
+    }
+
+    template <>
+    std::int64_t node_data<double>::copy_construction_count(bool reset)
+    {
+        return hpx::util::get_and_reset_value(count_copy_constructions_, reset);
+    }
+
+    template <>
+    std::int64_t node_data<double>::move_construction_count(bool reset)
+    {
+        return hpx::util::get_and_reset_value(count_move_constructions_, reset);
+    }
+
+    template <>
+    std::int64_t node_data<double>::copy_assignment_count(bool reset)
+    {
+        return hpx::util::get_and_reset_value(count_copy_assignments_, reset);
+    }
+
+    template <>
+    std::int64_t node_data<double>::move_assignment_count(bool reset)
+    {
+        return hpx::util::get_and_reset_value(count_move_assignments_, reset);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         template <typename Range>

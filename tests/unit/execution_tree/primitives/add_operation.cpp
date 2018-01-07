@@ -524,7 +524,5 @@ int main(int argc, char* argv[])
     test_add_operation_2d1d();
     test_add_operation_2d1d_lit();
 
-    phylanx::ir::print_node_statistics();
-
     return hpx::util::report_errors();
 }

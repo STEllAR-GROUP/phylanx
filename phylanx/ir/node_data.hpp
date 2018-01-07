@@ -17,26 +17,28 @@
 #include <blaze/Math.h>
 
 #include <array>
-#include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <vector>
 
 namespace phylanx { namespace ir
 {
-#if defined(PHYLANX_DEBUG)
-    PHYLANX_EXPORT extern std::atomic<std::size_t> count_copy_constructions_;
-    PHYLANX_EXPORT extern std::atomic<std::size_t> count_move_constructions_;
-    PHYLANX_EXPORT extern std::atomic<std::size_t> count_copy_assignments_;
-    PHYLANX_EXPORT extern std::atomic<std::size_t> count_move_assignments_;
-#endif
-
-    PHYLANX_EXPORT void reset_node_statistics();
-    PHYLANX_EXPORT void print_node_statistics();
-
     template <typename T>
     class node_data
     {
+    private:
+        PHYLANX_EXPORT static void increment_copy_construction_count();
+        PHYLANX_EXPORT static void increment_move_construction_count();
+        PHYLANX_EXPORT static void increment_copy_assignment_count();
+        PHYLANX_EXPORT static void increment_move_assignment_count();
+
+    public:
+        PHYLANX_EXPORT static std::int64_t copy_construction_count(bool reset);
+        PHYLANX_EXPORT static std::int64_t move_construction_count(bool reset);
+        PHYLANX_EXPORT static std::int64_t copy_assignment_count(bool reset);
+        PHYLANX_EXPORT static std::int64_t move_assignment_count(bool reset);
+
     public:
         constexpr static std::size_t const max_dimensions = 2;
 
@@ -101,16 +103,12 @@ namespace phylanx { namespace ir
         explicit node_data(storage1d_type const& values)
           : data_(values)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_copy_constructions_;
-#endif
+            increment_copy_construction_count();
         }
         explicit node_data(storage1d_type && values)
           : data_(std::move(values))
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_constructions_;
-#endif
+            increment_move_construction_count();
         }
         explicit node_data(std::vector<T> const& values)
           : data_(storage1d_type(values.size(), values.data()))
@@ -120,48 +118,36 @@ namespace phylanx { namespace ir
         explicit node_data(custom_storage1d_type const& values)
           : data_(custom_storage1d_type{values.data(), values.size()})
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_constructions_;
-#endif
+            increment_move_construction_count();
         }
         explicit node_data(custom_storage1d_type && values)
           : data_(std::move(values))
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_constructions_;
-#endif
+            increment_move_construction_count();
         }
 
         /// Create node data for a 2-dimensional value
         explicit node_data(storage2d_type const& values)
           : data_(values)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_copy_constructions_;
-#endif
+            increment_copy_construction_count();
         }
         explicit node_data(storage2d_type && values)
           : data_(std::move(values))
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_constructions_;
-#endif
+            increment_move_construction_count();
         }
 
         explicit node_data(custom_storage2d_type const& values)
           : data_(custom_storage2d_type{values.data(), values.rows(),
                 values.columns(), values.spacing()})
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_copy_constructions_;
-#endif
+            increment_copy_construction_count();
         }
         explicit node_data(custom_storage2d_type && values)
           : data_(std::move(values))
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_constructions_;
-#endif
+            increment_move_construction_count();
         }
 
     private:
@@ -175,18 +161,14 @@ namespace phylanx { namespace ir
             case 1: HPX_FALLTHROUGH;
             case 2:
                 {
-#if defined(PHYLANX_DEBUG)
-                    ++count_copy_constructions_;
-#endif
+                    increment_copy_construction_count();
                     return d.data_;
                 }
                 break;
 
             case 3:
                 {
-#if defined(PHYLANX_DEBUG)
-                    ++count_move_constructions_;
-#endif
+                    increment_move_construction_count();
                     auto v = d.vector();
                     return custom_storage1d_type{
                         v.data(), v.size(), v.spacing()};
@@ -195,9 +177,7 @@ namespace phylanx { namespace ir
 
             case 4:
                 {
-#if defined(PHYLANX_DEBUG)
-                    ++count_move_constructions_;
-#endif
+                    increment_move_construction_count();
                     auto m = d.matrix();
                     return custom_storage2d_type{
                         m.data(), m.rows(), m.columns(), m.spacing()};
@@ -220,9 +200,7 @@ namespace phylanx { namespace ir
         node_data(node_data && d)
           : data_(std::move(d.data_))
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_constructions_;
-#endif
+            increment_move_construction_count();
         }
 
         node_data& operator=(storage0d_type val)
@@ -233,70 +211,54 @@ namespace phylanx { namespace ir
 
         node_data& operator=(storage1d_type const& val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_copy_assignments_;
-#endif
+            increment_copy_assignment_count();
             data_ = val;
             return *this;
         }
         node_data& operator=(storage1d_type && val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_assignments_;
-#endif
+            increment_move_assignment_count();
             data_ = std::move(val);
             return *this;
         }
 
         node_data& operator=(custom_storage1d_type const& val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_assignments_;
-#endif
+            increment_move_assignment_count();
             data_ =
                 custom_storage1d_type{val.data(), val.size(), val.spacing()};
             return *this;
         }
         node_data& operator=(custom_storage1d_type && val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_assignments_;
-#endif
+            increment_move_assignment_count();
             data_ = std::move(val);
             return *this;
         }
 
         node_data& operator=(storage2d_type const& val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_copy_assignments_;
-#endif
+            increment_copy_assignment_count();
             data_ = val;
             return *this;
         }
         node_data& operator=(storage2d_type && val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_assignments_;
-#endif
+            increment_move_assignment_count();
             data_ = std::move(val);
             return *this;
         }
 
         node_data& operator=(custom_storage2d_type const& val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_assignments_;
-#endif
+            increment_move_assignment_count();
             data_ = custom_storage2d_type{
                 val.data(), val.rows(), val.columns(), val.spacing()};
             return *this;
         }
         node_data& operator=(custom_storage2d_type && val)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_assignments_;
-#endif
+            increment_move_assignment_count();
             data_ = std::move(val);
             return *this;
         }
@@ -312,18 +274,14 @@ namespace phylanx { namespace ir
             case 1: HPX_FALLTHROUGH;
             case 2:
                 {
-#if defined(PHYLANX_DEBUG)
-                    ++count_copy_assignments_;
-#endif
+                    increment_copy_assignment_count();
                     return d.data_;
                 }
                 break;
 
             case 3:
                 {
-#if defined(PHYLANX_DEBUG)
-                    ++count_move_assignments_;
-#endif
+                    increment_move_assignment_count();
                     auto v = d.vector();
                     return custom_storage1d_type{
                         v.data(), v.size(), v.spacing()};
@@ -332,9 +290,7 @@ namespace phylanx { namespace ir
 
             case 4:
                 {
-#if defined(PHYLANX_DEBUG)
-                    ++count_move_assignments_;
-#endif
+                    increment_move_assignment_count();
                     auto m = d.matrix();
                     return custom_storage2d_type{
                         m.data(), m.rows(), m.columns(), m.spacing()};
@@ -359,11 +315,9 @@ namespace phylanx { namespace ir
         }
         node_data& operator=(node_data && d)
         {
-#if defined(PHYLANX_DEBUG)
-            ++count_move_assignments_;
-#endif
             if (this != &d)
             {
+                increment_move_assignment_count();
                 data_ = std::move(d.data_);
             }
             return *this;
