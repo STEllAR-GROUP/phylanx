@@ -300,7 +300,7 @@ def hello():
 
 @phylanx
 def hello1(a):
-    print("Hello ",a)
+    print("Hello"," ",a)
 
 hello()
 
@@ -339,7 +339,8 @@ def fib(n):
 
 ten = et.phylisp_eval("10")
 
-phy_print(fib(ten))
+print("fib(10)=",end="")
+phy_print(fib(10))
 
 @phylanx
 def twof(a):
@@ -360,7 +361,7 @@ for i in range(1,4):
 
 @phylanx
 def cexpr(a,b):
-    return a+ -b +3+4*(a-b**4)
+    return a+ -b +3+4*(a-b%4)
 
 one = et.phylisp_eval("1")
 #phy_print(cexpr(one,one))

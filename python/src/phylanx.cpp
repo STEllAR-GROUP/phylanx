@@ -69,6 +69,7 @@ namespace pybind11 { namespace detail
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace bindings
 {
+
     ///////////////////////////////////////////////////////////////////////////
     // support for the traverse API
     struct traverse_helper
@@ -172,6 +173,39 @@ namespace phylanx { namespace bindings
 ///////////////////////////////////////////////////////////////////////////////
 void init_hpx_runtime();
 void stop_hpx_runtime();
+
+const char *expression_compiler_help = "compile and evaluate a numerical expression in Phylanx lisp";
+template <typename... Ts>
+typename hpx::util::invoke_result<phylanx::execution_tree::primitive(Ts...), Ts...>::type
+expression_compiler(std::string xexpr,Ts const & ... ts)
+{
+    return hpx::threads::run_as_hpx_thread([&]()
+        {
+            using namespace phylanx::execution_tree;
+            auto here = hpx::find_here();
+            try {
+              phylanx::execution_tree::compiler::function_list eval_snippets;
+              auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
+
+              phylanx::execution_tree::primitive_argument_type result;
+              result = x(ts...);
+              int ndx = result.index();
+              if(ndx == 4) {
+                auto node_result = phylanx::util::get<phylanx::ir::node_data<double>>(result);
+                return primitive{hpx::local_new<primitives::variable>(node_result)};
+              } else if(ndx == 2) {
+                auto node_result = phylanx::util::get<std::int64_t>(result);
+                return primitive{hpx::local_new<primitives::variable>(node_result)};
+              }
+            } catch(const std::exception& ex) {
+              PyErr_SetString(PyExc_RuntimeError, ex.what());
+            } catch(...) {
+              PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+            }
+            std::int64_t node_result = 0;
+            return primitive{hpx::local_new<primitives::variable>(node_result)};
+        });
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(_DEBUG)
@@ -606,99 +640,84 @@ PYBIND11_MODULE(_phylanx, m)
                 });
         },
         "create a new variable from a matrix of zeros");
-    execution_tree.def("phylisp_eval",
-        [](std::string xexpr)
-        {
-            return hpx::threads::run_as_hpx_thread([&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    auto here = hpx::find_here();
-                    try {
-                      phylanx::execution_tree::compiler::function_list eval_snippets;
-                      auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
 
-                      phylanx::execution_tree::primitive_argument_type result;
-                      result = x();
-                      int ndx = result.index();
-                      if(ndx == 4) {
-                        auto node_result = phylanx::util::get<phylanx::ir::node_data<double>>(result);
-                        return primitive{hpx::local_new<primitives::variable>(node_result)};
-                      } else if(ndx == 2) {
-                        auto node_result = phylanx::util::get<std::int64_t>(result);
-                        return primitive{hpx::local_new<primitives::variable>(node_result)};
-                      }
-                    } catch(const std::exception& ex) {
-                      PyErr_SetString(PyExc_RuntimeError, ex.what());
-                    } catch(...) {
-                      PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-                    }
-                    std::int64_t node_result = 0;
-                    return primitive{hpx::local_new<primitives::variable>(node_result)};
-                });
-        },
-        "compile and evaluate a numerical expression in Phylanx lisp");
     execution_tree.def("phylisp_eval",
-        [](std::string xexpr,phylanx::execution_tree::primitive const & arg)
-        {
-            return hpx::threads::run_as_hpx_thread([&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    auto here = hpx::find_here();
-                    try {
-                      phylanx::execution_tree::compiler::function_list eval_snippets;
-                      auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
-
-                      phylanx::execution_tree::primitive_argument_type result;
-                      result = x(arg);
-                      int ndx = result.index();
-                      if(ndx == 4) {
-                        auto node_result = phylanx::util::get<phylanx::ir::node_data<double>>(result);
-                        return primitive{hpx::local_new<primitives::variable>(node_result)};
-                      } else if(ndx == 2) {
-                        auto node_result = phylanx::util::get<std::int64_t>(result);
-                        return primitive{hpx::local_new<primitives::variable>(node_result)};
-                      }
-                    } catch(const std::exception& ex) {
-                      PyErr_SetString(PyExc_RuntimeError, ex.what());
-                    } catch(...) {
-                      PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-                    }
-                    std::int64_t node_result = 0;
-                    return primitive{hpx::local_new<primitives::variable>(node_result)};
-                });
-        },
-        "compile and evaluate a numerical expression in Phylanx lisp");
+        expression_compiler<>,
+        expression_compiler_help);
     execution_tree.def("phylisp_eval",
-        [](std::string xexpr,phylanx::execution_tree::primitive const & arg0,phylanx::execution_tree::primitive const & arg1)
-        {
-            return hpx::threads::run_as_hpx_thread([&]()
-                {
-                    using namespace phylanx::execution_tree;
-                    auto here = hpx::find_here();
-                    try {
-                      phylanx::execution_tree::compiler::function_list eval_snippets;
-                      auto x = phylanx::execution_tree::compile(xexpr, eval_snippets);//, env);
-
-                      phylanx::execution_tree::primitive_argument_type result;
-                      result = x(arg0,arg1);
-                      int ndx = result.index();
-                      if(ndx == 4) {
-                        auto node_result = phylanx::util::get<phylanx::ir::node_data<double>>(result);
-                        return primitive{hpx::local_new<primitives::variable>(node_result)};
-                      } else if(ndx == 2) {
-                        auto node_result = phylanx::util::get<std::int64_t>(result);
-                        return primitive{hpx::local_new<primitives::variable>(node_result)};
-                      }
-                    } catch(const std::exception& ex) {
-                      PyErr_SetString(PyExc_RuntimeError, ex.what());
-                    } catch(...) {
-                      PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-                    }
-                    std::int64_t node_result = 0;
-                    return primitive{hpx::local_new<primitives::variable>(node_result)};
-                });
-        },
-        "compile and evaluate a numerical expression in Phylanx lisp");
+        expression_compiler<double>,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<phylanx::execution_tree::primitive const &>,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<phylanx::execution_tree::primitive const &,phylanx::execution_tree::primitive const &>,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<phylanx::execution_tree::primitive const &,double>,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<double,phylanx::execution_tree::primitive const &>,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<double,double>,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          phylanx::execution_tree::primitive const &,
+          phylanx::execution_tree::primitive const &,
+          phylanx::execution_tree::primitive const &
+        >,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          double,
+          phylanx::execution_tree::primitive const &,
+          phylanx::execution_tree::primitive const &
+        >,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          phylanx::execution_tree::primitive const &,
+          double,
+          phylanx::execution_tree::primitive const &
+        >,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          phylanx::execution_tree::primitive const &,
+          phylanx::execution_tree::primitive const &,
+          double
+        >,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          double,
+          double,
+          phylanx::execution_tree::primitive const &
+        >,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          double,
+          phylanx::execution_tree::primitive const &,
+          double
+        >,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          phylanx::execution_tree::primitive const &,
+          double,
+          double
+        >,
+        expression_compiler_help);
+    execution_tree.def("phylisp_eval",
+        expression_compiler<
+          double,
+          double,
+          double
+        >,
+        expression_compiler_help);
 
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")
