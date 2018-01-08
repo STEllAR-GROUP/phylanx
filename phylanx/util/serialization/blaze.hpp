@@ -122,6 +122,7 @@ namespace hpx { namespace serialization
         // Serialize vector
         std::size_t count = target.size();
         std::size_t spacing = target.spacing();
+        archive << count << spacing;
         archive << hpx::serialization::make_array(target.data(), spacing);
     }
 
