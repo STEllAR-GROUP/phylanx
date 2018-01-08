@@ -69,7 +69,6 @@ namespace pybind11 { namespace detail
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace bindings
 {
-
     ///////////////////////////////////////////////////////////////////////////
     // support for the traverse API
     struct traverse_helper
@@ -726,12 +725,7 @@ PYBIND11_MODULE(_phylanx, m)
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        auto n = numeric_operand(p, {}).get();
-                        std::cout << "n[0]=" << n[0] << std::endl;
-                        std::cout << "n[1]=" << n[1] << std::endl;
-                        std::cout << "n.size()=" << n.size() << std::endl;
-                        std::cout << "n.num_dimensions()=" << n.num_dimensions() << std::endl;
-                        return n[0];
+                        return numeric_operand(p, {}).get()[0];
                     });
             },
             "evaluate execution tree")
@@ -754,7 +748,7 @@ PYBIND11_MODULE(_phylanx, m)
                         return n[index];
                     });
             },
-            "get the number of dimensions")
+            "get the value at the specified index")
         .def("get", [](phylanx::execution_tree::primitive const& p,int index1,int index2)
             {
                 return hpx::threads::run_as_hpx_thread(
@@ -765,7 +759,7 @@ PYBIND11_MODULE(_phylanx, m)
                         return n[indicies];
                     });
             },
-            "get the number of dimensions")
+            "get the value specified by the x,y index pair")
         .def("dimension", [](phylanx::execution_tree::primitive const& p,int index)
             {
                 return hpx::threads::run_as_hpx_thread(
@@ -775,7 +769,7 @@ PYBIND11_MODULE(_phylanx, m)
                         return n.dimension(index);
                     });
             },
-            "get the number of dimensions")
+            "get the size of the given dimension")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
             {
                 hpx::threads::run_as_hpx_thread(

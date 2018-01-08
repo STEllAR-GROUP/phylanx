@@ -267,7 +267,7 @@ class phylanx(object):
         # Create the AST
         tree = ast.parse(src)
         #astdump.indented(tree)
-        get_info(tree)
+        #get_info(tree)
         #globals()["fn"]=
         r = Recompiler()
         self.new_src = "block(" + r.recompile(tree)+')\n'
@@ -300,7 +300,7 @@ def hello():
 
 @phylanx
 def hello1(a):
-    print("Hello"," ",a)
+    print("Hello",""," ",a)
 
 hello()
 

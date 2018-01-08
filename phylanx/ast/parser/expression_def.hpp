@@ -124,7 +124,7 @@ namespace phylanx { namespace ast { namespace parser
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
             ;
 
-        string = lexeme['"' > raw[+(char_ - '"')] > '"']
+        string = lexeme['"' > raw[*(char_ - '"')] > '"']
             ;
 
         ///////////////////////////////////////////////////////////////////////
