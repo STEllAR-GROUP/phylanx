@@ -44,7 +44,7 @@ namespace hpx { namespace serialization
 
         target.resize(rows, columns, false);
         archive >>
-            hpx::serialization::make_array(target.data(), rows * spacing);
+            hpx::serialization::make_array(target.data(), spacing * columns);
     }
 
     template <typename T>
@@ -59,7 +59,7 @@ namespace hpx { namespace serialization
 
         target.resize(rows, columns, false);
         archive >>
-            hpx::serialization::make_array(target.data(), spacing * columns);
+            hpx::serialization::make_array(target.data(), rows * spacing);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,8 @@ namespace hpx { namespace serialization
         std::size_t columns = target.columns();
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
-        archive << hpx::serialization::make_array(target.data(), rows, spacing);
+        archive << hpx::serialization::make_array(
+            target.data(), spacing * columns);
     }
 
     template <typename T>
@@ -111,7 +112,7 @@ namespace hpx { namespace serialization
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
         archive << hpx::serialization::make_array(
-            target.data(), spacing * columns);
+            target.data(), rows * spacing);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -136,7 +137,7 @@ namespace hpx { namespace serialization
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
         archive << hpx::serialization::make_array(
-            target.data(), rows * spacing);
+            target.data(), spacing * columns);
     }
 
     template <typename T, bool AF, bool PF>
@@ -149,7 +150,7 @@ namespace hpx { namespace serialization
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
         archive << hpx::serialization::make_array(
-            target.data(), spacing * columns);
+            target.data(), rows * spacing);
     }
 
     ///////////////////////////////////////////////////////////////////////////
