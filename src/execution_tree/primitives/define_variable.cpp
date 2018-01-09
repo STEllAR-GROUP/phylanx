@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -72,7 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 p->eval_direct(args);
             }
 
-            return target_;
+            return extract_ref_value(target_);
         }
 
         // just evaluate the expression bound to this name
@@ -81,10 +81,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return extract_value(p->eval_direct(args));
         }
-        return extract_value(target_);
+
+        return extract_ref_value(target_);
     }
 
-    void define_variable::store(primitive_result_type const& val)
+    void define_variable::store(primitive_result_type && val)
     {
         if (!valid(target_))
         {
@@ -102,6 +103,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "the variable associated with this define has not been "
                     "properly initialized");
         }
-        p->store(hpx::launch::sync, val);
+        p->store(hpx::launch::sync, std::move(val));
     }
 }}}

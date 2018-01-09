@@ -1,4 +1,5 @@
-// Copyright (c) 2017 Bibek Wagle
+//  Copyright (c) 2017 Bibek Wagle
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -6,7 +7,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -57,12 +57,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using arg_type = ir::node_data<double>;
             using args_type = std::vector<arg_type>;
 
-            using matrix_type = blaze::DynamicMatrix<double>;
-            using submatrix_type = blaze::Submatrix<matrix_type>;
-
-            using vector_type = blaze::DynamicVector<double>;
-            using subvector_type = blaze::Subvector<vector_type>;
-
             primitive_result_type column_slicing0d(args_type && args) const
             {
                 // return the input as it is if the input is of zero dimension or
@@ -108,20 +102,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "col_stop can not be negative if col_start is positive");
                 }
 
+                using storage1d_type = typename arg_type::storage1d_type;
+
+                auto arg0 = args[0].vector();
+
                 if (col_start < 0 && col_stop <= 0)    // slice from the end
                 {
-                    auto size = args[0].vector().size();
+                    auto sv = blaze::subvector(
+                        arg0, arg0.size() + col_start, -col_start + col_stop);
 
-                    subvector_type sv = blaze::subvector(args[0].vector(),
-                        size + col_start, -col_start + col_stop);
-
-                    return ir::node_data<double>{vector_type{std::move(sv)}};
+                    storage1d_type v{sv};
+                    return ir::node_data<double>{std::move(v)};
                 }
 
-                subvector_type sv = blaze::subvector(
-                    args[0].vector(), col_start, col_stop - col_start);
+                auto sv =
+                    blaze::subvector(arg0, col_start, col_stop - col_start);
 
-                return ir::node_data<double>(vector_type(std::move(sv)));
+                storage1d_type v{sv};
+                return ir::node_data<double>(std::move(v));
             }
 
             primitive_result_type column_slicing2d(args_type && args) const
@@ -165,28 +163,55 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "negative");
                 }
 
+                using storage1d_type = typename arg_type::storage1d_type;
+                using storage2d_type = typename arg_type::storage2d_type;
+
+                auto arg0 = args[0].matrix();
+
                 if (col_start < 0 && col_stop <= 0)
                 {
-                    auto num_cols = args[0].matrix().columns();
+                    auto num_cols = arg0.columns();
 
-                    submatrix_type sm = blaze::submatrix(args[0].matrix(),
+                    // return a vector and not a matrix if the slice contains
+                    // exactly one column
+                    if (col_stop - col_start == 1)
+                    {
+                        auto sv = blaze::column(
+                            blaze::submatrix(arg0,
+                                0, num_cols + col_start,
+                                num_matrix_rows, 1),
+                            0);
+
+                        storage1d_type v{sv};
+                        return ir::node_data<double>{std::move(v)};
+                    }
+
+                    auto sm = blaze::submatrix(arg0,
                         0, num_cols + col_start,
                         num_matrix_rows, -col_start + col_stop);
 
-                    if (col_stop - col_start == 1)
-                    {
-                        return ir::node_data<double>{column(sm, 0)};
-                    }
-
-                    return ir::node_data<double>{matrix_type{std::move(sm)}};
+                    storage2d_type m{sm};
+                    return ir::node_data<double>{std::move(m)};
                 }
 
-                submatrix_type sm =
-                    blaze::submatrix(args[0].matrix(),
-                        0, col_start,
-                        num_matrix_rows, col_stop - col_start);
+                if (col_stop - col_start == 1)
+                {
+                    auto sv = blaze::column(
+                        blaze::submatrix(arg0,
+                            0, col_start,
+                            num_matrix_rows, 1),
+                        0);
 
-                return ir::node_data<double>(matrix_type(std::move(sm)));
+                    storage1d_type v{sv};
+                    return ir::node_data<double>{std::move(v)};
+                }
+
+                auto sm = blaze::submatrix(arg0,
+                    0, col_start,
+                    num_matrix_rows, col_stop - col_start);
+
+                storage2d_type m{sm};
+                return ir::node_data<double>{std::move(m)};
             }
 
         public:

@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "access_argument::eval_direct",
                 "argument count out of bounds: " + std::to_string(argnum_));
         }
-        return value_operand_sync(params[argnum_], params);
+        return value_operand_ref_sync(params[argnum_], params);
     }
 
     // Return whether this object could be evaluated using the given arguments

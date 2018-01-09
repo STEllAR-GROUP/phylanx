@@ -1,4 +1,5 @@
 //  Copyright (c) 2017 Parsa Amini
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -6,7 +7,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/cross_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -86,20 +86,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // lhs vector has 2 elements
                 if (lhs_vector_dims < 3ul)
                 {
-                    lhs.vector().resize(3ul);
-                    lhs[2ul] = 0.0;
+                    if (lhs.is_ref())
+                    {
+                        blaze::DynamicVector<double> temp = lhs.vector();
+                        temp.resize(3ul);
+                        temp[2ul] = 0.0;
+                        lhs = std::move(temp);
+                    }
+                    else
+                    {
+                        lhs.vector_non_ref().resize(3ul);
+                        lhs[2ul] = 0.0;
+                    }
                 }
 
                 // Only rhs has 2 elements
                 if (rhs_vector_dims < 3ul)
                 {
-                    rhs.vector().resize(3ul);
-                    rhs[2ul] = 0.0;
+                    if (rhs.is_ref())
+                    {
+                        blaze::DynamicVector<double> temp = rhs.vector();
+                        temp.resize(3ul);
+                        temp[2ul] = 0.0;
+                        rhs = std::move(temp);
+                    }
+                    else
+                    {
+                        rhs.vector_non_ref().resize(3ul);
+                        rhs[2ul] = 0.0;
+                    }
                 }
+
                 // Both vectors have 3 elements
                 lhs.vector() %= rhs.vector();
-
-                return std::move(lhs);
+                return ir::node_data<double>{std::move(lhs)};
             }
 
             primitive_result_type cross1d2d(
@@ -107,8 +127,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (lhs.size() == 2ul)
                 {
-                    lhs.vector().resize(3ul);
-                    lhs[2ul] = 0.0;
+                    if (lhs.is_ref())
+                    {
+                        blaze::DynamicVector<double> temp = lhs.vector();
+                        temp.resize(3ul);
+                        temp[2ul] = 0.0;
+                        lhs = std::move(temp);
+                    }
+                    else
+                    {
+                        lhs.vector_non_ref().resize(3ul);
+                        lhs[2ul] = 0.0;
+                    }
                 }
 
                 // lhs has to have 3 elements
@@ -117,11 +147,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     // rhs has 2 columns per vector
                     if (rhs.dimension(1) == 2ul)
                     {
-                        rhs.matrix().resize(rhs.dimension(0), 3ul);
-                        blaze::column(rhs.matrix(), 2ul) = 0.0;
+                        if (rhs.is_ref())
+                        {
+                            blaze::DynamicMatrix<double> temp = rhs.matrix();
+                            temp.resize(rhs.dimension(0), 3ul);
+                            blaze::column(temp, 2ul) = 0.0;
+                            rhs = std::move(temp);
+                        }
+                        else
+                        {
+                            rhs.matrix_non_ref().resize(rhs.dimension(0), 3ul);
+                            blaze::column(rhs.matrix_non_ref(), 2ul) = 0.0;
+                        }
                     }
 
-                    for (std::size_t i = 0ul; i < rhs.dimension(0); ++i)
+                    for (std::size_t i = 0ul; i != rhs.dimension(0); ++i)
                     {
                         blaze::DynamicVector<double> rhs_op_vec{
                             rhs[{i, 0ul}], rhs[{i, 1ul}], rhs[{i, 2ul}]};
@@ -133,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         rhs[{i, 2ul}] = i_vector[2ul];
                     }
 
-                    return std::move(rhs);
+                    return ir::node_data<double>{std::move(rhs)};
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -165,8 +205,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (rhs.size() == 2ul)
                 {
-                    rhs.vector().resize(3ul);
-                    rhs[2ul] = 0.0;
+                    if (rhs.is_ref())
+                    {
+                        blaze::DynamicVector<double> temp = rhs.vector();
+                        temp.resize(3ul);
+                        temp[2ul] = 0.0;
+                        rhs = std::move(temp);
+                    }
+                    else
+                    {
+                        rhs.vector_non_ref().resize(3ul);
+                        rhs[2ul] = 0.0;
+                    }
                 }
 
                 // rhs has to have 3 elements
@@ -175,21 +225,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     // lhs has 2 columns per vector
                     if (lhs.dimension(1) == 2ul)
                     {
-                        lhs.matrix().resize(lhs.dimension(0), 3ul);
-                        blaze::column(lhs.matrix(), 2ul) = 0.0;
+                        if (lhs.is_ref())
+                        {
+                            blaze::DynamicMatrix<double> temp = lhs.matrix();
+                            temp.resize(lhs.dimension(0), 3ul);
+                            blaze::column(temp, 2ul) = 0.0;
+                            lhs = std::move(temp);
+                        }
+                        else
+                        {
+                            lhs.matrix_non_ref().resize(lhs.dimension(0), 3ul);
+                            blaze::column(lhs.matrix_non_ref(), 2ul) = 0.0;
+                        }
                     }
 
-                    for (std::size_t i = 0ul; i < lhs.dimension(0); ++i)
-                    {
-                        blaze::DynamicMatrix<double> rhs_op_mat{{
-                                rhs[0ul], rhs[1ul], rhs[2ul]}};
+                    auto lhsm = lhs.matrix();
+                    blaze::DynamicMatrix<double> rhs_op_mat{
+                        {rhs[0ul], rhs[1ul], rhs[2ul]}};
+                    blaze::DynamicMatrix<double> temp = lhs.matrix();
 
-                        blaze::row(lhs.matrix(), i) = blaze::cross(
-                            blaze::row(lhs.matrix(), i),
+                    for (std::size_t i = 0ul; i != lhs.dimension(0); ++i)
+                    {
+                        blaze::row(temp, i) = blaze::cross(
+                            blaze::row(lhsm, i),
                             blaze::row(rhs_op_mat, 0ul));
                     }
 
-                    return std::move(lhs);
+                    return ir::node_data<double>{std::move(temp)};
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -214,43 +276,74 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     // If rhs has 2 elements per vector
                     if (rhs.dimension(1) == 2ul)
                     {
-                        for (std::size_t idx_row = 0; idx_row != lhs.dimension(0);
-                            ++idx_row)
+                        auto lhsm = lhs.matrix();
+                        auto rhsm = rhs.matrix();
+                        blaze::DynamicMatrix<double> temp = lhs.matrix();
+
+                        for (std::size_t idx_row = 0;
+                             idx_row != lhs.dimension(0);
+                             ++idx_row)
                         {
-                            blaze::row(lhs.matrix(), idx_row) = blaze::cross(
-                                blaze::row(lhs.matrix(), idx_row),
-                                blaze::row(rhs.matrix(), idx_row));
+                            blaze::row(temp, idx_row) = blaze::cross(
+                                blaze::row(lhsm, idx_row),
+                                blaze::row(rhsm, idx_row));
                         }
 
-                        return std::move(lhs);
+                        return ir::node_data<double>{std::move(temp)};
                     }
 
                     // If only lhs has 2 elements per vector
                     else
                     {
-                        lhs.matrix().resize(lhs.dimension(0), 3ul);
-                        blaze::column(lhs.matrix(), 2ul) = 0.0;
+                        if (rhs.is_ref())
+                        {
+                            blaze::DynamicMatrix<double> temp = lhs.matrix();
+                            temp.resize(lhs.dimension(0), 3ul);
+                            blaze::column(temp, 2ul) = 0.0;
+                            lhs = std::move(temp);
+                        }
+                        else
+                        {
+                            lhs.matrix_non_ref().resize(lhs.dimension(0), 3ul);
+                            blaze::column(lhs.matrix_non_ref(), 2ul) = 0.0;
+                        }
                     }
                 }
+
                 // If lhs has 3 elements per vector
                 if (lhs.dimension(1) == 3ul)
                 {
                     // If rhs has 2 elements per vector
                     if (rhs.dimension(1) == 2ul)
                     {
-                        rhs.matrix().resize(rhs.dimension(0), 3ul);
-                        blaze::column(rhs.matrix(), 2ul) = 0.0;
+                        if (rhs.is_ref())
+                        {
+                            blaze::DynamicMatrix<double> temp = rhs.matrix();
+                            temp.resize(rhs.dimension(0), 3ul);
+                            blaze::column(temp, 2ul) = 0.0;
+                            rhs = std::move(temp);
+                        }
+                        else
+                        {
+                            rhs.matrix_non_ref().resize(rhs.dimension(0), 3ul);
+                            blaze::column(rhs.matrix_non_ref(), 2ul) = 0.0;
+                        }
                     }
+
                     // Both have 3 elements per vector
+                    auto lhsm = lhs.matrix();
+                    auto rhsm = rhs.matrix();
+                    blaze::DynamicMatrix<double> temp = lhs.matrix();
+
                     for (std::size_t idx_row = 0; idx_row != lhs.dimension(0);
                         ++idx_row)
                     {
-                        blaze::row(lhs.matrix(), idx_row) = blaze::cross(
-                            blaze::row(lhs.matrix(), idx_row),
-                            blaze::row(rhs.matrix(), idx_row));
+                        blaze::row(temp, idx_row) = blaze::cross(
+                            blaze::row(lhsm, idx_row),
+                            blaze::row(rhsm, idx_row));
                     }
 
-                    return std::move(lhs);
+                    return ir::node_data<double>{std::move(temp)};
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,

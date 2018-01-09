@@ -25,6 +25,9 @@ add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/ir/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/performance_counters/*.cpp"
+  APPEND)
+add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/util/*.cpp"
   APPEND)
 

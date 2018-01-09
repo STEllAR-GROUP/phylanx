@@ -1,4 +1,5 @@
-// Copyright (c) 2017 Bibek Wagle
+//  Copyright (c) 2017 Bibek Wagle
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -6,7 +7,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/row_slicing.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -55,9 +55,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         protected:
             using arg_type = ir::node_data<double>;
             using args_type = std::vector<arg_type>;
-
-            using matrix_type = blaze::DynamicMatrix<double>;
-            using submatrix_type = blaze::Submatrix<matrix_type>;
 
             primitive_result_type row_slicing0or1d(args_type && args) const
             {
@@ -115,30 +112,57 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "row_stop can not be negative if row_start is positive");
                 }
 
+                using storage1d_type = typename arg_type::storage1d_type;
+                using storage2d_type = typename arg_type::storage2d_type;
+
+                auto arg0 = args[0].matrix();
+
                 if (row_start < 0 && row_stop <= 0)
                 {
-                    auto num_rows = args[0].matrix().rows();
+                    auto num_rows = arg0.rows();
 
-                    submatrix_type sm =
-                        blaze::submatrix(args[0].matrix(),
-                            num_rows + row_start, 0,
-                            -row_start + row_stop, num_matrix_cols);
-
+                    // return a vector and not a matrix if the slice contains
+                    // exactly one row
                     if (row_stop - row_start == 1)
                     {
-                        //return a vector in this case and not a matrix
-                        return ir::node_data<double>{blaze::trans(row(sm, 0))};
+                        auto sv = blaze::trans(blaze::row(
+                            blaze::submatrix(arg0,
+                                num_rows + row_start, 0,
+                                1, num_matrix_cols),
+                            0));
+
+                        storage1d_type v{sv};
+                        return ir::node_data<double>{std::move(v)};
                     }
 
-                    return ir::node_data<double>{matrix_type{std::move(sm)}};
+                    auto sm = blaze::submatrix(arg0,
+                        num_rows + row_start, 0,
+                        -row_start + row_stop, num_matrix_cols);
+
+                    storage2d_type m{sm};
+                    return ir::node_data<double>{std::move(m)};
                 }
 
-                submatrix_type sm =
-                    blaze::submatrix(args[0].matrix(),
-                        row_start, 0,
-                        row_stop - row_start, num_matrix_cols);
+                // return a vector and not a matrix if the slice contains
+                // exactly one row
+                if (row_stop - row_start == 1)
+                {
+                    auto sv = blaze::trans(blaze::row(
+                        blaze::submatrix(arg0,
+                            row_start, 0,
+                            1, num_matrix_cols),
+                        0));
 
-                return ir::node_data<double>{matrix_type{std::move(sm)}};
+                    storage1d_type v{sv};
+                    return ir::node_data<double>{std::move(v)};
+                }
+
+                auto sm = blaze::submatrix(arg0,
+                    row_start, 0,
+                    row_stop - row_start, num_matrix_cols);
+
+                storage2d_type m{sm};
+                return ir::node_data<double>{std::move(m)};
             }
 
         public:

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,6 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -64,13 +63,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type neg1d(operands_type&& ops) const
             {
-                ops[0].vector(-ops[0].vector());
+                ops[0] = -ops[0].vector();
                 return primitive_result_type(std::move(ops[0]));
             }
 
             primitive_result_type neg2d(operands_type&& ops) const
             {
-                ops[0].matrix(-ops[0].matrix());
+                ops[0] = -ops[0].matrix();
                 return primitive_result_type(std::move(ops[0]));
             }
 

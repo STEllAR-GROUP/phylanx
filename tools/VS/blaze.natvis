@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- Copyright (c) 2017 Hartmut Kaiser                                      -->
+<!-- Copyright (c) 2017-2018 Hartmut Kaiser                                 -->
 <!-- Copyright (c) 2017 Parsa Amini                                         -->
 
 <!-- Use, modification and distribution are subject to the Boost Software   -->
@@ -37,6 +37,36 @@
         </Expand>
     </Type>
 
+    <Type Name="blaze::CustomMatrix&lt;*,*,*,0&gt;">
+        <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <Item Name="[padding]">nn_</Item>
+            <ArrayItems>
+                <Direction>Forward</Direction>
+                <Rank>2</Rank>
+                <Size>$i == 0 ? (int)n_ : (int)m_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="blaze::CustomMatrix&lt;*,*,*,1&gt;">
+        <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <Item Name="[padding]">nn_</Item>
+            <ArrayItems>
+                <Direction>Backward</Direction>
+                <Rank>2</Rank>
+                <Size>$i == 0 ? (int)m_ : (int)n_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <Type Name="blaze::DynamicVector&lt;*,0&gt;">
         <DisplayString>{{size={size_}}}</DisplayString>
         <Expand>
@@ -51,6 +81,32 @@
     </Type>
 
     <Type Name="blaze::DynamicVector&lt;*,1&gt;">
+        <DisplayString>{{size={size_}}}</DisplayString>
+        <Expand>
+            <Item Name="[size]">size_</Item>
+            <ArrayItems>
+                <Direction>Backward</Direction>
+                <Rank>1</Rank>
+                <Size>size_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="blaze::CustomVector&lt;*,*,*,0&gt;">
+        <DisplayString>{{size={size_}}}</DisplayString>
+        <Expand>
+            <Item Name="[size]">size_</Item>
+            <ArrayItems>
+                <Direction>Forward</Direction>
+                <Rank>1</Rank>
+                <Size>size_</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="blaze::CustomVector&lt;*,*,*,1&gt;">
         <DisplayString>{{size={size_}}}</DisplayString>
         <Expand>
             <Item Name="[size]">size_</Item>

@@ -4,8 +4,10 @@
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
+
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/agas.hpp>
+#include <hpx/runtime_fwd.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -258,9 +260,8 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto elapsed = t.elapsed();
 
     std::cout << "Result: \n"
-              << phylanx::execution_tree::extract_numeric_value(result)
-              << std::endl
-              << "Calculated in :" << elapsed << " seconds" << std::endl;
+              << phylanx::execution_tree::extract_numeric_value(result) << "\n"
+              << "Calculated in: " << elapsed << " seconds\n";
 
     return hpx::finalize();
 }

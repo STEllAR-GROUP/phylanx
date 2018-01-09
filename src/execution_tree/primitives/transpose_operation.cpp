@@ -7,7 +7,6 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/transpose_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -106,7 +105,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type transpose2d(operands_type && ops) const
             {
-                blaze::transpose(ops[0].matrix());
+                if (ops[0].is_ref())
+                {
+                    ops[0] = blaze::trans(ops[0].matrix());
+                }
+                else
+                {
+                    blaze::transpose(ops[0].matrix_non_ref());
+                }
                 return std::move(ops[0]);
             }
         };
