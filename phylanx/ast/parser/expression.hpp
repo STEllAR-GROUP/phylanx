@@ -51,7 +51,9 @@ namespace phylanx { namespace ast { namespace parser
         qi::rule<Iterator, std::vector<ast::expression>(), skipper<Iterator>>
             argument_list;
 
-        qi::rule<Iterator, std::string(), skipper<Iterator>> identifier;
+        qi::rule<Iterator, ast::identifier(), skipper<Iterator>> identifier;
+
+        qi::rule<Iterator, std::string(), skipper<Iterator>> identifier_name;
         qi::rule<Iterator, std::string(), skipper<Iterator>> string;
 
         qi::symbols<char, ast::optoken> unary_op;

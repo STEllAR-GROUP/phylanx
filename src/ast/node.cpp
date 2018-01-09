@@ -14,6 +14,9 @@
 namespace phylanx { namespace ast
 {
     ///////////////////////////////////////////////////////////////////////////
+    std::int64_t tagged::next_id = 0;
+
+    ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         static constexpr int const precedence[] =
@@ -111,25 +114,25 @@ namespace phylanx { namespace ast
     ///////////////////////////////////////////////////////////////////////////
     void identifier::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << name;
+        ar << name << id;
     }
 
     void identifier::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> name;
+        ar >> name >> id;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     void primary_expr::serialize(
         hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << *static_cast<expr_node_type*>(this);
+        ar << *static_cast<expr_node_type*>(this) << id;
     }
 
     void primary_expr::serialize(
         hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> *static_cast<expr_node_type*>(this);
+        ar >> *static_cast<expr_node_type*>(this) >> id;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -146,12 +149,12 @@ namespace phylanx { namespace ast
     ///////////////////////////////////////////////////////////////////////////
     void unary_expr::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << operator_ << operand_;
+        ar << operator_ << operand_ << id;
     }
 
     void unary_expr::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> operator_ >> operand_;
+        ar >> operator_ >> operand_ >> id;
     }
 
     ///////////////////////////////////////////////////////////////////////////

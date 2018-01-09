@@ -16,7 +16,7 @@ integration service tracks the current build status for the master branch:
 The [AppVeyor](https://ci.appveyor.com/project/hkaiser/phylanx) contiguous
 integration tracks the status for Windows builds using the native Visual
 Studio toolchain:
-[![Build status](https://ci.appveyor.com/api/projects/status/2ewum879yi7akxc1?svg=true)](https://ci.appveyor.com/project/hkaiser/phylanx).
+[![Build status](https://ci.appveyor.com/api/projects/status/2ewum879yi7akxc1/branch/master?svg=true)](https://ci.appveyor.com/project/hkaiser/phylanx).
 
 The [Buildbot](http://ktau.nic.uoregon.edu:8020/tgrid) continuous integration
 service tracks the current build status on several platforms and compilers:

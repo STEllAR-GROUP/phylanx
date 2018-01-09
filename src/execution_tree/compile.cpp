@@ -23,6 +23,7 @@ namespace phylanx { namespace execution_tree
         hpx::id_type const& default_locality)
     {
         pattern_list const& patterns = get_all_known_patterns();
+        ++snippets.compile_id_;
         return compiler::compile(expr, snippets, env,
             compiler::generate_patterns(patterns), default_locality);
     }
@@ -32,6 +33,7 @@ namespace phylanx { namespace execution_tree
         hpx::id_type const& default_locality)
     {
         pattern_list const& patterns = get_all_known_patterns();
+        ++snippets.compile_id_;
         return compiler::compile(exprs, snippets, env,
             compiler::generate_patterns(patterns), default_locality);
     }
@@ -51,6 +53,8 @@ namespace phylanx { namespace execution_tree
         pattern_list const& patterns = get_all_known_patterns();
         compiler::environment env =
             compiler::default_environment(default_locality);
+
+        ++snippets.compile_id_;
         return compiler::compile(expr, snippets, env,
             compiler::generate_patterns(patterns), default_locality);
     }
@@ -61,6 +65,8 @@ namespace phylanx { namespace execution_tree
         pattern_list const& patterns = get_all_known_patterns();
         compiler::environment env =
             compiler::default_environment(default_locality);
+
+        ++snippets.compile_id_;
         return compiler::compile(exprs, snippets, env,
             compiler::generate_patterns(patterns), default_locality);
     }

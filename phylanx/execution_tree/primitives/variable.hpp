@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_result_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
-        void store(primitive_result_type const& data) override;
+        void store(primitive_result_type && data) override;
         bool bind(std::vector<primitive_argument_type> const& params) override;
 
     private:

@@ -1,7 +1,8 @@
-//   Copyright (c) 2017 Bibek Wagle
+//  Copyright (c) 2017 Bibek Wagle
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//   Distributed under the Boost Software License, Version 1.0. (See accompanying
-//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
@@ -56,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         protected:
             ir::node_data<double> exponential0d(operands_type&& ops) const
             {
-                ops[0].scalar(std::exp(ops[0].scalar()));
+                ops[0] = double(std::exp(ops[0].scalar()));
                 return std::move(ops[0]);
             }
 

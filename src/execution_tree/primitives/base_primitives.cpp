@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -73,6 +73,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive::primitive(hpx::future<hpx::id_type>&& fid, std::string const& name)
+      : base_type(std::move(fid))
+    {
+        if (!name.empty())
+        {
+            this->base_type::register_as("/phylanx/" + name).get();
+        }
+    }
+
     hpx::future<primitive_argument_type> primitive::eval(
         std::vector<primitive_argument_type> const& params) const
     {
@@ -99,16 +108,17 @@ namespace phylanx { namespace execution_tree
         return eval_direct(params);
     }
 
-    hpx::future<void> primitive::store(primitive_argument_type const& data)
+    hpx::future<void> primitive::store(primitive_argument_type data)
     {
         using action_type = primitives::base_primitive::store_action;
-        return hpx::async(action_type(), this->base_type::get_id(), data);
+        return hpx::async(
+            action_type(), this->base_type::get_id(), std::move(data));
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        primitive_argument_type const& data)
+        primitive_argument_type data)
     {
-        return store(data).get();
+        return store(std::move(data)).get();
     }
 
     hpx::future<bool> primitive::bind(
@@ -148,7 +158,73 @@ namespace phylanx { namespace execution_tree
             "primitive_argument_type does not hold a value type");
     }
 
-    primitive_argument_type && extract_value(primitive_argument_type&& val)
+    primitive_argument_type extract_copy_value(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+        case 1:     // bool
+        case 2:     // std::uint64_t
+        case 3:     // std::string
+        case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return val;
+
+        case 4:     // phylanx::ir::node_data<double>
+            {
+                auto const& v = util::get<4>(val);
+                if (v.is_ref())
+                {
+                    return v.copy();
+                }
+                return v;
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_copy_value",
+            "primitive_argument_type does not hold a value type");
+    }
+
+    primitive_argument_type extract_ref_value(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+        case 1:     // bool
+        case 2:     // std::uint64_t
+        case 3:     // std::string
+        case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return val;
+
+        case 4:     // phylanx::ir::node_data<double>
+            {
+                auto const& v = util::get<4>(val);
+                if (v.is_ref())
+                {
+                    return v;
+                }
+                return v.ref();
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_ref_value",
+            "primitive_argument_type does not hold a value type");
+    }
+
+    primitive_argument_type extract_value(primitive_argument_type&& val)
     {
         switch (val.index())
         {
@@ -161,6 +237,72 @@ namespace phylanx { namespace execution_tree
         case 6:     // std::vector<ast::expression>
         case 7:     // std::vector<primitive_argument_type>
             return std::move(val);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_value",
+            "primitive_argument_type does not hold a value type");
+    }
+
+    primitive_argument_type extract_copy_value(primitive_argument_type&& val)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+        case 1:     // bool
+        case 2:     // std::uint64_t
+        case 3:     // std::string
+        case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return std::move(val);
+
+        case 4:     // phylanx::ir::node_data<double>
+            {
+                auto && v = util::get<4>(std::move(val));
+                if (v.is_ref())
+                {
+                    return v.copy();
+                }
+                return std::move(v);
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_value",
+            "primitive_argument_type does not hold a value type");
+    }
+
+    primitive_argument_type extract_ref_value(primitive_argument_type&& val)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+        case 1:     // bool
+        case 2:     // std::uint64_t
+        case 3:     // std::string
+        case 5:     // primitive
+        case 6:     // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return std::move(val);
+
+        case 4:     // phylanx::ir::node_data<double>
+            {
+                auto && v = util::get<4>(std::move(val));
+                if (v.is_ref())
+                {
+                    return std::move(v);
+                }
+                return v.ref();
+            }
+            break;
 
         default:
             break;
@@ -191,6 +333,38 @@ namespace phylanx { namespace execution_tree
 
         case 4:     // phylanx::ir::node_data<double>
             return util::get<4>(val);
+
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_literal_value",
+            "primitive_argument_type does not hold a literal value type");
+    }
+
+    primitive_argument_type extract_literal_ref_value(
+        primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+            return ast::nil{};
+
+        case 1:     // bool
+            return util::get<1>(val);
+
+        case 2:     // std::uint64_t
+            return util::get<2>(val);
+
+        case 3:     // std::string
+            return util::get<3>(val);
+
+        case 4:     // phylanx::ir::node_data<double>
+            return util::get<4>(val).ref();
 
         case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
@@ -248,7 +422,7 @@ namespace phylanx { namespace execution_tree
             return ir::node_data<double>{double(util::get<2>(val))};
 
         case 4:     // phylanx::ir::node_data<double>
-            return util::get<4>(val);
+            return util::get<4>(val).ref();
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 3: HPX_FALLTHROUGH;    // string
@@ -639,14 +813,14 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [&args](hpx::future<primitive_argument_type> && f)
+                [](hpx::future<primitive_argument_type> && f)
                 {
                     return extract_value(f.get());
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_value(val));
+        return hpx::make_ready_future(extract_ref_value(val));
     }
 
     primitive_argument_type value_operand_sync(
@@ -663,6 +837,20 @@ namespace phylanx { namespace execution_tree
         return extract_value(val);
     }
 
+    primitive_argument_type value_operand_ref_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            return extract_value(p->eval_direct(args));
+        }
+
+        HPX_ASSERT(valid(val));
+        return extract_ref_value(val);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type const& val,
@@ -672,14 +860,14 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [&args](hpx::future<primitive_argument_type> && f)
+                [](hpx::future<primitive_argument_type> && f)
                 {
                     return extract_literal_value(f.get());
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_literal_value(val));
+        return hpx::make_ready_future(extract_literal_ref_value(val));
     }
 
     primitive_argument_type literal_operand_sync(
@@ -693,7 +881,7 @@ namespace phylanx { namespace execution_tree
         }
 
         HPX_ASSERT(valid(val));
-        return extract_literal_value(val);
+        return extract_literal_ref_value(val);
     }
 
     ///////////////////////////////////////////////////////////////////////////

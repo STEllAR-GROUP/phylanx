@@ -1,4 +1,5 @@
 //  Copyright (c) 2017 Parsa Amini
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -6,7 +7,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/square_root_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -55,20 +55,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_result_type square_root_0d(operands_type && ops) const
             {
-                ops[0].scalar(std::sqrt(ops[0].scalar()));
+                ops[0] = std::sqrt(ops[0].scalar());
                 return std::move(ops[0]);
             }
 
             primitive_result_type square_root_1d(operands_type && ops) const
             {
-                ops[0].vector(blaze::sqrt(ops[0].vector()));
+                ops[0] = blaze::sqrt(ops[0].vector());
 
                 return std::move(ops[0]);
             }
 
             primitive_result_type square_root_2d(operands_type && ops) const
             {
-                ops[0].matrix(blaze::sqrt(ops[0].matrix()));
+                ops[0] = blaze::sqrt(ops[0].matrix());
 
                 return std::move(ops[0]);
             }

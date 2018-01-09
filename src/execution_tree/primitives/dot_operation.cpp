@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //  Copyright (c) 2017 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -7,7 +7,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -63,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[0].scalar() *= ops[1].scalar();
-                return std::move(ops[0]);
+                return ir::node_data<double>{std::move(ops[0])};
             }
 
             // lhs_num_dims == 1
@@ -103,9 +102,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // lhs.dimension(0) == rhs.dimension(0)
-                lhs.scalar(blaze::dot(lhs.vector(), rhs.vector()));
-
-                return std::move(lhs);
+                lhs = double(blaze::dot(lhs.vector(), rhs.vector()));
+                return ir::node_data<double>{std::move(lhs)};
             }
 
             primitive_result_type dot1d2d(
@@ -118,9 +116,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the operands have incompatible number of dimensions");
                 }
 
-                lhs.vector() =
-                    blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
-                return std::move(lhs);
+                lhs = blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
+                return ir::node_data<double>{std::move(lhs)};
             }
 
             // lhs_num_dims == 2
@@ -156,9 +153,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the operands have incompatible number of dimensions");
                 }
 
-                rhs.vector(lhs.matrix() * rhs.vector());
-
-                return std::move(rhs);
+                rhs = lhs.matrix() * rhs.vector();
+                return ir::node_data<double>{std::move(rhs)};
             }
 
             primitive_result_type dot2d2d(
@@ -171,8 +167,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the operands have incompatible number of dimensions");
                 }
 
-                lhs.matrix() *= rhs.matrix();
-                return std::move(lhs);
+                lhs = lhs.matrix() * rhs.matrix();
+                return ir::node_data<double>{std::move(lhs)};
             }
 
         public:

@@ -18,7 +18,7 @@ void test_serialization(phylanx::ir::node_data<double> const& array_value1)
     std::vector<char> buffer = phylanx::util::serialize(array_value1);
     phylanx::util::detail::unserialize(buffer, array_value2);
 
-    HPX_TEST(array_value1 == array_value2);
+    HPX_TEST_EQ(array_value1, array_value2);
 }
 
 int main(int argc, char* argv[])

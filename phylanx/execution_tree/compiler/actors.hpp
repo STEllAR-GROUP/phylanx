@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -34,9 +34,26 @@ namespace phylanx { namespace execution_tree { namespace compiler
     struct actor
     {
         // direct execution
-        result_type operator()(arguments_type args) const
+        result_type operator()(arguments_type const& args) const
         {
-            return derived().call(std::move(args));
+            arguments_type params;
+            params.reserve(args.size());
+            for (auto const& arg : args)
+            {
+                params.emplace_back(extract_ref_value(arg));
+            }
+            return derived().call(std::move(params));
+        }
+
+        result_type operator()(arguments_type && args) const
+        {
+            arguments_type params;
+            params.reserve(args.size());
+            for (auto && arg : args)
+            {
+                params.emplace_back(extract_ref_value(std::move(arg)));
+            }
+            return derived().call(std::move(params));
         }
 
         result_type operator()() const
@@ -47,7 +64,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
         template <typename ... Ts>
         result_type operator()(Ts &&... ts) const
         {
-            arguments_type elements = {std::forward<Ts>(ts)...};
+            arguments_type elements;
+            elements.reserve(sizeof...(Ts));
+            int const sequencer_[] = {
+                0, (elements.emplace_back(
+                        extract_ref_value(std::forward<Ts>(ts))), 0)...
+            };
+            (void)sequencer_;
             return derived().call(std::move(elements));
         }
 
@@ -86,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return p->eval_direct(std::move(args));
+                return extract_copy_value(p->eval_direct(std::move(args)));
             }
             return arg_;
         }
@@ -113,38 +136,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
 #endif
     };
 
-    // defer the evaluation of a given function
-//     struct c : actor<function>
-//     {
-//         function() = default;
-//
-//         function(stored_function const& f)
-//           : f_(f)
-//         {
-//             HPX_ASSERT(!f_.empty());
-//         }
-//         function(stored_function && f)
-//           : f_(std::move(f))
-//         {
-//             HPX_ASSERT(!f_.empty());
-//         }
-//
-//         bool empty() const
-//         {
-//             return f_.empty();
-//         }
-//
-//         result_type call(arguments_type && args) const
-//         {
-//             return f_(std::move(args));
-//         }
-//
-//         stored_function f_;
-//     };
-
-
     // this must be a list to ensure stable references
-    using function_list = std::list<function>;
+    struct function_list
+    {
+        function_list()
+          : compile_id_(0)
+        {}
+
+        function_list(function_list const&) = delete;
+        function_list(function_list &&) = delete;
+
+        function_list& operator=(function_list const&) = delete;
+        function_list& operator=(function_list &&) = delete;
+
+        std::size_t compile_id_;
+        std::list<function> defines_;
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     // arguments
@@ -171,13 +178,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // lambda
     struct lambda : actor<lambda>
     {
-        function_list elements_;
+        std::list<function> elements_;
 
         // we must hold f by reference because functions can be recursive
         std::reference_wrapper<function const> f_;
 
         lambda(function const& f, function_list const& elements)
-          : elements_(elements)
+          : elements_(elements.defines_)
           , f_(f)
         {}
 
@@ -190,7 +197,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 for (auto const& element : elements_)
                 {
-                    fargs.push_back(element(std::move(args)));
+                    fargs.push_back(element(args));
                 }
 
                 return f_.get()(std::move(fargs));

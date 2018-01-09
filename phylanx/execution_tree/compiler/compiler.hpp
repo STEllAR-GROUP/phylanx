@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -67,15 +67,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
           : locality_(locality)
         {}
 
-        function operator()(function_list elements) const
+        function operator()(std::list<function> elements,
+            std::string const& name) const
         {
-            return derived().compose(std::move(elements));
+            return derived().compose(std::move(elements), name);
         }
 
         template <typename ... Ts>
         function operator()(Ts &&... ts) const
         {
-            function_list elements = {std::forward<Ts>(ts)...};
+            std::list<function> elements;
+            int const sequencer_[] = {
+                0, (elements.emplace_back(std::forward<Ts>(ts)), 0)...
+            };
+            (void)sequencer_;
             return derived().compose(std::move(elements));
         }
 
@@ -92,7 +97,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
           , f_(f)
         {}
 
-        function compose(function_list && args) const
+        function compose(std::list<function> && args,
+            std::string const& name) const
         {
             arguments_type fargs;
             fargs.reserve(args.size());
@@ -103,7 +109,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             return function{
-                (*f_)(this->locality_, std::move(fargs)), "builtin_function"};
+                (*f_)(this->locality_, std::move(fargs), name),
+                name};
         }
 
     private:
@@ -137,16 +144,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
           : locality_(locality)
         {}
 
-        function operator()(argument_type && arg) const
-        {
-            return function{hpx::new_<primitives::define_variable>(
-                locality_, std::move(arg)), "primitive_variable"};
-        }
         function operator()(argument_type && arg, std::string const& name) const
         {
-            return function{hpx::new_<primitives::define_variable>(
-                                locality_, std::move(arg), name),
-                "primitive_variable: " + name};
+            return function{
+                    primitive(
+                        hpx::new_<primitives::define_variable>(
+                            locality_, std::move(arg), name),
+                        name),
+                    name};
         }
 
     private:
@@ -179,8 +184,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function operator()(std::string const& name) const
         {
             return function{
-                hpx::new_<primitives::define_function>(locality_, name),
-                "primitive_function: " + name};
+                primitive(
+                    hpx::new_<primitives::define_function>(locality_, name),
+                    name),
+                name};
         }
 
     private:
@@ -190,17 +197,24 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // compose an argument selector
     struct argument
     {
-        function operator()(std::size_t n,
-            hpx::id_type const& locality = hpx::find_here()) const
+        argument(hpx::id_type const& locality = hpx::find_here())
+          : locality_(locality)
         {
+        }
+
+        function operator()(std::size_t n, std::string const& name) const
+        {
+            std::string full_name = "argument:" + name;
             return function{
-                    hpx::new_<primitives::access_argument>(locality, n),
-                    "argument"
+                    primitive(
+                        hpx::new_<primitives::access_argument>(locality_, n),
+                        full_name),
+                    full_name
                 };
         }
-    };
 
-    constexpr static argument const arg = {};
+        hpx::id_type locality_;
+    };
 
     // compose an external function
     struct external_function : compiled_actor<external_function>
@@ -214,11 +228,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
           , f_(f)
         {}
 
-        function compose(function_list && elements) const
+        function compose(std::list<function> && elements,
+            std::string const& name) const
         {
             if (elements.empty())
             {
-                return function{f_.get().arg_, "external_variable"};
+                return function{f_.get().arg_, name};
             }
 
             arguments_type fargs;
@@ -231,15 +246,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             return function{
                     hpx::new_<primitives::wrapped_function>(
-                        this->locality_, f_.get().arg_, std::move(fargs)),
-                    "external_function"
+                        this->locality_, f_.get().arg_, std::move(fargs), name),
+                    name
                 };
         }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     typedef hpx::util::function_nonser<
-            function(function_list)
+            function(std::list<function> const&, std::string const&)
         > compiled_function;
 
     class environment

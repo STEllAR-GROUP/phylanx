@@ -29,7 +29,8 @@ void test_define_operation_var(
     auto p = env.find(name);
     HPX_TEST(p != nullptr);
 
-    auto var = (*p)(phylanx::execution_tree::compiler::function_list{});
+    auto var =
+        (*p)(std::list<phylanx::execution_tree::compiler::function>{}, name);
 
     // evaluate expression
     HPX_TEST_EQ(expected,
@@ -55,7 +56,8 @@ void test_define_operation(char const* expr, char const* name, double expected,
     auto p = env.find(name);
     HPX_TEST(p != nullptr);
 
-    auto var = (*p)(phylanx::execution_tree::compiler::function_list{});
+    auto var =
+        (*p)(std::list<phylanx::execution_tree::compiler::function>{}, name);
 
     // evaluate expression
     std::vector<phylanx::execution_tree::primitive_argument_type> values;

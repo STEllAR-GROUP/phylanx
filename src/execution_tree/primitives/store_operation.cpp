@@ -84,12 +84,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands_[1], args_)
                     .then(hpx::util::unwrapping(
-                        [this_](primitive_result_type&& val)
+                        [this_](primitive_result_type && val)
                         {
-                            primitive_operand(
-                                    this_->operands_[0]
-                                ).store(hpx::launch::sync, val);
-                            return std::move(val);
+                            primitive_operand(this_->operands_[0])
+                                .store(hpx::launch::sync, std::move(val));
+                            return primitive_result_type{};
                         }));
             }
 

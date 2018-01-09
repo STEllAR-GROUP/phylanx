@@ -6,6 +6,7 @@
 set(example_programs
     lra
     lra_csv
+    lra_csv_instrumented
    )
 
 foreach(example_program ${example_programs})

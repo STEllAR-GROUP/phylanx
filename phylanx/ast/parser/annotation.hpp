@@ -8,10 +8,12 @@
 #define PHYLANX_AST_PARSER_ANNOTATION_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/tagged_id.hpp>
 #include <phylanx/ast/parser/ast.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <type_traits>
 #include <vector>
@@ -25,12 +27,6 @@ namespace phylanx { namespace ast { namespace parser
     template <typename Iterator>
     struct annotation
     {
-        template <typename, typename>
-        struct result
-        {
-            typedef void type;
-        };
-
         std::vector<Iterator>& iters;
 
         annotation(std::vector<Iterator>& iters)
@@ -40,65 +36,114 @@ namespace phylanx { namespace ast { namespace parser
 
         struct set_id
         {
-            using result_type = void;
-
-            std::size_t id;
+            std::int64_t id;
 
             set_id(std::size_t id)
-              : id(id)
+              : id(static_cast<std::int64_t>(id))
             {
             }
 
-            void operator()(ast::function_call& x) const
+            bool operator()(ast::function_call& x) const
             {
-                x.function_name.id = id;
+                if (x.function_name.id <= 0)
+                {
+                    x.function_name.id = id;
+                    return true;
+                }
+                return false;
             }
 
-            void operator()(ast::identifier& x) const
+            bool operator()(ast::identifier& x) const
             {
                 x.id = id;
+                return false;
+            }
+
+            bool operator()(ast::primary_expr& x) const
+            {
+                if (ast::detail::tagged_id(x) <= 0)
+                {
+                    x.id = id;
+                    return true;
+                }
+                return false;
+            }
+
+            bool operator()(ast::unary_expr& x) const
+            {
+                if (ast::detail::tagged_id(x) <= 0)
+                {
+                    x.id = id;
+                    return true;
+                }
+                return false;
             }
 
             template <typename T>
-            void operator()(T& x) const
+            bool operator()(T& x) const
             {
-                // no-op
+                return false;   // no-op
+            }
+
+            template <typename T>
+            bool operator()(util::recursive_wrapper<T>& x) const
+            {
+                return (*this)(x.get());
             }
         };
 
         void operator()(ast::operand& ast, Iterator pos) const
         {
             std::size_t id = iters.size();
-            iters.push_back(pos);
-            visit(set_id(id), ast);
+            if (visit(set_id(id), ast))
+            {
+                iters.push_back(pos);
+            }
         }
 
 //         void operator()(ast::variable_declaration& ast, Iterator pos) const
 //         {
-//             int id = iters.size();
+//             std::size_t id = iters.size();
 //             iters.push_back(pos);
 //             ast.lhs.id = id;
 //         }
 //
 //         void operator()(ast::assignment& ast, Iterator pos) const
 //         {
-//             int id = iters.size();
+//             std::size_t id = iters.size();
 //             iters.push_back(pos);
 //             ast.lhs.id = id;
 //         }
 //
 //         void operator()(ast::return_statement& ast, Iterator pos) const
 //         {
-//             int id = iters.size();
+//             std::size_t id = iters.size();
+//             iters.push_back(pos);
+//             ast.id = id;
+//         }
+//
+//         void operator()(ast::identifier& ast, Iterator pos) const
+//         {
+//             std::size_t id = iters.size();
 //             iters.push_back(pos);
 //             ast.id = id;
 //         }
 
+        void operator()(ast::function_call& ast, Iterator pos) const
+        {
+            if (ast.function_name.id <= 0)
+            {
+                std::size_t id = iters.size();
+                iters.push_back(pos);
+                ast.function_name.id = static_cast<std::int64_t>(id);
+            }
+        }
+
         void operator()(ast::identifier& ast, Iterator pos) const
         {
-            int id = iters.size();
+            std::size_t id = iters.size();
             iters.push_back(pos);
-            ast.id = id;
+            ast.id = static_cast<std::int64_t>(id);
         }
     };
 }}}

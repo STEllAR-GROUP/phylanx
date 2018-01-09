@@ -8,99 +8,165 @@
 
 #include <phylanx/config.hpp>
 #include <hpx/include/serialization.hpp>
+#include <hpx/include/util.hpp>
+
 #include <blaze/Math.h>
 
 #include <cstddef>
 
 namespace hpx { namespace serialization
 {
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, bool TF>
+    void load(
+        input_archive& archive, blaze::DynamicVector<T, TF>& target, unsigned)
+    {
+        // De-serialize vector
+        std::size_t count = 0UL;
+        std::size_t spacing = 0UL;
+        archive >> count >> spacing;
+
+        target.resize(count, false);
+        archive >>
+            hpx::serialization::make_array(target.data(), spacing);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    void load(input_archive& archive,
-        blaze::DynamicVector<T, blaze::columnVector>& target,
+    void load(input_archive& archive, blaze::DynamicMatrix<T, true>& target,
         unsigned)
     {
-        // De-serialize Header
-        std::size_t count_ = 0UL;
-        archive >> count_;
-        target = blaze::DynamicVector<T, blaze::columnVector>(count_);
+        // De-serialize matrix
+        std::size_t rows = 0UL;
+        std::size_t columns = 0UL;
+        std::size_t spacing = 0UL;
+        archive >> rows >> columns >> spacing;
 
-        // DeserializeVector
-        T value{};
-        std::size_t j = 0UL;
-        // NOTE: I've assumed archive >> value always returns something
-        while (j != count_) {
-            archive >> value;
-            target[j] = value;
-            ++j;
-        }
+        target.resize(rows, columns, false);
+        archive >>
+            hpx::serialization::make_array(target.data(), spacing * columns);
     }
 
     template <typename T>
-    void load(input_archive& archive,
-        blaze::DynamicMatrix<T>& target,
+    void load(input_archive& archive, blaze::DynamicMatrix<T, false>& target,
         unsigned)
     {
-        // DeserializeHeader
-        std::size_t rows_ = 0UL;
-        std::size_t columns_ = 0UL;
+        // De-serialize matrix
+        std::size_t rows = 0UL;
+        std::size_t columns = 0UL;
+        std::size_t spacing = 0UL;
+        archive >> rows >> columns >> spacing;
 
-        archive >> rows_ >> columns_;
-        target = blaze::DynamicMatrix<T>(rows_, columns_);
+        target.resize(rows, columns, false);
+        archive >>
+            hpx::serialization::make_array(target.data(), rows * spacing);
+    }
 
-        // DeserializeMatrix
-        T value{};
-        for (std::size_t i = 0UL; i < rows_; ++i)
-        {
-            std::size_t j = 0UL;
-            // NOTE: I've assumed archive >> value always returns something
-            while (j != columns_) {
-                archive >> value;
-                target(i, j) = value;
-                ++j;
-            }
-        }
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, bool AF, bool PF, bool TF>
+    void load(input_archive& archive,
+        blaze::CustomVector<T, AF, PF, TF>& target, unsigned)
+    {
+        HPX_ASSERT(false);      // shouldn't ever be called
+    }
+
+    template <typename T, bool AF, bool PF, bool SO>
+    void load(input_archive& archive,
+        blaze::CustomMatrix<T, AF, PF, SO>& target, unsigned)
+    {
+        HPX_ASSERT(false);      // shouldn't ever be called
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, bool TF>
+    void save(output_archive& archive,
+        blaze::DynamicVector<T, TF> const& target, unsigned)
+    {
+        // Serialize vector
+        std::size_t count = target.size();
+        std::size_t spacing = target.spacing();
+        archive << count << spacing;
+        archive << hpx::serialization::make_array(target.data(), spacing);
     }
 
     template <typename T>
     void save(output_archive& archive,
-        blaze::DynamicVector<T, blaze::columnVector> const& target,
-        unsigned)
+        blaze::DynamicMatrix<T, true> const& target, unsigned)
     {
-        // SerializeVector
-        archive << target.size();
-
-        // SerializeVector
-        for (std::size_t j = 0UL; j < target.size(); ++j)
-        {
-            archive << target[j];
-        }
+        // Serialize matrix
+        std::size_t rows = target.rows();
+        std::size_t columns = target.columns();
+        std::size_t spacing = target.spacing();
+        archive << rows << columns << spacing;
+        archive << hpx::serialization::make_array(
+            target.data(), spacing * columns);
     }
 
     template <typename T>
     void save(output_archive& archive,
-        blaze::DynamicMatrix<T> const& target,
-        unsigned)
+        blaze::DynamicMatrix<T, false> const& target, unsigned)
     {
-        // Serialize header
-        archive << target.rows() << target.columns();
-
-        // SerializeMatrix
-        for (std::size_t i = 0UL; i < target.rows(); ++i)
-        {
-            for (std::size_t j = 0UL; j < target.columns(); ++j)
-            {
-                archive << target(i, j);
-            }
-        }
+        // Serialize matrix
+        std::size_t rows = target.rows();
+        std::size_t columns = target.columns();
+        std::size_t spacing = target.spacing();
+        archive << rows << columns << spacing;
+        archive << hpx::serialization::make_array(
+            target.data(), rows * spacing);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, bool AF, bool PF, bool TF>
+    void save(output_archive& archive,
+        blaze::CustomVector<T, AF, PF, TF> const& target, unsigned)
+    {
+        // Serialize vector
+        std::size_t count = target.size();
+        std::size_t spacing = target.spacing();
+        archive << count << spacing;
+        archive << hpx::serialization::make_array(target.data(), spacing);
+    }
+
+    template <typename T, bool AF, bool PF>
+    void save(output_archive& archive,
+        blaze::CustomMatrix<T, AF, PF, true> const& target, unsigned)
+    {
+        // Serialize matrix
+        std::size_t rows = target.rows();
+        std::size_t columns = target.columns();
+        std::size_t spacing = target.spacing();
+        archive << rows << columns << spacing;
+        archive << hpx::serialization::make_array(
+            target.data(), spacing * columns);
+    }
+
+    template <typename T, bool AF, bool PF>
+    void save(output_archive& archive,
+        blaze::CustomMatrix<T, AF, PF, false> const& target, unsigned)
+    {
+        // Serialize matrix
+        std::size_t rows = target.rows();
+        std::size_t columns = target.columns();
+        std::size_t spacing = target.spacing();
+        archive << rows << columns << spacing;
+        archive << hpx::serialization::make_array(
+            target.data(), rows * spacing);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T>),
-        (blaze::DynamicVector<T, blaze::columnVector>));
+        (template <typename T, bool TF>), (blaze::DynamicVector<T, TF>));
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T>),
-        (blaze::DynamicMatrix<T>));
+        (template <typename T, bool SO>), (blaze::DynamicMatrix<T, SO>));
+
+    HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
+        (template <typename T, bool AF, bool PF, bool TF>),
+        (blaze::CustomVector<T, AF, PF, TF>));
+
+    HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
+        (template <typename T, bool AF, bool PF, bool SO>),
+        (blaze::CustomMatrix<T, AF, PF, SO>));
 }}
 
 #endif

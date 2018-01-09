@@ -494,7 +494,11 @@ PYBIND11_MODULE(_phylanx, m)
 
     ///////////////////////////////////////////////////////////////////////////
     // phylanx::ast::generate_ast()
-    ast.def("generate_ast", &phylanx::ast::generate_ast,
+    ast.def("generate_ast",
+            [](std::string const& code)
+            {
+                return phylanx::ast::generate_ast(code);
+            },
         "generate an AST from the given expression string");
 
     // phylanx::ast::traverse()

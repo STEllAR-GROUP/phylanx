@@ -131,11 +131,87 @@ void test_row_slicing_operation_2d()
               phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_row_slicing_operation_2d_negative_index()
+{
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(90UL, 101UL);
+
+    phylanx::execution_tree::primitive input_matrix =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(m1));
+
+    phylanx::execution_tree::primitive row_start =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(-5.0));
+
+    phylanx::execution_tree::primitive row_stop =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(-2.0));
+
+    phylanx::execution_tree::primitive slice =
+            hpx::new_<phylanx::execution_tree::primitives::row_slicing_operation>(
+                    hpx::find_here(),
+                    std::vector<phylanx::execution_tree::primitive_argument_type>{
+                            std::move(input_matrix), std::move(row_start),
+                            std::move(row_stop)
+                    });
+
+
+    auto sm = blaze::submatrix(m1, 85, 0, 3, 101);
+    auto expected = sm;
+
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+            slice.eval();
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+                phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_row_slicing_operation_2d_single_slice_negative_index()
+{
+    blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+    blaze::DynamicMatrix<double> m1 = gen.generate(90UL, 101UL);
+
+    phylanx::execution_tree::primitive input_matrix =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(m1));
+
+    phylanx::execution_tree::primitive row_start =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(-5.0));
+
+    phylanx::execution_tree::primitive row_stop =
+            hpx::new_<phylanx::execution_tree::primitives::variable>(
+                    hpx::find_here(), phylanx::ir::node_data<double>(-4.0));
+
+    phylanx::execution_tree::primitive slice =
+            hpx::new_<phylanx::execution_tree::primitives::row_slicing_operation>(
+                    hpx::find_here(),
+                    std::vector<phylanx::execution_tree::primitive_argument_type>{
+                            std::move(input_matrix), std::move(row_start),
+                            std::move(row_stop)
+                    });
+
+
+    auto sm = blaze::submatrix(m1, 85, 0, 1, 101);
+    auto expected = blaze::trans(blaze::row(sm, 0));
+
+    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+            slice.eval();
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+                phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+
 int main(int argc, char* argv[])
 {
   test_row_slicing_operation_0d();
   test_row_slicing_operation_1d();
   test_row_slicing_operation_2d();
+
+  test_row_slicing_operation_2d_negative_index();
+  test_row_slicing_operation_2d_single_slice_negative_index();
 
   return hpx::util::report_errors();
 }

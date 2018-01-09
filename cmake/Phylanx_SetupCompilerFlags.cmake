@@ -37,7 +37,7 @@ macro(phylanx_setup_compiler_flags)
 
       # Exceptions
       phylanx_add_target_compile_option(-EHsc)
-      if(MSVC14)
+      if(NOT (${MSVC_VERSION} LESS 1900))
         # assume conforming (throwing) operator new implementations
         phylanx_add_target_compile_option(/Zc:throwingNew)
 

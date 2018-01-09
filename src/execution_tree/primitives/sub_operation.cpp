@@ -235,6 +235,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }));
             }
 
+            primitive_result_type sub1d2d(operands_type&& ops) const
+            {
+                if (ops.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub1d2d",
+                        "the sub_operation primitive can sub a vector "
+                        "from a matrix only if there are exactly 2 operands");
+                }
+
+                if (ops[0].vector().size() != ops[1].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub1d2d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < ops[1].matrix().rows(); ++i)
+                {
+                    blaze::row(ops[1].matrix(), i) =
+                        blaze::trans(ops[0].vector()) -
+                        blaze::row(ops[1].matrix(), i);
+                }
+
+                return primitive_result_type(std::move(ops[1]));
+            }
+
             primitive_result_type sub1d(operands_type && ops) const
             {
                 std::size_t rhs_dims = ops[1].num_dimensions();
@@ -247,7 +274,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return sub1d1d(std::move(ops));
 
-                case 2: HPX_FALLTHROUGH;
+                case 2:
+                    return sub1d2d(std::move(ops));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub1d",
@@ -268,6 +296,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 ops[0].matrix() =
                     blaze::map(ops[0].matrix(), subnd0d_simd(ops[1].scalar()));
+                return primitive_result_type(std::move(ops[0]));
+            }
+
+            primitive_result_type sub2d1d(operands_type&& ops) const
+            {
+                if (ops.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub2d1d",
+                        "the sub_operation primitive can sub a vector "
+                        "from a matrix only if there are exactly 2 operands");
+                }
+
+                if (ops[1].vector().size() != ops[0].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::sub2d1d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < ops[0].matrix().rows(); ++i)
+                {
+                    blaze::row(ops[0].matrix(), i) -=
+                        blaze::trans(ops[1].vector());
+                }
+
                 return primitive_result_type(std::move(ops[0]));
             }
 
@@ -313,7 +367,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return sub2d2d(std::move(ops));
 
-                case 1: HPX_FALLTHROUGH;
+                case 1:
+                    return sub2d1d(std::move(ops));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "sub_operation::sub2d",

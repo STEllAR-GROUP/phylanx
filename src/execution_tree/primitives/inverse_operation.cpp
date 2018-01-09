@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,6 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/inverse_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/blaze.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
@@ -114,9 +113,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "matrices to inverse have to be quadratic");
                 }
 
-                using matrix_type = blaze::DynamicMatrix<double>;
-
-                blaze::invert(ops[0].matrix());
+                if (ops[0].is_ref())
+                {
+                    ops[0] = blaze::inv(ops[0].matrix());
+                }
+                else
+                {
+                    blaze::invert(ops[0].matrix_non_ref());
+                }
                 return std::move(ops[0]);
             }
         };

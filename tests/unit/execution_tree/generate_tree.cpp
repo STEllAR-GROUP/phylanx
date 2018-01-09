@@ -17,7 +17,7 @@ void test_generate_tree(
     phylanx::execution_tree::compiler::function_list snippets;
 
     phylanx::execution_tree::compile(variables, snippets, env);
-    for (auto& f : snippets) f();     // bind variables
+    for (auto& f : snippets.defines_) f();     // bind variables
 
     auto f = phylanx::execution_tree::compile(exprstr, snippets, env);
 
@@ -35,7 +35,7 @@ void test_generate_tree(
     phylanx::execution_tree::compiler::function_list snippets;
 
     phylanx::execution_tree::compile(variables, snippets, env);
-    for (auto& f : snippets) f();     // bind variables
+    for (auto& f : snippets.defines_) f();     // bind variables
 
     auto f = phylanx::execution_tree::compile(exprstr, snippets, env);
 
@@ -52,7 +52,7 @@ void test_generate_tree_nil(std::string const& exprstr, char const* variables)
     phylanx::execution_tree::compiler::function_list snippets;
 
     phylanx::execution_tree::compile(variables, snippets, env);
-    for (auto& f : snippets) f();     // bind variables
+    for (auto& f : snippets.defines_) f();     // bind variables
 
     auto f = phylanx::execution_tree::compile(exprstr, snippets, env);
 
@@ -196,11 +196,11 @@ void test_store_primitive()
         define(D, 42.0)
     )";
 
-    test_generate_tree("store(C, A)", variables, 41.0);
-    test_generate_tree("store(C, A + B)", variables, 42.0);
+    test_generate_tree_nil("store(C, A)", variables);
+    test_generate_tree_nil("store(C, A + B)", variables);
 
     test_generate_tree("block(store(B, constant(0, A)), B)", variables, 0.0);
-    test_generate_tree("store(D, 0)", variables, 0.0);
+    test_generate_tree_nil("store(D, 0)", variables);
 }
 
 void test_complex_expression()
