@@ -68,6 +68,7 @@ namespace phylanx { namespace ast { namespace parser
             ("-", ast::optoken::op_minus)
             ("*", ast::optoken::op_times)
             ("/", ast::optoken::op_divide)
+            ("%", ast::optoken::op_mod)
             ;
 
         unary_op.add
@@ -125,7 +126,7 @@ namespace phylanx { namespace ast { namespace parser
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
             ;
 
-        string = '"' > raw[lexeme[+(char_ - '"')]] > '"'
+        string = lexeme['"' > raw[*(char_ - '"')] > '"']
             ;
 
         ///////////////////////////////////////////////////////////////////////
