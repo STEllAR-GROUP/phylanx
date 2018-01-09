@@ -9,7 +9,7 @@
 
 #include <phylanx/config.hpp>
 
-#if defined(_MSC_VER) && _MSC_VER >= 1912
+#if defined(_MSC_VER) && _MSC_VER >= 1912 && defined(_HAS_CXX17) && (_HAS_CXX17 != 0)
 #include <variant>
 #else
 #include <phylanx/util/detail/variant.hpp>
@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace util
 {
-#if defined(_MSC_VER) && _MSC_VER >= 1912
+#if defined(_MSC_VER) && _MSC_VER >= 1912 && defined(_HAS_CXX17) && (_HAS_CXX17 != 0)
     using std::variant;
     using std::monostate;
 

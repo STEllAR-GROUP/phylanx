@@ -13,6 +13,7 @@
 
 #include <hpx/include/components.hpp>
 
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -39,6 +40,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_result_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
         void store(primitive_result_type const& val) override;
+
+    protected:
+        std::string extract_function_name() const;
 
     private:
         primitive_argument_type body_;

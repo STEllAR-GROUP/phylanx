@@ -59,7 +59,6 @@
     <Type Name="phylanx::ast::unary_expr">
         <DisplayString>{operator_}, {operand_}</DisplayString>
         <Expand>
-            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
             <Item Name="[operator]">operator_</Item>
             <Item Name="[operand]">operand_</Item>
         </Expand>

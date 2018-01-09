@@ -98,7 +98,7 @@ namespace phylanx { namespace ast { namespace parser
                 strict_double
             |   function_call
             |   list
-            |   as<ast::identifier>()[identifier]
+            |   identifier
             |   bool_
             |   long_long
             |   string
@@ -106,7 +106,7 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
         function_call =
-                (identifier >> '(')
+                (identifier_name >> '(')
             >   argument_list
             >   ')'
             ;
@@ -119,7 +119,9 @@ namespace phylanx { namespace ast { namespace parser
 
         argument_list = -(expr % ',');
 
-        identifier =
+        identifier = as<ast::identifier>()[identifier_name];
+
+        identifier_name =
                 !lexeme[keywords >> !(alnum | '_')]
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
             ;
@@ -133,6 +135,7 @@ namespace phylanx { namespace ast { namespace parser
             (expr)
             (unary_expr)
             (primary_expr)
+            (list)
             (function_call)
             (argument_list)
             (identifier)
@@ -146,8 +149,12 @@ namespace phylanx { namespace ast { namespace parser
             expr, error_handler_function(error_handler)(error_msg, _4, _3));
 
         ///////////////////////////////////////////////////////////////////////
-        // Annotation: on success in primary_expr, call annotation.
-        on_success(primary_expr,
+        // On success in identifier/function_call/unary_expr, call annotation.
+        on_success(unary_expr,
+            annotation_function(error_handler.iters)(_val, _1));
+        on_success(function_call,
+            annotation_function(error_handler.iters)(_val, _1));
+        on_success(identifier,
             annotation_function(error_handler.iters)(_val, _1));
     }
 }}}

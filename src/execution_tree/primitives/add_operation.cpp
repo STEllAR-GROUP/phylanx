@@ -209,6 +209,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }));
             }
 
+            primitive_result_type add1d2d(args_type&& args) const
+            {
+                if (args.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_operation::add1d2d",
+                        "the add_operation primitive can add a vector "
+                        "to a matrix only if there are exactly 2 operands");
+                }
+
+                if (args[0].vector().size() != args[1].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_operation::add1d2d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < args[1].matrix().rows(); ++i)
+                {
+                    blaze::row(args[1].matrix(), i) += blaze::trans(args[0].vector());
+                }
+
+                return primitive_result_type(std::move(args[1]));
+            }
+
             primitive_result_type add1d(args_type && args) const
             {
                 std::size_t rhs_dims = args[1].num_dimensions();
@@ -221,7 +246,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return add1d1d(std::move(args));
 
-                case 2: HPX_FALLTHROUGH;
+                case 2:
+                    return add1d2d(std::move(args));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add1d",
@@ -242,6 +268,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 args[0].matrix() =
                     blaze::map(args[0].matrix(), add_simd(args[1].scalar()));
+                return primitive_result_type(std::move(args[0]));
+            }
+
+            primitive_result_type add2d1d(args_type&& args) const
+            {
+                if (args.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_operation::add2d1d",
+                        "the add_operation primitive can add a vector "
+                        "to a matrix only if there are exactly 2 operands");
+                }
+
+                if (args[1].vector().size() != args[0].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_operation::add2d1d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < args[0].matrix().rows(); ++i)
+                {
+                    blaze::row(args[0].matrix(), i) += blaze::trans(args[1].vector());
+                }
+
                 return primitive_result_type(std::move(args[0]));
             }
 
@@ -288,7 +339,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return add2d2d(std::move(args));
 
-                case 1: HPX_FALLTHROUGH;
+                case 1:
+                    return add2d1d(std::move(args));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add2d",

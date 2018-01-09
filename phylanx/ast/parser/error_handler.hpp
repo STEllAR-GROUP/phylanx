@@ -20,22 +20,17 @@ namespace phylanx { namespace ast { namespace parser
     template <typename Iterator>
     struct error_handler
     {
-        template <typename, typename, typename>
-        struct result
-        {
-            typedef void type;
-        };
-
-        error_handler(Iterator first, Iterator last, std::ostream& ostr)
+        error_handler(Iterator first, Iterator last, std::ostream& ostr,
+                std::vector<Iterator>& iterators)
           : first(first)
           , last(last)
           , out(ostr)
+          , iters(iterators)
         {
         }
 
         template <typename Message, typename What>
-        void operator()(Message const& message,
-            What const& what,
+        void operator()(Message const& message, What const& what,
             Iterator err_pos) const
         {
             int line;
@@ -93,7 +88,7 @@ namespace phylanx { namespace ast { namespace parser
         Iterator first;
         Iterator last;
         std::ostream& out;
-        std::vector<Iterator> iters;
+        std::vector<Iterator>& iters;
     };
 }}}
 

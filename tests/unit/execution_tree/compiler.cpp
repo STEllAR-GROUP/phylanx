@@ -21,13 +21,13 @@ void test_builtin_environment()
 
     // add a variable 'x = 41.0'
     auto create_var = phylanx::execution_tree::compiler::primitive_variable{here};
-    auto varx = create_var(phylanx::ir::node_data<double>{41.0});
+    auto varx = create_var(phylanx::ir::node_data<double>{41.0}, "x");
     env.define("x", phylanx::execution_tree::compiler::external_function{varx});
 
     // extract factory for compiling variables
     phylanx::execution_tree::compiler::compiled_function* cfx = env.find("x");
     HPX_TEST(cfx != nullptr);
-    auto def = (*cfx)(phylanx::execution_tree::compiler::function_list{});
+    auto def = (*cfx)(std::list<phylanx::execution_tree::compiler::function>{}, "x");
 
     // invoking the factory function actually creates and binds the variable
     auto x = def();
@@ -49,8 +49,8 @@ void test_builtin_environment_vars()
     // add two variables, 'x' and 'y'
     auto create_var = phylanx::execution_tree::compiler::primitive_variable{here};
 
-    auto varx = create_var(phylanx::ir::node_data<double>{41.0});
-    auto vary = create_var(phylanx::ir::node_data<double>{1.0});
+    auto varx = create_var(phylanx::ir::node_data<double>{41.0}, "x");
+    auto vary = create_var(phylanx::ir::node_data<double>{1.0}, "y");
 
     env.define("x", phylanx::execution_tree::compiler::external_function{varx});
     env.define("y", phylanx::execution_tree::compiler::external_function{vary});
@@ -65,13 +65,15 @@ void test_builtin_environment_vars()
     phylanx::execution_tree::compiler::compiled_function* cfy = env.find("y");
     HPX_TEST(cfy != nullptr);
 
-    auto defx = (*cfx)(phylanx::execution_tree::compiler::function_list{});
-    auto defy = (*cfy)(phylanx::execution_tree::compiler::function_list{});
+    std::list<phylanx::execution_tree::compiler::function> funcs;
+    auto defx = (*cfx)(funcs, "x");
+    auto defy = (*cfy)(funcs, "y");
 
     // invoking the factory functions defx and defy actually creates and binds
     // the variables
     auto add = (*cfadd)(
-        phylanx::execution_tree::compiler::function_list{defx(), defy()});
+        std::list<phylanx::execution_tree::compiler::function>{defx(), defy()},
+        "add");
 
     // invoke '+' primitive
     HPX_TEST_EQ(42.0, phylanx::execution_tree::extract_numeric_value(add())[0]);
@@ -90,8 +92,8 @@ void test_builtin_environment_vars_lazy()
     // add two variables, 'x' and 'y'
     auto create_var = phylanx::execution_tree::compiler::primitive_variable{here};
 
-    auto varx = create_var(phylanx::ir::node_data<double>{41.0});
-    auto vary = create_var(phylanx::ir::node_data<double>{1.0});
+    auto varx = create_var(phylanx::ir::node_data<double>{41.0}, "x");
+    auto vary = create_var(phylanx::ir::node_data<double>{1.0}, "y");
 
     env.define("x", phylanx::execution_tree::compiler::external_function{varx});
     env.define("y", phylanx::execution_tree::compiler::external_function{vary});
@@ -106,10 +108,11 @@ void test_builtin_environment_vars_lazy()
     phylanx::execution_tree::compiler::compiled_function* cfy = env.find("y");
     HPX_TEST(cfy != nullptr);
 
-    auto defx = (*cfx)(phylanx::execution_tree::compiler::function_list{});
-    auto defy = (*cfy)(phylanx::execution_tree::compiler::function_list{});
+    std::list<phylanx::execution_tree::compiler::function> funcs;
+    auto defx = (*cfx)(funcs, "x");
+    auto defy = (*cfy)(funcs, "y");
 
-    auto add = (*cfadd)(phylanx::execution_tree::compiler::function_list{});
+    auto add = (*cfadd)(funcs, "add");
 
     // invoking the factory functions defx and defy actually creates and binds
     // the variables

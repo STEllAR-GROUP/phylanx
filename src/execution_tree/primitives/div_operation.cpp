@@ -264,6 +264,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }));
             }
 
+            primitive_result_type div1d2d(operands_type&& ops) const
+            {
+                if (ops.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "div_operation::div1d2d",
+                        "the div_operation primitive can divide a vector "
+                        "to a matrix only if there are exactly 2 operands");
+                }
+
+                if (ops[0].vector().size() != ops[1].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "div_operation::div1d2d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < ops[1].matrix().rows(); ++i)
+                {
+                    blaze::row(ops[1].matrix(), i) =
+                        blaze::trans(ops[0].vector()) /
+                        blaze::row(ops[1].matrix(), i);
+                }
+
+                return primitive_result_type(std::move(ops[1]));
+            }
+
             primitive_result_type div1d(operands_type && ops) const
             {
                 std::size_t rhs_dims = ops[1].num_dimensions();
@@ -276,7 +303,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return div1d1d(std::move(ops));
 
-                case 2: HPX_FALLTHROUGH;
+                case 2:
+                    return div1d2d(std::move(ops));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d",
@@ -299,6 +327,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_result_type(std::move(ops[0]));
             }
 
+            primitive_result_type div2d1d(operands_type&& ops) const
+            {
+                if (ops.size() != 2)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "div_operation::div2d1d",
+                        "the div_operation primitive can divide a matrix "
+                        "to a vector only if there are exactly 2 operands");
+                }
+
+                if (ops[1].vector().size() != ops[0].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "div_operation::div1d2d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < ops[0].matrix().rows(); ++i)
+                {
+                    blaze::row(ops[0].matrix(), i) /=
+                        blaze::trans(ops[1].vector());
+                }
+
+                return primitive_result_type(std::move(ops[0]));
+            }
+
             primitive_result_type div2d2d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
@@ -316,10 +370,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (ops.size() == 2)
                 {
-                    lhs.matrix() = blaze::map(
-                            lhs.matrix(),
-                            rhs.matrix(),
-                            [](double x1, double x2) { return x1 / x2; });
+                    lhs.matrix() =
+                        blaze::map(lhs.matrix(), rhs.matrix(), divndnd_simd());
                     return primitive_result_type(std::move(lhs));
                 }
 
@@ -345,7 +397,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 2:
                     return div2d2d(std::move(ops));
 
-                case 1: HPX_FALLTHROUGH;
+                case 1:
+                    return div2d1d(std::move(ops));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div2d",
