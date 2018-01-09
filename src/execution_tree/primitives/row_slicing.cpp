@@ -115,16 +115,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 using storage1d_type = typename arg_type::storage1d_type;
                 using storage2d_type = typename arg_type::storage2d_type;
 
+                auto arg0 = args[0].matrix();
+
                 if (row_start < 0 && row_stop <= 0)
                 {
-                    auto num_rows = args[0].matrix().rows();
+                    auto num_rows = arg0.rows();
 
                     // return a vector and not a matrix if the slice contains
                     // exactly one row
                     if (row_stop - row_start == 1)
                     {
                         auto sv = blaze::trans(blaze::row(
-                            blaze::submatrix(args[0].matrix(),
+                            blaze::submatrix(arg0,
                                 num_rows + row_start, 0,
                                 1, num_matrix_cols),
                             0));
@@ -133,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return ir::node_data<double>{std::move(v)};
                     }
 
-                    auto sm = blaze::submatrix(args[0].matrix(),
+                    auto sm = blaze::submatrix(arg0,
                         num_rows + row_start, 0,
                         -row_start + row_stop, num_matrix_cols);
 
@@ -146,7 +148,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (row_stop - row_start == 1)
                 {
                     auto sv = blaze::trans(blaze::row(
-                        blaze::submatrix(args[0].matrix(),
+                        blaze::submatrix(arg0,
                             row_start, 0,
                             1, num_matrix_cols),
                         0));
@@ -155,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return ir::node_data<double>{std::move(v)};
                 }
 
-                auto sm = blaze::submatrix(args[0].matrix(),
+                auto sm = blaze::submatrix(arg0,
                     row_start, 0,
                     row_stop - row_start, num_matrix_cols);
 

@@ -100,19 +100,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 using storage1d_type = typename arg_type::storage1d_type;
+
+                auto arg0 = args[0].vector();
+
                 if (col_start < 0 && col_stop <= 0)    // slice from the end
                 {
-                    auto size = args[0].vector().size();
-
-                    auto sv = blaze::subvector(args[0].vector(),
-                        size + col_start, -col_start + col_stop);
+                    auto sv = blaze::subvector(
+                        arg0, arg0.size() + col_start, -col_start + col_stop);
 
                     storage1d_type v{sv};
                     return ir::node_data<double>{std::move(v)};
                 }
 
-                auto sv = blaze::subvector(
-                    args[0].vector(), col_start, col_stop - col_start);
+                auto sv =
+                    blaze::subvector(arg0, col_start, col_stop - col_start);
 
                 storage1d_type v{sv};
                 return ir::node_data<double>{std::move(v)};
@@ -176,17 +177,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 using storage1d_type = typename arg_type::storage1d_type;
                 using storage2d_type = typename arg_type::storage2d_type;
 
+                auto arg0 = args[0].matrix();
+
                 if (col_start < 0 && col_stop <= 0 && row_start >= 0 &&
                     row_stop > 0)    //column slice from the end
                 {
-                    auto num_cols = args[0].matrix().columns();
+                    auto num_cols = arg0.columns();
 
                     // return a vector and not a matrix if the slice contains
                     // exactly one row/column
                     if (row_stop - row_start == 1)
                     {
                         auto sv = blaze::trans(blaze::row(
-                            blaze::submatrix(args[0].matrix(),
+                            blaze::submatrix(arg0,
                                 row_start, num_cols + col_start,
                                 1, -col_start + col_stop),
                             0));
@@ -197,7 +200,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (col_stop - col_start == 1)
                     {
                         auto sv = blaze::column(
-                            blaze::submatrix(args[0].matrix(),
+                            blaze::submatrix(arg0,
                                 row_start, num_cols + col_start,
                                 row_stop - row_start, 1),
                             0);
@@ -206,7 +209,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return ir::node_data<double>{std::move(v)};
                     }
 
-                    auto sm = blaze::submatrix(args[0].matrix(),
+                    auto sm = blaze::submatrix(arg0,
                         row_start, num_cols + col_start,
                         row_stop - row_start, -col_start + col_stop);
 
@@ -217,14 +220,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (row_start < 0 && row_stop <= 0 && col_start >= 0 &&
                     col_stop > 0)    // row slice from the end
                 {
-                    auto num_rows = args[0].matrix().rows();
+                    auto num_rows = arg0.rows();
 
                     // return a vector and not a matrix if the slice contains
                     // exactly one row/column
                     if (row_stop - row_start == 1)
                     {
                         auto sv = blaze::trans(blaze::row(
-                            blaze::submatrix(args[0].matrix(),
+                            blaze::submatrix(arg0,
                                 num_rows + row_start, col_start,
                                 1, col_stop - col_start),
                             0));
@@ -235,7 +238,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (col_stop - col_start == 1)
                     {
                         auto sv = blaze::column(
-                            blaze::submatrix(args[0].matrix(),
+                            blaze::submatrix(arg0,
                                 num_rows + row_start, col_start,
                                 -row_start + row_stop, 1),
                             0);
@@ -244,7 +247,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return ir::node_data<double>{std::move(v)};
                     }
 
-                    auto sm = blaze::submatrix(args[0].matrix(),
+                    auto sm = blaze::submatrix(arg0,
                         num_rows + row_start, col_start,
                         -row_start + row_stop, col_stop - col_start);
 
@@ -255,15 +258,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (row_start < 0 && row_stop <= 0 && col_start < 0 &&
                     col_stop <= 0)    // row and column , both, slice from end
                 {
-                    auto num_rows = args[0].matrix().rows();
-                    auto num_cols = args[0].matrix().columns();
+                    auto num_rows = arg0.rows();
+                    auto num_cols = arg0.columns();
 
                     // return a vector and not a matrix if the slice contains
                     // exactly one row/column
                     if (row_stop - row_start == 1)
                     {
                         auto sv = blaze::trans(blaze::row(
-                            blaze::submatrix(args[0].matrix(),
+                            blaze::submatrix(arg0,
                                 num_rows + row_start, num_cols + col_start,
                                 1, -col_start + col_stop),
                             0));
@@ -274,7 +277,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (col_stop - col_start == 1)
                     {
                         auto sv = blaze::column(
-                            blaze::submatrix(args[0].matrix(),
+                            blaze::submatrix(arg0,
                                 num_rows + row_start, num_cols + col_start,
                                 -row_start + row_stop, 1),
                             0);
@@ -283,7 +286,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return ir::node_data<double>{std::move(v)};
                     }
 
-                    auto sm = blaze::submatrix(args[0].matrix(),
+                    auto sm = blaze::submatrix(arg0,
                         num_rows + row_start, num_cols + col_start,
                         -row_start + row_stop, -col_start + col_stop);
 
@@ -296,7 +299,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (row_stop - row_start == 1)
                 {
                     auto sv = blaze::trans(blaze::row(
-                        blaze::submatrix(args[0].matrix(),
+                        blaze::submatrix(arg0,
                             row_start, col_start,
                             1, col_stop - col_start),
                         0));
@@ -307,7 +310,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (col_stop - col_start == 1)
                 {
                     auto sv = blaze::column(
-                        blaze::submatrix(args[0].matrix(),
+                        blaze::submatrix(arg0,
                             row_start, col_start,
                             row_stop - row_start, 1),
                         0);
@@ -316,7 +319,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return ir::node_data<double>{std::move(v)};
                 }
 
-                auto sm = blaze::submatrix(args[0].matrix(),
+                auto sm = blaze::submatrix(arg0,
                     row_start, col_start,
                     row_stop - row_start, col_stop - col_start);
 
