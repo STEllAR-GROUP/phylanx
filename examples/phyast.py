@@ -79,6 +79,7 @@ class Recompiler:
     def __init__(self):
         self.defs = {}
         self.priority = 0
+        self.groupAggressively = True
     def recompile(self,a,allowreturn=False):
       nm = a.__class__.__name__
       if nm == "Num":
@@ -147,7 +148,7 @@ class Recompiler:
           term1 = self.recompile(args[0])
           self.priority = priority
           term2 = self.recompile(args[2])
-          if priority < save:
+          if priority < save or self.groupAggressively:
             s += "(" + term1 + op + term2 + ")"
           else:
             s += term1 + op + term2
@@ -205,24 +206,32 @@ class Recompiler:
       elif nm == "If":
           s = "if("+self.recompile(a.test)+","
           if len(a.body)>1:
-              tw = "block("
-              for aa in a.body:
-                  s += tw
-                  tw = ","
-                  s += self.recompile(aa)
+              s += "block("
+              for j in range(len(a.body)):
+                  aa = a.body[j]
+                  if j > 0:
+                      s += ","
+                  if j + 1 == len(a.body):
+                      s += self.recompile(aa,allowreturn)
+                  else:
+                      s += self.recompile(aa)
               s += ")"
           else:
-              s += self.recompile(a.body[0])
+              s += self.recompile(a.body[0],allowreturn)
           s += ","
           if len(a.orelse)>1:
-              tw = "block("
-              for aa in a.orelse:
-                  s += tw
-                  tw = ","
-                  s += self.recompile(aa)
+              s += "block("
+              for j in range(len(a.orelse)):
+                  aa = a.orelse[j]
+                  if j > 0:
+                      s += ","
+                  if j + 1 == len(a.orelse):
+                      s += self.recompile(aa,allowreturn)
+                  else:
+                      s += self.recompile(aa)
               s += ")"
           else:
-              s += self.recompile(a.orelse[0])
+              s += self.recompile(a.orelse[0],allowreturn)
           s += ")"
           return s
       elif nm == "Compare":
@@ -245,8 +254,12 @@ class Recompiler:
       elif nm == "UnaryOp":
           args = [arg for arg in ast.iter_child_nodes(a)]
           nm2 = args[0].__class__.__name__
+          nm3 = args[1].__class__.__name__
           if nm2 == "USub":
-            return "-(" + self.recompile(args[1])+")"
+            if nm3 == "BinOp" or self.groupAggressively:
+                return "-(" + self.recompile(args[1])+")"
+            else:
+                return "-" + self.recompile(args[1])
           else:
             raise Exception(nm2)
       else:
@@ -343,6 +356,16 @@ print("fib(10)=",end="")
 phy_print(fib(10))
 
 @phylanx
+def fib2(n):
+    if n < 2:
+        return n
+    else:
+        return fib2(n-1)+fib2(n-2)
+
+print("fib2(10)=",end="")
+phy_print(fib2(10))
+
+@phylanx
 def twof(a):
     if a < 2:
         print("a less than 2")
@@ -361,7 +384,7 @@ for i in range(1,4):
 
 @phylanx
 def cexpr(a,b):
-    return a+ -b +3+4*(a-b%4)
+    return a+ -b +3+4*(a-b*4)
 
 one = et.phylisp_eval("1")
 #phy_print(cexpr(one,one))
