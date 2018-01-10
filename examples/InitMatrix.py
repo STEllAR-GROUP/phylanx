@@ -2,49 +2,50 @@ import phylanx
 et = phylanx.execution_tree
 
 def phy_print(m):
-  ndim = m.num_dimensions()
-  if ndim==1:
-    for i in range(m.dimension(0)):
-      print(m.get(i))
-  elif ndim==2:
-    for i in range(m.dimension(0)):
-      for j in range(m.dimension(1)):
-        print("%10.2f" % m.get(i,j),end=" ")
-        if j > 5:
-            print("...",end=" ")
-            break
-      print()
-      if i > 5:
-        print("%10s" % "...")
-        break
-  elif ndim==0:
-    print(m.get(0))
-  else:
-    print("ndim=",ndim)
+    ndim = m.num_dimensions()
+    if ndim == 1:
+        for i in range(m.dimension(0)):
+            print(m.get(i))
+    elif ndim == 2:
+        for i in range(m.dimension(0)):
+            for j in range(m.dimension(1)):
+                print("%10.2f" % m.get(i, j), end=" ")
+                if j > 5:
+                    print("...", end=" ")
+                    break
+            print()
+            if i > 5:
+                print("%10s" % "...")
+                break
+    elif ndim == 0:
+        print(m.get(0))
+    else:
+        print("ndim=", ndim)
+
 
 # Create a vector of zeros
 vz = et.zeros(10)
 
 phy_print(vz)
 
-mz = et.zeros(3,4)
+mz = et.zeros(3, 4)
 
 phy_print(mz)
 
-v = et.linspace(2.0,3.4,5)
+v = et.linspace(2.0, 3.4, 5)
 
 phy_print(v)
 
-m = et.linearmatrix(3,4,9.0,1.2,.3)
+m = et.linearmatrix(3, 4, 9.0, 1.2, .3)
 
 phy_print(m)
 
 print("Breast Cancer")
 
-m = et.file_read_csv("./examples/algorithms/breast_cancer.csv")
+m = et.file_read_csv("./algorithms/breast_cancer.csv")
 print(m)
 phy_print(m)
-phy_print(et.slice(m,0,3,0,3));
+phy_print(et.slice(m, 0, 3, 0, 3))
 three = et.phylisp_eval("3")
 four = et.phylisp_eval("4")
 
@@ -62,7 +63,7 @@ print(et.phylisp_eval("""
         ),
         fact(arg0)
     )""").get(0))
-print("3=",three.get(0))
+print("3=", three.get(0))
 print(et.phylisp_eval("""
     block(
         define(fact,arg0,
@@ -72,9 +73,10 @@ print(et.phylisp_eval("""
             )
         ),
         fact
-    )""",three).get(0))
-phy_print(et.phylisp_eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)",m))
-phy_print(et.phylisp_eval("block(define(addme,arg0,arg1,arg0+arg1),addme)",three,four))
+    )""", three).get(0))
+phy_print(et.phylisp_eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
+phy_print(et.phylisp_eval(
+    "block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
 et.phylisp_eval('cout("Hello ",3," - ",4.1-2.9)')
 et.phylisp_eval("""
     block(
@@ -85,3 +87,60 @@ et.phylisp_eval("""
             )
         ),
         cout(i))""")
+
+
+### TEST Primitive Operations ###
+# Create a vector of zeros
+vz = et.zeros(10)
+phy_print(vz)
+
+# Create a matrix of zeros
+mz = et.zeros(3, 4)
+phy_print(mz)
+
+v = et.linspace(2.0, 3.4, 5)
+phy_print(v)
+
+m = et.linearmatrix(3, 4, 9.0, 1.2, .3)
+phy_print(m)
+
+# Dot product
+m = et.linearmatrix(2, 2, 0, 1, 1)
+d = et.dot(m, m)
+phy_print(d)
+
+print("Breast Cancer")
+m = et.file_read_csv("./algorithms/breast_cancer.csv")
+print(m)
+phy_print(m)
+
+# Cross product
+v1 = et.linspace(1, 2, 3)
+v2 = et.linspace(-1, -2, 3)
+cross = et.cross(v1, v2)
+phy_print(cross)
+
+# Determinant
+m = et.linearmatrix(2, 2, 0, 1, 1)
+determinant = et.det(m)
+phy_print(determinant)
+
+# division
+a = et.var(42)
+b = et.var(7)
+phy_print(et.div(a, b))
+
+# exponential
+x = et.linspace(1, 4, 4)
+phy_print(et.exp(x))
+
+# inverse NOTE: returns -0.00, is this OK?
+m = et.linearmatrix(2, 2, 0, 1, 1)
+phy_print(et.inv(m))
+
+# # power
+m = et.linearmatrix(2, 2, 0, 1, 1)
+phy_print(et.power(m, et.var(2)))
+
+# subtraction
+phy_print(et.subtract(et.var(3), et.var(2)))

@@ -1,4 +1,5 @@
 //  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2018 R. Tohid
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -69,6 +70,7 @@ namespace pybind11 { namespace detail
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace bindings
 {
+
     ///////////////////////////////////////////////////////////////////////////
     // support for the traverse API
     struct traverse_helper
@@ -602,6 +604,7 @@ PYBIND11_MODULE(_phylanx, m)
                 });
         },
         "Read in the contents of a csv file");
+
     execution_tree.def("slice",
         [](phylanx::execution_tree::primitive const & obj,std::int64_t x0,std::int64_t xN,std::int64_t y0,std::int64_t yN)
         {
@@ -615,6 +618,7 @@ PYBIND11_MODULE(_phylanx, m)
                 });
         },
         "Take a slice of a 2d array");
+
     execution_tree.def("zeros",
         [](std::size_t nx)
         {
@@ -629,6 +633,7 @@ PYBIND11_MODULE(_phylanx, m)
                 });
         },
         "create a new variable from a vector of zeros");
+
     execution_tree.def("zeros",
         [](std::size_t nx,std::size_t ny)
         {
@@ -722,6 +727,195 @@ PYBIND11_MODULE(_phylanx, m)
         >,
         expression_compiler_help);
 
+    execution_tree.def("add",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto addition = primitives::add_operation{{obj1, obj2}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = addition.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+
+        },
+        "Addition of any two phylanx objects.");
+
+    execution_tree.def("and",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto and_op = primitives::and_operation{{obj1, obj2}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = and_op.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+        },
+        "Logical and operation.");
+
+    execution_tree.def("cross",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto cross = primitives::cross_operation{{obj1, obj2}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = cross.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+        },
+        "Cross product of two vectors.");
+
+    execution_tree.def("det",
+        [](phylanx::execution_tree::primitive const & obj)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto det = primitives::determinant{{obj}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = det.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+        },
+        "Compute the determinant of an array.");
+
+    execution_tree.def("div",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto division = primitives::div_operation{{obj1, obj2}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = division.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+        },
+        "Compute division.");
+
+    execution_tree.def("dot",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    auto dot_product = primitives::dot_operation{{obj1, obj2}};
+                    std::vector<primitive_argument_type> args;
+                    primitive_argument_type result = dot_product.eval(args).get();
+                    return primitive{
+                        hpx::local_new<primitives::variable>(result.variant())};
+                });
+        },
+        "Dot product.");
+
+    execution_tree.def("exp",
+        [](phylanx::execution_tree::primitive const & obj)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto exponential = primitives::exponential_operation{{obj}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = exponential.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+        },
+        "Calculate the exponentials of all elements of the array.");
+
+    execution_tree.def("inv",
+        [](phylanx::execution_tree::primitive const & obj)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto inverse = primitives::inverse_operation{{obj}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = inverse.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+        },
+        "Compute the inverse of an array.");
+
+    execution_tree.def("multiply",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    auto multiplication = primitives::mul_operation{{obj1, obj2}};
+                    std::vector<primitive_argument_type> args;
+                    primitive_argument_type result = multiplication.eval(args).get();
+                    return primitive{
+                        hpx::local_new<primitives::variable>(result.variant())};
+                });
+        },
+        "Multiplication of any two phylanx objects.");
+
+    execution_tree.def("power",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    auto power = primitives::power_operation{{obj1, obj2}};
+                    std::vector<primitive_argument_type> args;
+                    primitive_argument_type result = power.eval(args).get();
+                    return primitive{
+                        hpx::local_new<primitives::variable>(result.variant())};
+                });
+        },
+        "Raise elements of an array to the power from the second argument.");
+
+    execution_tree.def("subtract",
+        [](phylanx::execution_tree::primitive const & obj1,
+           phylanx::execution_tree::primitive const & obj2)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+            {
+                using namespace phylanx::execution_tree;
+                auto subtraction = primitives::sub_operation{{obj1, obj2}};
+                std::vector<primitive_argument_type> args;
+                primitive_argument_type result = subtraction.eval(args).get();
+                return primitive{
+                    hpx::local_new<primitives::variable>(result.variant())};
+            });
+        },
+        "Element-wise subtraction.");
+
+    execution_tree.def("transpose",
+        [](phylanx::execution_tree::primitive const & obj)
+        {
+            return hpx::threads::run_as_hpx_thread([&]()
+                {
+                    using namespace phylanx::execution_tree;
+                    auto transpose = primitives::transpose_operation{{obj}};
+                    std::vector<primitive_argument_type> args;
+                    primitive_argument_type result = transpose.eval(args).get();
+                    return primitive{
+                        hpx::local_new<primitives::variable>(result.variant())};
+                });
+        },
+        "Transpose of a matrix.");
+
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")
         .def("eval", [](phylanx::execution_tree::primitive const& p)
@@ -752,7 +946,7 @@ PYBIND11_MODULE(_phylanx, m)
                         return n[index];
                     });
             },
-            "get the value at the specified index")
+            "Get the value at the specified index")
         .def("get", [](phylanx::execution_tree::primitive const& p,int index1,int index2)
             {
                 return hpx::threads::run_as_hpx_thread(
@@ -763,7 +957,7 @@ PYBIND11_MODULE(_phylanx, m)
                         return n[indicies];
                     });
             },
-            "get the value specified by the x,y index pair")
+            "Get the value specified by the x,y index pair")
         .def("dimension", [](phylanx::execution_tree::primitive const& p,int index)
             {
                 return hpx::threads::run_as_hpx_thread(
@@ -773,7 +967,7 @@ PYBIND11_MODULE(_phylanx, m)
                         return n.dimension(index);
                     });
             },
-            "get the size of the given dimension")
+            "Get the size of the given dimension")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
             {
                 hpx::threads::run_as_hpx_thread(
