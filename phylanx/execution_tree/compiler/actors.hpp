@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <functional>
 #include <list>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -151,6 +152,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         std::size_t compile_id_;
         std::list<function> defines_;
+        std::map<std::string, std::size_t> sequence_numbers_;
     };
 
     ///////////////////////////////////////////////////////////////////////////
