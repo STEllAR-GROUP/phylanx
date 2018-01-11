@@ -5,6 +5,7 @@
 
 set(tests
   phylisp_test
+  make_array
    )
 
 foreach(test ${tests})

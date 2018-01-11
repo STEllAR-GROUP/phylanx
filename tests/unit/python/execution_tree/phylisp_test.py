@@ -1,4 +1,5 @@
 import phylanx
+from phylanx.util import phyfun
 et = phylanx.execution_tree
 
 fib10 = et.phylisp_eval("""
@@ -25,3 +26,12 @@ block(
     sum10)""")
 
 assert sum10.get(0) == 55.0
+
+@phyfun
+def fib(n):
+    if n < 2:
+        return n
+    else:
+        return fib(n-1)+fib(n-2)
+
+assert fib(10).get(0) == 55.0
