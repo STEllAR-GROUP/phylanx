@@ -5,6 +5,7 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
+from phylanx.util import *
 
 # Create a vector
 x0 = 0
@@ -59,3 +60,12 @@ assert m.dimension(1) == ny
 for i in range(nx):
     for j in range(ny):
         assert m.get(i,j) == 0
+
+m2 = [
+ [1.0,2.0,3.0],
+ [1.1,2,2,3.2],
+ [1.5,2.6,3.7]]
+m3 = et.var(m2)
+for i in range(len(m2)):
+  for j in range(len(m2[0])):
+    assert m3.get(i,j) == m2[i][j]

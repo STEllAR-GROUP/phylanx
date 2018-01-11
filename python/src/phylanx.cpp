@@ -551,7 +551,24 @@ PYBIND11_MODULE(_phylanx, m)
                     phylanx::ir::node_data<double>{d})};
             });
         },
-        "create a new variable from a floating point value");
+        "create a new variable from a vector floating point values");
+    execution_tree.def("var",
+        [](const std::vector<std::vector<double>>& d) {
+            std::size_t nx = d.size();
+            std::size_t ny = d[0].size();
+            blaze::DynamicMatrix<double> m{nx, ny};
+            for(int i=0;i<nx;i++) {
+              for(int j=0;j<ny;j++) {
+                m(i,j) = d[i][j];
+              }
+            }
+            return hpx::threads::run_as_hpx_thread([&]() {
+                using namespace phylanx::execution_tree;
+                return primitive{hpx::local_new<primitives::variable>(
+                    phylanx::ir::node_data<double>{m})};
+            });
+        },
+        "create a new variable from a matrix floating point values");
 
     execution_tree.def("linspace",
         [](double xmin, double xmax, std::size_t nx) {
