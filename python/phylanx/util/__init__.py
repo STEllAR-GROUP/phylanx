@@ -190,8 +190,10 @@ class Recompiler:
                   else:
                       s += self.recompile(aa)
               s += ")"
-          else:
+          elif len(a.orelse)==1:
               s += self.recompile(a.orelse[0],allowreturn)
+          else:
+              s += "block()"
           s += ")"
           return s
       elif nm == "Compare":
