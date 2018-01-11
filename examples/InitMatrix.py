@@ -27,17 +27,17 @@ phy_print(m)
 
 print("Breast Cancer")
 
-m = et.file_read_csv("./algorithms/breast_cancer.csv")
+m = et.file_read_csv("./breast_cancer.csv")
 print(m)
 phy_print(m)
 phy_print(et.slice(m, 0, 3, 0, 3))
-three = et.phylisp_eval("3")
-four = et.phylisp_eval("4")
+three = et.eval("3")
+four = et.eval("4")
 
 print("The answer is 42")
-print(et.phylisp_eval("block(42.0)").get(0))
-print(et.phylisp_eval("block(define(x,42),x)").get(0))
-print(et.phylisp_eval("""
+print(et.eval("block(42.0)").get(0))
+print(et.eval("block(define(x,42),x)").get(0))
+print(et.eval("""
     block(
         define(arg0,10),
         define(fact,arg0,
@@ -49,7 +49,7 @@ print(et.phylisp_eval("""
         fact(arg0)
     )""").get(0))
 print("3=", three.get(0))
-print(et.phylisp_eval("""
+print(et.eval("""
     block(
         define(fact,arg0,
             if(arg0 <= 1,
@@ -59,11 +59,11 @@ print(et.phylisp_eval("""
         ),
         fact
     )""", three).get(0))
-phy_print(et.phylisp_eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
-phy_print(et.phylisp_eval(
+phy_print(et.eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
+phy_print(et.eval(
     "block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
-et.phylisp_eval('cout("Hello ",3," - ",4.1-2.9)')
-et.phylisp_eval("""
+et.eval('cout("Hello ",3," - ",4.1-2.9)')
+et.eval("""
     block(
         define(i,0),
         while(i<10,
@@ -95,7 +95,7 @@ d = et.dot(m, m)
 phy_print(d)
 
 print("Breast Cancer")
-m = et.file_read_csv("./algorithms/breast_cancer.csv")
+m = et.file_read_csv("./breast_cancer.csv")
 print(m)
 phy_print(m)
 
