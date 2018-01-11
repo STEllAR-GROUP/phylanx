@@ -11,14 +11,14 @@ def lra(x, y, alpha, iterations, enable_output):
         gradient=constant(0.0, shape(x, 1))
         step=0
         while step < iterations:
-                if(enable_output):
+                if enable_output:
                     print("step: ", step, ", ", weights)
                 pred=1.0 / (1.0 + exp(-dot(x, weights)))
                 error=pred - y
                 gradient=dot(transx, error)
                 weights=weights - (alpha * gradient)
                 step += 1
-        weights
+        return weights
 
 
 file_name = "breast_cancer.csv"
