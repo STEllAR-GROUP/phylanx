@@ -225,6 +225,13 @@ class Recompiler:
       else:
           raise Exception(nm)
 
+def convert_to_phylanx_type(v):
+    t = type(v)
+    if t == int or t == float:
+        return et.var(v)
+    else:
+        return v
+
 # Create the decorator
 class phyfun(object):
     def __init__(self,f):
@@ -241,9 +248,5 @@ class phyfun(object):
         self.new_src = "block(" + r.recompile(tree)+')\n'
 
     def __call__(self,*args):
-        if len(args)==1:
-            return et.eval(self.new_src,args[0])
-        elif len(args)==2:
-            return et.eval(self.new_src,args[0],args[1])
-        else:
-            return et.eval(self.new_src,*args)
+        nargs = tuple(convert_to_phylanx_type(a) for a in args)
+        return et.eval(self.new_src,*nargs)

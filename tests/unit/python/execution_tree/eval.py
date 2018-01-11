@@ -13,7 +13,7 @@ block(
     define(fib,n,
     if(n<2,n,
         fib(n-1)+fib(n-2))),
-    fib)""",10)
+    fib)""",et.var(10))
 
 assert fib10.get(0) == 55.0
 
