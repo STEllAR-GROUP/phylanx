@@ -186,7 +186,6 @@ expression_compiler(std::string xexpr, Ts const&... ts)
 {
     return hpx::threads::run_as_hpx_thread([&]() {
         using namespace phylanx::execution_tree;
-        auto here = hpx::find_here();
         try
         {
             phylanx::execution_tree::compiler::function_list eval_snippets;
