@@ -25,8 +25,8 @@ file_name = "breast_cancer.csv"
 
 import numpy as np
 data = np.genfromtxt(file_name,skip_header=1,delimiter=",")
-x = data[:,0:30]
-y = data[:,30:31]
+x = data[:,:-1]
+y = data[:,-1:]
 y = y.reshape((y.shape[0],))
 res = lra(x,y,1e-5,750,0)
 phy_print(res)
