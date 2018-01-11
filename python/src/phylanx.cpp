@@ -646,55 +646,55 @@ PYBIND11_MODULE(_phylanx, m)
         "create a new variable from a matrix of zeros");
 
     execution_tree.def(
-        "phylisp_eval", expression_compiler<>, expression_compiler_help);
+        "eval", expression_compiler<>, expression_compiler_help);
     execution_tree.def(
-        "phylisp_eval", expression_compiler<double>, expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+        "eval", expression_compiler<double>, expression_compiler_help);
+    execution_tree.def("eval",
         expression_compiler<phylanx::execution_tree::primitive const&>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<phylanx::execution_tree::primitive const&,
             phylanx::execution_tree::primitive const&>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<phylanx::execution_tree::primitive const&, double>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<double, phylanx::execution_tree::primitive const&>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<double, double>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<phylanx::execution_tree::primitive const&,
             phylanx::execution_tree::primitive const&,
             phylanx::execution_tree::primitive const&>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<double, phylanx::execution_tree::primitive const&,
             phylanx::execution_tree::primitive const&>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<phylanx::execution_tree::primitive const&, double,
             phylanx::execution_tree::primitive const&>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<phylanx::execution_tree::primitive const&,
             phylanx::execution_tree::primitive const&, double>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<double, double,
             phylanx::execution_tree::primitive const&>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<double, phylanx::execution_tree::primitive const&,
             double>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<phylanx::execution_tree::primitive const&, double,
             double>,
         expression_compiler_help);
-    execution_tree.def("phylisp_eval",
+    execution_tree.def("eval",
         expression_compiler<double, double, double>,
         expression_compiler_help);
 

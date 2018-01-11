@@ -5,10 +5,10 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
-from phylanx.util import phyfun
+from phylanx.util import phyfun, phy_print
 et = phylanx.execution_tree
 
-fib10 = et.phylisp_eval("""
+fib10 = et.eval("""
 block(
     define(fib,n,
     if(n<2,n,
@@ -17,7 +17,7 @@ block(
 
 assert fib10.get(0) == 55.0
 
-sum10 = et.phylisp_eval("""
+sum10 = et.eval("""
 block(
     define(sum10,
         block(

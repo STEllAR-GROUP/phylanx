@@ -242,8 +242,8 @@ class phyfun(object):
 
     def __call__(self,*args):
         if len(args)==1:
-            return et.phylisp_eval(self.new_src,args[0])
+            return et.eval(self.new_src,args[0])
         elif len(args)==2:
-            return et.phylisp_eval(self.new_src,args[0],args[1])
+            return et.eval(self.new_src,args[0],args[1])
         else:
-            return et.phylisp_eval(self.new_src,*args)
+            return et.eval(self.new_src,*args)
