@@ -543,6 +543,15 @@ PYBIND11_MODULE(_phylanx, m)
             });
         },
         "create a new variable from a floating point value");
+    execution_tree.def("var",
+        [](const std::vector<double>& d) {
+            return hpx::threads::run_as_hpx_thread([&]() {
+                using namespace phylanx::execution_tree;
+                return primitive{hpx::local_new<primitives::variable>(
+                    phylanx::ir::node_data<double>{d})};
+            });
+        },
+        "create a new variable from a floating point value");
 
     execution_tree.def("linspace",
         [](double xmin, double xmax, std::size_t nx) {

@@ -227,7 +227,7 @@ class Recompiler:
 
 def convert_to_phylanx_type(v):
     t = type(v)
-    if t == int or t == float:
+    if t == int or t == float or t == list:
         return et.var(v)
     else:
         return v

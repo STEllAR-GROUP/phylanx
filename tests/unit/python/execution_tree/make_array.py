@@ -23,10 +23,12 @@ for i in range(11):
 assert et.dot(r,r).get(0) == sum2
 
 # Test cross product, need size 3
-r = et.linspace(0,10,3)
-cr = et.cross(r,r)
+vx = et.var([1,0,0])
+vy = et.var([0,1,0])
+vz = et.var([0,0,1])
+cr = et.cross(vx,vy)
 for i in range(cr.dimension(0)):
-    assert cr.get(i) == 0
+    assert cr.get(i) == vz.get(i)
 
 # Create a vector that's all zeros
 r = et.zeros(nx)
