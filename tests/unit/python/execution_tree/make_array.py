@@ -20,16 +20,11 @@ for i in range(11):
     sum2 += i*i
     assert x0+dx*i == r.get(i)
 
-# Test dot product
-assert et.dot(r,r).get(0) == sum2
-
-# Test cross product, need size 3
-vx = et.var([1,0,0])
-vy = et.var([0,1,0])
-vz = et.var([0,0,1])
-cr = et.cross(vx,vy)
-for i in range(cr.dimension(0)):
-    assert cr.get(i) == vz.get(i)
+# Test creation from a python array
+va = [1,2,3,4,5]
+vx = et.var(va)
+for i in range(len(va)):
+    assert vx.get(i) == va[i] 
 
 # Create a vector that's all zeros
 r = et.zeros(nx)
