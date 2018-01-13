@@ -25,7 +25,7 @@ for i in range(11):
 va = [1,2,3,4,5]
 vx = et.var(va)
 for i in range(len(va)):
-    assert vx.get(i) == va[i] 
+    assert vx.get(i) == va[i]
 
 # Create a vector that's all zeros
 r = et.var(np.zeros(nx))
@@ -51,5 +51,5 @@ m2 = [
  [1.5,2.6,3.7]]
 m3 = et.var(m2)
 for i in range(len(m2)):
-  for j in range(len(m2[0])):
-    assert m3.get(i,j) == m2[i][j]
+    for j in range(len(m2[0])):
+        assert m3.get(i,j) == m2[i][j]
