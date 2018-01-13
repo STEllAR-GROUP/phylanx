@@ -6,13 +6,14 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
 from phylanx.util import *
+import numpy as np
 
 # Create a vector
 x0 = 0
 nx = 11
 dx = 1.0
 et = phylanx.execution_tree
-r = et.linspace(x0,(nx-1)*dx,nx)
+r = et.var(np.linspace(x0,(nx-1)*dx,nx))
 assert r.num_dimensions()==1
 assert r.dimension(0) == nx
 sum2 = 0
@@ -27,28 +28,16 @@ for i in range(len(va)):
     assert vx.get(i) == va[i] 
 
 # Create a vector that's all zeros
-r = et.zeros(nx)
+r = et.var(np.zeros(nx))
 assert r.num_dimensions()==1
 assert r.dimension(0) == nx
 for i in range(11):
     assert 0 == r.get(i)
 
-# Create a matrix
+# Create a matrix that's all zeros
 nx = 5
 ny = 4
-x0 = 2
-dx = 1
-dy = 2
-m = et.linearmatrix(nx,ny,x0,dx,dy)
-assert m.num_dimensions()==2
-assert m.dimension(0) == nx
-assert m.dimension(1) == ny
-for i in range(nx):
-    for j in range(ny):
-        assert m.get(i,j) == x0+i*dx+j*dy
-
-# Create a matrix that's all zeros
-m = et.zeros(nx,ny)
+m = et.var(np.zeros((nx,ny)))
 assert m.num_dimensions()==2
 assert m.dimension(0) == nx
 assert m.dimension(1) == ny

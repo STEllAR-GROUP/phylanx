@@ -505,7 +505,10 @@ PYBIND11_MODULE(_phylanx, m)
 
     ///////////////////////////////////////////////////////////////////////////
     // phylanx::ast::generate_ast()
-    ast.def("generate_ast", &phylanx::ast::generate_ast,
+    ast.def("generate_ast",
+        [](std::string const& code) {
+            return phylanx::ast::generate_ast(code);
+        },
         "generate an AST from the given expression string");
 
     // phylanx::ast::traverse()
@@ -630,7 +633,7 @@ PYBIND11_MODULE(_phylanx, m)
                             phylanx::ir::node_data<double>{d});
                 });
             },
-            "assign another value to variable");
+            "assign another value to variable")
         .def("num_dimensions",
             [](phylanx::execution_tree::primitive const& p) {
                 return hpx::threads::run_as_hpx_thread([&]() {
@@ -669,7 +672,7 @@ PYBIND11_MODULE(_phylanx, m)
                     return n.dimension(index);
                 });
             },
-            "Get the size of the given dimension")
+            "Get the size of the given dimension");
 
     ///////////////////////////////////////////////////////////////////////////
     // expose util submodule

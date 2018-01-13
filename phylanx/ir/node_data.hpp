@@ -120,9 +120,9 @@ namespace phylanx { namespace ir
           const std::size_t ny = values[0].size();
           storage2d_type store{nx,ny};
           for(std::size_t i=0;i<nx;i++) {
-            for(std::size_t j=0;j<ny;j++) {
-              store(i,j) = values[i][j];
-            }
+              for(std::size_t j=0;j<ny;j++) {
+                  store(i,j) = values[i][j];
+              }
           }
           operator=(std::move(store));
         }
