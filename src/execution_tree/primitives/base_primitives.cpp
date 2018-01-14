@@ -31,6 +31,8 @@ HPX_REGISTER_ACTION(base_primitive_type::store_action,
     phylanx_primitive_store_action)
 HPX_REGISTER_ACTION(base_primitive_type::bind_action,
     phylanx_primitive_bind_action)
+HPX_REGISTER_ACTION(base_primitive_type::newick_tree_action,
+    phylanx_primitive_newick_tree_action)
 HPX_DEFINE_GET_COMPONENT_TYPE(base_primitive_type)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,14 +60,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        hpx::wait_all(results);
-
         bool result = true;
-        for (auto& r : results)
+        if (!results.empty())
         {
-            result = r.get() && result;
+            hpx::wait_all(results);
+            for (auto& r : results)
+            {
+                result = r.get() && result;
+            }
         }
         return result;
+    }
+
+    std::string base_primitive::newick_tree() const
+    {
+        std::vector<hpx::future<std::string>> results;
+        results.reserve(operands_.size());
+
+        for (auto& operand : operands_)
+        {
+            primitive const* p = util::get_if<primitive>(&operand);
+            if (p != nullptr)
+            {
+                results.push_back(p->newick_tree());
+            }
+        }
+
+        std::string dependend_names;
+        if (!results.empty())
+        {
+            hpx::wait_all(results);
+
+            bool first = true;
+            for (auto& r : results)
+            {
+                std::string name = r.get();
+                if (!first && !name.empty())
+                    dependend_names += ',';
+                first = false;
+                dependend_names += std::move(name);
+            }
+        }
+        return dependend_names;
     }
 }}}
 
@@ -132,6 +168,41 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> const& args)
     {
         return bind(args).get();
+    }
+
+    hpx::future<std::string> primitive::newick_tree() const
+    {
+        // retrieve name of component instance
+        using action_type = primitives::base_primitive::newick_tree_action;
+        hpx::future<std::string> f =
+            hpx::async(action_type(), this->base_type::get_id());
+
+        // retrieve name of this node (the component can only retrieve
+        // names of dependent nodes)
+        std::string this_name = this->base_type::registered_name();
+
+        // The combined name for this node has the structure (Newick
+        // tree format), see:
+        // http://evolution.genetics.washington.edu/phylip/newicktree.html
+        //
+        //    (dependent_name) this_name
+        //
+        // where: 'dependent_name' is a list of names of all all children
+        //                         of the current node
+        //        'this_name'      is the name of the current node
+        return f.then(
+            [this_name](hpx::future<std::string> && f)
+            {
+                std::string name = f.get();
+                if (name.empty())
+                    return this_name;
+                return "(" + name + ") " + this_name;
+            });
+    }
+
+    std::string primitive::newick_tree(hpx::launch::sync_policy) const
+    {
+        return newick_tree().get();
     }
 
     ///////////////////////////////////////////////////////////////////////////

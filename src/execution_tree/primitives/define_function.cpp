@@ -49,7 +49,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // created on.
         if (!valid(target_))
         {
-            if(!valid(body_))
+            if (!valid(body_))
             {
                 HPX_THROW_EXCEPTION(hpx::invalid_status,
                     "define_function::eval_direct",
@@ -84,7 +84,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     void define_function::set_body(primitive_argument_type&& body)
     {
+        if (valid(body_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_function::set_body",
+                "expression representing the function body was already "
+                    "initialized");
+        }
+
         body_ = std::move(body);
+    }
+
+    std::string define_function::newick_tree() const
+    {
+        if (!valid(body_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_function::name",
+                "expression representing the function body was not "
+                    "initialized yet");
+        }
+
+        std::string dependend_name;
+
+        primitive const* p = util::get_if<primitive>(&body_);
+        if (p != nullptr)
+        {
+            dependend_name = p->newick_tree(hpx::launch::sync);
+        }
+
+        return dependend_name;
     }
 }}}
 

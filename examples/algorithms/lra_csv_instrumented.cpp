@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -164,8 +164,9 @@ std::pair<std::size_t, std::int64_t> extract_tags(std::string const& name)
 //                    iterator refers to the point of usage of the
 //                    primitive in the compiled source code
 //
-void print_instrumentation(char const* const name, int compile_id,
-    std::string const& code,
+void print_instrumentation(
+    char const* const name, int compile_id, std::string const& code,
+    phylanx::execution_tree::compiler::function const& func,
     std::vector<std::string::const_iterator> const& iterators,
     std::map<std::string, hpx::id_type> const& entries)
 {
@@ -202,6 +203,9 @@ void print_instrumentation(char const* const name, int compile_id,
     }
 
     std::cout << "\n";
+
+    std::cout << "Tree information for function: " << name << "\n";
+    std::cout << func.get_newick_tree() << "\n\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -230,9 +234,9 @@ int hpx_main(boost::program_options::variables_map& vm)
         auto entries =
             hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*");
 
-        print_instrumentation("read_x", 0, read_x_code, iterators, entries);
-        print_instrumentation("read_y", 1, read_y_code, iterators, entries);
-        print_instrumentation("lra", 2, lra_code, iterators, entries);
+        print_instrumentation("read_x", 0, read_x_code, read_x, iterators, entries);
+        print_instrumentation("read_y", 1, read_y_code, read_y, iterators, entries);
+        print_instrumentation("lra", 2, lra_code, lra, iterators, entries);
     }
 
     auto row_start = vm["row_start"].as<std::int64_t>();

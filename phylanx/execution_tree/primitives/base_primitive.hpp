@@ -74,6 +74,9 @@ namespace phylanx { namespace execution_tree
         hpx::future<bool> bind(std::vector<primitive_argument_type> const&);
         bool bind(hpx::launch::sync_policy,
             std::vector<primitive_argument_type> const&);
+
+        hpx::future<std::string> newick_tree() const;
+        std::string newick_tree(hpx::launch::sync_policy) const;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -197,6 +200,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         virtual bool bind(std::vector<primitive_argument_type> const& args);
 
+        std::string newick_tree_nonvirtual() const
+        {
+            return newick_tree();
+        }
+        virtual std::string newick_tree() const;
+
     public:
 
 #if defined(PHYLANX_DEBUG)
@@ -214,6 +223,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             base_primitive, eval_direct_nonvirtual, eval_direct_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            base_primitive, newick_tree_nonvirtual, newick_tree_action);
 
     protected:
         static std::vector<primitive_argument_type> noargs;
@@ -234,6 +245,9 @@ HPX_REGISTER_ACTION_DECLARATION(
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::bind_action,
     phylanx_primitive_bind_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::base_primitive::newick_tree_action,
+    phylanx_primitive_newick_tree_action);
 
 namespace phylanx { namespace execution_tree
 {
