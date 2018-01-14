@@ -197,14 +197,18 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // compose an argument selector
     struct argument
     {
-        argument(hpx::id_type const& locality = hpx::find_here())
-          : locality_(locality)
+        argument(std::size_t sequence_number,
+                hpx::id_type const& locality = hpx::find_here())
+          : sequence_number_(sequence_number),
+            locality_(locality)
         {
         }
 
         function operator()(std::size_t n, std::string const& name) const
         {
-            std::string full_name = "argument:" + name;
+            std::string full_name =
+                "argument:" + std::to_string(sequence_number_) + ":" + name;
+
             return function{
                     primitive(
                         hpx::new_<primitives::access_argument>(locality_, n),
@@ -213,6 +217,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 };
         }
 
+        std::size_t sequence_number_;
         hpx::id_type locality_;
     };
 
