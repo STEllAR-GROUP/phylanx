@@ -115,16 +115,18 @@ namespace phylanx { namespace ir
         {
         }
         explicit node_data(std::vector<std::vector<T>> const& values)
+          : data_(storage2d_type{values.size(), values[0].size()})
         {
-          const std::size_t nx = values.size();
-          const std::size_t ny = values[0].size();
-          storage2d_type store{nx,ny};
-          for(std::size_t i=0;i<nx;i++) {
-              for(std::size_t j=0;j<ny;j++) {
-                  store(i,j) = values[i][j];
-              }
-          }
-          operator=(std::move(store));
+            std::size_t const nx = values.size();
+            for (std::size_t i = 0; i != nx; ++i)
+            {
+                std::vector<T> const& row = values[i];
+                std::size_t const ny = row.size();
+                for (std::size_t j = 0; j != ny; ++j)
+                {
+                    util::get<2>(data_)(i, j) = row[j];
+                }
+            }
         }
 
         explicit node_data(custom_storage1d_type const& values)
