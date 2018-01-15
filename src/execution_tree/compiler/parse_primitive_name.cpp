@@ -1,0 +1,83 @@
+//  Copyright (c) 2018 Hartmut Kaiser
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
+
+#include <hpx/throw_exception.hpp>
+
+#include <cstdint>
+#include <string>
+
+#include <boost/spirit/include/qi_char.hpp>
+#include <boost/spirit/include/qi_nonterminal.hpp>
+#include <boost/spirit/include/qi_numeric.hpp>
+#include <boost/spirit/include/qi_operator.hpp>
+#include <boost/spirit/include/qi_parse.hpp>
+#include <boost/spirit/include/qi_string.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+
+BOOST_FUSION_ADAPT_STRUCT(
+    phylanx::execution_tree::compiler::primitive_name_parts,
+    (std::string, primitive)
+    (std::int64_t, sequence_number)
+    (std::string, instance)
+    (std::int64_t, compile_id)
+    (std::int64_t, tag)
+)
+
+namespace phylanx { namespace execution_tree { namespace compiler
+{
+    namespace detail
+    {
+        namespace qi = boost::spirit::qi;
+
+        template <typename Iterator>
+        struct primitive_name_parser
+          : qi::grammar<Iterator, primitive_name_parts()>
+        {
+            primitive_name_parser()
+              : primitive_name_parser::base_type(start)
+            {
+                start =
+                        qi::lit("/phylanx/") >> primitive
+                        >> qi::lit('#') >> qi::int_
+                        >> -(qi::lit('#') > instance)
+                        >> qi::lit('/') >> qi::int_
+                        >> qi::lit('#') >> qi::int_
+                    ;
+
+                primitive = +(qi::char_ - qi::lit('#'));
+                instance = +(qi::char_ - qi::lit('/'));
+            }
+
+            qi::rule<Iterator, primitive_name_parts()> start;
+            qi::rule<Iterator, std::string()> primitive;
+            qi::rule<Iterator, std::string()> instance;
+        };
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_name_parts parse_primitive_name(std::string const& name)
+    {
+        primitive_name_parts data;
+
+        auto begin = name.begin();
+        bool result = boost::spirit::qi::parse(begin, name.end(),
+            detail::primitive_name_parser<std::string::const_iterator>(), data);
+
+        if (!result || begin != name.end())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::compiler::parse_primitive_name",
+                "could not (fully) parse the give primitive name: " + name);
+        }
+
+        return data;
+    }
+}}}
+
+
+

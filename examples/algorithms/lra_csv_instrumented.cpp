@@ -131,38 +131,28 @@ std::pair<std::size_t, std::size_t> get_pos(std::string const& code,
 //
 std::pair<std::size_t, std::int64_t> extract_tags(std::string const& name)
 {
-    std::size_t compile_id = 0;
-    std::int64_t tag = 0;
-
-    auto p = name.find_last_of("#");
-    if (p != std::string::npos)
-    {
-        char* end = nullptr;
-        tag = std::strtoll(name.c_str() + p + 1, &end, 10);
-
-        p = name.find_last_of("/", p);
-        if (p != std::string::npos)
-        {
-            compile_id = std::strtoll(name.c_str() + p + 1, &end, 10);
-        }
-    }
-
-    return std::make_pair(compile_id, tag);
+    auto data = phylanx::execution_tree::compiler::parse_primitive_name(name);
+    return std::make_pair(data.compile_id, data.tag);
 }
 
 // The symbolic names registered in AGAS that identify the created
 // primitive instances have the following structure:
 //
-//      /phylanx/<primitive>/<compile_id>#<tag>
+//      /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
 //
-// where:
-//      <primitive>:  the name of primitive type representing the given
-//                    node in the expression tree
-//      <compile_id>: the sequence number of the invocation of the
-//                    function phylanx::execution_tree::compile
-//      <tag>:        the index into the vector of iterators, where the
-//                    iterator refers to the point of usage of the
-//                    primitive in the compiled source code
+//  where:
+//      <primitive>:   the name of primitive type representing the given
+//                     node in the expression tree
+//      <sequence-nr>: the sequence number of the corresponding instance
+//                     of type <primitive>
+//      <instance>:    (optional), some primitives have additional instance
+//                     names, for instance references to function arguments
+//                     have the name of the argument as their <instance>
+//      <compile_id>:  the sequence number of the invocation of the
+//                     function phylanx::execution_tree::compile
+//      <tag>:         the index into the vector of iterators, where the
+//                     iterator refers to the point of usage of the
+//                     primitive in the compiled source code
 //
 void print_instrumentation(
     char const* const name, int compile_id, std::string const& code,
