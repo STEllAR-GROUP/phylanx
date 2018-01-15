@@ -31,8 +31,8 @@ HPX_REGISTER_ACTION(base_primitive_type::store_action,
     phylanx_primitive_store_action)
 HPX_REGISTER_ACTION(base_primitive_type::bind_action,
     phylanx_primitive_bind_action)
-HPX_REGISTER_ACTION(base_primitive_type::newick_tree_action,
-    phylanx_primitive_newick_tree_action)
+HPX_REGISTER_ACTION(base_primitive_type::expression_topology_action,
+    phylanx_primitive_expression_topology_action)
 HPX_DEFINE_GET_COMPONENT_TYPE(base_primitive_type)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,9 +72,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return result;
     }
 
-    std::string base_primitive::newick_tree() const
+    topology base_primitive::expression_topology() const
     {
-        std::vector<hpx::future<std::string>> results;
+        std::vector<hpx::future<topology>> results;
         results.reserve(operands_.size());
 
         for (auto& operand : operands_)
@@ -82,26 +82,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive const* p = util::get_if<primitive>(&operand);
             if (p != nullptr)
             {
-                results.push_back(p->newick_tree());
+                results.push_back(p->expression_topology());
             }
         }
 
-        std::string dependend_names;
+        std::vector<topology> children;
         if (!results.empty())
         {
             hpx::wait_all(results);
 
-            bool first = true;
             for (auto& r : results)
             {
-                std::string name = r.get();
-                if (!first && !name.empty())
-                    dependend_names += ',';
-                first = false;
-                dependend_names += std::move(name);
+                children.emplace_back(r.get());
             }
         }
-        return dependend_names;
+
+        return topology{std::move(children)};
     }
 }}}
 
@@ -170,39 +166,77 @@ namespace phylanx { namespace execution_tree
         return bind(args).get();
     }
 
-    hpx::future<std::string> primitive::newick_tree() const
+    hpx::future<topology> primitive::expression_topology() const
     {
         // retrieve name of component instance
-        using action_type = primitives::base_primitive::newick_tree_action;
-        hpx::future<std::string> f =
+        using action_type = primitives::base_primitive::
+            expression_topology_action;
+
+        hpx::future<topology> f =
             hpx::async(action_type(), this->base_type::get_id());
 
         // retrieve name of this node (the component can only retrieve
         // names of dependent nodes)
         std::string this_name = this->base_type::registered_name();
 
-        // The combined name for this node has the structure (Newick
-        // tree format), see:
-        // http://evolution.genetics.washington.edu/phylip/newicktree.html
-        //
-        //    (dependent_name) this_name
-        //
-        // where: 'dependent_name' is a list of names of all all children
-        //                         of the current node
-        //        'this_name'      is the name of the current node
         return f.then(
-            [this_name](hpx::future<std::string> && f)
+            [this_name](hpx::future<topology> && f)
             {
-                std::string name = f.get();
-                if (name.empty())
-                    return this_name;
-                return "(" + name + ") " + this_name;
+                topology t = f.get();
+                t.name_ = this_name;
+                return t;
             });
     }
 
-    std::string primitive::newick_tree(hpx::launch::sync_policy) const
+    topology primitive::expression_topology(hpx::launch::sync_policy) const
     {
-        return newick_tree().get();
+        return expression_topology().get();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // traverse expression-tree topology and generate Newick representation
+    std::string newick_tree_helper(topology const& t)
+    {
+        std::string result;
+
+        if (!t.children_.empty())
+        {
+            bool first = true;
+            for (auto const& child : t.children_)
+            {
+                std::string name = newick_tree_helper(child);
+                if (!first && !name.empty())
+                {
+                    result += ',';
+                }
+                first = false;
+                if (!name.empty())
+                {
+                    result += std::move(name);
+                }
+            }
+
+            if (!result.empty())
+            {
+                result = "(" + result + ")";
+            }
+        }
+
+        if (!t.name_.empty())
+        {
+            if (!result.empty())
+            {
+                result += " ";
+            }
+            result += t.name_;
+        }
+
+        return result;
+    }
+
+    std::string newick_tree(topology const& t)
+    {
+        return newick_tree_helper(t) + ";";
     }
 
     ///////////////////////////////////////////////////////////////////////////

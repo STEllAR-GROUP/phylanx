@@ -37,8 +37,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_result_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
 
-        // return the extended name for this function definition
-        std::string newick_tree() const;
+        // return the topology for this function definition
+        topology expression_topology() const;
 
         // Initialize the expression representing the function body, this has
         // to be done separately in order to support recursive functions.

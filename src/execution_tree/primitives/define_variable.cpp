@@ -105,4 +105,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         p->store(hpx::launch::sync, std::move(val));
     }
+
+    topology define_variable::expression_topology() const
+    {
+        if (!valid(body_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_variable::expression_topology",
+                "expression represented by the variable was not "
+                    "initialized yet");
+        }
+
+        primitive const* p = util::get_if<primitive>(&body_);
+        if (p != nullptr)
+        {
+            return p->expression_topology(hpx::launch::sync);
+        }
+
+        return {};
+    }
 }}}

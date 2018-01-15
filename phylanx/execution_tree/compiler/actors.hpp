@@ -131,14 +131,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
 #endif
         }
 
-        std::string get_newick_tree() const
+        topology get_expression_topology() const
         {
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return p->newick_tree(hpx::launch::sync) + ";";
+                return p->expression_topology(hpx::launch::sync);
             }
-            return ";";
+            return {};
         }
 
         primitive_argument_type arg_;
