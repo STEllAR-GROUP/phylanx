@@ -230,7 +230,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::size_t sequence_number_;
 
         explicit external_variable(function const& f,
-                std::size_t sequence_number,
+                std::size_t sequence_number = std::size_t(-1),
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<external_variable>(locality)
           ,sequence_number_(sequence_number)
@@ -261,7 +261,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::size_t sequence_number_;
 
         explicit external_function(function const& f,
-                std::size_t sequence_number,
+                std::size_t sequence_number = std::size_t(-1),
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<external_function>(locality)
           , sequence_number_(sequence_number)
