@@ -13,7 +13,8 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 // This example uses part of the breast cancer dataset from UCI Machine Learning
-// Repository. https://goo.gl/U2Uwz
+// Repository.
+//     https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)
 //
 // A copy of the full dataset in CSV format (breast_cancer.csv), obtained from
 // scikit-learn datasets, is provided in the same folder as this example.
