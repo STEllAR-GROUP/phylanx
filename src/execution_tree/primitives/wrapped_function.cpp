@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -23,30 +23,13 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
     "phylanx_primitive_component", hpx::components::factory_enabled)
 HPX_DEFINE_GET_COMPONENT_TYPE(wrapped_function_type::wrapped_type)
 
-HPX_REGISTER_ACTION(wrapped_function_type::set_target_direct_action,
-    phylanx_wrapped_function_set_target_action)
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    wrapped_function::wrapped_function(std::string name)
-      : name_(std::move(name))
-    {}
-
-    wrapped_function::wrapped_function(primitive_argument_type target)
-      : target_(std::move(target))
-    {}
-
     wrapped_function::wrapped_function(primitive_argument_type target,
             std::string name)
       : target_(std::move(target))
       , name_(std::move(name))
-    {}
-
-    wrapped_function::wrapped_function(primitive_argument_type target,
-            std::vector<primitive_argument_type>&& args)
-      : target_(std::move(target))
-      , args_(std::move(args))
     {}
 
     wrapped_function::wrapped_function(primitive_argument_type target,
@@ -72,11 +55,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return value_operand(target_, params);
-    }
-
-    void wrapped_function::set_target(primitive_argument_type target)
-    {
-        target_ = std::move(target);
     }
 
     bool wrapped_function::bind(
@@ -108,23 +86,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 }}}
 
-///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree
-{
-    hpx::future<void> wrapped_function::set_target(
-        primitive_argument_type&& target)
-    {
-        using action_type =
-            primitives::wrapped_function::set_target_direct_action;
-        return hpx::async(
-            action_type(), this->primitive::get_id(), std::move(target));
-    }
-
-    void wrapped_function::set_target(hpx::launch::sync_policy,
-        primitive_argument_type&& target)
-    {
-        using action_type =
-            primitives::wrapped_function::set_target_direct_action;
-        action_type()(this->primitive::get_id(), std::move(target));
-    }
-}}

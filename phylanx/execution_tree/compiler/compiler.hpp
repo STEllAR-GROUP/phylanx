@@ -10,10 +10,11 @@
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/define_function.hpp>
+#include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_function.hpp>
+#include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
@@ -169,7 +170,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
         function operator()(std::string && name) const
         {
-            return function{ast::nil{}, "always_nil: " + name};
+            return function{ast::nil{}, "always_nil# " + name};
         }
     };
 
@@ -207,7 +208,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function operator()(std::size_t n, std::string const& name) const
         {
             std::string full_name =
-                "argument:" + std::to_string(sequence_number_) + ":" + name;
+                "argument#" + std::to_string(sequence_number_) + "#" + name;
 
             return function{
                     primitive(
@@ -221,26 +222,55 @@ namespace phylanx { namespace execution_tree { namespace compiler
         hpx::id_type locality_;
     };
 
-    // compose an external function
-    struct external_function : compiled_actor<external_function>
+    // compose an external variable
+    struct external_variable : compiled_actor<external_variable>
     {
-        // we must hold f by reference because functions can be recursive
+        // we must hold f by reference
         std::reference_wrapper<function const> f_;
+        std::size_t sequence_number_;
 
-        explicit external_function(function const& f,
+        explicit external_variable(function const& f,
+                std::size_t sequence_number = std::size_t(-1),
                 hpx::id_type const& locality = hpx::find_here())
-          : compiled_actor<external_function>(locality)
+          : compiled_actor<external_variable>(locality)
+          ,sequence_number_(sequence_number)
           , f_(f)
         {}
 
         function compose(std::list<function> && elements,
             std::string const& name) const
         {
-            if (elements.empty())
-            {
-                return function{f_.get().arg_, name};
-            }
+            std::string full_name =
+                "variable#" + std::to_string(sequence_number_) + "#" + name;
+            return function{
+                    primitive(
+                        hpx::new_<primitives::wrapped_variable>(
+                            this->locality_, f_.get().arg_,
+                            full_name),
+                        full_name),
+                    full_name
+                };
+        }
+    };
 
+    // compose an external function
+    struct external_function : compiled_actor<external_function>
+    {
+        // we must hold f by reference because functions can be recursive
+        std::reference_wrapper<function const> f_;
+        std::size_t sequence_number_;
+
+        explicit external_function(function const& f,
+                std::size_t sequence_number = std::size_t(-1),
+                hpx::id_type const& locality = hpx::find_here())
+          : compiled_actor<external_function>(locality)
+          , sequence_number_(sequence_number)
+          , f_(f)
+        {}
+
+        function compose(std::list<function> && elements,
+            std::string const& name) const
+        {
             arguments_type fargs;
             fargs.reserve(elements.size());
 
@@ -249,10 +279,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.push_back(arg.arg_);
             }
 
+            std::string full_name =
+                "function#" + std::to_string(sequence_number_) + "#" + name;
             return function{
-                    hpx::new_<primitives::wrapped_function>(
-                        this->locality_, f_.get().arg_, std::move(fargs), name),
-                    name
+                    primitive(
+                        hpx::new_<primitives::wrapped_function>(
+                            this->locality_, f_.get().arg_, std::move(fargs),
+                            full_name),
+                        full_name),
+                    full_name
                 };
         }
     };
