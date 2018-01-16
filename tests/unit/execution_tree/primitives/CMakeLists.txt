@@ -22,6 +22,7 @@ set(tests
     for_operation
     greater_operation
     greater_equal_operation
+    identity
     if_conditional
     inverse_operation
     invoke_operation

@@ -221,10 +221,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::vector<ast::expression> const& args,
             ast::expression const& body) const
         {
-            argument arg(default_locality_);
+            static std::string argument_name("argument");
+
             environment env(&env_);
             for (std::size_t i = 0; i != args.size(); ++i)
             {
+                // get sequence number of this component
+                std::size_t sequence_number =
+                    snippets_.sequence_numbers_[argument_name]++;
+                argument arg(sequence_number, default_locality_);
+
                 HPX_ASSERT(ast::detail::is_identifier(args[i]));
                 env.define(ast::detail::identifier_name(args[i]),
                     hpx::util::bind(arg, i, hpx::util::placeholders::_2));
@@ -261,22 +267,33 @@ namespace phylanx { namespace execution_tree { namespace compiler
             auto body = extract_body(p);
             if (args.empty())
             {
+                // get sequence number of this component
+                static std::string define_variable("define-variable");
+                std::size_t sequence_number =
+                    snippets_.sequence_numbers_[define_variable]++;
+
                 // define variable
                 environment env(&env_);
                 function bf = compile(body, snippets_, env, patterns_,
                     default_locality_);
 
                 f = primitive_variable{default_locality_}(
-                        std::move(bf.arg_), "define-variable:" + name);
+                        std::move(bf.arg_), define_variable + ":" +
+                            std::to_string(sequence_number) + ":" + name);
             }
             else
             {
+                // get sequence number of this component
+                static std::string define_function_("define-function");
+                std::size_t sequence_number =
+                    snippets_.sequence_numbers_[define_function_]++;
+
                 // two-step initialization of the wrapped_function to support
                 // recursion
 
                 // create define_function helper object
-                f = primitive_function{default_locality_}(
-                        "define-function:" + name);
+                f = primitive_function{default_locality_}(define_function_ +
+                        ":" + std::to_string(sequence_number) + ":" + name);
 
                 // set the body for the compiled function
                 define_function(f.arg_).set_body(hpx::launch::sync,
@@ -289,9 +306,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function handle_variable_reference(std::string name,
             ast::expression const& expr)
         {
-            std::int64_t id = ast::detail::tagged_id(expr);
             if (compiled_function* cf = env_.find(name))
             {
+                std::int64_t id = ast::detail::tagged_id(expr);
                 if (id != 0)
                 {
                     name += annotation(id);
@@ -307,7 +324,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function handle_function_call(std::string name,
             ast::expression const& expr)
         {
-            std::int64_t id = ast::detail::tagged_id(expr);
             if (compiled_function* cf = env_.find(name))
             {
                 std::vector<ast::expression> argexprs =
@@ -321,6 +337,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         default_locality_));
                 }
 
+                std::int64_t id = ast::detail::tagged_id(expr);
                 if (id != 0)
                 {
                     name += annotation(id);
@@ -361,9 +378,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
     public:
         function operator()(ast::expression const& expr)
         {
-            // get global name of the component created
-            std::int64_t id = ast::detail::tagged_id(expr);
-
             for (auto const& pattern : patterns_)
             {
                 std::multimap<std::string, ast::expression> placeholders;
@@ -380,6 +394,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     return handle_define(placeholders, pattern);
                 }
 
+                // add sequence number for this primitive component
+                std::size_t sequence_number =
+                    snippets_.sequence_numbers_[name]++;
+                name += ":" + std::to_string(sequence_number);
+
+                // get global name of the component created
+                std::int64_t id = ast::detail::tagged_id(expr);
                 if (id != 0)
                 {
                     name += annotation(id);
