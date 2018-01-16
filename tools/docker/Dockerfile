@@ -11,6 +11,7 @@ RUN apt-get update  &&                                                          
     apt-get -y install libblas-dev liblapack-dev &&                              \
     pip3 install setuptools &&                                                   \
     pip3 install pytest &&                                                       \
+    pip3 install numpy  &&                                                       \
     cd / &&                                                                      \
     git clone --depth 1 https://github.com/pybind/pybind11.git pybind11-src &&   \
     cd pybind11-src &&                                                           \
