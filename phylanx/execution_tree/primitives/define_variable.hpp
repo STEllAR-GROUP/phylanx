@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -40,6 +40,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_result_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
         void store(primitive_result_type && val) override;
+
+        // return the topology for this variable definition
+        topology expression_topology() const;
 
     protected:
         std::string extract_function_name() const;

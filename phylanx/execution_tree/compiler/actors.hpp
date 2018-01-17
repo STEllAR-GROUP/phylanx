@@ -131,6 +131,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
 #endif
         }
 
+        topology get_expression_topology() const
+        {
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                return p->expression_topology(hpx::launch::sync);
+            }
+            return {};
+        }
+
         primitive_argument_type arg_;
 #if defined(_DEBUG)
         std::string name_;

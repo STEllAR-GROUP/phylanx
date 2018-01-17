@@ -31,6 +31,8 @@ HPX_REGISTER_ACTION(base_primitive_type::store_action,
     phylanx_primitive_store_action)
 HPX_REGISTER_ACTION(base_primitive_type::bind_action,
     phylanx_primitive_bind_action)
+HPX_REGISTER_ACTION(base_primitive_type::expression_topology_action,
+    phylanx_primitive_expression_topology_action)
 HPX_DEFINE_GET_COMPONENT_TYPE(base_primitive_type)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,14 +60,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        hpx::wait_all(results);
-
         bool result = true;
-        for (auto& r : results)
+        if (!results.empty())
         {
-            result = r.get() && result;
+            hpx::wait_all(results);
+            for (auto& r : results)
+            {
+                result = r.get() && result;
+            }
         }
         return result;
+    }
+
+    topology base_primitive::expression_topology() const
+    {
+        std::vector<hpx::future<topology>> results;
+        results.reserve(operands_.size());
+
+        for (auto& operand : operands_)
+        {
+            primitive const* p = util::get_if<primitive>(&operand);
+            if (p != nullptr)
+            {
+                results.push_back(p->expression_topology());
+            }
+        }
+
+        std::vector<topology> children;
+        if (!results.empty())
+        {
+            hpx::wait_all(results);
+
+            for (auto& r : results)
+            {
+                children.emplace_back(r.get());
+            }
+        }
+
+        return topology{std::move(children)};
     }
 }}}
 
@@ -132,6 +164,79 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> const& args)
     {
         return bind(args).get();
+    }
+
+    hpx::future<topology> primitive::expression_topology() const
+    {
+        // retrieve name of component instance
+        using action_type = primitives::base_primitive::
+            expression_topology_action;
+
+        hpx::future<topology> f =
+            hpx::async(action_type(), this->base_type::get_id());
+
+        // retrieve name of this node (the component can only retrieve
+        // names of dependent nodes)
+        std::string this_name = this->base_type::registered_name();
+
+        return f.then(
+            [this_name](hpx::future<topology> && f)
+            {
+                topology t = f.get();
+                t.name_ = this_name;
+                return t;
+            });
+    }
+
+    topology primitive::expression_topology(hpx::launch::sync_policy) const
+    {
+        return expression_topology().get();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // traverse expression-tree topology and generate Newick representation
+    std::string newick_tree_helper(topology const& t)
+    {
+        std::string result;
+
+        if (!t.children_.empty())
+        {
+            bool first = true;
+            for (auto const& child : t.children_)
+            {
+                std::string name = newick_tree_helper(child);
+                if (!first && !name.empty())
+                {
+                    result += ',';
+                }
+                first = false;
+                if (!name.empty())
+                {
+                    result += std::move(name);
+                }
+            }
+
+            if (!result.empty())
+            {
+                result = "(" + result + ")";
+            }
+        }
+
+        if (!t.name_.empty())
+        {
+            if (!result.empty())
+            {
+                result += " ";
+            }
+            result += t.name_;
+        }
+
+        return result;
+    }
+
+    std::string newick_tree(topology const& t)
+    {
+        return newick_tree_helper(t) + ";";
     }
 
     ///////////////////////////////////////////////////////////////////////////

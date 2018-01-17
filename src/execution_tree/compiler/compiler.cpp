@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -254,13 +254,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             ast::expression name_expr = extract_name(p);
             std::string name = ast::detail::identifier_name(name_expr);
-            env_.define(name, external_function(f, default_locality_));
 
             // get global name of the component created
+            std::string full_name = name;
             std::int64_t id = ast::detail::tagged_id(name_expr);
             if (id != 0)
             {
-                name += annotation(id);
+                full_name += annotation(id);
             }
 
             auto args = extract_arguments(p);
@@ -268,8 +268,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (args.empty())
             {
                 // get sequence number of this component
-                static std::string define_variable("define-variable");
+                static std::string variable("variable");
                 std::size_t sequence_number =
+                    snippets_.sequence_numbers_[variable]++;
+
+                env_.define(name,
+                    external_variable(f, sequence_number, default_locality_));
+
+                static std::string define_variable("define-variable");
+                sequence_number =
                     snippets_.sequence_numbers_[define_variable]++;
 
                 // define variable
@@ -278,22 +285,28 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     default_locality_);
 
                 f = primitive_variable{default_locality_}(
-                        std::move(bf.arg_), define_variable + ":" +
-                            std::to_string(sequence_number) + ":" + name);
+                        std::move(bf.arg_), define_variable + "#" +
+                            std::to_string(sequence_number) + "#" + full_name);
             }
             else
             {
                 // get sequence number of this component
-                static std::string define_function_("define-function");
+                static std::string function_("function");
                 std::size_t sequence_number =
-                    snippets_.sequence_numbers_[define_function_]++;
+                    snippets_.sequence_numbers_[function_]++;
 
                 // two-step initialization of the wrapped_function to support
                 // recursion
+                env_.define(name,
+                    external_function(f, sequence_number, default_locality_));
+
+                static std::string define_function_("define-function");
+                sequence_number =
+                    snippets_.sequence_numbers_[define_function_]++;
 
                 // create define_function helper object
                 f = primitive_function{default_locality_}(define_function_ +
-                        ":" + std::to_string(sequence_number) + ":" + name);
+                        "#" + std::to_string(sequence_number) + "#" + full_name);
 
                 // set the body for the compiled function
                 define_function(f.arg_).set_body(hpx::launch::sync,
@@ -397,7 +410,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // add sequence number for this primitive component
                 std::size_t sequence_number =
                     snippets_.sequence_numbers_[name]++;
-                name += ":" + std::to_string(sequence_number);
+                name += "#" + std::to_string(sequence_number);
 
                 // get global name of the component created
                 std::int64_t id = ast::detail::tagged_id(expr);

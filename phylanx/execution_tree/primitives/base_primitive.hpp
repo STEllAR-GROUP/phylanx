@@ -9,11 +9,10 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/include/serialization.hpp>
 
 #include <initializer_list>
 #include <iosfwd>
@@ -31,6 +30,35 @@ namespace phylanx { namespace execution_tree
     }
 
     class HPX_COMPONENT_EXPORT primitive;
+
+    ///////////////////////////////////////////////////////////////////////////
+    struct topology
+    {
+        topology() = default;
+
+        topology(std::string name)
+          : name_(std::move(name))
+        {}
+
+        topology(std::vector<topology> names)
+          : children_(std::move(names))
+        {}
+
+        topology(std::vector<topology> names, std::string name)
+          : children_(std::move(names)), name_(std::move(name))
+        {}
+
+        template <typename Archive>
+        void serialize(Archive & ar, unsigned)
+        {
+            ar & children_ & name_;
+        }
+
+        std::vector<topology> children_;
+        std::string name_;
+    };
+
+    PHYLANX_EXPORT std::string newick_tree(topology const& t);
 
     ///////////////////////////////////////////////////////////////////////////
     struct primitive_argument_type;
@@ -74,6 +102,9 @@ namespace phylanx { namespace execution_tree
         hpx::future<bool> bind(std::vector<primitive_argument_type> const&);
         bool bind(hpx::launch::sync_policy,
             std::vector<primitive_argument_type> const&);
+
+        hpx::future<topology> expression_topology() const;
+        topology expression_topology(hpx::launch::sync_policy) const;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -197,6 +228,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         virtual bool bind(std::vector<primitive_argument_type> const& args);
 
+        topology expression_topology_nonvirtual() const
+        {
+            return expression_topology();
+        }
+        virtual topology expression_topology() const;
+
     public:
 
 #if defined(PHYLANX_DEBUG)
@@ -214,6 +251,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             base_primitive, eval_direct_nonvirtual, eval_direct_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            base_primitive, expression_topology_nonvirtual,
+            expression_topology_action);
 
     protected:
         static std::vector<primitive_argument_type> noargs;
@@ -234,6 +274,10 @@ HPX_REGISTER_ACTION_DECLARATION(
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::bind_action,
     phylanx_primitive_bind_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::
+        base_primitive::expression_topology_action,
+    phylanx_primitive_expression_topology_action);
 
 namespace phylanx { namespace execution_tree
 {

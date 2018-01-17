@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -36,6 +36,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // value as returned by evaluating the given body.
         primitive_result_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
+
+        // return the topology for this function definition
+        topology expression_topology() const;
 
         // Initialize the expression representing the function body, this has
         // to be done separately in order to support recursive functions.
