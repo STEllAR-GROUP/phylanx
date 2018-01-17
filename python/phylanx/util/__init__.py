@@ -18,11 +18,11 @@ def phy_print(m):
     ndim = m.num_dimensions()
     if ndim == 1:
         for i in range(m.dimension(0)):
-            print(m.get(i))
+            print(m[i])
     elif ndim == 2:
         for i in range(m.dimension(0)):
             for j in range(m.dimension(1)):
-                print("%10.2f" % m.get(i, j), end=" ")
+                print("%10.2f" % m[i, j], end=" ")
                 if j > 5:
                     print("...", end=" ")
                     break
@@ -31,7 +31,7 @@ def phy_print(m):
                 print("%10s" % "...")
                 break
     elif ndim == 0:
-        print(m.get(0))
+        print(m[0])
     else:
         print("ndim=", ndim)
 
