@@ -19,9 +19,9 @@ foreach(test ${tests})
     WORKING_DIRECTORY ${PHYLANX_PYTHON_EXTENSION_LOCATION}
     ENVIRONMENT "PYTHONPATH=${PHYLANX_PYTHON_EXTENSION_LOCATION}")
 
-  add_phylanx_pseudo_target(tests.unit.python_execution_treee.${test}_py)
-  #add_phylanx_pseudo_dependencies(tests.unit.python_execution_tree tests.unit.python_execution_tree.${test}_py)
-  #add_phylanx_pseudo_dependencies(tests.unit.python_execution_tree.${test}_py ${test}_test_py)
+  add_phylanx_pseudo_target(tests.unit.python_execution_tree.${test}_py)
+  add_phylanx_pseudo_dependencies(tests.unit.python_execution_tree tests.unit.python_execution_tree.${test}_py)
+  add_phylanx_pseudo_dependencies(tests.unit.python_execution_tree.${test}_py ${test}_test_py)
 
 endforeach()
 
