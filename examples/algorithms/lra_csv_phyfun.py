@@ -3,7 +3,12 @@ et = phylanx.execution_tree
 from phylanx.util import *
 
 @phyfun
-def lra(x, y, alpha, iterations, enable_output):
+def lra(data,
+        xlo1, xhi1, ylo1, yhi1,
+        xlo2, xhi2, ylo2, yhi2,
+        alpha, iterations, enable_output):
+    x = slice(data,xlo1,xhi1,ylo1,yhi1)
+    y = slice(data,xlo2,xhi2,ylo2,yhi2)
     weights=constant(0.0, shape(x, 1))
     transx=transpose(x)
     pred=constant(0.0, shape(x, 0))
@@ -21,10 +26,6 @@ def lra(x, y, alpha, iterations, enable_output):
     return weights
 
 
-file_name = "breast_cancer.csv"
-
-data = et.file_read_csv(file_name)
-x = et.slice(data, 0, 569, 0, 30)
-y = et.slice(data, 0, 569, 30, 31)
-res = lra(x,y,1e-5,750,0)
+data = et.eval('file_read_csv("breast_cancer.csv")')
+res = lra(data, 0,569,0,30, 0,569,30,31, 1e-5,750,0)
 phy_print(res)

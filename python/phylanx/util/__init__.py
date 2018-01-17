@@ -228,9 +228,14 @@ class Recompiler:
             raise Exception(nm)
 
 def convert_to_phylanx_type(v):
-    import numpy
     t = type(v)
-    if t == int or t == float or t == list or t == numpy.ndarray:
+    try:
+        import numpy
+        if t == numpy.ndarray:
+            return et.var(v)
+    except:
+          pass
+    if t == int or t == float or t == list:
         return et.var(v)
     else:
         return v
