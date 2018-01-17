@@ -19,20 +19,20 @@ assert r.dimension(0) == nx
 sum2 = 0
 for i in range(11):
     sum2 += i*i
-    assert x0+dx*i == r.get(i)
+    assert x0+dx*i == r[i]
 
 # Test creation from a python array
 va = [1,2,3,4,5]
 vx = et.var(va)
 for i in range(len(va)):
-    assert vx.get(i) == va[i]
+    assert vx[i] == va[i]
 
 # Create a vector that's all zeros
 r = et.var(np.zeros(nx))
 assert r.num_dimensions()==1
 assert r.dimension(0) == nx
 for i in range(11):
-    assert 0 == r.get(i)
+    assert 0 == r[i]
 
 # Create a matrix that's all zeros
 nx = 5
@@ -43,7 +43,7 @@ assert m.dimension(0) == nx
 assert m.dimension(1) == ny
 for i in range(nx):
     for j in range(ny):
-        assert m.get(i,j) == 0
+        assert m[i,j] == 0
 
 m2 = [
  [1.0,2.0,3.0],
@@ -52,4 +52,4 @@ m2 = [
 m3 = et.var(m2)
 for i in range(len(m2)):
     for j in range(len(m2[0])):
-        assert m3.get(i,j) == m2[i][j]
+        assert m3[i,j] == m2[i][j]

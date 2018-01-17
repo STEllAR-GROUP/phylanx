@@ -203,6 +203,10 @@ expression_compiler(std::string xexpr, Ts const&... ts)
                 return primitive{
                     hpx::local_new<primitives::variable>(node_result)};
             }
+            else
+            {
+                PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
+            }
         }
         catch (const std::exception& ex)
         {
@@ -643,7 +647,7 @@ PYBIND11_MODULE(_phylanx, m)
                 });
             },
             "get the number of dimensions")
-        .def("get",
+        .def("__getitem__",
             [](phylanx::execution_tree::primitive const& p, int index) {
                 return hpx::threads::run_as_hpx_thread([&]() {
                     using namespace phylanx::execution_tree;
@@ -652,9 +656,10 @@ PYBIND11_MODULE(_phylanx, m)
                 });
             },
             "Get the value at the specified index")
-        .def("get",
-            [](phylanx::execution_tree::primitive const& p, int index1,
-                int index2) {
+        .def("__getitem__",
+            [](phylanx::execution_tree::primitive const& p, const std::tuple<int,int>& pt) {
+                const int index1 = std::get<0>(pt);
+                const int index2 = std::get<1>(pt);
                 return hpx::threads::run_as_hpx_thread([&]() {
                     using namespace phylanx::execution_tree;
                     auto n = numeric_operand(p, {}).get();

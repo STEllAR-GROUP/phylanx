@@ -15,7 +15,7 @@ block(
         fib(n-1)+fib(n-2))),
     fib)""",et.var(10))
 
-assert fib10.get(0) == 55.0
+assert fib10[0] == 55.0
 
 sum10 = et.eval("""
 block(
@@ -31,7 +31,7 @@ block(
             i)),
     sum10)""")
 
-assert sum10.get(0) == 55.0
+assert sum10[0] == 55.0
 
 @phyfun
 def fib(n):
@@ -40,4 +40,4 @@ def fib(n):
     else:
         return fib(n-1)+fib(n-2)
 
-assert fib(10).get(0) == 55.0
+assert fib(10)[0] == 55.0

@@ -80,13 +80,8 @@ if (PYTHON_EXECUTABLE)
   set_source_files_properties(${setup_files} PROPERTIES HEADER_FILE_ONLY TRUE)
 
   # for the install step it does not matter which setup.py we use
-  if($ENV{USER} EQUAL "root")
-    set(USER_FLAG "")
-  else()
-    set(UESR_FLAG "--user")
-  endif()
   install(CODE
-    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__install_config}.py install ${USER_FLAG})")
+    "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY}_${__install_config}.py install --user)")
 
 endif()
 
