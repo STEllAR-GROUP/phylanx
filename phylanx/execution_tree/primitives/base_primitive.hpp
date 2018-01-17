@@ -12,6 +12,7 @@
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/util/scoped_timer.hpp>
 #include <hpx/include/serialization.hpp>
 
 #include <initializer_list>
@@ -181,10 +182,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public hpx::traits::detail::component_tag
     {
     public:
-        base_primitive() = default;
+        base_primitive()
+          : count_(0ll), duration_(0ll)
+        {}
 
         base_primitive(std::vector<primitive_argument_type> && operands)
-          : operands_(std::move(operands))
+          : operands_(std::move(operands)), count_(0ll), duration_(0ll)
         {}
 
         virtual ~base_primitive() = default;
@@ -192,6 +195,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval_nonvirtual(
             std::vector<primitive_argument_type> const& args) const
         {
+            hpx::util::scoped_timer<std::int64_t> timer(duration_);
+            ++count_;
             return eval(args);
         }
         virtual hpx::future<primitive_result_type> eval(
@@ -258,6 +263,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         static std::vector<primitive_argument_type> noargs;
         std::vector<primitive_argument_type> operands_;
+        mutable std::int64_t count_;
+        mutable std::int64_t duration_;
     };
 }}}
 
