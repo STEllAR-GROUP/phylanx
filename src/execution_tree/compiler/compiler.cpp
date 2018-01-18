@@ -258,7 +258,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             // get global name of the component created
             std::string full_name = name;
             std::int64_t id = ast::detail::tagged_id(name_expr);
-            if (id != 0)
+            if (id >= 0)
             {
                 full_name += annotation(id);
             }
@@ -322,7 +322,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (compiled_function* cf = env_.find(name))
             {
                 std::int64_t id = ast::detail::tagged_id(expr);
-                if (id != 0)
+                if (id >= 0)
                 {
                     name += annotation(id);
                 }
@@ -351,7 +351,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
 
                 std::int64_t id = ast::detail::tagged_id(expr);
-                if (id != 0)
+                if (id >= 0)
                 {
                     name += annotation(id);
                 }
@@ -414,7 +414,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 // get global name of the component created
                 std::int64_t id = ast::detail::tagged_id(expr);
-                if (id != 0)
+                if (id >= 0)
                 {
                     name += annotation(id);
                 }

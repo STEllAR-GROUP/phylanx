@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         void store(primitive_result_type && val) override;
 
         // return the topology for this variable definition
-        topology expression_topology() const;
+        topology expression_topology() const override;
 
     protected:
         std::string extract_function_name() const;
