@@ -197,6 +197,12 @@ expression_compiler(std::string xexpr, Ts const&... ts)
                 return primitive{
                     hpx::local_new<primitives::variable>(node_result)};
             }
+            else if (ndx == 3)
+            {
+                auto node_result = phylanx::util::get<std::string>(result);
+                return primitive{
+                    hpx::local_new<primitives::variable>(node_result)};
+            }
             else if (ndx == 2)
             {
                 auto node_result = phylanx::util::get<std::int64_t>(result);
@@ -558,6 +564,14 @@ PYBIND11_MODULE(_phylanx, m)
             });
         },
         "create a new variable from a floating point value");
+    execution_tree.def("var",
+        [](const std::string d) {
+            return hpx::threads::run_as_hpx_thread([&]() {
+                using namespace phylanx::execution_tree;
+                return primitive{hpx::local_new<primitives::variable>(d)};
+            });
+        },
+        "create a new variable from a vector floating point values");
     execution_tree.def("var",
         [](const std::vector<double>& d) {
             return hpx::threads::run_as_hpx_thread([&]() {

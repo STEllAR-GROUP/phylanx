@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     console_output::console_output(
             std::vector<primitive_argument_type>&& operands)
       : base_primitive(std::move(operands))
-    {}
+    {} 
 
     namespace detail
     {
@@ -63,13 +63,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](args_type && args) -> primitive_result_type
                     {
-                        if (args.empty())
-                        {
-                            return {};
-                        }
 
+                        bool init = true;
                         for (auto const& arg : args)
                         {
+                            if(init)
+                                init = false;
+                            else
+                                hpx::cout << ' ';
                             hpx::cout << arg;
                         }
                         hpx::cout << std::endl;
@@ -91,11 +92,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_result_type> console_output::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
-        {
-            return std::make_shared<detail::console_output>()->eval(args, noargs);
-        }
-
         return std::make_shared<detail::console_output>()->eval(operands_, args);
     }
 }}}

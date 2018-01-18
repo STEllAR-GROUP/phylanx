@@ -14,6 +14,74 @@ import phylanx
 et = phylanx.execution_tree
 import inspect, re, ast
 
+def physl_fmt(src):
+    pat = re.compile(r'"[^"]*"|\([^()]*\)|.')
+    indent = 0
+    for s in re.findall(pat,src):
+        if s == '(':
+            print(s,end="")
+            indent += 1
+        elif s == ')':
+            indent -= 1
+            print("")
+            print(" " * indent * 2,end="")
+            print(s,end="")
+        elif s == ',':
+            print(s)
+            print(" " * indent * 2,end="")
+        else:
+            print(s,end="")
+    print("")
+
+def ast_dump(a,depth=0,label=""):
+    if a == None:
+        nm = "None"
+    else:
+        nm = a.__class__.__name__
+    print("  "*depth+label,end="")
+    show_children = True
+    show_attrs = True
+    if nm == "None":
+        print("None")
+        show_children = False
+        show_attrs = False
+    elif nm == "Num":
+        if type(a.n)==int:
+            print("%s=%d" % (nm,a.n))
+        else:
+            print("%s=%f" % (nm,a.n))
+    elif nm == "Slice":
+        print("Slice")
+        ast_dump(a.lower,depth+1,label="lower:")
+        ast_dump(a.upper,depth+1,label="upper:")
+        show_children = False
+    elif nm == "Str":
+        print("%s='%s'" % (nm,a.s))
+    elif nm == "Name":
+        print("%s='%s'" %(nm,a.id))
+    elif nm == "arg":
+        print("%s='%s'" %(nm,a.arg))
+    elif nm == "If":
+        show_children = False
+        print(nm)
+        for n in a.body:
+            ast_dump(n,depth+1)
+        if len(a.orelse)>0:
+            print("  "*depth,end="")
+            print("Else")
+            for n in a.orelse:
+                ast_dump(n,depth+1)
+    else:
+        print(nm)
+    if show_attrs:
+        for (f,v) in ast.iter_fields(a):
+            if type(f) == str and type(v) == str:
+                print("%s:attr[%s]=%s" % ("  "*(depth+1),f,v))
+    if show_children:
+        if iter_children:
+            for n in ast.iter_child_nodes(a):
+                ast_dump(n,depth+1)
+
 def phy_print(m):
     ndim = m.num_dimensions()
     if ndim == 1:
@@ -34,6 +102,27 @@ def phy_print(m):
         print(m[0])
     else:
         print("ndim=", ndim)
+
+def get_node(node,**kwargs):
+    args = [arg for arg in ast.iter_child_nodes(node)]
+    params = {"name":None,"num":None}
+    for k in kwargs:
+        if k not in params:
+            raise Exception("Invalid argument '%s'" % k)
+        else:
+            params[k] = kwargs[k]
+    name = params["name"]
+    num  = params["num"]
+    if name != None:
+        for i in range(len(args)):
+            a = args[i]
+            nm = a.__class__.__name__
+            if nm == name:
+                if num == None or num == i:
+                    return a
+    elif num != None:
+        if num < len(args):
+            return args[num]
 
 class Recompiler:
     def __init__(self):
@@ -224,6 +313,39 @@ class Recompiler:
                     return "-" + self.recompile(args[1])
             else:
                 raise Exception(nm2)
+        elif nm == "Subscript":
+            e = get_node(a,name="ExtSlice")
+            s0 = get_node(e,name="Slice",num=0)
+            s1 = get_node(e,name="Slice",num=1)
+            xlo = s0.lower
+            xhi = s0.upper
+            ylo = s1.lower
+            yhi = s1.upper
+            sname = self.recompile(get_node(a,num=0))
+            s = "slice("
+            s += sname
+            s += ","
+            if xlo == None:
+                s += "0"
+            else:
+                s += self.recompile(xlo)
+            s += ","
+            if xhi == None:
+                s += "shape(" + sname + ",0)"
+            else:
+                s += self.recompile(xhi)
+            s += ","
+            if ylo == None:
+                s += "0"
+            else:
+                s += self.recompile(ylo)
+            s += ","
+            if yhi == None:
+                s += "shape(" + sname + ",1)"
+            else:
+                s += self.recompile(yhi)
+            s += ")"
+            return s
         else:
             raise Exception(nm)
 
@@ -235,7 +357,7 @@ def convert_to_phylanx_type(v):
             return et.var(v)
     except:
           pass
-    if t == int or t == float or t == list:
+    if t == int or t == float or t == list or t == str:
         return et.var(v)
     else:
         return v
@@ -253,8 +375,8 @@ class phyfun(object):
         # Create the AST
         tree = ast.parse(src)
         r = Recompiler()
-        self.new_src = "block(" + r.recompile(tree)+')\n'
+        self.__physl_src__ = "block(" + r.recompile(tree)+')\n'
 
     def __call__(self,*args):
         nargs = tuple(convert_to_phylanx_type(a) for a in args)
-        return et.eval(self.new_src,*nargs)
+        return et.eval(self.__physl_src__,*nargs)
