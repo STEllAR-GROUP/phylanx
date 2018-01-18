@@ -1,11 +1,14 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017-2018 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    cout_prints_twice_155
     negative_integral_value_131
    )
+
+set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
@@ -24,7 +27,7 @@ foreach(test ${tests})
   add_phylanx_pseudo_target(tests.regressions.execution_tree_.${test})
   add_phylanx_pseudo_dependencies(tests.regressions.execution_tree_
     tests.regressions.execution_tree_.${test})
-  add_phylanx_pseudo_dependencies(tests.regressions.execution_tree_.${test} 
+  add_phylanx_pseudo_dependencies(tests.regressions.execution_tree_.${test}
     ${test}_test_exe)
 
 endforeach()
