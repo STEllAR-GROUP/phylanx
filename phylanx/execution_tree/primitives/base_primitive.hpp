@@ -12,6 +12,7 @@
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/util/scoped_timer.hpp>
 #include <hpx/include/serialization.hpp>
 
 #include <initializer_list>
@@ -181,10 +182,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public hpx::traits::detail::component_tag
     {
     public:
-        base_primitive() = default;
+        base_primitive()
+          : count_(0ll), duration_(0ll)
+        {}
 
         base_primitive(std::vector<primitive_argument_type> && operands)
-          : operands_(std::move(operands))
+          : operands_(std::move(operands)), count_(0ll), duration_(0ll)
         {}
 
         virtual ~base_primitive() = default;
@@ -192,6 +195,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval_nonvirtual(
             std::vector<primitive_argument_type> const& args) const
         {
+            hpx::util::scoped_timer<std::int64_t> timer(duration_);
+            ++count_;
             return eval(args);
         }
         virtual hpx::future<primitive_result_type> eval(
@@ -241,23 +246,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, bind_nonvirtual, bind_action);
+        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
+            base_primitive, expression_topology_nonvirtual,
+            expression_topology_action);
 #else
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, bind_nonvirtual, bind_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            base_primitive, expression_topology_nonvirtual,
+            expression_topology_action);
 #endif
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_direct_nonvirtual, eval_direct_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
-        HPX_DEFINE_COMPONENT_ACTION(
-            base_primitive, expression_topology_nonvirtual,
-            expression_topology_action);
 
     protected:
         static std::vector<primitive_argument_type> noargs;
         std::vector<primitive_argument_type> operands_;
+        mutable std::int64_t count_;
+        mutable std::int64_t duration_;
     };
 }}}
 

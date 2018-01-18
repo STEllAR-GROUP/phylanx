@@ -98,15 +98,14 @@ std::string const lra_code = R"(block(
 // pointing into it.
 //
 std::pair<std::size_t, std::size_t> get_pos(std::string const& code,
-    std::string::const_iterator pos)
+    std::int64_t pos)
 {
     std::size_t line = 1;
     std::size_t column = 1;
 
-    for (std::string::const_iterator i = code.begin();
-         i != code.end() && i != pos; ++i)
+    for (std::int64_t i = 0; i != pos && i != code.size(); ++i)
     {
-        if (*i == '\r' || *i == '\n')    // CR/LF
+        if (code[i] == '\r' || code[i] == '\n')    // CR/LF
         {
             ++line;
             column = 1;
@@ -116,6 +115,7 @@ std::pair<std::size_t, std::size_t> get_pos(std::string const& code,
             ++column;
         }
     }
+
     return std::make_pair(line, column);
 }
 
@@ -151,14 +151,13 @@ std::pair<std::size_t, std::int64_t> extract_tags(std::string const& name)
 //                     have the name of the argument as their <instance>
 //      <compile_id>:  the sequence number of the invocation of the
 //                     function phylanx::execution_tree::compile
-//      <tag>:         the index into the vector of iterators, where the
-//                     iterator refers to the point of usage of the
-//                     primitive in the compiled source code
+//      <tag>:         the position inside the compiled code block where the
+//                     referring to the point of usage of the primitive in
+//                     the compiled source code
 //
 void print_instrumentation(
     char const* const name, int compile_id, std::string const& code,
     phylanx::execution_tree::compiler::function const& func,
-    std::vector<std::string::const_iterator> const& iterators,
     std::map<std::string, hpx::id_type> const& entries)
 {
     std::cout << "Instrumentation information for function: " << name << "\n";
@@ -171,21 +170,20 @@ void print_instrumentation(
             continue;
 
         // find real position of given symbol in source code
-        if (tags.second >= 0 &&
-            tags.second < static_cast<std::int64_t>(iterators.size()))
+        if (tags.second >= 0)
         {
-            auto pos = get_pos(code, iterators[tags.second]);
+            auto pos = get_pos(code, tags.second);
             std::cout << e.first << ": " << name << "(" << pos.first << ", "
                       << pos.second << "): ";
 
             // show the next (at max) 20 characters
-            auto end = iterators[tags.second];
+            auto end = code.begin() + tags.second;
             for (int i = 0; end != code.end() && i != 20; ++end, ++i)
             {
                 if (*end == '\n' || *end == '\r')
                     break;
             }
-            std::cout << std::string(iterators[tags.second], end) << " ...\n";
+            std::cout << std::string(code.begin() + tags.second, end) << " ...\n";
         }
         else
         {
@@ -211,15 +209,14 @@ int hpx_main(boost::program_options::variables_map& vm)
     }
 
     // compile the given code
-    std::vector<std::string::const_iterator> iterators;
     phylanx::execution_tree::compiler::function_list snippets;
 
     auto read_x = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(read_x_code, iterators), snippets);
+        phylanx::ast::generate_ast(read_x_code), snippets);
     auto read_y = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(read_y_code, iterators), snippets);
+        phylanx::ast::generate_ast(read_y_code), snippets);
     auto lra = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(lra_code, iterators), snippets);
+        phylanx::ast::generate_ast(lra_code), snippets);
 
     // print instrumentation information, if enabled
     if (vm.count("instrument") != 0)
@@ -227,9 +224,9 @@ int hpx_main(boost::program_options::variables_map& vm)
         auto entries =
             hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*");
 
-        print_instrumentation("read_x", 0, read_x_code, read_x, iterators, entries);
-        print_instrumentation("read_y", 1, read_y_code, read_y, iterators, entries);
-        print_instrumentation("lra", 2, lra_code, lra, iterators, entries);
+        print_instrumentation("read_x", 0, read_x_code, read_x, entries);
+        print_instrumentation("read_y", 1, read_y_code, read_y, entries);
+        print_instrumentation("lra", 2, lra_code, lra, entries);
     }
 
     auto row_start = vm["row_start"].as<std::int64_t>();

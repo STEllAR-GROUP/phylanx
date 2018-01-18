@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
         // return the topology for this function definition
-        topology expression_topology() const;
+        topology expression_topology() const override;
 
         // Initialize the expression representing the function body, this has
         // to be done separately in order to support recursive functions.

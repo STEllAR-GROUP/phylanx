@@ -29,9 +29,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
     //                     have the name of the argument as their <instance>
     //      <compile_id>:  the sequence number of the invocation of the
     //                     function phylanx::execution_tree::compile
-    //      <tag>:         the index into the vector of iterators, where the
-    //                     iterator refers to the point of usage of the
-    //                     primitive in the compiled source code
+    //      <tag>:         the position inside the compiled code block where the
+    //                     referring to the point of usage of the primitive in
+    //                     the compiled source code
     struct primitive_name_parts
     {
         primitive_name_parts()
