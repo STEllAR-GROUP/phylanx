@@ -63,14 +63,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](args_type && args) -> primitive_result_type
                     {
-                        if (!args.empty())
+                        for (auto const& arg : args)
                         {
-                            for (auto const& arg : args)
-                            {
-                                hpx::consolestream << arg;
-                            }
-                            hpx::consolestream << std::endl;
+                            hpx::consolestream << arg;
                         }
+                        hpx::consolestream << std::endl;
+
                         return {};
                     }),
                     detail::map_operands(operands, value_operand, args)

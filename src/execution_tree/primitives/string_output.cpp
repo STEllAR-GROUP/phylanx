@@ -74,7 +74,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             strm << arg;
                         }
-                        strm << std::endl;
 
                         return primitive_result_type(strm.str());
                     }),
