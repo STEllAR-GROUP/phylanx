@@ -41,3 +41,9 @@ def fib(n):
         return fib(n-1)+fib(n-2)
 
 assert fib(10)[0] == 55.0
+
+@phyfun
+def pass_str(a):
+    return a
+
+assert "foo" == str(pass_str("foo"))

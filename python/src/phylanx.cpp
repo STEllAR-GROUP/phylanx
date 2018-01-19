@@ -568,10 +568,11 @@ PYBIND11_MODULE(_phylanx, m)
         [](const std::string d) {
             return hpx::threads::run_as_hpx_thread([&]() {
                 using namespace phylanx::execution_tree;
-                return primitive{hpx::local_new<primitives::variable>(d)};
+                // Name of the variable is ""
+                return primitive{hpx::local_new<primitives::variable>(d,"")};
             });
         },
-        "create a new variable from a vector floating point values");
+        "create a new variable from a string");
     execution_tree.def("var",
         [](const std::vector<double>& d) {
             return hpx::threads::run_as_hpx_thread([&]() {
@@ -791,6 +792,7 @@ PYBIND11_MODULE(_phylanx, m)
                 });
             },
             "Get the value specified by the x,y index pair")
+        .def("__str__", &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
         .def("dimension",
             [](phylanx::execution_tree::primitive const& p, int index) {
                 return hpx::threads::run_as_hpx_thread([&]() {

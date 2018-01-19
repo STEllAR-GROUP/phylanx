@@ -25,8 +25,9 @@ HPX_DEFINE_GET_COMPONENT_TYPE(literal_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    variable::variable(std::string name)
-      : data_(std::move(name))
+    variable::variable(std::string data,std::string name)
+      : data_(std::move(data))
+      , name_(std::move(name))
       , evaluated_(false)
     {}
 
@@ -61,6 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     variable::variable(std::vector<primitive_argument_type>&& operands,
             std::string name)
       : name_(std::move(name))
+      , data_(operands)
       , evaluated_(false)
     {
         if (operands.size() > 1)

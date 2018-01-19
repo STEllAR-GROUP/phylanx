@@ -70,6 +70,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             if(init)
                                 init = false;
                             else
+                                // Put spaces in the output
+                                // to match Python
                                 hpx::cout << ' ';
                             hpx::cout << arg;
                         }
