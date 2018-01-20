@@ -182,9 +182,7 @@ namespace phylanx { namespace execution_tree
         return f.then(
             [this_name](hpx::future<topology> && f)
             {
-                topology t = f.get();
-                t.name_ = this_name;
-                return t;
+                return topology{{f.get()}, this_name};
             });
     }
 
@@ -224,7 +222,8 @@ namespace phylanx { namespace execution_tree
                 }
             }
 
-            if (!t.name_.empty())
+            if (!result.empty() &&
+                !(result[0] == '(' && result[result.size()-1] == ')'))
             {
                 if (!result.empty())
                 {

@@ -402,7 +402,6 @@ namespace phylanx { namespace ast
         {
         }
 
-
     private:
         friend class hpx::serialization::access;
 

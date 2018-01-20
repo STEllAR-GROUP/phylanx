@@ -5,6 +5,7 @@
 
 set(subdirs
     ast
+    execution_tree
    )
 
 foreach(subdir ${subdirs})

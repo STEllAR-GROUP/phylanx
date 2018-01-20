@@ -253,19 +253,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, bind_nonvirtual, bind_action);
+        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
+            base_primitive, expression_topology_nonvirtual,
+            expression_topology_action);
 #else
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, bind_nonvirtual, bind_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            base_primitive, expression_topology_nonvirtual,
+            expression_topology_action);
 #endif
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_direct_nonvirtual, eval_direct_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
-        HPX_DEFINE_COMPONENT_ACTION(
-            base_primitive, expression_topology_nonvirtual,
-            expression_topology_action);
 
     protected:
         static std::vector<primitive_argument_type> noargs;
