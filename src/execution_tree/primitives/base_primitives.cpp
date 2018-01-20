@@ -216,14 +216,14 @@ namespace phylanx { namespace execution_tree
                     }
                 }
 
-                if (!result.empty())
+                if (!result.empty() &&
+                    !(result[0] == '(' && result[result.size()-1] == ')'))
                 {
                     result = "(" + result + ")";
                 }
             }
 
-            if (!result.empty() &&
-                !(result[0] == '(' && result[result.size()-1] == ')'))
+            if (!t.name_.empty())
             {
                 if (!result.empty())
                 {
