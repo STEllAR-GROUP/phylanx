@@ -195,7 +195,11 @@ void print_instrumentation(
 
     std::cout << "Tree information for function: " << name << "\n";
     std::cout << phylanx::execution_tree::newick_tree(
-                     func.get_expression_topology())
+                     name, func.get_expression_topology())
+              << "\n\n";
+
+    std::cout << phylanx::execution_tree::dot_tree(
+                     name, func.get_expression_topology())
               << "\n\n";
 }
 
