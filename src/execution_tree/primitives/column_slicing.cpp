@@ -112,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     auto sv = blaze::subvector(
                         arg0, arg0.size() + col_start, -col_start + col_stop);
 
-                    if(sv.size() ==1)
+                    if(sv.size() == 1)
                     {
                         storage0d_type v{sv[0]};
                         return ir::node_data<double>{std::move(v)};
@@ -125,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto sv =
                     blaze::subvector(arg0, col_start, col_stop - col_start);
 
-                if(sv.size() ==1)
+                if(sv.size() == 1)
                 {
                     storage0d_type v{sv[0]};
                     return ir::node_data<double>{std::move(v)};
@@ -196,7 +196,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 num_matrix_rows, 1),
                             0);
 
-                        if(sv.size() ==1)
+                        if(sv.size() == 1)
                         {
                             storage0d_type v{sv[0]};
                             return ir::node_data<double>{std::move(v)};
@@ -222,7 +222,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             num_matrix_rows, 1),
                         0);
 
-                    if(sv.size() ==1)
+                    if(sv.size() == 1)
                     {
                         storage0d_type v{sv[0]};
                         return ir::node_data<double>{std::move(v)};

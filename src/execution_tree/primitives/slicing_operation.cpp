@@ -112,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage1d_type v{sv};
                     return ir::node_data<double>{std::move(v)};
 
-                    if(sv.size() ==1)
+                    if(sv.size() == 1)
                     {
                         storage0d_type v{sv[0]};
                         return ir::node_data<double>{std::move(v)};
@@ -122,7 +122,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto sv =
                     blaze::subvector(arg0, col_start, col_stop - col_start);
 
-                if(sv.size() ==1)
+                if(sv.size() == 1)
                 {
                     storage0d_type v{sv[0]};
                     return ir::node_data<double>{std::move(v)};
@@ -208,7 +208,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 1, -col_start + col_stop),
                             0));
 
-                        if(sv.size() ==1)
+                        if(sv.size() == 1)
                         {
                             storage0d_type v{sv[0]};
                             return ir::node_data<double>{std::move(v)};
@@ -225,7 +225,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 row_stop - row_start, 1),
                             0);
 
-                        if(sv.size() ==1)
+                        if(sv.size() == 1)
                         {
                             storage0d_type v{sv[0]};
                             return ir::node_data<double>{std::move(v)};
@@ -258,7 +258,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 1, col_stop - col_start),
                             0));
 
-                        if(sv.size() ==1)
+                        if(sv.size() == 1)
                         {
                             storage0d_type v{sv[0]};
                             return ir::node_data<double>{std::move(v)};
@@ -275,7 +275,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 -row_start + row_stop, 1),
                             0);
 
-                        if(sv.size() ==1)
+                        if(sv.size() == 1)
                         {
                             storage0d_type v{sv[0]};
                             return ir::node_data<double>{std::move(v)};
@@ -309,7 +309,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 1, -col_start + col_stop),
                             0));
 
-                        if(sv.size() ==1)
+                        if(sv.size() == 1)
                         {
                             storage0d_type v{sv[0]};
                             return ir::node_data<double>{std::move(v)};
@@ -326,7 +326,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 -row_start + row_stop, 1),
                             0);
 
-                        if(sv.size() ==1)
+                        if(sv.size() == 1)
                         {
                             storage0d_type v{sv[0]};
                             return ir::node_data<double>{std::move(v)};
@@ -354,7 +354,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             1, col_stop - col_start),
                         0));
 
-                    if(sv.size() ==1)
+                    if(sv.size() == 1)
                     {
                         storage0d_type v{sv[0]};
                         return ir::node_data<double>{std::move(v)};
@@ -371,7 +371,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             row_stop - row_start, 1),
                         0);
 
-                    if(sv.size() ==1)
+                    if(sv.size() == 1)
                     {
                         storage0d_type v{sv[0]};
                         return ir::node_data<double>{std::move(v)};
