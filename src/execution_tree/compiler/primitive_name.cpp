@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/compiler/parse_primitive_name.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
 #include <hpx/throw_exception.hpp>
 
@@ -60,6 +60,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // Split the given primitive name into its parts
     primitive_name_parts parse_primitive_name(std::string const& name)
     {
         primitive_name_parts data;
@@ -76,6 +77,34 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         return data;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // compose a new primitive name from the given parts
+    std::string compose_primitive_name(primitive_name_parts const& parts)
+    {
+        if (parts.primitive.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::compiler::compose_primitive_name",
+                "primitive type was not specified");
+        }
+
+        std::string result("/phylanx/");
+        result += parts.primitive;
+        result += "#" + std::to_string(
+            parts.sequence_number == -1 ? 0 : parts.sequence_number);
+
+        if (!parts.instance.empty())
+        {
+            result += "#" + parts.instance;
+        }
+
+        result += "/" + std::to_string(
+            parts.compile_id == -1 ? 0 : parts.compile_id);
+        result += "#" + std::to_string(parts.tag == -1 ? 0 : parts.tag);
+
+        return result;
     }
 }}}
 

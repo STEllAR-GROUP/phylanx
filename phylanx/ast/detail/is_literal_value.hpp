@@ -63,7 +63,7 @@ namespace phylanx { namespace ast { namespace detail
     }
     inline literal_value_type literal_value(unary_expr const& ue)
     {
-        return is_literal_value(ue.operand_);
+        return literal_value(ue.operand_);
     }
 
     inline bool is_literal_value(operation const& op)
