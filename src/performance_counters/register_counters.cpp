@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/execution_tree/compile.hpp>
 
 #include <hpx/runtime/startup_function.hpp>
 #include <hpx/include/util.hpp>
@@ -15,6 +16,23 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace performance_counters
 {
+    hpx::naming::gid_type primitive_counter_creator(
+        hpx::performance_counters::counter_info const& info,
+        hpx::error_code& ec)
+    {
+        namespace et = phylanx::execution_tree;
+        return hpx::naming::invalid_gid;
+    }
+
+    bool primitive_counter_discoverer(
+        hpx::performance_counters::counter_info const& info,
+        hpx::performance_counters::discover_counter_func const& f,
+        hpx::performance_counters::discover_counters_mode mode,
+        hpx::error_code& ec)
+    {
+        return false;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // This function will be registered as a startup function for HPX below.
     // That means it will be executed in an HPX-thread before hpx_main, but
@@ -46,6 +64,13 @@ namespace phylanx { namespace performance_counters
             &ir::node_data<double>::move_assignment_count,
             "returns the current value of the move-assignment count of "
                 "any node_data<double>");
+
+        hpx::performance_counters::install_counter_type(
+            "/phylanx/primitives/add/time/eval",
+            hpx::performance_counters::counter_raw_values,
+            "returns the total execution time of eval() function of each primitive",
+            &primitive_counter_creator,
+            &primitive_counter_discoverer);
     }
 
     ///////////////////////////////////////////////////////////////////////////
