@@ -4,10 +4,12 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    cout_noargs_prints_nothing_159
     cout_prints_twice_155
     negative_integral_value_131
    )
 
+set(cout_noargs_prints_nothing_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
 
 foreach(test ${tests})
