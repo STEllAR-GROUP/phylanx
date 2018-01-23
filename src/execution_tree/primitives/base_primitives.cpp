@@ -193,49 +193,84 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     // traverse expression-tree topology and generate Newick representation
-    std::string newick_tree_helper(topology const& t)
+    namespace detail
     {
-        std::string result;
+        std::string newick_tree_helper(topology const& t)
+        {
+            std::string result;
+
+            if (!t.children_.empty())
+            {
+                bool first = true;
+                for (auto const& child : t.children_)
+                {
+                    std::string name = newick_tree_helper(child);
+                    if (!first && !name.empty())
+                    {
+                        result += ',';
+                    }
+                    first = false;
+                    if (!name.empty())
+                    {
+                        result += std::move(name);
+                    }
+                }
+
+                if (!result.empty() &&
+                    !(result[0] == '(' && result[result.size()-1] == ')'))
+                {
+                    result = "(" + result + ")";
+                }
+            }
+
+            if (!t.name_.empty())
+            {
+                if (!result.empty())
+                {
+                    result += " ";
+                }
+                result += t.name_;
+            }
+
+            return result;
+        }
+    }
+
+    std::string newick_tree(std::string const& name, topology const& t)
+    {
+        return "(" + detail::newick_tree_helper(t) + ") " + name + ";";
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        std::string dot_tree_helper(topology const& t)
+        {
+            std::string result;
+
+            for (auto const& child : t.children_)
+            {
+                result += "    \"" + t.name_ + "\" -- \"" + child.name_ + "\";\n";
+                if (!child.children_.empty())
+                {
+                    result += dot_tree_helper(child);
+                }
+            }
+
+            return result;
+        }
+    }
+
+    std::string dot_tree(std::string const& name, topology const& t)
+    {
+        std::string result = "graph " + name + " {\n";
 
         if (!t.children_.empty())
         {
-            bool first = true;
-            for (auto const& child : t.children_)
-            {
-                std::string name = newick_tree_helper(child);
-                if (!first && !name.empty())
-                {
-                    result += ',';
-                }
-                first = false;
-                if (!name.empty())
-                {
-                    result += std::move(name);
-                }
-            }
-
-            if (!result.empty() &&
-                !(result[0] == '(' && result[result.size()-1] == ')'))
-            {
-                result = "(" + result + ")";
-            }
+            result += detail::dot_tree_helper(t);
         }
 
-        if (!t.name_.empty())
-        {
-            if (!result.empty())
-            {
-                result += " ";
-            }
-            result += t.name_;
-        }
-
-        return result;
-    }
-
-    std::string newick_tree(topology const& t)
-    {
-        return newick_tree_helper(t) + ";";
+        return result + "}\n";
     }
 
     ///////////////////////////////////////////////////////////////////////////

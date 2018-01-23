@@ -1,10 +1,10 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/console_output.hpp>
+#include <phylanx/execution_tree/primitives/debug_output.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/ast.hpp>
 #include <phylanx/util/serialization/execution_tree.hpp>
@@ -23,33 +23,33 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
-    phylanx::execution_tree::primitives::console_output>
-    console_output_type;
+    phylanx::execution_tree::primitives::debug_output>
+    debug_output_type;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    console_output_type, phylanx_console_output_component,
+    debug_output_type, phylanx_debug_output_component,
     "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(console_output_type::wrapped_type)
+HPX_DEFINE_GET_COMPONENT_TYPE(debug_output_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const console_output::match_data =
+    std::vector<match_pattern_type> const debug_output::match_data =
     {
-        hpx::util::make_tuple("cout", "cout(__1)", &create<console_output>)
+        hpx::util::make_tuple("debug", "debug(__1)", &create<debug_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    console_output::console_output(
+    debug_output::debug_output(
             std::vector<primitive_argument_type>&& operands)
       : base_primitive(std::move(operands))
     {}
 
     namespace detail
     {
-        struct console_output : std::enable_shared_from_this<console_output>
+        struct debug_output : std::enable_shared_from_this<debug_output>
         {
-            console_output() = default;
+            debug_output() = default;
 
         protected:
             using args_type = std::vector<primitive_result_type>;
@@ -63,18 +63,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](args_type && args) -> primitive_result_type
                     {
-                        bool init = true;
                         for (auto const& arg : args)
                         {
-                            if(init)
-                                init = false;
-                            else
-                                // Put spaces in the output
-                                // to match Python
-                                hpx::cout << ' ';
-                            hpx::cout << arg;
+                            hpx::consolestream << arg;
                         }
-                        hpx::cout << std::endl;
+                        hpx::consolestream << std::endl;
 
                         return {};
                     }),
@@ -89,14 +82,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content
-    hpx::future<primitive_result_type> console_output::eval(
+    hpx::future<primitive_result_type> debug_output::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        return std::make_shared<detail::console_output>()->eval(operands_, args);
+        if (operands_.empty())
+        {
+            return std::make_shared<detail::debug_output>()->eval(args, noargs);
+        }
+
+        return std::make_shared<detail::debug_output>()->eval(operands_, args);
     }
 
     // Never evaluate output operations while defining a function
-    bool console_output::bind(std::vector<primitive_argument_type> const&)
+    bool debug_output::bind(std::vector<primitive_argument_type> const&)
     {
         return false;
     }

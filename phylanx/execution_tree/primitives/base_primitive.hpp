@@ -59,7 +59,14 @@ namespace phylanx { namespace execution_tree
         std::string name_;
     };
 
-    PHYLANX_EXPORT std::string newick_tree(topology const& t);
+    ///////////////////////////////////////////////////////////////////////////
+    // Generate Newick tree (string) format from given tree topology
+    PHYLANX_EXPORT std::string newick_tree(
+        std::string const& name, topology const& t);
+
+    // Generate Dot tree (string) format from given tree topology
+    PHYLANX_EXPORT std::string dot_tree(
+        std::string const& name, topology const& t);
 
     ///////////////////////////////////////////////////////////////////////////
     struct primitive_argument_type;
