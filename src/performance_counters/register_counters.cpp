@@ -166,18 +166,21 @@ namespace phylanx { namespace performance_counters {
             std::string const& name = hpx::util::get<0>(pattern);
             // Register a primitive time performance counter
             hpx::performance_counters::install_counter_type(
-                "/phylanx/time/primitives/" + name + "/eval",
+                "/phylanx/primitives/" + name + "/time/eval",
                 hpx::performance_counters::counter_raw_values,
-                "returns the total execution time of eval() function of the " +
+                "returns a list whose elements contain the total execution "
+                "time of eval function for each " +
                     name + " primitive",
                 &primitive_counter_creator,
-                &hpx::performance_counters::locality_counter_discoverer);
+                &hpx::performance_counters::locality_counter_discoverer,
+                HPX_PERFORMANCE_COUNTER_V1, "ns");
             // Register a primitive count performance counter
             hpx::performance_counters::install_counter_type(
-                "/phylanx/count/primitives/" + name + "/eval",
+                "/phylanx/primitives/" + name + "/count/eval",
                 hpx::performance_counters::counter_raw_values,
-                "returns the number of times of eval() function of each " +
-                name + " primitive instance was called",
+                "returns a list whose elements contain the number of times "
+                "the eval function was called for each " +
+                name + " primitive",
                 &primitive_counter_creator,
                 &hpx::performance_counters::locality_counter_discoverer);
         }
