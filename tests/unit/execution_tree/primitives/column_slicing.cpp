@@ -214,7 +214,7 @@ void test_column_slicing_operation_1d_single_slice_negative_index()
         });
 
     auto sm = blaze::subvector(v1, 1002, 1);
-    auto expected = sm;
+    auto expected = sm[0];
 
     hpx::future<phylanx::execution_tree::primitive_result_type> f =
         slice.eval();
