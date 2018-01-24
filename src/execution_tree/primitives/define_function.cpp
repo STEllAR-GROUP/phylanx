@@ -5,7 +5,6 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/define_function.hpp>
-#include <phylanx/execution_tree/primitives/wrapped_function.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
@@ -33,53 +32,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : name_(std::move(name))
     {}
 
-    std::string define_function::extract_function_name() const
-    {
-        if (name_.find("define-") == 0)
-        {
-            return name_.substr(7);
-        }
-        return name_;
-    }
-
     primitive_result_type define_function::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
-        // This proxy was created on the locality where the function should be
-        // created on.
-        if (!valid(target_))
+        if (!valid(body_))
         {
-            if (!valid(body_))
-            {
-                HPX_THROW_EXCEPTION(hpx::invalid_status,
-                    "define_function::eval_direct",
-                    "expression representing the function body was not "
-                        "initialized yet");
-            }
-
-            primitive_argument_type operand = body_;
-            target_ = primitive(
-                hpx::new_<primitives::wrapped_function>(
-                    hpx::find_here(), std::move(operand), name_),
-                extract_function_name());
-
-            // bind this name to the result of the expression right away
-            primitive* p = util::get_if<primitive>(&target_);
-            if (p != nullptr && p->bind(hpx::launch::sync, args))
-            {
-                p->eval_direct(args);
-            }
-
-            return extract_ref_value(target_);
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_function::eval_direct",
+                "expression representing the function body was not "
+                    "initialized yet");
         }
 
-        // just evaluate the expression bound to this name
-        primitive const* p = util::get_if<primitive>(&target_);
-        if (p != nullptr)
-        {
-            return extract_value(p->eval_direct(args));
-        }
-        return extract_ref_value(target_);
+        return body_;
     }
 
     void define_function::set_body(primitive_argument_type&& body)

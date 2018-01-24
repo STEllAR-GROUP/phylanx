@@ -62,7 +62,7 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+    auto lra = phylanx::execution_tree::compile_and_run(lra_code, snippets);
 
     // evaluate generated execution tree
     auto x = phylanx::ir::node_data<double>{v1};

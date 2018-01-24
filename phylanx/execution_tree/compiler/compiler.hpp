@@ -303,8 +303,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         using value_type = std::map<std::string, compiled_function>::value_type;
 
     public:
-        environment(environment* outer = nullptr)
+        environment(environment* outer = nullptr, std::size_t base_arg_num = 0)
           : outer_(outer)
+          , base_arg_num_(outer != nullptr ?
+                    outer->base_arg_num_ + base_arg_num :
+                    base_arg_num)
         {}
 
         template <typename F>
@@ -354,9 +357,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return count;
         }
 
+        std::size_t base_arg_num() const
+        {
+            return base_arg_num_;
+        }
+
     private:
         environment* outer_;
         std::map<std::string, compiled_function> definitions_;
+        std::size_t base_arg_num_;
     };
 
     ///////////////////////////////////////////////////////////////////////////

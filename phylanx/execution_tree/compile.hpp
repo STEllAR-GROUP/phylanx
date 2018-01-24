@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -60,6 +60,49 @@ namespace phylanx { namespace execution_tree
     /// evaluate the expression corresponding to the expression. Reuse the
     /// given compilation environment.
     PHYLANX_EXPORT compiler::function compile(std::string const& expr,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Compile a given expression into a function, additionally invoke it to
+    /// evaluate the expression corresponding to the expression.
+    PHYLANX_EXPORT compiler::function compile_and_run(
+        ast::expression const& expr, compiler::function_list& snippets,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    /// Compile a given expression into a function, additionally invoke it to
+    /// evaluate the expression corresponding to the expression.
+    PHYLANX_EXPORT compiler::function compile_and_run(
+        std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    /// Compile a given expression into a function, additionally invoke it to
+    /// evaluate the expression corresponding to the expression.
+    PHYLANX_EXPORT compiler::function compile_and_run(std::string const& expr,
+        compiler::function_list& snippets,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    /// Compile a given expression into a function, additionally invoke it to
+    /// evaluate the expression corresponding to the expression. Reuse the
+    /// given compilation environment.
+    PHYLANX_EXPORT compiler::function compile_and_run(
+        ast::expression const& expr, compiler::function_list& snippets,
+        compiler::environment& env,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    /// Compile a given expression into a function, additionally invoke it to
+    /// evaluate the expression corresponding to the expression. Reuse the
+    /// given compilation environment.
+    PHYLANX_EXPORT compiler::function compile_and_run(
+        std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality = hpx::find_here());
+
+    /// Compile a given expression into a function, additionally invoke it to
+    /// evaluate the expression corresponding to the expression. Reuse the
+    /// given compilation environment.
+    PHYLANX_EXPORT compiler::function compile_and_run(std::string const& expr,
         compiler::function_list& snippets, compiler::environment& env,
         hpx::id_type const& default_locality = hpx::find_here());
 }}

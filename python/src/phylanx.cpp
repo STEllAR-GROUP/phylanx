@@ -172,25 +172,27 @@ namespace phylanx { namespace bindings
 void init_hpx_runtime();
 void stop_hpx_runtime();
 
-const char* expression_compiler_help =
+const char const* expression_compiler_help =
     "compile and evaluate a numerical expression in Phylanx lisp";
+
 template <typename... Ts>
-typename hpx::util::invoke_result<phylanx::execution_tree::primitive(Ts...),
-    Ts...>::type
+typename hpx::util::invoke_result<
+    phylanx::execution_tree::primitive(Ts...), Ts...
+>::type
 expression_compiler(std::string xexpr, Ts const&... ts)
 {
     namespace et = phylanx::execution_tree;
     return hpx::threads::run_as_hpx_thread(
         [&]() -> et::primitive
         {
-            try
-            {
+        try
+        {
                 et::compiler::function_list eval_snippets;
-                auto x = et::compile(xexpr, eval_snippets);
+                auto x = et::compile_and_run(xexpr, eval_snippets);
 
                 et::primitive_argument_type result = x(ts...);
                 switch (result.index())
-                {
+            {
                 case 2: HPX_FALLTHROUGH;    // std::int64_t
                 case 3: HPX_FALLTHROUGH;    // std::string
                 case 4:                     // phylanx::ir::node_data<double>
@@ -199,21 +201,21 @@ expression_compiler(std::string xexpr, Ts const&... ts)
                     };
 
                  default:
-                    PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
+                PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
                     break;
-                 }
             }
-            catch (const std::exception& ex)
-            {
-                PyErr_SetString(PyExc_RuntimeError, ex.what());
-            }
-            catch (...)
-            {
-                PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-            }
+        }
+        catch (const std::exception& ex)
+        {
+            PyErr_SetString(PyExc_RuntimeError, ex.what());
+        }
+        catch (...)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+        }
 
             return {};
-        });
+    });
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -737,9 +739,9 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
-                        using namespace phylanx::execution_tree;
-                        return numeric_operand(p, {}).get()[0];
-                    });
+                    using namespace phylanx::execution_tree;
+                    return numeric_operand(p, {}).get()[0];
+                });
             },
             "evaluate execution tree")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
@@ -748,7 +750,7 @@ PYBIND11_MODULE(_phylanx, m)
                     [&]() {
                         p.store(hpx::launch::sync,
                             phylanx::ir::node_data<double>{d});
-                    });
+                });
             },
             "assign another value to variable")
         .def("num_dimensions",
