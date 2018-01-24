@@ -24,15 +24,6 @@ namespace phylanx { namespace performance_counters
         return hpx::naming::invalid_gid;
     }
 
-    bool primitive_counter_discoverer(
-        hpx::performance_counters::counter_info const& info,
-        hpx::performance_counters::discover_counter_func const& f,
-        hpx::performance_counters::discover_counters_mode mode,
-        hpx::error_code& ec)
-    {
-        return f(info, ec);
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // This function will be registered as a startup function for HPX below.
     // That means it will be executed in an HPX-thread before hpx_main, but
@@ -77,10 +68,10 @@ namespace phylanx { namespace performance_counters
             hpx::performance_counters::install_counter_type(
                 "/phylanx/primitives/" + name + "/time/eval",
                 hpx::performance_counters::counter_raw_values,
-                "returns the total execution time of eval() function of the" +
+                "returns the total execution time of eval() function of the " +
                     name + " primitive",
                 &primitive_counter_creator,
-                &primitive_counter_discoverer);
+                &hpx::performance_counters::locality_counter_discoverer);
         }
     }
 
