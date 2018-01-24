@@ -10,6 +10,7 @@
 #include <hpx/runtime/startup_function.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/include/performance_counters.hpp>
+#include <hpx/include/iostreams.hpp>
 
 #include <cstdint>
 
@@ -20,7 +21,6 @@ namespace phylanx { namespace performance_counters
         hpx::performance_counters::counter_info const& info,
         hpx::error_code& ec)
     {
-        namespace et = phylanx::execution_tree;
         return hpx::naming::invalid_gid;
     }
 
@@ -30,7 +30,7 @@ namespace phylanx { namespace performance_counters
         hpx::performance_counters::discover_counters_mode mode,
         hpx::error_code& ec)
     {
-        return false;
+        return f(info, ec);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -65,12 +65,23 @@ namespace phylanx { namespace performance_counters
             "returns the current value of the move-assignment count of "
                 "any node_data<double>");
 
-        hpx::performance_counters::install_counter_type(
-            "/phylanx/primitives/add/time/eval",
-            hpx::performance_counters::counter_raw_values,
-            "returns the total execution time of eval() function of each primitive",
-            &primitive_counter_creator,
-            &primitive_counter_discoverer);
+
+        namespace et = phylanx::execution_tree;
+
+        et::pattern_list const& pattern_list = et::get_all_known_patterns();
+
+        for (auto const& patterns : pattern_list)
+        {
+            auto const& pattern = *(patterns.begin());
+            std::string const& name = hpx::util::get<0>(pattern);
+            hpx::performance_counters::install_counter_type(
+                "/phylanx/primitives/" + name + "/time/eval",
+                hpx::performance_counters::counter_raw_values,
+                "returns the total execution time of eval() function of the" +
+                    name + " primitive",
+                &primitive_counter_creator,
+                &primitive_counter_discoverer);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
