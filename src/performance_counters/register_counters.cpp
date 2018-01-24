@@ -43,6 +43,21 @@ namespace phylanx { namespace performance_counters {
 
             return value;
         }
+
+        // Retrieve the list of existing primitives for the current execution tree and keep it
+        void reinit(bool reset) override
+        {
+            namespace et = phylanx::execution_tree;
+
+            et::pattern_list const& pattern_list = et::get_all_known_patterns();
+
+            for (auto const& patterns : pattern_list)
+            {
+                auto const& pattern = *(patterns.begin());
+                std::string const& name = hpx::util::get<0>(pattern);
+                auto entries = hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/name#*");
+            }
+        }
     };
 
     using primitive_counter_type = hpx::components::component<primitive_counter>;
@@ -53,11 +68,13 @@ namespace phylanx { namespace performance_counters {
     {
         namespace pc = hpx::performance_counters;
 
+        // Break down the counter name
         pc::counter_path_elements paths;
         pc::get_counter_path_elements(info.fullname_, paths, ec);
         if (ec)
             return hpx::naming::invalid_gid;
 
+        // If another counter's name was give
         if (paths.parentinstance_is_basename_)
         {
             HPX_THROWS_IF(ec,
@@ -78,6 +95,7 @@ namespace phylanx { namespace performance_counters {
             hpx::naming::gid_type id;
             try
             {
+                // Try constructing the actual counter
                 id = hpx::components::server::construct<primitive_counter_type>(
                     complemented_info);
             }
@@ -136,21 +154,27 @@ namespace phylanx { namespace performance_counters {
 
         namespace et = phylanx::execution_tree;
 
+        // Query the list of existing primitive types
         et::pattern_list const& pattern_list = et::get_all_known_patterns();
 
+        // Iterate and register a time and count performance counter per each primitive
         for (auto const& patterns : pattern_list)
         {
+            // No need to process all entries in the list
             auto const& pattern = *(patterns.begin());
+            // The name of the primitive
             std::string const& name = hpx::util::get<0>(pattern);
+            // Register a primitive time performance counter
             hpx::performance_counters::install_counter_type(
-                "/phylanx/primitives/" + name + "/time/eval",
+                "/phylanx/time/primitives/" + name + "/eval",
                 hpx::performance_counters::counter_raw_values,
                 "returns the total execution time of eval() function of the " +
                     name + " primitive",
                 &primitive_counter_creator,
                 &hpx::performance_counters::locality_counter_discoverer);
+            // Register a primitive count performance counter
             hpx::performance_counters::install_counter_type(
-                "/phylanx/primitives/" + name + "/count/eval",
+                "/phylanx/count/primitives/" + name + "/eval",
                 hpx::performance_counters::counter_raw_values,
                 "returns the number of times of eval() function of each " +
                 name + " primitive instance was called",
