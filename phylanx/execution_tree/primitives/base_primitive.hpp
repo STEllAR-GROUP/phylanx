@@ -121,7 +121,7 @@ namespace phylanx { namespace execution_tree
     using argument_value_type =
         phylanx::util::variant<
             ast::nil
-          , bool
+          , phylanx::ir::node_data<bool>
           , std::int64_t
           , std::string
           , phylanx::ir::node_data<double>

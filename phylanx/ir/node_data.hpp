@@ -891,6 +891,9 @@ namespace phylanx { namespace ir
 
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, node_data<double> const& nd);
+
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, node_data<bool> const& nd);
 }}
 
 #endif

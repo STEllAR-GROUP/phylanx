@@ -36,6 +36,22 @@ int main(int argc, char* argv[])
     }
 
     {
+        phylanx::ir::node_data<bool> single_value(false);
+        HPX_TEST_EQ(single_value[0], false);
+
+        //auto begin = hpx::util::begin(single_value);
+        //auto end = hpx::util::end(single_value);
+        //
+        //HPX_TEST(begin != end);
+        //HPX_TEST_EQ(*begin, false);
+        //HPX_TEST(++begin == end);
+
+        HPX_TEST_EQ(single_value.num_dimensions(), std::size_t(0UL));
+        HPX_TEST(single_value.dimensions() ==
+            phylanx::ir::node_data<bool>::dimensions_type({1, 1}));
+    }
+
+    {
         blaze::Rand<blaze::DynamicVector<double>> gen{};
         blaze::DynamicVector<double> v = gen.generate(1007UL);
 
@@ -46,6 +62,23 @@ int main(int argc, char* argv[])
             phylanx::ir::node_data<double>::dimensions_type({v.size(), 1UL}));
 
         test_serialization(array_value);
+    }
+
+    {
+        blaze::Rand<blaze::DynamicVector<double>> gen{};
+        blaze::DynamicVector<double> v = gen.generate(1007UL);
+        phylanx::ir::node_data<bool> array_value(v);
+
+        //auto begin = hpx::util::begin(array_value);
+        //auto end = hpx::util::end(array_value);
+        //
+        //HPX_TEST_EQ(std::distance(begin, end), v.size());
+        //HPX_TEST(
+        //    std::equal(begin, end, hpx::util::begin(v), hpx::util::end(v)));
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<bool>::dimensions_type({v.size(), 1UL}));
     }
 
     {
@@ -73,6 +106,26 @@ int main(int argc, char* argv[])
                 {m.rows(), m.columns()}));
 
         test_serialization(array_value);
+    }
+
+    {
+        blaze::Rand<blaze::DynamicMatrix<double>> gen{};
+        blaze::DynamicMatrix<double> m = gen.generate(42UL, 101UL);
+
+        phylanx::ir::node_data<bool> array_value(m);
+
+        //auto begin = hpx::util::begin(array_value);
+        //auto end = hpx::util::end(array_value);
+        //
+        //HPX_TEST_EQ(std::distance(begin, end),
+        //    std::distance(m.begin(0UL), m.end(m.rows() - 1UL)));
+        //HPX_TEST(
+        //    std::equal(begin, end, m.begin(0UL), m.end(m.rows() - 1UL)));
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<bool>::dimensions_type(
+                {m.rows(), m.columns()}));
     }
 
     return hpx::util::report_errors();
