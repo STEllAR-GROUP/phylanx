@@ -7,20 +7,97 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/compile.hpp>
 
-#include <hpx/runtime/startup_function.hpp>
-#include <hpx/include/util.hpp>
-#include <hpx/include/performance_counters.hpp>
+#include <hpx/include/components.hpp>
 #include <hpx/include/iostreams.hpp>
+#include <hpx/include/performance_counters.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/performance_counters/base_performance_counter.hpp>
+#include <hpx/runtime/startup_function.hpp>
 
 #include <cstdint>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace performance_counters
-{
+namespace phylanx { namespace performance_counters {
+    class primitive_counter
+      : public hpx::performance_counters::base_performance_counter<primitive_counter>
+    {
+    public:
+        primitive_counter() = default;
+
+        primitive_counter(
+            hpx::performance_counters::counter_info const& info)
+          : hpx::performance_counters::base_performance_counter<
+                primitive_counter>(info)
+        { }
+
+        hpx::performance_counters::counter_values_array
+        get_counter_values_array(bool reset) override
+        {
+            hpx::performance_counters::counter_values_array value;
+
+            value.time_ = hpx::util::high_resolution_clock::now();
+            value.status_ = hpx::performance_counters::status_new_data;
+            value.count_ = ++invocation_count_;
+
+            /*value.values_ = std::move(result);*/
+
+            return value;
+        }
+    };
+
+    using primitive_counter_type = hpx::components::component<primitive_counter>;
+
     hpx::naming::gid_type primitive_counter_creator(
         hpx::performance_counters::counter_info const& info,
         hpx::error_code& ec)
     {
+        namespace pc = hpx::performance_counters;
+
+        pc::counter_path_elements paths;
+        pc::get_counter_path_elements(info.fullname_, paths, ec);
+        if (ec)
+            return hpx::naming::invalid_gid;
+
+        if (paths.parentinstance_is_basename_)
+        {
+            HPX_THROWS_IF(ec,
+                hpx::bad_parameter,
+                "primitive_counter_creator",
+                "invalid counter instance parent name: " +
+                paths.parentinstancename_);
+            return hpx::naming::invalid_gid;
+        }
+
+        if (paths.instancename_ == "total" && paths.instanceindex_ == -1)
+        {
+            pc::counter_info complemented_info = info;
+            pc::complement_counter_info(complemented_info, info, ec);
+            if (ec)
+                return hpx::naming::invalid_gid;
+
+            hpx::naming::gid_type id;
+            try
+            {
+                id = hpx::components::server::construct<primitive_counter_type>(
+                    complemented_info);
+            }
+            catch (hpx::exception const& e)
+            {
+                if (&ec == &hpx::throws)
+                    throw;
+                ec = hpx::make_error_code(e.get_error(), e.what());
+                return hpx::naming::invalid_gid;
+            }
+
+            if (&ec != &hpx::throws)
+                ec = hpx::make_success_code();
+            return id;
+        }
+
+        HPX_THROWS_IF(ec,
+            hpx::bad_parameter,
+            "primitive_counter_creator",
+            "invalid counter instance name: " + paths.instancename_);
         return hpx::naming::invalid_gid;
     }
 
@@ -91,4 +168,11 @@ namespace phylanx { namespace performance_counters
 // runtime startup. We use this function to register our performance counter
 // type and performance counter instances.
 HPX_REGISTER_STARTUP_MODULE(phylanx::performance_counters::get_startup);
+
+using primitive_counter_type = hpx::components::component<
+    phylanx::performance_counters::primitive_counter>;
+using primitive_counter = phylanx::performance_counters::primitive_counter;
+
+HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
+    primitive_counter_type, primitive_counter, "base_performance_counter");
 
