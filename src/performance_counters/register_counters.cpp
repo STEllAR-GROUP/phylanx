@@ -149,6 +149,13 @@ namespace phylanx { namespace performance_counters {
                     name + " primitive",
                 &primitive_counter_creator,
                 &hpx::performance_counters::locality_counter_discoverer);
+            hpx::performance_counters::install_counter_type(
+                "/phylanx/primitives/" + name + "/count/eval",
+                hpx::performance_counters::counter_raw_values,
+                "returns the number of times of eval() function of each " +
+                name + " primitive instance was called",
+                &primitive_counter_creator,
+                &hpx::performance_counters::locality_counter_discoverer);
         }
     }
 
