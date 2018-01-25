@@ -270,6 +270,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
 
+    public:
+        // Pinning functionality
+        void pin()
+        {
+        }
+        void unpin()
+        {
+        }
+        std::uint32_t pin_count() const
+        {
+            return 0;
+        }
+
     protected:
         static std::vector<primitive_argument_type> noargs;
         std::vector<primitive_argument_type> operands_;
