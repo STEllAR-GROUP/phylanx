@@ -1,4 +1,4 @@
-//  Copyright (c) 2017  Bibek Wagle
+//  Copyright (c) 2017 Bibek Wagle
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -22,7 +22,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public hpx::components::component_base<sub_operation>
     {
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static match_pattern_type const match_data;
 
         sub_operation() = default;
 
