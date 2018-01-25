@@ -103,6 +103,11 @@ phylanx_option(
   "Enable or disable the compilation of the examples"
   ON ADVANCED CATEGORY "Build")
 
+phylanx_option(
+        PHYLANX_WITH_DOCUMENTATION BOOL
+        "Enable or disable building Documentation"
+        OFF ADVANCED CATEGORY "Build")
+
 if(MSVC)
   phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
     "Force creating pseudo targets and pseudo dependencies (default OFF)."
