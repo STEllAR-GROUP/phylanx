@@ -9,7 +9,8 @@
 #include <hpx/util/lightweight_test.hpp>
 
 void test_expressiontree_topology(char const* name,
-    char const* code, char const* expected)
+    char const* code, char const* newick_expected,
+    char const* dot_expected)
 {
     phylanx::execution_tree::compiler::function_list snippets;
 
@@ -17,23 +18,35 @@ void test_expressiontree_topology(char const* name,
         phylanx::ast::generate_ast(code), snippets);
 
     auto topology = f.get_expression_topology();
-    std::string tree = phylanx::execution_tree::newick_tree(name, topology);
+    std::string newick_tree =
+        phylanx::execution_tree::newick_tree(name, topology);
 
-    HPX_TEST_EQ(tree, std::string(expected));
+    HPX_TEST_EQ(newick_tree, std::string(newick_expected));
+
+    std::string dot_tree = phylanx::execution_tree::dot_tree(name, topology);
+
+    HPX_TEST_EQ(dot_tree, std::string(dot_expected));
 }
 
 int main(int argc, char* argv[])
 {
     test_expressiontree_topology("test1",
         "define(x, 42)",
-            "(/phylanx/define-variable#0#x/0#7) test1;");
+            "(/phylanx/define-variable#0#x/0#7) test1;",
+            "graph test1 {\n"
+            "}\n");
 
     test_expressiontree_topology("test2",
         "block(define(x, 42), define(y, x))",
-        "((/phylanx/define-variable#0#x/0#13,"
-            "(/phylanx/variable#0#x/0#31) "
-                "/phylanx/define-variable#1#y/0#28) "
-            "/phylanx/block#0/0#0) test2;");
+            "((/phylanx/define-variable#0#x/0#13,"
+                "(/phylanx/variable#0#x/0#31) "
+                    "/phylanx/define-variable#1#y/0#28) "
+                "/phylanx/block#0/0#0) test2;",
+            "graph test2 {\n"
+            "    \"/phylanx/block#0/0#0\" -- \"/phylanx/define-variable#0#x/0#13\";\n"
+            "    \"/phylanx/block#0/0#0\" -- \"/phylanx/define-variable#1#y/0#28\";\n"
+            "    \"/phylanx/define-variable#1#y/0#28\" -- \"/phylanx/variable#0#x/0#31\";\n"
+            "}\n");
 
     return hpx::util::report_errors();
 }

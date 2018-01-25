@@ -168,6 +168,10 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<topology> primitive::expression_topology() const
     {
+        // retrieve name of this node (the component can only retrieve
+        // names of dependent nodes)
+        std::string this_name = this->base_type::registered_name();
+
         // retrieve name of component instance
         using action_type = primitives::base_primitive::
             expression_topology_action;
@@ -175,14 +179,18 @@ namespace phylanx { namespace execution_tree
         hpx::future<topology> f =
             hpx::async(action_type(), this->base_type::get_id());
 
-        // retrieve name of this node (the component can only retrieve
-        // names of dependent nodes)
-        std::string this_name = this->base_type::registered_name();
-
         return f.then(
             [this_name](hpx::future<topology> && f)
             {
-                return topology{{f.get()}, this_name};
+                topology && t = f.get();
+                if (t.name_.empty())
+                {
+                    t.name_ = this_name;
+                    return t;
+                }
+                std::vector<topology> children;
+                children.emplace_back(std::move(t));
+                return topology{std::move(children), this_name};
             });
     }
 
