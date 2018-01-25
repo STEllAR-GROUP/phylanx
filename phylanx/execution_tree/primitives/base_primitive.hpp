@@ -1,4 +1,5 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2018 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -281,6 +282,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::uint32_t pin_count() const
         {
             return 0;
+        }
+
+        const std::int64_t get_count()
+        {
+            return count_;
+        }
+
+        const std::int64_t get_duration()
+        {
+            return duration_;
         }
 
     protected:
