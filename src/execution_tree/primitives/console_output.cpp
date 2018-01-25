@@ -101,10 +101,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return std::make_shared<detail::console_output>()->eval(operands_, args);
     }
-
-    // Never evaluate output operations while defining a function
-    bool console_output::bind(std::vector<primitive_argument_type> const&)
-    {
-        return false;
-    }
 }}}

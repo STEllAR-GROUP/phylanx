@@ -426,8 +426,8 @@ void test_recursive_function()
 
 int main(int argc, char* argv[])
 {
-    test_builtin_environment();
-    test_builtin_environment_vars();
+//    test_builtin_environment();
+//    test_builtin_environment_vars();
 
     test_define_variable();
     test_define_variable_block();

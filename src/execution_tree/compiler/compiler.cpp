@@ -312,8 +312,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             define_function(f.arg_).set_body(hpx::launch::sync,
                 std::move(handle_lambda(args, body).arg_));
 
-            // define shouldn't return a function that evaluates to itself, let
-            // it return nil{} instead
+            // define-function shouldn't return a function that evaluates
+            // to itself, let it return nil{} instead
             return always_nil{}(std::move(define_function_name));
         }
 
