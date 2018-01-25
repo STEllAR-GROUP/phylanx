@@ -25,16 +25,8 @@ HPX_DEFINE_GET_COMPONENT_TYPE(literal_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    #ifdef ONE_ARG_CONS
     variable::variable(std::string name)
       : name_(std::move(name))
-      , evaluated_(false)
-    {}
-    #endif
-
-    variable::variable(std::string data,std::string name)
-      : data_(std::move(data))
-      , name_(std::move(name))
       , evaluated_(false)
     {}
 

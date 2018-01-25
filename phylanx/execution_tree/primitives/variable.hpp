@@ -25,11 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         variable() = default;
 
-        #ifdef ONE_ARG_CONS
         variable(std::string name);
-        #endif
-
-        variable(std::string data,std::string name);
 
         variable(primitive_argument_type&& operand);
         variable(std::vector<primitive_argument_type>&& operands);
