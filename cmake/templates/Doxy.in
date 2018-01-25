@@ -1,0 +1,17 @@
+# Copyright (c) 2018 Bibek Wagle
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+PROJECT_NAME = "Phylanx"
+EXTRACT_ALL = YES
+GENERATE_HTML = YES
+MACRO_EXPANSION = YES
+PREDEFINED = @DOCYGEN_DEFINATIONS@
+OUTPUT_DIRECTORY = @CMAKE_CURRENT_BINARY_DIR@/doxygen_API_docs/
+GENERATE_LATEX = YES
+HAVE_DOT = NO
+INPUT = @DOXYGEN_INPUTS@
+ENABLE_PREPROCESSING = NO
+SKIP_FUNCTION_MACROS = YES
+EXCLUDE_SYMBOLS = detail
