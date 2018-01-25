@@ -44,7 +44,11 @@ namespace phylanx { namespace performance_counters
             value.count_ = ++invocation_count_;
 
             // Need to call reinit here if it has never been called before.
-            reinit(false);
+            if (!first_init)
+            {
+                first_init = true;
+                reinit(false);
+            }
 
             std::vector<std::int64_t> result;
             result.reserve(instances_.size());
@@ -93,6 +97,7 @@ namespace phylanx { namespace performance_counters
         std::vector<std::shared_ptr<
             phylanx::execution_tree::primitives::base_primitive>>
             instances_;
+        bool first_init = false;
     };
 
     hpx::naming::gid_type primitive_counter_creator(
