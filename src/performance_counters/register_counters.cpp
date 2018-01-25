@@ -32,6 +32,9 @@ namespace phylanx { namespace performance_counters
           : hpx::performance_counters::base_performance_counter<
                 primitive_counter>(info)
         {
+            hpx::performance_counters::counter_path_elements paths;
+            hpx::performance_counters::get_counter_path_elements(info.fullname_, paths);
+            duration_counter = paths.countername_.find("count") == std::string::npos;
         }
 
         hpx::performance_counters::counter_values_array
@@ -56,7 +59,10 @@ namespace phylanx { namespace performance_counters
             // Extract the values from instances_
             for (auto const& instance : instances_)
             {
-                result.push_back(instance->get_duration());
+                if (duration_counter)
+                    result.push_back(instance->get_duration());
+                else
+                    result.push_back(instance->get_count());
             }
 
             value.values_ = std::move(result);
@@ -98,6 +104,7 @@ namespace phylanx { namespace performance_counters
             phylanx::execution_tree::primitives::base_primitive>>
             instances_;
         bool first_init = false;
+        bool duration_counter = false;
     };
 
     hpx::naming::gid_type primitive_counter_creator(

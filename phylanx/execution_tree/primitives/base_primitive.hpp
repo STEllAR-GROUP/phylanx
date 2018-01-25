@@ -284,12 +284,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return 0;
         }
 
-        const std::int64_t get_count()
+        std::int64_t get_count() const
         {
             return count_;
         }
 
-        const std::int64_t get_duration()
+        std::int64_t get_duration() const
         {
             return duration_;
         }
