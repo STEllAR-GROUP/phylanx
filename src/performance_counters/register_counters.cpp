@@ -9,13 +9,17 @@
 #include <phylanx/execution_tree/compile.hpp>
 #include <phylanx/execution_tree/primitives.hpp>
 
+#include <hpx/include/agas.hpp>
 #include <hpx/include/components.hpp>
-#include <hpx/include/iostreams.hpp>
 #include <hpx/include/performance_counters.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/startup_function.hpp>
 
 #include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace performance_counters
@@ -25,16 +29,22 @@ namespace phylanx { namespace performance_counters
             primitive_counter>
     {
     public:
-        primitive_counter() = default;
+        primitive_counter()
+          : first_init_(false)
+          , duration_counter_(false)
+        {}
 
-        primitive_counter(
-            hpx::performance_counters::counter_info const& info)
+        primitive_counter(hpx::performance_counters::counter_info const& info)
           : hpx::performance_counters::base_performance_counter<
                 primitive_counter>(info)
+          , first_init_(false)
+          , duration_counter_(false)
         {
             hpx::performance_counters::counter_path_elements paths;
-            hpx::performance_counters::get_counter_path_elements(info.fullname_, paths);
-            duration_counter = paths.countername_.find("count") == std::string::npos;
+            hpx::performance_counters::get_counter_path_elements(
+                info.fullname_, paths);
+            duration_counter_ =
+                paths.countername_.find("time") != std::string::npos;
         }
 
         hpx::performance_counters::counter_values_array
@@ -47,9 +57,9 @@ namespace phylanx { namespace performance_counters
             value.count_ = ++invocation_count_;
 
             // Need to call reinit here if it has never been called before.
-            if (!first_init)
+            if (!first_init_)
             {
-                first_init = true;
+                first_init_ = true;
                 reinit(false);
             }
 
@@ -59,10 +69,10 @@ namespace phylanx { namespace performance_counters
             // Extract the values from instances_
             for (auto const& instance : instances_)
             {
-                if (duration_counter)
-                    result.push_back(instance->get_duration());
+                if (duration_counter_)
+                    result.push_back(instance->get_eval_duration(reset));
                 else
-                    result.push_back(instance->get_count());
+                    result.push_back(instance->get_eval_count(reset));
             }
 
             value.values_ = std::move(result);
@@ -74,15 +84,12 @@ namespace phylanx { namespace performance_counters
         // tree and keep it
         void reinit(bool reset) override
         {
-            using phylanx::execution_tree::primitives::base_primitive;
             namespace et = phylanx::execution_tree;
 
-            et::pattern_list const& pattern_list = et::get_all_known_patterns();
-
-            for (auto const& patterns : pattern_list)
+            for (auto const& patterns : et::get_all_known_patterns())
             {
-                auto const& pattern = *(patterns.begin());
-                std::string const& name = hpx::util::get<0>(pattern);
+                std::string const& name = hpx::util::get<0>(patterns[0]);
+
                 // Structure of primitives in symbolic namespace:
                 //     /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
                 auto entries = hpx::agas::find_symbols(
@@ -91,8 +98,11 @@ namespace phylanx { namespace performance_counters
                 // TODO: Only keep entries that live on this locality.
                 // This will be a problem when Phylanx becomes distributed.
                 instances_.clear();
+                instances_.reserve(entries.size());
+
                 for (auto const& value : entries)
                 {
+                    using phylanx::execution_tree::primitives::base_primitive;
                     instances_.push_back(hpx::get_ptr<base_primitive>(
                         hpx::launch::sync, value.second));
                 }
@@ -103,8 +113,8 @@ namespace phylanx { namespace performance_counters
         std::vector<std::shared_ptr<
             phylanx::execution_tree::primitives::base_primitive>>
             instances_;
-        bool first_init = false;
-        bool duration_counter = false;
+        bool first_init_;
+        bool duration_counter_;
     };
 
     hpx::naming::gid_type primitive_counter_creator(
@@ -116,8 +126,7 @@ namespace phylanx { namespace performance_counters
         // Break down the counter name
         pc::counter_path_elements paths;
         pc::get_counter_path_elements(info.fullname_, paths, ec);
-        if (ec)
-            return hpx::naming::invalid_gid;
+        if (ec) return hpx::naming::invalid_gid;
 
         // If another counter's name was give
         if (paths.parentinstance_is_basename_)
@@ -134,8 +143,7 @@ namespace phylanx { namespace performance_counters
         {
             pc::counter_info complemented_info = info;
             pc::complement_counter_info(complemented_info, info, ec);
-            if (ec)
-                return hpx::naming::invalid_gid;
+            if (ec) return hpx::naming::invalid_gid;
 
             hpx::naming::gid_type id;
             try
@@ -176,44 +184,36 @@ namespace phylanx { namespace performance_counters
         // Install the counter types, de-installation of the types is handled
         // automatically.
         hpx::performance_counters::install_counter_type(
-            "/phylanx/count/node_data/copy_constructions",
+            "/phylanx/node_data_double/count/copy_constructions",
             &ir::node_data<double>::copy_construction_count,
             "returns the current value of the copy-construction count of "
                 "any node_data<double>");
 
         hpx::performance_counters::install_counter_type(
-            "/phylanx/count/node_data/move_constructions",
+            "/phylanx/node_data_double/count/move_constructions",
             &ir::node_data<double>::move_construction_count,
             "returns the current value of the move-construction count of "
                 "any node_data<double>");
 
         hpx::performance_counters::install_counter_type(
-            "/phylanx/count/node_data/copy_assignments",
+            "/phylanx/node_data_double/count/copy_assignments",
             &ir::node_data<double>::copy_assignment_count,
             "returns the current value of the copy-assignment count of "
                 "any node_data<double>");
 
         hpx::performance_counters::install_counter_type(
-            "/phylanx/count/node_data/move_assignments",
+            "/phylanx/node_data_double/count/move_assignments",
             &ir::node_data<double>::move_assignment_count,
             "returns the current value of the move-assignment count of "
                 "any node_data<double>");
 
-
-        namespace et = phylanx::execution_tree;
-
-        // Query the list of existing primitive types
-        et::pattern_list const& pattern_list = et::get_all_known_patterns();
-
         // Iterate and register a time and count performance counter per each
         // primitive
-        for (auto const& patterns : pattern_list)
+        namespace et = phylanx::execution_tree;
+        for (auto const& patterns : et::get_all_known_patterns())
         {
-            // No need to process all entries in the list
-            auto const& pattern = *(patterns.begin());
-
             // The name of the primitive
-            std::string const& name = hpx::util::get<0>(pattern);
+            std::string const& name = hpx::util::get<0>(patterns[0]);
 
             // Register a primitive time performance counter
             hpx::performance_counters::install_counter_type(
