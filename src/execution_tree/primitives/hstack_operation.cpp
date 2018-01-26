@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -35,11 +36,12 @@ HPX_DEFINE_GET_COMPONENT_TYPE(hstack_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const hstack_operation::match_data =
-    {
-        hpx::util::make_tuple(
-            "hstack", "hstack(_1, _2)", &create<hstack_operation>)
-    };
+    match_pattern_type const hstack_operation::match_data =
+        {
+        hpx::util::make_tuple("hstack",
+            std::vector<std::string>{"hstack(_1, _2)"},
+            &create<hstack_operation>)
+        };
 
     ///////////////////////////////////////////////////////////////////////////
     hstack_operation::hstack_operation(
