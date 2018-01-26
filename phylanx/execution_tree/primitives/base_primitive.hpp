@@ -1,4 +1,5 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2018 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -190,11 +191,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         base_primitive()
-          : count_(0ll), duration_(0ll)
+          : eval_count_(0ll)
+          , eval_duration_(0ll)
         {}
 
-        base_primitive(std::vector<primitive_argument_type> && operands)
-          : operands_(std::move(operands)), count_(0ll), duration_(0ll)
+        base_primitive(std::vector<primitive_argument_type>&& operands)
+          : operands_(std::move(operands))
+          , eval_count_(0ll)
+          , eval_duration_(0ll)
         {}
 
         virtual ~base_primitive() = default;
@@ -202,8 +206,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval_nonvirtual(
             std::vector<primitive_argument_type> const& args) const
         {
-            hpx::util::scoped_timer<std::int64_t> timer(duration_);
-            ++count_;
+            hpx::util::scoped_timer<std::int64_t> timer(eval_duration_);
+            ++eval_count_;
             return eval(args);
         }
         virtual hpx::future<primitive_result_type> eval(
@@ -270,11 +274,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
 
+    public:
+        // Pinning functionality helper functions
+        void pin()
+        {
+        }
+        void unpin()
+        {
+        }
+        std::uint32_t pin_count() const
+        {
+            return 0;
+        }
+
+        // access data for performance counter
+        std::int64_t get_eval_count(bool reset) const
+        {
+            return hpx::util::get_and_reset_value(eval_count_, reset);
+        }
+
+        std::int64_t get_eval_duration(bool reset) const
+        {
+            return hpx::util::get_and_reset_value(eval_duration_, reset);
+        }
+
     protected:
         static std::vector<primitive_argument_type> noargs;
         std::vector<primitive_argument_type> operands_;
-        mutable std::int64_t count_;
-        mutable std::int64_t duration_;
+
+        // Performance counter data
+        mutable std::int64_t eval_count_;
+        mutable std::int64_t eval_duration_;
     };
 }}}
 
