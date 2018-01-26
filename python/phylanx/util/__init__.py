@@ -235,7 +235,7 @@ def convert_to_phylanx_type(v):
             return et.var(v)
     except:
           pass
-    if t == int or t == float or t == list:
+    if t == int or t == float or t == list or t == str:
         return et.var(v)
     else:
         return v
@@ -253,8 +253,8 @@ class phyfun(object):
         # Create the AST
         tree = ast.parse(src)
         r = Recompiler()
-        self.new_src = "block(" + r.recompile(tree)+')\n'
+        self.__physl_src__ = "block(" + r.recompile(tree)+')\n'
 
     def __call__(self,*args):
         nargs = tuple(convert_to_phylanx_type(a) for a in args)
-        return et.eval(self.new_src,*nargs)
+        return et.eval(self.__physl_src__,*nargs)

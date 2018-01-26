@@ -65,8 +65,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](args_type && args) -> primitive_result_type
                     {
+                        bool init = true;
                         for (auto const& arg : args)
                         {
+                            if(init)
+                                init = false;
+                            else
+                                // Put spaces in the output
+                                // to match Python
+                                hpx::cout << ' ';
                             hpx::cout << arg;
                         }
                         hpx::cout << std::endl;

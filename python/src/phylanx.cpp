@@ -179,46 +179,41 @@ typename hpx::util::invoke_result<phylanx::execution_tree::primitive(Ts...),
     Ts...>::type
 expression_compiler(std::string xexpr, Ts const&... ts)
 {
-    return hpx::threads::run_as_hpx_thread([&]() {
-        using namespace phylanx::execution_tree;
-        try
+    namespace et = phylanx::execution_tree;
+    return hpx::threads::run_as_hpx_thread(
+        [&]() -> et::primitive
         {
-            phylanx::execution_tree::compiler::function_list eval_snippets;
-            auto x = phylanx::execution_tree::compile(
-                xexpr, eval_snippets);    //, env);
+            try
+            {
+                et::compiler::function_list eval_snippets;
+                auto x = et::compile(xexpr, eval_snippets);
 
-            phylanx::execution_tree::primitive_argument_type result;
-            result = x(ts...);
-            int ndx = result.index();
-            if (ndx == 4)
-            {
-                auto node_result =
-                    phylanx::util::get<phylanx::ir::node_data<double>>(result);
-                return primitive{
-                    hpx::local_new<primitives::variable>(node_result)};
+                et::primitive_argument_type result = x(ts...);
+                switch (result.index())
+                {
+                case 2: HPX_FALLTHROUGH;    // std::int64_t
+                case 3: HPX_FALLTHROUGH;    // std::string
+                case 4:                     // phylanx::ir::node_data<double>
+                    return et::primitive{
+                        hpx::local_new<et::primitives::variable>(std::move(result))
+                    };
+
+                 default:
+                    PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
+                    break;
+                 }
             }
-            else if (ndx == 2)
+            catch (const std::exception& ex)
             {
-                auto node_result = phylanx::util::get<std::int64_t>(result);
-                return primitive{
-                    hpx::local_new<primitives::variable>(node_result)};
+                PyErr_SetString(PyExc_RuntimeError, ex.what());
             }
-            else
+            catch (...)
             {
-                PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
+                PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
             }
-        }
-        catch (const std::exception& ex)
-        {
-            PyErr_SetString(PyExc_RuntimeError, ex.what());
-        }
-        catch (...)
-        {
-            PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-        }
-        std::int64_t node_result = 0;
-        return primitive{hpx::local_new<primitives::variable>(node_result)};
-    });
+
+            return {};
+        });
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -559,6 +554,16 @@ PYBIND11_MODULE(_phylanx, m)
         },
         "create a new variable from a floating point value");
     execution_tree.def("var",
+        [](const std::string& d) {
+            return hpx::threads::run_as_hpx_thread([&]() {
+                using namespace phylanx::execution_tree;
+                // Name of the variable is ""
+                return primitive{hpx::local_new<primitives::variable>(
+                    phylanx::execution_tree::primitive_argument_type{d})};
+            });
+        },
+        "create a new variable from a string");
+    execution_tree.def("var",
         [](const std::vector<double>& d) {
             return hpx::threads::run_as_hpx_thread([&]() {
                 using namespace phylanx::execution_tree;
@@ -732,9 +737,9 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
-                    using namespace phylanx::execution_tree;
-                    return numeric_operand(p, {}).get()[0];
-                });
+                        using namespace phylanx::execution_tree;
+                        return numeric_operand(p, {}).get()[0];
+                    });
             },
             "evaluate execution tree")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
@@ -743,7 +748,7 @@ PYBIND11_MODULE(_phylanx, m)
                     [&]() {
                         p.store(hpx::launch::sync,
                             phylanx::ir::node_data<double>{d});
-                });
+                    });
             },
             "assign another value to variable")
         .def("num_dimensions",
@@ -777,6 +782,7 @@ PYBIND11_MODULE(_phylanx, m)
                 });
             },
             "Get the value specified by the x,y index pair")
+        .def("__str__", &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
         .def("dimension",
             [](phylanx::execution_tree::primitive const& p, int index) {
                 return hpx::threads::run_as_hpx_thread([&]() {
