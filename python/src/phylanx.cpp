@@ -172,7 +172,7 @@ namespace phylanx { namespace bindings
 void init_hpx_runtime();
 void stop_hpx_runtime();
 
-const char const* expression_compiler_help =
+char const* const expression_compiler_help =
     "compile and evaluate a numerical expression in Phylanx lisp";
 
 template <typename... Ts>
