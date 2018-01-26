@@ -61,5 +61,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return value_operand(target_, params);
     }
+
+    topology function_reference::expression_topology() const
+    {
+        primitive const* p = util::get_if<primitive>(&target_);
+        if (p != nullptr)
+        {
+            return p->expression_topology(hpx::launch::sync);
+        }
+        return {};
+    }
 }}}
 

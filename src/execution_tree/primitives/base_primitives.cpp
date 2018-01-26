@@ -216,6 +216,10 @@ namespace phylanx { namespace execution_tree
                 {
                     result += dot_tree_helper(child);
                 }
+                else if (!child.name_.empty())
+                {
+                    result += "    \"" + child.name_ + "\";\n";
+                }
             }
 
             return result;
@@ -229,6 +233,10 @@ namespace phylanx { namespace execution_tree
         if (!t.children_.empty())
         {
             result += detail::dot_tree_helper(t);
+        }
+        else if (!t.name_.empty())
+        {
+            result += "    \"" + t.name_ + "\";\n";
         }
 
         return result + "}\n";
