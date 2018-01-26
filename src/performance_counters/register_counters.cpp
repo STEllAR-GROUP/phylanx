@@ -47,6 +47,7 @@ namespace phylanx { namespace performance_counters
                 paths.countername_.find("time") != std::string::npos;
         }
 
+        // Produce the counter value
         hpx::performance_counters::counter_values_array
         get_counter_values_array(bool reset) override
         {
@@ -84,8 +85,8 @@ namespace phylanx { namespace performance_counters
         // tree and keep it
         void reinit(bool reset) override
         {
-            namespace et = phylanx::execution_tree;
-            for (auto const& pattern : et::get_all_known_patterns())
+            for (auto const& pattern :
+                phylanx::execution_tree::get_all_known_patterns())
             {
                 std::string const& name = hpx::util::get<0>(pattern);
 
@@ -101,9 +102,17 @@ namespace phylanx { namespace performance_counters
 
                 for (auto const& value : entries)
                 {
-                    using phylanx::execution_tree::primitives::base_primitive;
-                    instances_.push_back(hpx::get_ptr<base_primitive>(
-                        hpx::launch::sync, value.second));
+                    auto const& instance = hpx::get_ptr<
+                        phylanx::execution_tree::primitives::base_primitive>(
+                            hpx::launch::sync, value.second);
+
+                    // Consider the reset flag
+                    if (reset)
+                    {
+                        instance->get_eval_count(true);
+                        instance->get_eval_duration(true);
+                    }
+                    instances_.push_back(instance);
                 }
             }
         }
