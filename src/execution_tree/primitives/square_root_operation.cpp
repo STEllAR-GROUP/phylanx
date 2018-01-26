@@ -12,11 +12,12 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
-#include <cmath>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -31,10 +32,12 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(square_root_operation_type,
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const
-        square_root_operation::match_data = {
-            hpx::util::make_tuple("square_root", "square_root(_1, _2)",
-                &create<square_root_operation>)};
+    match_pattern_type const square_root_operation::match_data =
+    {
+        hpx::util::make_tuple("square_root",
+            std::vector<std::string>{"square_root(_1, _2)"},
+            &create<square_root_operation>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     square_root_operation::square_root_operation(

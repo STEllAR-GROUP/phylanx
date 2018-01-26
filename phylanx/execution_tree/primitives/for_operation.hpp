@@ -20,7 +20,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public hpx::components::component_base<for_operation>
     {
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static match_pattern_type const match_data;
 
         for_operation() = default;
 

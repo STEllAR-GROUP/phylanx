@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -31,10 +32,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(for_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const for_operation::match_data =
+    match_pattern_type const for_operation::match_data =
     {
-        hpx::util::make_tuple(
-            "for", "for(_1, _2, _3, _4)", &create<for_operation>)
+        hpx::util::make_tuple("for",
+            std::vector<std::string>{"for(_1, _2, _3, _4)"},
+            &create<for_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

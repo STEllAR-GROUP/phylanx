@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,9 +31,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(not_equal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const not_equal::match_data =
+    match_pattern_type const not_equal::match_data =
     {
-        hpx::util::make_tuple("ne", "_1 != _2", &create<not_equal>)
+        hpx::util::make_tuple("ne",
+            std::vector<std::string>{"_1 != _2"},
+            &create<not_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

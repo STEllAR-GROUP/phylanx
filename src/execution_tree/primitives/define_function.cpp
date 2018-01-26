@@ -11,8 +11,8 @@
 #include <hpx/include/util.hpp>
 
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 using define_function_type = hpx::components::component<

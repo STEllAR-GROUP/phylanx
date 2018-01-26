@@ -35,9 +35,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(string_output_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const string_output::match_data =
+    match_pattern_type const string_output::match_data =
     {
-        hpx::util::make_tuple("string", "string(__1)", &create<string_output>)
+        hpx::util::make_tuple("string",
+            std::vector<std::string>{"string(__1)"},
+            &create<string_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

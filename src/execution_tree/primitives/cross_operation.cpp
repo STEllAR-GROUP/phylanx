@@ -14,9 +14,10 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
-#include <type_traits>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -31,14 +32,17 @@ HPX_DEFINE_GET_COMPONENT_TYPE(cross_operation_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    std::vector<match_pattern_type> const cross_operation::match_data =
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const cross_operation::match_data =
     {
-        hpx::util::make_tuple("cross", "cross(_1, _2)", &create<cross_operation>)
+        hpx::util::make_tuple("cross",
+            std::vector<std::string>{"cross(_1, _2)"},
+            &create<cross_operation>)
     };
 
     cross_operation::cross_operation(
-            std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+        std::vector<primitive_argument_type>&& operands)
+        : base_primitive(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

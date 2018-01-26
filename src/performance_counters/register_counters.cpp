@@ -85,10 +85,9 @@ namespace phylanx { namespace performance_counters
         void reinit(bool reset) override
         {
             namespace et = phylanx::execution_tree;
-
-            for (auto const& patterns : et::get_all_known_patterns())
+            for (auto const& pattern : et::get_all_known_patterns())
             {
-                std::string const& name = hpx::util::get<0>(patterns[0]);
+                std::string const& name = hpx::util::get<0>(pattern);
 
                 // Structure of primitives in symbolic namespace:
                 //     /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
@@ -210,10 +209,10 @@ namespace phylanx { namespace performance_counters
         // Iterate and register a time and count performance counter per each
         // primitive
         namespace et = phylanx::execution_tree;
-        for (auto const& patterns : et::get_all_known_patterns())
+        for (auto const& pattern : et::get_all_known_patterns())
         {
             // The name of the primitive
-            std::string const& name = hpx::util::get<0>(patterns[0]);
+            std::string const& name = hpx::util::get<0>(pattern);
 
             // Register a primitive time performance counter
             hpx::performance_counters::install_counter_type(
