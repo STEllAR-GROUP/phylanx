@@ -25,6 +25,9 @@
 
 #include <boost/spirit/include/qi.hpp>
 
+#include <string>
+#include <vector>
+
 namespace phylanx { namespace ast { namespace parser
 {
     namespace qi = boost::spirit::qi;

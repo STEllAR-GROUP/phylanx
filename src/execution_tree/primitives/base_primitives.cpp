@@ -3,6 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:noinclude:HPX_ASSERT
+
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
@@ -10,6 +12,7 @@
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
 
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 #include <vector>

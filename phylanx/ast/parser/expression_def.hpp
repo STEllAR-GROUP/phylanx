@@ -16,6 +16,8 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_function.hpp>
 
+#include <cstdint>
+
 namespace phylanx { namespace ast { namespace parser
 {
     template <typename Iterator>

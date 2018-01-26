@@ -3,12 +3,15 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:noinclude:HPX_ASSERT
+
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 
+#include <cstdint>
 #include <iosfwd>
 
 namespace phylanx { namespace ast

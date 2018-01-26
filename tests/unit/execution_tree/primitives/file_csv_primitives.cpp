@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <string>
+#include <utility>
 #include <vector>
 
 void test_file_io_lit(phylanx::ir::node_data<double> const& in)

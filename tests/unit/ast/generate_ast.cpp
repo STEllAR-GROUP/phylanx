@@ -12,6 +12,8 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 struct traverse_ast
 {

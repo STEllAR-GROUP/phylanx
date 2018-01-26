@@ -3,6 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:noinclude:HPX_ASSERT
+
 #if !defined(PHYLANX_EXECUTION_TREE_COMPILER_HPP)
 #define PHYLANX_EXECUTION_TREE_COMPILER_HPP
 
@@ -19,13 +21,15 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/find_here.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <cstddef>
 #include <functional>
+#include <list>
 #include <map>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree { namespace compiler
 {

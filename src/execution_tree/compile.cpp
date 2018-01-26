@@ -14,6 +14,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
+#include <vector>
 
 namespace phylanx { namespace execution_tree
 {

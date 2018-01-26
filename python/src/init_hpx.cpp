@@ -37,10 +37,10 @@ struct get_command_line
     get_command_line()
     {
         // parse the command line proc file
-        std::ifstream cmdline("/proc/self/cmdline"); 
+        std::ifstream cmdline("/proc/self/cmdline");
         if (!cmdline.is_open())
         {
-            // If we are on Linux and there is no proc filesystem, 
+            // If we are on Linux and there is no proc filesystem,
             // something bad has happened
             std::cerr << "Cannot access file: /proc/self/cmdline" << std::endl;
             std::abort();

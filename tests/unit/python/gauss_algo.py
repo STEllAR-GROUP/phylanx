@@ -1,3 +1,7 @@
+#  Copyright (c) 2017 Chris Taylor
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 # Code samples taken from...
 #
@@ -57,7 +61,7 @@ def gauss_elim2(X): # Basic row pivoting
       #
 
       # should if be the name of this method on a matrix node?
-      # 
+      #
       # the conditional is a new node added to X
       #
       X.conditional(X[j,j] == 0.0, compute_pivot(X,m, n, j));
@@ -68,7 +72,7 @@ def gauss_elim2(X): # Basic row pivoting
             X[i] = X[i,k]-c*X[j,k]
 
    # returns result or 'end point'/'sink' of the computational graph
-   return X 
+   return X
 
 if __name__ == "__main__":
    c = p.context()
@@ -76,7 +80,7 @@ if __name__ == "__main__":
    A = p.randomize(A)
    A = gauss_elim1(A)
    A.write(p.stdout)
-  
+
    B = p.matrix(float, 100, 100)
    B = p.randomize(B)
    B = guass_elim2(B)

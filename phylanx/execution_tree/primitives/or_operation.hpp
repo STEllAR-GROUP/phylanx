@@ -13,6 +13,7 @@
 
 #include <hpx/include/components.hpp>
 
+#include <cstdint>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives

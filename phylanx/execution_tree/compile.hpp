@@ -13,6 +13,7 @@
 
 #include <hpx/include/naming.hpp>
 
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree

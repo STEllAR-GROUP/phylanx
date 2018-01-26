@@ -14,8 +14,10 @@
 #include <boost/spirit/include/qi.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace phylanx { namespace ast
 {

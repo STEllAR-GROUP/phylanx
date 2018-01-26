@@ -11,12 +11,16 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
-#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
 #include <hpx/runtime/components/new.hpp>
+#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
+#include <hpx/util/detail/pp/stringize.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <map>
-#include <string>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
 
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
@@ -230,7 +234,8 @@ PYBIND11_MODULE(_phylanx, m)
     m.attr("__version__") = pybind11::str(
         HPX_PP_STRINGIZE(PHYLANX_VERSION_MAJOR) "."
         HPX_PP_STRINGIZE(PHYLANX_VERSION_MINOR) "."
-        HPX_PP_STRINGIZE(PHYLANX_VERSION_SUBMINOR));
+        HPX_PP_STRINGIZE(PHYLANX_VERSION_SUBMINOR) "."
+        PHYLANX_HAVE_GIT_COMMIT);
 
     ///////////////////////////////////////////////////////////////////////////
     // expose version functions
@@ -772,7 +777,9 @@ PYBIND11_MODULE(_phylanx, m)
             },
             "Get the value at the specified index")
         .def("__getitem__",
-            [](phylanx::execution_tree::primitive const& p, const std::tuple<int,int>& pt) {
+            [](phylanx::execution_tree::primitive const& p,
+                    const std::tuple<int, int>& pt)
+            {
                 const int index1 = std::get<0>(pt);
                 const int index2 = std::get<1>(pt);
                 return hpx::threads::run_as_hpx_thread([&]() {

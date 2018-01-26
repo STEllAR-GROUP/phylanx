@@ -8,6 +8,8 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <string>
+
 void test_expressiontree_topology(char const* name,
     char const* code, char const* newick_expected,
     char const* dot_expected)
@@ -44,10 +46,13 @@ int main(int argc, char* argv[])
                     "/phylanx/define-variable#1#y/0#28) "
                 "/phylanx/block#0/0#0) test2;",
             "graph test2 {\n"
-            "    \"/phylanx/block#0/0#0\" -- \"/phylanx/define-variable#0#x/0#13\";\n"
+            "    \"/phylanx/block#0/0#0\" -- "
+                    "\"/phylanx/define-variable#0#x/0#13\";\n"
             "    \"/phylanx/define-variable#0#x/0#13\";\n"
-            "    \"/phylanx/block#0/0#0\" -- \"/phylanx/define-variable#1#y/0#28\";\n"
-            "    \"/phylanx/define-variable#1#y/0#28\" -- \"/phylanx/variable#0#x/0#31\";\n"
+            "    \"/phylanx/block#0/0#0\" -- "
+                    "\"/phylanx/define-variable#1#y/0#28\";\n"
+            "    \"/phylanx/define-variable#1#y/0#28\" -- "
+                    "\"/phylanx/variable#0#x/0#31\";\n"
             "    \"/phylanx/variable#0#x/0#31\";\n"
             "}\n");
 

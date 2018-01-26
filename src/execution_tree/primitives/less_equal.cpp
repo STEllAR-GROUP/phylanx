@@ -12,6 +12,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <numeric>
 #include <string>

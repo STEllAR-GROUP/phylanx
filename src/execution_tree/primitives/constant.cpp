@@ -12,6 +12,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <memory>

@@ -1,3 +1,8 @@
+#  Copyright (c) 2017 Chris Taylor
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 # algorithm provided by http://math.nist.gov/javanumerics/jama/
 #
 import phylanx as p
@@ -8,7 +13,7 @@ def lu_decomp(A, B):
   LU = A.copy() # deep copy of p.matrix into LU
 
   # phylanx problem context
-  # makes computing easier to 
+  # makes computing easier to
   # think about
   #
   c = A.context()
@@ -70,7 +75,7 @@ def lu_decomp(A, B):
 
   for k in range(n):
     for (i, j) in zip(range(k), range(nx)):
-      Bmat[k,j] /= LU[k,k] 
+      Bmat[k,j] /= LU[k,k]
     for (i, j) in zip(range(k+1, n), range(nx)):
       Bmat[i,j] -= Bmat[k,j]*LU[i,k]
 
@@ -119,4 +124,4 @@ if __name__ == "__main__":
   [ v.write(p.stdout) for v in [ Bmat, LU, L, U] ]
 
   p.compute(c)
-  
+
