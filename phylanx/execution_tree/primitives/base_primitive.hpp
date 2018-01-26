@@ -477,10 +477,10 @@ namespace phylanx { namespace execution_tree
         hpx::id_type, std::vector<primitive_argument_type>&&,
         std::string const&);
 
-    using match_pattern_type =
-        hpx::util::tuple<std::string, std::string, factory_function_type>;
+    using match_pattern_type = hpx::util::tuple<std::string,
+        std::vector<std::string>, factory_function_type>;
 
-    using pattern_list = std::vector<std::vector<match_pattern_type>>;
+    using pattern_list = std::vector<match_pattern_type>;
 
     ///////////////////////////////////////////////////////////////////////////
     // Generic creation helper for creating an instance of the given primitive.

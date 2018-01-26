@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public hpx::components::component_base<define_variable>
     {
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static match_pattern_type const match_data;
 
         define_variable() = default;
 

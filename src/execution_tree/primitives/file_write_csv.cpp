@@ -32,9 +32,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_write_csv_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const file_write_csv::match_data =
+    match_pattern_type const file_write_csv::match_data =
     {
-        hpx::util::make_tuple("file_write_csv", "file_write_csv(_1, _2)",
+        hpx::util::make_tuple("file_write_csv",
+            std::vector<std::string>{"file_write_csv(_1, _2)"},
             &create<file_write_csv>)
     };
 

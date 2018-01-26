@@ -21,7 +21,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public hpx::components::component_base<string_output>
     {
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static match_pattern_type const match_data;
 
         string_output() = default;
 
