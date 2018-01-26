@@ -191,11 +191,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         base_primitive()
-          : count_(0ll), duration_(0ll)
+          : eval_count_(0ll)
+          , eval_duration_(0ll)
         {}
 
-        base_primitive(std::vector<primitive_argument_type> && operands)
-          : operands_(std::move(operands)), count_(0ll), duration_(0ll)
+        base_primitive(std::vector<primitive_argument_type>&& operands)
+          : operands_(std::move(operands))
+          , eval_count_(0ll)
+          , eval_duration_(0ll)
         {}
 
         virtual ~base_primitive() = default;
@@ -203,8 +206,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval_nonvirtual(
             std::vector<primitive_argument_type> const& args) const
         {
-            hpx::util::scoped_timer<std::int64_t> timer(duration_);
-            ++count_;
+            hpx::util::scoped_timer<std::int64_t> timer(eval_duration_);
+            ++eval_count_;
             return eval(args);
         }
         virtual hpx::future<primitive_result_type> eval(
@@ -272,7 +275,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             base_primitive, store_nonvirtual, store_action);
 
     public:
-        // Pinning functionality
+        // Pinning functionality helper functions
         void pin()
         {
         }
@@ -284,21 +287,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return 0;
         }
 
-        std::int64_t get_count() const
+        // access data for performance counter
+        std::int64_t get_eval_count(bool reset) const
         {
-            return count_;
+            return hpx::util::get_and_reset_value(eval_count_, reset);
         }
 
-        std::int64_t get_duration() const
+        std::int64_t get_eval_duration(bool reset) const
         {
-            return duration_;
+            return hpx::util::get_and_reset_value(eval_duration_, reset);
         }
 
     protected:
         static std::vector<primitive_argument_type> noargs;
         std::vector<primitive_argument_type> operands_;
-        mutable std::int64_t count_;
-        mutable std::int64_t duration_;
+
+        // Performance counter data
+        mutable std::int64_t eval_count_;
+        mutable std::int64_t eval_duration_;
     };
 }}}
 
