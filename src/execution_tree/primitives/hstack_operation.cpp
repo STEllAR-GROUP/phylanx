@@ -86,9 +86,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicVector<double> temp(total_elements);
                 auto iter = temp.begin();
 
-                for (std::size_t i = 0; i < 2; ++i)
+                for (std::size_t i = 0; i < args.size(); ++i)
                 {
-                    std::copy(args[i].begin(), args[i].end(), iter);
+                    std::copy(args[i].vector().begin(), args[i].vector().end(), iter);
                     iter += args[i].size();
                 }
 
