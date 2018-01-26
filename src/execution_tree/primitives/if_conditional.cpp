@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -31,10 +32,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(if_conditional_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const if_conditional::match_data =
+    match_pattern_type const if_conditional::match_data =
     {
-        hpx::util::make_tuple("if2", "if(_1, _2, _3)", &create<if_conditional>),
-        hpx::util::make_tuple("if1", "if(_1, _2)", &create<if_conditional>)
+        hpx::util::make_tuple("if",
+            std::vector<std::string>{"if(_1, _2, _3)", "if(_1, _2)"},
+            &create<if_conditional>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -31,10 +32,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(transpose_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const transpose_operation::match_data =
+    match_pattern_type const transpose_operation::match_data =
     {
-        hpx::util::make_tuple(
-            "transpose", "transpose(_1)", &create<transpose_operation>)
+        hpx::util::make_tuple("transpose",
+            std::vector<std::string>{"transpose(_1)"},
+            &create<transpose_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
