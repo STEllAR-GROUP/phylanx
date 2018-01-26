@@ -61,7 +61,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     variable::variable(std::vector<primitive_argument_type>&& operands,
             std::string name)
       : name_(std::move(name))
-      , data_(operands)
       , evaluated_(false)
     {
         if (operands.size() > 1)
