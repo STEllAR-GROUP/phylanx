@@ -8,10 +8,8 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/components.hpp>
 
