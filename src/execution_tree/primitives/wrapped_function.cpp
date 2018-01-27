@@ -4,6 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/function_reference.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_function.hpp>
 
 #include <hpx/include/components.hpp>
@@ -26,63 +27,76 @@ HPX_DEFINE_GET_COMPONENT_TYPE(wrapped_function_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    std::string extract_function_name(std::string const& name)
+    {
+        if (name.find("define-") == 0)
+        {
+            return name.substr(7);
+        }
+        return name;
+    }
+
     wrapped_function::wrapped_function(primitive_argument_type target,
             std::string name)
       : target_(std::move(target))
-      , name_(std::move(name))
-    {}
+      , name_(extract_function_name(name))
+    {
+        if (!valid(target_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "wrapped_function::wrapped_function",
+                "no target given");
+        }
+    }
 
     wrapped_function::wrapped_function(primitive_argument_type target,
             std::vector<primitive_argument_type>&& args, std::string name)
       : target_(std::move(target))
       , args_(std::move(args))
-      , name_(std::move(name))
-    {}
+      , name_(extract_function_name(name))
+    {
+        if (!valid(target_))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "wrapped_function::wrapped_function",
+                "no target given");
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_result_type> wrapped_function::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        if (!args_.empty())
+        primitive const* p = util::get_if<primitive>(&target_);
+        if (p == nullptr)
         {
-            std::vector<primitive_result_type> fargs;
-            fargs.reserve(args_.size());
-            for (auto const& arg : args_)
-            {
-                fargs.push_back(value_operand_sync(arg, params));
-            }
-            return value_operand(target_, std::move(fargs));
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                " wrapped_function::eval", "no target given");
         }
 
-        return value_operand(target_, params);
-    }
+        // evaluation of the define-function yields the function body
+        auto body = p->eval_direct(params);
 
-    bool wrapped_function::bind(
-        std::vector<primitive_argument_type> const& params)
-    {
-        bool result = true;
-
-        if (!args_.empty())
+        if (args_.empty())
         {
-            std::vector<primitive_result_type> fargs;
-            fargs.reserve(args_.size());
-            for (auto& arg : args_)
-            {
-                primitive* parg = util::get_if<primitive>(&arg);
-                if (parg != nullptr)
-                {
-                    result = parg->bind(hpx::launch::sync, params) && result;
-                }
-            }
+            std::vector<primitive_argument_type> fargs(params);
+            return hpx::make_ready_future(
+                primitive_result_type{primitive{
+                    hpx::new_<primitives::function_reference>(
+                        hpx::find_here(), std::move(body), std::move(fargs),
+                        name_),
+                    name_
+                }});
         }
 
-        primitive* p = util::get_if<primitive>(&target_);
-        if (p != nullptr)
+        std::vector<primitive_argument_type> fargs;
+        fargs.reserve(args_.size());
+        for (auto const& arg : args_)
         {
-            result = p->bind(hpx::launch::sync, params) && result;
+            fargs.push_back(value_operand_sync(arg, params));
         }
 
-        return result;
+        return value_operand(body, fargs);
     }
 }}}
 

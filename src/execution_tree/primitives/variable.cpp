@@ -97,11 +97,5 @@ namespace phylanx { namespace execution_tree { namespace primitives
         data_ = extract_copy_value(std::move(data));
         evaluated_ = true;
     }
-
-    bool variable::bind(std::vector<primitive_argument_type> const& params)
-    {
-        primitive* p = util::get_if<primitive>(&data_);
-        return (p != nullptr) ? p->bind(hpx::launch::sync, params) : true;
-    }
 }}}
 

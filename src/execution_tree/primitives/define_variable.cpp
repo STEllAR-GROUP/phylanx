@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             // bind this name to the result of the expression right away
             primitive* p = util::get_if<primitive>(&target_);
-            if (p != nullptr && p->bind(hpx::launch::sync, args))
+            if (p != nullptr)
             {
                 p->eval_direct(args);
             }

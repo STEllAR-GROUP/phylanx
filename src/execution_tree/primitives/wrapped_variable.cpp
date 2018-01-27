@@ -4,6 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
 
 #include <hpx/include/components.hpp>
@@ -46,20 +47,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             p->store(hpx::launch::sync, std::move(val));
         }
-    }
-
-    bool wrapped_variable::bind(
-        std::vector<primitive_argument_type> const& params)
-    {
-        bool result = true;
-
-        primitive* p = util::get_if<primitive>(&target_);
-        if (p != nullptr)
-        {
-            result = p->bind(hpx::launch::sync, params) && result;
-        }
-
-        return result;
     }
 }}}
 
