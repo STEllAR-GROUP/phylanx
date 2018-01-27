@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
-//  Copyright (c) 2001-2017 Hartmut Kaiser
+//  Copyright (c) 2001-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,6 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ast/parser/extended_variant.hpp>
 #include <phylanx/ast/parser/variant_traits.hpp>
-#include <phylanx/util/optional.hpp>
 
 #include <boost/fusion/include/sequence.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -46,7 +45,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 // BOOST_FUSION_ADAPT_STRUCT(
 //     phylanx::ast::variable_declaration,
 //     (phylanx::ast::identifier, lhs)
-//     (phylanx::util::optional<phylanx::ast::expression>, rhs)
+//     (hpx::util::optional<phylanx::ast::expression>, rhs)
 // )
 //
 // BOOST_FUSION_ADAPT_STRUCT(
@@ -60,7 +59,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 //     phylanx::ast::if_statement,
 //     (phylanx::ast::expression, condition)
 //     (phylanx::ast::statement, then)
-//     (phylanx::util::optional<phylanx::ast::statement>, else_)
+//     (hpx::util::optional<phylanx::ast::statement>, else_)
 // )
 //
 // BOOST_FUSION_ADAPT_STRUCT(
@@ -71,7 +70,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 //
 // BOOST_FUSION_ADAPT_STRUCT(
 //     phylanx::ast::return_statement,
-//     (phylanx::util::optional<phylanx::ast::expression>, expr)
+//     (hpx::util::optional<phylanx::ast::expression>, expr)
 // )
 //
 // BOOST_FUSION_ADAPT_STRUCT(
@@ -79,7 +78,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 //     (std::string, return_type)
 //     (phylanx::ast::identifier, function_name)
 //     (std::list<phylanx::ast::identifier>, args)
-//     (phylanx::util::optional<phylanx::ast::statement_list>, body)
+//     (hpx::util::optional<phylanx::ast::statement_list>, body)
 // )
 
 #endif

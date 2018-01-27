@@ -2,15 +2,14 @@
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #ifndef PHYLANX_COLUMN_SLICING_HPP
 #define PHYLANX_COLUMN_SLICING_HPP
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/components.hpp>
 

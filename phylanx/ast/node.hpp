@@ -1,5 +1,5 @@
 //   Copyright (c) 2001-2011 Joel de Guzman
-//   Copyright (c) 2001-2017 Hartmut Kaiser
+//   Copyright (c) 2001-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,8 +10,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/parser/extended_variant.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
@@ -691,7 +689,7 @@ namespace phylanx { namespace ast
 //     struct variable_declaration
 //     {
 //         identifier lhs;
-//         phylanx::util::optional<expression> rhs;
+//         hpx::util::optional<expression> rhs;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
@@ -805,7 +803,7 @@ namespace phylanx { namespace ast
 //     {
 //         expression condition;
 //         statement then;
-//         phylanx::util::optional<statement> else_;
+//         hpx::util::optional<statement> else_;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
@@ -849,7 +847,7 @@ namespace phylanx { namespace ast
 //     ///////////////////////////////////////////////////////////////////////////
 //     struct return_statement : tagged
 //     {
-//         phylanx::util::optional<expression> expr;
+//         hpx::util::optional<expression> expr;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
@@ -874,7 +872,7 @@ namespace phylanx { namespace ast
 //         std::string return_type;
 //         identifier function_name;
 //         std::list<identifier> args;
-//         phylanx::util::optional<statement_list> body;
+//         hpx::util::optional<statement_list> body;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
