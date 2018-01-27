@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //  Copyright (c) 2017 Alireza Kheirkhahan
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public hpx::components::component_base<mul_operation>
     {
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static match_pattern_type const match_data;
 
         mul_operation() = default;
 
