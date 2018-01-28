@@ -9,6 +9,8 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <string>
+
 void test_generate_tree(
     std::string const& exprstr, char const* variables, double expected_result)
 {

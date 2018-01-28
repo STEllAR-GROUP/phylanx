@@ -17,6 +17,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 BOOST_FUSION_ADAPT_STRUCT(
     phylanx::ast::unary_expr,

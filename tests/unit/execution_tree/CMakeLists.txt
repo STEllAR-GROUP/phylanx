@@ -24,7 +24,7 @@ foreach(test ${tests})
   add_phylanx_unit_test("execution_tree" ${test} ${${test}_PARAMETERS})
 
   add_phylanx_pseudo_target(tests.unit.execution_tree.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.execution_tree 
+  add_phylanx_pseudo_dependencies(tests.unit.execution_tree
     tests.unit.execution_tree.${test})
   add_phylanx_pseudo_dependencies(tests.unit.execution_tree.${test} ${test}_test_exe)
 
@@ -37,7 +37,7 @@ set(subdirs
 foreach(subdir ${subdirs})
   add_phylanx_pseudo_target(tests.unit.execution_tree.${subdir})
   add_subdirectory(${subdir})
-  add_phylanx_pseudo_dependencies(tests.unit.execution_tree 
+  add_phylanx_pseudo_dependencies(tests.unit.execution_tree
     tests.unit.execution_tree.${subdir})
 endforeach()
 

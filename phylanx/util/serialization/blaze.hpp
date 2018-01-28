@@ -3,6 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:noinclude:HPX_ASSERT
+
 #if !defined(PHYLANX_UTIL_BLAZE_SERIALIZATION_HPP)
 #define PHYLANX_UTIL_BLAZE_SERIALIZATION_HPP
 

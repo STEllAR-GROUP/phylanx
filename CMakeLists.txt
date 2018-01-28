@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Hartmut Kaiser
+# Copyright (c) 2017-2018 Hartmut Kaiser
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -80,6 +80,8 @@ phylanx_setup_hpx()
 phylanx_setup_blaze()
 phylanx_setup_pybind11()
 
+include(Phylanx_GitCommit)
+
 ################################################################################
 # Build options
 
@@ -104,9 +106,14 @@ phylanx_option(
   ON ADVANCED CATEGORY "Build")
 
 phylanx_option(
-        PHYLANX_WITH_DOCUMENTATION BOOL
-        "Enable or disable building Documentation"
-        OFF ADVANCED CATEGORY "Build")
+  PHYLANX_WITH_DOCUMENTATION BOOL
+  "Enable or disable building Documentation"
+  OFF ADVANCED CATEGORY "Build")
+
+phylanx_option(
+  PHYLANX_WITH_TOOLS BOOL
+  "Enable or disable building tools"
+  OFF ADVANCED CATEGORY "Build")
 
 if(MSVC)
   phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
@@ -174,6 +181,13 @@ endif()
 configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/phylanxrun.py.in"
                "${CMAKE_BINARY_DIR}/bin/phylanxrun.py"
                @ONLY)
+
+################################################################################
+# Targets related to Tools
+if(PHYLANX_WITH_TOOLS)
+  add_phylanx_pseudo_target(tools)
+  add_subdirectory(tools)
+endif()
 
 ################################################################################
 # installation instructions

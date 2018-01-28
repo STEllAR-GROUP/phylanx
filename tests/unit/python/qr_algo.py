@@ -1,3 +1,8 @@
+#  Copyright (c) 2017 Chris Taylor
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 # qr decomposition as provided by http://math.nist.gov/javanumerics/jama/
 #
 import phylanx as p
@@ -35,14 +40,14 @@ def qr_decomp(A):
    Rdiag = c.array(float, n)
 
    QR = A.copy() # deep copy of p.matrix
- 
+
    for k in range(n):
       nrm = c.scalar(0.0)
       for i in range(k,m):
          rnm = hypot(nrm, QR[i,k])
 
       nrm.conditional(nrm != 0.0, khousevec(m, n, k, nrm, QR))
-      Rdiag[k] = -nrm 
+      Rdiag[k] = -nrm
 
    X = A.copy() # deep copy of p.matrix
 
@@ -80,7 +85,7 @@ def get_q(QR, Rdiag):
          Q[i,j] += s*QR[i,k]
 
       return Q
-         
+
 
    for k in range(n, -1, -1):
       Q[k,k] = 1.0

@@ -12,9 +12,12 @@
 #include <hpx/traits/has_member_xxx.hpp>
 #include <hpx/util/invoke.hpp>
 
+#include <cstdint>
 #include <list>
+#include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 // This implements a traversal of our AST data structures. Note that
 // ast::expression nodes are traversed in postfix order to resolve possible

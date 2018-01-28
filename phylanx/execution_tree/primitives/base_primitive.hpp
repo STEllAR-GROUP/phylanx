@@ -16,6 +16,7 @@
 #include <hpx/util/scoped_timer.hpp>
 #include <hpx/include/serialization.hpp>
 
+#include <cstdint>
 #include <initializer_list>
 #include <iosfwd>
 #include <map>

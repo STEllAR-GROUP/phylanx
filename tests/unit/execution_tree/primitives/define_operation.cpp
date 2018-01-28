@@ -9,6 +9,9 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstddef>
+#include <list>
+#include <utility>
 #include <vector>
 
 void test_define_operation_var(

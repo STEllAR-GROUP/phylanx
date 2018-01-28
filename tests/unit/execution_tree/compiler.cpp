@@ -9,6 +9,9 @@
 #include <hpx/runtime/find_here.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <list>
+#include <utility>
+
 void test_builtin_environment()
 {
     hpx::id_type here = hpx::find_here();

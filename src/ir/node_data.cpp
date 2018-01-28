@@ -13,9 +13,12 @@
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 
+#include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <string>
+#include <utility>
 
 namespace phylanx { namespace ir
 {

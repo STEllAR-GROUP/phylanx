@@ -15,6 +15,8 @@
 #include <phylanx/util/detail/variant.hpp>
 #endif
 
+#include <utility>
+
 namespace phylanx { namespace util
 {
 #if defined(_MSC_VER) && _MSC_VER >= 1912 && defined(_HAS_CXX17) && (_HAS_CXX17 != 0)

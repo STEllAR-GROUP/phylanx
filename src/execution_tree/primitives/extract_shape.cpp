@@ -12,8 +12,10 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////

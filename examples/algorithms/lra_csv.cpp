@@ -6,7 +6,10 @@
 #include <phylanx/phylanx.hpp>
 #include <hpx/hpx_init.hpp>
 
+#include <cstdint>
 #include <iostream>
+#include <string>
+#include <utility>
 
 #include <boost/program_options.hpp>
 #include <blaze/Math.h>
@@ -55,8 +58,8 @@ char const* const lra_code = R"(block(
     //
     define(lra, x, y, alpha, iterations, enable_output,
         block(
-            define(weights, constant(0.0, shape(x, 1))),                // weights: [M]
-            define(transx, transpose(x)),                               // transx:  [M, N]
+            define(weights, constant(0.0, shape(x, 1))),            // weights: [M]
+            define(transx, transpose(x)),                           // transx:  [M, N]
             define(pred, constant(0.0, shape(x, 0))),
             define(error, constant(0.0, shape(x, 0))),
             define(gradient, constant(0.0, shape(x, 1))),
@@ -65,9 +68,10 @@ char const* const lra_code = R"(block(
                 step < iterations,
                 block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
-                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),  // exp(-dot(x, weights)): [N], pred: [N]
-                    store(error, pred - y),                            // error: [N]
-                    store(gradient, dot(transx, error)),               // gradient: [M]
+                    // exp(-dot(x, weights)): [N], pred: [N]
+                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
+                    store(error, pred - y),                         // error: [N]
+                    store(gradient, dot(transx, error)),            // gradient: [M]
                     parallel_block(
                         store(weights, weights - (alpha * gradient)),
                         store(step, step + 1)
