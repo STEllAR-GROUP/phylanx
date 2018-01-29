@@ -206,6 +206,29 @@ namespace phylanx { namespace ir
             }
         }
 
+        template <typename U>
+        static storage_type init_data_from_type(node_data<U> const& d)
+        {
+            std::size_t dims = d.num_dimensions();
+
+            switch (dims)
+            {
+            case 0:
+                return storage_type(d.scalar());
+
+            case 1:
+                return storage_type(d.vector());
+
+            case 2:
+                return storage_type(d.matrix());
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "phylanx::ir::node_data<T>::node_data<U>",
+                    "node_data object holds unsupported data type");
+            }
+        }
+
     public:
         /// Create node data from a node data
         node_data(node_data const& d)
@@ -216,6 +239,14 @@ namespace phylanx { namespace ir
           : data_(std::move(d.data_))
         {
             increment_move_construction_count();
+        }
+
+        template <typename U,
+            typename U1 =
+                typename std::enable_if<!std::is_same<T, U>::value>::type>
+        node_data(node_data<U> const& d)
+          : data_(init_data_from_type(d))
+        {
         }
 
         node_data& operator=(storage0d_type val)
