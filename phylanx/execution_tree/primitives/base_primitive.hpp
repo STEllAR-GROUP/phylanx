@@ -332,6 +332,44 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT primitive_result_type extract_copy_value(
         primitive_result_type && val);
 
+    template <typename T>
+    primitive_argument_type extract_ref_value(ir::node_data<T> const& val)
+    {
+        if (val.is_ref())
+        {
+            return primitive_argument_type{val};
+        }
+        return primitive_argument_type{val.ref()};
+    }
+    template <typename T>
+    primitive_argument_type extract_ref_value(ir::node_data<T> && val)
+    {
+        if (val.is_ref())
+        {
+            return primitive_argument_type{std::move(val)};
+        }
+        return primitive_argument_type{val.ref()};
+    }
+
+    template <typename T>
+    primitive_argument_type extract_copy_value(ir::node_data<T> const& val)
+    {
+        if (val.is_ref())
+        {
+            return primitive_argument_type{val.copy()};
+        }
+        return primitive_argument_type{val};
+    }
+    template <typename T>
+    primitive_argument_type extract_copy_value(ir::node_data<T> && val)
+    {
+        if (val.is_ref())
+        {
+            return primitive_argument_type{val.copy()};
+        }
+        return primitive_argument_type{std::move(val)};
+    }
+
     // Extract a literal type from a given primitive_argument_type, throw
     // if it doesn't hold one.
     PHYLANX_EXPORT primitive_result_type extract_literal_value(

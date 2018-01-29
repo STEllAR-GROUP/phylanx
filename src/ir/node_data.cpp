@@ -90,7 +90,7 @@ namespace phylanx { namespace ir
                 {
                     out << ", ";
                 }
-                out << std::to_string(r[i]);
+                out << r[i];
             }
             out << "]";
         }
@@ -103,7 +103,7 @@ namespace phylanx { namespace ir
         switch (dims)
         {
         case 0:
-            out << std::to_string(nd[0]);
+            out << nd[0];
             break;
 
         case 1: HPX_FALLTHROUGH;
@@ -114,6 +114,7 @@ namespace phylanx { namespace ir
         case 2: HPX_FALLTHROUGH;
         case 4:
             {
+                out << "[";
                 auto data = nd.matrix();
                 for (std::size_t row = 0; row != data.rows(); ++row)
                 {
@@ -122,6 +123,7 @@ namespace phylanx { namespace ir
                     detail::print_array(
                         out, blaze::row(data, row), data.columns());
                 }
+                out << "]";
             }
             break;
 

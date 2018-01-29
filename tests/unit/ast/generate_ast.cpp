@@ -164,8 +164,8 @@ int main(int argc, char* argv[])
 
     test_expression(
         "1.0 / (1.0 + exp(-dot(A, B)))",
-            "1.000000\n"
-            "1.000000\n"
+            "1\n"
+            "1\n"
             "exp\n"
             "dot\n"
             "A\n"
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
         "'(true, 1, 1.0, A, A + B)",
             "true\n"
             "1\n"
-            "1.000000\n"
+            "1\n"
             "A\n"
             "A\n"
             "B\n"
@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
         "'(true, 1, '(1.0, A, A + B))",
             "true\n"
             "1\n"
-            "1.000000\n"
+            "1\n"
             "A\n"
             "A\n"
             "B\n"

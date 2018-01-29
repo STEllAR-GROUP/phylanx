@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
     std::stringstream const& strm = hpx::get_consolestream();
-    HPX_TEST_EQ(strm.str(), std::string("hello: 42.000000\n"));
+    HPX_TEST_EQ(strm.str(), std::string("hello: 42\n"));
 
     return hpx::util::report_errors();
 }

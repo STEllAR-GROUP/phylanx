@@ -111,7 +111,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return extract_copy_value(p->eval_direct(std::move(args)));
+                // user-facing functions need to copy all arguments
+                arguments_type params;
+                params.reserve(args.size());
+                for (auto const& arg : args)
+                {
+                    params.emplace_back(extract_copy_value(arg));
+                }
+                return extract_copy_value(p->eval_direct(std::move(params)));
             }
             return arg_;
         }
@@ -120,7 +127,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return p->eval(std::move(args));
+                // user-facing functions need to copy all arguments
+                arguments_type params;
+                params.reserve(args.size());
+                for (auto const& arg : args)
+                {
+                    params.emplace_back(extract_copy_value(arg));
+                }
+                return p->eval(std::move(params));
             }
             return hpx::make_ready_future(arg_);
         }
