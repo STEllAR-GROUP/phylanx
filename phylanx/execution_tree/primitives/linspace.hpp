@@ -32,10 +32,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         /**
          * @brief Creates a linear space of evenly spaced numbers over the given interval.
          * 
-         * @param args Is a vector with exactly three elements (in order): 
-         * start: the first value of the sequence.
+         * @param args Is a vector with exactly three elements (in order):
+         * 
+         * start: the first value of the sequence.\n
          * stop: the last value of the sequence. It will be ignored if the number of
-         * samples is less than 2.
+         * samples is less than 2.\n
          * num_samples: number of samples in the sequence.
          */
         linspace(std::vector<primitive_argument_type>&& args);
