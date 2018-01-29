@@ -5,9 +5,11 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
-#include <hpx/hpx_init.hpp>
+#include <hpx/hpx_main.hpp>
+#include <hpx/util/lightweight_test.hpp>
 
 #include <iostream>
+#include <string>
 
 #include <boost/program_options.hpp>
 #include <blaze/Math.h>
@@ -21,8 +23,8 @@ char const* const lra_code = R"(block(
     //   y: [30]
     define(lra, x, y, alpha,
         block(
-            define(weights, constant(0.0, shape(x, 1))),                // weights: [2]
-            define(transx, transpose(x)),                               // transx:  [2, 30]
+            define(weights, constant(0.0, shape(x, 1))),     // weights: [2]
+            define(transx, transpose(x)),                    // transx:  [2, 30]
             define(pred, constant(0.0, shape(x, 0))),
             define(error, constant(0.0, shape(x, 0))),
             define(gradient, constant(0.0, shape(x, 1))),
@@ -30,9 +32,9 @@ char const* const lra_code = R"(block(
             while(
                 step < 10,
                 block(
-                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),  // exp(-dot(x, weights)): [30], pred: [30]
-                    store(error, pred - y),                            // error: [30]
-                    store(gradient, dot(transx, error)),               // gradient: [2]
+                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
+                    store(error, pred - y),                  // error: [30]
+                    store(gradient, dot(transx, error)),     // gradient: [2]
                     parallel_block(
                         store(weights, weights - (alpha * gradient)),
                         store(step, step + 1)
@@ -45,20 +47,7 @@ char const* const lra_code = R"(block(
     lra
 ))";
 
-void print_counter(hpx::performance_counters::performance_counter& c)
-{
-    std::cout << "Counter values: [";
-    c.reinit(hpx::launch::sync, false);
-    auto values = c.get_counter_values_array(hpx::launch::sync, false);
-    for (auto& i = values.values_.begin(); i != values.values_.end(); ++i)
-    {
-        if (i != values.values_.begin()) std::cout << ", ";
-        std::cout << *i;
-    }
-    std::cout << "]" << std::endl;
-}
-
-int hpx_main()
+int main()
 {
     blaze::DynamicMatrix<double> v1{{15.04, 16.74}, {13.82, 24.49},
         {12.54, 16.32}, {23.09, 19.83}, {9.268, 12.87}, {9.676, 13.14},
@@ -76,79 +65,47 @@ int hpx_main()
     phylanx::execution_tree::compiler::function_list snippets;
     auto lra = phylanx::execution_tree::compile(lra_code, snippets);
 
-    hpx::performance_counters::performance_counter c("/phylanx{locality#*/total}/primitives/dot/time/eval");
-
     // evaluate generated execution tree
     auto x = phylanx::ir::node_data<double>{ v1 };
     auto y = phylanx::ir::node_data<double>{ v2 };
     auto alpha = phylanx::ir::node_data<double>{ 1e-5 };
 
-    print_counter(c);
-
     auto result = lra(x, y, alpha);
 
-    print_counter(c);
+    for (auto const& pattern :
+        phylanx::execution_tree::get_all_known_patterns())
+    {
+        std::string const& name = hpx::util::get<0>(pattern);
+
+        hpx::performance_counters::performance_counter counter_pc(
+            "/phylanx{locality#*/total}/primitives/" + name + "/count/eval");
+        hpx::performance_counters::performance_counter time_pc(
+            "/phylanx{locality#*/total}/primitives/" + name + "/time/eval");
+
+        // Time performance counter
+        {
+            auto values =
+                time_pc.get_counter_values_array(hpx::launch::sync, false);
+            HPX_TEST_NEQ(values.count_, 0ll);
+
+            if (name == "dot")
+            {
+                for (auto const& i : values.values_)
+                {
+                    HPX_TEST_NEQ(i, 0ll);
+                }
+            }
+        }
+
+        // Count performance counter
+        {
+            auto values =
+                counter_pc.get_counter_values_array(hpx::launch::sync, false);
+            HPX_TEST_NEQ(values.count_, 0ll);
+            if (name == "dot")
+                HPX_TEST_EQ(values.values_.size(), 2);
+        }
+    }
 
     return hpx::finalize();
 }
-
-int main(int argc, char* argv[])
-{
-    return hpx::init(argc, argv);
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////////
-//int hpx_main(boost::program_options::variables_map& vm)
-//{
-//    unsigned int seed = (unsigned int)std::time(nullptr);
-//    if (vm.count("seed"))
-//        seed = vm["seed"].as<unsigned int>();
-//
-//    std::cout << "using seed: " << seed << std::endl;
-//    std::srand(seed);
-//
-//    for (int i = 0; i != 10; ++i)
-//    {
-//        hpx::performance_counters::performance_counter c("/test/reinit-values");
-//
-//        c.reinit();
-//
-//        auto values = c.get_counter_values_array(hpx::launch::sync, false);
-//
-//        HPX_TEST_EQ(values.count_, static_cast<std::uint64_t>(i + 1));
-//
-//        std::vector<std::int64_t> expected(value_count_.load());
-//        std::iota(expected.begin(), expected.end(), i);
-//        HPX_TEST(values.values_ == expected);
-//
-//        std::string name = c.get_name(hpx::launch::sync);
-//        HPX_TEST_EQ(name, std::string("/test{locality#0/total}/reinit-values"));
-//    }
-//
-//    return hpx::finalize();
-//}
-//
-//int main(int argc, char* argv[])
-//{
-//    // add command line option which controls the random number generator seed
-//    using namespace boost::program_options;
-//    options_description desc_commandline(
-//        "Usage: " HPX_APPLICATION_STRING " [options]");
-//
-//    desc_commandline.add_options()
-//        ("seed,s", value<unsigned int>(),
-//            "the random number generator seed to use for this run")
-//        ;
-//
-//    hpx::register_startup_function(&register_counter_type);
-//
-//    // Initialize and run HPX.
-//    std::vector<std::string> const cfg = {
-//        "hpx.os_threads=1"
-//    };
-//    HPX_TEST_EQ(hpx::init(desc_commandline, argc, argv, cfg), 0);
-//
-//    return hpx::util::report_errors();
-//}

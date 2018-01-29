@@ -5,9 +5,10 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/compile.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/agas.hpp>
 #include <hpx/include/components.hpp>
@@ -21,6 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
 #include <boost/spirit/include/qi_char.hpp>
 #include <boost/spirit/include/qi_difference.hpp>
@@ -123,14 +125,17 @@ namespace phylanx { namespace performance_counters
 
             // TODO: Only keep entries that live on this locality.
             // This will be a problem when Phylanx becomes distributed.
-            instances_.clear();
-            instances_.reserve(entries.size());
+            std::map<std::int64_t, base_primitive_ptr> instances_sorted;
 
             for (auto const& value : entries)
             {
                 auto const& instance = hpx::get_ptr<
                     phylanx::execution_tree::primitives::base_primitive>(
                         hpx::launch::sync, value.second);
+
+                auto instance_info =
+                    phylanx::execution_tree::compiler::parse_primitive_name(
+                        value.first);
 
                 // Consider the reset flag
                 if (reset)
@@ -140,15 +145,24 @@ namespace phylanx { namespace performance_counters
                     else
                         instance->get_eval_count(true);
                 }
-                instances_.push_back(instance);
+                instances_sorted[instance_info.sequence_number] = instance;
+            }
+
+            instances_.clear();
+            instances_.reserve(entries.size());
+            for (auto const& value : instances_sorted)
+            {
+                instances_.push_back(value.second);
             }
 
             first_init_ = true;
         }
 
     private:
-        std::vector<std::shared_ptr<
-            phylanx::execution_tree::primitives::base_primitive>>
+        using base_primitive_ptr = std::shared_ptr<
+            phylanx::execution_tree::primitives::base_primitive>;
+
+        std::vector<base_primitive_ptr>
             instances_;
         std::atomic<bool> first_init_;
         bool duration_counter_;
@@ -300,4 +314,3 @@ using primitive_counter = phylanx::performance_counters::primitive_counter;
 
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
     primitive_counter_type, primitive_counter, "base_performance_counter");
-
