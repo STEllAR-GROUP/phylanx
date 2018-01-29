@@ -15,11 +15,19 @@
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/startup_function.hpp>
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <boost/spirit/include/qi_char.hpp>
+#include <boost/spirit/include/qi_difference.hpp>
+#include <boost/spirit/include/qi_lit.hpp>
+#include <boost/spirit/include/qi_parse.hpp>
+#include <boost/spirit/include/qi_plus.hpp>
+#include <boost/spirit/include/qi_sequence.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace performance_counters
@@ -28,6 +36,29 @@ namespace phylanx { namespace performance_counters
       : public hpx::performance_counters::base_performance_counter<
             primitive_counter>
     {
+        std::string extract_primitive_type()
+        {
+            hpx::performance_counters::counter_path_elements paths;
+            hpx::performance_counters::get_counter_path_elements(
+                info_.fullname_, paths);
+
+            std::string result;
+
+            namespace qi = boost::spirit::qi;
+            bool success =
+                qi::parse(paths.countername_.begin(), paths.countername_.end(),
+                    "primitives/" >> +(qi::char_ - '/'), result);
+
+            if (!success)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "primitive_counter::extract_primitive_type",
+                    "unexpected counter name");
+            }
+
+            return result;
+        }
+
     public:
         primitive_counter()
           : first_init_(false)
@@ -58,9 +89,9 @@ namespace phylanx { namespace performance_counters
             value.count_ = ++invocation_count_;
 
             // Need to call reinit here if it has never been called before.
-            if (!first_init_)
+            bool expected = false;
+            if (first_init_.compare_exchange_strong(expected, true))
             {
-                first_init_ = true;
                 reinit(false);
             }
 
@@ -85,43 +116,41 @@ namespace phylanx { namespace performance_counters
         // tree and keep it
         void reinit(bool reset) override
         {
-            for (auto const& pattern :
-                phylanx::execution_tree::get_all_known_patterns())
+            // Structure of primitives in symbolic namespace:
+            //     /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
+            auto entries = hpx::agas::find_symbols(hpx::launch::sync,
+                "/phylanx/" + extract_primitive_type() + "#*");
+
+            // TODO: Only keep entries that live on this locality.
+            // This will be a problem when Phylanx becomes distributed.
+            instances_.clear();
+            instances_.reserve(entries.size());
+
+            for (auto const& value : entries)
             {
-                std::string const& name = hpx::util::get<0>(pattern);
+                auto const& instance = hpx::get_ptr<
+                    phylanx::execution_tree::primitives::base_primitive>(
+                        hpx::launch::sync, value.second);
 
-                // Structure of primitives in symbolic namespace:
-                //     /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
-                auto entries = hpx::agas::find_symbols(
-                    hpx::launch::sync, "/phylanx/" + name + "#*");
-
-                // TODO: Only keep entries that live on this locality.
-                // This will be a problem when Phylanx becomes distributed.
-                instances_.clear();
-                instances_.reserve(entries.size());
-
-                for (auto const& value : entries)
+                // Consider the reset flag
+                if (reset)
                 {
-                    auto const& instance = hpx::get_ptr<
-                        phylanx::execution_tree::primitives::base_primitive>(
-                            hpx::launch::sync, value.second);
-
-                    // Consider the reset flag
-                    if (reset)
-                    {
-                        instance->get_eval_count(true);
+                    if (duration_counter_)
                         instance->get_eval_duration(true);
-                    }
-                    instances_.push_back(instance);
+                    else
+                        instance->get_eval_count(true);
                 }
+                instances_.push_back(instance);
             }
+
+            first_init_ = true;
         }
 
     private:
         std::vector<std::shared_ptr<
             phylanx::execution_tree::primitives::base_primitive>>
             instances_;
-        bool first_init_;
+        std::atomic<bool> first_init_;
         bool duration_counter_;
     };
 

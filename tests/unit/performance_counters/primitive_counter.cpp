@@ -48,7 +48,7 @@ char const* const lra_code = R"(block(
 void print_counter(hpx::performance_counters::performance_counter& c)
 {
     std::cout << "Counter values: [";
-    c.reinit(false);
+    c.reinit(hpx::launch::sync, false);
     auto values = c.get_counter_values_array(hpx::launch::sync, false);
     for (auto& i = values.values_.begin(); i != values.values_.end(); ++i)
     {
@@ -87,11 +87,6 @@ int hpx_main()
 
     auto result = lra(x, y, alpha);
 
-    print_counter(c);
-
-    std::cout << "Result: \n"
-        << phylanx::execution_tree::extract_numeric_value(result)
-        << std::endl;
     print_counter(c);
 
     return hpx::finalize();
