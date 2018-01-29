@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 else if (1 == num_samples)
                 {
                     vector_type result{start};            
-                    return operand_type{result};
+                    return operand_type{std::move(result)};
                 }
                 else
                 {
@@ -63,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                   {
                     result[i] = start + dx * i;
                   }
-                  return operand_type{result};
+                  return operand_type{std::move(result)};
                 }
             }
 
