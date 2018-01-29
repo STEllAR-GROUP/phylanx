@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -117,25 +117,25 @@ namespace phylanx { namespace ast
     ///////////////////////////////////////////////////////////////////////////
     void identifier::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << name << id;
+        ar << name << id << col;
     }
 
     void identifier::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> name >> id;
+        ar >> name >> id >> col;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     void primary_expr::serialize(
         hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << *static_cast<expr_node_type*>(this) << id;
+        ar << *static_cast<expr_node_type*>(this) << id << col;
     }
 
     void primary_expr::serialize(
         hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> *static_cast<expr_node_type*>(this) >> id;
+        ar >> *static_cast<expr_node_type*>(this) >> id >> col;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -152,12 +152,12 @@ namespace phylanx { namespace ast
     ///////////////////////////////////////////////////////////////////////////
     void unary_expr::serialize(hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << operator_ << operand_ << id;
+        ar << operator_ << operand_ << id << col;
     }
 
     void unary_expr::serialize(hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> operator_ >> operand_ >> id;
+        ar >> operator_ >> operand_ >> id >> col;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -440,6 +440,10 @@ namespace phylanx { namespace ast
     std::ostream& operator<<(std::ostream& out, identifier const& id)
     {
         out << id.name;
+        if (id.id >= 0 && id.col != -1)
+        {
+            out << '#' << id.id << '#' << id.col;
+        }
         return out;
     }
 

@@ -15,9 +15,17 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/support_attributes.hpp>
 
+#include <cstdint>
 #include <list>
 #include <string>
 #include <vector>
+
+BOOST_FUSION_ADAPT_STRUCT(
+    phylanx::ast::identifier,
+    (std::string, name)
+    (std::int64_t, id)
+    (std::int64_t, col)
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
     phylanx::ast::unary_expr,
