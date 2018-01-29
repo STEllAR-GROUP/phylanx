@@ -7,6 +7,7 @@ set(tests
     compiler
     expression_topology
     generate_tree
+    parse_primitive_name
    )
 
 foreach(test ${tests})
