@@ -17,9 +17,9 @@
 
 #include <cstddef>
 #include <memory>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -34,9 +34,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(debug_output_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const debug_output::match_data =
+    match_pattern_type const debug_output::match_data =
     {
-        hpx::util::make_tuple("debug", "debug(__1)", &create<debug_output>)
+        hpx::util::make_tuple("debug",
+            std::vector<std::string>{"debug(__1)"},
+            &create<debug_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -91,11 +93,5 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return std::make_shared<detail::debug_output>()->eval(operands_, args);
-    }
-
-    // Never evaluate output operations while defining a function
-    bool debug_output::bind(std::vector<primitive_argument_type> const&)
-    {
-        return false;
     }
 }}}

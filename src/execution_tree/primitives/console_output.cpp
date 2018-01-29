@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,9 +17,9 @@
 
 #include <cstddef>
 #include <memory>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -34,9 +34,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(console_output_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const console_output::match_data =
+    match_pattern_type const console_output::match_data =
     {
-        hpx::util::make_tuple("cout", "cout(__1)", &create<console_output>)
+        hpx::util::make_tuple("cout",
+            std::vector<std::string>{"cout(__1)"},
+            &create<console_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -98,11 +100,5 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return std::make_shared<detail::console_output>()->eval(operands_, args);
-    }
-
-    // Never evaluate output operations while defining a function
-    bool console_output::bind(std::vector<primitive_argument_type> const&)
-    {
-        return false;
     }
 }}}

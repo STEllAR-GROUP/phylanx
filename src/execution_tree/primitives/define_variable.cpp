@@ -11,8 +11,8 @@
 #include <hpx/include/util.hpp>
 
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 using define_type = hpx::components::component<
@@ -26,11 +26,13 @@ HPX_DEFINE_GET_COMPONENT_TYPE(define_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const define_variable::match_data =
+    match_pattern_type const define_variable::match_data =
     {
         // We don't need a creation function as 'define()' is explicitly
         // handled by generate_tree.
-        hpx::util::make_tuple("define", "define(__1)", nullptr)
+        hpx::util::make_tuple("define",
+            std::vector<std::string>{"define(__1)"},
+            nullptr)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -67,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             // bind this name to the result of the expression right away
             primitive* p = util::get_if<primitive>(&target_);
-            if (p != nullptr && p->bind(hpx::launch::sync, args))
+            if (p != nullptr)
             {
                 p->eval_direct(args);
             }

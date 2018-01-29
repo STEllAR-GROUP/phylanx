@@ -22,6 +22,7 @@ set(tests
     for_operation
     greater_operation
     greater_equal_operation
+    hstack_operation
     identity
     if_conditional
     inverse_operation
@@ -43,6 +44,7 @@ set(tests
     transpose_operation
     unary_minus_operation
     unary_not_operation
+    vstack_operation
     while_operation
    )
 

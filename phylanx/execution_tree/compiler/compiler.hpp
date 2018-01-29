@@ -3,6 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:noinclude:HPX_ASSERT
+
 #if !defined(PHYLANX_EXECUTION_TREE_COMPILER_HPP)
 #define PHYLANX_EXECUTION_TREE_COMPILER_HPP
 
@@ -19,13 +21,15 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/find_here.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <cstddef>
 #include <functional>
+#include <list>
 #include <map>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree { namespace compiler
 {
@@ -303,8 +307,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         using value_type = std::map<std::string, compiled_function>::value_type;
 
     public:
-        environment(environment* outer = nullptr)
+        environment(environment* outer = nullptr, std::size_t base_arg_num = 0)
           : outer_(outer)
+          , base_arg_num_(outer != nullptr ?
+                    outer->base_arg_num_ + base_arg_num :
+                    base_arg_num)
         {}
 
         template <typename F>
@@ -354,9 +361,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return count;
         }
 
+        std::size_t base_arg_num() const
+        {
+            return base_arg_num_;
+        }
+
     private:
         environment* outer_;
         std::map<std::string, compiled_function> definitions_;
+        std::size_t base_arg_num_;
     };
 
     ///////////////////////////////////////////////////////////////////////////

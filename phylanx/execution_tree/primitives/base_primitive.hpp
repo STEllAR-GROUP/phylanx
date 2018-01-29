@@ -16,6 +16,7 @@
 #include <hpx/util/scoped_timer.hpp>
 #include <hpx/include/serialization.hpp>
 
+#include <cstdint>
 #include <initializer_list>
 #include <iosfwd>
 #include <map>
@@ -107,10 +108,6 @@ namespace phylanx { namespace execution_tree
 
         hpx::future<void> store(primitive_argument_type);
         void store(hpx::launch::sync_policy, primitive_argument_type);
-
-        hpx::future<bool> bind(std::vector<primitive_argument_type> const&);
-        bool bind(hpx::launch::sync_policy,
-            std::vector<primitive_argument_type> const&);
 
         hpx::future<topology> expression_topology() const;
         topology expression_topology(hpx::launch::sync_policy) const;
@@ -238,12 +235,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store function should only be called in store_primitive");
         }
 
-        bool bind_nonvirtual(std::vector<primitive_argument_type> const& args)
-        {
-            return bind(args);
-        }
-        virtual bool bind(std::vector<primitive_argument_type> const& args);
-
         topology expression_topology_nonvirtual() const
         {
             return expression_topology();
@@ -256,15 +247,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
-            base_primitive, bind_nonvirtual, bind_action);
-        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, expression_topology_nonvirtual,
             expression_topology_action);
 #else
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
-        HPX_DEFINE_COMPONENT_ACTION(
-            base_primitive, bind_nonvirtual, bind_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, expression_topology_nonvirtual,
             expression_topology_action);
@@ -318,9 +305,6 @@ HPX_REGISTER_ACTION_DECLARATION(
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::store_action,
     phylanx_primitive_store_action);
-HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::execution_tree::primitives::base_primitive::bind_action,
-    phylanx_primitive_bind_action);
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::
         base_primitive::expression_topology_action,
@@ -477,10 +461,10 @@ namespace phylanx { namespace execution_tree
         hpx::id_type, std::vector<primitive_argument_type>&&,
         std::string const&);
 
-    using match_pattern_type =
-        hpx::util::tuple<std::string, std::string, factory_function_type>;
+    using match_pattern_type = hpx::util::tuple<std::string,
+        std::vector<std::string>, factory_function_type>;
 
-    using pattern_list = std::vector<std::vector<match_pattern_type>>;
+    using pattern_list = std::vector<match_pattern_type>;
 
     ///////////////////////////////////////////////////////////////////////////
     // Generic creation helper for creating an instance of the given primitive.

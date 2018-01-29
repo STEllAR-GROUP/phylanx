@@ -14,6 +14,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -32,9 +34,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(exponential_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const exponential_operation::match_data =
+    match_pattern_type const exponential_operation::match_data =
     {
-        hpx::util::make_tuple("exp", "exp(_1)", &create<exponential_operation>)
+        hpx::util::make_tuple("exp",
+            std::vector<std::string>{"exp(_1)"},
+            &create<exponential_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

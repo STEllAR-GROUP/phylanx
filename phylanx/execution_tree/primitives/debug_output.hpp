@@ -21,7 +21,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public hpx::components::component_base<debug_output>
     {
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static match_pattern_type const match_data;
 
         debug_output() = default;
 
@@ -29,7 +29,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_result_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
-        bool bind(std::vector<primitive_argument_type> const&) override;
     };
 }}}
 

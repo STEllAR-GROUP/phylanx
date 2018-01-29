@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,10 +31,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(store_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const store_operation::match_data =
+    match_pattern_type const store_operation::match_data =
     {
-        hpx::util::make_tuple(
-            "store", "store(_1, _2)", &create<store_operation>)
+        hpx::util::make_tuple("store",
+            std::vector<std::string>{"store(_1, _2)"},
+            &create<store_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

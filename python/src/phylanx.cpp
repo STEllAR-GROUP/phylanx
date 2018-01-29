@@ -11,12 +11,16 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
-#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
 #include <hpx/runtime/components/new.hpp>
+#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
+#include <hpx/util/detail/pp/stringize.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <map>
-#include <string>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
 
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
@@ -172,25 +176,27 @@ namespace phylanx { namespace bindings
 void init_hpx_runtime();
 void stop_hpx_runtime();
 
-const char* expression_compiler_help =
+char const* const expression_compiler_help =
     "compile and evaluate a numerical expression in Phylanx lisp";
+
 template <typename... Ts>
-typename hpx::util::invoke_result<phylanx::execution_tree::primitive(Ts...),
-    Ts...>::type
+typename hpx::util::invoke_result<
+    phylanx::execution_tree::primitive(Ts...), Ts...
+>::type
 expression_compiler(std::string xexpr, Ts const&... ts)
 {
     namespace et = phylanx::execution_tree;
     return hpx::threads::run_as_hpx_thread(
         [&]() -> et::primitive
         {
-            try
-            {
+        try
+        {
                 et::compiler::function_list eval_snippets;
-                auto x = et::compile(xexpr, eval_snippets);
+                auto x = et::compile_and_run(xexpr, eval_snippets);
 
                 et::primitive_argument_type result = x(ts...);
                 switch (result.index())
-                {
+            {
                 case 2: HPX_FALLTHROUGH;    // std::int64_t
                 case 3: HPX_FALLTHROUGH;    // std::string
                 case 4:                     // phylanx::ir::node_data<double>
@@ -199,21 +205,21 @@ expression_compiler(std::string xexpr, Ts const&... ts)
                     };
 
                  default:
-                    PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
+                PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
                     break;
-                 }
             }
-            catch (const std::exception& ex)
-            {
-                PyErr_SetString(PyExc_RuntimeError, ex.what());
-            }
-            catch (...)
-            {
-                PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-            }
+        }
+        catch (const std::exception& ex)
+        {
+            PyErr_SetString(PyExc_RuntimeError, ex.what());
+        }
+        catch (...)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+        }
 
             return {};
-        });
+    });
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -228,7 +234,8 @@ PYBIND11_MODULE(_phylanx, m)
     m.attr("__version__") = pybind11::str(
         HPX_PP_STRINGIZE(PHYLANX_VERSION_MAJOR) "."
         HPX_PP_STRINGIZE(PHYLANX_VERSION_MINOR) "."
-        HPX_PP_STRINGIZE(PHYLANX_VERSION_SUBMINOR));
+        HPX_PP_STRINGIZE(PHYLANX_VERSION_SUBMINOR) "."
+        PHYLANX_HAVE_GIT_COMMIT);
 
     ///////////////////////////////////////////////////////////////////////////
     // expose version functions
@@ -737,9 +744,9 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
-                        using namespace phylanx::execution_tree;
-                        return numeric_operand(p, {}).get()[0];
-                    });
+                    using namespace phylanx::execution_tree;
+                    return numeric_operand(p, {}).get()[0];
+                });
             },
             "evaluate execution tree")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
@@ -748,7 +755,7 @@ PYBIND11_MODULE(_phylanx, m)
                     [&]() {
                         p.store(hpx::launch::sync,
                             phylanx::ir::node_data<double>{d});
-                    });
+                });
             },
             "assign another value to variable")
         .def("num_dimensions",
@@ -770,7 +777,9 @@ PYBIND11_MODULE(_phylanx, m)
             },
             "Get the value at the specified index")
         .def("__getitem__",
-            [](phylanx::execution_tree::primitive const& p, const std::tuple<int,int>& pt) {
+            [](phylanx::execution_tree::primitive const& p,
+                    const std::tuple<int, int>& pt)
+            {
                 const int index1 = std::get<0>(pt);
                 const int index2 = std::get<1>(pt);
                 return hpx::threads::run_as_hpx_thread([&]() {

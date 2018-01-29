@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -33,10 +34,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(slicing_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const slicing_operation::match_data =
+    match_pattern_type const slicing_operation::match_data =
     {
-        hpx::util::make_tuple(
-            "slice", "slice(_1, _2, _3, _4, _5)", &create<slicing_operation>)
+        hpx::util::make_tuple("slice",
+            std::vector<std::string>{"slice(_1, _2, _3, _4, _5)"},
+            &create<slicing_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

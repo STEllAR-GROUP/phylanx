@@ -14,6 +14,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
+#include <vector>
 
 namespace phylanx { namespace execution_tree
 {
@@ -46,7 +48,6 @@ namespace phylanx { namespace execution_tree
             ast::generate_asts(expr), snippets, env, default_locality);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
     compiler::function compile(ast::expression const& expr,
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
@@ -75,6 +76,52 @@ namespace phylanx { namespace execution_tree
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
         return compile(ast::generate_asts(expr), snippets, default_locality);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    compiler::function compile_and_run(ast::expression const& expr,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality)
+    {
+        auto f = compile(expr, snippets, env, default_locality);
+        return f();
+    }
+
+    compiler::function compile_and_run(std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality)
+    {
+        auto f = compile(exprs, snippets, env, default_locality);
+        return f();
+    }
+
+    compiler::function compile_and_run(std::string const& expr,
+        compiler::function_list& snippets, compiler::environment& env,
+        hpx::id_type const& default_locality)
+    {
+        auto f = compile(expr, snippets, env, default_locality);
+        return f();
+    }
+
+    compiler::function compile_and_run(ast::expression const& expr,
+        compiler::function_list& snippets, hpx::id_type const& default_locality)
+    {
+        auto f = compile(expr, snippets, default_locality);
+        return f();
+    }
+
+    compiler::function compile_and_run(std::vector<ast::expression> const& exprs,
+        compiler::function_list& snippets, hpx::id_type const& default_locality)
+    {
+        auto f = compile(exprs, snippets, default_locality);
+        return f();
+    }
+
+    compiler::function compile_and_run(std::string const& expr,
+        compiler::function_list& snippets, hpx::id_type const& default_locality)
+    {
+        auto f = compile(expr, snippets, default_locality);
+        return f();
     }
 }}
 

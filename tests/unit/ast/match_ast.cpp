@@ -10,6 +10,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 struct on_placeholder_match
 {

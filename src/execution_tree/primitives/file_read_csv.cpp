@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,10 +35,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(file_read_csv_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const file_read_csv::match_data =
+    match_pattern_type const file_read_csv::match_data =
     {
-        hpx::util::make_tuple(
-            "file_read_csv", "file_read_csv(_1)", &create<file_read_csv>)
+        hpx::util::make_tuple("file_read_csv",
+            std::vector<std::string>{"file_read_csv(_1)"},
+            &create<file_read_csv>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

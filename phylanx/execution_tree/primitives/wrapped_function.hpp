@@ -19,8 +19,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT wrapped_function
       : public base_primitive
-      , public hpx::components::locking_hook<
-          hpx::components::component_base<wrapped_function>>
+      , public hpx::components::component_base<wrapped_function>
     {
     public:
         wrapped_function() = default;
@@ -31,8 +30,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_result_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
-        bool bind(
-            std::vector<primitive_argument_type> const& params) override;
 
     private:
         primitive_argument_type target_;

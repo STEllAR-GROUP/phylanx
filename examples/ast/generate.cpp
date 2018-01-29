@@ -9,6 +9,8 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <sstream>
+#include <string>
 
 struct traverse_ast
 {

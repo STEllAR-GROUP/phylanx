@@ -30,6 +30,7 @@
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
+#include <phylanx/execution_tree/primitives/hstack_operation.hpp>
 #include <phylanx/execution_tree/primitives/identity.hpp>
 #include <phylanx/execution_tree/primitives/if_conditional.hpp>
 #include <phylanx/execution_tree/primitives/inverse_operation.hpp>
@@ -51,6 +52,7 @@
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_not_operation.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives/vstack_operation.hpp>
 #include <phylanx/execution_tree/primitives/while_operation.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_function.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_variable.hpp>

@@ -3,6 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:noinclude:HPX_ASSERT
+
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_function_call.hpp>
 #include <phylanx/ast/detail/is_identifier.hpp>
@@ -40,12 +42,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         for (auto const& patterns : patterns_list)
         {
-            for (auto const& pattern : patterns)
-            {
-                result.define(hpx::util::get<0>(pattern),
-                    builtin_function(
-                        hpx::util::get<2>(pattern), default_locality));
-            }
+            result.define(hpx::util::get<0>(patterns),
+                builtin_function(
+                    hpx::util::get<2>(patterns), default_locality));
         }
 
         return result;
@@ -64,14 +63,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         for (auto const& patterns : patterns_list)
         {
-            for (auto const& pattern : patterns)
+            for (auto const& pattern : hpx::util::get<1>(patterns))
             {
                 result.push_back(
                     hpx::util::make_tuple(
-                        hpx::util::get<0>(pattern),
-                        hpx::util::get<1>(pattern),
-                        ast::generate_ast(hpx::util::get<1>(pattern)),
-                        hpx::util::get<2>(pattern)));
+                        hpx::util::get<0>(patterns), pattern,
+                        ast::generate_ast(pattern), hpx::util::get<2>(patterns)));
             }
         }
 
@@ -223,7 +220,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             static std::string argument_name("argument");
 
-            environment env(&env_);
+            std::size_t base_arg_num = env_.base_arg_num();
+            environment env(&env_, args.size());
             for (std::size_t i = 0; i != args.size(); ++i)
             {
                 // get sequence number of this component
@@ -233,7 +231,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 HPX_ASSERT(ast::detail::is_identifier(args[i]));
                 env.define(ast::detail::identifier_name(args[i]),
-                    hpx::util::bind(arg, i, hpx::util::placeholders::_2));
+                    hpx::util::bind(
+                        arg, i + base_arg_num, hpx::util::placeholders::_2));
             }
             return compile(body, snippets_, env, patterns_, default_locality_);
         }
@@ -287,33 +286,37 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 f = primitive_variable{default_locality_}(
                         std::move(bf.arg_), define_variable + "#" +
                             std::to_string(sequence_number) + "#" + full_name);
-            }
-            else
-            {
-                // get sequence number of this component
-                static std::string function_("function");
-                std::size_t sequence_number =
-                    snippets_.sequence_numbers_[function_]++;
-
-                // two-step initialization of the wrapped_function to support
-                // recursion
-                env_.define(name,
-                    external_function(f, sequence_number, default_locality_));
-
-                static std::string define_function_("define-function");
-                sequence_number =
-                    snippets_.sequence_numbers_[define_function_]++;
-
-                // create define_function helper object
-                f = primitive_function{default_locality_}(define_function_ +
-                        "#" + std::to_string(sequence_number) + "#" + full_name);
-
-                // set the body for the compiled function
-                define_function(f.arg_).set_body(hpx::launch::sync,
-                    std::move(handle_lambda(args, body).arg_));
+                return f;
             }
 
-            return f;
+            // get sequence number of this component
+            static std::string function_("function");
+            std::size_t sequence_number =
+                snippets_.sequence_numbers_[function_]++;
+
+            // two-step initialization of the wrapped_function to support
+            // recursion
+            env_.define(name,
+                external_function(f, sequence_number, default_locality_));
+
+            static std::string define_function_("define-function");
+            sequence_number =
+                snippets_.sequence_numbers_[define_function_]++;
+
+            // create define_function helper object
+            std::string define_function_name =
+                std::to_string(sequence_number) + "#" + full_name;
+
+            f = primitive_function{default_locality_}(
+                define_function_ + "#" + define_function_name);
+
+            // set the body for the compiled function
+            define_function(f.arg_).set_body(hpx::launch::sync,
+                std::move(handle_lambda(args, body).arg_));
+
+            // define-function shouldn't return a function that evaluates
+            // to itself, let it return nil{} instead
+            return always_nil{}(std::move(define_function_name));
         }
 
         function handle_variable_reference(std::string name,

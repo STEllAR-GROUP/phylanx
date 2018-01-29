@@ -8,7 +8,10 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
+#include <utility>
 #include <vector>
+
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////

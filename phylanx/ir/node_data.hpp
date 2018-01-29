@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace ir
