@@ -36,6 +36,8 @@ def phy_print(m):
         print("ndim=", ndim)
 
 def get_node(node,**kwargs):
+    if node == None:
+        return None
     args = [arg for arg in ast.iter_child_nodes(node)]
     params = {"name":None,"num":None}
     for k in kwargs:
@@ -55,6 +57,9 @@ def get_node(node,**kwargs):
     elif num != None:
         if num < len(args):
             return args[num]
+
+    # if we can't find what we're looking for...
+    return None
 
 class Recompiler:
     def __init__(self):
@@ -81,35 +86,38 @@ class Recompiler:
             e = get_node(a,name="ExtSlice")
             s0 = get_node(e,name="Slice",num=0)
             s1 = get_node(e,name="Slice",num=1)
-            xlo = s0.lower
-            xhi = s0.upper
-            ylo = s1.lower
-            yhi = s1.upper
-            sname = self.recompile(get_node(a,num=0))
-            s = "slice("
-            s += sname
-            s += ","
-            if xlo == None:
-                s += "0"
+            if s0 != None and s1 != None:
+                xlo = s0.lower
+                xhi = s0.upper
+                ylo = s1.lower
+                yhi = s1.upper
+                sname = self.recompile(get_node(a,num=0))
+                s = "slice("
+                s += sname
+                s += ","
+                if xlo == None:
+                    s += "0"
+                else:
+                    s += self.recompile(xlo)
+                s += ","
+                if xhi == None:
+                    s += "shape(" + sname + ",0)"
+                else:
+                    s += self.recompile(xhi)
+                s += ","
+                if ylo == None:
+                    s += "0"
+                else:
+                    s += self.recompile(ylo)
+                s += ","
+                if yhi == None:
+                    s += "shape(" + sname + ",1)"
+                else:
+                    s += self.recompile(yhi)
+                s += ")"
+                return s
             else:
-                s += self.recompile(xlo)
-            s += ","
-            if xhi == None:
-                s += "shape(" + sname + ",0)"
-            else:
-                s += self.recompile(xhi)
-            s += ","
-            if ylo == None:
-                s += "0"
-            else:
-                s += self.recompile(ylo)
-            s += ","
-            if yhi == None:
-                s += "shape(" + sname + ",1)"
-            else:
-                s += self.recompile(yhi)
-            s += ")"
-            return s
+                raise Exception("Unsupported slicing: line=%d"%a.lineno)
         elif nm == "FunctionDef":
             args = [arg for arg in ast.iter_child_nodes(a)]
             s = ""
