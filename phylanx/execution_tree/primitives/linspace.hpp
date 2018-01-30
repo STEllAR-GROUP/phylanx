@@ -12,7 +12,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     /**
      * @brief Linear space of evenly distributed numbers over the given interval.
-     * 
+     *
      * @author R. Tohid
      * @version 0.0.1
      * @date 2018
@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         static match_pattern_type const match_data;
-        
+
         /**
          * @brief Default constructor.
          */
@@ -31,9 +31,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         /**
          * @brief Creates a linear space of evenly spaced numbers over the given interval.
-         * 
+         *
          * @param args Is a vector with exactly three elements (in order):
-         * 
+         *
          * start: the first value of the sequence.\n
          * stop: the last value of the sequence. It will be ignored if the number of
          * samples is less than 2.\n

@@ -17,7 +17,7 @@ void test_linspace0d()
     phylanx::execution_tree::primitive start =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
-    
+
     phylanx::execution_tree::primitive stop =
     hpx::new_<phylanx::execution_tree::primitives::variable>(
         hpx::find_here(), phylanx::ir::node_data<double>(45.0));
@@ -47,7 +47,7 @@ void test_linspace1d()
     phylanx::execution_tree::primitive start =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
-    
+
     phylanx::execution_tree::primitive stop =
     hpx::new_<phylanx::execution_tree::primitives::variable>(
         hpx::find_here(), phylanx::ir::node_data<double>(45.0));
@@ -68,8 +68,8 @@ void test_linspace1d()
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(
-        phylanx::ir::node_data<double>(blaze::DynamicVector <double>{42.0, 43.0, 44.0, 45.0}),
-        result);
+        phylanx::ir::node_data<double>(
+            blaze::DynamicVector <double>{42.0, 43.0, 44.0, 45.0}), result);
 }
 
 int main(int argc, char* argv[])

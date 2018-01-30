@@ -7,7 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
-        phylanx::execution_tree::primitives::linspace> linspace_type ;
+    phylanx::execution_tree::primitives::linspace> linspace_type;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(linspace_type, phylanx_linspace_component,
     "phylanx_primitive_component", hpx::components::factory_enabled)
 HPX_DEFINE_GET_COMPONENT_TYPE(linspace_type::wrapped_type)
@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 else if (1 == num_samples)
                 {
-                    vector_type result{start};            
+                    vector_type result{start};
                     return operand_type{std::move(result)};
                 }
                 else
