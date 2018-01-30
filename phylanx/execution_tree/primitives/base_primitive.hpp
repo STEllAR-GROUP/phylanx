@@ -190,12 +190,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         base_primitive()
           : eval_count_(0ll)
           , eval_duration_(0ll)
+          , eval_direct_count_(0ll)
+          , eval_direct_duration_(0ll)
         {}
 
         base_primitive(std::vector<primitive_argument_type>&& operands)
           : operands_(std::move(operands))
           , eval_count_(0ll)
           , eval_duration_(0ll)
+          , eval_direct_count_(0ll)
+          , eval_direct_duration_(0ll)
         {}
 
         virtual ~base_primitive() = default;
@@ -216,6 +220,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_result_type eval_direct_nonvirtual(
             std::vector<primitive_argument_type> const& args) const
         {
+            hpx::util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
+            ++eval_direct_count_;
             return eval_direct(args);
         }
         virtual primitive_result_type eval_direct(
@@ -275,14 +281,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // access data for performance counter
-        std::int64_t get_eval_count(bool reset) const
+        std::int64_t get_eval_count(bool reset, bool direct) const
         {
-            return hpx::util::get_and_reset_value(eval_count_, reset);
+            if (!direct)
+            {
+                return hpx::util::get_and_reset_value(eval_count_, reset);
+            }
+            return hpx::util::get_and_reset_value(eval_direct_count_, reset);
         }
-
-        std::int64_t get_eval_duration(bool reset) const
+        std::int64_t get_eval_duration(bool reset, bool direct) const
         {
-            return hpx::util::get_and_reset_value(eval_duration_, reset);
+            if (!direct)
+            {
+                return hpx::util::get_and_reset_value(eval_duration_, reset);
+            }
+            return hpx::util::get_and_reset_value(eval_direct_duration_, reset);
         }
 
     protected:
@@ -292,6 +305,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Performance counter data
         mutable std::int64_t eval_count_;
         mutable std::int64_t eval_duration_;
+        mutable std::int64_t eval_direct_count_;
+        mutable std::int64_t eval_direct_duration_;
     };
 }}}
 

@@ -5,13 +5,17 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
+
 #include <hpx/hpx_main.hpp>
+#include <hpx/include/agas.hpp>
+#include <hpx/include/performance_counters.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <iostream>
+#include <cstddef>
+#include <cstdint>
+#include <map>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,6 +51,25 @@ char const* const lra_code = R"(block(
     lra
 ))";
 
+std::map<std::string, std::size_t> expected_counts =
+{
+    { "block", 2 },
+    { "parallel_block", 1 },
+    { "dot", 2 },
+    { "while", 1 },
+    { "constant", 4 },
+    { "exp", 1 },
+    { "shape", 4 },
+    { "transpose", 1 },
+    { "add", 2 },
+    { "div", 1 },
+    { "mul", 1 },
+    { "sub", 2 },
+    { "lt", 1 },
+    { "store", 5 },
+    { "minus", 1 },
+};
+
 int main()
 {
     blaze::DynamicMatrix<double> v1{{15.04, 16.74}, {13.82, 24.49},
@@ -63,12 +86,12 @@ int main()
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+    auto lra = phylanx::execution_tree::compile_and_run(lra_code, snippets);
 
     // evaluate generated execution tree
-    auto x = phylanx::ir::node_data<double>{ v1 };
-    auto y = phylanx::ir::node_data<double>{ v2 };
-    auto alpha = phylanx::ir::node_data<double>{ 1e-5 };
+    auto x = phylanx::ir::node_data<double>{v1};
+    auto y = phylanx::ir::node_data<double>{v2};
+    auto alpha = phylanx::ir::node_data<double>{1e-5};
 
     auto result = lra(x, y, alpha);
 
@@ -77,33 +100,91 @@ int main()
     {
         std::string const& name = hpx::util::get<0>(pattern);
 
+        std::string counter_pc_name(
+            "/phylanx{locality#0/total}/primitives/" + name + "/count/eval");
         hpx::performance_counters::performance_counter counter_pc(
-            "/phylanx{locality#*/total}/primitives/" + name + "/count/eval");
-        hpx::performance_counters::performance_counter time_pc(
-            "/phylanx{locality#*/total}/primitives/" + name + "/time/eval");
+            counter_pc_name);
 
-        // Time performance counter
+        std::string time_pc_name(
+            "/phylanx{locality#0/total}/primitives/" + name + "/time/eval");
+        hpx::performance_counters::performance_counter time_pc(time_pc_name);
+
+        std::string direct_counter_pc_name(
+            "/phylanx{locality#0/total}/primitives/" + name + "/count/eval_direct");
+        hpx::performance_counters::performance_counter direct_counter_pc(
+            direct_counter_pc_name);
+
+        std::string direct_time_pc_name(
+            "/phylanx{locality#0/total}/primitives/" + name + "/time/eval_direct");
+        hpx::performance_counters::performance_counter direct_time_pc(
+            direct_time_pc_name);
+
+        auto entries = hpx::agas::find_symbols(
+            hpx::launch::sync, "/phylanx/" + name + "#*");
+        HPX_TEST_EQ(expected_counts[name], entries.size());
+
+        // Time performance counters
         {
+            auto info = time_pc.get_info(hpx::launch::sync);
+            HPX_TEST_EQ(info.fullname_, time_pc_name);
+            HPX_TEST_EQ(
+                info.type_, hpx::performance_counters::counter_raw_values);
+
             auto values =
                 time_pc.get_counter_values_array(hpx::launch::sync, false);
-            HPX_TEST_NEQ(values.count_, 0ll);
 
-            if (name == "dot")
+            HPX_TEST_EQ(values.count_, 1ll);
+            HPX_TEST_EQ(values.values_.size(), entries.size());
+
+            auto direct_info = direct_time_pc.get_info(hpx::launch::sync);
+            HPX_TEST_EQ(direct_info.fullname_, direct_time_pc_name);
+            HPX_TEST_EQ(direct_info.type_,
+                hpx::performance_counters::counter_raw_values);
+
+            auto direct_values = direct_time_pc.get_counter_values_array(
+                hpx::launch::sync, false);
+
+            HPX_TEST_EQ(direct_values.count_, 1ll);
+            HPX_TEST_EQ(direct_values.values_.size(), entries.size());
+
+            // at least one of the values for each primitive should be non-zero
+            for (std::size_t i = 0; i != values.values_.size(); ++i)
             {
-                for (auto const& i : values.values_)
-                {
-                    HPX_TEST_NEQ(i, 0ll);
-                }
+                HPX_TEST(values.values_[i] != 0ll ||
+                    direct_values.values_[i] != 0ll);
             }
         }
 
-        // Count performance counter
+        // Count performance counters
         {
+            auto info = counter_pc.get_info(hpx::launch::sync);
+            HPX_TEST_EQ(info.fullname_, counter_pc_name);
+            HPX_TEST_EQ(
+                info.type_, hpx::performance_counters::counter_raw_values);
+
             auto values =
                 counter_pc.get_counter_values_array(hpx::launch::sync, false);
-            HPX_TEST_NEQ(values.count_, 0ll);
-            if (name == "dot")
-                HPX_TEST_EQ(values.values_.size(), 2);
+
+            HPX_TEST_EQ(values.count_, 1ll);
+            HPX_TEST_EQ(values.values_.size(), entries.size());
+
+            auto direct_info = direct_counter_pc.get_info(hpx::launch::sync);
+            HPX_TEST_EQ(direct_info.fullname_, direct_counter_pc_name);
+            HPX_TEST_EQ(direct_info.type_,
+                hpx::performance_counters::counter_raw_values);
+
+            auto direct_values = direct_counter_pc.get_counter_values_array(
+                hpx::launch::sync, false);
+
+            HPX_TEST_EQ(direct_values.count_, 1ll);
+            HPX_TEST_EQ(direct_values.values_.size(), entries.size());
+
+            // at least one of the values for each primitive should be non-zero
+            for (std::size_t i = 0; i != values.values_.size(); ++i)
+            {
+                HPX_TEST(values.values_[i] != 0ll ||
+                    direct_values.values_[i] != 0ll);
+            }
         }
     }
 
