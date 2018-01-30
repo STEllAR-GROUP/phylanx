@@ -35,6 +35,32 @@ def phy_print(m):
     else:
         print("ndim=", ndim)
 
+def get_node(node,**kwargs):
+    if node == None:
+        return None
+    args = [arg for arg in ast.iter_child_nodes(node)]
+    params = {"name":None,"num":None}
+    for k in kwargs:
+        if k not in params:
+            raise Exception("Invalid argument '%s'" % k)
+        else:
+            params[k] = kwargs[k]
+    name = params["name"]
+    num  = params["num"]
+    if name != None:
+        for i in range(len(args)):
+            a = args[i]
+            nm = a.__class__.__name__
+            if nm == name:
+                if num == None or num == i:
+                    return a
+    elif num != None:
+        if num < len(args):
+            return args[num]
+
+    # if we can't find what we're looking for...
+    return None
+
 class Recompiler:
     def __init__(self):
         self.defs = {}
@@ -56,6 +82,42 @@ class Recompiler:
             else:
                 raise Exception()
             return s
+        elif nm == "Subscript":
+            e = get_node(a,name="ExtSlice")
+            s0 = get_node(e,name="Slice",num=0)
+            s1 = get_node(e,name="Slice",num=1)
+            if s0 != None and s1 != None:
+                xlo = s0.lower
+                xhi = s0.upper
+                ylo = s1.lower
+                yhi = s1.upper
+                sname = self.recompile(get_node(a,num=0))
+                s = "slice("
+                s += sname
+                s += ","
+                if xlo == None:
+                    s += "0"
+                else:
+                    s += self.recompile(xlo)
+                s += ","
+                if xhi == None:
+                    s += "shape(" + sname + ",0)"
+                else:
+                    s += self.recompile(xhi)
+                s += ","
+                if ylo == None:
+                    s += "0"
+                else:
+                    s += self.recompile(ylo)
+                s += ","
+                if yhi == None:
+                    s += "shape(" + sname + ",1)"
+                else:
+                    s += self.recompile(yhi)
+                s += ")"
+                return s
+            else:
+                raise Exception("Unsupported slicing: line=%d"%a.lineno)
         elif nm == "FunctionDef":
             args = [arg for arg in ast.iter_child_nodes(a)]
             s = ""

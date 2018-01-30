@@ -7,6 +7,7 @@
 import phylanx
 from phylanx.util import phyfun, phy_print
 et = phylanx.execution_tree
+import numpy as np
 
 fib10 = et.eval("""
 block(
@@ -47,3 +48,16 @@ def pass_str(a):
     return a
 
 assert "foo" == str(pass_str("foo"))
+
+@phyfun
+def test_slice(a):
+    return a[1:3,1:4]
+
+two = np.reshape(np.arange(30),(5,6))
+r1 = test_slice(two)
+r2 = two[1:3,1:4]
+
+assert r2.shape == (r1.dimension(0), r1.dimension(1))
+for i in range(r2.shape[0]):
+    for j in range(r2.shape[1]):
+        assert r1[i,j] == r2[i,j]
