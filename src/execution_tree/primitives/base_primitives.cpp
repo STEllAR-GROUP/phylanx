@@ -1160,7 +1160,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type to_primitive_value_type(
-        ast::literal_value_type && val)
+        ast::literal_value_type&& val)
     {
         switch (val.index())
         {
@@ -1178,6 +1178,20 @@ namespace phylanx { namespace execution_tree
 
         case 4:     // phylanx::ir::node_data<double>
             return util::get<4>(std::move(val));
+
+        // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
+        case 5:
+            {
+                auto && v = util::get<5>(std::move(val)).get();
+                std::vector<primitive_argument_type> data;
+                data.reserve(v.size());
+                for (auto && value : std::move(v))
+                {
+                    data.push_back(to_primitive_value_type(std::move(value)));
+                }
+                return primitive_argument_type{data};
+            }
+            break;
 
         default:
             break;

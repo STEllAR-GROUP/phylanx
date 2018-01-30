@@ -26,10 +26,10 @@ foreach(test ${tests})
 
   add_phylanx_regression_test("execution_tree" ${test} ${${test}_PARAMETERS})
 
-  add_phylanx_pseudo_target(tests.regressions.execution_tree_.${test})
-  add_phylanx_pseudo_dependencies(tests.regressions.execution_tree_
-    tests.regressions.execution_tree_.${test})
-  add_phylanx_pseudo_dependencies(tests.regressions.execution_tree_.${test}
+  add_phylanx_pseudo_target(tests.regressions.execution_tree_dir.${test})
+  add_phylanx_pseudo_dependencies(tests.regressions.execution_tree_dir
+    tests.regressions.execution_tree_dir.${test})
+  add_phylanx_pseudo_dependencies(tests.regressions.execution_tree_dir.${test}
     ${test}_test_exe)
 
 endforeach()

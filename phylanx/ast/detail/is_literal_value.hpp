@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,9 +8,12 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/variant.hpp>
 
+#include <cstdint>
 #include <string>
+#include <vector>
 
 namespace phylanx { namespace ast { namespace detail
 {
@@ -93,6 +96,10 @@ namespace phylanx { namespace ast { namespace detail
         }
         return literal_value(expr.first);
     }
+
+    PHYLANX_EXPORT bool is_literal_value(std::vector<expression> const& exprs);
+    PHYLANX_EXPORT literal_value_type literal_value(
+        std::vector<expression> const& exprs);
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT ir::node_data<double> literal_value(
