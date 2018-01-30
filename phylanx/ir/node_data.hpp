@@ -248,6 +248,7 @@ namespace phylanx { namespace ir
         node_data(node_data<U> const& d)
           : data_(init_data_from_type(d))
         {
+            increment_copy_construction_count();
         }
 
         node_data& operator=(storage0d_type val)
@@ -367,6 +368,17 @@ namespace phylanx { namespace ir
                 increment_move_assignment_count();
                 data_ = std::move(d.data_);
             }
+            return *this;
+        }
+
+        template <typename U,
+            typename U1 =
+                typename std::enable_if<!std::is_same<T, U>::value>::type>
+        node_data& operator=(node_data const& d)
+        {
+            increment_copy_assignment_count();
+            data_ = init_data_from_type(d);
+
             return *this;
         }
 
