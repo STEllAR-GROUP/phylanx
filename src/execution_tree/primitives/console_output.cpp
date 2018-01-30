@@ -62,26 +62,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> const& args)
             {
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_result_type
-                    {
+                return hpx::dataflow(
+                    hpx::util::unwrapping([this_](args_type&& args)
+                                              -> primitive_result_type {
                         bool init = true;
                         for (auto const& arg : args)
                         {
-                            if(init)
+                            if (init)
+                            {
                                 init = false;
+                            }
                             else
-                                // Put spaces in the output
-                                // to match Python
+                            {
+                                // Put spaces in the output to match Python
                                 hpx::cout << ' ';
+                            }
                             hpx::cout << arg;
                         }
                         hpx::cout << std::endl;
 
                         return {};
                     }),
-                    detail::map_operands(operands, value_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::value_operand{}, args));
             }
 
         private:

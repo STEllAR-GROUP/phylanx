@@ -90,12 +90,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "arguments given by the operands array are valid");
                 }
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping(
-                        [this_](operands_type&& op0) -> primitive_result_type {
-                            return this_->identity_nd(std::move(op0));
-                        }),
-                    detail::map_operands(operands, numeric_operand, args));
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& op0) -> primitive_result_type
+                    {
+                        return this_->identity_nd(std::move(op0));
+                    }),
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

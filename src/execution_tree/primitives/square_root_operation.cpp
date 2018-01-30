@@ -101,28 +101,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
-                {
-
-                    switch (ops[0].num_dimensions())
                     {
-                    case 0:
-                        return this_->square_root_0d(std::move(ops));
 
-                    case 1:
-                        return this_->square_root_1d(std::move(ops));
+                        switch (ops[0].num_dimensions())
+                        {
+                        case 0:
+                            return this_->square_root_0d(std::move(ops));
 
-                    case 2:
-                        return this_->square_root_2d(std::move(ops));
+                        case 1:
+                            return this_->square_root_1d(std::move(ops));
 
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "square_root_operation::eval",
-                            "left hand side operand has unsupported "
-                            "number of dimensions");
-                    }
-                }),
-                    detail::map_operands(operands, numeric_operand, args)
-                    );
+                        case 2:
+                            return this_->square_root_2d(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "square_root_operation::eval",
+                                "left hand side operand has unsupported "
+                                "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }
