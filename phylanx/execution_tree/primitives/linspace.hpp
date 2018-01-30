@@ -8,6 +8,8 @@
 
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
+#include <vector>
+
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     /**

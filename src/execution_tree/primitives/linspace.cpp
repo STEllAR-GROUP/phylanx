@@ -5,6 +5,12 @@
 
 #include <phylanx/execution_tree/primitives/linspace.hpp>
 
+#include <cstddef>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
     phylanx::execution_tree::primitives::linspace> linspace_type;
