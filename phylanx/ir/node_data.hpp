@@ -374,7 +374,7 @@ namespace phylanx { namespace ir
         template <typename U,
             typename U1 =
                 typename std::enable_if<!std::is_same<T, U>::value>::type>
-        node_data& operator=(node_data const& d)
+        node_data& operator=(node_data<U> const& d)
         {
             increment_copy_assignment_count();
             data_ = init_data_from_type(d);
