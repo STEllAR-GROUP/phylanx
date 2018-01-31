@@ -513,7 +513,7 @@ namespace phylanx { namespace ir
                 "node_data object holds unsupported data type");
         }
 
-        custom_storage2d_type matrix()
+        custom_storage2d_type matrix() &
         {
             custom_storage2d_type* cm =
                 util::get_if<custom_storage2d_type>(&data_);
@@ -533,7 +533,7 @@ namespace phylanx { namespace ir
                 "phylanx::ir::node_data<T>::matrix()",
                 "node_data object holds unsupported data type");
         }
-        custom_storage2d_type matrix() const
+        custom_storage2d_type matrix() const&
         {
             custom_storage2d_type const* cm =
                 util::get_if<custom_storage2d_type>(&data_);
@@ -553,6 +553,12 @@ namespace phylanx { namespace ir
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "phylanx::ir::node_data<T>::matrix()",
                 "node_data object holds unsupported data type");
+        }
+        custom_storage2d_type matrix() &&
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::matrix()",
+                "node_data::matrix() shouldn't be called on an rvalue");
         }
 
         storage1d_type& vector_non_ref()
@@ -598,7 +604,7 @@ namespace phylanx { namespace ir
                 "node_data object holds unsupported data type");
         }
 
-        custom_storage1d_type vector()
+        custom_storage1d_type vector() &
         {
             custom_storage1d_type* cv =
                 util::get_if<custom_storage1d_type>(&data_);
@@ -615,7 +621,7 @@ namespace phylanx { namespace ir
                 "phylanx::ir::node_data<T>::vector()",
                 "node_data object holds unsupported data type");
         }
-        custom_storage1d_type vector() const
+        custom_storage1d_type vector() const&
         {
             custom_storage1d_type const* cv =
                 util::get_if<custom_storage1d_type>(&data_);
@@ -635,6 +641,12 @@ namespace phylanx { namespace ir
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "phylanx::ir::node_data<T>::vector()",
                 "node_data object holds unsupported data type");
+        }
+        custom_storage1d_type vector() &&
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::vector()",
+                "node_data::vector shouldn't be called on an rvalue");
         }
 
         storage0d_type& scalar()
@@ -741,7 +753,7 @@ namespace phylanx { namespace ir
         }
 
         /// Return a new instance of node_data referring to this instance.
-        node_data<T> ref() const
+        node_data<T> ref() const&
         {
             switch(data_.index())
             {
@@ -760,6 +772,12 @@ namespace phylanx { namespace ir
                 break;
             }
 
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::ref()",
+                "node_data object holds unsupported data type");
+        }
+        node_data<T> ref() &&
+        {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "phylanx::ir::node_data<T>::ref()",
                 "node_data object holds unsupported data type");

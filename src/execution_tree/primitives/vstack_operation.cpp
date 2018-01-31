@@ -175,29 +175,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping(
-                        [this_](args_type&& args) -> primitive_result_type {
-                            std::size_t matrix_dims = args[0].num_dimensions();
-                            switch (matrix_dims)
-                            {
-                            case 0:
-                                return this_->vstack0d(std::move(args));
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](args_type&& args) -> primitive_result_type
+                    {
+                        std::size_t matrix_dims = args[0].num_dimensions();
+                        switch (matrix_dims)
+                        {
+                        case 0:
+                            return this_->vstack0d(std::move(args));
 
-                            case 1:
-                                return this_->vstack1d(std::move(args));
+                        case 1:
+                            return this_->vstack1d(std::move(args));
 
-                            case 2:
-                                return this_->vstack2d(std::move(args));
+                        case 2:
+                            return this_->vstack2d(std::move(args));
 
-                            default:
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "vstack_operation::eval",
-                                    "left hand side operand has unsupported "
-                                    "number of dimensions");
-                            }
-                        }),
-                    detail::map_operands(operands, numeric_operand, args));
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "vstack_operation::eval",
+                                "left hand side operand has unsupported "
+                                "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

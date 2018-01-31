@@ -295,7 +295,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args));
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }
