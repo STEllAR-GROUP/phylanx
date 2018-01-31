@@ -153,7 +153,7 @@ namespace phylanx { namespace ir
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "node_data<double>::operator bool",
+                "node_data<double>::operator<<()",
                 "invalid dimensionality: " + std::to_string(dims));
         }
         return out;
@@ -274,29 +274,30 @@ namespace phylanx { namespace ir
             out << std::to_string(nd[0]);
             break;
 
-        case 1:
-            HPX_FALLTHROUGH;
+        case 1: HPX_FALLTHROUGH;
         case 3:
             detail::print_array(out, nd.vector(), nd.size());
             break;
 
-        case 2:
-            HPX_FALLTHROUGH;
+        case 2: HPX_FALLTHROUGH;
         case 4:
-        {
-            auto data = nd.matrix();
-            for (std::size_t row = 0; row != data.rows(); ++row)
             {
-                if (row != 0)
-                    out << ", ";
-                detail::print_array(out, blaze::row(data, row), data.columns());
+                out << "[";
+                auto data = nd.matrix();
+                for (std::size_t row = 0; row != data.rows(); ++row)
+                {
+                    if (row != 0)
+                        out << ", ";
+                    detail::print_array(
+                        out, blaze::row(data, row), data.columns());
+                }
+                out << "]";
             }
-        }
-        break;
+            break;
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "node_data<bool>::operator bool",
+                "node_data<bool>::operator<<()",
                 "invalid dimensionality: " + std::to_string(dims));
         }
         return out;
@@ -312,13 +313,11 @@ namespace phylanx { namespace ir
         case 0:
             return scalar();
 
-        case 1:
-            HPX_FALLTHROUGH;
+        case 1: HPX_FALLTHROUGH;
         case 3:
             return vector().nonZeros() != 0;
 
-        case 2:
-            HPX_FALLTHROUGH;
+        case 2: HPX_FALLTHROUGH;
         case 4:
             return matrix().nonZeros() != 0;
 
@@ -377,32 +376,30 @@ namespace phylanx { namespace ir
         switch (index)
         {
         case 0:
-        {
-            bool val = false;
-            ar >> val;
-            data_ = val;
-        }
-        break;
+            {
+                bool val = false;
+                ar >> val;
+                data_ = val;
+            }
+            break;
 
-        case 1:
-            HPX_FALLTHROUGH;
+        case 1: HPX_FALLTHROUGH;
         case 3:    // deserialize CustomVector as DynamicVector
-        {
-            storage1d_type v;
-            ar >> v;
-            data_ = std::move(v);
-        }
-        break;
+            {
+                storage1d_type v;
+                ar >> v;
+                data_ = std::move(v);
+            }
+            break;
 
-        case 2:
-            HPX_FALLTHROUGH;
+        case 2: HPX_FALLTHROUGH;
         case 4:    // deserialize CustomMatrix as DynamicMatrix
-        {
-            storage2d_type m;
-            ar >> m;
-            data_ = std::move(m);
-        }
-        break;
+            {
+                storage2d_type m;
+                ar >> m;
+                data_ = std::move(m);
+            }
+            break;
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,

@@ -218,9 +218,11 @@ namespace phylanx { namespace ir
                 return storage_type(d.scalar());
 
             case 1:
+                increment_copy_construction_count();
                 return storage_type(d.vector());
 
             case 2:
+                increment_copy_construction_count();
                 return storage_type(d.matrix());
 
             default:
@@ -248,7 +250,6 @@ namespace phylanx { namespace ir
         node_data(node_data<U> const& d)
           : data_(init_data_from_type(d))
         {
-            increment_copy_construction_count();
         }
 
         node_data& operator=(storage0d_type val)
@@ -376,9 +377,7 @@ namespace phylanx { namespace ir
                 typename std::enable_if<!std::is_same<T, U>::value>::type>
         node_data& operator=(node_data<U> const& d)
         {
-            increment_copy_assignment_count();
             data_ = init_data_from_type(d);
-
             return *this;
         }
 
