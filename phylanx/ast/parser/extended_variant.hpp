@@ -33,8 +33,13 @@ namespace phylanx { namespace ast { namespace parser
 
         extended_variant() = default;
 
-        template <typename T>
-        extended_variant(T && var)
+        template <typename T,
+            typename U = typename std::enable_if<
+               !std::is_same<
+                    typename std::decay<T>::type, extended_variant
+                >::value
+            >::type>
+        extended_variant(T&& var)
           : var(std::forward<T>(var))
         {
         }
