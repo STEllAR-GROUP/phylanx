@@ -23,14 +23,14 @@ foreach(example_program ${example_programs})
                      FOLDER "Examples/Profiling")
 
   # add a custom target for this example
-  add_phylanx_pseudo_target(examples.prof_.${example_program})
+  add_phylanx_pseudo_target(examples.profiling_.${example_program})
 
   # make pseudo-targets depend on master pseudo-target
-  add_phylanx_pseudo_dependencies(examples.prof_
-                              examples.prof_.${example_program})
+  add_phylanx_pseudo_dependencies(examples.profiling_
+                              examples.profiling_.${example_program})
 
   # add dependencies to pseudo-target
-  add_phylanx_pseudo_dependencies(examples.prof_.${example_program}
+  add_phylanx_pseudo_dependencies(examples.profiling_.${example_program}
                               ${example_program}_exe)
 endforeach()
 
