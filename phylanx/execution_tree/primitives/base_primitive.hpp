@@ -190,6 +190,17 @@ namespace phylanx { namespace execution_tree
         return val.index() != 0;
     }
 
+    inline bool operator==(primitive_argument_type const& lhs,
+        primitive_argument_type const& rhs)
+    {
+        return lhs.variant() == rhs.variant();
+    }
+    inline bool operator!=(primitive_argument_type const& lhs,
+        primitive_argument_type const& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
         primitive_argument_type const&);
 }}

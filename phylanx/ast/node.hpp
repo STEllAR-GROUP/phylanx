@@ -211,24 +211,6 @@ namespace phylanx { namespace ast
           , phylanx::util::recursive_wrapper<std::vector<ast::expression>>
         >;
 
-    using literal_value_type = phylanx::util::variant<
-            nil
-          , bool
-          , std::int64_t
-          , std::string
-          , phylanx::ir::node_data<double>
-        >;
-
-    // a literal value is valid of its not nil{}
-    inline bool valid(literal_value_type const& val)
-    {
-        return val.index() != 0;
-    }
-    inline bool valid(literal_value_type && val)
-    {
-        return val.index() != 0;
-    }
-
     struct primary_expr : expr_node_type, tagged
     {
         primary_expr() = default;
@@ -920,6 +902,42 @@ namespace phylanx { namespace ast
 //         std::ostream& out, function_list const& fl);
 
     PHYLANX_EXPORT std::string to_string(expression const& expr);
+
+    ///////////////////////////////////////////////////////////////////////////
+    struct literal_argument_type;
+
+    using literal_value_type = phylanx::util::variant<
+            nil
+          , bool
+          , std::int64_t
+          , std::string
+          , phylanx::ir::node_data<double>
+          , phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
+        >;
+
+    struct literal_argument_type : literal_value_type
+    {
+        // poor man's forwarding constructor
+        template <typename ... Ts>
+        literal_argument_type(Ts &&... ts)
+          : literal_value_type{std::forward<Ts>(ts)...}
+        {}
+
+        // workaround for problem in implementation of MSVC14.12
+        // variant::visit
+        literal_value_type& variant() { return *this; }
+        literal_value_type const& variant() const { return *this; }
+    };
+
+    // a literal value is valid of its not nil{}
+    inline bool valid(literal_value_type const& val)
+    {
+        return val.index() != 0;
+    }
+    inline bool valid(literal_value_type && val)
+    {
+        return val.index() != 0;
+    }
 }}
 
 #endif
