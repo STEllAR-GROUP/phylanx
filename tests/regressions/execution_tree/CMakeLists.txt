@@ -6,13 +6,13 @@
 set(tests
     cout_noargs_prints_nothing_159
     cout_prints_twice_155
-    define_looses_values_177
+    define_loses_values_177
     negative_integral_value_131
    )
 
 set(cout_noargs_prints_nothing_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(define_looses_values_177_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(define_loses_values_177_FLAGS COMPONENT_DEPENDENCIES iostreams)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
