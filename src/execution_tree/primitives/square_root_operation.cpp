@@ -12,11 +12,12 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
-#include <cmath>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -31,10 +32,12 @@ HPX_REGISTER_DERIVED_COMPONENT_FACTORY(square_root_operation_type,
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const
-        square_root_operation::match_data = {
-            hpx::util::make_tuple("square_root", "square_root(_1, _2)",
-                &create<square_root_operation>)};
+    match_pattern_type const square_root_operation::match_data =
+    {
+        hpx::util::make_tuple("square_root",
+            std::vector<std::string>{"square_root(_1, _2)"},
+            &create<square_root_operation>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     square_root_operation::square_root_operation(
@@ -98,28 +101,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](operands_type&& ops) -> primitive_result_type
-                {
-
-                    switch (ops[0].num_dimensions())
                     {
-                    case 0:
-                        return this_->square_root_0d(std::move(ops));
 
-                    case 1:
-                        return this_->square_root_1d(std::move(ops));
+                        switch (ops[0].num_dimensions())
+                        {
+                        case 0:
+                            return this_->square_root_0d(std::move(ops));
 
-                    case 2:
-                        return this_->square_root_2d(std::move(ops));
+                        case 1:
+                            return this_->square_root_1d(std::move(ops));
 
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "square_root_operation::eval",
-                            "left hand side operand has unsupported "
-                            "number of dimensions");
-                    }
-                }),
-                    detail::map_operands(operands, numeric_operand, args)
-                    );
+                        case 2:
+                            return this_->square_root_2d(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "square_root_operation::eval",
+                                "left hand side operand has unsupported "
+                                "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

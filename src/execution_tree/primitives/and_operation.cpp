@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -13,7 +13,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,9 +32,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(and_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const and_operation::match_data =
+    match_pattern_type const and_operation::match_data =
     {
-        hpx::util::make_tuple("and", "_1 && __2", &create<and_operation>)
+        hpx::util::make_tuple("and",
+            std::vector<std::string>{"_1 && __2"},
+            &create<and_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,31 +19,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class HPX_COMPONENT_EXPORT wrapped_function
       : public base_primitive
-      , public hpx::components::locking_hook<
-          hpx::components::component_base<wrapped_function>>
+      , public hpx::components::component_base<wrapped_function>
     {
     public:
         wrapped_function() = default;
 
-        wrapped_function(std::string name);
-
-        wrapped_function(primitive_argument_type target);
         wrapped_function(primitive_argument_type target, std::string name);
-
-        wrapped_function(primitive_argument_type target,
-            std::vector<primitive_argument_type>&& operands);
         wrapped_function(primitive_argument_type target,
             std::vector<primitive_argument_type>&& operands, std::string name);
 
-        void set_target(primitive_argument_type target);
-
         hpx::future<primitive_result_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
-        bool bind(
-            std::vector<primitive_argument_type> const& params) override;
-
-        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
-            wrapped_function, set_target, set_target_direct_action);
 
     private:
         primitive_argument_type target_;
@@ -51,30 +37,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string name_;
     };
 }}}
-
-// Declaration of serialization support for the actions
-HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::execution_tree::primitives::
-        wrapped_function::set_target_direct_action,
-    phylanx_wrapped_function_set_target_action);
-
-namespace phylanx { namespace execution_tree
-{
-    struct wrapped_function : public primitive
-    {
-        wrapped_function(primitive_argument_type const& rhs)
-          : primitive(primitive_operand(rhs))
-        {}
-        wrapped_function(primitive_argument_type && rhs)
-          : primitive(primitive_operand(std::move(rhs)))
-        {}
-
-        PHYLANX_EXPORT hpx::future<void> set_target(
-            primitive_argument_type && target);
-        PHYLANX_EXPORT void set_target(hpx::launch::sync_policy,
-            primitive_argument_type && target);
-    };
-}}
 
 #endif
 

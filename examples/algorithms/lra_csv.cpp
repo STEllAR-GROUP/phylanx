@@ -6,14 +6,18 @@
 #include <phylanx/phylanx.hpp>
 #include <hpx/hpx_init.hpp>
 
+#include <cstdint>
 #include <iostream>
+#include <string>
+#include <utility>
 
 #include <boost/program_options.hpp>
 #include <blaze/Math.h>
 
 //////////////////////////////////////////////////////////////////////////////////
 // This example uses part of the breast cancer dataset from UCI Machine Learning
-// Repository. https://goo.gl/U2Uwz
+// Repository.
+//     https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)
 //
 // A copy of the full dataset in CSV format (breast_cancer.csv), obtained from
 // scikit-learn datasets, is provided in the same folder as this example.
@@ -54,8 +58,8 @@ char const* const lra_code = R"(block(
     //
     define(lra, x, y, alpha, iterations, enable_output,
         block(
-            define(weights, constant(0.0, shape(x, 1))),                // weights: [M]
-            define(transx, transpose(x)),                               // transx:  [M, N]
+            define(weights, constant(0.0, shape(x, 1))),            // weights: [M]
+            define(transx, transpose(x)),                           // transx:  [M, N]
             define(pred, constant(0.0, shape(x, 0))),
             define(error, constant(0.0, shape(x, 0))),
             define(gradient, constant(0.0, shape(x, 1))),
@@ -64,9 +68,10 @@ char const* const lra_code = R"(block(
                 step < iterations,
                 block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
-                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),  // exp(-dot(x, weights)): [N], pred: [N]
-                    store(error, pred - y),                            // error: [N]
-                    store(gradient, dot(transx, error)),               // gradient: [M]
+                    // exp(-dot(x, weights)): [N], pred: [N]
+                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
+                    store(error, pred - y),                         // error: [N]
+                    store(gradient, dot(transx, error)),            // gradient: [M]
                     parallel_block(
                         store(weights, weights - (alpha * gradient)),
                         store(step, step + 1)
@@ -89,8 +94,10 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto read_x = phylanx::execution_tree::compile(read_x_code, snippets);
-    auto read_y = phylanx::execution_tree::compile(read_y_code, snippets);
+    auto read_x =
+        phylanx::execution_tree::compile_and_run(read_x_code, snippets);
+    auto read_y =
+        phylanx::execution_tree::compile_and_run(read_y_code, snippets);
 
     auto row_start = vm["row_start"].as<std::int64_t>();
     auto col_start = vm["col_start"].as<std::int64_t>();
@@ -112,7 +119,7 @@ int hpx_main(boost::program_options::variables_map& vm)
     bool enable_output = vm.count("enable_output") != 0;
 
     // evaluate LRA using the read data
-    auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+    auto lra = phylanx::execution_tree::compile_and_run(lra_code, snippets);
 
     // time the execution
     hpx::util::high_resolution_timer t;

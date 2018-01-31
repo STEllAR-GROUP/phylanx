@@ -1,5 +1,5 @@
 //   Copyright (c) 2001-2011 Joel de Guzman
-//   Copyright (c) 2001-2017 Hartmut Kaiser
+//   Copyright (c) 2001-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,8 +10,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/parser/extended_variant.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 #include <phylanx/util/serialization/variant.hpp>
 
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
@@ -213,24 +211,6 @@ namespace phylanx { namespace ast
           , phylanx::util::recursive_wrapper<std::vector<ast::expression>>
         >;
 
-    using literal_value_type = phylanx::util::variant<
-            nil
-          , bool
-          , std::int64_t
-          , std::string
-          , phylanx::ir::node_data<double>
-        >;
-
-    // a literal value is valid of its not nil{}
-    inline bool valid(literal_value_type const& val)
-    {
-        return val.index() != 0;
-    }
-    inline bool valid(literal_value_type && val)
-    {
-        return val.index() != 0;
-    }
-
     struct primary_expr : expr_node_type, tagged
     {
         primary_expr() = default;
@@ -401,7 +381,6 @@ namespace phylanx { namespace ast
           : operand_node_type(std::move(val))
         {
         }
-
 
     private:
         friend class hpx::serialization::access;
@@ -692,7 +671,7 @@ namespace phylanx { namespace ast
 //     struct variable_declaration
 //     {
 //         identifier lhs;
-//         phylanx::util::optional<expression> rhs;
+//         hpx::util::optional<expression> rhs;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
@@ -806,7 +785,7 @@ namespace phylanx { namespace ast
 //     {
 //         expression condition;
 //         statement then;
-//         phylanx::util::optional<statement> else_;
+//         hpx::util::optional<statement> else_;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
@@ -850,7 +829,7 @@ namespace phylanx { namespace ast
 //     ///////////////////////////////////////////////////////////////////////////
 //     struct return_statement : tagged
 //     {
-//         phylanx::util::optional<expression> expr;
+//         hpx::util::optional<expression> expr;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
@@ -875,7 +854,7 @@ namespace phylanx { namespace ast
 //         std::string return_type;
 //         identifier function_name;
 //         std::list<identifier> args;
-//         phylanx::util::optional<statement_list> body;
+//         hpx::util::optional<statement_list> body;
 //
 //         PHYLANX_EXPORT void serialize(
 //             hpx::serialization::input_archive& ar, unsigned);
@@ -923,6 +902,42 @@ namespace phylanx { namespace ast
 //         std::ostream& out, function_list const& fl);
 
     PHYLANX_EXPORT std::string to_string(expression const& expr);
+
+    ///////////////////////////////////////////////////////////////////////////
+    struct literal_argument_type;
+
+    using literal_value_type = phylanx::util::variant<
+            nil
+          , bool
+          , std::int64_t
+          , std::string
+          , phylanx::ir::node_data<double>
+          , phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
+        >;
+
+    struct literal_argument_type : literal_value_type
+    {
+        // poor man's forwarding constructor
+        template <typename ... Ts>
+        literal_argument_type(Ts &&... ts)
+          : literal_value_type{std::forward<Ts>(ts)...}
+        {}
+
+        // workaround for problem in implementation of MSVC14.12
+        // variant::visit
+        literal_value_type& variant() { return *this; }
+        literal_value_type const& variant() const { return *this; }
+    };
+
+    // a literal value is valid of its not nil{}
+    inline bool valid(literal_value_type const& val)
+    {
+        return val.index() != 0;
+    }
+    inline bool valid(literal_value_type && val)
+    {
+        return val.index() != 0;
+    }
 }}
 
 #endif

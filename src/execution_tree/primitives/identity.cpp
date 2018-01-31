@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -33,8 +34,12 @@ HPX_DEFINE_GET_COMPONENT_TYPE(identity_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const identity::match_data = {
-        hpx::util::make_tuple("identity1", "identity(_1)", &create<identity>)};
+    match_pattern_type const identity::match_data =
+    {
+        hpx::util::make_tuple("identity",
+            std::vector<std::string>{"identity(_1)"},
+            &create<identity>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     identity::identity(std::vector<primitive_argument_type> && operands)
@@ -60,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "identity::identity_nd",
                         "input should be a scalar");
 
-                std::size_t dim = ops[0].scalar();
+                std::size_t dim = static_cast<std::size_t>(ops[0].scalar());
                 return operand_type{blaze::IdentityMatrix<double>(dim)};
             }
 
@@ -85,12 +90,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "arguments given by the operands array are valid");
                 }
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping(
-                        [this_](operands_type&& op0) -> primitive_result_type {
-                            return this_->identity_nd(std::move(op0));
-                        }),
-                    detail::map_operands(operands, numeric_operand, args));
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& op0) -> primitive_result_type
+                    {
+                        return this_->identity_nd(std::move(op0));
+                    }),
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

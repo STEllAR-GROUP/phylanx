@@ -13,19 +13,178 @@
 
 #include <boost/spirit/include/qi.hpp>
 
+#include <algorithm>
+#include <cstddef>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace phylanx { namespace ast
 {
-    ast::expression generate_ast(std::string const& input,
-        std::vector<std::string::const_iterator>& iters)
+    namespace detail
+    {
+        ///////////////////////////////////////////////////////////////////////
+        expression& replace_compile_ids(expression& ast,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+
+        template <typename Ast>
+        void replace_compile_ids(util::recursive_wrapper<Ast>& ast,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+
+        inline void replace_compile_ids(operand& op,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+        inline void replace_compile_ids(identifier& id,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+        inline void replace_compile_ids(unary_expr& ue,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+        inline void replace_compile_ids(primary_expr& pe,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+        inline void replace_compile_ids(operation& op,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+        inline void replace_compile_ids(function_call& fc,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+
+        ///////////////////////////////////////////////////////////////////////
+        template <typename Ast>
+        void replace_compile_ids(Ast const&,
+            std::vector<std::ptrdiff_t> const&,
+            std::string::const_iterator)
+        {
+        }
+
+        inline void replace_compile_ids(identifier& id,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            if (id.id >= 0)
+            {
+                id.id = std::distance(begin, iters[id.id]);
+            }
+        }
+
+        inline void replace_compile_ids(unary_expr& ue,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            if (ue.id >= 0)
+            {
+                ue.id = std::distance(begin, iters[ue.id]);
+            }
+            replace_compile_ids(ue.operand_, iters, begin);
+        }
+
+        inline void replace_compile_ids(primary_expr& pe,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            if (pe.id >= 0)
+            {
+                pe.id = std::distance(begin, iters[pe.id]);
+            }
+
+            switch (pe.index())
+            {
+            case 3:     // identifier
+                replace_compile_ids(util::get<3>(pe.get()), iters, begin);
+                break;
+
+            case 6:     // phylanx::util::recursive_wrapper<expression>
+                replace_compile_ids(util::get<6>(pe.get()).get(), iters, begin);
+                break;
+
+            case 7:     // phylanx::util::recursive_wrapper<function_call>
+                replace_compile_ids(util::get<7>(pe.get()).get(), iters, begin);
+                break;
+
+            case 8:     // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
+                for (auto& ast : util::get<8>(pe.get()).get())
+                {
+                    replace_compile_ids(ast, iters, begin);
+                }
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        inline void replace_compile_ids(operand& op,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            switch (op.index())
+            {
+            case 1:     // phylanx::util::recursive_wrapper<primary_expr>
+                replace_compile_ids(util::get<1>(op.get()).get(), iters, begin);
+                break;
+
+            case 2:     // phylanx::util::recursive_wrapper<unary_expr>
+                replace_compile_ids(util::get<2>(op.get()).get(), iters, begin);
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        inline void replace_compile_ids(operation& op,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            replace_compile_ids(op.operand_, iters, begin);
+        }
+
+        inline void replace_compile_ids(function_call& fc,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            replace_compile_ids(fc.function_name, iters, begin);
+            for (auto& arg : fc.args)
+            {
+                replace_compile_ids(arg, iters, begin);
+            }
+        }
+
+        template <typename Ast>
+        void replace_compile_ids(util::recursive_wrapper<Ast>& ast,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            replace_compile_ids(ast.get(), iters, begin);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        expression& replace_compile_ids(expression& ast,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin)
+        {
+            for (auto& op : ast.rest)
+            {
+                replace_compile_ids(op, iters, begin);
+            }
+            replace_compile_ids(ast.first, iters, begin);
+
+            return ast;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    ast::expression generate_ast(std::string const& input)
     {
         using iterator = std::string::const_iterator;
 
         iterator first = input.begin();
         iterator last = input.end();
 
+        std::vector<std::string::const_iterator> iters;
         std::stringstream strm;
         ast::parser::error_handler<iterator> error_handler(
             first, last, strm, iters);
@@ -49,24 +208,19 @@ namespace phylanx { namespace ast
                 "phylanx::ast::generate_ast", strm.str());
         }
 
-        return ast;
-    }
-
-    ast::expression generate_ast(std::string const& input)
-    {
-        std::vector<std::string::const_iterator> iters;
-        return generate_ast(input, iters);
+        // replace compile-tags with offsets against begin of input
+        return detail::replace_compile_ids(ast, iters, input.begin());
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<ast::expression> generate_asts(std::string const& input,
-        std::vector<std::string::const_iterator>& iters)
+    std::vector<ast::expression> generate_asts(std::string const& input)
     {
         using iterator = std::string::const_iterator;
 
         iterator first = input.begin();
         iterator last = input.end();
 
+        std::vector<std::string::const_iterator> iters;
         std::stringstream strm;
         ast::parser::error_handler<iterator> error_handler(
             first, last, strm, iters);
@@ -90,13 +244,13 @@ namespace phylanx { namespace ast
                 "phylanx::ast::generate_asts", strm.str());
         }
 
-        return asts;
-    }
+        // replace compile-tags with offsets against begin of input
+        for (auto& ast : asts)
+        {
+            detail::replace_compile_ids(ast, iters, input.begin());
+        }
 
-    std::vector<ast::expression> generate_asts(std::string const& input)
-    {
-        std::vector<std::string::const_iterator> iters;
-        return generate_asts(input, iters);
+        return asts;
     }
 }}
 

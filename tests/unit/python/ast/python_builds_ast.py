@@ -3,10 +3,11 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+import sys
 import phylanx.ast as ast
 import phylanx.util as util
-# A simple way to turn a python3 expression into a data structure (AST)
 
+# A simple way to turn a python3 expression into a data structure (AST)
 def oper(x):
     t = type(x)
     if t == ast.primary_expr:
@@ -82,7 +83,7 @@ expr = a1*a2*a0+a3*-a4
 #expr = (a1 + a2)+a3-a4
 
 # Convert the AST to a string and check the value
-if str(expr.value) == '(((3.140000 * "b") * "c") + ("d" * -"e"))':
+if str(expr.value) == '(((3.14 * "b") * "c") + ("d" * -"e"))':
     print("Success")
 else:
     print("Failure")

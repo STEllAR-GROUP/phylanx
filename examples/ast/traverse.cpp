@@ -7,6 +7,8 @@
 #include <hpx/hpx_main.hpp>
 
 #include <iostream>
+#include <utility>
+#include <vector>
 
 struct traverse_ast : phylanx::ast::static_visitor
 {

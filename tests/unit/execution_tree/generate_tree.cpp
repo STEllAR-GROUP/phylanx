@@ -9,6 +9,8 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <string>
+
 void test_generate_tree(
     std::string const& exprstr, char const* variables, double expected_result)
 {
@@ -223,10 +225,6 @@ void test_if_conditional()
 {
     // Test 1
     //  two outcome true case
-    phylanx::execution_tree::pattern_list patterns = {
-        phylanx::execution_tree::primitives::if_conditional::match_data
-    };
-
     char const* variables1 = R"(
         define(cond, 1.0)
         define(true_case, 42.0)

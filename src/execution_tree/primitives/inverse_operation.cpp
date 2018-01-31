@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -31,10 +32,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(inverse_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const inverse_operation::match_data =
+    match_pattern_type const inverse_operation::match_data =
     {
-        hpx::util::make_tuple(
-            "inverse", "inverse(_1)", &create<inverse_operation>)
+        hpx::util::make_tuple("inverse",
+            std::vector<std::string>{"inverse(_1)"},
+            &create<inverse_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -90,8 +92,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
 
         protected:

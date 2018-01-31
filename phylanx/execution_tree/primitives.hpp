@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,9 +14,9 @@
 #include <phylanx/execution_tree/primitives/console_output.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/execution_tree/primitives/cross_operation.hpp>
+#include <phylanx/execution_tree/primitives/debug_output.hpp>
 #include <phylanx/execution_tree/primitives/define_function.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
-
 #include <phylanx/execution_tree/primitives/determinant.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>
@@ -30,6 +30,7 @@
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
+#include <phylanx/execution_tree/primitives/hstack_operation.hpp>
 #include <phylanx/execution_tree/primitives/identity.hpp>
 #include <phylanx/execution_tree/primitives/if_conditional.hpp>
 #include <phylanx/execution_tree/primitives/inverse_operation.hpp>
@@ -45,12 +46,15 @@
 #include <phylanx/execution_tree/primitives/slicing_operation.hpp>
 #include <phylanx/execution_tree/primitives/square_root_operation.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
+#include <phylanx/execution_tree/primitives/string_output.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/execution_tree/primitives/transpose_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_not_operation.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives/vstack_operation.hpp>
 #include <phylanx/execution_tree/primitives/while_operation.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_function.hpp>
+#include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
 
 #endif

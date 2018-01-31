@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,8 +12,10 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,9 +32,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(equal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const equal::match_data =
+    match_pattern_type const equal::match_data =
     {
-        hpx::util::make_tuple("eq", "_1 == _2", &create<equal>)
+        hpx::util::make_tuple("eq",
+            std::vector<std::string>{"_1 == _2"},
+            &create<equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -229,15 +233,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops)
+                    [this_](operands_type && ops) -> primitive_result_type
                     {
                         return primitive_result_type(
                             util::visit(visit_equal{*this_},
                                 std::move(ops[0].variant()),
                                 std::move(ops[1].variant())));
                     }),
-                    detail::map_operands(operands, literal_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::literal_operand{}, args));
             }
         };
     }

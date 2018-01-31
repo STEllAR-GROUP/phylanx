@@ -24,7 +24,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public hpx::components::component_base<access_argument>
     {
     public:
-        static std::vector<match_pattern_type> const match_data;
+        static match_pattern_type const match_data;
 
         access_argument() = default;
 
@@ -34,8 +34,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_result_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
-        bool bind(
-            std::vector<primitive_argument_type> const& params) override;
 
     private:
         std::size_t argnum_;

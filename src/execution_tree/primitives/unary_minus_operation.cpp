@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -33,9 +34,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(unary_minus_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const unary_minus_operation::match_data =
+    match_pattern_type const unary_minus_operation::match_data =
     {
-        hpx::util::make_tuple("minus", "-_1", &create<unary_minus_operation>)
+        hpx::util::make_tuple("minus",
+            std::vector<std::string>{"-_1"},
+            &create<unary_minus_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -116,8 +119,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "operand has unsupported number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

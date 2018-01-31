@@ -1,4 +1,5 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2018 Parsa Amini
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,12 +10,13 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/optional.hpp>
-#include <phylanx/util/serialization/optional.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/util/scoped_timer.hpp>
+#include <hpx/include/serialization.hpp>
 
+#include <cstdint>
 #include <initializer_list>
 #include <iosfwd>
 #include <map>
@@ -31,6 +33,42 @@ namespace phylanx { namespace execution_tree
     }
 
     class HPX_COMPONENT_EXPORT primitive;
+
+    ///////////////////////////////////////////////////////////////////////////
+    struct topology
+    {
+        topology() = default;
+
+        topology(std::string name)
+          : name_(std::move(name))
+        {}
+
+        topology(std::vector<topology> names)
+          : children_(std::move(names))
+        {}
+
+        topology(std::vector<topology> names, std::string name)
+          : children_(std::move(names)), name_(std::move(name))
+        {}
+
+        template <typename Archive>
+        void serialize(Archive & ar, unsigned)
+        {
+            ar & children_ & name_;
+        }
+
+        std::vector<topology> children_;
+        std::string name_;
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Generate Newick tree (string) format from given tree topology
+    PHYLANX_EXPORT std::string newick_tree(
+        std::string const& name, topology const& t);
+
+    // Generate Dot tree (string) format from given tree topology
+    PHYLANX_EXPORT std::string dot_tree(
+        std::string const& name, topology const& t);
 
     ///////////////////////////////////////////////////////////////////////////
     struct primitive_argument_type;
@@ -62,18 +100,21 @@ namespace phylanx { namespace execution_tree
 
         hpx::future<primitive_argument_type> eval() const;
         hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> && args) const;
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const;
 
         primitive_argument_type eval_direct() const;
+        primitive_argument_type eval_direct(
+            std::vector<primitive_argument_type> && args) const;
         primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& args) const;
 
         hpx::future<void> store(primitive_argument_type);
         void store(hpx::launch::sync_policy, primitive_argument_type);
 
-        hpx::future<bool> bind(std::vector<primitive_argument_type> const&);
-        bool bind(hpx::launch::sync_policy,
-            std::vector<primitive_argument_type> const&);
+        hpx::future<topology> expression_topology() const;
+        topology expression_topology(hpx::launch::sync_policy) const;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -96,6 +137,16 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT primitive_result_type value_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT primitive_result_type value_operand_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args);
+    PHYLANX_EXPORT primitive_result_type value_operand_sync(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT primitive_result_type value_operand_sync(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args);
+
     PHYLANX_EXPORT primitive_result_type value_operand_ref_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
@@ -139,6 +190,17 @@ namespace phylanx { namespace execution_tree
         return val.index() != 0;
     }
 
+    inline bool operator==(primitive_argument_type const& lhs,
+        primitive_argument_type const& rhs)
+    {
+        return lhs.variant() == rhs.variant();
+    }
+    inline bool operator!=(primitive_argument_type const& lhs,
+        primitive_argument_type const& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
         primitive_argument_type const&);
 }}
@@ -150,10 +212,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public hpx::traits::detail::component_tag
     {
     public:
-        base_primitive() = default;
+        base_primitive()
+          : eval_count_(0ll)
+          , eval_duration_(0ll)
+          , eval_direct_count_(0ll)
+          , eval_direct_duration_(0ll)
+        {}
 
-        base_primitive(std::vector<primitive_argument_type> && operands)
+        base_primitive(std::vector<primitive_argument_type>&& operands)
           : operands_(std::move(operands))
+          , eval_count_(0ll)
+          , eval_duration_(0ll)
+          , eval_direct_count_(0ll)
+          , eval_direct_duration_(0ll)
         {}
 
         virtual ~base_primitive() = default;
@@ -161,6 +232,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_result_type> eval_nonvirtual(
             std::vector<primitive_argument_type> const& args) const
         {
+            hpx::util::scoped_timer<std::int64_t> timer(eval_duration_);
+            ++eval_count_;
             return eval(args);
         }
         virtual hpx::future<primitive_result_type> eval(
@@ -172,6 +245,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_result_type eval_direct_nonvirtual(
             std::vector<primitive_argument_type> const& args) const
         {
+            hpx::util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
+            ++eval_direct_count_;
             return eval_direct(args);
         }
         virtual primitive_result_type eval_direct(
@@ -191,11 +266,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "store function should only be called in store_primitive");
         }
 
-        bool bind_nonvirtual(std::vector<primitive_argument_type> const& args)
+        topology expression_topology_nonvirtual() const
         {
-            return bind(args);
+            return expression_topology();
         }
-        virtual bool bind(std::vector<primitive_argument_type> const& args);
+        virtual topology expression_topology() const;
 
     public:
 
@@ -203,21 +278,60 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
-            base_primitive, bind_nonvirtual, bind_action);
+            base_primitive, expression_topology_nonvirtual,
+            expression_topology_action);
 #else
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, eval_nonvirtual, eval_action);
         HPX_DEFINE_COMPONENT_ACTION(
-            base_primitive, bind_nonvirtual, bind_action);
+            base_primitive, expression_topology_nonvirtual,
+            expression_topology_action);
 #endif
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             base_primitive, eval_direct_nonvirtual, eval_direct_action);
         HPX_DEFINE_COMPONENT_ACTION(
             base_primitive, store_nonvirtual, store_action);
 
+    public:
+        // Pinning functionality helper functions
+        void pin()
+        {
+        }
+        void unpin()
+        {
+        }
+        std::uint32_t pin_count() const
+        {
+            return 0;
+        }
+
+        // access data for performance counter
+        std::int64_t get_eval_count(bool reset, bool direct) const
+        {
+            if (!direct)
+            {
+                return hpx::util::get_and_reset_value(eval_count_, reset);
+            }
+            return hpx::util::get_and_reset_value(eval_direct_count_, reset);
+        }
+        std::int64_t get_eval_duration(bool reset, bool direct) const
+        {
+            if (!direct)
+            {
+                return hpx::util::get_and_reset_value(eval_duration_, reset);
+            }
+            return hpx::util::get_and_reset_value(eval_direct_duration_, reset);
+        }
+
     protected:
         static std::vector<primitive_argument_type> noargs;
         std::vector<primitive_argument_type> operands_;
+
+        // Performance counter data
+        mutable std::int64_t eval_count_;
+        mutable std::int64_t eval_duration_;
+        mutable std::int64_t eval_direct_count_;
+        mutable std::int64_t eval_direct_duration_;
     };
 }}}
 
@@ -232,8 +346,9 @@ HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::base_primitive::store_action,
     phylanx_primitive_store_action);
 HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::execution_tree::primitives::base_primitive::bind_action,
-    phylanx_primitive_bind_action);
+    phylanx::execution_tree::primitives::
+        base_primitive::expression_topology_action,
+    phylanx_primitive_expression_topology_action);
 
 namespace phylanx { namespace execution_tree
 {
@@ -256,6 +371,40 @@ namespace phylanx { namespace execution_tree
         primitive_result_type && val);
     PHYLANX_EXPORT primitive_result_type extract_copy_value(
         primitive_result_type && val);
+
+    template <typename T>
+    primitive_argument_type extract_ref_value(ir::node_data<T> const& val)
+    {
+        if (val.is_ref())
+        {
+            return primitive_argument_type{val};
+        }
+        return primitive_argument_type{val.ref()};
+    }
+    template <typename T>
+    primitive_argument_type extract_ref_value(ir::node_data<T> && val)
+    {
+        return primitive_argument_type{std::move(val)};
+    }
+
+    template <typename T>
+    primitive_argument_type extract_copy_value(ir::node_data<T> const& val)
+    {
+        if (val.is_ref())
+        {
+            return primitive_argument_type{val.copy()};
+        }
+        return primitive_argument_type{val};
+    }
+    template <typename T>
+    primitive_argument_type extract_copy_value(ir::node_data<T> && val)
+    {
+        if (val.is_ref())
+        {
+            return primitive_argument_type{val.copy()};
+        }
+        return primitive_argument_type{std::move(val)};
+    }
 
     // Extract a literal type from a given primitive_argument_type, throw
     // if it doesn't hold one.
@@ -321,6 +470,30 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT hpx::future<primitive_result_type> value_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT hpx::future<primitive_result_type> value_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args);
+    PHYLANX_EXPORT hpx::future<primitive_result_type> value_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT hpx::future<primitive_result_type> value_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args);
+
+    namespace functional
+    {
+        struct value_operand
+        {
+            template <typename T1, typename T2>
+            hpx::future<primitive_result_type> operator()(
+                T1&& t1, T2&& t2) const
+            {
+                return execution_tree::value_operand(
+                    std::forward<T1>(t1), std::forward<T2>(t2));
+            }
+        };
+    }
+
 // was declared above
 //     PHYLANX_EXPORT primitive_result_type value_operand_sync(
 //         primitive_argument_type const& val,
@@ -331,6 +504,30 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT hpx::future<primitive_result_type> literal_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT hpx::future<primitive_result_type> literal_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args);
+    PHYLANX_EXPORT hpx::future<primitive_result_type> literal_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT hpx::future<primitive_result_type> literal_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args);
+
+    namespace functional
+    {
+        struct literal_operand
+        {
+            template <typename T1, typename T2>
+            hpx::future<primitive_result_type> operator()(
+                T1&& t1, T2&& t2) const
+            {
+                return execution_tree::literal_operand(
+                    std::forward<T1>(t1), std::forward<T2>(t2));
+            }
+        };
+    }
+
     PHYLANX_EXPORT primitive_argument_type literal_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
@@ -340,6 +537,30 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args);
+    PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args);
+
+    namespace functional
+    {
+        struct numeric_operand
+        {
+            template <typename T1, typename T2>
+            hpx::future<ir::node_data<double>> operator()(
+                T1&& t1, T2&& t2) const
+            {
+                return execution_tree::numeric_operand(
+                    std::forward<T1>(t1), std::forward<T2>(t2));
+            }
+        };
+    }
+
     PHYLANX_EXPORT ir::node_data<double> numeric_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args);
@@ -386,10 +607,10 @@ namespace phylanx { namespace execution_tree
         hpx::id_type, std::vector<primitive_argument_type>&&,
         std::string const&);
 
-    using match_pattern_type =
-        hpx::util::tuple<std::string, std::string, factory_function_type>;
+    using match_pattern_type = hpx::util::tuple<std::string,
+        std::vector<std::string>, factory_function_type>;
 
-    using pattern_list = std::vector<std::vector<match_pattern_type>>;
+    using pattern_list = std::vector<match_pattern_type>;
 
     ///////////////////////////////////////////////////////////////////////////
     // Generic creation helper for creating an instance of the given primitive.

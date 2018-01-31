@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -33,10 +34,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(column_slicing_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const column_slicing_operation::match_data =
+    match_pattern_type const column_slicing_operation::match_data =
     {
-        hpx::util::make_tuple(
-            "slice_column", "slice_column(_1, _2, _3)",
+        hpx::util::make_tuple("slice_column",
+            std::vector<std::string>{"slice_column(_1, _2, _3)"},
             &create<column_slicing_operation>)
     };
 
@@ -102,6 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "col_stop can not be negative if col_start is positive");
                 }
 
+                using storage0d_type = typename arg_type::storage0d_type;
                 using storage1d_type = typename arg_type::storage1d_type;
 
                 auto arg0 = args[0].vector();
@@ -111,12 +113,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     auto sv = blaze::subvector(
                         arg0, arg0.size() + col_start, -col_start + col_stop);
 
+                    if(sv.size() == 1)
+                    {
+                        storage0d_type v{sv[0]};
+                        return ir::node_data<double>{std::move(v)};
+                    }
+
                     storage1d_type v{sv};
                     return ir::node_data<double>{std::move(v)};
                 }
 
                 auto sv =
                     blaze::subvector(arg0, col_start, col_stop - col_start);
+
+                if(sv.size() == 1)
+                {
+                    storage0d_type v{sv[0]};
+                    return ir::node_data<double>{std::move(v)};
+                }
 
                 storage1d_type v{sv};
                 return ir::node_data<double>(std::move(v));
@@ -163,6 +177,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "negative");
                 }
 
+                using storage0d_type = typename arg_type::storage0d_type;
                 using storage1d_type = typename arg_type::storage1d_type;
                 using storage2d_type = typename arg_type::storage2d_type;
 
@@ -181,6 +196,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 0, num_cols + col_start,
                                 num_matrix_rows, 1),
                             0);
+
+                        if(sv.size() == 1)
+                        {
+                            storage0d_type v{sv[0]};
+                            return ir::node_data<double>{std::move(v)};
+                        }
 
                         storage1d_type v{sv};
                         return ir::node_data<double>{std::move(v)};
@@ -201,6 +222,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             0, col_start,
                             num_matrix_rows, 1),
                         0);
+
+                    if(sv.size() == 1)
+                    {
+                        storage0d_type v{sv[0]};
+                        return ir::node_data<double>{std::move(v)};
+                    }
 
                     storage1d_type v{sv};
                     return ir::node_data<double>{std::move(v)};
@@ -268,7 +295,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args));
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

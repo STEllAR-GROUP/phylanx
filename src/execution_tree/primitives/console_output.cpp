@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,9 +17,9 @@
 
 #include <cstddef>
 #include <memory>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -34,9 +34,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(console_output_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const console_output::match_data =
+    match_pattern_type const console_output::match_data =
     {
-        hpx::util::make_tuple("cout", "cout(__1)", &create<console_output>)
+        hpx::util::make_tuple("cout",
+            std::vector<std::string>{"cout(__1)"},
+            &create<console_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -60,28 +62,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> const& args)
             {
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_result_type
-                    {
-                        if (args.empty())
-                        {
-                            return {};
-                        }
-
+                return hpx::dataflow(
+                    hpx::util::unwrapping([this_](args_type&& args)
+                                              -> primitive_result_type {
+                        bool init = true;
                         for (auto const& arg : args)
                         {
+                            if (init)
+                            {
+                                init = false;
+                            }
+                            else
+                            {
+                                // Put spaces in the output to match Python
+                                hpx::cout << ' ';
+                            }
                             hpx::cout << arg;
                         }
                         hpx::cout << std::endl;
 
-                        return primitive_result_type(std::move(args.back()));
+                        return {};
                     }),
-                    detail::map_operands(operands, value_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::value_operand{}, args));
             }
 
         private:
-            std::string filename_;
             primitive_argument_type operand_;
         };
     }

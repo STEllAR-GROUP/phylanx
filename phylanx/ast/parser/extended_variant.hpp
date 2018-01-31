@@ -4,6 +4,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:nodeprecatedname:boost::mpl
+
 #if !defined(PHYLANX_AST_PARSER_EXTENDED_VARIANT_HPP)
 #define PHYLANX_AST_PARSER_EXTENDED_VARIANT_HPP
 
@@ -12,6 +14,7 @@
 
 #include <boost/mpl/vector.hpp>
 
+#include <cstddef>
 #include <type_traits>
 #include <utility>
 
@@ -30,8 +33,13 @@ namespace phylanx { namespace ast { namespace parser
 
         extended_variant() = default;
 
-        template <typename T>
-        extended_variant(T && var)
+        template <typename T,
+            typename U = typename std::enable_if<
+               !std::is_same<
+                    typename std::decay<T>::type, extended_variant
+                >::value
+            >::type>
+        extended_variant(T&& var)
           : var(std::forward<T>(var))
         {
         }

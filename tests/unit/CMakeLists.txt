@@ -11,6 +11,7 @@ set(subdirs
     ir
     python
     util
+    performance_counters
    )
 
 foreach(subdir ${subdirs})

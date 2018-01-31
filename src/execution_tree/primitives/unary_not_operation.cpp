@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -13,8 +13,10 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <numeric>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -31,9 +33,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(unary_not_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const unary_not_operation::match_data =
+    match_pattern_type const unary_not_operation::match_data =
     {
-        hpx::util::make_tuple("not", "!_1", &create<unary_not_operation>)
+        hpx::util::make_tuple("not",
+            std::vector<std::string>{"!_1"},
+            &create<unary_not_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

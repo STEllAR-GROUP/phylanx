@@ -3,6 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// phylanxinspect:noinclude:HPX_ASSERT
+
 #if !defined(PHYLANX_EXECUTION_TREE_COMPILER_HPP)
 #define PHYLANX_EXECUTION_TREE_COMPILER_HPP
 
@@ -10,21 +12,24 @@
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/define_function.hpp>
+#include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_function.hpp>
+#include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/find_here.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <cstddef>
 #include <functional>
+#include <list>
 #include <map>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree { namespace compiler
 {
@@ -169,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
         function operator()(std::string && name) const
         {
-            return function{ast::nil{}, "always_nil: " + name};
+            return function{ast::nil{}, "always_nil# " + name};
         }
     };
 
@@ -197,14 +202,18 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // compose an argument selector
     struct argument
     {
-        argument(hpx::id_type const& locality = hpx::find_here())
-          : locality_(locality)
+        argument(std::size_t sequence_number,
+                hpx::id_type const& locality = hpx::find_here())
+          : sequence_number_(sequence_number),
+            locality_(locality)
         {
         }
 
         function operator()(std::size_t n, std::string const& name) const
         {
-            std::string full_name = "argument:" + name;
+            std::string full_name =
+                "argument#" + std::to_string(sequence_number_) + "#" + name;
+
             return function{
                     primitive(
                         hpx::new_<primitives::access_argument>(locality_, n),
@@ -213,7 +222,39 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 };
         }
 
+        std::size_t sequence_number_;
         hpx::id_type locality_;
+    };
+
+    // compose an external variable
+    struct external_variable : compiled_actor<external_variable>
+    {
+        // we must hold f by reference
+        std::reference_wrapper<function const> f_;
+        std::size_t sequence_number_;
+
+        explicit external_variable(function const& f,
+                std::size_t sequence_number = std::size_t(-1),
+                hpx::id_type const& locality = hpx::find_here())
+          : compiled_actor<external_variable>(locality)
+          ,sequence_number_(sequence_number)
+          , f_(f)
+        {}
+
+        function compose(std::list<function> && elements,
+            std::string const& name) const
+        {
+            std::string full_name =
+                "variable#" + std::to_string(sequence_number_) + "#" + name;
+            return function{
+                    primitive(
+                        hpx::new_<primitives::wrapped_variable>(
+                            this->locality_, f_.get().arg_,
+                            full_name),
+                        full_name),
+                    full_name
+                };
+        }
     };
 
     // compose an external function
@@ -221,21 +262,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
     {
         // we must hold f by reference because functions can be recursive
         std::reference_wrapper<function const> f_;
+        std::size_t sequence_number_;
 
         explicit external_function(function const& f,
+                std::size_t sequence_number = std::size_t(-1),
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<external_function>(locality)
+          , sequence_number_(sequence_number)
           , f_(f)
         {}
 
         function compose(std::list<function> && elements,
             std::string const& name) const
         {
-            if (elements.empty())
-            {
-                return function{f_.get().arg_, name};
-            }
-
             arguments_type fargs;
             fargs.reserve(elements.size());
 
@@ -244,10 +283,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.push_back(arg.arg_);
             }
 
+            std::string full_name =
+                "function#" + std::to_string(sequence_number_) + "#" + name;
             return function{
-                    hpx::new_<primitives::wrapped_function>(
-                        this->locality_, f_.get().arg_, std::move(fargs), name),
-                    name
+                    primitive(
+                        hpx::new_<primitives::wrapped_function>(
+                            this->locality_, f_.get().arg_, std::move(fargs),
+                            full_name),
+                        full_name),
+                    full_name
                 };
         }
     };
@@ -263,8 +307,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         using value_type = std::map<std::string, compiled_function>::value_type;
 
     public:
-        environment(environment* outer = nullptr)
+        environment(environment* outer = nullptr, std::size_t base_arg_num = 0)
           : outer_(outer)
+          , base_arg_num_(outer != nullptr ?
+                    outer->base_arg_num_ + base_arg_num :
+                    base_arg_num)
         {}
 
         template <typename F>
@@ -314,9 +361,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return count;
         }
 
+        std::size_t base_arg_num() const
+        {
+            return base_arg_num_;
+        }
+
     private:
         environment* outer_;
         std::map<std::string, compiled_function> definitions_;
+        std::size_t base_arg_num_;
     };
 
     ///////////////////////////////////////////////////////////////////////////

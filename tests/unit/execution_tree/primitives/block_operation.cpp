@@ -9,6 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <utility>
 #include <vector>
 
 void test_block_operation()

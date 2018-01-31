@@ -14,6 +14,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <utility>
 
 namespace hpx { namespace serialization
 {

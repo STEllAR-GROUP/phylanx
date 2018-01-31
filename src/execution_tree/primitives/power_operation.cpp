@@ -12,11 +12,12 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
-#include <cmath>
 
 ///////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<
@@ -31,9 +32,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(power_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const power_operation::match_data =
+    match_pattern_type const power_operation::match_data =
     {
-        hpx::util::make_tuple("power", "power(_1, _2)", &create<power_operation>)
+        hpx::util::make_tuple("power",
+            std::vector<std::string>{"power(_1, _2)"},
+            &create<power_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -130,8 +133,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

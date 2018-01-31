@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,9 +31,10 @@ HPX_DEFINE_GET_COMPONENT_TYPE(parallel_block_operation_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const parallel_block_operation::match_data =
+    match_pattern_type const parallel_block_operation::match_data =
     {
-        hpx::util::make_tuple("parallel_block", "parallel_block(__1)",
+        hpx::util::make_tuple("parallel_block",
+            std::vector<std::string>{"parallel_block(__1)"},
             &create<parallel_block_operation>)
     };
 
@@ -65,11 +67,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](std::vector<primitive_result_type> && ops)
+                    ->  primitive_result_type
                     {
                         return ops.back();
                     }),
-                    detail::map_operands(operands, literal_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::literal_operand{}, args));
             }
         };
     }

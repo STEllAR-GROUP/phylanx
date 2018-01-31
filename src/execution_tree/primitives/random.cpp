@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -33,9 +34,11 @@ HPX_DEFINE_GET_COMPONENT_TYPE(random_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const random::match_data =
+    match_pattern_type const random::match_data =
     {
-        hpx::util::make_tuple("random", "random(_1)", &create<random>)
+        hpx::util::make_tuple("random",
+            std::vector<std::string>{"random(_1)"},
+            &create<random>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -98,8 +101,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
 
         protected:

@@ -1,4 +1,6 @@
 //  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2018 R. Tohid
+//  Copyright (c) 2018 Steven R. Brandt
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,12 +11,16 @@
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
-#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
 #include <hpx/runtime/components/new.hpp>
+#include <hpx/runtime/threads/run_as_hpx_thread.hpp>
+#include <hpx/util/detail/pp/stringize.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <map>
-#include <string>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
 
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
@@ -170,6 +176,52 @@ namespace phylanx { namespace bindings
 void init_hpx_runtime();
 void stop_hpx_runtime();
 
+char const* const expression_compiler_help =
+    "compile and evaluate a numerical expression in Phylanx lisp";
+
+template <typename... Ts>
+typename hpx::util::invoke_result<
+    phylanx::execution_tree::primitive(Ts...), Ts...
+>::type
+expression_compiler(std::string xexpr, Ts const&... ts)
+{
+    namespace et = phylanx::execution_tree;
+    return hpx::threads::run_as_hpx_thread(
+        [&]() -> et::primitive
+        {
+        try
+        {
+                et::compiler::function_list eval_snippets;
+                auto x = et::compile_and_run(xexpr, eval_snippets);
+
+                et::primitive_argument_type result = x(ts...);
+                switch (result.index())
+            {
+                case 2: HPX_FALLTHROUGH;    // std::int64_t
+                case 3: HPX_FALLTHROUGH;    // std::string
+                case 4:                     // phylanx::ir::node_data<double>
+                    return et::primitive{
+                        hpx::local_new<et::primitives::variable>(std::move(result))
+                    };
+
+                 default:
+                PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
+                    break;
+            }
+        }
+        catch (const std::exception& ex)
+        {
+            PyErr_SetString(PyExc_RuntimeError, ex.what());
+        }
+        catch (...)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+        }
+
+            return {};
+    });
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(_DEBUG)
 PYBIND11_MODULE(_phylanxd, m)
@@ -182,7 +234,8 @@ PYBIND11_MODULE(_phylanx, m)
     m.attr("__version__") = pybind11::str(
         HPX_PP_STRINGIZE(PHYLANX_VERSION_MAJOR) "."
         HPX_PP_STRINGIZE(PHYLANX_VERSION_MINOR) "."
-        HPX_PP_STRINGIZE(PHYLANX_VERSION_SUBMINOR));
+        HPX_PP_STRINGIZE(PHYLANX_VERSION_SUBMINOR) "."
+        PHYLANX_HAVE_GIT_COMMIT);
 
     ///////////////////////////////////////////////////////////////////////////
     // expose version functions
@@ -201,7 +254,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     pybind11::enum_<phylanx::ast::optoken>(
             ast, "optoken", pybind11::arithmetic(),
-            "an enumerator type representing possible operations with operands")
+        "an enumerator type representing possible operations with operands")
         .value("op_comma", phylanx::ast::optoken::op_comma)
         .value("op_assign", phylanx::ast::optoken::op_assign)
         .value("op_plus_assign", phylanx::ast::optoken::op_plus_assign)
@@ -247,7 +300,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // phylanx::ast::identifier
     pybind11::class_<phylanx::ast::identifier>(
-            ast, "identifier", "AST node representing an identifier")
+        ast, "identifier", "AST node representing an identifier")
         .def(pybind11::init<std::string const&>(),
             "initialize identifier instance with a name")
         .def_readonly("name", &phylanx::ast::identifier::name,
@@ -261,7 +314,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // phylanx::ast::primary_expr
     pybind11::class_<phylanx::ast::primary_expr>(
-            ast, "primary_expr", "AST node representing a primary_expr")
+        ast, "primary_expr", "AST node representing a primary_expr")
         .def(pybind11::init<bool>(),
             "initialize primary_expr instance with a Boolean value")
         .def(pybind11::init<std::int64_t>(),
@@ -292,7 +345,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // phylanx::ast::operand
     pybind11::class_<phylanx::ast::operand>(
-            ast, "operand", "AST node representing an operand")
+        ast, "operand", "AST node representing an operand")
         .def(pybind11::init<bool>(),
             "initialize operand instance with a Boolean value")
         .def(pybind11::init<std::int64_t>(),
@@ -323,7 +376,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // phylanx::ast::unary_expr
     pybind11::class_<phylanx::ast::unary_expr>(
-            ast, "unary_expr", "AST node representing an unary_expr")
+        ast, "unary_expr", "AST node representing an unary_expr")
         .def(pybind11::init<phylanx::ast::optoken, phylanx::ast::operand>(),
             "initialize unary_expr instance with an operator and an operand")
         .def_readonly("operator", &phylanx::ast::unary_expr::operator_,
@@ -339,7 +392,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // phylanx::ast::operation
     pybind11::class_<phylanx::ast::operation>(
-            ast, "operation", "AST node representing an operation")
+        ast, "operation", "AST node representing an operation")
         .def(pybind11::init<phylanx::ast::optoken, phylanx::ast::identifier>(),
             "initialize operation instance with an operator and an operand")
         .def(pybind11::init<phylanx::ast::optoken, phylanx::ast::operand>(),
@@ -357,7 +410,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // phylanx::ast::expression
     pybind11::class_<phylanx::ast::expression>(
-            ast, "expression", "AST node representing an expression")
+        ast, "expression", "AST node representing an expression")
         .def(pybind11::init<phylanx::ast::operand>(),
             "initialize expression instance with an operand")
         .def(pybind11::init<phylanx::ast::identifier>(),
@@ -389,7 +442,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // list of phylanx::ast::operations
     pybind11::class_<std::vector<phylanx::ast::operation>>(
-            ast, "operation_list", "A list of operations")
+        ast, "operation_list", "A list of operations")
         .def(pybind11::init<>())
         .def("pop_back", &std::vector<phylanx::ast::operation>::pop_back)
         .def("append",
@@ -435,7 +488,7 @@ PYBIND11_MODULE(_phylanx, m)
 
     // phylanx::ast::function_call
     pybind11::class_<phylanx::ast::function_call>(
-            ast, "function_call", "AST node representing a function_call")
+        ast, "function_call", "AST node representing a function_call")
         .def(pybind11::init<phylanx::ast::identifier>(),
             "initialize function_call instance with an identifier")
         .def_readonly("name", &phylanx::ast::function_call::function_name,
@@ -459,34 +512,33 @@ PYBIND11_MODULE(_phylanx, m)
     ///////////////////////////////////////////////////////////////////////////
     // phylanx::ast::generate_ast()
     ast.def("generate_ast",
-            [](std::string const& code)
-            {
-                return phylanx::ast::generate_ast(code);
-            },
+        [](std::string const& code) {
+            return phylanx::ast::generate_ast(code);
+        },
         "generate an AST from the given expression string");
 
     // phylanx::ast::traverse()
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::optoken>,
         "traverse the given AST optoken and call the provided function "
-            "on each part of it");
+        "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::identifier>,
         "traverse the given AST identifier and call the provided function "
-            "on each part of it");
+        "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::primary_expr>,
         "traverse the given AST primary_expr and call the provided function "
-            "on each part of it");
+        "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::operand>,
         "traverse the given AST operand and call the provided function "
-            "on each part of it");
+        "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::unary_expr>,
         "traverse the given AST unary_expr and call the provided function "
-            "on each part of it");
+        "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::expression>,
         "traverse the given AST expression and call the provided function "
-            "on each part of it");
+        "on each part of it");
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::function_call>,
         "traverse the given AST expression and call the provided function "
-            "on each part of it");
+        "on each part of it");
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -501,13 +553,190 @@ PYBIND11_MODULE(_phylanx, m)
         {
             return hpx::threads::run_as_hpx_thread([&]()
                 {
-                    using namespace phylanx::execution_tree;
+                using namespace phylanx::execution_tree;
                     return primitive{
                         hpx::local_new<primitives::variable>(
-                            phylanx::ir::node_data<double>{d})};
-                });
+                    phylanx::ir::node_data<double>{d})};
+            });
         },
         "create a new variable from a floating point value");
+    execution_tree.def("var",
+        [](const std::string& d) {
+            return hpx::threads::run_as_hpx_thread([&]() {
+                using namespace phylanx::execution_tree;
+                // Name of the variable is ""
+                return primitive{hpx::local_new<primitives::variable>(
+                    phylanx::execution_tree::primitive_argument_type{d})};
+            });
+        },
+        "create a new variable from a string");
+    execution_tree.def("var",
+        [](const std::vector<double>& d) {
+            return hpx::threads::run_as_hpx_thread([&]() {
+                using namespace phylanx::execution_tree;
+                return primitive{hpx::local_new<primitives::variable>(
+                    phylanx::ir::node_data<double>{d})};
+            });
+        },
+        "create a new variable from a vector floating point values");
+    execution_tree.def("var",
+        [](const std::vector<std::vector<double>>& d) {
+            return hpx::threads::run_as_hpx_thread([&]() {
+                using namespace phylanx::execution_tree;
+                return primitive{hpx::local_new<primitives::variable>(
+                    phylanx::ir::node_data<double>{d})};
+            });
+        },
+        "create a new variable from a matrix floating point values");
+
+    execution_tree.def(
+        "eval", expression_compiler<>, expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
+    execution_tree.def("eval",
+        expression_compiler<
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&,
+            phylanx::execution_tree::primitive const&>,
+        expression_compiler_help);
 
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")
@@ -515,9 +744,9 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
-                        using namespace phylanx::execution_tree;
-                        return numeric_operand(p, {}).get()[0];
-                    });
+                    using namespace phylanx::execution_tree;
+                    return numeric_operand(p, {}).get()[0];
+                });
             },
             "evaluate execution tree")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
@@ -526,9 +755,52 @@ PYBIND11_MODULE(_phylanx, m)
                     [&]() {
                         p.store(hpx::launch::sync,
                             phylanx::ir::node_data<double>{d});
-                    });
+                });
             },
-            "assign another value to variable");
+            "assign another value to variable")
+        .def("num_dimensions",
+            [](phylanx::execution_tree::primitive const& p) {
+                return hpx::threads::run_as_hpx_thread([&]() {
+                    using namespace phylanx::execution_tree;
+                    auto n = numeric_operand(p, {}).get();
+                    return n.num_dimensions();
+                });
+            },
+            "get the number of dimensions")
+        .def("__getitem__",
+            [](phylanx::execution_tree::primitive const& p, int index) {
+                return hpx::threads::run_as_hpx_thread([&]() {
+                    using namespace phylanx::execution_tree;
+                    auto n = numeric_operand(p, {}).get();
+                    return n[index];
+                });
+            },
+            "Get the value at the specified index")
+        .def("__getitem__",
+            [](phylanx::execution_tree::primitive const& p,
+                    const std::tuple<int, int>& pt)
+            {
+                const int index1 = std::get<0>(pt);
+                const int index2 = std::get<1>(pt);
+                return hpx::threads::run_as_hpx_thread([&]() {
+                    using namespace phylanx::execution_tree;
+                    auto n = numeric_operand(p, {}).get();
+                    phylanx::ir::node_data<double>::dimensions_type indicies{
+                        std::size_t(index1), std::size_t(index2)};
+                    return n[indicies];
+                });
+            },
+            "Get the value specified by the x,y index pair")
+        .def("__str__", &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
+        .def("dimension",
+            [](phylanx::execution_tree::primitive const& p, int index) {
+                return hpx::threads::run_as_hpx_thread([&]() {
+                    using namespace phylanx::execution_tree;
+                    auto n = numeric_operand(p, {}).get();
+                    return n.dimension(index);
+                });
+            },
+            "Get the size of the given dimension");
 
     ///////////////////////////////////////////////////////////////////////////
     // expose util submodule

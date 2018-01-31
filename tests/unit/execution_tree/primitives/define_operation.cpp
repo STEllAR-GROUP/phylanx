@@ -9,6 +9,9 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstddef>
+#include <list>
+#include <utility>
 #include <vector>
 
 void test_define_operation_var(
@@ -21,16 +24,16 @@ void test_define_operation_var(
     std::size_t num_entries = env.size();
 
     auto f = phylanx::execution_tree::compile(expr, snippets, env);
-    f();        // bind expressions
 
     HPX_TEST_EQ(env.size(), num_entries + 1);
 
     // verify function name
-    auto p = env.find(name);
-    HPX_TEST(p != nullptr);
+    auto cf = env.find(name);
+    HPX_TEST(cf != nullptr);
 
-    auto var =
-        (*p)(std::list<phylanx::execution_tree::compiler::function>{}, name);
+    auto var_def =
+        (*cf)(std::list<phylanx::execution_tree::compiler::function>{}, name);
+    auto var = var_def();       // bind the variable
 
     // evaluate expression
     HPX_TEST_EQ(expected,
@@ -48,16 +51,16 @@ void test_define_operation(char const* expr, char const* name, double expected,
 
     std::size_t num_entries = env.size();
 
-    auto f = phylanx::execution_tree::compile(expr, snippets, env);
-    f();        // bind expressions
+    phylanx::execution_tree::compile(expr, snippets, env);
 
     HPX_TEST_EQ(env.size(), num_entries + 1);
 
-    auto p = env.find(name);
-    HPX_TEST(p != nullptr);
+    auto cf = env.find(name);
+    HPX_TEST(cf != nullptr);
 
-    auto var =
-        (*p)(std::list<phylanx::execution_tree::compiler::function>{}, name);
+    auto def_f =
+        (*cf)(std::list<phylanx::execution_tree::compiler::function>{}, name);
+    auto f = def_f();     // bind the function
 
     // evaluate expression
     std::vector<phylanx::execution_tree::primitive_argument_type> values;
@@ -68,7 +71,7 @@ void test_define_operation(char const* expr, char const* name, double expected,
 
     HPX_TEST_EQ(expected,
         phylanx::execution_tree::extract_numeric_value(
-            var(std::move(values))
+            f(std::move(values))
         )[0]);
 }
 
