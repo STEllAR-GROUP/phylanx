@@ -99,17 +99,25 @@ std::string const lra_code = R"(block(
 // pointing into it.
 //
 std::pair<std::size_t, std::size_t> get_pos(std::string const& code,
-    std::int64_t pos)
+    std::tuple<std::size_t, std::size_t, std::int64_t> const& tags)
 {
+    // column might be given directly, in that case line is given as well
+    if (std::get<2>(tags) != -1)
+    {
+        return std::make_pair(std::get<1>(tags), std::get<2>(tags));
+    }
+
+    // otherwise the given value is the offset into the code
+    std::size_t pos = std::get<1>(tags);
     std::size_t line = 1;
-    std::size_t column = 1;
+    std::size_t column = 0;
 
     for (std::int64_t i = 0; i != pos && i != code.size(); ++i)
     {
         if (code[i] == '\r' || code[i] == '\n')    // CR/LF
         {
             ++line;
-            column = 1;
+            column = 0;
         }
         else
         {
@@ -118,6 +126,44 @@ std::pair<std::size_t, std::size_t> get_pos(std::string const& code,
     }
 
     return std::make_pair(line, column);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Find offset into code as given by the tags argument
+//
+std::size_t get_offset(std::string const& code,
+    std::tuple<std::size_t, std::size_t, std::size_t> const& tags)
+{
+    // offset might be given directly
+    if (std::get<2>(tags) == -1)
+    {
+        return std::get<1>(tags);
+    }
+
+    // otherwise the given value is the line/column posiiton in the code
+    std::size_t offset = 0;
+    std::size_t line = 1;
+    std::size_t column = 0;
+
+    for (std::int64_t i = 0; i != code.size(); ++i, ++offset)
+    {
+        if (code[i] == '\r' || code[i] == '\n')    // CR/LF
+        {
+            ++line;
+            column = 0;
+        }
+        else
+        {
+            ++column;
+        }
+
+        if (std::get<1>(tags) == line && std::get<2>(tags) == column)
+        {
+            break;
+        }
+    }
+
+    return offset;
 }
 
 // Extract the compile_id/tag pair from a given primitive instance name.
@@ -131,16 +177,17 @@ std::pair<std::size_t, std::size_t> get_pos(std::string const& code,
 // to the construct in the source code a particular primitive instance was
 // created by.
 //
-std::pair<std::size_t, std::int64_t> extract_tags(std::string const& name)
+std::tuple<std::size_t, std::size_t, std::size_t> extract_tags(
+    std::string const& name)
 {
     auto data = phylanx::execution_tree::compiler::parse_primitive_name(name);
-    return std::make_pair(data.compile_id, data.tag);
+    return std::make_tuple(data.compile_id, data.tag1, data.tag2);
 }
 
 // The symbolic names registered in AGAS that identify the created
 // primitive instances have the following structure:
 //
-//      /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
+// /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag1>[#<tag2>]
 //
 //  where:
 //      <primitive>:   the name of primitive type representing the given
@@ -152,9 +199,14 @@ std::pair<std::size_t, std::int64_t> extract_tags(std::string const& name)
 //                     have the name of the argument as their <instance>
 //      <compile_id>:  the sequence number of the invocation of the
 //                     function phylanx::execution_tree::compile
-//      <tag>:         the position inside the compiled code block where the
-//                     referring to the point of usage of the primitive in
-//                     the compiled source code
+//      <tag1>:        if <tag2> == -1: the position inside the compiled code
+//                     block where the referring to the point of usage of the
+//                     primitive in the compiled source code
+//                     if <tag2> != -1: the line number in the compiled code
+//                     block where the referring to the point of usage of the
+//                     primitive in the compiled source code
+//      <tag2>:        (optional) if <tag2> != -1 or not given: the column
+//                      offset in the given line (default: -1)
 //
 void print_instrumentation(
     char const* const name, int compile_id, std::string const& code,
@@ -167,24 +219,26 @@ void print_instrumentation(
     {
         // extract compile_id and iterator index (tag) from the symbolic name
         auto tags = extract_tags(e.first);
-        if (tags.first != compile_id)
+        if (std::get<0>(tags) != compile_id)
             continue;
 
         // find real position of given symbol in source code
-        if (tags.second >= 0)
+        if (std::get<1>(tags) >= 0)
         {
-            auto pos = get_pos(code, tags.second);
+            auto pos = get_pos(code, tags);
             std::cout << e.first << ": " << name << "(" << pos.first << ", "
                       << pos.second << "): ";
 
             // show the next (at max) 20 characters
-            auto end = code.begin() + tags.second;
+            auto offset = get_offset(code, tags);
+            auto end = code.begin() + offset;
             for (int i = 0; end != code.end() && i != 20; ++end, ++i)
             {
                 if (*end == '\n' || *end == '\r')
                     break;
             }
-            std::cout << std::string(code.begin() + tags.second, end) << " ...\n";
+            std::cout << std::string(code.begin() + offset, end)
+                      << " ...\n";
         }
         else
         {

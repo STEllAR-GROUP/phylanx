@@ -15,7 +15,8 @@
     <Type Name="phylanx::ast::identifier">
         <DisplayString>{name}</DisplayString>
         <Expand>
-            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
+            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col == -1)">id</Item>
+            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col != -1)">id,col</Item>
             <Item Name="[name]">name</Item>
         </Expand>
     </Type>
@@ -31,7 +32,8 @@
         <DisplayString Condition="(var.impl_.index_ == 7)">function_call({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 8)">expression_list({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <Expand>
-            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
+            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col == -1)">id</Item>
+            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col != -1)">id,col</Item>
             <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
             <Item Name="[bool]" Condition="(var.impl_.index_ == 1)">var.impl_.data_.tail_.head_.value</Item>
             <Item Name="[node_data]" Condition="(var.impl_.index_ == 2)">var.impl_.data_.tail_.tail_.head_.value</Item>
@@ -49,7 +51,6 @@
         <DisplayString Condition="(var.impl_.index_ == 1)">primary_expr({var.impl_.data_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 2)">unary_expr({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
         <Expand>
-            <Item Name="[tagged]" Condition="(id != 0)">id</Item>
             <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
             <Item Name="[primary_expr]" Condition="(var.impl_.index_ == 1)">var.impl_.data_.tail_.head_.value</Item>
             <Item Name="[unary_expr]" Condition="(var.impl_.index_ == 2)">var.impl_.data_.tail_.tail_.head_.value</Item>
@@ -59,6 +60,8 @@
     <Type Name="phylanx::ast::unary_expr">
         <DisplayString>{operator_}, {operand_}</DisplayString>
         <Expand>
+            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col == -1)">id</Item>
+            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col != -1)">id,col</Item>
             <Item Name="[operator]">operator_</Item>
             <Item Name="[operand]">operand_</Item>
         </Expand>
