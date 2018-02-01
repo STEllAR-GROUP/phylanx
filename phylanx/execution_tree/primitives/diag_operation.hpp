@@ -25,8 +25,27 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
             diag_operation() = default;
 
-            diag_operation(
-                std::vector<primitive_argument_type>&& operands);
+            /**
+             * @brief Diag Operation Primitive
+             *
+             * Constructs a diagonal matrix if the input is a vector,
+             * extracts the diagonal if the input is a matrix and returns
+             * unchanged input if the input is a scalar.
+             *
+             * @param operands Vector of phylanx node data objects of size either one or two
+             *
+             * If used inside PhySL:
+             *
+             *      diag (input, k=0 )
+             *
+             *          input : Scalar, Vector or a Matrix
+             *          k     : Which diagonal to extract or create, default being 0
+             *
+             * This primitives replicates the functionality of
+             * <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.diag.html">numpy.diag</a>
+             */
+
+            diag_operation(std::vector<primitive_argument_type>&& operands);
 
             hpx::future<primitive_result_type> eval(
                 std::vector<primitive_argument_type> const& params)
