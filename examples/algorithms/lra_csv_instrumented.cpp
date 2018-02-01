@@ -312,6 +312,10 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     auto elapsed = t.elapsed();
 
+    // make sure all counters are properly initialized, don't reset current
+    // counter values
+    hpx::reinit_active_counters(false);
+
     std::cout << "Result: \n"
               << phylanx::execution_tree::extract_numeric_value(result) << "\n"
               << "Calculated in: " << elapsed << " seconds\n";

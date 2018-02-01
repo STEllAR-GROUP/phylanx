@@ -90,7 +90,7 @@ namespace phylanx { namespace performance_counters
         {
             hpx::performance_counters::counter_values_array value;
 
-            value.time_ = hpx::util::high_resolution_clock::now();
+            value.time_ = static_cast<std::int64_t>(hpx::get_system_uptime());
             value.status_ = hpx::performance_counters::status_new_data;
             value.count_ = ++invocation_count_;
 
