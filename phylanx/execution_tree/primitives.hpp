@@ -18,6 +18,7 @@
 #include <phylanx/execution_tree/primitives/define_function.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/determinant.hpp>
+#include <phylanx/execution_tree/primitives/diag_operation.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>
 #include <phylanx/execution_tree/primitives/equal.hpp>

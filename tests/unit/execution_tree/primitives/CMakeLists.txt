@@ -11,6 +11,7 @@ set(tests
     constant
     define_operation
     determinant
+    diag_operation
     div_operation
     dot_operation
     cross_operation
