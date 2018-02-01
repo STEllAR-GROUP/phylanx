@@ -21,6 +21,7 @@
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>
 #include <phylanx/execution_tree/primitives/equal.hpp>
+#include <phylanx/execution_tree/primitives/equal_elementwise.hpp>
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/execution_tree/primitives/extract_shape.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>

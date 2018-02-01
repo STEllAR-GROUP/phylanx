@@ -15,6 +15,7 @@ set(tests
     dot_operation
     cross_operation
     equal_operation
+    equal_elementwise
     exponential_operation
     extract_shape
     file_primitives
