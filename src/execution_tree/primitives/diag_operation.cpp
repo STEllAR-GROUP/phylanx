@@ -66,7 +66,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 primitive_result_type diag1d(args_type&& args) const
                 {
                     auto vecsize = args[0].dimension(0);
-
                     auto k = 0;
                     auto incr = 0;
 
@@ -88,9 +87,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
                 primitive_result_type diag2d(args_type&& args) const
                 {
-                    auto row_size = args[0].dimension(0);
-                    auto col_size = args[0].dimension(0);
-
                     auto k = 0;
 
                     if (args.size() == 2)
