@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -206,6 +207,31 @@ namespace phylanx { namespace ir
             }
         }
 
+        template <typename U>
+        static storage_type init_data_from_type(node_data<U> const& d)
+        {
+            std::size_t dims = d.num_dimensions();
+
+            switch (dims)
+            {
+            case 0:
+                return storage_type(d.scalar());
+
+            case 1:
+                increment_copy_construction_count();
+                return storage_type(d.vector());
+
+            case 2:
+                increment_copy_construction_count();
+                return storage_type(d.matrix());
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "phylanx::ir::node_data<T>::node_data<U>",
+                    "node_data object holds unsupported data type");
+            }
+        }
+
     public:
         /// Create node data from a node data
         node_data(node_data const& d)
@@ -216,6 +242,14 @@ namespace phylanx { namespace ir
           : data_(std::move(d.data_))
         {
             increment_move_construction_count();
+        }
+
+        template <typename U,
+            typename U1 =
+                typename std::enable_if<!std::is_same<T, U>::value>::type>
+        node_data(node_data<U> const& d)
+          : data_(init_data_from_type(d))
+        {
         }
 
         node_data& operator=(storage0d_type val)
@@ -335,6 +369,15 @@ namespace phylanx { namespace ir
                 increment_move_assignment_count();
                 data_ = std::move(d.data_);
             }
+            return *this;
+        }
+
+        template <typename U,
+            typename U1 =
+                typename std::enable_if<!std::is_same<T, U>::value>::type>
+        node_data& operator=(node_data<U> const& d)
+        {
+            data_ = init_data_from_type(d);
             return *this;
         }
 
@@ -891,6 +934,9 @@ namespace phylanx { namespace ir
 
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, node_data<double> const& nd);
+
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, node_data<bool> const& nd);
 }}
 
 #endif
