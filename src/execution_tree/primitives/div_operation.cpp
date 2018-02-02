@@ -440,9 +440,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops) -> primitive_result_type
-                    {
+                return hpx::dataflow(
+                    hpx::util::unwrapping([this_](operands_type&& ops)
+                                              -> primitive_result_type {
                         std::size_t lhs_dims = ops[0].num_dimensions();
                         switch (lhs_dims)
                         {
@@ -462,8 +462,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

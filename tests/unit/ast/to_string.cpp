@@ -10,9 +10,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
+
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,15 +46,9 @@ void test_primary_expr()
     blaze::DynamicVector<double> v = gen.generate(1007UL);
     phylanx::ast::primary_expr p3{
         phylanx::ir::node_data<double>{v}};
-    std::string expected("[");
-    for (std::size_t i = 0; i != v.size(); ++i)
-    {
-        if (i != 0)
-            expected += ", ";
-        expected += std::to_string(v[i]);
-    }
-    expected += "]";
-    test_to_string(p3, expected);
+    std::stringstream strm;
+    strm << p3;
+    test_to_string(p3, strm.str());
 
     phylanx::ast::primary_expr p4{"some string"};
     test_to_string(p4, "\"some string\"");

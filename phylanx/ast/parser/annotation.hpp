@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
-//  Copyright (c) 2001-2017 Hartmut Kaiser
+//  Copyright (c) 2001--2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -45,7 +45,7 @@ namespace phylanx { namespace ast { namespace parser
 
             bool operator()(ast::function_call& x) const
             {
-                if (x.function_name.id <= 0)
+                if (x.function_name.id < 0 && x.function_name.col == -1)
                 {
                     x.function_name.id = id;
                     return true;
@@ -55,13 +55,18 @@ namespace phylanx { namespace ast { namespace parser
 
             bool operator()(ast::identifier& x) const
             {
-                x.id = id;
+                if (x.id < 0 && x.col == -1)
+                {
+                    x.id = id;
+                    return true;
+                }
                 return false;
             }
 
             bool operator()(ast::primary_expr& x) const
             {
-                if (ast::detail::tagged_id(x) <= 0)
+                tagged t = ast::detail::tagged_id(x);
+                if (t.id < 0 && t.col == -1)
                 {
                     x.id = id;
                     return true;
@@ -71,7 +76,8 @@ namespace phylanx { namespace ast { namespace parser
 
             bool operator()(ast::unary_expr& x) const
             {
-                if (ast::detail::tagged_id(x) <= 0)
+                tagged t = ast::detail::tagged_id(x);
+                if (t.id < 0 && t.col == -1)
                 {
                     x.id = id;
                     return true;
@@ -131,7 +137,7 @@ namespace phylanx { namespace ast { namespace parser
 
         void operator()(ast::function_call& ast, Iterator pos) const
         {
-            if (ast.function_name.id <= 0)
+            if (ast.function_name.id < 0 && ast.function_name.col == -1)
             {
                 std::size_t id = iters.size();
                 iters.push_back(pos);
@@ -141,9 +147,12 @@ namespace phylanx { namespace ast { namespace parser
 
         void operator()(ast::identifier& ast, Iterator pos) const
         {
-            std::size_t id = iters.size();
-            iters.push_back(pos);
-            ast.id = static_cast<std::int64_t>(id);
+            if (ast.id < 0 && ast.col == -1)
+            {
+                std::size_t id = iters.size();
+                iters.push_back(pos);
+                ast.id = static_cast<std::int64_t>(id);
+            }
         }
     };
 }}}

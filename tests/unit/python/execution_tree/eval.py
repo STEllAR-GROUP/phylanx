@@ -1,4 +1,4 @@
-#  Copyright (c) 2017 Hartmut Kaiser
+#  Copyright (c) 2017-2018 Hartmut Kaiser
 #  Copyright (c) 2018 R. Tohid
 #  Copyright (c) 2018 Steven R. Brandt
 #
@@ -7,6 +7,7 @@
 import phylanx
 from phylanx.util import phyfun, phy_print
 et = phylanx.execution_tree
+import numpy as np
 
 fib10 = et.eval("""
 block(
@@ -40,10 +41,32 @@ def fib(n):
     else:
         return fib(n-1)+fib(n-2)
 
+assert fib.__physl_src__ == \
+    'block#1#0(define#1#0(fib#1#0, n#1#8, ' + \
+        'if(n#2#7 < 2, n#3#15, ' + \
+            '(fib((n#5#19 - 1)) + fib((n#5#28 - 2))))' + \
+        '), fib#1#0)\n'
+
 assert fib(10)[0] == 55.0
 
 @phyfun
 def pass_str(a):
     return a
 
+assert pass_str.__physl_src__ == \
+    'block#1#0(define#1#0(pass_str#1#0, a#1#13, a#2#11), pass_str#1#0)\n'
+
 assert "foo" == str(pass_str("foo"))
+
+@phyfun
+def test_slice(a):
+    return a[1:3,1:4]
+
+two = np.reshape(np.arange(30),(5,6))
+r1 = test_slice(two)
+r2 = two[1:3,1:4]
+
+assert r2.shape == (r1.dimension(0), r1.dimension(1))
+for i in range(r2.shape[0]):
+    for j in range(r2.shape[1]):
+        assert r1[i,j] == r2[i,j]

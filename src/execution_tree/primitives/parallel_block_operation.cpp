@@ -67,11 +67,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](std::vector<primitive_result_type> && ops)
+                    ->  primitive_result_type
                     {
                         return ops.back();
                     }),
-                    detail::map_operands(operands, literal_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::literal_operand{}, args));
             }
         };
     }

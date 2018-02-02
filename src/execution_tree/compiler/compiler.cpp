@@ -207,11 +207,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
     private:
-        std::string annotation(std::int64_t id)
+        std::string annotation(ast::tagged const& id)
         {
             // Note: the compile-id needs to be adjusted to be zero-based.
-            return "/" + std::to_string(snippets_.compile_id_ - 1) + "#" +
-                std::to_string(id);
+            std::string result = "/" +
+                std::to_string(snippets_.compile_id_ - 1) + "#" +
+                std::to_string(id.id);
+
+            if (id.col != -1)
+            {
+                result += '#' + std::to_string(id.col);
+            }
+
+            return result;
         }
 
         function handle_lambda(
@@ -256,8 +264,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // get global name of the component created
             std::string full_name = name;
-            std::int64_t id = ast::detail::tagged_id(name_expr);
-            if (id >= 0)
+            ast::tagged id = ast::detail::tagged_id(name_expr);
+            if (id.id >= 0)
             {
                 full_name += annotation(id);
             }
@@ -324,8 +332,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             if (compiled_function* cf = env_.find(name))
             {
-                std::int64_t id = ast::detail::tagged_id(expr);
-                if (id >= 0)
+                ast::tagged id = ast::detail::tagged_id(expr);
+                if (id.id >= 0)
                 {
                     name += annotation(id);
                 }
@@ -353,8 +361,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         default_locality_));
                 }
 
-                std::int64_t id = ast::detail::tagged_id(expr);
-                if (id >= 0)
+                ast::tagged id = ast::detail::tagged_id(expr);
+                if (id.id >= 0)
                 {
                     name += annotation(id);
                 }
@@ -416,8 +424,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 name += "#" + std::to_string(sequence_number);
 
                 // get global name of the component created
-                std::int64_t id = ast::detail::tagged_id(expr);
-                if (id >= 0)
+                ast::tagged id = ast::detail::tagged_id(expr);
+                if (id.id >= 0)
                 {
                     name += annotation(id);
                 }

@@ -94,8 +94,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return primitive_result_type{
                             std::int64_t(dims[std::size_t(args[1][0])])};
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }

@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -64,7 +64,7 @@ namespace phylanx { namespace ast
             std::vector<std::string::const_iterator> const& iters,
             std::string::const_iterator begin)
         {
-            if (id.id >= 0)
+            if (id.id >= 0 && id.col == -1 && std::size_t(id.id) < iters.size())
             {
                 id.id = std::distance(begin, iters[id.id]);
             }
@@ -74,7 +74,7 @@ namespace phylanx { namespace ast
             std::vector<std::string::const_iterator> const& iters,
             std::string::const_iterator begin)
         {
-            if (ue.id >= 0)
+            if (ue.id >= 0 && ue.col == -1 && std::size_t(ue.id) < iters.size())
             {
                 ue.id = std::distance(begin, iters[ue.id]);
             }
@@ -85,7 +85,7 @@ namespace phylanx { namespace ast
             std::vector<std::string::const_iterator> const& iters,
             std::string::const_iterator begin)
         {
-            if (pe.id >= 0)
+            if (pe.id >= 0 && pe.col == -1 && std::size_t(pe.id) < iters.size())
             {
                 pe.id = std::distance(begin, iters[pe.id]);
             }

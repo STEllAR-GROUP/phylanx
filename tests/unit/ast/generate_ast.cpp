@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,15 @@
 #include <string>
 #include <vector>
 
+///////////////////////////////////////////////////////////////////////////////
+template <typename Ast>
+void test_ast(std::string const& exprstr, Ast const& expected)
+{
+    phylanx::ast::expression expr = phylanx::ast::generate_ast(exprstr);
+    HPX_TEST_EQ(expr, phylanx::ast::expression(expected));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 struct traverse_ast
 {
     traverse_ast(std::stringstream& strm)
@@ -115,10 +124,25 @@ void test_expression(std::string const& expr, std::string const& expected)
 
 int main(int argc, char* argv[])
 {
+    test_ast("A", phylanx::ast::identifier("A"));
+    test_ast("A#1#2", phylanx::ast::identifier("A", 1, 2));
+
+    test_ast("A()",
+        phylanx::ast::function_call(phylanx::ast::identifier("A")));
+    test_ast("A#1#2()",
+        phylanx::ast::function_call(phylanx::ast::identifier("A", 1, 2)));
+
     test_expression(
         "A + B",
             "A\n"
             "B\n"
+            "+\n"
+    );
+
+    test_expression(
+        "A#1#0 + B#1#5",
+            "A#1#0\n"
+            "B#1#5\n"
             "+\n"
     );
 
@@ -158,14 +182,21 @@ int main(int argc, char* argv[])
     );
 
     test_expression(
+        "func#1#0(A#1#6, B#1#9)",
+            "func#1#0\n"
+            "A#1#6\n"
+            "B#1#9\n"
+    );
+
+    test_expression(
         "\"test\"",
             "test\n"
     );
 
     test_expression(
         "1.0 / (1.0 + exp(-dot(A, B)))",
-            "1.000000\n"
-            "1.000000\n"
+            "1\n"
+            "1\n"
             "exp\n"
             "dot\n"
             "A\n"
@@ -184,7 +215,7 @@ int main(int argc, char* argv[])
         "'(true, 1, 1.0, A, A + B)",
             "true\n"
             "1\n"
-            "1.000000\n"
+            "1\n"
             "A\n"
             "A\n"
             "B\n"
@@ -195,7 +226,7 @@ int main(int argc, char* argv[])
         "'(true, 1, '(1.0, A, A + B))",
             "true\n"
             "1\n"
-            "1.000000\n"
+            "1\n"
             "A\n"
             "A\n"
             "B\n"

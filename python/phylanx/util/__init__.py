@@ -35,6 +35,38 @@ def phy_print(m):
     else:
         print("ndim=", ndim)
 
+def get_node(node,**kwargs):
+    if node == None:
+        return None
+    args = [arg for arg in ast.iter_child_nodes(node)]
+    params = {"name":None,"num":None}
+    for k in kwargs:
+        if k not in params:
+            raise Exception("Invalid argument '%s'" % k)
+        else:
+            params[k] = kwargs[k]
+    name = params["name"]
+    num  = params["num"]
+    if name != None:
+        for i in range(len(args)):
+            a = args[i]
+            nm = a.__class__.__name__
+            if nm == name:
+                if num == None or num == i:
+                    return a
+    elif num != None:
+        if num < len(args):
+            return args[num]
+
+    # if we can't find what we're looking for...
+    return None
+
+def full_node_name(a, name):
+    return '%s#%d#%d' % (name, a.lineno, a.col_offset)
+
+def full_name(a):
+    return full_node_name(a, a.name)
+
 class Recompiler:
     def __init__(self):
         self.defs = {}
@@ -45,30 +77,66 @@ class Recompiler:
         if nm == "Num":
             return str(a.n)
         elif nm == "Str":
-            return '"'+a.s+'"'
+            return '"' + a.s + '"'
         elif nm == "Name":
-            return a.id
+            return full_node_name(a, a.id)
         elif nm == "Expr":
             args = [arg for arg in ast.iter_child_nodes(a)]
             s = ""
             if len(args)==1:
                 s += self.recompile(args[0])
             else:
-                raise Exception()
+                raise Exception('unexpected: expression has more than one sub-expression')
             return s
+        elif nm == "Subscript":
+            e = get_node(a,name="ExtSlice")
+            s0 = get_node(e,name="Slice",num=0)
+            s1 = get_node(e,name="Slice",num=1)
+            if s0 != None and s1 != None:
+                xlo = s0.lower
+                xhi = s0.upper
+                ylo = s1.lower
+                yhi = s1.upper
+                sname = self.recompile(get_node(a,num=0))
+                s = "slice("
+                s += sname
+                s += ","
+                if xlo == None:
+                    s += "0"
+                else:
+                    s += self.recompile(xlo)
+                s += ","
+                if xhi == None:
+                    s += "shape(" + sname + ",0)"
+                else:
+                    s += self.recompile(xhi)
+                s += ","
+                if ylo == None:
+                    s += "0"
+                else:
+                    s += self.recompile(ylo)
+                s += ","
+                if yhi == None:
+                    s += "shape(" + sname + ",1)"
+                else:
+                    s += self.recompile(yhi)
+                s += ")"
+                return s
+            else:
+                raise Exception("Unsupported slicing: line=%d"%a.lineno)
         elif nm == "FunctionDef":
             args = [arg for arg in ast.iter_child_nodes(a)]
             s = ""
-            s += "define("
-            s += a.name
-            s += ","
+            s += '%s(' % full_node_name(a, 'define')
+            s += full_name(a)
+            s += ", "
             for arg in ast.iter_child_nodes(args[0]):
-                s += arg.arg
-                s += ","
+                s += full_node_name(arg, arg.arg)
+                s += ", "
             if len(args)==2:
-                s += self.recompile(args[1],True)
+                s += self.recompile(args[1], True).strip(' ')
             else:
-                s += "block("
+                s += '%s(' % full_node_name(a, 'block')
                 #for aa in args[1:]:
                 sargs = args[1:]
                 for i in range(len(sargs)):
@@ -77,9 +145,9 @@ class Recompiler:
                         s += self.recompile(aa,True)
                     else:
                         s += self.recompile(aa,False)
-                        s += ","
+                        s += ", "
                 s += ")"
-            s += ")," + a.name
+            s += "), " + full_name(a)
             return s
         elif nm == "BinOp":
             args = [arg for arg in ast.iter_child_nodes(a)]
@@ -103,7 +171,7 @@ class Recompiler:
                 op = " ** "
                 priority = 3
             else:
-                raise Exception(nm2)
+                raise Exception('binary operation not supported: %s' % nm2)
             self.priority = priority
             term1 = self.recompile(args[0])
             self.priority = priority
@@ -120,7 +188,7 @@ class Recompiler:
             s = args[0].id+'('
             for n in range(1,len(args)):
                 if n > 1:
-                    s += ','
+                    s += ', '
                 s += self.recompile(args[n])
             s += ')'
             return s
@@ -158,7 +226,7 @@ class Recompiler:
                 tw = "block("
                 for aa in args[1:]:
                     s += tw
-                    tw = ","
+                    tw = ", "
                     s += self.recompile(aa)
                 s += ")"
             s += ")"
@@ -170,7 +238,7 @@ class Recompiler:
                 for j in range(len(a.body)):
                     aa = a.body[j]
                     if j > 0:
-                        s += ","
+                        s += ", "
                     if j + 1 == len(a.body):
                         s += self.recompile(aa,allowreturn)
                     else:
@@ -184,7 +252,7 @@ class Recompiler:
                 for j in range(len(a.orelse)):
                     aa = a.orelse[j]
                     if j > 0:
-                        s += ","
+                        s += ", "
                     if j + 1 == len(a.orelse):
                         s += self.recompile(aa,allowreturn)
                     else:
@@ -201,17 +269,19 @@ class Recompiler:
             sym = "?"
             nn = args[1].__class__.__name__
             if nn == "Lt":
-                sym = "<"
+                sym = " < "
             elif nn == "Gt":
-                sym = ">"
+                sym = " > "
             elif nn == "LtE":
-                sym = "<="
+                sym = " <= "
             elif nn == "GtE":
-                sym = ">="
+                sym = " >= "
             elif nn == "NotEq":
-                sym = "!="
+                sym = " != "
             elif nn == "Eq":
-                sym = "=="
+                sym = " == "
+            else:
+                raise Exception('boolean operation not supported: %s' % nn)
             return self.recompile(args[0])+sym+self.recompile(args[2])
         elif nm == "UnaryOp":
             args = [arg for arg in ast.iter_child_nodes(a)]
@@ -225,7 +295,7 @@ class Recompiler:
             else:
                 raise Exception(nm2)
         else:
-            raise Exception(nm)
+            raise Exception('unsupport AST node type: %s' % nm)
 
 def convert_to_phylanx_type(v):
     t = type(v)
@@ -253,7 +323,11 @@ class phyfun(object):
         # Create the AST
         tree = ast.parse(src)
         r = Recompiler()
-        self.__physl_src__ = "block(" + r.recompile(tree)+')\n'
+
+        assert len(tree.body) == 1
+
+        self.__physl_src__ = '%s(%s)\n' % (
+            full_node_name(tree.body[0], 'block'), r.recompile(tree))
 
     def __call__(self,*args):
         nargs = tuple(convert_to_phylanx_type(a) for a in args)

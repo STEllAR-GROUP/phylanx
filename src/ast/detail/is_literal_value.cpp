@@ -1,4 +1,4 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+//   Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,6 +10,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <string>
+#include <vector>
 
 namespace phylanx { namespace ast { namespace detail
 {
@@ -33,6 +34,16 @@ namespace phylanx { namespace ast { namespace detail
         case 5:                     // std::uint64_t
             return true;
 
+        // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
+        case 8:
+            return is_literal_value(util::get<8>(pe.get()).get());
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // identifier
+        // phylanx::util::recursive_wrapper<expression>
+        case 6: HPX_FALLTHROUGH;
+        // phylanx::util::recursive_wrapper<function_call>
+        case 7: HPX_FALLTHROUGH;
         default:
             break;
         }
@@ -70,6 +81,16 @@ namespace phylanx { namespace ast { namespace detail
         case 5:     // std::uint64_t
             return util::get<5>(pe.get());
 
+        // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
+        case 8:
+            return literal_value(util::get<8>(pe.get()).get());
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // identifier
+        // phylanx::util::recursive_wrapper<expression>
+        case 6: HPX_FALLTHROUGH;
+        // phylanx::util::recursive_wrapper<function_call>
+        case 7: HPX_FALLTHROUGH;
         default:
             break;
         }
@@ -86,15 +107,18 @@ namespace phylanx { namespace ast { namespace detail
     {
         switch (val.index())
         {
-        case 4:     // phylanx::ir::node_data<double>
-            return util::get<4>(val);
-
         case 1:     // bool
             return ir::node_data<double>{double(util::get<1>(val))};
 
         case 2:     // std::uint64_t
             return ir::node_data<double>{double(util::get<2>(val))};
 
+        case 4:     // phylanx::ir::node_data<double>
+            return util::get<4>(val);
+
+        case 3: HPX_FALLTHROUGH;    // std::string
+        // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
+        case 5: HPX_FALLTHROUGH;
         default:
             break;
         }
@@ -102,6 +126,29 @@ namespace phylanx { namespace ast { namespace detail
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::ast::detail::literal_value",
             "unsupported literal_value_type");
+    }
+
+    bool is_literal_value(std::vector<expression> const& exprs)
+    {
+        for (auto const& expr : exprs)
+        {
+            if (!is_literal_value(expr))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    literal_value_type literal_value(std::vector<expression> const& exprs)
+    {
+        std::vector<literal_argument_type> result;
+        result.reserve(exprs.size());
+        for (auto const& expr : exprs)
+        {
+            result.push_back(literal_value(expr));
+        }
+        return literal_value_type{result};
     }
 }}}
 
