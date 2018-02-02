@@ -36,14 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        using operand_type = ir::node_data<double>;
-        using args_type = std::vector<operand_type>;
-        using vector_type = blaze::DynamicVector<double>;
         struct linspace : std::enable_shared_from_this<linspace>
         {
             linspace() = default;
 
         protected:
+            using arg_type = ir::node_data<double>;
+            using args_type = std::vector<arg_type>;
+            using vector_type = blaze::DynamicVector<double>;
+
             primitive_result_type linspace1d(args_type&& args) const
             {
                 double start = extract_integer_value(args[0]);
@@ -59,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 else if (1 == num_samples)
                 {
                     vector_type result{start};
-                    return operand_type{std::move(result)};
+                    return arg_type{std::move(result)};
                 }
                 else
                 {
@@ -69,24 +70,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                   {
                     result[i] = start + dx * i;
                   }
-                  return operand_type{std::move(result)};
+                  return arg_type{std::move(result)};
                 }
             }
 
         public:
             hpx::future<primitive_result_type> eval(
+                std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
-                if (args.size() != 3)
+                if (operands.size() != 3)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::linspace",
                         "The linspace primitive requires exactly three arguments.");
                 }
 
-                for (std::size_t i = 0; i != args.size(); ++i)
+                for (std::size_t i = 0; i != operands.size(); ++i)
                 {
-                    if (!valid(args[i]))
+                    if (!valid(operands[i]))
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "linspace::eval",
@@ -101,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         return this_->linspace1d(std::move(args));
                     }),
-                    detail::map_operands(args, numeric_operand, args));
+                    detail::map_operands(operands, numeric_operand, args));
             }
         };
     }
@@ -111,8 +113,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::linspace>()->eval(args);
+            return std::make_shared<detail::linspace>()->eval(args, noargs);
         }
-        return std::make_shared<detail::linspace>()->eval(operands_);
+        return std::make_shared<detail::linspace>()->eval(operands_, args);
     }
 }}}
