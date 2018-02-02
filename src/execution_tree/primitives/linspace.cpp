@@ -57,7 +57,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "phylanx::execution_tree::primitives::detail::linspace1d",
                         "the linspace primitive requires at least one interval");
                 }
-                else if (1 == num_samples)
+
+                if (1 == num_samples)
                 {
                     vector_type result{start};
                     return arg_type{std::move(result)};
@@ -103,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         return this_->linspace1d(std::move(args));
                     }),
-                    detail::map_operands(operands, numeric_operand, args));
+                    detail::map_operands(operands, functional::numeric_operand{}, args));
             }
         };
     }
