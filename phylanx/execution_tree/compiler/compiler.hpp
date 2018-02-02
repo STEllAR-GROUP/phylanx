@@ -344,7 +344,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 return &it->second;
             }
-            else if (outer_ != nullptr)
+            if (outer_ != nullptr)
             {
                 return outer_->find(name);
             }

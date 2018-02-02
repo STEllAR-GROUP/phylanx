@@ -89,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs = blaze::map(lhs.vector(), rhs.vector(),
                     [](double x1, double x2) { return x1 >= x2 ? 1.0 : 0.0; });
 
-                return lhs.vector().nonZeros() > 0;
+                return lhs.vector().nonZeros() != 0;
             }
 
             bool greater_equal1d(operand_type&& lhs, operand_type&& rhs) const
@@ -126,7 +126,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs = blaze::map(lhs.matrix(), rhs.matrix(),
                     [](double x1, double x2) { return x1 >= x2 ? 1 : 0; });
 
-                return lhs.matrix().nonZeros() > 0;
+                return lhs.matrix().nonZeros() != 0;
             }
 
             bool greater_equal2d(operand_type&& lhs, operand_type&& rhs) const
@@ -179,6 +179,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "greater_equal::eval",
                         "left hand side and right hand side are incompatible "
                             "and can't be compared");
+                }
+
+                bool operator()(
+                    ir::node_data<bool>&&, ir::node_data<bool>&&) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::eval",
+                        "left hand side and right hand side are incompatible "
+                        "and can't be compared");
                 }
 
                 bool operator()(std::vector<ast::expression>&&,

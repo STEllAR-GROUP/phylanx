@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
-//  Copyright (c) 2001-2017 Hartmut Kaiser
+//  Copyright (c) 2001-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -44,6 +44,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::alnum_type alnum;
         qi::bool_type bool_;
         qi::int_parser<std::int64_t> long_long;
+        qi::attr_type attr;
 
         using qi::on_error;
         using qi::on_success;
@@ -108,7 +109,7 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
         function_call =
-                (identifier_name >> '(')
+                (identifier >> '(')
             >   argument_list
             >   ')'
             ;
@@ -121,10 +122,14 @@ namespace phylanx { namespace ast { namespace parser
 
         argument_list = -(expr % ',');
 
-        identifier = as<ast::identifier>()[identifier_name];
+        identifier =
+                identifier_name
+            >>  (('#' > long_long) | attr(std::int64_t(-1)))
+            >>  (('#' > long_long) | attr(std::int64_t(-1)))
+            ;
 
         identifier_name =
-                !lexeme[keywords >> !(alnum | '_')]
+               !lexeme[keywords >> !(alnum | '_')]
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
             ;
 
@@ -141,6 +146,8 @@ namespace phylanx { namespace ast { namespace parser
             (function_call)
             (argument_list)
             (identifier)
+            (identifier_name)
+            (string)
         );
 
         ///////////////////////////////////////////////////////////////////////

@@ -121,7 +121,7 @@ namespace phylanx { namespace execution_tree
     using argument_value_type =
         phylanx::util::variant<
             ast::nil
-          , bool
+          , phylanx::ir::node_data<bool>
           , std::int64_t
           , std::string
           , phylanx::ir::node_data<double>
@@ -421,6 +421,13 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val);
     PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
         primitive_result_type && val);
+
+    // Extract a ir::node_data<bool> type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT ir::node_data<bool> extract_boolean_data(
+        primitive_argument_type const& val);
+    PHYLANX_EXPORT ir::node_data<bool> extract_boolean_data(
+        primitive_result_type&& val);
 
     // Extract a std::int64_t type from a given primitive_argument_type,
     // throw if it doesn't hold one.
