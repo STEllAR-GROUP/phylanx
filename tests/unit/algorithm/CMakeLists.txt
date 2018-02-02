@@ -4,10 +4,10 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    lra
+    simple_lra
    )
 
-set(lra_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(simple_lra_FLAGS COMPONENT_DEPENDENCIES iostreams)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)
