@@ -32,6 +32,14 @@ HPX_DEFINE_GET_COMPONENT_TYPE(equal_type::wrapped_type)
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_element_wise_equal(hpx::id_type locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name)
+    {
+        return primitive(
+            hpx::new_<equal>(locality, std::move(operands), true), name);
+    }
+
     match_pattern_type const equal::match_data =
     {
         hpx::util::make_tuple("eq",
@@ -39,32 +47,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create<equal>)
     };
 
+    match_pattern_type const equal::match_data_element_wise = {
+        hpx::util::make_tuple("eeq",
+            std::vector<std::string>{"eeq(_1, _2)"},
+            &create_element_wise_equal)};
+
     ///////////////////////////////////////////////////////////////////////////
-    equal::equal(std::vector<primitive_argument_type>&& operands)
+    equal::equal(
+        std::vector<primitive_argument_type>&& operands, bool element_wise)
       : base_primitive(std::move(operands))
-    {}
+      , element_wise_(element_wise)
+    {
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct equal : std::enable_shared_from_this<equal>
         {
-            equal() = default;
+            equal(bool element_wise)
+              : element_wise_(element_wise)
+            {
+            }
 
         protected:
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<primitive_result_type>;
 
-            bool equal0d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type equal0d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
                 {
                 case 0:
-                    return lhs.scalar() == rhs.scalar();
+                    return ir::node_data<bool>{lhs.scalar() == rhs.scalar()};
 
-                case 1: HPX_FALLTHROUGH;
-                case 2: HPX_FALLTHROUGH;
+                case 1:
+                    if (element_wise_)
+                        return equal0d1d(std::move(lhs), std::move(rhs));
+                    else
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::equal0d",
+                            "the operands have incompatible number of "
+                            "dimensions");
+
+                case 2:
+                    if (element_wise_)
+                        return equal0d2d(std::move(lhs), std::move(rhs));
+                    else
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::equal0d",
+                            "the operands have incompatible number of "
+                            "dimensions");
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal0d",
@@ -72,7 +107,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            bool equal1d1d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type equal0d1d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                rhs.vector() = blaze::map(rhs.vector(),
+                    [&](double x) { return (x == lhs.scalar()); });
+                return ir::node_data<bool>{rhs};
+            }
+
+            primitive_result_type equal0d2d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                rhs.matrix() = blaze::map(rhs.matrix(),
+                    [&](double x) { return (x == lhs.scalar()); });
+
+                return ir::node_data<bool>{rhs};
+            }
+
+            primitive_result_type equal1d0d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                lhs.vector() = blaze::map(lhs.vector(),
+                    [&](double x) { return (x == rhs.scalar()); });
+
+                return ir::node_data<bool>{lhs};
+            }
+
+            primitive_result_type equal1d1d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -84,19 +151,66 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                return lhs.vector() == rhs.vector();
+                if (element_wise_)
+                {
+                    // TODO: SIMD functionality should be added, blaze implementation
+                    // is not currently available
+                    lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
+                        [&](double x, double y) { return (x == y); });
+                    return ir::node_data<bool>{lhs};
+                }
+                else
+                    return ir::node_data<bool>{lhs.vector() == rhs.vector()};
             }
 
-            bool equal1d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type equal1d2d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t lhs_size = lhs.dimension(0);
+                auto rhs_size = rhs.dimensions();
+
+                if (lhs_size != rhs_size[1])
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal1d2d",
+                        "the dimensions of the operands do not match");
+                }
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                for (size_t i = 0UL; i < rhs.matrix().rows(); i++)
+                    blaze::row(rhs.matrix(), i) =
+                        blaze::map(blaze::row(rhs.matrix(), i),
+                            blaze::trans(lhs.vector()),
+                            [](double x, double y) { return x == y; });
+
+                return ir::node_data<bool>{rhs};
+            }
+
+            primitive_result_type equal1d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
                 {
+                case 0:
+                    if (element_wise_)
+                        return equal1d0d(std::move(lhs), std::move(rhs));
+                    else
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::equal1d",
+                            "the operands have incompatible number of "
+                            "dimensions");
                 case 1:
                     return equal1d1d(std::move(lhs), std::move(rhs));
 
-                case 0: HPX_FALLTHROUGH;
-                case 2: HPX_FALLTHROUGH;
+                case 2:
+                    if (element_wise_)
+                        return equal1d2d(std::move(lhs), std::move(rhs));
+                    else
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::equal1d",
+                            "the operands have incompatible number of "
+                            "dimensions");
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal1d",
@@ -104,7 +218,46 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            bool equal2d2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type equal2d0d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t lhs_size = lhs.dimension(0);
+                std::size_t rhs_size = rhs.dimension(0);
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                lhs.matrix() = blaze::map(lhs.matrix(),
+                    [&](double x) { return (x == rhs.scalar()); });
+
+                return ir::node_data<bool>{lhs};
+            }
+
+            primitive_result_type equal2d1d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t rhs_size = rhs.dimension(0);
+                auto lhs_size = lhs.dimensions();
+
+                if (rhs_size != lhs_size[1])
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "equal::equal2d1d",
+                        "the dimensions of the operands do not match");
+                }
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                for (size_t i = 0UL; i < lhs.matrix().rows(); i++)
+                    blaze::row(lhs.matrix(), i) =
+                        blaze::map(blaze::row(lhs.matrix(), i),
+                            blaze::trans(rhs.vector()),
+                            [](double x, double y) { return x == y; });
+
+                return ir::node_data<bool>{lhs};
+            }
+
+            primitive_result_type equal2d2d(
+                operand_type&& lhs, operand_type&& rhs) const
             {
                 auto lhs_size = lhs.dimensions();
                 auto rhs_size = rhs.dimensions();
@@ -116,19 +269,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the dimensions of the operands do not match");
                 }
 
-                return lhs.matrix() == rhs.matrix();
+                if (element_wise_)
+                {
+                    // TODO: SIMD functionality should be added, blaze implementation
+                    // is not currently available
+                    lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
+                        [&](double x, double y) { return (x == y); });
+
+                    return ir::node_data<bool>{lhs};
+                }
+                else
+                    return ir::node_data<bool>{lhs.matrix() == rhs.matrix()};
             }
 
-            bool equal2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type equal2d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
                 {
+                case 0:
+                    if (element_wise_)
+                        return equal2d0d(std::move(lhs), std::move(rhs));
+                    else
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::equal2d",
+                            "the operands have incompatible number of "
+                            "dimensions");
+                case 1:
+                    if (element_wise_)
+                        return equal2d1d(std::move(lhs), std::move(rhs));
+                    else
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "equal::equal2d",
+                            "the operands have incompatible number of "
+                            "dimensions");
                 case 2:
                     return equal2d2d(std::move(lhs), std::move(rhs));
 
-                case 0: HPX_FALLTHROUGH;
-                case 1: HPX_FALLTHROUGH;
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal2d",
@@ -137,7 +314,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            bool equal_all(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type equal_all(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_dims = lhs.num_dimensions();
                 switch (lhs_dims)
@@ -163,7 +340,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             struct visit_equal
             {
                 template <typename T1, typename T2>
-                bool operator()(T1, T2) const
+                primitive_result_type operator()(T1, T2) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::eval",
@@ -172,38 +349,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 template <typename T>
-                bool operator()(T && lhs, T && rhs) const
+                primitive_result_type operator()(T && lhs, T && rhs) const
                 {
-                    return lhs == rhs;
+                    return ir::node_data<bool>{lhs == rhs};
                 }
 
-                bool operator()(
+                primitive_result_type operator()(
                     ir::node_data<double>&& lhs, std::int64_t rhs) const
                 {
                     if (lhs.num_dimensions() != 0)
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "equal::eval",
-                            "left hand side and right hand side are "
-                                "incompatible and can't be compared");
+                        return equal_.equal_all(
+                            std::move(lhs), operand_type(std::move(rhs)));
                     }
-                    return lhs[0] == rhs;
+                    return ir::node_data<bool>{lhs[0] == rhs};
                 }
 
-                bool operator()(
+                primitive_result_type operator()(
                     std::int64_t&& lhs, ir::node_data<double> rhs) const
                 {
                     if (rhs.num_dimensions() != 0)
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "equal::eval",
-                            "left hand side and right hand side are "
-                                "incompatible and can't be compared");
+                        return equal_.equal_all(
+                            operand_type(std::move(lhs)), std::move(rhs));
                     }
-                    return lhs == rhs[0];
+                    return ir::node_data<bool>{lhs == rhs[0]};
                 }
 
-                bool operator()(operand_type&& lhs, operand_type&& rhs) const
+                primitive_result_type operator()(operand_type&& lhs, operand_type&& rhs) const
+                {
+                    return equal_.equal_all(std::move(lhs), std::move(rhs));
+                }
+
+                primitive_result_type operator()(
+                    ir::node_data<bool>&& lhs, ir::node_data<bool>&& rhs) const
                 {
                     return equal_.equal_all(std::move(lhs), std::move(rhs));
                 }
@@ -243,6 +422,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     detail::map_operands(
                         operands, functional::literal_operand{}, args));
             }
+            bool element_wise_;
         };
     }
 
@@ -252,9 +432,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::equal>()->eval(args, noargs);
+            return std::make_shared<detail::equal>(element_wise_)->eval(args, noargs);
         }
 
-        return std::make_shared<detail::equal>()->eval(operands_, args);
+        return std::make_shared<detail::equal>(element_wise_)->eval(operands_, args);
     }
 }}}
