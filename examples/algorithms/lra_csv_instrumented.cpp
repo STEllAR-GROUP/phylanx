@@ -110,14 +110,14 @@ std::pair<std::size_t, std::size_t> get_pos(std::string const& code,
     // otherwise the given value is the offset into the code
     std::size_t pos = std::get<1>(tags);
     std::size_t line = 1;
-    std::size_t column = 0;
+    std::size_t column = 1;
 
     for (std::int64_t i = 0; i != pos && i != code.size(); ++i)
     {
         if (code[i] == '\r' || code[i] == '\n')    // CR/LF
         {
             ++line;
-            column = 0;
+            column = 1;
         }
         else
         {

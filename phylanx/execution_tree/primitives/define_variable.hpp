@@ -44,9 +44,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // return the topology for this variable definition
         topology expression_topology() const override;
 
-    protected:
-        std::string extract_function_name() const;
-
     private:
         primitive_argument_type body_;
         mutable primitive_argument_type target_;

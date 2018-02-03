@@ -262,8 +262,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined function
             // and store new function description for later use
-            snippets_.defines_.emplace_back(function{});
-            function& f = snippets_.defines_.back();
+            snippets_.snippets_.emplace_back(function{});
+            function& f = snippets_.snippets_.back();
 
             ast::expression name_expr = extract_name(p);
             std::string name = ast::detail::identifier_name(name_expr);

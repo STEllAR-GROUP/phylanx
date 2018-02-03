@@ -8,6 +8,7 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
