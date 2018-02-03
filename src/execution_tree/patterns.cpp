@@ -55,6 +55,7 @@ namespace phylanx { namespace execution_tree
             primitives::sub_operation::match_data,
             // binary operations
             primitives::equal::match_data,
+            primitives::equal::match_data_element_wise,
             primitives::greater::match_data,
             primitives::greater_equal::match_data,
             primitives::less::match_data,
