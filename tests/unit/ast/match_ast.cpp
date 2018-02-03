@@ -59,57 +59,70 @@ struct on_placeholder_match
 void test_placeholder_matching(std::string const& to_match,
     std::string const& expr_to_match, std::string const& expected_match)
 {
-    phylanx::ast::expression match = phylanx::ast::generate_ast(to_match);
-    phylanx::ast::expression expr = phylanx::ast::generate_ast(expr_to_match);
+    auto match = phylanx::ast::generate_ast(to_match);
+    auto expr = phylanx::ast::generate_ast(expr_to_match);
+
+    HPX_TEST_EQ(match.size(), std::size_t(1));
+    HPX_TEST_EQ(expr.size(), std::size_t(1));
 
     std::multimap<std::string, phylanx::ast::expression> placeholders;
     HPX_TEST(phylanx::ast::match_ast(
-        expr, match, on_placeholder_match{placeholders}));
+        expr[0], match[0], on_placeholder_match{placeholders}));
 
     HPX_TEST(placeholders.size() == 1);
     auto r = placeholders.equal_range("_1");
     HPX_TEST(std::distance(r.first, r.second) > 0);
-    HPX_TEST((*r.first).second == phylanx::ast::generate_ast(expected_match));
+    HPX_TEST(
+        (*r.first).second == phylanx::ast::generate_ast(expected_match)[0]);
 }
 
 void test_placeholder_matching(std::string const& to_match,
     std::string const& expr_to_match, std::string const& expected_match1,
     std::string const& expected_match2)
 {
-    phylanx::ast::expression match = phylanx::ast::generate_ast(to_match);
-    phylanx::ast::expression expr = phylanx::ast::generate_ast(expr_to_match);
+    auto match = phylanx::ast::generate_ast(to_match);
+    auto expr = phylanx::ast::generate_ast(expr_to_match);
+
+    HPX_TEST_EQ(match.size(), std::size_t(1));
+    HPX_TEST_EQ(expr.size(), std::size_t(1));
 
     std::multimap<std::string, phylanx::ast::expression> placeholders;
     HPX_TEST(phylanx::ast::match_ast(
-        expr, match, on_placeholder_match{placeholders}));
+        expr[0], match[0], on_placeholder_match{placeholders}));
 
     HPX_TEST(placeholders.size() == 2);
 
     auto r1 = placeholders.equal_range("_1");
     HPX_TEST(std::distance(r1.first, r1.second) == 1);
-    HPX_TEST((*r1.first).second == phylanx::ast::generate_ast(expected_match1));
+    HPX_TEST(
+        (*r1.first).second == phylanx::ast::generate_ast(expected_match1)[0]);
 
     auto r2 = placeholders.equal_range("_2");
     HPX_TEST(std::distance(r2.first, r2.second) == 1);
-    HPX_TEST((*r2.first).second == phylanx::ast::generate_ast(expected_match2));
+    HPX_TEST(
+        (*r2.first).second == phylanx::ast::generate_ast(expected_match2)[0]);
 }
 
 void test_placeholder_matching_ellipses(std::string const& to_match,
     std::string const& expr_to_match, std::string const& expected_match,
     std::vector<std::string> const& expected_matches)
 {
-    phylanx::ast::expression match = phylanx::ast::generate_ast(to_match);
-    phylanx::ast::expression expr = phylanx::ast::generate_ast(expr_to_match);
+    auto match = phylanx::ast::generate_ast(to_match);
+    auto expr = phylanx::ast::generate_ast(expr_to_match);
+
+    HPX_TEST_EQ(match.size(), std::size_t(1));
+    HPX_TEST_EQ(expr.size(), std::size_t(1));
 
     std::multimap<std::string, phylanx::ast::expression> placeholders;
     HPX_TEST(phylanx::ast::match_ast(
-        expr, match, on_placeholder_match{placeholders}));
+        expr[0], match[0], on_placeholder_match{placeholders}));
 
     HPX_TEST(placeholders.size() == expected_matches.size() + 1);
 
     auto r1 = placeholders.equal_range("_1");
     HPX_TEST(std::distance(r1.first, r1.second) == 1);
-    HPX_TEST((*r1.first).second == phylanx::ast::generate_ast(expected_match));
+    HPX_TEST(
+        (*r1.first).second == phylanx::ast::generate_ast(expected_match)[0]);
 
     auto r2 = placeholders.equal_range("_2");
     auto it = r2.first, end = r2.second;
@@ -117,7 +130,7 @@ void test_placeholder_matching_ellipses(std::string const& to_match,
     for (auto const& match : expected_matches)
     {
         HPX_TEST(it != end);
-        HPX_TEST(it->second == phylanx::ast::generate_ast(match));
+        HPX_TEST(it->second == phylanx::ast::generate_ast(match)[0]);
         ++it;
     }
 }

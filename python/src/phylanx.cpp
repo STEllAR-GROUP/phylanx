@@ -192,7 +192,7 @@ expression_compiler(std::string xexpr, Ts const&... ts)
         try
         {
                 et::compiler::function_list eval_snippets;
-                auto x = et::compile_and_run(xexpr, eval_snippets);
+                auto x = et::compile(xexpr, eval_snippets);
 
                 et::primitive_argument_type result = x(ts...);
                 switch (result.index())
