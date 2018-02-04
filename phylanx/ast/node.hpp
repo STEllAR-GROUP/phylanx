@@ -299,6 +299,24 @@ namespace phylanx { namespace ast
         {
         }
 
+        primary_expr(std::vector<double> const& val)
+          : expr_node_type(phylanx::ir::node_data<double>{val})
+        {
+        }
+        primary_expr(std::vector<double> && val)
+          : expr_node_type(phylanx::ir::node_data<double>{std::move(val)})
+        {
+        }
+
+        primary_expr(std::vector<std::vector<double>> const& val)
+          : expr_node_type(phylanx::ir::node_data<double>{val})
+        {
+        }
+        primary_expr(std::vector<std::vector<double>> && val)
+          : expr_node_type(phylanx::ir::node_data<double>{std::move(val)})
+        {
+        }
+
         primary_expr(identifier const& val)
           : expr_node_type(val)
         {
