@@ -29,7 +29,7 @@ void hstack_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(first), std::move(second)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
 
     blaze::DynamicVector<double> expected{42.0, 5.0};
@@ -57,7 +57,7 @@ void hstack_operation_1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(first), std::move(second)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
 
     blaze::DynamicVector<double> expected{
@@ -91,7 +91,7 @@ void hstack_operation_2d()
     blaze::DynamicMatrix<double> expected{{1, 2, 3, 11, 22},
                                           {4, 5, 6, 12, 13}};
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         hstack.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),

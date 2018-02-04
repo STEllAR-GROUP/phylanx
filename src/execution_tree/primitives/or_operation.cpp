@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operands_type = std::vector<std::uint8_t>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -90,11 +90,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         if (ops.size() == 2)
                         {
-                            return primitive_result_type(
+                            return primitive_argument_type(
                                 ops[0] != 0 || ops[1] != 0);
                         }
 
-                        return primitive_result_type(
+                        return primitive_argument_type(
                             std::any_of(
                                 ops.begin(), ops.end(),
                                 [](std::uint8_t curr)
@@ -109,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement '||' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> or_operation::eval(
+    hpx::future<primitive_argument_type> or_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

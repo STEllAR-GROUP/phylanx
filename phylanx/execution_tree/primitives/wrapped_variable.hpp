@@ -26,9 +26,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         wrapped_variable() = default;
         wrapped_variable(primitive_argument_type target, std::string name);
 
-        void store(primitive_result_type && val) override;
+        void store(primitive_argument_type && val) override;
 
-        hpx::future<primitive_result_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
     private:

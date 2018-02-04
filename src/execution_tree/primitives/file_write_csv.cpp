@@ -108,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -135,19 +135,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return numeric_operand(operands[1], args)
                     .then(hpx::util::unwrapping(
                         [this_](ir::node_data<double> && val)
-                        ->  primitive_result_type
+                        ->  primitive_argument_type
                         {
-                            if (!valid(val))
-                            {
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "file_write_csv::eval",
-                                    "the file_write_csv primitive requires that "
-                                        "the argument value given by the "
-                                        "operand is non-empty");
-                            }
-
                             this_->write_to_file_csv(val);
-                            return primitive_result_type(std::move(val));
+                            return primitive_argument_type(std::move(val));
                         }));
             }
 
@@ -159,7 +150,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file in CSV format and return content
-    hpx::future<primitive_result_type> file_write_csv::eval(
+    hpx::future<primitive_argument_type> file_write_csv::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

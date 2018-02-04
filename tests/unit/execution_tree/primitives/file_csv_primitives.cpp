@@ -36,7 +36,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
     }
 
     // read back the file
-    hpx::future<phylanx::execution_tree::primitive_result_type> f;
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f;
     {
         phylanx::execution_tree::primitive infile =
             hpx::new_<phylanx::execution_tree::primitives::file_read_csv>(
@@ -69,7 +69,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
     }
 
     // read back the file
-    hpx::future<phylanx::execution_tree::primitive_result_type> f;
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f;
     {
         phylanx::execution_tree::primitive infile =
             hpx::new_<phylanx::execution_tree::primitives::file_read_csv>(

@@ -113,8 +113,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             return function{
-                (*f_)(this->locality_, std::move(fargs), name),
-                name};
+                primitive_argument_type{
+                    (*f_)(this->locality_, std::move(fargs), name)
+                }, name};
         }
 
     private:
@@ -151,11 +152,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function operator()(argument_type && arg, std::string const& name) const
         {
             return function{
-                    primitive(
-                        hpx::new_<primitives::define_variable>(
-                            locality_, std::move(arg), name),
-                        name),
-                    name};
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::define_variable>(
+                        locality_, std::move(arg), name),
+                    name}},
+                name};
         }
 
     private:
@@ -188,9 +189,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function operator()(std::string const& name) const
         {
             return function{
-                primitive(
+                primitive_argument_type{primitive{
                     hpx::new_<primitives::define_function>(locality_, name),
-                    name),
+                    name}},
                 name};
         }
 
@@ -214,11 +215,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::to_string(sequence_number_) + "#" + name;
 
             return function{
-                    primitive(
-                        hpx::new_<primitives::access_argument>(locality_, n),
-                        full_name),
-                    full_name
-                };
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::access_argument>(locality_, n),
+                    full_name}},
+                full_name};
         }
 
         std::size_t sequence_number_;
@@ -246,14 +246,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::string full_name = "access-variable#" +
                 std::to_string(sequence_number_) + "#" + name;
 
+
             return function{
-                    primitive(
-                        hpx::new_<primitives::wrapped_variable>(
-                            this->locality_, f_.get().arg_,
-                            full_name),
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::wrapped_variable>(
+                        this->locality_, f_.get().arg_,
                         full_name),
-                    full_name
-                };
+                    full_name}},
+                full_name};
         }
     };
 
@@ -286,14 +286,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::string full_name = "function#" +
                 std::to_string(sequence_number_) + "#" + name;
 
+
             return function{
-                    primitive(
-                        hpx::new_<primitives::wrapped_function>(
-                            this->locality_, f_.get().arg_, std::move(fargs),
-                            full_name),
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::wrapped_function>(
+                        this->locality_, f_.get().arg_, std::move(fargs),
                         full_name),
-                    full_name
-                };
+                    full_name}},
+                full_name};
         }
     };
 

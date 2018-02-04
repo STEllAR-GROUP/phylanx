@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operands_type = std::vector<std::uint8_t>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -79,9 +79,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops) -> primitive_result_type
+                    [this_](operands_type && ops) -> primitive_argument_type
                     {
-                        return primitive_result_type(ops[0] == 0);
+                        return primitive_argument_type(ops[0] == 0);
                     }),
                     detail::map_operands(operands, boolean_operand, args)
                 );
@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement unary '!' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> unary_not_operation::eval(
+    hpx::future<primitive_argument_type> unary_not_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 value_operand(operands_[i], args_).then(
-                    [this_, i](hpx::future<primitive_result_type> && step)
+                    [this_, i](hpx::future<primitive_argument_type> && step)
                     {
                         try
                         {
@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
             }
 
-            hpx::future<primitive_result_type> eval()
+            hpx::future<primitive_argument_type> eval()
             {
                 if (operands_.empty())
                 {
@@ -103,12 +103,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         private:
             std::vector<primitive_argument_type> operands_;
             std::vector<primitive_argument_type> args_;
-            hpx::promise<primitive_result_type> result_;
+            hpx::promise<primitive_argument_type> result_;
         };
     }
 
     // start iteration over given block statement
-    hpx::future<primitive_result_type> block_operation::eval(
+    hpx::future<primitive_argument_type> block_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
