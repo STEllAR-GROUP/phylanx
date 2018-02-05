@@ -68,6 +68,11 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
     // Return value
     std::map<std::string, std::vector<std::int64_t>> result;
 
+    // Reuse get_counter_values_array calls
+    //   key: primitive type
+    //   value: vector of counter_values_array instance
+    std::map<std::string, std::vector<pc::counter_values_array>> pc_values;
+
     // Iterate through all provided primitive instances
     for (auto const& name : primitive_instances)
     {
@@ -78,20 +83,23 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         // TODO: Ensure counter_name_last_part has at least one entry
 
         // Performance counter values
-        std::vector<pc::counter_values_array> counter_values;
-
-        // Iterate through the last parts of performance counter names
-        for (auto const& counter_name_last_part : counter_name_last_parts)
+        std::vector<pc::counter_values_array> &counter_values =
+            pc_values[tags.primitive];
+        if (counter_values.empty())
         {
-            // NOTE: Reuse the get_counter_values_array call?
-            // 
-            // Construct the name of the counter
-            std::string counter_name(
-                "/phylanx/primitives/" + tags.primitive + "/" + counter_name_last_part);
-            // The actual performance counter
-            pc::performance_counter counter(counter_name, locality_id);
-            counter_values.push_back(
-                counter.get_counter_values_array(hpx::launch::sync, false));
+            // Iterate through the last parts of performance counter names
+            for (auto const& counter_name_last_part : counter_name_last_parts)
+            {
+                // NOTE: Reuse the get_counter_values_array call?
+                //
+                // Construct the name of the counter
+                std::string counter_name("/phylanx/primitives/" +
+                    tags.primitive + "/" + counter_name_last_part);
+                // The actual performance counter
+                pc::performance_counter counter(counter_name, locality_id);
+                counter_values.push_back(
+                    counter.get_counter_values_array(hpx::launch::sync, false));
+            }
         }
 
         // HACK: block 0 does not appear in AGAS
@@ -102,12 +110,12 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
             continue;
         }
 
-        std::vector<std::int64_t> data(counter_values.size());
+        std::vector<std::int64_t> data(counter_name_last_parts.size());
         for (int i = 0; i < counter_values.size(); ++i)
         {
             data[i] = counter_values[i].values_[tags.sequence_number];
         }
-        
+
         result[name] = data;
     }
 
