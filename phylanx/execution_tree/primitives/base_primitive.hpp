@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree
     struct primitive_argument_type;
 
     ///////////////////////////////////////////////////////////////////////////
-    class primitive
+    class PHYLANX_EXPORT primitive
       : public hpx::components::client_base<primitive,
             primitives::base_primitive>
     {
@@ -115,6 +115,9 @@ namespace phylanx { namespace execution_tree
 
         hpx::future<topology> expression_topology() const;
         topology expression_topology(hpx::launch::sync_policy) const;
+
+    public:
+        static bool enable_tracing;
     };
 
     ///////////////////////////////////////////////////////////////////////////
