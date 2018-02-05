@@ -98,5 +98,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return value_operand(body, fargs);
     }
+
+    topology wrapped_function::expression_topology() const
+    {
+        if (!valid(target_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "wrapped_function::expression_topology",
+                "expression representing the function body was not "
+                    "initialized yet");
+        }
+
+        primitive const* p = util::get_if<primitive>(&target_);
+        if (p != nullptr)
+        {
+            return p->expression_topology(hpx::launch::sync);
+        }
+
+        return {};
+    }
 }}}
 

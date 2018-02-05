@@ -42,9 +42,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         for (auto const& patterns : patterns_list)
         {
-            result.define(hpx::util::get<0>(patterns),
-                builtin_function(
-                    hpx::util::get<2>(patterns), default_locality));
+            if (!hpx::util::get<1>(patterns).empty())
+            {
+                result.define(hpx::util::get<0>(patterns),
+                    builtin_function(
+                        hpx::util::get<2>(patterns), default_locality));
+            }
         }
 
         return result;
@@ -66,9 +69,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             for (auto const& pattern : hpx::util::get<1>(patterns))
             {
                 result.push_back(
-                    hpx::util::make_tuple(
-                        hpx::util::get<0>(patterns), pattern,
-                        ast::generate_ast(pattern), hpx::util::get<2>(patterns)));
+                    hpx::util::make_tuple(hpx::util::get<0>(patterns),
+                        pattern, ast::generate_ast(pattern),
+                        hpx::util::get<2>(patterns)));
             }
         }
 
