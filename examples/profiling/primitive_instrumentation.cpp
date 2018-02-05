@@ -11,8 +11,10 @@
 #include <hpx/runtime_fwd.hpp>
 
 #include <iostream>
+#include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const lra_code = R"(block(
@@ -46,6 +48,71 @@ char const* const lra_code = R"(block(
     ),
     lra
 ))";
+
+// Retrieve performance counter data for selected primitives
+//   primitive_instances:     The primitives for which performance counter data
+//                            is required
+//   locality_id:             The locality the performance counter data is going
+//                            to be queried from
+//   counter_name_last_parts: A vector containing the last part of the
+//                            performance counter names.
+//                            e.g. std::vector{ "count/eval", "count/direct_eval" }
+// NOTE: primitive_instances are not verified
+std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
+    std::vector<std::string> const& primitive_instances,
+    hpx::naming::id_type locality_id,
+    std::vector<std::string> counter_name_last_parts)
+{
+    namespace pc = hpx::performance_counters;
+
+    // Return value
+    std::map<std::string, std::vector<std::int64_t>> result;
+
+    // Iterate through all provided primitive instances
+    for (auto const& name : primitive_instances)
+    {
+        // Parse the primitive name
+        auto tags =
+            phylanx::execution_tree::compiler::parse_primitive_name(name);
+
+        // TODO: Ensure counter_name_last_part has at least one entry
+
+        // Performance counter values
+        std::vector<pc::counter_values_array> counter_values;
+
+        // Iterate through the last parts of performance counter names
+        for (auto const& counter_name_last_part : counter_name_last_parts)
+        {
+            // NOTE: Reuse the get_counter_values_array call?
+            // 
+            // Construct the name of the counter
+            std::string counter_name(
+                "/phylanx/primitives/" + tags.primitive + "/" + counter_name_last_part);
+            // The actual performance counter
+            pc::performance_counter counter(counter_name, locality_id);
+            counter_values.push_back(
+                counter.get_counter_values_array(hpx::launch::sync, false));
+        }
+
+        // HACK: block 0 does not appear in AGAS
+        if (tags.primitive == "block" &&
+            (tags.sequence_number == 0 ||
+                tags.sequence_number == counter_values[0].values_.size()))
+        {
+            continue;
+        }
+
+        std::vector<std::int64_t> data(counter_values.size());
+        for (int i = 0; i < counter_values.size(); ++i)
+        {
+            data[i] = counter_values[i].values_[tags.sequence_number];
+        }
+        
+        result[name] = data;
+    }
+
+    return result;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main()
@@ -85,84 +152,42 @@ int hpx_main()
     auto result = lra(x, y, alpha);
 
     // CSV Header
-    std::cout << "primitive" << ","
-        << "sequence_number" << ","
-        << "instance_id" << ","
-        << "compile_id" << ","
-        << "tag1" << ","
-        << "tag2" << ","
+    std::cout << "primitive_instance" << ","
         << "count" << ","
         << "time" << ","
         << "direct_count" << ","
         << "direct_time"
         << std::endl;
 
-    // Complement performance data from primitive performance counters with
-    // information in their AGAS names
+    // List of existing primitive instances
+    std::vector<std::string> existing_primitive_instances;
+    // Iterate over all primitive types
     for (auto const& pattern :
         phylanx::execution_tree::get_all_known_patterns())
     {
+        // Name of the primitive
         std::string const& name = hpx::util::get<0>(pattern);
 
-        std::string count_pc_name(
-            "/phylanx{locality#0/total}/primitives/" + name + "/count/eval");
-        hpx::performance_counters::performance_counter count_pc(
-            count_pc_name);
-        auto count_pc_values =
-            count_pc.get_counter_values_array(hpx::launch::sync, false);
-
-        std::string time_pc_name(
-            "/phylanx{locality#0/total}/primitives/" + name + "/time/eval");
-        hpx::performance_counters::performance_counter time_pc(time_pc_name);
-        auto time_pc_values =
-            time_pc.get_counter_values_array(hpx::launch::sync, false);
-
-        std::string direct_count_pc_name(
-            "/phylanx{locality#0/total}/primitives/" + name +
-            "/count/eval_direct");
-        hpx::performance_counters::performance_counter direct_count_pc(
-            direct_count_pc_name);
-        auto direct_count_pc_values =
-            direct_count_pc.get_counter_values_array(hpx::launch::sync, false);
-
-        std::string direct_time_pc_name(
-            "/phylanx{locality#0/total}/primitives/" + name +
-            "/time/eval_direct");
-        hpx::performance_counters::performance_counter direct_time_pc(
-            direct_time_pc_name);
-        auto direct_time_pc_values =
-            direct_time_pc.get_counter_values_array(hpx::launch::sync, false);
-
-        // Query AGAS for primitives
-        auto entries = hpx::agas::find_symbols(
-            hpx::launch::sync, "/phylanx/" + name + "#*");
-
-        for (auto const& e : entries)
+        // Retrieve all instances of this primitive type
+        for (auto const& entry : hpx::agas::find_symbols(
+                 hpx::launch::sync, "/phylanx/" + name + "#*"))
         {
-            // Parse the primitive name
-            auto tags = phylanx::execution_tree::compiler::parse_primitive_name(
-                e.first);
-
-            // HACK: block 0 does not appear in AGAS
-            if (name == "block" &&
-                (tags.sequence_number == 0 ||
-                    tags.sequence_number == count_pc_values.values_.size()))
-            {
-                continue;
-            }
-
-            std::cout << "\"" << name << "\"" << ","
-                << tags.sequence_number << ","
-                << tags.instance << ","
-                << tags.compile_id << ","
-                << tags.tag1 << ","
-                << tags.tag2 << ","
-                << count_pc_values.values_[tags.sequence_number] << ","
-                << time_pc_values.values_[tags.sequence_number] << ","
-                << direct_count_pc_values.values_[tags.sequence_number] << ","
-                << direct_time_pc_values.values_[tags.sequence_number]
-                << std::endl;
+            existing_primitive_instances.push_back(entry.first);
         }
+    }
+
+    // Print performance data
+    for (auto const& entry :
+        retrieve_counter_data(existing_primitive_instances, hpx::find_here(),
+            std::vector<std::string>{"count/eval", "time/eval",
+                "count/eval_direct", "time/eval_direct"}))
+    {
+        std::cout << "\"" << entry.first << "\"";
+        for (auto const& counter_value : entry.second)
+        {
+            std::cout << "," << counter_value;
+        }
+        std::cout << std::endl;
     }
 
     auto elapsed = t.elapsed();
