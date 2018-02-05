@@ -190,8 +190,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function_list& operator=(function_list const&) = delete;
         function_list& operator=(function_list &&) = delete;
 
+        template <typename ... Ts>
+        result_type operator()(Ts &&... ts) const
+        {
+            return snippets_.back()(std::forward<Ts>(ts)...);
+        }
+
+        topology get_expression_topology() const
+        {
+            return snippets_.back().get_expression_topology();
+        }
+
         std::size_t compile_id_;
-        std::list<function> defines_;
+        std::list<function> snippets_;
         std::map<std::string, std::size_t> sequence_numbers_;
     };
 
@@ -226,7 +237,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::reference_wrapper<function const> f_;
 
         lambda(function const& f, function_list const& elements)
-          : elements_(elements.defines_)
+          : elements_(elements.snippets_)
           , f_(f)
         {}
 

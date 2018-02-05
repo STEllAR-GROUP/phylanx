@@ -37,10 +37,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
     class environment;
 
     ///////////////////////////////////////////////////////////////////////////
-    using expression_pattern =
-        hpx::util::tuple<
-            std::string, std::string, ast::expression, factory_function_type
-        >;
+    using expression_pattern = hpx::util::tuple<
+        std::string, std::string,
+        ast::expression, factory_function_type>;
     using expression_pattern_list = std::vector<expression_pattern>;
 
     PHYLANX_EXPORT expression_pattern_list generate_patterns(
@@ -383,14 +382,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
     /// corresponding to its structure. Return a function object that - when
     /// executed - will evaluate the generated execution tree.
     PHYLANX_EXPORT function compile(ast::expression const& expr,
-        function_list& snippets, environment& env,
-        expression_pattern_list const& patterns,
-        hpx::id_type const& default_locality);
-
-    /// Compile the given list of AST instances and generate an expression tree
-    /// corresponding to its structure. Return a function object that - when
-    /// executed - will evaluate the generated execution tree.
-    PHYLANX_EXPORT function compile(std::vector<ast::expression> const& exprs,
         function_list& snippets, environment& env,
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);

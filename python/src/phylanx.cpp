@@ -192,7 +192,7 @@ expression_compiler(std::string xexpr, Ts const&... ts)
         try
         {
                 et::compiler::function_list eval_snippets;
-                auto x = et::compile_and_run(xexpr, eval_snippets);
+                auto x = et::compile(xexpr, eval_snippets);
 
                 et::primitive_argument_type result = x(ts...);
                 switch (result.index())
@@ -456,6 +456,12 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 return v.size();
             })
+        .def("__getitem__",
+            [](const std::vector<phylanx::ast::operation>& v, std::size_t i)
+            {
+                if (i >= v.size()) throw pybind11::index_error();
+                return v[i];
+            })
         .def("__iter__",
             [](std::vector<phylanx::ast::operation>& v)
             {
@@ -478,6 +484,12 @@ PYBIND11_MODULE(_phylanx, m)
             [](const std::vector<phylanx::ast::expression>& v)
             {
                 return v.size();
+            })
+        .def("__getitem__",
+            [](const std::vector<phylanx::ast::expression>& v, std::size_t i)
+            {
+                if (i >= v.size()) throw pybind11::index_error();
+                return v[i];
             })
         .def("__iter__",
             [](std::vector<phylanx::ast::expression>& v)

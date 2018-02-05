@@ -24,8 +24,7 @@ int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto somelist =
-        phylanx::execution_tree::compile_and_run(read_code, snippets);
+    auto somelist = phylanx::execution_tree::compile(read_code, snippets);
 
     auto result = somelist();
 
