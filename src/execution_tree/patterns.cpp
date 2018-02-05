@@ -7,6 +7,9 @@
 #include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/execution_tree/compile.hpp>
 
+#include <string>
+#include <vector>
+
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -64,7 +67,20 @@ namespace phylanx { namespace execution_tree
             primitives::store_operation::match_data,
             // unary operations
             primitives::unary_minus_operation::match_data,
-            primitives::unary_not_operation::match_data
+            primitives::unary_not_operation::match_data,
+            //
+            // compiler-specific (internal) primitives
+            //
+            hpx::util::make_tuple("access-argument",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("access-variable",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("define-variable",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("call-function",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("define-function",
+                std::vector<std::string>{}, nullptr)
         };
 
         return patterns;

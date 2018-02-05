@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     test_expressiontree_topology("test2",
         "block(define(x, 42), define(y, x))",
             "((/phylanx/define-variable#0#x/0#13,"
-                "(/phylanx/variable#0#x/0#31) "
+                "(/phylanx/access-variable#0#x/0#31) "
                     "/phylanx/define-variable#1#y/0#28) "
                 "/phylanx/block#0/0#0) test2;",
             "graph test2 {\n"
@@ -52,8 +52,8 @@ int main(int argc, char* argv[])
             "    \"/phylanx/block#0/0#0\" -- "
                     "\"/phylanx/define-variable#1#y/0#28\";\n"
             "    \"/phylanx/define-variable#1#y/0#28\" -- "
-                    "\"/phylanx/variable#0#x/0#31\";\n"
-            "    \"/phylanx/variable#0#x/0#31\";\n"
+                    "\"/phylanx/access-variable#0#x/0#31\";\n"
+            "    \"/phylanx/access-variable#0#x/0#31\";\n"
             "}\n");
 
     return hpx::util::report_errors();

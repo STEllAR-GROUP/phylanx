@@ -170,11 +170,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()() const
         {
-            return function{ast::nil{}, "always_nil"};
+            return function{ast::nil{}, "always-nil"};
         }
         function operator()(std::string && name) const
         {
-            return function{ast::nil{}, "always_nil# " + name};
+            return function{ast::nil{}, "always-nil# " + name};
         }
     };
 
@@ -211,8 +211,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(std::size_t n, std::string const& name) const
         {
-            std::string full_name =
-                "argument#" + std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "access-argument#" +
+                std::to_string(sequence_number_) + "#" + name;
 
             return function{
                     primitive(
@@ -244,8 +244,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compose(std::list<function> && elements,
             std::string const& name) const
         {
-            std::string full_name =
-                "variable#" + std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "access-variable#" +
+                std::to_string(sequence_number_) + "#" + name;
+
             return function{
                     primitive(
                         hpx::new_<primitives::wrapped_variable>(
@@ -283,8 +284,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.push_back(arg.arg_);
             }
 
-            std::string full_name =
-                "function#" + std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "function#" +
+                std::to_string(sequence_number_) + "#" + name;
+
             return function{
                     primitive(
                         hpx::new_<primitives::wrapped_function>(
