@@ -10,6 +10,7 @@
 #include <hpx/include/agas.hpp>
 #include <hpx/runtime_fwd.hpp>
 
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <string>
@@ -61,17 +62,17 @@ char const* const lra_code = R"(block(
 std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
     std::vector<std::string> const& primitive_instances,
     hpx::naming::id_type locality_id,
-    std::vector<std::string> counter_name_last_parts)
+    std::vector<std::string>
+        counter_name_last_parts)
 {
-    namespace pc = hpx::performance_counters;
-
     // Return value
     std::map<std::string, std::vector<std::int64_t>> result;
 
     // Reuse get_counter_values_array calls
     //   key: primitive type
-    //   value: vector of counter_values_array instance
-    std::map<std::string, std::vector<pc::counter_values_array>> pc_values;
+    //   value: vector of performance counter values
+    std::map<std::string, std::vector<std::vector<std::int64_t>>>
+        counter_values_pile;
 
     // Iterate through all provided primitive instances
     for (auto const& name : primitive_instances)
@@ -83,8 +84,8 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         // TODO: Ensure counter_name_last_part has at least one entry
 
         // Performance counter values
-        std::vector<pc::counter_values_array> &counter_values =
-            pc_values[tags.primitive];
+        std::vector<std::vector<std::int64_t>>& counter_values =
+            counter_values_pile[tags.primitive];
         if (counter_values.empty())
         {
             // Iterate through the last parts of performance counter names
@@ -96,16 +97,18 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
                 std::string counter_name("/phylanx/primitives/" +
                     tags.primitive + "/" + counter_name_last_part);
                 // The actual performance counter
-                pc::performance_counter counter(counter_name, locality_id);
+                hpx::performance_counters::performance_counter counter(
+                    counter_name, locality_id);
                 counter_values.push_back(
-                    counter.get_counter_values_array(hpx::launch::sync, false));
+                    counter.get_counter_values_array(hpx::launch::sync, false)
+                        .values_);
             }
         }
 
         // HACK: block 0 does not appear in AGAS
         if (tags.primitive == "block" &&
             (tags.sequence_number == 0 ||
-                tags.sequence_number == counter_values[0].values_.size()))
+                tags.sequence_number == counter_values[0].size()))
         {
             continue;
         }
@@ -113,7 +116,7 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         std::vector<std::int64_t> data(counter_name_last_parts.size());
         for (int i = 0; i < counter_values.size(); ++i)
         {
-            data[i] = counter_values[i].values_[tags.sequence_number];
+            data[i] = counter_values[i][tags.sequence_number];
         }
 
         result[name] = data;
