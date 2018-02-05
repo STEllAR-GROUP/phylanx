@@ -23,16 +23,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         static match_pattern_type const match_data;
+        static match_pattern_type const match_data_element_wise;
 
         equal() = default;
 
-        equal(std::vector<primitive_argument_type>&& operands);
+        equal(std::vector<primitive_argument_type>&& operands,
+            bool element_wise = false);
 
         hpx::future<primitive_result_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    private:
+        bool element_wise_;
     };
 }}}
 
 #endif
+
 
 
