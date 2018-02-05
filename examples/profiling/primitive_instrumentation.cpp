@@ -91,8 +91,6 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
             // Iterate through the last parts of performance counter names
             for (auto const& counter_name_last_part : counter_name_last_parts)
             {
-                // NOTE: Reuse the get_counter_values_array call?
-                //
                 // Construct the name of the counter
                 std::string counter_name("/phylanx/primitives/" +
                     tags.primitive + "/" + counter_name_last_part);
@@ -103,14 +101,6 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
                     counter.get_counter_values_array(hpx::launch::sync, false)
                         .values_);
             }
-        }
-
-        // HACK: block 0 does not appear in AGAS
-        if (tags.primitive == "block" &&
-            (tags.sequence_number == 0 ||
-                tags.sequence_number == counter_values[0].size()))
-        {
-            continue;
         }
 
         std::vector<std::int64_t> data(counter_name_last_parts.size());
@@ -131,7 +121,7 @@ int hpx_main()
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto lra = phylanx::execution_tree::compile_and_run(
+    auto lra = phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(lra_code), snippets);
 
     // print instrumentation information, if enabled
