@@ -25,7 +25,7 @@ void test_determinant_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inverse.eval();
 
     HPX_TEST_EQ(
@@ -43,7 +43,7 @@ void test_determinant_0d_lit()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inverse.eval();
 
     HPX_TEST_EQ(
@@ -66,7 +66,7 @@ void test_determinant_2d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         determinant.eval();
 
     double expected = blaze::det(m);

@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
-            primitive_result_type hstack0d(args_type&& args) const
+            primitive_argument_type hstack0d(args_type&& args) const
             {
                 auto vec_size = args.size();
                 blaze::DynamicVector<double> temp(vec_size);
@@ -72,10 +72,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     temp[i] = args[i].scalar();
                 }
 
-                return ir::node_data<double>{storage1d_type{std::move(temp)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage1d_type{std::move(temp)}}};
             }
 
-            primitive_result_type hstack1d(args_type&& args) const
+            primitive_argument_type hstack1d(args_type&& args) const
             {
                 auto args_size = args.size();
                 auto total_elements = 0;
@@ -94,10 +95,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     iter += args[i].size();
                 }
 
-                return ir::node_data<double>{storage1d_type{std::move(temp)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage1d_type{std::move(temp)}}};
             }
 
-            primitive_result_type hstack2d(args_type&& args) const
+            primitive_argument_type hstack2d(args_type&& args) const
             {
                 auto args_size = args.size();
                 auto total_cols = args[0].dimension(1);
@@ -132,11 +134,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     step = step + num_cols;
                 }
 
-                return ir::node_data<double>{storage2d_type{std::move(temp)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(temp)}}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -168,7 +171,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_result_type
+                    [this_](args_type&& args) -> primitive_argument_type
                     {
                         std::size_t matrix_dims = args[0].num_dimensions();
                         switch (matrix_dims)
@@ -195,7 +198,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> hstack_operation::eval(
+    hpx::future<primitive_argument_type> hstack_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

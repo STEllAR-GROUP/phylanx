@@ -299,9 +299,9 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<1>(val);
                 if (v.is_ref())
                 {
-                    return v.copy();
+                    return primitive_argument_type{v.copy()};
                 }
-                return v;
+                return primitive_argument_type{v};
             }
             break;
 
@@ -310,9 +310,9 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<4>(val);
                 if (v.is_ref())
                 {
-                    return v.copy();
+                    return primitive_argument_type{v.copy()};
                 }
-                return v;
+                return primitive_argument_type{v};
             }
             break;
 
@@ -342,9 +342,9 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<1>(val);
                 if (v.is_ref())
                 {
-                    return v;
+                    return primitive_argument_type{v};
                 }
-                return v.ref();
+                return primitive_argument_type{v.ref()};
             }
             break;
 
@@ -353,9 +353,9 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<4>(val);
                 if (v.is_ref())
                 {
-                    return v;
+                    return primitive_argument_type{v};
                 }
-                return v.ref();
+                return primitive_argument_type{v.ref()};
             }
             break;
 
@@ -408,9 +408,9 @@ namespace phylanx { namespace execution_tree
                 auto && v = util::get<1>(std::move(val));
                 if (v.is_ref())
                 {
-                    return v.copy();
+                    return primitive_argument_type{v.copy()};
                 }
-                return std::move(v);
+                return primitive_argument_type{std::move(v)};
             }
             break;
 
@@ -419,9 +419,9 @@ namespace phylanx { namespace execution_tree
                 auto && v = util::get<4>(std::move(val));
                 if (v.is_ref())
                 {
-                    return v.copy();
+                    return primitive_argument_type{v.copy()};
                 }
-                return std::move(v);
+                return primitive_argument_type{std::move(v)};
             }
             break;
 
@@ -489,7 +489,7 @@ namespace phylanx { namespace execution_tree
         {
         case 0: HPX_FALLTHROUGH;    // nil
         case 1:                     // phylanx::ir::node_data<bool>
-            return util::get<1>(val).ref();
+            return primitive_argument_type{util::get<1>(val).ref()};
 
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3:                     // std::string
@@ -500,9 +500,9 @@ namespace phylanx { namespace execution_tree
                 auto const& v = util::get<4>(val);
                 if (v.is_ref())
                 {
-                    return v;
+                    return primitive_argument_type{v};
                 }
-                return v.ref();
+                return primitive_argument_type{v.ref()};
             }
             break;
 
@@ -881,22 +881,22 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
-            return {util::get<0>(val)};
+            return {primitive_argument_type{util::get<0>(val)}};
 
         case 1:    // phylanx::ir::node_data<bool>
-            return {util::get<1>(val)};
+            return {primitive_argument_type{util::get<1>(val)}};
 
         case 2:     // std::uint64_t
-            return {util::get<2>(val)};
+            return {primitive_argument_type{util::get<2>(val)}};
 
         case 3:     // string
-            return {util::get<3>(val)};
+            return {primitive_argument_type{util::get<3>(val)}};
 
         case 4:     // phylanx::ir::node_data<double>
-            return {util::get<4>(val)};
+            return {primitive_argument_type{util::get<4>(val)}};
 
         case 6:     // std::vector<ast::expression>
-            return {util::get<6>(val)};
+            return {primitive_argument_type{util::get<6>(val)}};
 
         case 7:     // std::vector<primitive_argument_type>
 //             {
@@ -928,27 +928,27 @@ namespace phylanx { namespace execution_tree
         {
         case 0:     // nil
             return std::vector<primitive_argument_type>{
-                util::get<0>(std::move(val))};
+                primitive_argument_type{util::get<0>(std::move(val))}};
 
         case 1:    // phylanx::ir::node_data<bool>
             return std::vector<primitive_argument_type>{
-                util::get<1>(std::move(val))};
+                primitive_argument_type{util::get<1>(std::move(val))}};
 
         case 2:     // std::uint64_t
             return std::vector<primitive_argument_type>{
-                util::get<2>(std::move(val))};
+                primitive_argument_type{util::get<2>(std::move(val))}};
 
         case 3:     // string
             return std::vector<primitive_argument_type>{
-                util::get<3>(std::move(val))};
+                primitive_argument_type{util::get<3>(std::move(val))}};
 
         case 4:     // phylanx::ir::node_data<double>
             return std::vector<primitive_argument_type>{
-                util::get<4>(std::move(val))};
+                primitive_argument_type{util::get<4>(std::move(val))}};
 
         case 6:     // std::vector<ast::expression>
             return std::vector<primitive_argument_type>{
-                util::get<6>(std::move(val))};
+                primitive_argument_type{util::get<6>(std::move(val))}};
 
         case 7:     // std::vector<primitive_argument_type>
             {
@@ -957,7 +957,8 @@ namespace phylanx { namespace execution_tree
                 result.reserve(v.size());
                 for (auto && elem : v)
                 {
-                    result.push_back(extract_list_value(std::move(elem)));
+                    result.push_back(primitive_argument_type{
+                        extract_list_value(std::move(elem))});
                 }
                 return result;
             }
@@ -1452,16 +1453,16 @@ namespace phylanx { namespace execution_tree
             return ast::nil{};
 
         case 1:    // bool
-            return util::get<1>(std::move(val));
+            return primitive_argument_type{util::get<1>(std::move(val))};
 
         case 2:     // std::uint64_t
-            return util::get<2>(std::move(val));
+            return primitive_argument_type{util::get<2>(std::move(val))};
 
         case 3:     // std::string
-            return util::get<3>(std::move(val));
+            return primitive_argument_type{util::get<3>(std::move(val))};
 
         case 4:     // phylanx::ir::node_data<double>
-            return util::get<4>(std::move(val));
+            return primitive_argument_type{util::get<4>(std::move(val))};
 
         // phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
         case 5:
@@ -1484,6 +1485,13 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::to_primitive_value_type",
             "unsupported primitive_argument_type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::ostream& operator<<(std::ostream& os, primitive const& val)
+    {
+        os << value_operand_sync(primitive_argument_type{val}, {});
+        return os;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1512,7 +1520,7 @@ namespace phylanx { namespace execution_tree
             return os;
 
         case 5:
-            os << value_operand_sync(util::get<5>(val), {});
+            os << value_operand_sync(val, {});
             return os;
 
         case 6:     // std::vector<ast::expression>

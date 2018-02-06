@@ -25,7 +25,7 @@ void test_inversion_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inversion.eval();
 
     HPX_TEST_EQ(
@@ -43,7 +43,7 @@ void test_inversion_0d_lit()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inversion.eval();
 
     HPX_TEST_EQ(
@@ -66,7 +66,7 @@ void test_inversion_2d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inversion.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::inv(m);

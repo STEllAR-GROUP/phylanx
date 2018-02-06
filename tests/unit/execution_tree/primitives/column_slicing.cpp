@@ -34,7 +34,7 @@ void test_column_slicing_operation_0d()
               std::move(first), std::move(second), std::move(third)
           });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
       slice.eval();
 
     HPX_TEST_EQ(42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -86,7 +86,7 @@ void test_column_slicing_operation_1d()
     auto sm = blaze::subvector(v1, 5, 10);
     auto expected = sm;
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         slice.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -146,7 +146,7 @@ void test_column_slicing_operation_2d()
     auto sm = blaze::submatrix(m1, 0, 5, 90, 42);
     auto expected = sm;
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
           slice.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -181,7 +181,7 @@ void test_column_slicing_operation_1d_negative_index()
     auto sm = blaze::subvector(v1, 1002, 3);
     auto expected = sm;
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         slice.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -216,7 +216,7 @@ void test_column_slicing_operation_1d_single_slice_negative_index()
     auto sm = blaze::subvector(v1, 1002, 1);
     auto expected = sm[0];
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         slice.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -251,7 +251,7 @@ void test_column_slicing_operation_2d_negative_index()
     auto sm = blaze::submatrix(m1, 0, 96, 90, 3);
     auto expected = sm;
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         slice.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -286,7 +286,7 @@ void test_column_slicing_operation_2d_single_slice_negative_index()
     auto sm = blaze::submatrix(m1, 0, 96, 90, 1);
     auto expected = blaze::column(sm, 0);
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         slice.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),

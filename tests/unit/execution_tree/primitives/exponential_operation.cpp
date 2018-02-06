@@ -25,7 +25,7 @@ void test_exponential_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         exponential.eval();
     HPX_TEST_EQ(std::exp(5.0),
         phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -42,7 +42,7 @@ void test_exponential_operation_0d_lit()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         exponential.eval();
     HPX_TEST_EQ(std::exp(5.0),
         phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -64,7 +64,7 @@ void test_exponential_operation_2d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         exponential.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::exp(m);

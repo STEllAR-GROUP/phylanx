@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             file_write() = default;
 
         protected:
-            void write_to_file(primitive_result_type const& val)
+            void write_to_file(primitive_argument_type const& val)
             {
                 std::ofstream outfile(filename_.c_str(),
                     std::ios::binary | std::ios::out | std::ios::trunc);
@@ -75,7 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -101,8 +101,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands[1], args)
                     .then(hpx::util::unwrapping(
-                        [this_](primitive_result_type && val)
-                        ->  primitive_result_type
+                        [this_](primitive_argument_type && val)
+                        ->  primitive_argument_type
                         {
                             if (!valid(val))
                             {
@@ -114,7 +114,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             }
 
                             this_->write_to_file(val);
-                            return primitive_result_type(std::move(val));
+                            return primitive_argument_type(std::move(val));
                         }));
             }
 
@@ -126,7 +126,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content
-    hpx::future<primitive_result_type> file_write::eval(
+    hpx::future<primitive_argument_type> file_write::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

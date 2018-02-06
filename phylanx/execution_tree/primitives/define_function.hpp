@@ -34,7 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
-        primitive_result_type eval_direct(
+        primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
 
         // return the topology for this function definition

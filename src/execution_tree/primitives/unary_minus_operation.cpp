@@ -58,26 +58,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type neg0d(operands_type&& ops) const
+            primitive_argument_type neg0d(operands_type&& ops) const
             {
                 ops[0].scalar() = -ops[0].scalar();
-                return primitive_result_type(std::move(ops[0]));
+                return primitive_argument_type(std::move(ops[0]));
             }
 
-            primitive_result_type neg1d(operands_type&& ops) const
+            primitive_argument_type neg1d(operands_type&& ops) const
             {
                 ops[0] = -ops[0].vector();
-                return primitive_result_type(std::move(ops[0]));
+                return primitive_argument_type(std::move(ops[0]));
             }
 
-            primitive_result_type neg2d(operands_type&& ops) const
+            primitive_argument_type neg2d(operands_type&& ops) const
             {
                 ops[0] = -ops[0].matrix();
-                return primitive_result_type(std::move(ops[0]));
+                return primitive_argument_type(std::move(ops[0]));
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -99,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops) -> primitive_result_type
+                    [this_](operands_type && ops) -> primitive_argument_type
                     {
                         std::size_t lhs_dims = ops[0].num_dimensions();
                         switch (lhs_dims)
@@ -126,7 +126,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement unary '-' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> unary_minus_operation::eval(
+    hpx::future<primitive_argument_type> unary_minus_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

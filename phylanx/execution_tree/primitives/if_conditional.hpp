@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if_conditional(std::vector<primitive_argument_type>&& operand);
 
-        hpx::future<primitive_result_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

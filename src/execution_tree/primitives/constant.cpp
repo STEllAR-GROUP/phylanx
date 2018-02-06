@@ -76,27 +76,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type constant0d(operand_type && op) const
+            primitive_argument_type constant0d(operand_type && op) const
             {
-                return std::move(op);       // no-op
+                return primitive_argument_type{std::move(op)};       // no-op
             }
 
-            primitive_result_type constant1d(
+            primitive_argument_type constant1d(
                 operand_type&& op, std::size_t dim) const
             {
                 using vector_type = blaze::DynamicVector<double>;
-                return operand_type{vector_type(dim, op[0])};
+                return primitive_argument_type{
+                    operand_type{vector_type(dim, op[0])}};
             }
 
-            primitive_result_type constant2d(operand_type&& op,
+            primitive_argument_type constant2d(operand_type&& op,
                 operand_type::dimensions_type const& dim) const
             {
                 using matrix_type = blaze::DynamicMatrix<double>;
-                return operand_type{matrix_type{dim[0], dim[1], op[0]}};
+                return primitive_argument_type{
+                    operand_type{matrix_type{dim[0], dim[1], op[0]}}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -123,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return hpx::dataflow(hpx::util::unwrapping(
                         [this_](operand_type&& op0,
                                 std::vector<primitive_argument_type>&& op1)
-                        ->  primitive_result_type
+                        ->  primitive_argument_type
                         {
                             if (op0.num_dimensions() != 0)
                             {
@@ -178,7 +180,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> constant::eval(
+    hpx::future<primitive_argument_type> constant::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

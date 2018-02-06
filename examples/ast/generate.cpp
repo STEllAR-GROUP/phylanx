@@ -39,7 +39,7 @@ void generate(std::istream& in, bool print_source_code)
         std::back_inserter(source_code));
 
     try {
-        phylanx::ast::expression ast = phylanx::ast::generate_ast(source_code);
+        auto ast = phylanx::ast::generate_ast(source_code);
 
         std::stringstream strm;
         phylanx::ast::traverse(ast, traverse_ast{strm});

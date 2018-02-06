@@ -37,15 +37,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
-        primitive_result_type eval_direct(
+        primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
-        void store(primitive_result_type && val) override;
+        void store(primitive_argument_type && val) override;
 
         // return the topology for this variable definition
         topology expression_topology() const override;
-
-    protected:
-        std::string extract_function_name() const;
 
     private:
         primitive_argument_type body_;

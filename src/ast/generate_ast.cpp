@@ -177,43 +177,7 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ast::expression generate_ast(std::string const& input)
-    {
-        using iterator = std::string::const_iterator;
-
-        iterator first = input.begin();
-        iterator last = input.end();
-
-        std::vector<std::string::const_iterator> iters;
-        std::stringstream strm;
-        ast::parser::error_handler<iterator> error_handler(
-            first, last, strm, iters);
-
-        ast::parser::expression<iterator> expr(error_handler);
-        ast::parser::skipper<iterator> skipper;
-
-        ast::expression ast;
-
-        if (!boost::spirit::qi::phrase_parse(first, last, expr, skipper, ast))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ast::generate_ast", strm.str());
-        }
-
-        if (first != last)
-        {
-            error_handler("Error! ", "Incomplete parse:", first);
-
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ast::generate_ast", strm.str());
-        }
-
-        // replace compile-tags with offsets against begin of input
-        return detail::replace_compile_ids(ast, iters, input.begin());
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    std::vector<ast::expression> generate_asts(std::string const& input)
+    std::vector<ast::expression> generate_ast(std::string const& input)
     {
         using iterator = std::string::const_iterator;
 
@@ -230,10 +194,10 @@ namespace phylanx { namespace ast
 
         std::vector<ast::expression> asts;
 
-        if (!boost::spirit::qi::phrase_parse(first, last, +expr, skipper, asts))
+        if (!boost::spirit::qi::phrase_parse(first, last, expr % ',', skipper, asts))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ast::generate_asts", strm.str());
+                "phylanx::ast::generate_ast", strm.str());
         }
 
         if (first != last)
@@ -241,7 +205,7 @@ namespace phylanx { namespace ast
             error_handler("Error! ", "Incomplete parse:", first);
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ast::generate_asts", strm.str());
+                "phylanx::ast::generate_ast", strm.str());
         }
 
         // replace compile-tags with offsets against begin of input
