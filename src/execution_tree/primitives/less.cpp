@@ -4,7 +4,6 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/less.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -56,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<primitive_argument_type>;
 
-            primitive_result_type less0d1d(
+            primitive_argument_type less0d1d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -64,10 +63,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 rhs.vector() = blaze::map(
                     rhs.vector(), [&](double x) { return (x < lhs.scalar()); });
 
-                return primitive_result_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(ir::node_data<bool>{rhs});
             }
 
-            primitive_result_type less0d2d(
+            primitive_argument_type less0d2d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -75,16 +74,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 rhs.matrix() = blaze::map(
                     rhs.matrix(), [&](double x) { return (x < lhs.scalar()); });
 
-                return primitive_result_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(ir::node_data<bool>{rhs});
             }
 
-            primitive_result_type less0d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type less0d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
                 {
                 case 0:
-                    return primitive_result_type(
+                    return primitive_argument_type(
                         ir::node_data<bool>{lhs.scalar() < rhs.scalar()});
 
                 case 1:
@@ -100,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type less1d0d(
+            primitive_argument_type less1d0d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -108,10 +107,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.vector() = blaze::map(
                     lhs.vector(), [&](double x) { return (x < rhs.scalar()); });
 
-                return primitive_result_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(ir::node_data<bool>{lhs});
             }
 
-            primitive_result_type less1d1d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type less1d1d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -128,10 +127,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
                     [&](double x, double y) { return (x < y); });
 
-                return primitive_result_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(ir::node_data<bool>{lhs});
             }
 
-            primitive_result_type less1d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type less1d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
@@ -152,7 +151,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type less1d2d(
+            primitive_argument_type less1d2d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
@@ -173,10 +172,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::trans(lhs.vector()),
                             [](double x, double y) { return x < y; });
 
-                return primitive_result_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(ir::node_data<bool>{rhs});
             }
 
-            primitive_result_type less2d0d(
+            primitive_argument_type less2d0d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
@@ -187,10 +186,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.matrix() = blaze::map(lhs.matrix(),
                     [&](double x) { return (x < rhs.scalar()); });
 
-                return primitive_result_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(ir::node_data<bool>{lhs});
             }
 
-            primitive_result_type less2d1d(
+            primitive_argument_type less2d1d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_size = rhs.dimension(0);
@@ -211,10 +210,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::trans(rhs.vector()),
                             [](double x, double y) { return x < y; });
 
-                return primitive_result_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(ir::node_data<bool>{lhs});
             }
 
-            primitive_result_type less2d2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type less2d2d(operand_type&& lhs, operand_type&& rhs) const
             {
                 auto lhs_size = lhs.dimensions();
                 auto rhs_size = rhs.dimensions();
@@ -231,10 +230,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
                     [&](double x, double y) { return (x < y); });
 
-                return primitive_result_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(ir::node_data<bool>{lhs});
             }
 
-            primitive_result_type less2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type less2d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
@@ -256,7 +255,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            primitive_result_type less_all(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type less_all(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_dims = lhs.num_dimensions();
                 switch (lhs_dims)
@@ -282,7 +281,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             struct visit_less
             {
                 template <typename T1, typename T2>
-                primitive_result_type operator()(T1, T2) const
+                primitive_argument_type operator()(T1, T2) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::eval",
@@ -290,8 +289,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                primitive_result_type operator()(
-                    ir::node_data<primitive_result_type>&&, ir::node_data<primitive_result_type>&&) const
+                primitive_argument_type operator()(
+                    ir::node_data<primitive_argument_type>&&, ir::node_data<primitive_argument_type>&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::eval",
@@ -299,7 +298,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "and can't be compared");
                 }
 
-                primitive_result_type operator()(std::vector<ast::expression>&&,
+                primitive_argument_type operator()(std::vector<ast::expression>&&,
                     std::vector<ast::expression>&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -308,7 +307,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                primitive_result_type operator()(ast::expression&&, ast::expression&&) const
+                primitive_argument_type operator()(ast::expression&&, ast::expression&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::eval",
@@ -316,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                primitive_result_type operator()(primitive&&, primitive&&) const
+                primitive_argument_type operator()(primitive&&, primitive&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::eval",
@@ -325,13 +324,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 template <typename T>
-                primitive_result_type operator()(T && lhs, T && rhs) const
+                primitive_argument_type operator()(T && lhs, T && rhs) const
                 {
-                    return primitive_result_type(
+                    return primitive_argument_type(
                         ir::node_data<bool>{lhs < rhs});
                 }
 
-                primitive_result_type operator()(
+                primitive_argument_type operator()(
                     util::recursive_wrapper<
                         std::vector<primitive_argument_type>>&&,
                     util::recursive_wrapper<
@@ -343,7 +342,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                primitive_result_type operator()(
+                primitive_argument_type operator()(
                     ir::node_data<double>&& lhs, std::int64_t&& rhs) const
                 {
                     if (lhs.num_dimensions() != 0)
@@ -351,11 +350,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return less_.less_all(
                             std::move(lhs), operand_type(std::move(rhs)));
                     }
-                    return primitive_result_type(
+                    return primitive_argument_type(
                         ir::node_data<bool>{lhs[0] < rhs});
                 }
 
-                primitive_result_type operator()(
+                primitive_argument_type operator()(
                     std::int64_t&& lhs, ir::node_data<double>&& rhs) const
                 {
                     if (rhs.num_dimensions() != 0)
@@ -363,11 +362,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return less_.less_all(
                             operand_type(std::move(lhs)), std::move(rhs));
                     }
-                    return primitive_result_type(
+                    return primitive_argument_type(
                         ir::node_data<bool>{lhs < rhs[0]});
                 }
 
-                primitive_result_type operator()(
+                primitive_argument_type operator()(
                     ir::node_data<bool>&& lhs, ir::node_data<bool>&& rhs) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -375,7 +374,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "left hand side and right hand side can't be compared");
                 }
 
-                primitive_result_type operator()(
+                primitive_argument_type operator()(
                     operand_type&& lhs, operand_type&& rhs) const
                 {
                     return less_.less_all(std::move(lhs), std::move(rhs));

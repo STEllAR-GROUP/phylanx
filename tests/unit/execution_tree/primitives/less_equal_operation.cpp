@@ -44,7 +44,8 @@ void test_less_equal_operation_0d_true()
         std::vector<phylanx::execution_tree::primitive_argument_type>{
             std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(1.0),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -68,7 +69,8 @@ void test_less_equal_operation_0d_false()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(0.0),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -90,7 +92,8 @@ void test_less_equal_operation_0d_lit_true()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(1.0),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -112,7 +115,8 @@ void test_less_equal_operation_0d_lit_false()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(0.0),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -139,7 +143,8 @@ void test_less_equal_operation_0d1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return (x <= 1.0); });
@@ -167,7 +172,8 @@ void test_less_equal_operation_0d1d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return (x <= 1.0); });
@@ -197,7 +203,8 @@ void test_less_equal_operation_0d2d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return (x <= 1.0); });
@@ -225,7 +232,8 @@ void test_less_equal_operation_0d2d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return (x <= 1.0); });
@@ -256,7 +264,8 @@ void test_less_equal_operation_1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v1, v2, [](double x, double y) { return x <= y; });
@@ -285,7 +294,8 @@ void test_less_equal_operation_1d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v1, v2, [](double x, double y) { return x <= y; });
@@ -315,7 +325,8 @@ void test_less_equal_operation_1d0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return (x <= 1.0); });
@@ -343,7 +354,8 @@ void test_less_equal_operation_1d0d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return (x <= 1.0); });
@@ -376,7 +388,8 @@ void test_less_equal_operation_1d2d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected{m.rows(), m.columns()};
 
@@ -411,7 +424,8 @@ void test_less_equal_operation_1d2d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected{m.rows(), m.columns()};
 
@@ -446,7 +460,8 @@ void test_less_equal_operation_2d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m1, m2, [](double x, double y) { return x <= y; });
@@ -475,7 +490,8 @@ void test_less_equal_operation_2d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m1, m2, [](double x, double y) { return x <= y; });
@@ -505,7 +521,8 @@ void test_less_equal_operation_2d0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return (x <= 1.0); });
@@ -533,7 +550,8 @@ void test_less_equal_operation_2d0d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return (x <= 1.0); });
@@ -566,7 +584,8 @@ void test_less_equal_operation_2d1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected{m.rows(), m.columns()};
     for (size_t i = 0UL; i < m.rows(); i++)
@@ -600,7 +619,8 @@ void test_less_equal_operation_2d1d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    phylanx::execution_tree::primitive_result_type f = less_equal.eval().get();
+    phylanx::execution_tree::primitive_argument_type f =
+        less_equal.eval().get();
 
     blaze::DynamicMatrix<double> expected{m.rows(), m.columns()};
     for (size_t i = 0UL; i < m.rows(); i++)
