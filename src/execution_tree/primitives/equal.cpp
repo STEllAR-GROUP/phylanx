@@ -83,7 +83,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch(rhs_dims)
                 {
                 case 0:
-                    return primitive_result_type(ir::node_data<bool>{lhs.scalar() == rhs.scalar()});
+                    return primitive_result_type(
+                        ir::node_data<bool>{lhs.scalar() == rhs.scalar()});
 
                 case 1:
                     return equal0d1d(std::move(lhs), std::move(rhs));
@@ -326,7 +327,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return equal_.equal_all(std::move(lhs), std::move(rhs));
                 }
 
-                primitive_result_type operator()(operand_type&& lhs, operand_type&& rhs) const
+                primitive_result_type operator()(
+                    operand_type&& lhs, operand_type&& rhs) const
                 {
                     return equal_.equal_all(std::move(lhs), std::move(rhs));
                 }

@@ -234,7 +234,7 @@ void test_equal_operation_0d1d_bool_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_0d2d()
+void test_equal_operation_0d2d()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL, 0, 2);
@@ -263,7 +263,7 @@ void test_equal_opeartion_0d2d()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_0d2d_lit()
+void test_equal_operation_0d2d_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL, 0, 2);
@@ -290,7 +290,7 @@ void test_equal_opeartion_0d2d_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_0d2d_bool()
+void test_equal_operation_0d2d_bool()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
@@ -317,7 +317,7 @@ void test_equal_opeartion_0d2d_bool()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_0d2d_bool_lit()
+void test_equal_operation_0d2d_bool_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
@@ -342,7 +342,7 @@ void test_equal_opeartion_0d2d_bool_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d()
+void test_equal_operation_1d()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v1 = gen.generate(100UL, 0, 2);
@@ -372,7 +372,7 @@ void test_equal_opeartion_1d()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d_lit()
+void test_equal_operation_1d_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v1 = gen.generate(1007UL, 0, 2);
@@ -400,7 +400,7 @@ void test_equal_opeartion_1d_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d0d()
+void test_equal_operation_1d0d()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v = gen.generate(1007UL, 0, 2);
@@ -429,7 +429,7 @@ void test_equal_opeartion_1d0d()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d0d_lit()
+void test_equal_operation_1d0d_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v = gen.generate(1007UL, 0, 2);
@@ -456,7 +456,7 @@ void test_equal_opeartion_1d0d_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d0d_bool()
+void test_equal_operation_1d0d_bool()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
@@ -485,7 +485,7 @@ void test_equal_opeartion_1d0d_bool()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d0d_bool_lit()
+void test_equal_operation_1d0d_bool_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
@@ -512,7 +512,7 @@ void test_equal_opeartion_1d0d_bool_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d2d()
+void test_equal_operation_1d2d()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v = gen.generate(104UL, 0, 2);
@@ -548,7 +548,7 @@ void test_equal_opeartion_1d2d()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_1d2d_lit()
+void test_equal_operation_1d2d_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v = gen.generate(104UL, 0, 2);
@@ -582,7 +582,7 @@ void test_equal_opeartion_1d2d_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d()
+void test_equal_operation_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<double> m1 = gen.generate(1007UL, 1007UL, 0, 2);
@@ -612,7 +612,7 @@ void test_equal_opeartion_2d()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d_lit()
+void test_equal_operation_2d_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<double> m1 = gen.generate(1007UL, 1007UL, 0, 2);
@@ -640,7 +640,7 @@ void test_equal_opeartion_2d_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d_bool()
+void test_equal_operation_2d_bool()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<bool> m1 = gen.generate(1007UL, 1007UL, 0, 1);
@@ -670,7 +670,7 @@ void test_equal_opeartion_2d_bool()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d_bool_lit()
+void test_equal_operation_2d_bool_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<bool> m1 = gen.generate(1007UL, 1007UL, 0, 1);
@@ -698,7 +698,7 @@ void test_equal_opeartion_2d_bool_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d0d()
+void test_equal_operation_2d0d()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL, 0, 2);
@@ -727,7 +727,7 @@ void test_equal_opeartion_2d0d()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d0d_lit()
+void test_equal_operation_2d0d_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL, 0, 2);
@@ -754,7 +754,7 @@ void test_equal_opeartion_2d0d_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d0d_bool()
+void test_equal_operation_2d0d_bool()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
@@ -783,7 +783,7 @@ void test_equal_opeartion_2d0d_bool()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d0d_bool_lit()
+void test_equal_operation_2d0d_bool_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
@@ -808,7 +808,7 @@ void test_equal_opeartion_2d0d_bool_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d1d()
+void test_equal_operation_2d1d()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v = gen.generate(104UL, 0, 2);
@@ -843,7 +843,7 @@ void test_equal_opeartion_2d1d()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d1d_lit()
+void test_equal_operation_2d1d_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v = gen.generate(104UL, 0, 2);
@@ -876,7 +876,7 @@ void test_equal_opeartion_2d1d_lit()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d1d_bool()
+void test_equal_operation_2d1d_bool()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<bool> v = gen.generate(104UL, 0, 1);
@@ -909,7 +909,7 @@ void test_equal_opeartion_2d1d_bool()
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
-void test_equal_opeartion_2d1d_bool_lit()
+void test_equal_operation_2d1d_bool_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<bool> v = gen.generate(104UL, 0, 1);
@@ -951,32 +951,32 @@ int main(int argc, char* argv[])
     test_equal_operation_0d1d_lit();
     test_equal_operation_0d1d_bool();
     test_equal_operation_0d1d_bool_lit();
-    test_equal_opeartion_0d2d();
-    test_equal_opeartion_0d2d_lit();
-    test_equal_opeartion_0d2d_bool();
-    test_equal_opeartion_0d2d_bool_lit();
+    test_equal_operation_0d2d();
+    test_equal_operation_0d2d_lit();
+    test_equal_operation_0d2d_bool();
+    test_equal_operation_0d2d_bool_lit();
 
-    test_equal_opeartion_1d();
-    test_equal_opeartion_1d_lit();
-    test_equal_opeartion_1d0d();
-    test_equal_opeartion_1d0d_lit();
-    test_equal_opeartion_1d0d_bool();
-    test_equal_opeartion_1d0d_bool_lit();
-    test_equal_opeartion_1d2d();
-    test_equal_opeartion_1d2d_lit();
+    test_equal_operation_1d();
+    test_equal_operation_1d_lit();
+    test_equal_operation_1d0d();
+    test_equal_operation_1d0d_lit();
+    test_equal_operation_1d0d_bool();
+    test_equal_operation_1d0d_bool_lit();
+    test_equal_operation_1d2d();
+    test_equal_operation_1d2d_lit();
 
-    test_equal_opeartion_2d();
-    test_equal_opeartion_2d_lit();
-    test_equal_opeartion_2d_bool();
-    test_equal_opeartion_2d_bool_lit();
-    test_equal_opeartion_2d0d();
-    test_equal_opeartion_2d0d_lit();
-    test_equal_opeartion_2d0d_bool();
-    test_equal_opeartion_2d0d_bool_lit();
-    test_equal_opeartion_2d1d();
-    test_equal_opeartion_2d1d_lit();
-    test_equal_opeartion_2d1d_bool();
-    test_equal_opeartion_2d1d_bool_lit();
+    test_equal_operation_2d();
+    test_equal_operation_2d_lit();
+    test_equal_operation_2d_bool();
+    test_equal_operation_2d_bool_lit();
+    test_equal_operation_2d0d();
+    test_equal_operation_2d0d_lit();
+    test_equal_operation_2d0d_bool();
+    test_equal_operation_2d0d_bool_lit();
+    test_equal_operation_2d1d();
+    test_equal_operation_2d1d_lit();
+    test_equal_operation_2d1d_bool();
+    test_equal_operation_2d1d_bool_lit();
 
     return hpx::util::report_errors();
 }

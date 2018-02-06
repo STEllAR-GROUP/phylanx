@@ -55,16 +55,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<primitive_result_type>;
 
-            bool greater_equal0d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type greater_equal0d1d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                rhs.vector() = blaze::map(rhs.vector(),
+                    [&](double x) { return (x >= lhs.scalar()); });
+
+                return primitive_result_type(ir::node_data<bool>{rhs});
+            }
+
+            primitive_result_type greater_equal0d2d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                rhs.matrix() = blaze::map(rhs.matrix(),
+                    [&](double x) { return (x >= lhs.scalar()); });
+
+                return primitive_result_type(ir::node_data<bool>{rhs});
+            }
+
+            primitive_result_type greater_equal0d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
                 {
                 case 0:
-                    return lhs.scalar() >= rhs.scalar();
+                    return primitive_result_type(
+                        ir::node_data<bool>{lhs.scalar() >= rhs.scalar()});
 
-                case 1: HPX_FALLTHROUGH;
-                case 2: HPX_FALLTHROUGH;
+                case 1:
+                    return greater_equal0d1d(std::move(lhs), std::move(rhs));
+
+                case 2:
+                    return greater_equal0d2d(std::move(lhs), std::move(rhs));
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater_equal::greater_equal0d",
@@ -72,7 +99,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            bool greater_equal1d1d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type greater_equal1d0d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                lhs.vector() = blaze::map(lhs.vector(),
+                    [&](double x) { return (x >= rhs.scalar()); });
+
+                return primitive_result_type(ir::node_data<bool>{lhs});
+            }
+
+            primitive_result_type greater_equal1d1d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -85,23 +123,51 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
-                //       is not currently available
-                lhs = blaze::map(lhs.vector(), rhs.vector(),
-                    [](double x1, double x2) { return x1 >= x2 ? 1.0 : 0.0; });
+                // is not currently available
+                lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
+                    [&](double x, double y) { return (x >= y); });
 
-                return lhs.vector().nonZeros() != 0;
+                return primitive_result_type(ir::node_data<bool>{lhs});
             }
 
-            bool greater_equal1d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type greater_equal1d2d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t lhs_size = lhs.dimension(0);
+                auto rhs_size = rhs.dimensions();
+
+                if (lhs_size != rhs_size[1])
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::greater_equal1d2d",
+                        "the dimensions of the operands do not match");
+                }
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                for (size_t i = 0UL; i < rhs.matrix().rows(); i++)
+                    blaze::row(rhs.matrix(), i) =
+                        blaze::map(blaze::row(rhs.matrix(), i),
+                            blaze::trans(lhs.vector()),
+                            [](double x, double y) { return x >= y; });
+
+                return primitive_result_type(ir::node_data<bool>{rhs});
+            }
+
+            primitive_result_type greater_equal1d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
                 {
+                case 0:
+                    return greater_equal1d0d(std::move(lhs), std::move(rhs));
+
                 case 1:
                     return greater_equal1d1d(std::move(lhs), std::move(rhs));
 
-                case 0: HPX_FALLTHROUGH;
-                case 2: HPX_FALLTHROUGH;
+                case 2:
+                    return greater_equal1d2d(std::move(lhs), std::move(rhs));
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater_equal::greater_equal1d",
@@ -109,7 +175,45 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            bool greater_equal2d2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type greater_equal2d0d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t lhs_size = lhs.dimension(0);
+                std::size_t rhs_size = rhs.dimension(0);
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                lhs.matrix() = blaze::map(
+                    lhs.matrix(), [&](double x) { return (x >= rhs.scalar()); });
+
+                return primitive_result_type(ir::node_data<bool>{lhs});
+            }
+
+            primitive_result_type greater_equal2d1d(
+                operand_type&& lhs, operand_type&& rhs) const
+            {
+                std::size_t rhs_size = rhs.dimension(0);
+                auto lhs_size = lhs.dimensions();
+
+                if (rhs_size != lhs_size[1])
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "greater_equal::greater_eqaul2d1d",
+                        "the dimensions of the operands do not match");
+                }
+
+                // TODO: SIMD functionality should be added, blaze implementation
+                // is not currently available
+                for (size_t i = 0UL; i < lhs.matrix().rows(); i++)
+                    blaze::row(lhs.matrix(), i) =
+                        blaze::map(blaze::row(lhs.matrix(), i),
+                            blaze::trans(rhs.vector()),
+                            [](double x, double y) { return x >= y; });
+
+                return primitive_result_type(ir::node_data<bool>{lhs});
+            }
+
+            primitive_result_type greater_equal2d2d(operand_type&& lhs, operand_type&& rhs) const
             {
                 auto lhs_size = lhs.dimensions();
                 auto rhs_size = rhs.dimensions();
@@ -123,22 +227,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 //       is not currently available
-                lhs = blaze::map(lhs.matrix(), rhs.matrix(),
-                    [](double x1, double x2) { return x1 >= x2 ? 1 : 0; });
+                lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
+                    [&](double x, double y) { return (x >= y); });
 
-                return lhs.matrix().nonZeros() != 0;
+                return primitive_result_type(ir::node_data<bool>{lhs});
             }
 
-            bool greater_equal2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type greater_equal2d(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
                 {
+                case 0:
+                    return greater_equal2d0d(std::move(lhs), std::move(rhs));
+
+                case 1:
+                    return greater_equal2d1d(std::move(lhs), std::move(rhs));
+
                 case 2:
                     return greater_equal2d2d(std::move(lhs), std::move(rhs));
 
-                case 0: HPX_FALLTHROUGH;
-                case 1: HPX_FALLTHROUGH;
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater_equal::greater_equal2d",
@@ -147,7 +255,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            bool greater_equal_all(operand_type&& lhs, operand_type&& rhs) const
+            primitive_result_type greater_equal_all(operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_dims = lhs.num_dimensions();
                 switch (lhs_dims)
@@ -173,7 +281,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             struct visit_greater_equal
             {
                 template <typename T1, typename T2>
-                bool operator()(T1, T2) const
+                primitive_result_type operator()(T1, T2) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater_equal::eval",
@@ -181,8 +289,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                bool operator()(
-                    ir::node_data<bool>&&, ir::node_data<bool>&&) const
+                primitive_result_type operator()(
+                    ir::node_data<primitive_result_type>&&, ir::node_data<primitive_result_type>&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater_equal::eval",
@@ -190,7 +298,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "and can't be compared");
                 }
 
-                bool operator()(std::vector<ast::expression>&&,
+                primitive_result_type operator()(std::vector<ast::expression>&&,
                     std::vector<ast::expression>&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -199,7 +307,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                bool operator()(ast::expression&&, ast::expression&&) const
+                primitive_result_type operator()(ast::expression&&, ast::expression&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater_equal::eval",
@@ -207,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                bool operator()(primitive&&, primitive&&) const
+                primitive_result_type operator()(primitive&&, primitive&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater_equal::eval",
@@ -216,12 +324,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 template <typename T>
-                bool operator()(T && lhs, T && rhs) const
+                primitive_result_type operator()(T && lhs, T && rhs) const
                 {
                     return lhs >= rhs;
                 }
 
-                bool operator()(
+                primitive_result_type operator()(
                     util::recursive_wrapper<
                         std::vector<primitive_result_type>>&&,
                     util::recursive_wrapper<
@@ -233,36 +341,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "and can't be compared");
                 }
 
-                bool operator()(
+                primitive_result_type operator()(
                     ir::node_data<double>&& lhs, std::int64_t&& rhs) const
                 {
                     if (lhs.num_dimensions() != 0)
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "greater_equal::eval",
-                            "left hand side and right hand side are "
-                                "incompatible and can't be compared");
+                        return greater_equal_.greater_equal_all(
+                            std::move(lhs), operand_type(std::move(rhs)));
                     }
                     return lhs[0] >= rhs;
                 }
 
-                bool operator()(
+                primitive_result_type operator()(
                     std::int64_t&& lhs, ir::node_data<double>&& rhs) const
                 {
                     if (rhs.num_dimensions() != 0)
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "greater_equal::eval",
-                            "left hand side and right hand side are "
-                                "incompatible and can't be compared");
+                        return greater_equal_.greater_equal_all(
+                            operand_type(std::move(lhs)), std::move(rhs));
                     }
                     return lhs >= rhs[0];
                 }
 
-                bool operator()(operand_type&& lhs, operand_type&& rhs) const
+                primitive_result_type operator()(
+                    operand_type&& lhs, operand_type&& rhs) const
                 {
                     return greater_equal_.greater_equal_all(
                         std::move(lhs), std::move(rhs));
+                }
+
+                primitive_result_type operator()(
+                        ir::node_data<bool>&& lhs, ir::node_data<bool>&& rhs) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "greater_equal::eval",
+                                        "left hand side and right hand side can't be compared");
                 }
 
                 greater_equal const& greater_equal_;
