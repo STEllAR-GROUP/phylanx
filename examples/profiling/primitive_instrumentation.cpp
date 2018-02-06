@@ -58,7 +58,6 @@ char const* const lra_code = R"(block(
 //   counter_name_last_parts: A vector containing the last part of the
 //                            performance counter names.
 //                            e.g. std::vector{ "count/eval", "count/direct_eval" }
-// NOTE: primitive_instances are not verified
 std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
     std::vector<std::string> const& primitive_instances,
     std::vector<std::string> const& counter_name_last_parts,
@@ -73,6 +72,8 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
     std::map<std::string, std::vector<std::vector<std::int64_t>>>
         counter_values_pile;
 
+    // NOTE: primitive_instances are not verified
+
     // Iterate through all provided primitive instances
     for (auto const& name : primitive_instances)
     {
@@ -80,7 +81,12 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         auto tags =
             phylanx::execution_tree::compiler::parse_primitive_name(name);
 
-        // TODO: Ensure counter_name_last_part has at least one entry
+        // Ensure counter_name_last_part has at least one entry
+        if (counter_name_last_parts.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "retrieve_counter_data",
+                "counter_name_last_parts cannot be empty");
+        }
 
         // Performance counter values
         std::vector<std::vector<std::int64_t>>& counter_values =
@@ -170,19 +176,12 @@ int hpx_main()
 
     // List of existing primitive instances
     std::vector<std::string> existing_primitive_instances;
-    // Iterate over all primitive types
-    for (auto const& pattern :
-        phylanx::execution_tree::get_all_known_patterns())
-    {
-        // Name of the primitive
-        std::string const& name = hpx::util::get<0>(pattern);
 
-        // Retrieve all instances of this primitive type
-        for (auto const& entry : hpx::agas::find_symbols(
-                 hpx::launch::sync, "/phylanx/" + name + "#*"))
-        {
-            existing_primitive_instances.push_back(entry.first);
-        }
+    // Retrieve all instances of this primitive type
+    for (auto const& entry :
+        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*#*"))
+    {
+        existing_primitive_instances.push_back(entry.first);
     }
 
     // Print performance data
@@ -198,9 +197,6 @@ int hpx_main()
         }
         std::cout << std::endl;
     }
-
-    // Make sure all counters are properly initialized, don't reset current counter values
-    hpx::reinit_active_counters(false);
 
     return hpx::finalize();
 }
