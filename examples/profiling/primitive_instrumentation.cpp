@@ -61,9 +61,8 @@ char const* const lra_code = R"(block(
 // NOTE: primitive_instances are not verified
 std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
     std::vector<std::string> const& primitive_instances,
-    hpx::naming::id_type locality_id,
-    std::vector<std::string>
-        counter_name_last_parts)
+    std::vector<std::string> const& counter_name_last_parts,
+    hpx::naming::id_type const& locality_id = hpx::find_here())
 {
     // Return value
     std::map<std::string, std::vector<std::int64_t>> result;
@@ -88,7 +87,14 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
             counter_values_pile[tags.primitive];
         if (counter_values.empty())
         {
+            // Preallocate memory
+            counter_values.reserve(counter_name_last_parts.size());
             // Iterate through the last parts of performance counter names
+            std::vector<
+                hpx::future<hpx::performance_counters::counter_values_array>>
+                futures;
+            futures.reserve(counter_name_last_parts.size());
+
             for (auto const& counter_name_last_part : counter_name_last_parts)
             {
                 // Construct the name of the counter
@@ -97,9 +103,14 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
                 // The actual performance counter
                 hpx::performance_counters::performance_counter counter(
                     counter_name, locality_id);
-                counter_values.push_back(
-                    counter.get_counter_values_array(hpx::launch::sync, false)
-                        .values_);
+                futures.push_back(
+                    counter.get_counter_values_array(false));
+            }
+
+            hpx::wait_all(futures);
+            for (auto& f : futures)
+            {
+                counter_values.push_back(f.get().values_);
             }
         }
 
@@ -109,7 +120,7 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
             data[i] = counter_values[i][tags.sequence_number];
         }
 
-        result[name] = data;
+        result.emplace(decltype(result)::value_type(name, data));
     }
 
     return result;
@@ -146,9 +157,6 @@ int hpx_main()
     auto alpha = phylanx::ir::node_data<double>{ 1e-5 };
     bool enable_output = true;
 
-    // Time execution
-    hpx::util::high_resolution_timer t;
-
     // Evaluate LRA using the read data
     auto result = lra(x, y, alpha);
 
@@ -179,9 +187,9 @@ int hpx_main()
 
     // Print performance data
     for (auto const& entry :
-        retrieve_counter_data(existing_primitive_instances, hpx::find_here(),
+        retrieve_counter_data(existing_primitive_instances,
             std::vector<std::string>{"count/eval", "time/eval",
-                "count/eval_direct", "time/eval_direct"}))
+                "count/eval_direct", "time/eval_direct"}, hpx::find_here()))
     {
         std::cout << "\"" << entry.first << "\"";
         for (auto const& counter_value : entry.second)
@@ -190,8 +198,6 @@ int hpx_main()
         }
         std::cout << std::endl;
     }
-
-    auto elapsed = t.elapsed();
 
     // Make sure all counters are properly initialized, don't reset current counter values
     hpx::reinit_active_counters(false);
