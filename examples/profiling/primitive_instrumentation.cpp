@@ -91,15 +91,16 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         // Performance counter values
         std::vector<std::vector<std::int64_t>>& counter_values =
             counter_values_pile[tags.primitive];
+        std::vector<
+            hpx::future<hpx::performance_counters::counter_values_array>>
+            futures;
+        futures.reserve(counter_name_last_parts.size());
+
         if (counter_values.empty())
         {
             // Preallocate memory
             counter_values.reserve(counter_name_last_parts.size());
             // Iterate through the last parts of performance counter names
-            std::vector<
-                hpx::future<hpx::performance_counters::counter_values_array>>
-                futures;
-            futures.reserve(counter_name_last_parts.size());
 
             for (auto const& counter_name_last_part : counter_name_last_parts)
             {
@@ -112,12 +113,12 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
                 futures.push_back(
                     counter.get_counter_values_array(false));
             }
+        }
 
-            hpx::wait_all(futures);
-            for (auto& f : futures)
-            {
-                counter_values.push_back(f.get().values_);
-            }
+        hpx::wait_all(futures);
+        for (auto& f : futures)
+        {
+            counter_values.push_back(f.get().values_);
         }
 
         std::vector<std::int64_t> data(counter_name_last_parts.size());
@@ -135,18 +136,13 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
 ///////////////////////////////////////////////////////////////////////////////
 int hpx_main()
 {
-    // compile the given code
+    // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
 
     auto lra = phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(lra_code), snippets);
 
-    // print instrumentation information, if enabled
-    auto entries =
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*");
-
     // LRA arguments
-
     blaze::DynamicMatrix<double> v1{ { 15.04, 16.74 },{ 13.82, 24.49 },
     { 12.54, 16.32 },{ 23.09, 19.83 },{ 9.268, 12.87 },{ 9.676, 13.14 },
     { 12.22, 20.04 },{ 11.06, 17.12 },{ 16.3 , 15.7 },{ 15.46, 23.95 },
@@ -177,7 +173,7 @@ int hpx_main()
     // List of existing primitive instances
     std::vector<std::string> existing_primitive_instances;
 
-    // Retrieve all instances of this primitive type
+    // Retrieve all primitive instances
     for (auto const& entry :
         hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*#*"))
     {
