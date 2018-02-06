@@ -29,6 +29,7 @@ namespace phylanx { namespace execution_tree
             // n-nary functions
             primitives::if_conditional::match_data,
             primitives::for_operation::match_data,
+            primitives::linearmatrix::match_data,
             primitives::linspace::match_data,
             // binary functions
             primitives::cross_operation::match_data,
