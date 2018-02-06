@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT wrapped_function
+    class wrapped_function
       : public base_primitive
       , public hpx::components::component_base<wrapped_function>
     {

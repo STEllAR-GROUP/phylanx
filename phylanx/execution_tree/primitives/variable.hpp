@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT variable
+    class variable
       : public base_primitive
       , public hpx::components::locking_hook<
           hpx::components::component_base<variable>>

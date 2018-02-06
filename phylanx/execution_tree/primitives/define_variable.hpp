@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //
     // This is a helper primitive needed for proper binding of the expression
     // value to a variable.
-    class HPX_COMPONENT_EXPORT define_variable
+    class define_variable
       : public base_primitive
       , public hpx::components::component_base<define_variable>
     {

@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT less
+    class less
       : public base_primitive
       , public hpx::components::component_base<less>
     {

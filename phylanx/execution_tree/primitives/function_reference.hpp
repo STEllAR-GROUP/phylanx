@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT function_reference
+    class function_reference
       : public base_primitive
       , public hpx::components::component_base<function_reference>
     {

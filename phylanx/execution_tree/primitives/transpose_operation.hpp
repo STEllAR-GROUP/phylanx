@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT transpose_operation
+    class transpose_operation
       : public base_primitive
       , public hpx::components::component_base<transpose_operation>
     {

@@ -19,7 +19,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT extract_shape
+    class extract_shape
         : public base_primitive
         , public hpx::components::component_base<extract_shape>
     {

@@ -19,7 +19,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT dot_operation
+    class dot_operation
       : public base_primitive
       , public hpx::components::component_base<dot_operation>
     {
