@@ -11,6 +11,7 @@
 
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
+#include <hpx/util/logging.hpp>
 
 #include <cstdint>
 #include <iosfwd>
@@ -74,6 +75,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_DEBUG)
+    bool primitive::enable_tracing = true;
+#else
+    bool primitive::enable_tracing = false;
+#endif
+
+    namespace detail
+    {
+        primitive_argument_type trace(char const* const func,
+            primitive const& this_, primitive_argument_type&& data)
+        {
+            if (!primitive::enable_tracing)
+            {
+                return std::move(data);
+            }
+
+            primitive const* p = util::get_if<primitive>(&data);
+            if (p != nullptr)
+            {
+                LAPP_(debug) << this_.registered_name() << "::" << func << ": "
+                             << p->registered_name();
+            }
+            else
+            {
+                LAPP_(debug)
+                    << this_.registered_name() << "::" << func << ": " << data;
+            }
+
+            return std::move(data);
+        }
+
+        hpx::future<primitive_argument_type> lazy_trace(char const* const func,
+            primitive const& this_, hpx::future<primitive_argument_type>&& f)
+        {
+            if (!primitive::enable_tracing)
+            {
+                return std::move(f);
+            }
+
+            return f.then(
+                [=](hpx::future<primitive_argument_type>&& f)
+                {
+                    return trace(func, this_, f.get());
+                });
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     primitive::primitive(hpx::future<hpx::id_type>&& fid, std::string const& name)
       : base_type(std::move(fid))
     {
@@ -87,14 +136,16 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> const& params) const
     {
         using action_type = primitives::base_primitive::eval_action;
-        return hpx::async(action_type(), this->base_type::get_id(), params);
+        return detail::lazy_trace("eval", *this,
+            hpx::async(action_type(), this->base_type::get_id(), params));
     }
     hpx::future<primitive_argument_type> primitive::eval(
         std::vector<primitive_argument_type> && params) const
     {
         using action_type = primitives::base_primitive::eval_action;
-        return hpx::async(
-            action_type(), this->base_type::get_id(), std::move(params));
+        return detail::lazy_trace("eval", *this,
+            hpx::async(
+                action_type(), this->base_type::get_id(), std::move(params)));
     }
 
     hpx::future<primitive_argument_type> primitive::eval() const
@@ -107,13 +158,15 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> const& params) const
     {
         using action_type = primitives::base_primitive::eval_direct_action;
-        return action_type()(this->base_type::get_id(), params);
+        return detail::trace("eval_direct", *this,
+            action_type()(this->base_type::get_id(), params));
     }
     primitive_argument_type primitive::eval_direct(
         std::vector<primitive_argument_type> && params) const
     {
         using action_type = primitives::base_primitive::eval_direct_action;
-        return action_type()(this->base_type::get_id(), std::move(params));
+        return detail::trace("eval_direct", *this,
+            action_type()(this->base_type::get_id(), std::move(params)));
     }
 
     primitive_argument_type primitive::eval_direct() const
@@ -1501,6 +1554,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
+            os << "<nil>";
             return os;  // no output
 
         case 1:    // phylanx::ir::node_data<bool>
