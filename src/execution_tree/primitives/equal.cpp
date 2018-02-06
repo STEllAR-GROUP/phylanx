@@ -214,7 +214,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type(ir::node_data<bool>{lhs});
             }
 
-            primitive_argument_type equal2d2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type equal2d2d(
+                operand_type&& lhs, operand_type&& rhs) const
             {
                 auto lhs_size = lhs.dimensions();
                 auto rhs_size = rhs.dimensions();
@@ -256,7 +257,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            primitive_argument_type equal_all(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type equal_all(
+                operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_dims = lhs.num_dimensions();
                 switch (lhs_dims)
