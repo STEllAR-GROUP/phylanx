@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -50,6 +50,7 @@ namespace phylanx { namespace execution_tree
             primitives::transpose_operation::match_data,
             primitives::random::match_data,
             primitives::identity::match_data,
+            primitives::enable_tracing::match_data,
             // variadic operations
             primitives::add_operation::match_data,
             primitives::and_operation::match_data,
