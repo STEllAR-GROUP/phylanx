@@ -84,26 +84,27 @@ int main()
     blaze::DynamicVector<double> v2{1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0,
         1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1};
 
-    // compile the given code
+    // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
     auto lra = phylanx::execution_tree::compile(lra_code, snippets);
 
-    // evaluate generated execution tree
+    // Evaluate generated execution tree
     auto x = phylanx::ir::node_data<double>{v1};
     auto y = phylanx::ir::node_data<double>{v2};
     auto alpha = phylanx::ir::node_data<double>{1e-5};
 
     auto result = lra(x, y, alpha);
 
+    // Test the performance counters of all primitives
     for (auto const& pattern :
         phylanx::execution_tree::get_all_known_patterns())
     {
         std::string const& name = hpx::util::get<0>(pattern);
 
-        std::string counter_pc_name(
+        std::string count_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/count/eval");
-        hpx::performance_counters::performance_counter counter_pc(
-            counter_pc_name);
+        hpx::performance_counters::performance_counter count_pc(
+            count_pc_name);
 
         std::string time_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/time/eval");
@@ -119,6 +120,7 @@ int main()
         hpx::performance_counters::performance_counter direct_time_pc(
             direct_time_pc_name);
 
+        // Verify the number of primitive instances in lra
         auto entries = hpx::agas::find_symbols(
             hpx::launch::sync, "/phylanx/" + name + "#*");
         HPX_TEST_EQ(expected_counts[name], entries.size());
@@ -147,7 +149,7 @@ int main()
             HPX_TEST_EQ(direct_values.count_, 1ll);
             HPX_TEST_EQ(direct_values.values_.size(), entries.size());
 
-            // at least one of the values for each primitive should be non-zero
+            // At least one of the values for each primitive should be non-zero
             for (std::size_t i = 0; i != values.values_.size(); ++i)
             {
                 HPX_TEST(values.values_[i] != 0ll ||
@@ -157,13 +159,13 @@ int main()
 
         // Count performance counters
         {
-            auto info = counter_pc.get_info(hpx::launch::sync);
-            HPX_TEST_EQ(info.fullname_, counter_pc_name);
+            auto info = count_pc.get_info(hpx::launch::sync);
+            HPX_TEST_EQ(info.fullname_, count_pc_name);
             HPX_TEST_EQ(
                 info.type_, hpx::performance_counters::counter_raw_values);
 
             auto values =
-                counter_pc.get_counter_values_array(hpx::launch::sync, false);
+                count_pc.get_counter_values_array(hpx::launch::sync, false);
 
             HPX_TEST_EQ(values.count_, 1ll);
             HPX_TEST_EQ(values.values_.size(), entries.size());
@@ -179,7 +181,7 @@ int main()
             HPX_TEST_EQ(direct_values.count_, 1ll);
             HPX_TEST_EQ(direct_values.values_.size(), entries.size());
 
-            // at least one of the values for each primitive should be non-zero
+            // At least one of the values for each primitive should be non-zero
             for (std::size_t i = 0; i != values.values_.size(); ++i)
             {
                 HPX_TEST(values.values_[i] != 0ll ||
