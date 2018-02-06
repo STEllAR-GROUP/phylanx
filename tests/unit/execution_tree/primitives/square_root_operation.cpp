@@ -27,7 +27,7 @@ void test_square_root_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = add.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
 
     HPX_TEST_EQ(
         2.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -49,7 +49,7 @@ void test_square_root_operation_1d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         square_root.eval();
     blaze::DynamicVector<double> expected = blaze::sqrt(v1);
 
@@ -73,7 +73,7 @@ void test_square_root_operation_2d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         square_root.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::sqrt(m1);

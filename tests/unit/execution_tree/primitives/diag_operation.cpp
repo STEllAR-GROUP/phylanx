@@ -29,7 +29,7 @@ void test_diag_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(data), std::move(k)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         diag.eval();
 
     HPX_TEST_EQ(5.0,
@@ -56,7 +56,7 @@ void test_diag_operation_1d()
             });
 
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         diag.eval();
 
     blaze::DynamicMatrix<double> expected{{1, 0, 0, 0, 0},
@@ -89,7 +89,7 @@ void test_diag_operation_1d_plus_one()
             });
 
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         diag.eval();
 
     blaze::DynamicMatrix<double> expected{{0, 1, 0, 0, 0, 0},
@@ -123,7 +123,7 @@ void test_diag_operation_1d_minus_one()
             });
 
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         diag.eval();
 
     blaze::DynamicMatrix<double> expected{{ 0, 0, 0, 0, 0, 0},
@@ -160,7 +160,7 @@ void test_diag_operation_2d()
                 std::move(mat), std::move(k)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         diag.eval();
 
     blaze::DynamicVector<double> expected{90,  96, 102, 108, 114};
@@ -193,7 +193,7 @@ void test_diag_operation_2d_plus_one()
                 std::move(mat), std::move(k)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         diag.eval();
 
     blaze::DynamicVector<double> expected{54, 57, 60, 63};
@@ -226,7 +226,7 @@ void test_diag_operation_2d_minus_one()
                 std::move(mat), std::move(k)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         diag.eval();
 
     blaze::DynamicVector<double> expected{51, 54, 57, 60};

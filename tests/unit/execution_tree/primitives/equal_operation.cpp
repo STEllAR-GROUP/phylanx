@@ -603,8 +603,8 @@ void test_equal_operation_2d()
 
     phylanx::execution_tree::primitive_result_type f = equal.eval().get();
 
-    blaze::DynamicMatrix<double> expected =
-        blaze::map(m1, m2, [](double x, double y) { return x == y; });
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        equal.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
@@ -718,8 +718,8 @@ void test_equal_operation_2d0d()
 
     phylanx::execution_tree::primitive_result_type f = equal.eval().get();
 
-    blaze::DynamicMatrix<double> expected =
-        blaze::map(m, [](double x) { return (x == 2.0); });
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        equal.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));

@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
           : argnum_(argnum)
         {}
 
-        primitive_result_type eval_direct(
+        primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
 
     private:

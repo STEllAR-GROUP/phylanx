@@ -40,7 +40,7 @@ int hpx_main(int argc, char* argv[])
     auto data_vec = phylanx::ir::node_data<double>{std::move(vec)};
     auto data_mat = phylanx::ir::node_data<double>{std::move(mat)};
 
-    auto func = phylanx::execution_tree::compile_and_run(read_code, snippets);
+    auto func = phylanx::execution_tree::compile(read_code, snippets);
 
     func(std::move(data_mat), std::move(data_vec), std::move(data_0d));
 

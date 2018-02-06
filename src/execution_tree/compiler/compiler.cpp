@@ -44,10 +44,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             if (!hpx::util::get<1>(patterns).empty())
             {
-                result.define(hpx::util::get<0>(patterns),
-                    builtin_function(
-                        hpx::util::get<2>(patterns), default_locality));
-            }
+            result.define(hpx::util::get<0>(patterns),
+                builtin_function(
+                    hpx::util::get<2>(patterns), default_locality));
+        }
         }
 
         return result;
@@ -68,10 +68,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             for (auto const& pattern : hpx::util::get<1>(patterns))
             {
+                auto exprs = ast::generate_ast(pattern);
+                HPX_ASSERT(exprs.size() == 1);
+
                 result.push_back(
-                    hpx::util::make_tuple(hpx::util::get<0>(patterns),
-                        pattern, ast::generate_ast(pattern),
-                        hpx::util::get<2>(patterns)));
+                    hpx::util::make_tuple(
+                        hpx::util::get<0>(patterns), pattern,
+                        exprs[0], hpx::util::get<2>(patterns)));
             }
         }
 
@@ -259,8 +262,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined function
             // and store new function description for later use
-            snippets_.defines_.emplace_back(function{});
-            function& f = snippets_.defines_.back();
+            snippets_.snippets_.emplace_back(function{});
+            function& f = snippets_.snippets_.back();
 
             ast::expression name_expr = extract_name(p);
             std::string name = ast::detail::identifier_name(name_expr);
@@ -480,20 +483,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
     {
         compiler comp{snippets, env, patterns, default_locality};
         return comp(expr);
-    }
-
-    function compile(std::vector<ast::expression> const& exprs,
-        function_list& snippets, environment& env,
-        expression_pattern_list const& patterns,
-        hpx::id_type const& default_locality)
-    {
-        compiler comp{snippets, env, patterns, default_locality};
-        function f;
-        for (auto const& expr : exprs)
-        {
-            f = comp(expr);
-        }
-        return f;
     }
 }}}
 

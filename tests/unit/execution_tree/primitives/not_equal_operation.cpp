@@ -434,7 +434,7 @@ void test_not_equal_operation_1d0d()
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return (x != 2.0); });
-
+  
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),

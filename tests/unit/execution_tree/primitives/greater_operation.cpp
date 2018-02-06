@@ -245,7 +245,7 @@ void test_greater_operation_1d()
 
     blaze::DynamicVector<double> expected =
         blaze::map(v1, v2, [](double x, double y) { return x > y; });
-
+  
     HPX_TEST_EQ(phylanx::ir::node_data<double>((expected)),
         phylanx::execution_tree::extract_numeric_value(f));
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),

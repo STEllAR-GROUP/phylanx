@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         protected:
             using operand_type = ir::node_data<double>;
-            using operands_type = std::vector<primitive_result_type>;
+            using operands_type = std::vector<primitive_argument_type>;
 
             primitive_result_type less_equal0d1d(
                 operand_type&& lhs, operand_type&& rhs) const
@@ -332,9 +332,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 primitive_result_type operator()(
                     util::recursive_wrapper<
-                        std::vector<primitive_result_type>>&&,
+                        std::vector<primitive_argument_type>>&&,
                     util::recursive_wrapper<
-                        std::vector<primitive_result_type>>&&) const
+                        std::vector<primitive_argument_type>>&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::eval",
@@ -385,7 +385,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             };
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -406,9 +406,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
-                        return primitive_result_type(
+                        return primitive_argument_type(
                             util::visit(visit_less_equal{*this_},
                                 std::move(ops[0].variant()),
                                 std::move(ops[1].variant())));
@@ -420,7 +420,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement '<=' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> less_equal::eval(
+    hpx::future<primitive_argument_type> less_equal::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

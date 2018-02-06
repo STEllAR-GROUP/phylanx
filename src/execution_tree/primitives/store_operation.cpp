@@ -81,16 +81,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            hpx::future<primitive_result_type> eval()
+            hpx::future<primitive_argument_type> eval()
             {
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands_[1], args_)
                     .then(hpx::util::unwrapping(
-                        [this_](primitive_result_type && val)
+                        [this_](primitive_argument_type && val)
                         {
                             primitive_operand(this_->operands_[0])
                                 .store(hpx::launch::sync, std::move(val));
-                            return primitive_result_type{};
+                            return primitive_argument_type{};
                         }));
             }
 
@@ -99,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> store_operation::eval(
+    hpx::future<primitive_argument_type> store_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

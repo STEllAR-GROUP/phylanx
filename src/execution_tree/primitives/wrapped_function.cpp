@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> wrapped_function::eval(
+    hpx::future<primitive_argument_type> wrapped_function::eval(
         std::vector<primitive_argument_type> const& params) const
     {
         primitive const* p = util::get_if<primitive>(&target_);
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             std::vector<primitive_argument_type> fargs(params);
             return hpx::make_ready_future(
-                primitive_result_type{primitive{
+                primitive_argument_type{primitive{
                     hpx::new_<primitives::function_reference>(
                         hpx::find_here(), std::move(body), std::move(fargs),
                         name_),
