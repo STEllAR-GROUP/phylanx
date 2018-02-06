@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT greater_equal
+    class greater_equal
       : public base_primitive
       , public hpx::components::component_base<greater_equal>
     {

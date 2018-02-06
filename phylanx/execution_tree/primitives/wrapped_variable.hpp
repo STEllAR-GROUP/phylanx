@@ -17,10 +17,9 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT wrapped_variable
+    class wrapped_variable
       : public base_primitive
-      , public hpx::components::locking_hook<
-          hpx::components::component_base<wrapped_variable>>
+      , public hpx::components::component_base<wrapped_variable>
     {
     public:
         wrapped_variable() = default;

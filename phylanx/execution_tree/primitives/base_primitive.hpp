@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     namespace primitives
     {
-        class HPX_COMPONENT_EXPORT base_primitive;
+        class base_primitive;
     }
 
     class HPX_COMPONENT_EXPORT primitive;
@@ -273,7 +273,7 @@ namespace phylanx { namespace execution_tree
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    class HPX_COMPONENT_EXPORT base_primitive
+    class base_primitive
       : public hpx::traits::detail::component_tag
     {
     public:

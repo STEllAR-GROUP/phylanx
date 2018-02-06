@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT while_operation
+    class while_operation
       : public base_primitive
       , public hpx::components::component_base<while_operation>
     {

@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT parallel_block_operation
+    class parallel_block_operation
       : public base_primitive
       , public hpx::components::component_base<parallel_block_operation>
     {

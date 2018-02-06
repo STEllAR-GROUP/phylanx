@@ -18,7 +18,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT if_conditional
+    class if_conditional
         : public base_primitive
         , public hpx::components::component_base<if_conditional>
     {

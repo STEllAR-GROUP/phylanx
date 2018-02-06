@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT hstack_operation
+    class hstack_operation
       : public base_primitive
       , public hpx::components::component_base<hstack_operation>
     {

@@ -16,7 +16,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT file_write_csv
+    class file_write_csv
       : public base_primitive
       , public hpx::components::component_base<file_write_csv>
     {

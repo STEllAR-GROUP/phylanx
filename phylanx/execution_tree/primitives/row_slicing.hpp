@@ -16,7 +16,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT row_slicing_operation
+    class row_slicing_operation
       : public base_primitive
       , public hpx::components::component_base<row_slicing_operation>
     {

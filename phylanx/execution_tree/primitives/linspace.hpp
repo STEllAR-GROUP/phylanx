@@ -19,7 +19,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
      * @version 0.0.1
      * @date 2018
      */
-    class HPX_COMPONENT_EXPORT linspace
+    class linspace
       : public base_primitive
       , public hpx::components::component_base<linspace>
     {
