@@ -33,7 +33,7 @@ void test_mul_operation_0d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -54,7 +54,7 @@ void test_mul_operation_0d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -80,7 +80,7 @@ void test_mul_operation_0d1d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicVector<double> expected = 6.0 * v;
@@ -107,7 +107,7 @@ void test_mul_operation_0d1d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicVector<double> expected = 6.0 * v;
@@ -136,7 +136,7 @@ void test_mul_operation_0d2d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicMatrix<double> expected = 6.0 * m;
@@ -163,7 +163,7 @@ void test_mul_operation_0d2d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicMatrix<double> expected = m * 6.0;
@@ -192,7 +192,7 @@ void test_mul_operation_1d0d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicVector<double> expected = v * 6.0;
@@ -219,7 +219,7 @@ void test_mul_operation_1d0d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicVector<double> expected = v * 6.0;
@@ -251,7 +251,7 @@ void test_mul_operation_1d1d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
     HPX_TEST_EQ(
         phylanx::ir::node_data<double>(std::move(expected)),
@@ -278,7 +278,7 @@ void test_mul_operation_2d0d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicMatrix<double> expected = m * 6.0;
@@ -305,7 +305,7 @@ void test_mul_operation_2d0d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicMatrix<double> expected = m * 6.0;
@@ -336,7 +336,7 @@ void test_mul_operation_2d1d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicVector<double> expected = m * v;
@@ -366,7 +366,7 @@ void test_mul_operation_2d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicMatrix<double> expected = m1 * m2;
@@ -394,7 +394,7 @@ void test_mul_operation_2d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         mul.eval();
 
     blaze::DynamicMatrix<double> expected = m1 * m2;

@@ -118,7 +118,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 int const sequencer_[] = {
                     0, (keep_alive.emplace_back(
-                            extract_copy_value(std::forward<Ts>(ts))), 0)...
+                            extract_copy_value(primitive_argument_type{
+                                std::forward<Ts>(ts)
+                            })), 0)...
                 };
                 (void)sequencer_;
 
@@ -250,7 +252,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 for (auto const& element : elements_)
                 {
-                    fargs.push_back(element(args));
+                    fargs.push_back(primitive_argument_type{element(args)});
                 }
 
                 return f_.get()(std::move(fargs));

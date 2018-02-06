@@ -31,7 +31,7 @@ void test_store_operation()
 
     HPX_TEST_EQ(0.0, phylanx::execution_tree::numeric_operand_sync(lhs, {})[0]);
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         store.eval();
 
     HPX_TEST(!phylanx::execution_tree::valid(f.get()));

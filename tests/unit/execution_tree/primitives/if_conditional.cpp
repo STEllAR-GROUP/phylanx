@@ -39,7 +39,7 @@ void test_if_conditional_t1()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(cond), std::move(true_case), std::move(false_case)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         if_prim.eval();
     HPX_TEST_EQ(
         1.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -91,7 +91,7 @@ void test_if_conditional_t2()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(cond), std::move(add), std::move(sub)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         if_prim.eval();
 
     HPX_TEST_EQ(
@@ -152,7 +152,7 @@ void test_if_conditional_t3()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(equal), std::move(add), std::move(sub)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         if_prim.eval();
 
     HPX_TEST_EQ(
@@ -177,7 +177,7 @@ void test_if_conditional_t4()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(cond), std::move(true_case)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         if_prim.eval();
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -212,7 +212,7 @@ void test_if_conditional_t5()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(cond), std::move(add)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         if_prim.eval();
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -247,7 +247,7 @@ void test_if_conditional_t6()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(cond), std::move(add)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         if_prim.eval();
 
     HPX_TEST(!phylanx::execution_tree::valid(f.get()));

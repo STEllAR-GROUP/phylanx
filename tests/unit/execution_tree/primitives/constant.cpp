@@ -27,7 +27,7 @@ void test_constant_0d()
                 std::move(val)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         const_.eval();
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
@@ -49,7 +49,7 @@ void test_constant_1d()
                 std::move(val), std::int64_t(1007)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         const_.eval();
 
     blaze::DynamicVector<double> expected =
@@ -77,7 +77,7 @@ void test_constant_2d()
                 }
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         const_.eval();
 
     blaze::DynamicMatrix<double> expected =

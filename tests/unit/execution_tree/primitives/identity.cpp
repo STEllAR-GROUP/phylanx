@@ -24,7 +24,7 @@ void test_identity()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(val)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         identity.eval();
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());

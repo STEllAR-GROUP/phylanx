@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // return the topology for this function definition
         topology expression_topology() const override;
 
-        hpx::future<primitive_result_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
     private:

@@ -26,7 +26,7 @@ void test_unary_not_operation_0d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
     HPX_TEST_EQ(
@@ -42,7 +42,7 @@ void test_unary_not_operation_0d_lit()
                 false
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
     HPX_TEST_EQ(
@@ -65,7 +65,7 @@ void test_unary_not_operation_2d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
     HPX_TEST_EQ(

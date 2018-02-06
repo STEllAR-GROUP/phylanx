@@ -43,14 +43,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> function_reference::eval(
+    hpx::future<primitive_argument_type> function_reference::eval(
         std::vector<primitive_argument_type> const& params) const
     {
         if (!args_.empty())
         {
             if (!params.empty())
             {
-                std::vector<primitive_result_type> fargs(args_);
+                std::vector<primitive_argument_type> fargs(args_);
                 fargs.reserve(args_.size() + params.size());
                 std::copy(params.begin(), params.end(), std::back_inserter(fargs));
                 return value_operand(target_, std::move(fargs));

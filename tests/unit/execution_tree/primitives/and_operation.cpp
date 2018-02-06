@@ -22,7 +22,7 @@ void test_and_operation_0d_false()
         true, false
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -37,7 +37,7 @@ void test_and_operation_0d_true()
         true, true
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -58,7 +58,7 @@ void test_and_operation_0d_lit_false()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -79,7 +79,7 @@ void test_and_operation_0d_lit_true()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -106,7 +106,7 @@ void test_and_operation_1d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST_EQ(
@@ -133,7 +133,7 @@ void test_and_operation_1d_lit()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST_EQ(
@@ -162,7 +162,7 @@ void test_and_operation_2d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST_EQ(
@@ -189,7 +189,7 @@ void test_and_operation_2d_lit()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         and_.eval();
 
     HPX_TEST_EQ(

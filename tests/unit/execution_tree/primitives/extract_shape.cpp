@@ -31,7 +31,7 @@ void test_block_operation()
                 std::move(arg1), std::move(arg2), std::move(arg3)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         block.eval();
 
     HPX_TEST_EQ(

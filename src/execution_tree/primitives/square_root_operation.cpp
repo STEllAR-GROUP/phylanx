@@ -56,28 +56,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type square_root_0d(operands_type && ops) const
+            primitive_argument_type square_root_0d(operands_type && ops) const
             {
                 ops[0] = std::sqrt(ops[0].scalar());
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            primitive_result_type square_root_1d(operands_type && ops) const
+            primitive_argument_type square_root_1d(operands_type && ops) const
             {
                 ops[0] = blaze::sqrt(ops[0].vector());
 
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            primitive_result_type square_root_2d(operands_type && ops) const
+            primitive_argument_type square_root_2d(operands_type && ops) const
             {
                 ops[0] = blaze::sqrt(ops[0].matrix());
 
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -100,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
 
                         switch (ops[0].num_dimensions())
@@ -128,7 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> square_root_operation::eval(
+    hpx::future<primitive_argument_type> square_root_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
