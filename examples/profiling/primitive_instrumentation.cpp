@@ -1,5 +1,6 @@
 //   Copyright (c) 2018 Parsa Amini
 //   Copyright (c) 2018 Hartmut Kaiser
+//   Copyright (c) 2018 Shahrzad Shirzad
 //
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,37 +18,33 @@
 #include <utility>
 #include <vector>
 
+#include <boost/program_options.hpp>
+
 ///////////////////////////////////////////////////////////////////////////////
-char const* const lra_code = R"(block(
-    //
-    // Logistic regression analysis algorithm
-    //
-    //   x: [30, 2]
-    //   y: [30]
-    define(lra, x, y, alpha,
+char const* const fib_code = R"(block(
+    define(fib_test, iterations,
         block(
-            define(weights, constant(0.0, shape(x, 1))),     // weights: [2]
-            define(transx, transpose(x)),                    // transx:  [2, 30]
-            define(pred, constant(0.0, shape(x, 0))),
-            define(error, constant(0.0, shape(x, 0))),
-            define(gradient, constant(0.0, shape(x, 1))),
+            define(x, 1.0),
+            define(z, 0.0),
+            define(y, 1.0),
+            cout(x),
+            cout(y),
+            define(temp,0.0),
             define(step, 0),
             while(
-                step < 10,
+                step < iterations,
                 block(
-                    store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
-                    store(error, pred - y),                  // error: [30]
-                    store(gradient, dot(transx, error)),     // gradient: [2]
-                    parallel_block(
-                        store(weights, weights - (alpha * gradient)),
-                        store(step, step + 1)
-                    )
+                    store(z, x + y),
+                    store(temp, y),
+                    store(y, z),
+                    store(x, temp),
+                    cout(z),
+                    store(step, step + 1)
                 )
-            ),
-            weights
+            )
         )
     ),
-    lra
+    fib_test
 ))";
 
 // Retrieve performance counter data for selected primitives
@@ -91,17 +88,19 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         // Performance counter values
         std::vector<std::vector<std::int64_t>>& counter_values =
             counter_values_pile[tags.primitive];
+
+        // Querying for performance counters is relatively expensive and there
+        // is overlap, thus we can use futures
         std::vector<
             hpx::future<hpx::performance_counters::counter_values_array>>
             futures;
-        futures.reserve(counter_name_last_parts.size());
 
         if (counter_values.empty())
         {
             // Preallocate memory
             counter_values.reserve(counter_name_last_parts.size());
-            // Iterate through the last parts of performance counter names
 
+            // Iterate through the last parts of performance counter names
             for (auto const& counter_name_last_part : counter_name_last_parts)
             {
                 // Construct the name of the counter
@@ -115,7 +114,10 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
             }
         }
 
+        // We need the performance counter values. Wait until they are done
         hpx::wait_all(futures);
+
+        // Collect the performance counter values
         for (auto& f : futures)
         {
             counter_values.push_back(f.get().values_);
@@ -134,33 +136,19 @@ std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int hpx_main()
+int hpx_main(boost::program_options::variables_map& vm)
 {
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto lra = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(lra_code), snippets);
+    auto fibonacci = phylanx::execution_tree::compile(
+        phylanx::ast::generate_ast(fib_code), snippets);
 
-    // LRA arguments
-    blaze::DynamicMatrix<double> v1{ { 15.04, 16.74 },{ 13.82, 24.49 },
-    { 12.54, 16.32 },{ 23.09, 19.83 },{ 9.268, 12.87 },{ 9.676, 13.14 },
-    { 12.22, 20.04 },{ 11.06, 17.12 },{ 16.3 , 15.7 },{ 15.46, 23.95 },
-    { 11.74, 14.69 },{ 14.81, 14.7 },{ 13.4 , 20.52 },{ 14.58, 13.66 },
-    { 15.05, 19.07 },{ 11.34, 18.61 },{ 18.31, 20.58 },{ 19.89, 20.26 },
-    { 12.88, 18.22 },{ 12.75, 16.7 },{ 9.295, 13.9 },{ 24.63, 21.6 },
-    { 11.26, 19.83 },{ 13.71, 18.68 },{ 9.847, 15.68 },{ 8.571, 13.1 },
-    { 13.46, 18.75 },{ 12.34, 12.27 },{ 13.94, 13.17 },{ 12.07, 13.44 } };
+    // Fibonacci arguments
+    auto num_iterations = vm["num_iterations"].as<std::int64_t>();
 
-    blaze::DynamicVector<double> v2{ 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0,
-        1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1 };
-    auto x = phylanx::ir::node_data<double>{ v1 };
-    auto y = phylanx::ir::node_data<double>{ v2 };
-    auto alpha = phylanx::ir::node_data<double>{ 1e-5 };
-    bool enable_output = true;
-
-    // Evaluate LRA using the read data
-    auto result = lra(x, y, alpha);
+    // Evaluate Fibonacci using the read data
+    fibonacci(num_iterations);
 
     // CSV Header
     std::cout << "primitive_instance" << ","
@@ -199,5 +187,13 @@ int hpx_main()
 
 int main(int argc, char* argv[])
 {
-    return hpx::init(argc, argv);
+    // Command-line handling
+    boost::program_options::options_description desc(
+        "usage: primitive_instrumentation [options]");
+    desc.add_options()
+        ("num_iterations,n",
+            boost::program_options::value<std::int64_t>()->default_value(10),
+            "number of iterations (default: 10)");
+
+    return hpx::init(desc, argc, argv);
 }
