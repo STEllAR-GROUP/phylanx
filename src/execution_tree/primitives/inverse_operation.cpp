@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             inverse() = default;
 
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
                         switch (dims)
@@ -92,21 +92,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
 
         protected:
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type inverse0d(operands_type && ops) const
+            primitive_argument_type inverse0d(operands_type && ops) const
             {
                 ops[0].scalar() = 1 / ops[0].scalar();
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            primitive_result_type inverse2d(operands_type && ops) const
+            primitive_argument_type inverse2d(operands_type && ops) const
             {
                 if (ops[0].dimension(0) != ops[0].dimension(1))
                 {
@@ -123,12 +123,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     blaze::invert(ops[0].matrix_non_ref());
                 }
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
         };
     }
 
-    hpx::future<primitive_result_type> inverse_operation::eval(
+    hpx::future<primitive_argument_type> inverse_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

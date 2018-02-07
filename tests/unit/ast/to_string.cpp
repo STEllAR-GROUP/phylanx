@@ -10,9 +10,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
+
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,15 +46,9 @@ void test_primary_expr()
     blaze::DynamicVector<double> v = gen.generate(1007UL);
     phylanx::ast::primary_expr p3{
         phylanx::ir::node_data<double>{v}};
-    std::string expected("[");
-    for (std::size_t i = 0; i != v.size(); ++i)
-    {
-        if (i != 0)
-            expected += ", ";
-        expected += std::to_string(v[i]);
-    }
-    expected += "]";
-    test_to_string(p3, expected);
+    std::stringstream strm;
+    strm << p3;
+    test_to_string(p3, strm.str());
 
     phylanx::ast::primary_expr p4{"some string"};
     test_to_string(p4, "\"some string\"");
@@ -159,6 +155,31 @@ void test_list()
     test_to_string(list, "'(true, function_name(true, true, true))");
 }
 
+void test_vector()
+{
+    std::vector<double> v = {1.0, 2.0, 3.0};
+    phylanx::ast::primary_expr p1(std::move(v));
+    phylanx::ast::operand op1(p1);
+    phylanx::ast::expression e1(std::move(p1));
+
+    test_to_string(e1, "[1, 2, 3]");
+}
+
+void test_matrix()
+{
+    std::vector<double> v1 = {1.0, 2.0, 3.0};
+    std::vector<double> v2 = {2.0, 3.0, 1.0};
+    std::vector<double> v3 = {3.0, 1.0, 2.0};
+
+    std::vector<std::vector<double>> v = {v1, v2, v3};
+
+    phylanx::ast::primary_expr p1(std::move(v));
+    phylanx::ast::operand op1(p1);
+    phylanx::ast::expression e1(std::move(p1));
+
+    test_to_string(e1, "[[1, 2, 3], [2, 3, 1], [3, 1, 2]]");
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -169,6 +190,8 @@ int main(int argc, char* argv[])
     test_expression();
     test_function_call();
     test_list();
+    test_vector();
+    test_matrix();
 
     return hpx::util::report_errors();
 }

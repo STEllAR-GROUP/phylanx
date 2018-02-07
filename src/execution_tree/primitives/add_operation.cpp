@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using arg_type = ir::node_data<double>;
             using args_type = std::vector<arg_type>;
 
-            primitive_result_type add0d0d(args_type && args) const
+            primitive_argument_type add0d0d(args_type && args) const
             {
                 arg_type& lhs = args[0];
                 arg_type& rhs = args[1];
@@ -98,10 +98,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (args.size() == 2)
                 {
                     lhs.scalar() += rhs.scalar();
-                    return primitive_result_type(std::move(lhs));
+                    return primitive_argument_type(std::move(lhs));
                 }
 
-                return primitive_result_type(std::accumulate(
+                return primitive_argument_type(std::accumulate(
                     args.begin() + 1, args.end(), std::move(lhs),
                     [](arg_type& result, arg_type const& curr)
                     ->  arg_type
@@ -111,7 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }));
             }
 
-            primitive_result_type add0d1d(args_type && args) const
+            primitive_argument_type add0d1d(args_type && args) const
             {
                 if (args.size() != 2)
                 {
@@ -124,10 +124,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 args[1] = blaze::map(
                     args[1].vector(), add_simd(args[0].scalar()));
 
-                return primitive_result_type(std::move(args[1]));
+                return primitive_argument_type(std::move(args[1]));
             }
 
-            primitive_result_type add0d2d(args_type && args) const
+            primitive_argument_type add0d2d(args_type && args) const
             {
                 if (args.size() != 2)
                 {
@@ -140,10 +140,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 args[1] = blaze::map(
                     args[1].matrix(), add_simd(args[0].scalar()));
 
-                return primitive_result_type(std::move(args[1]));
+                return primitive_argument_type(std::move(args[1]));
             }
 
-            primitive_result_type add0d(args_type && args) const
+            primitive_argument_type add0d(args_type && args) const
             {
                 std::size_t rhs_dims = args[1].num_dimensions();
                 switch(rhs_dims)
@@ -165,7 +165,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             ///////////////////////////////////////////////////////////////////////////
-            primitive_result_type add1d0d(args_type && args) const
+            primitive_argument_type add1d0d(args_type && args) const
             {
                 if (args.size() != 2)
                 {
@@ -178,10 +178,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 args[0] = blaze::map(
                     args[0].vector(), add_simd(args[1].scalar()));
 
-                return primitive_result_type(std::move(args[0]));
+                return primitive_argument_type(std::move(args[0]));
             }
 
-            primitive_result_type add1d1d(args_type && args) const
+            primitive_argument_type add1d1d(args_type && args) const
             {
                 arg_type& lhs = args[0];
                 arg_type& rhs = args[1];
@@ -199,11 +199,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (args.size() == 2)
                 {
                     lhs.vector() += rhs.vector();
-                    return primitive_result_type(std::move(lhs));
+                    return primitive_argument_type(std::move(lhs));
                 }
 
                 arg_type& first_term = *args.begin();
-                return primitive_result_type(std::accumulate(
+                return primitive_argument_type(std::accumulate(
                     args.begin() + 1, args.end(), std::move(first_term),
                     [](arg_type& result, arg_type const& curr) -> arg_type
                     {
@@ -212,7 +212,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }));
             }
 
-            primitive_result_type add1d2d(args_type&& args) const
+            primitive_argument_type add1d2d(args_type&& args) const
             {
                 if (args.size() != 2)
                 {
@@ -237,10 +237,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::row(cm, i) += blaze::trans(cv);
                 }
 
-                return primitive_result_type(std::move(args[1]));
+                return primitive_argument_type(std::move(args[1]));
             }
 
-            primitive_result_type add1d(args_type && args) const
+            primitive_argument_type add1d(args_type && args) const
             {
                 std::size_t rhs_dims = args[1].num_dimensions();
 
@@ -263,7 +263,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             ///////////////////////////////////////////////////////////////////////////
-            primitive_result_type add2d0d(args_type && args) const
+            primitive_argument_type add2d0d(args_type && args) const
             {
                 if (args.size() != 2)
                 {
@@ -275,10 +275,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 args[0] = blaze::map(
                     args[0].matrix(), add_simd(args[1].scalar()));
-                return primitive_result_type(std::move(args[0]));
+                return primitive_argument_type(std::move(args[0]));
             }
 
-            primitive_result_type add2d1d(args_type&& args) const
+            primitive_argument_type add2d1d(args_type&& args) const
             {
                 if (args.size() != 2)
                 {
@@ -303,10 +303,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::row(cm, i) += blaze::trans(cv);
                 }
 
-                return primitive_result_type(std::move(args[0]));
+                return primitive_argument_type(std::move(args[0]));
             }
 
-            primitive_result_type add2d2d(args_type && args) const
+            primitive_argument_type add2d2d(args_type && args) const
             {
                 arg_type& lhs = args[0];
                 arg_type& rhs = args[1];
@@ -324,11 +324,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (args.size() == 2)
                 {
                     lhs.matrix() += rhs.matrix();
-                    return primitive_result_type(std::move(lhs));
+                    return primitive_argument_type(std::move(lhs));
                 }
 
                 arg_type& first_term = *args.begin();
-                return primitive_result_type(std::accumulate(
+                return primitive_argument_type(std::accumulate(
                     args.begin() + 1, args.end(), std::move(first_term),
                     [](arg_type& result, arg_type const& curr)
                     ->  arg_type
@@ -338,7 +338,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }));
             }
 
-            primitive_result_type add2d(args_type && args) const
+            primitive_argument_type add2d(args_type && args) const
             {
                 std::size_t rhs_dims = args[1].num_dimensions();
                 switch(rhs_dims)
@@ -360,7 +360,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -390,9 +390,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_result_type
-                    {
+                return hpx::dataflow(
+                    hpx::util::unwrapping([this_](args_type&& args)
+                                              -> primitive_argument_type {
                         std::size_t lhs_dims = args[0].num_dimensions();
                         switch (lhs_dims)
                         {
@@ -412,14 +412,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }
 
     // implement '+' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> add_operation::eval(
+    hpx::future<primitive_argument_type> add_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

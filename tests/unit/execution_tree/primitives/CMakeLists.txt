@@ -11,6 +11,7 @@ set(tests
     constant
     define_operation
     determinant
+    diag_operation
     div_operation
     dot_operation
     cross_operation
@@ -30,6 +31,7 @@ set(tests
     less_operation
     less_equal_operation
     literal_value
+    linspace
     mul_operation
     not_equal_operation
     or_operation

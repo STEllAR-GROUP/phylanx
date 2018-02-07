@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : name_(std::move(name))
     {}
 
-    primitive_result_type define_function::eval_direct(
+    primitive_argument_type define_function::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
         if (!valid(body_))

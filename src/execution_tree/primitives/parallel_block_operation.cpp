@@ -50,7 +50,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             block() = default;
 
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                     std::vector<primitive_argument_type> const& args) const
             {
@@ -66,18 +66,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // evaluate condition of while statement
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](std::vector<primitive_result_type> && ops)
+                    [this_](std::vector<primitive_argument_type> && ops)
+                    ->  primitive_argument_type
                     {
                         return ops.back();
                     }),
-                    detail::map_operands(operands, literal_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::literal_operand{}, args));
             }
         };
     }
 
     // start iteration over given parallel-block statement
-    hpx::future<primitive_result_type> parallel_block_operation::eval(
+    hpx::future<primitive_argument_type> parallel_block_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

@@ -59,30 +59,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operands_type = std::vector<operand_type>;
 
         protected:
-            ir::node_data<double> exponential0d(operands_type&& ops) const
+            primitive_argument_type exponential0d(operands_type&& ops) const
             {
                 ops[0] = double(std::exp(ops[0].scalar()));
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            ir::node_data<double> exponential1d(operands_type&& ops) const
+            primitive_argument_type exponential1d(operands_type&& ops) const
             {
                 using vector_type = blaze::DynamicVector<double>;
 
                 vector_type result = blaze::exp(ops[0].vector());
-                return ir::node_data<double>(std::move(result));
+                return primitive_argument_type{
+                    ir::node_data<double>(std::move(result))};
             }
 
-            ir::node_data<double> exponentialxd(operands_type&& ops) const
+            primitive_argument_type exponentialxd(operands_type&& ops) const
             {
                 using matrix_type = blaze::DynamicMatrix<double>;
 
                 matrix_type result = blaze::exp(ops[0].matrix());
-                return ir::node_data<double>(std::move(result));
+                return primitive_argument_type{
+                    ir::node_data<double>(std::move(result))};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -105,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
                         switch (dims)
@@ -126,14 +128,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }
 
     // implement 'exp' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> exponential_operation::eval(
+    hpx::future<primitive_argument_type> exponential_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

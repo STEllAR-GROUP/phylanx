@@ -8,6 +8,7 @@ set(tests
     match_ast
     node
     to_string
+    transform_ast
    )
 
 foreach(test ${tests})

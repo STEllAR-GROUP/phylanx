@@ -1,4 +1,4 @@
-#  Copyright (c) 2017 Hartmut Kaiser
+#  Copyright (c) 2017-2018 Hartmut Kaiser
 #  Copyright (c) 2018 R. Tohid
 #  Copyright (c) 2018 Steven R. Brandt
 #
@@ -41,11 +41,20 @@ def fib(n):
     else:
         return fib(n-1)+fib(n-2)
 
+assert fib.__physl_src__ == \
+    'block#1#0(define#1#0(fib#1#0, n#1#8, ' + \
+        'if(n#2#7 < 2, n#3#15, ' + \
+            '(fib((n#5#19 - 1)) + fib((n#5#28 - 2))))' + \
+        '), fib#1#0)\n'
+
 assert fib(10)[0] == 55.0
 
 @phyfun
 def pass_str(a):
     return a
+
+assert pass_str.__physl_src__ == \
+    'block#1#0(define#1#0(pass_str#1#0, a#1#13, a#2#11), pass_str#1#0)\n'
 
 assert "foo" == str(pass_str("foo"))
 

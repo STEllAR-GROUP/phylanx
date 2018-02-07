@@ -22,7 +22,7 @@ std::string const code = R"(block(
 int hpx_main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto pr = phylanx::execution_tree::compile_and_run(code, snippets);
+    auto pr = phylanx::execution_tree::compile(code, snippets);
 
     pr(42.0);
 
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
     std::stringstream const& strm = hpx::get_consolestream();
-    HPX_TEST_EQ(strm.str(), std::string("hello: 42.000000\n"));
+    HPX_TEST_EQ(strm.str(), std::string("hello: 42\n"));
 
     return hpx::util::report_errors();
 }

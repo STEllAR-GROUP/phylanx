@@ -31,7 +31,7 @@ void test_dot_operation_0d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dot.eval();
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -61,7 +61,7 @@ void test_dot_operation_1d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dot.eval();
 
     HPX_TEST_EQ(
@@ -94,7 +94,7 @@ void test_dot_operation_1d2d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dot.eval();
 
 
@@ -127,7 +127,7 @@ void test_dot_operation_2d1d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dot.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -157,7 +157,7 @@ void test_dot_operation_2d2d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dot.eval();
 
 

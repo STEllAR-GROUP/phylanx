@@ -56,28 +56,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type square_root_0d(operands_type && ops) const
+            primitive_argument_type square_root_0d(operands_type && ops) const
             {
                 ops[0] = std::sqrt(ops[0].scalar());
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            primitive_result_type square_root_1d(operands_type && ops) const
+            primitive_argument_type square_root_1d(operands_type && ops) const
             {
                 ops[0] = blaze::sqrt(ops[0].vector());
 
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            primitive_result_type square_root_2d(operands_type && ops) const
+            primitive_argument_type square_root_2d(operands_type && ops) const
             {
                 ops[0] = blaze::sqrt(ops[0].matrix());
 
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -100,35 +100,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
-                {
-
-                    switch (ops[0].num_dimensions())
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
-                    case 0:
-                        return this_->square_root_0d(std::move(ops));
 
-                    case 1:
-                        return this_->square_root_1d(std::move(ops));
+                        switch (ops[0].num_dimensions())
+                        {
+                        case 0:
+                            return this_->square_root_0d(std::move(ops));
 
-                    case 2:
-                        return this_->square_root_2d(std::move(ops));
+                        case 1:
+                            return this_->square_root_1d(std::move(ops));
 
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "square_root_operation::eval",
-                            "left hand side operand has unsupported "
-                            "number of dimensions");
-                    }
-                }),
-                    detail::map_operands(operands, numeric_operand, args)
-                    );
+                        case 2:
+                            return this_->square_root_2d(std::move(ops));
+
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "square_root_operation::eval",
+                                "left hand side operand has unsupported "
+                                "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> square_root_operation::eval(
+    hpx::future<primitive_argument_type> square_root_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

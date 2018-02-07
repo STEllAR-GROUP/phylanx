@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             transpose() = default;
 
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
                         switch (dims)
@@ -92,20 +92,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
 
         protected:
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type transpose0d(operands_type && ops) const
+            primitive_argument_type transpose0d(operands_type && ops) const
             {
-                return std::move(ops[0]);       // no-op
+                return primitive_argument_type{std::move(ops[0])};       // no-op
             }
 
-            primitive_result_type transpose2d(operands_type && ops) const
+            primitive_argument_type transpose2d(operands_type && ops) const
             {
                 if (ops[0].is_ref())
                 {
@@ -115,12 +115,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     blaze::transpose(ops[0].matrix_non_ref());
                 }
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
         };
     }
 
-    hpx::future<primitive_result_type> transpose_operation::eval(
+    hpx::future<primitive_argument_type> transpose_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

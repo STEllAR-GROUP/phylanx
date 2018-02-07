@@ -1,4 +1,5 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
+//                2018 R. Tohid
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -18,8 +19,10 @@
 #include <phylanx/execution_tree/primitives/define_function.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/determinant.hpp>
+#include <phylanx/execution_tree/primitives/diag_operation.hpp>
 #include <phylanx/execution_tree/primitives/div_operation.hpp>
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>
+#include <phylanx/execution_tree/primitives/enable_tracing.hpp>
 #include <phylanx/execution_tree/primitives/equal.hpp>
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/execution_tree/primitives/extract_shape.hpp>
@@ -36,6 +39,7 @@
 #include <phylanx/execution_tree/primitives/inverse_operation.hpp>
 #include <phylanx/execution_tree/primitives/less.hpp>
 #include <phylanx/execution_tree/primitives/less_equal.hpp>
+#include <phylanx/execution_tree/primitives/linspace.hpp>
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>

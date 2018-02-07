@@ -21,7 +21,7 @@ std::string const code = R"(
 int hpx_main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile_and_run(code, snippets);
+    auto f = phylanx::execution_tree::compile(code, snippets);
 
     return hpx::finalize();
 }

@@ -21,7 +21,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public base_primitive
       , public hpx::components::component_base<while_operation>
     {
-        using operands_type = std::vector<primitive_result_type>;
+        using operands_type = std::vector<primitive_argument_type>;
 
     public:
         static match_pattern_type const match_data;
@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         while_operation(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_result_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
     };
 }}}

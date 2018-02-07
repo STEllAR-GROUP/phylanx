@@ -4,7 +4,7 @@
 <!--   Distributed under the Boost Software License, Version 1.0. (See accompanying -->
 <!--   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)        -->
 
-# Phylanx: A Distributed Array Computing Toolkit
+# Phylanx: An Asynchronous Distributed Array Computing Toolkit
 
 Find our project website [here](http://phylanx.stellar-group.org/). This site provides an overview of the project as well 
 as information on who we are and what we plan to do!

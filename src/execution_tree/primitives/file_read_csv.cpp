@@ -49,7 +49,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     // read data from given file and return content
-    hpx::future<primitive_result_type> file_read_csv::eval(
+    hpx::future<primitive_argument_type> file_read_csv::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.size() != 1)
@@ -133,14 +133,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (n_cols == 1)
             {
                 // scalar value
-                return hpx::make_ready_future(primitive_result_type{
+                return hpx::make_ready_future(primitive_argument_type{
                     ir::node_data<double>{matrix_array[0]}});
             }
 
             // vector
             blaze::DynamicVector<double> vector(n_cols, matrix_array.data());
 
-            return hpx::make_ready_future(primitive_result_type{
+            return hpx::make_ready_future(primitive_argument_type{
                 ir::node_data<double>{std::move(vector)}});
         }
 
@@ -149,6 +149,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             n_rows, n_cols, matrix_array.data());
 
         return hpx::make_ready_future(
-            primitive_result_type{ir::node_data<double>{std::move(matrix)}});
+            primitive_argument_type{ir::node_data<double>{std::move(matrix)}});
     }
 }}}

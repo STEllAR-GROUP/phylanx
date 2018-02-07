@@ -31,7 +31,7 @@ void test_greater_equal_operation_0d_false()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
     HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
 }
@@ -53,7 +53,7 @@ void test_greater_equal_operation_0d_true()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
     HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
 }
@@ -73,7 +73,7 @@ void test_greater_equal_operation_0d_lit_false()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
     HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
 }
@@ -93,7 +93,7 @@ void test_greater_equal_operation_0d_lit_true()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
     HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
 }
@@ -119,7 +119,7 @@ void test_greater_equal_operation_1d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
 
     blaze::DynamicVector<double> expected = blaze::map(
@@ -147,7 +147,7 @@ void test_greater_equal_operation_1d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
 
     blaze::DynamicVector<double> expected = blaze::map(
@@ -177,7 +177,7 @@ void test_greater_equal_operation_2d()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::map(
@@ -205,7 +205,7 @@ void test_greater_equal_operation_2d_lit()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         greater_equal.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::map(

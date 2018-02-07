@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const vstack_operation::match_data =
     {
         hpx::util::make_tuple("vstack",
-            std::vector<std::string>{"vstack(_1, _2)"},
+            std::vector<std::string>{"vstack(_1, __2)"},
             &create<vstack_operation>)
     };
 
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
-            primitive_result_type vstack0d(args_type&& args) const
+            primitive_argument_type vstack0d(args_type&& args) const
             {
                 auto vec_size = args.size();
                 blaze::DynamicVector<double> temp(vec_size);
@@ -75,10 +75,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicMatrix<double> result(vec_size, 1);
                 blaze::column(result, 0) = temp;
 
-                return ir::node_data<double>{storage2d_type{std::move(result)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(result)}}};
             }
 
-            primitive_result_type vstack1d(args_type&& args) const
+            primitive_argument_type vstack1d(args_type&& args) const
             {
                 auto args_size = args.size();
                 arg_type& first = args[0];
@@ -102,10 +103,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::row(temp, i) = blaze::trans(args[i].vector());
                 }
 
-                return ir::node_data<double>{storage2d_type{std::move(temp)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(temp)}}};
             }
 
-            primitive_result_type vstack2d(args_type&& args) const
+            primitive_argument_type vstack2d(args_type&& args) const
             {
                 auto args_size = args.size();
                 auto total_rows = args[0].dimension(0);
@@ -140,11 +142,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     step = step + num_rows;
                 }
 
-                return ir::node_data<double>{storage2d_type{std::move(temp)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(temp)}}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -175,34 +178,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping(
-                        [this_](args_type&& args) -> primitive_result_type {
-                            std::size_t matrix_dims = args[0].num_dimensions();
-                            switch (matrix_dims)
-                            {
-                            case 0:
-                                return this_->vstack0d(std::move(args));
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](args_type&& args) -> primitive_argument_type
+                    {
+                        std::size_t matrix_dims = args[0].num_dimensions();
+                        switch (matrix_dims)
+                        {
+                        case 0:
+                            return this_->vstack0d(std::move(args));
 
-                            case 1:
-                                return this_->vstack1d(std::move(args));
+                        case 1:
+                            return this_->vstack1d(std::move(args));
 
-                            case 2:
-                                return this_->vstack2d(std::move(args));
+                        case 2:
+                            return this_->vstack2d(std::move(args));
 
-                            default:
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "vstack_operation::eval",
-                                    "left hand side operand has unsupported "
-                                    "number of dimensions");
-                            }
-                        }),
-                    detail::map_operands(operands, numeric_operand, args));
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "vstack_operation::eval",
+                                "left hand side operand has unsupported "
+                                "number of dimensions");
+                        }
+                    }),
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }
 
-    hpx::future<primitive_result_type> vstack_operation::eval(
+    hpx::future<primitive_argument_type> vstack_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

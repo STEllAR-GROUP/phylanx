@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             random() = default;
 
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -75,7 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = 0;
                         if (!ops.empty())
@@ -101,41 +101,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
 
         protected:
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type random0d(operands_type && ops) const
+            primitive_argument_type random0d(operands_type && ops) const
             {
                 blaze::Rand<double> gen{};
-                return operand_type{gen.generate()};
+                return primitive_argument_type{operand_type{gen.generate()}};
             }
 
-            primitive_result_type random1d(operands_type && ops) const
+            primitive_argument_type random1d(operands_type && ops) const
             {
                 std::size_t dim = ops[0].dimension(0);
 
                 blaze::Rand<blaze::DynamicVector<double>> gen{};
 
-                return operand_type{gen.generate(dim)};
+                return primitive_argument_type{operand_type{gen.generate(dim)}};
             }
 
-            primitive_result_type random2d(operands_type && ops) const
+            primitive_argument_type random2d(operands_type && ops) const
             {
                 auto dim = ops[0].dimensions();
 
                 blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 
-                return operand_type{gen.generate(dim[0], dim[1])};
+                return primitive_argument_type{
+                    operand_type{gen.generate(dim[0], dim[1])}};
             }
         };
     }
 
-    hpx::future<primitive_result_type> random::eval(
+    hpx::future<primitive_argument_type> random::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

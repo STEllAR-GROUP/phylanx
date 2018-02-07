@@ -11,6 +11,10 @@
 #include <cstdint>
 #include <string>
 
+// Uncomment this if you want to enable debugging
+// #define BOOST_SPIRIT_QI_DEBUG
+
+#include <boost/spirit/include/qi_attr.hpp>
 #include <boost/spirit/include/qi_char.hpp>
 #include <boost/spirit/include/qi_nonterminal.hpp>
 #include <boost/spirit/include/qi_numeric.hpp>
@@ -25,7 +29,8 @@ BOOST_FUSION_ADAPT_STRUCT(
     (std::int64_t, sequence_number)
     (std::string, instance)
     (std::int64_t, compile_id)
-    (std::int64_t, tag)
+    (std::int64_t, tag1)
+    (std::int64_t, tag2)
 )
 
 namespace phylanx { namespace execution_tree { namespace compiler
@@ -43,14 +48,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 start =
                         qi::lit("/phylanx/") >> primitive
-                        >> qi::lit('#') >> qi::int_
-                        >> -(qi::lit('#') > instance)
-                        >> qi::lit('/') >> qi::int_
-                        >> qi::lit('#') >> qi::int_
+                    >   qi::lit('#') > qi::int_
+                    > ((qi::lit('#') > instance) | qi::attr(""))
+                    >   qi::lit('/') > qi::int_
+                    >   qi::lit('#') > qi::int_
+                    > ((qi::lit('#') > qi::int_) | qi::attr(-1))
                     ;
 
                 primitive = +(qi::char_ - qi::lit('#'));
                 instance = +(qi::char_ - qi::lit('/'));
+
+                // Debugging support.
+                BOOST_SPIRIT_DEBUG_NODES(
+                    (start)
+                    (primitive)
+                    (instance)
+                );
             }
 
             qi::rule<Iterator, primitive_name_parts()> start;
@@ -102,7 +115,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         result += "/" + std::to_string(
             parts.compile_id == -1 ? 0 : parts.compile_id);
-        result += "#" + std::to_string(parts.tag == -1 ? 0 : parts.tag);
+        result += "#" + std::to_string(parts.tag1 < 0 ? 0 : parts.tag1);
+
+        // column is optional
+        if (parts.tag2 != -1)
+        {
+            result += '#' + std::to_string(parts.tag2);
+        }
 
         return result;
     }

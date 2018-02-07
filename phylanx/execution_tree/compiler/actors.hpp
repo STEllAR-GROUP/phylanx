@@ -84,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    struct function : actor<function>
+    struct function
     {
         function() = default;
 
@@ -106,21 +106,52 @@ namespace phylanx { namespace execution_tree { namespace compiler
             set_name(std::move(name));
         }
 
-        result_type call(arguments_type && args) const
+        template <typename ... Ts>
+        result_type operator()(Ts &&... ts) const
         {
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return extract_copy_value(p->eval_direct(std::move(args)));
+                // user-facing functions need to copy all arguments
+                arguments_type keep_alive;
+                keep_alive.reserve(sizeof...(Ts));
+
+                int const sequencer_[] = {
+                    0, (keep_alive.emplace_back(
+                            extract_copy_value(primitive_argument_type{
+                                std::forward<Ts>(ts)
+                            })), 0)...
+                };
+                (void)sequencer_;
+
+                // construct argument-pack to use for actual call
+                arguments_type params;
+                params.reserve(sizeof...(Ts));
+                for (auto const& arg : keep_alive)
+                {
+                    params.emplace_back(extract_ref_value(arg));
+                }
+
+                return extract_copy_value(p->eval_direct(std::move(params)));
             }
+
             return arg_;
         }
+
         hpx::future<result_type> eval(arguments_type && args) const
         {
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return p->eval(std::move(args));
+                // user-facing functions need to copy all arguments
+                arguments_type keep_alive;
+                keep_alive.reserve(args.size());
+                for (auto && arg : std::move(args))
+                {
+                    keep_alive.emplace_back(extract_copy_value(std::move(arg)));
+                }
+
+                return p->eval(std::move(keep_alive));
             }
             return hpx::make_ready_future(arg_);
         }
@@ -161,8 +192,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function_list& operator=(function_list const&) = delete;
         function_list& operator=(function_list &&) = delete;
 
+        template <typename ... Ts>
+        result_type operator()(Ts &&... ts) const
+        {
+            return snippets_.back()(std::forward<Ts>(ts)...);
+        }
+
+        topology get_expression_topology() const
+        {
+            return snippets_.back().get_expression_topology();
+        }
+
         std::size_t compile_id_;
-        std::list<function> defines_;
+        std::list<function> snippets_;
         std::map<std::string, std::size_t> sequence_numbers_;
     };
 
@@ -197,7 +239,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::reference_wrapper<function const> f_;
 
         lambda(function const& f, function_list const& elements)
-          : elements_(elements.defines_)
+          : elements_(elements.snippets_)
           , f_(f)
         {}
 
@@ -210,7 +252,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 for (auto const& element : elements_)
                 {
-                    fargs.push_back(element(args));
+                    fargs.push_back(primitive_argument_type{element(args)});
                 }
 
                 return f_.get()(std::move(fargs));

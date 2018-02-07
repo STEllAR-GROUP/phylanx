@@ -55,20 +55,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             string_output() = default;
 
         protected:
-            using args_type = std::vector<primitive_result_type>;
+            using args_type = std::vector<primitive_argument_type>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_result_type
+                    [this_](args_type && args) -> primitive_argument_type
                     {
                         if (args.empty())
                         {
-                            return primitive_result_type{std::string{}};
+                            return primitive_argument_type{std::string{}};
                         }
 
                         std::stringstream strm;
@@ -77,10 +77,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             strm << arg;
                         }
 
-                        return primitive_result_type(strm.str());
+                        return primitive_argument_type(strm.str());
                     }),
-                    detail::map_operands(operands, value_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::value_operand{}, args));
             }
 
         private:
@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content
-    hpx::future<primitive_result_type> string_output::eval(
+    hpx::future<primitive_argument_type> string_output::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

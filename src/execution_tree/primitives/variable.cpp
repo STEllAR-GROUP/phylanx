@@ -77,7 +77,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_result_type variable::eval_direct(
+    primitive_argument_type variable::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
         if (!evaluated_)
@@ -92,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return extract_ref_value(data_);
     }
 
-    void variable::store(primitive_result_type && data)
+    void variable::store(primitive_argument_type && data)
     {
         data_ = extract_copy_value(std::move(data));
         evaluated_ = true;

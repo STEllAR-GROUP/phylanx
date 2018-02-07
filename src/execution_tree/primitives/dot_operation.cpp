@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type dot0d(operands_type && ops) const
+            primitive_argument_type dot0d(operands_type && ops) const
             {
                 if (ops[1].num_dimensions() != 0UL)
                 {
@@ -65,13 +65,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 ops[0].scalar() *= ops[1].scalar();
-                return ir::node_data<double>{std::move(ops[0])};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(ops[0])}};
             }
 
             // lhs_num_dims == 1
             // Case 1: Inner product of two vectors
             // Case 2: Inner product of a vector and an array of vectors
-            primitive_result_type dot1d(operands_type && ops) const
+            primitive_argument_type dot1d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
@@ -94,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type dot1d1d(
+            primitive_argument_type dot1d1d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 if (lhs.size() != rhs.size())
@@ -106,10 +107,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // lhs.dimension(0) == rhs.dimension(0)
                 lhs = double(blaze::dot(lhs.vector(), rhs.vector()));
-                return ir::node_data<double>{std::move(lhs)};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(lhs)}};
             }
 
-            primitive_result_type dot1d2d(
+            primitive_argument_type dot1d2d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 if (lhs.size() != rhs.dimension(0))
@@ -120,13 +122,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 lhs = blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
-                return ir::node_data<double>{std::move(lhs)};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(lhs)}};
             }
 
             // lhs_num_dims == 2
             // Multiply a matrix with a vector
             // Regular matrix multiplication
-            primitive_result_type dot2d(operands_type && ops) const
+            primitive_argument_type dot2d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
@@ -146,7 +149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type dot2d1d(
+            primitive_argument_type dot2d1d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 if (lhs.dimension(1) != rhs.size())
@@ -157,10 +160,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 rhs = lhs.matrix() * rhs.vector();
-                return ir::node_data<double>{std::move(rhs)};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(rhs)}};
             }
 
-            primitive_result_type dot2d2d(
+            primitive_argument_type dot2d2d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 if (lhs.dimension(1) != rhs.dimension(0))
@@ -171,11 +175,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 lhs = lhs.matrix() * rhs.matrix();
-                return ir::node_data<double>{std::move(lhs)};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(lhs)}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -197,7 +202,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
                         switch (dims)
@@ -218,14 +223,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions");
                         }
                     }),
-                    detail::map_operands(operands, numeric_operand, args)
-                );
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args));
             }
         };
     }
 
     // implement 'dot' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> dot_operation::eval(
+    hpx::future<primitive_argument_type> dot_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

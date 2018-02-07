@@ -34,13 +34,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> wrapped_variable::eval(
+    hpx::future<primitive_argument_type> wrapped_variable::eval(
         std::vector<primitive_argument_type> const& params) const
     {
         return value_operand(target_, params);
     }
 
-    void wrapped_variable::store(primitive_result_type && val)
+    void wrapped_variable::store(primitive_argument_type && val)
     {
         primitive* p = util::get_if<primitive>(&target_);
         if (p != nullptr)
