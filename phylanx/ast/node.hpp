@@ -623,6 +623,11 @@ namespace phylanx { namespace ast
           : first(primary_expr(std::move(l)))
         {}
 
+        expression(operand && expr, std::vector<operation> && l)
+          : first(std::move(expr))
+          , rest(std::move(l))
+        {}
+
         void append(operation const& op)
         {
             rest.push_back(op);
@@ -671,6 +676,11 @@ namespace phylanx { namespace ast
         {}
         explicit function_call(identifier && name)
           : function_name(std::move(name))
+        {}
+
+        function_call(identifier name, std::vector<expression>&& l)
+          : function_name(std::move(name))
+          , args(std::move(l))
         {}
 
         void append(expression const& expr)
