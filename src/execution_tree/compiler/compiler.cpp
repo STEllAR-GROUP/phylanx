@@ -303,8 +303,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return f;
             }
 
+            // NOTE: Check the consistency of names: "function" vs "call-function"
             // get sequence number of this component
-            static std::string function_("function");
+            static std::string function_("call-function");
             std::size_t sequence_number =
                 snippets_.sequence_numbers_[function_]++;
 

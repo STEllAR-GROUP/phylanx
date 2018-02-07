@@ -283,7 +283,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.push_back(arg.arg_);
             }
 
-            std::string full_name = "function#" +
+            // NOTE: Check the consistency of names: "function" vs "call-function"
+            std::string full_name = "call-function#" +
                 std::to_string(sequence_number_) + "#" + name;
 
 
