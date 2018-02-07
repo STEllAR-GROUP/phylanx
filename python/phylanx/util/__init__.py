@@ -208,7 +208,6 @@ class Recompiler:
                 s += self.recompile(args[1], True).strip(' ')
             else:
                 s += '%s(' % full_node_name(a, 'block')
-                #for aa in args[1:]:
                 sargs = args[1:]
                 for i in range(len(sargs)):
                     aa = sargs[i]
