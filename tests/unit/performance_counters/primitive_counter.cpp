@@ -53,7 +53,7 @@ char const* const lra_code = R"(block(
 
 std::map<std::string, std::size_t> expected_counts =
 {
-    { "block", 2 },
+    { "block", 3 },
     { "parallel_block", 1 },
     { "dot", 2 },
     { "while", 1 },
@@ -68,11 +68,16 @@ std::map<std::string, std::size_t> expected_counts =
     { "lt", 1 },
     { "store", 5 },
     { "minus", 1 },
+    { "access-argument", 8 },
+    { "access-variable", 14 },
+    { "define-variable", 6 },
+    { "call-function", 1 },
+    { "define-function", 1 },
 };
 
 int main()
 {
-    blaze::DynamicMatrix<double> v1{{15.04, 16.74}, {13.82, 24.49},
+    blaze::DynamicMatrix<double> const v1{{15.04, 16.74}, {13.82, 24.49},
         {12.54, 16.32}, {23.09, 19.83}, {9.268, 12.87}, {9.676, 13.14},
         {12.22, 20.04}, {11.06, 17.12}, {16.3 , 15.7 }, {15.46, 23.95},
         {11.74, 14.69}, {14.81, 14.7 }, {13.4 , 20.52}, {14.58, 13.66},
@@ -81,12 +86,12 @@ int main()
         {11.26, 19.83}, {13.71, 18.68}, {9.847, 15.68}, {8.571, 13.1 },
         {13.46, 18.75}, {12.34, 12.27}, {13.94, 13.17}, {12.07, 13.44}};
 
-    blaze::DynamicVector<double> v2{1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0,
+    blaze::DynamicVector<double> const v2{1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0,
         1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1};
 
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+    auto const lra = phylanx::execution_tree::compile(lra_code, snippets);
 
     // Evaluate generated execution tree
     auto x = phylanx::ir::node_data<double>{v1};
@@ -101,21 +106,21 @@ int main()
     {
         std::string const& name = hpx::util::get<0>(pattern);
 
-        std::string count_pc_name(
+        std::string const count_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/count/eval");
         hpx::performance_counters::performance_counter count_pc(
             count_pc_name);
 
-        std::string time_pc_name(
+        std::string const time_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/time/eval");
         hpx::performance_counters::performance_counter time_pc(time_pc_name);
 
-        std::string direct_counter_pc_name(
+        std::string const direct_counter_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/count/eval_direct");
         hpx::performance_counters::performance_counter direct_counter_pc(
             direct_counter_pc_name);
 
-        std::string direct_time_pc_name(
+        std::string const direct_time_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/time/eval_direct");
         hpx::performance_counters::performance_counter direct_time_pc(
             direct_time_pc_name);
@@ -127,7 +132,7 @@ int main()
 
         // Time performance counters
         {
-            auto info = time_pc.get_info(hpx::launch::sync);
+            auto const info = time_pc.get_info(hpx::launch::sync);
             HPX_TEST_EQ(info.fullname_, time_pc_name);
             HPX_TEST_EQ(
                 info.type_, hpx::performance_counters::counter_raw_values);
@@ -138,12 +143,12 @@ int main()
             HPX_TEST_EQ(values.count_, 1ll);
             HPX_TEST_EQ(values.values_.size(), entries.size());
 
-            auto direct_info = direct_time_pc.get_info(hpx::launch::sync);
+            auto const direct_info = direct_time_pc.get_info(hpx::launch::sync);
             HPX_TEST_EQ(direct_info.fullname_, direct_time_pc_name);
             HPX_TEST_EQ(direct_info.type_,
                 hpx::performance_counters::counter_raw_values);
 
-            auto direct_values = direct_time_pc.get_counter_values_array(
+            auto const direct_values = direct_time_pc.get_counter_values_array(
                 hpx::launch::sync, false);
 
             HPX_TEST_EQ(direct_values.count_, 1ll);
@@ -159,23 +164,23 @@ int main()
 
         // Count performance counters
         {
-            auto info = count_pc.get_info(hpx::launch::sync);
+            auto const info = count_pc.get_info(hpx::launch::sync);
             HPX_TEST_EQ(info.fullname_, count_pc_name);
             HPX_TEST_EQ(
                 info.type_, hpx::performance_counters::counter_raw_values);
 
-            auto values =
+            auto const values =
                 count_pc.get_counter_values_array(hpx::launch::sync, false);
 
             HPX_TEST_EQ(values.count_, 1ll);
             HPX_TEST_EQ(values.values_.size(), entries.size());
 
-            auto direct_info = direct_counter_pc.get_info(hpx::launch::sync);
+            auto const direct_info = direct_counter_pc.get_info(hpx::launch::sync);
             HPX_TEST_EQ(direct_info.fullname_, direct_counter_pc_name);
             HPX_TEST_EQ(direct_info.type_,
                 hpx::performance_counters::counter_raw_values);
 
-            auto direct_values = direct_counter_pc.get_counter_values_array(
+            auto const direct_values = direct_counter_pc.get_counter_values_array(
                 hpx::launch::sync, false);
 
             HPX_TEST_EQ(direct_values.count_, 1ll);
@@ -190,5 +195,5 @@ int main()
         }
     }
 
-    return hpx::finalize();
+    return hpx::util::report_errors();
 }

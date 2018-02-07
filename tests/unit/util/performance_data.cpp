@@ -1,22 +1,22 @@
 //  Copyright (c) 2018 Parsa Amini
 //  Copyright (c) 2018 Hartmut Kaiser
-//  Copyright (c) 2018 Shahrzad Shirzad
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 
-#include <hpx/hpx_init.hpp>
+#include <hpx/hpx_main.hpp>
 #include <hpx/include/agas.hpp>
+#include <hpx/include/performance_counters.hpp>
+#include <hpx/util/lightweight_test.hpp>
 
+#include <cstddef>
 #include <cstdint>
-#include <iostream>
+#include <map>
 #include <string>
-#include <utility>
-#include <vector>
 
-#include <boost/program_options.hpp>
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const fib_code = R"(block(
@@ -45,8 +45,7 @@ char const* const fib_code = R"(block(
     fib_test
 ))";
 
-///////////////////////////////////////////////////////////////////////////////
-int hpx_main(boost::program_options::variables_map& vm)
+int main()
 {
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
@@ -54,19 +53,8 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto const fibonacci = phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(fib_code), snippets);
 
-    // Fibonacci arguments
-    auto num_iterations = vm["num_iterations"].as<std::int64_t>();
-
     // Evaluate Fibonacci using the read data
-    fibonacci(num_iterations);
-
-    // CSV Header
-    std::cout << "primitive_instance" << ","
-        << "count" << ","
-        << "time" << ","
-        << "direct_count" << ","
-        << "direct_time"
-        << std::endl;
+    auto const result = fibonacci();
 
     // List of existing primitive instances
     std::vector<std::string> existing_primitive_instances;
@@ -78,32 +66,7 @@ int hpx_main(boost::program_options::variables_map& vm)
         existing_primitive_instances.push_back(entry.first);
     }
 
-    // Print performance data
-    for (auto const& entry :
-        phylanx::util::retrieve_counter_data(existing_primitive_instances,
-            std::vector<std::string>{"count/eval", "time/eval",
-                "count/eval_direct", "time/eval_direct"}, hpx::find_here()))
-    {
-        std::cout << "\"" << entry.first << "\"";
-        for (auto const& counter_value : entry.second)
-        {
-            std::cout << "," << counter_value;
-        }
-        std::cout << std::endl;
-    }
+    // TODO: Finish the test
 
-    return hpx::finalize();
-}
-
-int main(int argc, char* argv[])
-{
-    // Command-line handling
-    boost::program_options::options_description desc(
-        "usage: primitive_instrumentation [options]");
-    desc.add_options()
-        ("num_iterations,n",
-            boost::program_options::value<std::int64_t>()->default_value(10),
-            "number of iterations (default: 10)");
-
-    return hpx::init(desc, argc, argv);
+    return hpx::util::report_errors();
 }
