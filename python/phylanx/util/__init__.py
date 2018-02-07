@@ -14,6 +14,58 @@ import phylanx
 et = phylanx.execution_tree
 import inspect, re, ast
 
+def dump_info(a,depth=0):
+    "Print detailed information about an AST"
+    nm = a.__class__.__name__
+    print("  "*depth,end="")
+    iter_children = True
+    if nm == "Num":
+        if type(a.n)==int:
+            print("%s=%d" % (nm,a.n))
+        else:
+            print("%s=%f" % (nm,a.n))
+    elif nm == "Global":
+        print("Global:",dir(a))
+    elif nm == "Str":
+        print("%s='%s'" % (nm,a.s))
+    elif nm == "Name":
+        print("%s='%s'" %(nm,a.id))
+    elif nm == "arg":
+        print("%s='%s'" %(nm,a.arg))
+    elif nm == "Slice":
+        print("Slice:")
+        print("  "*depth,end="")
+        print("  Upper:")
+        if a.upper != None:
+            dump_info(a.upper,depth+4)
+        print("  "*depth,end="")
+        print("  Lower:")
+        if a.lower != None:
+            dump_info(a.lower,depth+4)
+        print("  "*depth,end="")
+        print("  Step:")
+        if a.step != None:
+            dump_info(a.step,depth+4)
+    elif nm == "If":
+        iter_children = False
+        print(nm)
+        dump_info(a.test,depth)
+        for n in a.body:
+            dump_info(n,depth+1)
+        if len(a.orelse)>0:
+            print("  "*depth,end="")
+            print("Else")
+            for n in a.orelse:
+                dump_info(n,depth+1)
+    else:
+        print(nm)
+    for (f,v) in ast.iter_fields(a):
+        if type(f) == str and type(v) == str:
+            print("%s:attr[%s]=%s" % ("  "*(depth+1),f,v))
+    if iter_children:
+        for n in ast.iter_child_nodes(a):
+            dump_info(n,depth+1)
+
 def phy_print(m):
     ndim = m.num_dimensions()
     if ndim == 1:
@@ -86,6 +138,7 @@ class Recompiler:
             e = get_node(a,name="ExtSlice")
             s0 = get_node(e,name="Slice",num=0)
             s1 = get_node(e,name="Slice",num=1)
+            s0alt = get_node(a,name="Slice",num=1)
             if s0 != None and s1 != None:
                 xlo = s0.lower
                 xhi = s0.upper
@@ -114,6 +167,24 @@ class Recompiler:
                     s += "shape(" + sname + ",1)"
                 else:
                     s += self.recompile(yhi)
+                s += ")"
+                return s
+            elif s0alt != None:
+                sname = self.recompile(get_node(a,num=0))
+                xlo = s0alt.lower
+                xhi = s0alt.upper
+                s = 'slice_column('
+                s += sname
+                s += ','
+                if xlo == None:
+                    s += "0"
+                else:
+                    s += self.recompile(xlo)
+                s += ','
+                if xhi == None:
+                    s += "shape("+sname+",0)"
+                else:
+                    s += self.recompile(xhi)
                 s += ")"
                 return s
             else:

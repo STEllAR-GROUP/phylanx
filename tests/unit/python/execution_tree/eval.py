@@ -57,7 +57,11 @@ two = np.reshape(np.arange(30),(5,6))
 r1 = test_slice(two)
 r2 = two[1:3,1:4]
 
-assert r2.shape == (r1.dimension(0), r1.dimension(1))
-for i in range(r2.shape[0]):
-    for j in range(r2.shape[1]):
-        assert r1[i,j] == r2[i,j]
+assert r1 == r2
+
+@phyfun
+def test_slice1(a):
+    return a[2:4]
+
+v1 = np.arange(10)
+assert test_slice1(v1) == v1[2:4]
