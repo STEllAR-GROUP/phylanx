@@ -115,6 +115,11 @@ phylanx_option(
   "Enable or disable building tools"
   OFF ADVANCED CATEGORY "Build")
 
+phylanx_option(
+  PHYLANX_WITH_HIGHFIVE BOOL
+  "Enable or disable building HDF5 Support"
+  OFF ADVANCED CATEGORY "Build")
+
 if(MSVC)
   phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
     "Force creating pseudo targets and pseudo dependencies (default OFF)."
