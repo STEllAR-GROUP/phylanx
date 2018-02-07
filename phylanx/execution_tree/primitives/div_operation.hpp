@@ -15,8 +15,9 @@
 
 #include <vector>
 
-namespace phylanx { namespace execution_tree { namespace primitives {
-    class HPX_COMPONENT_EXPORT div_operation
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    class div_operation
       : public base_primitive
       , public hpx::components::component_base<div_operation>
     {
@@ -25,9 +26,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         div_operation() = default;
 
-        div_operation(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT div_operation(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

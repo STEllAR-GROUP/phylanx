@@ -19,7 +19,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
      * @version 0.0.1
      * @date 2018
      */
-    class HPX_COMPONENT_EXPORT linspace
+    class linspace
       : public base_primitive
       , public hpx::components::component_base<linspace>
     {
@@ -41,9 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
          * samples is less than 2.\n
          * num_samples: number of samples in the sequence.
          */
-        linspace(std::vector<primitive_argument_type>&& args);
+        PHYLANX_EXPORT linspace(std::vector<primitive_argument_type>&& args);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

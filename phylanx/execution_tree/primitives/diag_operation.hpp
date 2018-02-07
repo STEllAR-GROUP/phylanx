@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT diag_operation
+    class diag_operation
       : public base_primitive
       , public hpx::components::component_base<diag_operation>
     {
@@ -49,9 +49,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
          * >numpy.diag</a>
          */
 
-        diag_operation(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT diag_operation(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
     };
 }}}

@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT less
+    class less
       : public base_primitive
       , public hpx::components::component_base<less>
     {
@@ -26,9 +26,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         less() = default;
 
-        less(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT less(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

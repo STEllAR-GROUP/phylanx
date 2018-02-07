@@ -18,7 +18,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT or_operation
+    class or_operation
       : public base_primitive
       , public hpx::components::component_base<or_operation>
     {
@@ -30,9 +30,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         or_operation() = default;
 
-        or_operation(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT or_operation(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

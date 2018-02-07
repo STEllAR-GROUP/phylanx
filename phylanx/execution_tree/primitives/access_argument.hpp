@@ -19,7 +19,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT access_argument
+    class access_argument
         : public base_primitive
         , public hpx::components::component_base<access_argument>
     {
@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
           : argnum_(argnum)
         {}
 
-        primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
 
     private:

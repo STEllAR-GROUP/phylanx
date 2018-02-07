@@ -74,6 +74,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
 {
+    namespace primitives
+    {
+        base_primitive::~base_primitive()
+        {
+        }
+
+        //////////////////////////////////////////////////////////////////////
+        hpx::future<primitive_argument_type> base_primitive::eval_nonvirtual(
+            std::vector<primitive_argument_type> const& args) const
+        {
+            hpx::util::scoped_timer<std::int64_t> timer(eval_duration_);
+            ++eval_count_;
+            return eval(args);
+        }
+
+        hpx::future<primitive_argument_type> base_primitive::eval(
+            std::vector<primitive_argument_type> const& params) const
+        {
+            return hpx::make_ready_future(eval_direct(params));
+        }
+
+        primitive_argument_type base_primitive::eval_direct_nonvirtual(
+            std::vector<primitive_argument_type> const& args) const
+        {
+            hpx::util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
+            ++eval_direct_count_;
+            return eval_direct(args);
+        }
+
+        primitive_argument_type base_primitive::eval_direct(
+            std::vector<primitive_argument_type> const& params) const
+        {
+            return eval(params).get();
+        }
+
+        void base_primitive::store_nonvirtual(primitive_argument_type data)
+        {
+            store(std::move(data));
+        }
+
+        void base_primitive::store(primitive_argument_type &&)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::execution_tree::primitives::base_primitive",
+                "store function should only be called in store_primitive");
+        }
+
+        topology base_primitive::expression_topology_nonvirtual() const
+        {
+            return expression_topology();
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_DEBUG)
     bool primitive::enable_tracing = true;

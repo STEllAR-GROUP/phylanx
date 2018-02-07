@@ -17,20 +17,20 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT function_reference
+    class function_reference
       : public base_primitive
       , public hpx::components::component_base<function_reference>
     {
     public:
         function_reference() = default;
 
-        function_reference(primitive_argument_type target,
+        PHYLANX_EXPORT function_reference(primitive_argument_type target,
             std::vector<primitive_argument_type>&& operands, std::string name);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
-        topology expression_topology() const override;
+        PHYLANX_EXPORT topology expression_topology() const override;
 
     private:
         primitive_argument_type target_;

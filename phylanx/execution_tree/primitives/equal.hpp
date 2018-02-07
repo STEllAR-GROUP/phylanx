@@ -17,18 +17,18 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT equal
-        : public base_primitive
-        , public hpx::components::component_base<equal>
+    class equal
+      : public base_primitive
+      , public hpx::components::component_base<equal>
     {
     public:
         static match_pattern_type const match_data;
 
         equal() = default;
 
-        equal(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT equal(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

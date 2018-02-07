@@ -18,7 +18,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT if_conditional
+    class if_conditional
         : public base_primitive
         , public hpx::components::component_base<if_conditional>
     {
@@ -27,9 +27,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if_conditional() = default;
 
-        if_conditional(std::vector<primitive_argument_type>&& operand);
+        PHYLANX_EXPORT if_conditional(
+            std::vector<primitive_argument_type>&& operand);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

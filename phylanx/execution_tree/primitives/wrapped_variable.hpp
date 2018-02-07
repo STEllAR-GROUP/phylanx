@@ -17,18 +17,19 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT wrapped_variable
+    class wrapped_variable
       : public base_primitive
       , public hpx::components::locking_hook<
           hpx::components::component_base<wrapped_variable>>
     {
     public:
         wrapped_variable() = default;
-        wrapped_variable(primitive_argument_type target, std::string name);
+        PHYLANX_EXPORT wrapped_variable(
+            primitive_argument_type target, std::string name);
 
-        void store(primitive_argument_type && val) override;
+        PHYLANX_EXPORT void store(primitive_argument_type && val) override;
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
     private:

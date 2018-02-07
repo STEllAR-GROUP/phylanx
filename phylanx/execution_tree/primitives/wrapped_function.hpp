@@ -17,21 +17,22 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT wrapped_function
+    class wrapped_function
       : public base_primitive
       , public hpx::components::component_base<wrapped_function>
     {
     public:
         wrapped_function() = default;
 
-        wrapped_function(primitive_argument_type target, std::string name);
-        wrapped_function(primitive_argument_type target,
+        PHYLANX_EXPORT wrapped_function(
+            primitive_argument_type target, std::string name);
+        PHYLANX_EXPORT wrapped_function(primitive_argument_type target,
             std::vector<primitive_argument_type>&& operands, std::string name);
 
         // return the topology for this function definition
-        topology expression_topology() const override;
+        PHYLANX_EXPORT topology expression_topology() const override;
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
     private:

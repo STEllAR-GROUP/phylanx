@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT column_slicing_operation
+    class column_slicing_operation
       : public base_primitive
       , public hpx::components::component_base<column_slicing_operation>
     {
@@ -26,9 +26,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         column_slicing_operation() = default;
 
-        column_slicing_operation(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT column_slicing_operation(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
     };
 }}}
