@@ -63,7 +63,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 rhs.vector() = blaze::map(rhs.vector(),
                     [&](double x) { return (x <= lhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(rhs)});
             }
 
             primitive_argument_type less_equal0d2d(
@@ -74,7 +75,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 rhs.matrix() = blaze::map(rhs.matrix(),
                     [&](double x) { return (x <= lhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(rhs)});
             }
 
             primitive_argument_type less_equal0d(
@@ -108,7 +110,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.vector() = blaze::map(lhs.vector(),
                     [&](double x) { return (x <= rhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type less_equal1d1d(
@@ -129,7 +132,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
                     [&](double x, double y) { return (x <= y); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type less_equal1d2d(
@@ -153,7 +157,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::trans(lhs.vector()),
                             [](double x, double y) { return x <= y; });
 
-                return primitive_argument_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(rhs)});
             }
 
             primitive_argument_type less_equal1d(
@@ -189,7 +194,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.matrix() = blaze::map(lhs.matrix(),
                     [&](double x) { return (x <= rhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type less_equal2d1d(
@@ -213,7 +219,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::trans(rhs.vector()),
                             [](double x, double y) { return x <= y; });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type less_equal2d2d(
@@ -234,7 +241,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
                     [&](double x, double y) { return (x <= y); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type less_equal2d(

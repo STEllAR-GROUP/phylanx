@@ -63,7 +63,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 rhs.vector() = blaze::map(rhs.vector(),
                     [&](double x) { return (x == lhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(rhs)});
             }
 
             primitive_argument_type equal0d2d(
@@ -74,10 +75,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 rhs.matrix() = blaze::map(rhs.matrix(),
                     [&](double x) { return (x == lhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(rhs)});
             }
 
-            primitive_argument_type equal0d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type equal0d(
+                operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
@@ -107,7 +110,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.vector() = blaze::map(lhs.vector(),
                     [&](double x) { return (x == rhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type equal1d1d(
@@ -128,7 +132,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
                     [&](double x, double y) { return (x == y); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type equal1d2d(
@@ -152,10 +157,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::trans(lhs.vector()),
                             [](double x, double y) { return x == y; });
 
-                return primitive_argument_type(ir::node_data<bool>{rhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(rhs)});
             }
 
-            primitive_argument_type equal1d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type equal1d(
+                operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
@@ -177,7 +184,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             primitive_argument_type equal2d0d(
-                    operand_type&& lhs, operand_type&& rhs) const
+                operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -185,9 +192,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
                 lhs.matrix() = blaze::map(lhs.matrix(),
-                                          [&](double x) { return (x == rhs.scalar()); });
+                    [&](double x) { return (x == rhs.scalar()); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type equal2d1d(
@@ -211,7 +219,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::trans(rhs.vector()),
                             [](double x, double y) { return x == y; });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
             primitive_argument_type equal2d2d(
@@ -232,10 +241,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
                     [&](double x, double y) { return (x == y); });
 
-                return primitive_argument_type(ir::node_data<bool>{lhs});
+                return primitive_argument_type(
+                    ir::node_data<bool>{std::move(lhs)});
             }
 
-            primitive_argument_type equal2d(operand_type&& lhs, operand_type&& rhs) const
+            primitive_argument_type equal2d(
+                operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch(rhs_dims)
