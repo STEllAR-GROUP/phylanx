@@ -28,7 +28,7 @@ char const* const fib_code = R"(block(
             cout(x),
             cout(y),
             define(temp,0.0),
-            define(step, 0),
+            define(step, 2),
             while(
                 step < iterations,
                 block(
