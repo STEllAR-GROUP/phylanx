@@ -834,7 +834,9 @@ PYBIND11_MODULE(_phylanx, m)
                 });
             },"Compare against arrays")
         .def("__eq__",
-            [](phylanx::execution_tree::primitive const& p,std::vector<std::vector<double>> const& v) {
+            [](phylanx::execution_tree::primitive const& p,
+               std::vector<std::vector<double>> const& v)
+            {
                 using namespace phylanx::execution_tree;
                 return hpx::threads::run_as_hpx_thread([&]() {
                     auto n = numeric_operand(p, {}).get();
