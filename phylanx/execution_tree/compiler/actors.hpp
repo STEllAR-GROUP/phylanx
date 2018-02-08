@@ -106,6 +106,40 @@ namespace phylanx { namespace execution_tree { namespace compiler
             set_name(std::move(name));
         }
 
+        // direct execution
+        result_type operator()(arguments_type const& args) const
+        {
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                arguments_type params;
+                params.reserve(args.size());
+                for (auto const& arg : args)
+                {
+                    params.emplace_back(extract_ref_value(arg));
+                }
+                return extract_copy_value(p->eval_direct(std::move(params)));
+            }
+            return arg_;
+        }
+
+        result_type operator()(arguments_type && args) const
+        {
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                // construct argument-pack to use for actual call
+                arguments_type params;
+                params.reserve(args.size());
+                for (auto && arg : args)
+                {
+                    params.emplace_back(extract_ref_value(std::move(arg)));
+                }
+                return extract_copy_value(p->eval_direct(std::move(params)));
+            }
+            return arg_;
+        }
+
         template <typename ... Ts>
         result_type operator()(Ts &&... ts) const
         {
