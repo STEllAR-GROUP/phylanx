@@ -11,21 +11,23 @@
 
 #include <hpx/runtime/find_here.hpp>
 
+#include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
 
 
 namespace phylanx { namespace util
 {
     /// Retrieve performance counter data for selected primitives
-    /// \param primitive_instances The primitives for which performance counter 
+    /// \param primitive_instances The primitives for which performance counter
     /// data is required
-    /// \param locality_id The locality the performance counter data is going 
+    /// \param locality_id The locality the performance counter data is going
     /// to be queried from
-    /// \param counter_name_last_parts A vector containing the last part of the 
-    /// performance counter names. 
+    /// \param counter_name_last_parts A vector containing the last part of the
+    /// performance counter names.
     /// e.g. std::vector{ "count/eval", "count/direct_eval" }
-    /// \return a std::map containing a key/value pair of primitive 
+    /// \return a std::map containing a key/value pair of primitive
     /// instances/performance counter values
     /// \note primitive_instances are not verified
     /// \exception hpx::exception

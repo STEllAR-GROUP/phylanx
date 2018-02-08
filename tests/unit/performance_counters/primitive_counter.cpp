@@ -106,8 +106,10 @@ int main()
     {
         std::string const& name = hpx::util::get<0>(pattern);
 
-        // HACK: There is access-argument and access-variable primitive
-        // registered in AGAS for each access
+        // HACK: There is an access-argument/access-variable primitive
+        // registered in AGAS for each argument/variable access. This is a
+        // problem because several instances with the same sequence ids may
+        // exist and thus we ignore these two primitives for now.
         if (name == "access-argument" || name == "access-variable")
             continue;
 

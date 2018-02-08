@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <vector>
 
 #include <blaze/Math.h>
 
@@ -101,11 +102,15 @@ int main()
     for (auto const& entry :
         phylanx::util::retrieve_counter_data(existing_primitive_instances,
             std::vector<std::string>{"count/eval", "time/eval",
-            "count/eval_direct", "time/eval_direct"}, hpx::find_here()))
+                "count/eval_direct", "time/eval_direct"},
+            hpx::find_here()))
     {
-        auto const tags = phylanx::execution_tree::compiler::parse_primitive_name(entry.first);
+        auto const tags =
+            phylanx::execution_tree::compiler::parse_primitive_name(
+                entry.first);
 
-        std::string const expected_key(tags.primitive + "#" + std::to_string(tags.sequence_number));
+        std::string const expected_key(
+            tags.primitive + "#" + std::to_string(tags.sequence_number));
         auto const& expected_values = expected_counts[expected_key];
 
         HPX_TEST_EQ(entry.second[0], expected_values[0]);
