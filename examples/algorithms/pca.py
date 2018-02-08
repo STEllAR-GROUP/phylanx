@@ -21,6 +21,7 @@ from phylanx.util import *
 @phyfun
 def pca(A):
     M = transpose(A - mean( transpose(A), axis=1))
+    # TODO: cov, eig primitives
     latent, coeff = eig(cov(M))
     score = dot(transpose(coeff), M)
     return coeff, score, latent
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     A = array([ [2.4,0.7,2.9,2.2,3.0,2.7,1.6,1.1,1.6,0.9],
                 [2.5,0.5,2.2,1.9,3.1,2.3,2,1,1.5,1.1] ])
 
-    coeff, score, latent = princomp(transpose(A))
+    coeff, score, latent = pca(transpose(A))
     phy_print(coeff, score, latent)
 
     res = princomp(transpose(A))
