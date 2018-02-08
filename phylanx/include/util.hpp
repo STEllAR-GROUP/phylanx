@@ -7,7 +7,7 @@
 #define PHYLANX_UTIL_HPP
 
 #include <phylanx/config.hpp>
-#include <phylanx/util/instrumentation/performance_data.hpp>
+#include <phylanx/util/performance_data.hpp>
 #include <phylanx/util/serialization/ast.hpp>
 #include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/serialization/variant.hpp>

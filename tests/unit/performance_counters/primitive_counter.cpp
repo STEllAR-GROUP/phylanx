@@ -106,6 +106,11 @@ int main()
     {
         std::string const& name = hpx::util::get<0>(pattern);
 
+        // HACK: There is access-argument and access-variable primitive
+        // registered in AGAS for each access
+        if (name == "access-argument" || name == "access-variable")
+            continue;
+
         std::string const count_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/count/eval");
         hpx::performance_counters::performance_counter count_pc(

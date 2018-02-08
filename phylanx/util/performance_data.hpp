@@ -17,14 +17,18 @@
 
 namespace phylanx { namespace util
 {
-    // Retrieve performance counter data for selected primitives
-    //     primitive_instances:
-    //         The primitives for which performance counter data is required
-    //     locality_id:
-    //         The locality the performance counter data is going to be queried from
-    //     counter_name_last_parts:
-    //         A vector containing the last part of the performance counter
-    //         names. e.g. std::vector{ "count/eval", "count/direct_eval" }
+    /// Retrieve performance counter data for selected primitives
+    /// \param primitive_instances The primitives for which performance counter 
+    /// data is required
+    /// \param locality_id The locality the performance counter data is going 
+    /// to be queried from
+    /// \param counter_name_last_parts A vector containing the last part of the 
+    /// performance counter names. 
+    /// e.g. std::vector{ "count/eval", "count/direct_eval" }
+    /// \return a std::map containing a key/value pair of primitive 
+    /// instances/performance counter values
+    /// \note primitive_instances are not verified
+    /// \exception hpx::exception
     PHYLANX_EXPORT std::map<std::string, std::vector<std::int64_t>>
     retrieve_counter_data(std::vector<std::string> const& primitive_instances,
         std::vector<std::string> const& counter_name_last_parts,

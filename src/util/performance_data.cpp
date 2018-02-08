@@ -5,7 +5,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
-#include <phylanx/util/instrumentation/performance_data.hpp>
+#include <phylanx/util/performance_data.hpp>
 
 #include <hpx/include/future.hpp>
 #include <hpx/include/performance_counters.hpp>
