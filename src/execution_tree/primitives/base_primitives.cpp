@@ -6,6 +6,7 @@
 // phylanxinspect:noinclude:HPX_ASSERT
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -523,8 +524,21 @@ namespace phylanx { namespace execution_tree
         case 4:                     // phylanx::ir::node_data<double>
             return val;
 
+        case 6:                     // std::vector<ast::expression>
+            {
+                auto const& exprs = util::get<6>(val);
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_value_type(
+                            ast::detail::literal_value(exprs[0]));
+                    }
+                }
+            }
+            break;
+
         case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
             break;
@@ -559,8 +573,21 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
+        case 6:                     // std::vector<ast::expression>
+            {
+                auto const& exprs = util::get<6>(val);
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_value_type(
+                            ast::detail::literal_value(exprs[0]));
+                    }
+                }
+            }
+            break;
+
         case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
             break;
@@ -582,8 +609,21 @@ namespace phylanx { namespace execution_tree
         case 4:                     // phylanx::ir::node_data<double>
             return std::move(val);
 
+        case 6:                     // std::vector<ast::expression>
+            {
+                auto && exprs = util::get<6>(std::move(val));
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_value_type(
+                            ast::detail::literal_value(std::move(exprs[0])));
+                    }
+                }
+            }
+            break;
+
         case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
             break;
