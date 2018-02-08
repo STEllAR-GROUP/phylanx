@@ -1,0 +1,23 @@
+(block(
+    define(fib_test,
+        block(
+            define(x, 1.0),
+            define(z, 0.0),
+            define(y, 1.0),
+            define(temp, 0.0),
+            define(step, 0),
+            while(
+                step < 10,
+                block(
+                    store(z, x + y),
+                    store(temp, y),
+                    store(y, z),
+                    store(x, temp),
+                    store(step, step + 1)
+                )
+            ),
+            z
+        )
+    ),
+    fib_test
+))
