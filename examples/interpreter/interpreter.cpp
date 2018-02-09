@@ -108,7 +108,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
              "Execute the PhySL code given in argument")
             ("print,p", "Print the result of evaluation of the last "
                 "PhySL expression encountered in the input")
-            ("performance", "Print the topolofy of the created execution "
+            ("performance", "Print the topology of the created execution "
                 "tree and the corresponding performance counter results")
             ("transform,t", po::value<std::string>(),
                 "file to read transformation rules from")
@@ -175,13 +175,13 @@ int main(int argc, char* argv[])
     std::size_t first_index = 0;
     if (vm.count("code") != 0)
     {
-        // execute code as given directly on the command line
+        // Execute code as given directly on the command line
         user_code = vm["code"].as<std::string>();
         code_source_name = "<command_line>";
     }
     else
     {
-        // interpret first argument as the file name for the PhySL code
+        // Interpret first argument as the file name for the PhySL code
         user_code = read_user_code(positional_args[0]);
         code_source_name = fs::path(positional_args[0]).filename().string();
         first_index = 1;
