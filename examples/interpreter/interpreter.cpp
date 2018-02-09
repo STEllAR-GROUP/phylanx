@@ -15,7 +15,9 @@
 #include <vector>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
+namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 std::string read_user_code(std::string const& arg)
@@ -59,6 +61,41 @@ read_arguments(std::vector<std::string> const& args, std::size_t first_index)
     return result;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void print_performance_counter_data_csv()
+{
+    // CSV Header
+    std::cout << "primitive_instance,count,time,direct_count,direct_time\n";
+
+    // List of existing primitive instances
+    std::vector<std::string> existing_primitive_instances;
+
+    // Retrieve all primitive instances
+    for (auto const& entry :
+        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*#*"))
+    {
+        existing_primitive_instances.push_back(entry.first);
+    }
+
+    // Print performance data
+    std::vector<std::string> counter_names{
+        "count/eval", "time/eval", "count/eval_direct", "time/eval_direct"};
+
+    for (auto const& entry : phylanx::util::retrieve_counter_data(
+             existing_primitive_instances, counter_names))
+    {
+        std::cout << "\"" << entry.first << "\"";
+        for (auto const& counter_value : entry.second)
+        {
+            std::cout << "," << counter_value;
+        }
+        std::cout << "\n";
+    }
+
+    std::cout << "\n";
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int handle_command_line(int argc, char* argv[], po::variables_map& vm)
 {
     try
@@ -71,6 +108,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
              "Execute the PhySL code given in argument")
             ("print,p", "Print the result of evaluation of the last "
                 "PhySL expression encountered in the input")
+            ("performance", "Print the topolofy of the created execution "
+                "tree and the corresponding performance counter results")
             ("transform,t", po::value<std::string>(),
                 "file to read transformation rules from")
         ;
@@ -131,17 +170,20 @@ int main(int argc, char* argv[])
     // Read the file containing the source code
     auto positional_args = vm["positional"].as<std::vector<std::string>>();
 
+    std::string code_source_name;
     std::string user_code;
     std::size_t first_index = 0;
     if (vm.count("code") != 0)
     {
         // execute code as given directly on the command line
         user_code = vm["code"].as<std::string>();
+        code_source_name = "<command_line>";
     }
     else
     {
         // interpret first argument as the file name for the PhySL code
         user_code = read_user_code(positional_args[0]);
+        code_source_name = fs::path(positional_args[0]).filename().string();
         first_index = 1;
     }
 
@@ -167,13 +209,28 @@ int main(int argc, char* argv[])
         phylanx::execution_tree::compiler::function_list snippets;
         auto code = phylanx::execution_tree::compile(ast, snippets);
 
+        // Re-init all performance counters to guarantee correct measurement
+        // results if those are requested on the command line.
+        hpx::reinit_active_counters();
+
         // Evaluate user code using the read data
         auto result = code(args);
 
         // Print the result of the last PhySL expression, if requested
         if (vm.count("print") != 0)
         {
-            std::cout << result << std::endl;
+            std::cout << result << "\n";
+        }
+
+        // Print auxiliary information at exit: topology of the execution tree
+        // and the associate performance counter data
+        if (vm.count("performance") != 0)
+        {
+            std::cout << "\n"
+                << phylanx::execution_tree::dot_tree(code_source_name,
+                       snippets.snippets_.back().get_expression_topology())
+                << "\n";
+            print_performance_counter_data_csv();
         }
     }
     catch (std::exception const& e)
