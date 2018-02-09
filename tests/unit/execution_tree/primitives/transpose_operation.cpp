@@ -25,7 +25,7 @@ void test_transpose_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         transpose.eval();
 
     HPX_TEST_EQ(
@@ -43,7 +43,7 @@ void test_transpose_operation_0d_lit()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         transpose.eval();
 
     HPX_TEST_EQ(
@@ -66,7 +66,7 @@ void test_transpose_operation_2d()
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         transpose.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::trans(m);

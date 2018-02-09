@@ -192,7 +192,7 @@ expression_compiler(std::string xexpr, Ts const&... ts)
         try
         {
                 et::compiler::function_list eval_snippets;
-                auto x = et::compile_and_run(xexpr, eval_snippets);
+                auto x = et::compile(xexpr, eval_snippets);
 
                 et::primitive_argument_type result = x(ts...);
                 switch (result.index())
@@ -456,6 +456,12 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 return v.size();
             })
+        .def("__getitem__",
+            [](const std::vector<phylanx::ast::operation>& v, std::size_t i)
+            {
+                if (i >= v.size()) throw pybind11::index_error();
+                return v[i];
+            })
         .def("__iter__",
             [](std::vector<phylanx::ast::operation>& v)
             {
@@ -478,6 +484,12 @@ PYBIND11_MODULE(_phylanx, m)
             [](const std::vector<phylanx::ast::expression>& v)
             {
                 return v.size();
+            })
+        .def("__getitem__",
+            [](const std::vector<phylanx::ast::expression>& v, std::size_t i)
+            {
+                if (i >= v.size()) throw pybind11::index_error();
+                return v[i];
             })
         .def("__iter__",
             [](std::vector<phylanx::ast::expression>& v)
@@ -549,43 +561,47 @@ PYBIND11_MODULE(_phylanx, m)
         "generate expression tree from given expression");
 
     execution_tree.def("var",
-        [](double d)
-        {
-            return hpx::threads::run_as_hpx_thread([&]()
+        [](double d) {
+            return hpx::threads::run_as_hpx_thread(
+                [&]()
                 {
-                using namespace phylanx::execution_tree;
-                    return primitive{
-                        hpx::local_new<primitives::variable>(
-                    phylanx::ir::node_data<double>{d})};
-            });
+                    using namespace phylanx::execution_tree;
+                        return primitive{
+                            hpx::local_new<primitives::variable>(
+                                primitive_argument_type{d})};
+                });
         },
         "create a new variable from a floating point value");
     execution_tree.def("var",
         [](const std::string& d) {
-            return hpx::threads::run_as_hpx_thread([&]() {
-                using namespace phylanx::execution_tree;
-                // Name of the variable is ""
-                return primitive{hpx::local_new<primitives::variable>(
-                    phylanx::execution_tree::primitive_argument_type{d})};
-            });
+            return hpx::threads::run_as_hpx_thread(
+                [&]() {
+                    using namespace phylanx::execution_tree;
+                    return primitive{hpx::local_new<primitives::variable>(
+                        primitive_argument_type{d})};
+                });
         },
         "create a new variable from a string");
     execution_tree.def("var",
         [](const std::vector<double>& d) {
-            return hpx::threads::run_as_hpx_thread([&]() {
-                using namespace phylanx::execution_tree;
-                return primitive{hpx::local_new<primitives::variable>(
-                    phylanx::ir::node_data<double>{d})};
-            });
+            return hpx::threads::run_as_hpx_thread(
+                [&]() {
+                    using namespace phylanx::execution_tree;
+                    return primitive{hpx::local_new<primitives::variable>(
+                        primitive_argument_type{
+                            phylanx::ir::node_data<double>{d}})};
+                });
         },
         "create a new variable from a vector floating point values");
     execution_tree.def("var",
         [](const std::vector<std::vector<double>>& d) {
-            return hpx::threads::run_as_hpx_thread([&]() {
-                using namespace phylanx::execution_tree;
-                return primitive{hpx::local_new<primitives::variable>(
-                    phylanx::ir::node_data<double>{d})};
-            });
+            return hpx::threads::run_as_hpx_thread(
+                [&]() {
+                    using namespace phylanx::execution_tree;
+                    return primitive{hpx::local_new<primitives::variable>(
+                        primitive_argument_type{
+                            phylanx::ir::node_data<double>{d}})};
+                });
         },
         "create a new variable from a matrix floating point values");
 
@@ -744,36 +760,44 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
-                    using namespace phylanx::execution_tree;
-                    return numeric_operand(p, {}).get()[0];
-                });
+                        using namespace phylanx::execution_tree;
+                        return numeric_operand(
+                            primitive_argument_type{p}, {}).get()[0];
+                    });
             },
             "evaluate execution tree")
         .def("assign", [](phylanx::execution_tree::primitive p, double d)
             {
                 hpx::threads::run_as_hpx_thread(
                     [&]() {
+                        using namespace phylanx::execution_tree;
                         p.store(hpx::launch::sync,
-                            phylanx::ir::node_data<double>{d});
-                });
+                            primitive_argument_type{d});
+                    });
             },
             "assign another value to variable")
         .def("num_dimensions",
-            [](phylanx::execution_tree::primitive const& p) {
-                return hpx::threads::run_as_hpx_thread([&]() {
-                    using namespace phylanx::execution_tree;
-                    auto n = numeric_operand(p, {}).get();
-                    return n.num_dimensions();
-                });
+            [](phylanx::execution_tree::primitive const& p)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(
+                            primitive_argument_type{p}, {}).get();
+                        return n.num_dimensions();
+                    });
             },
             "get the number of dimensions")
         .def("__getitem__",
-            [](phylanx::execution_tree::primitive const& p, int index) {
-                return hpx::threads::run_as_hpx_thread([&]() {
-                    using namespace phylanx::execution_tree;
-                    auto n = numeric_operand(p, {}).get();
-                    return n[index];
-                });
+            [](phylanx::execution_tree::primitive const& p, int index)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(
+                            primitive_argument_type{p}, {}).get();
+                        return n[index];
+                    });
             },
             "Get the value at the specified index")
         .def("__getitem__",
@@ -782,23 +806,70 @@ PYBIND11_MODULE(_phylanx, m)
             {
                 const int index1 = std::get<0>(pt);
                 const int index2 = std::get<1>(pt);
-                return hpx::threads::run_as_hpx_thread([&]() {
-                    using namespace phylanx::execution_tree;
-                    auto n = numeric_operand(p, {}).get();
-                    phylanx::ir::node_data<double>::dimensions_type indicies{
-                        std::size_t(index1), std::size_t(index2)};
-                    return n[indicies];
-                });
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(
+                            primitive_argument_type{p}, {}).get();
+                        phylanx::ir::node_data<double>::dimensions_type indicies{
+                            std::size_t(index1), std::size_t(index2)};
+                        return n[indicies];
+                    });
             },
             "Get the value specified by the x,y index pair")
-        .def("__str__", &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
-        .def("dimension",
-            [](phylanx::execution_tree::primitive const& p, int index) {
+        .def("__eq__",
+            [](phylanx::execution_tree::primitive const& p,std::vector<double> const& v) {
+                using namespace phylanx::execution_tree;
                 return hpx::threads::run_as_hpx_thread([&]() {
-                    using namespace phylanx::execution_tree;
                     auto n = numeric_operand(p, {}).get();
-                    return n.dimension(index);
+                    if(n.num_dimensions() != 1)
+                        return false;
+                    if(n.dimension(0) != v.size())
+                        return false;
+                    for(int i=0;i<v.size();i++) {
+                        if(n[i] != v[i])
+                            return false;
+                    }
+                    return true;
                 });
+            },"Compare against arrays")
+        .def("__eq__",
+            [](phylanx::execution_tree::primitive const& p,
+               std::vector<std::vector<double>> const& v)
+            {
+                using namespace phylanx::execution_tree;
+                return hpx::threads::run_as_hpx_thread([&]() {
+                    auto n = numeric_operand(p, {}).get();
+                    if(n.num_dimensions() != 2)
+                        return false;
+                    if(n.dimension(0) != v.size())
+                        return false;
+                    if(n.dimension(1) != v[0].size())
+                        return false;
+                    for(int i=0;i<v.size();i++) {
+                        auto& vi = v[i];
+                        for(int j=0;j<vi.size();j++) {
+                            phylanx::ir::node_data<double>::dimensions_type indicies{
+                                std::size_t(i), std::size_t(j)};
+                            if(n[indicies] != vi[j])
+                                return false;
+                        }
+                    }
+                    return true;
+                });
+            },"Compare against arrays")
+        .def("__str__",
+            &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
+        .def("dimension",
+            [](phylanx::execution_tree::primitive const& p, int index)
+            {
+                return hpx::threads::run_as_hpx_thread(
+                    [&]() {
+                        using namespace phylanx::execution_tree;
+                        auto n = numeric_operand(
+                            primitive_argument_type{p}, {}).get();
+                        return n.dimension(index);
+                    });
             },
             "Get the size of the given dimension");
 

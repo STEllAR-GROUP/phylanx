@@ -14,9 +14,10 @@ void test_literal_value()
 {
     phylanx::execution_tree::primitive val =
         hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(42.0));
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{42.0});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         val.eval();
 
     HPX_TEST_EQ(

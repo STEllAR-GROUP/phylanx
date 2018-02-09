@@ -58,7 +58,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using matrix_type = blaze::IdentityMatrix<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type identity_nd(operands_type&& ops) const
+            primitive_argument_type identity_nd(operands_type&& ops) const
             {
                 if (ops[0].num_dimensions() != 0)
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -66,11 +66,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "input should be a scalar");
 
                 std::size_t dim = static_cast<std::size_t>(ops[0].scalar());
-                return operand_type{blaze::IdentityMatrix<double>(dim)};
+                return primitive_argument_type{
+                    operand_type{blaze::IdentityMatrix<double>(dim)}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -91,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& op0) -> primitive_result_type
+                    [this_](operands_type&& op0) -> primitive_argument_type
                     {
                         return this_->identity_nd(std::move(op0));
                     }),
@@ -101,7 +102,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> identity::eval(
+    hpx::future<primitive_argument_type> identity::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

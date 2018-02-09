@@ -42,7 +42,7 @@ void test_linmatrix()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 move(nx), move(ny), move(base_value), move(dx), move(dy)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         linearmatrix.eval();
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());

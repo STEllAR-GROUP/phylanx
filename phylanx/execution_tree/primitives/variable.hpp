@@ -33,12 +33,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         variable(
             std::vector<primitive_argument_type>&& operands, std::string name);
 
-        primitive_result_type eval_direct(
+        primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
-        void store(primitive_result_type && data) override;
+        void store(primitive_argument_type && data) override;
 
     private:
-        mutable primitive_result_type data_;
+        mutable primitive_argument_type data_;
         std::string name_;
         mutable bool evaluated_;
     };

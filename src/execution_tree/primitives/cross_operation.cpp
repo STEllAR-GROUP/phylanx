@@ -56,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type cross1d(
+            primitive_argument_type cross1d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 switch (rhs.num_dimensions())
@@ -75,7 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type cross1d1d(operand_type& lhs, operand_type& rhs) const
+            primitive_argument_type cross1d1d(operand_type& lhs, operand_type& rhs) const
             {
                 std::size_t lhs_vector_dims = lhs.size();
                 std::size_t rhs_vector_dims = rhs.size();
@@ -123,10 +123,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // Both vectors have 3 elements
                 lhs.vector() %= rhs.vector();
-                return ir::node_data<double>{std::move(lhs)};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(lhs)}};
             }
 
-            primitive_result_type cross1d2d(
+            primitive_argument_type cross1d2d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 if (lhs.size() == 2ul)
@@ -177,7 +178,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         rhs[{i, 2ul}] = i_vector[2ul];
                     }
 
-                    return ir::node_data<double>{std::move(rhs)};
+                    return primitive_argument_type{
+                        ir::node_data<double>{std::move(rhs)}};
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -185,7 +187,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "operand vectors have an invalid number of elements");
             }
 
-            primitive_result_type cross2d(
+            primitive_argument_type cross2d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 switch (rhs.num_dimensions())
@@ -204,7 +206,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type cross2d1d(
+            primitive_argument_type cross2d1d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 if (rhs.size() == 2ul)
@@ -255,7 +257,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::row(rhs_op_mat, 0ul));
                     }
 
-                    return ir::node_data<double>{std::move(temp)};
+                    return primitive_argument_type{
+                        ir::node_data<double>{std::move(temp)}};
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -263,7 +266,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "operand vectors have an invalid number of elements");
             }
 
-            primitive_result_type cross2d2d(
+            primitive_argument_type cross2d2d(
                 operand_type& lhs, operand_type& rhs) const
             {
                 // Both matrices have to have the same number of rows
@@ -293,7 +296,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 blaze::row(rhsm, idx_row));
                         }
 
-                        return ir::node_data<double>{std::move(temp)};
+                        return primitive_argument_type{
+                            ir::node_data<double>{std::move(temp)}};
                     }
 
                     // If only lhs has 2 elements per vector
@@ -347,7 +351,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             blaze::row(rhsm, idx_row));
                     }
 
-                    return ir::node_data<double>{std::move(temp)};
+                    return primitive_argument_type{
+                        ir::node_data<double>{std::move(temp)}};
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -356,7 +361,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -378,7 +383,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         switch (ops[0].num_dimensions())
                         {
@@ -401,7 +406,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> cross_operation::eval(
+    hpx::future<primitive_argument_type> cross_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
