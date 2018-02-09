@@ -31,7 +31,7 @@ void test_sub_operation_0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
@@ -50,7 +50,7 @@ void test_sub_operation_0d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     HPX_TEST_EQ(
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
@@ -74,7 +74,7 @@ void test_sub_operation_0d1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return 47.0 - x; });
@@ -99,7 +99,7 @@ void test_sub_operation_0d1d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return 47.0 - x; });
@@ -126,7 +126,7 @@ void test_sub_operation_0d2d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return 47.0 - x; });
@@ -151,7 +151,7 @@ void test_sub_operation_0d2d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return 47.0 - x; });
@@ -179,7 +179,7 @@ void test_sub_operation_1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicVector<double> expected = v1 - v2;
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -204,7 +204,7 @@ void test_sub_operation_1d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicVector<double> expected = v1 - v2;
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -230,7 +230,7 @@ void test_sub_operation_1d0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return x - 47.0; });
@@ -255,7 +255,7 @@ void test_sub_operation_1d0d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicVector<double> expected =
         blaze::map(v, [](double x) { return x - 47.0; });
@@ -285,7 +285,7 @@ void test_sub_operation_1d2d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns());
     for (size_t i = 0UL; i < m.rows(); ++i)
     {
@@ -316,7 +316,7 @@ void test_sub_operation_1d2d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns());
     for (size_t i = 0UL; i < m.rows(); ++i)
     {
@@ -347,7 +347,7 @@ void test_sub_operation_2d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicMatrix<double> expected = m1 - m2;
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -372,7 +372,7 @@ void test_sub_operation_2d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
 
     blaze::DynamicMatrix<double> expected = m1 - m2;
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
@@ -401,7 +401,7 @@ void test_sub_operation_2d0d()
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return x - 47.0; });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
@@ -426,7 +426,7 @@ void test_sub_operation_2d0d_lit()
     blaze::DynamicMatrix<double> expected =
         blaze::map(m, [](double x) { return x - 47.0; });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
@@ -453,7 +453,7 @@ void test_sub_operation_2d1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns());
     for (size_t i = 0UL; i < m.rows(); ++i)
     {
@@ -484,7 +484,7 @@ void test_sub_operation_2d1d_lit()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f = sub.eval();
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = sub.eval();
     blaze::DynamicMatrix<double> expected(m.rows(), m.columns());
     for (size_t i = 0UL; i < m.rows(); ++i)
     {

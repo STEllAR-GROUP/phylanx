@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -6,6 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/execution_tree/compile.hpp>
+
+#include <string>
+#include <vector>
 
 namespace phylanx { namespace execution_tree
 {
@@ -48,6 +51,7 @@ namespace phylanx { namespace execution_tree
             primitives::transpose_operation::match_data,
             primitives::random::match_data,
             primitives::identity::match_data,
+            primitives::enable_tracing::match_data,
             // variadic operations
             primitives::add_operation::match_data,
             primitives::and_operation::match_data,
@@ -65,7 +69,20 @@ namespace phylanx { namespace execution_tree
             primitives::store_operation::match_data,
             // unary operations
             primitives::unary_minus_operation::match_data,
-            primitives::unary_not_operation::match_data
+            primitives::unary_not_operation::match_data,
+            //
+            // compiler-specific (internal) primitives
+            //
+            hpx::util::make_tuple("access-argument",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("access-variable",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("define-variable",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("call-function",
+                std::vector<std::string>{}, nullptr),
+            hpx::util::make_tuple("define-function",
+                std::vector<std::string>{}, nullptr)
         };
 
         return patterns;

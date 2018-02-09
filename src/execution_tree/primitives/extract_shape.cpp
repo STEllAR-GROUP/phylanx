@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using args_type = std::vector<arg_type>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -78,20 +78,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_result_type
+                    [this_](args_type && args) -> primitive_argument_type
                     {
                         auto dims = args[0].dimensions();
                         if (args.size() == 1)
                         {
                             // return a list of numbers representing the
                             // dimensions of the first argument
-                            std::vector<primitive_result_type> result{
-                                std::int64_t(dims[0]), std::int64_t(dims[1])
+                            std::vector<primitive_argument_type> result{
+                                primitive_argument_type{std::int64_t(dims[0])},
+                                primitive_argument_type{std::int64_t(dims[1])}
                             };
-                            return primitive_result_type{std::move(result)};
+                            return primitive_argument_type{std::move(result)};
                         }
 
-                        return primitive_result_type{
+                        return primitive_argument_type{
                             std::int64_t(dims[std::size_t(args[1][0])])};
                     }),
                     detail::map_operands(
@@ -101,7 +102,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> extract_shape::eval(
+    hpx::future<primitive_argument_type> extract_shape::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

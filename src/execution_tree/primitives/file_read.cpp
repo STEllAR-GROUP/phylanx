@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     // read data from given file and return content
-    hpx::future<primitive_result_type> file_read::eval(
+    hpx::future<primitive_argument_type> file_read::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.size() != 1)
@@ -88,8 +88,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     filename);
         }
 
-        // assume data in file is result of a serialized primitive_result_type
-        primitive_result_type val;
+        // assume data in file is result of a serialized primitive_argument_type
+        primitive_argument_type val;
         phylanx::util::unserialize(data, val);
 
         return hpx::make_ready_future(std::move(val));

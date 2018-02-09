@@ -72,30 +72,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            hpx::future<primitive_result_type> init()
+            hpx::future<primitive_argument_type> init()
             {
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands_[0], args_).then(
-                    [this_](hpx::future<primitive_result_type> && val)
+                    [this_](hpx::future<primitive_argument_type> && val)
                     {
                         val.get();
                         return this_->loop();
                     });
             }
 
-            hpx::future<primitive_result_type> reinit()
+            hpx::future<primitive_argument_type> reinit()
             {
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands_[2], args_).then(
-                    [this_](hpx::future<primitive_result_type> && val)
+                    [this_](hpx::future<primitive_argument_type> && val)
                     {
                         val.get();
                         return this_->loop();   // call the loop again
                     });
             }
 
-            hpx::future<primitive_result_type> body(
-                hpx::future<primitive_result_type>&& cond)
+            hpx::future<primitive_argument_type> body(
+                hpx::future<primitive_argument_type>&& cond)
             {
                 if (extract_boolean_value(cond.get()))
                 {
@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     auto this_ = this->shared_from_this();
                     return literal_operand(operands_[3], args_).then(
                         [this_](
-                            hpx::future<primitive_result_type> && result
+                            hpx::future<primitive_argument_type> && result
                         ) mutable
                         {
                             this_->result_ = result.get();
@@ -111,17 +111,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         });
                 }
 
-                hpx::future<primitive_result_type> f = p_.get_future();
+                hpx::future<primitive_argument_type> f = p_.get_future();
                 p_.set_value(std::move(result_));
                 return f;
             }
 
-            hpx::future<primitive_result_type> loop()
+            hpx::future<primitive_argument_type> loop()
             {
                 // evaluate condition of for statement
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands_[1], args_).then(
-                    [this_](hpx::future<primitive_result_type> && cond)
+                    [this_](hpx::future<primitive_argument_type> && cond)
                     {
                         return this_->body(std::move(cond));
                     });
@@ -130,13 +130,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         private:
             std::vector<primitive_argument_type> operands_;
             std::vector<primitive_argument_type> args_;
-            hpx::promise<primitive_result_type> p_;
-            primitive_result_type result_;
+            hpx::promise<primitive_argument_type> p_;
+            primitive_argument_type result_;
         };
     }
 
     // start iteration over given for statement
-    hpx::future<primitive_result_type> for_operation::eval(
+    hpx::future<primitive_argument_type> for_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

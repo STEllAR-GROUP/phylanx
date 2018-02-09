@@ -9,6 +9,7 @@
 #include <hpx/include/serialization.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstddef>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -19,8 +20,9 @@
 template <typename Ast>
 void test_ast(std::string const& exprstr, Ast const& expected)
 {
-    phylanx::ast::expression expr = phylanx::ast::generate_ast(exprstr);
-    HPX_TEST_EQ(expr, phylanx::ast::expression(expected));
+    auto exprs = phylanx::ast::generate_ast(exprstr);
+    HPX_TEST_EQ(exprs.size(), std::size_t(1));
+    HPX_TEST_EQ(exprs[0], phylanx::ast::expression(expected));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,17 +109,19 @@ struct traverse_ast_enter_exit
 void test_expression(std::string const& expr, std::string const& expected)
 {
     {
-        phylanx::ast::expression ast = phylanx::ast::generate_ast(expr);
+        auto ast = phylanx::ast::generate_ast(expr);
+        HPX_TEST_EQ(ast.size(), std::size_t(1));
         std::stringstream strm;
         strm << std::boolalpha;
-        phylanx::ast::traverse(ast, traverse_ast{strm});
+        phylanx::ast::traverse(ast[0], traverse_ast{strm});
         HPX_TEST_EQ(strm.str(), expected);
     }
     {
-        phylanx::ast::expression ast = phylanx::ast::generate_ast(expr);
+        auto ast = phylanx::ast::generate_ast(expr);
+        HPX_TEST_EQ(ast.size(), std::size_t(1));
         std::stringstream strm;
         strm << std::boolalpha;
-        phylanx::ast::traverse(ast, traverse_ast_enter_exit{strm});
+        phylanx::ast::traverse(ast[0], traverse_ast_enter_exit{strm});
         HPX_TEST_EQ(strm.str(), expected);
     }
 }

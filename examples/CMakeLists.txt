@@ -6,6 +6,8 @@
 set(subdirs
     algorithms
     ast
+    profiling
+    interpreter
    )
 
 foreach(subdir ${subdirs})

@@ -28,13 +28,14 @@ class traverse_ast_enter_exit:
 
 def test_expression(expr, expected, delimiter):
     ast = phylanx.ast.generate_ast(expr)
+    assert(len(ast) == 1)
 
     visitor = traverse_ast()
-    phylanx.ast.traverse(ast, visitor, delimiter)
+    phylanx.ast.traverse(ast[0], visitor, delimiter)
     assert(visitor.result == expected)
 
     visitor = traverse_ast_enter_exit()
-    phylanx.ast.traverse(ast, visitor, delimiter)
+    phylanx.ast.traverse(ast[0], visitor, delimiter)
     assert(visitor.result == expected)
 
 

@@ -15,6 +15,7 @@
 #include <phylanx/ast/generate_ast.hpp>
 #include <phylanx/ast/match_ast.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/ast/transform_ast.hpp>
 #include <phylanx/ast/traverse.hpp>
 
 #endif

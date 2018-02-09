@@ -33,7 +33,7 @@ void test_linspace0d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(start), std::move(stop), std::move(num_samples)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         linspace.eval();
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());
@@ -63,7 +63,7 @@ void test_linspace1d()
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(start), std::move(stop), std::move(num_samples)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         linspace.eval();
 
     auto result = phylanx::execution_tree::extract_numeric_value(f.get());

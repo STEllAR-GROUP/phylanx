@@ -60,12 +60,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
-            primitive_result_type diag0d(args_type&& args) const
+            primitive_argument_type diag0d(args_type&& args) const
             {
-                return primitive_result_type(std::move(args[0]));
+                return primitive_argument_type(std::move(args[0]));
             }
 
-            primitive_result_type diag1d(args_type&& args) const
+            primitive_argument_type diag1d(args_type&& args) const
             {
                 auto vecsize = args[0].dimension(0);
                 auto k = 0;
@@ -85,11 +85,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 diag = args[0].vector();
 
-                return ir::node_data<double>{
-                    storage2d_type{std::move(result)}};
+                return primitive_argument_type{ir::node_data<double>{
+                    storage2d_type{std::move(result)}}};
             }
 
-            primitive_result_type diag2d(args_type&& args) const
+            primitive_argument_type diag2d(args_type&& args) const
             {
                 auto k = 0;
 
@@ -103,12 +103,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 blaze::DynamicVector<double> result(diag);
 
-                return ir::node_data<double>{
-                    storage1d_type{std::move(result)}};
+                return primitive_argument_type{ir::node_data<double>{
+                    storage1d_type{std::move(result)}}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -142,7 +142,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(
                     hpx::util::unwrapping([this_](args_type&& args)
-                                              -> primitive_result_type {
+                                              -> primitive_argument_type {
                         std::size_t matrix_dims = args[0].num_dimensions();
                         switch (matrix_dims)
                         {
@@ -168,7 +168,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> diag_operation::eval(
+    hpx::future<primitive_argument_type> diag_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

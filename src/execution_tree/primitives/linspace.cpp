@@ -45,11 +45,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using args_type = std::vector<arg_type>;
             using vector_type = blaze::DynamicVector<double>;
 
-            primitive_result_type linspace1d(args_type&& args) const
+            primitive_argument_type linspace1d(args_type&& args) const
             {
-                double start = extract_integer_value(args[0]);
-                double stop = extract_integer_value(args[1]);
-                double num_samples = extract_integer_value(args[2]);
+                double start = args[0][0];
+                double stop = args[1][0];
+                double num_samples = args[2][0];
 
                 if (num_samples < 1)
                 {
@@ -61,22 +61,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (1 == num_samples)
                 {
                     vector_type result{start};
-                    return arg_type{std::move(result)};
+                    return primitive_argument_type{arg_type{std::move(result)}};
                 }
                 else
                 {
-                  auto result = vector_type(num_samples);
-                  double dx = (stop - start) / (num_samples - 1);
-                  for (std::size_t i = 0; i < num_samples; i++)
-                  {
-                    result[i] = start + dx * i;
-                  }
-                  return arg_type{std::move(result)};
+                    auto result = vector_type(num_samples);
+                    double dx = (stop - start) / (num_samples - 1);
+                    for (std::size_t i = 0; i < num_samples; i++)
+                    {
+                        result[i] = start + dx * i;
+                    }
+                    return primitive_argument_type{arg_type{std::move(result)}};
                 }
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -100,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_result_type
+                    [this_](args_type&& args) -> primitive_argument_type
                     {
                         return this_->linspace1d(std::move(args));
                     }),
@@ -109,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> linspace::eval(
+    hpx::future<primitive_argument_type> linspace::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

@@ -37,10 +37,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
     class environment;
 
     ///////////////////////////////////////////////////////////////////////////
-    using expression_pattern =
-        hpx::util::tuple<
-            std::string, std::string, ast::expression, factory_function_type
-        >;
+    using expression_pattern = hpx::util::tuple<
+        std::string, std::string,
+        ast::expression, factory_function_type>;
     using expression_pattern_list = std::vector<expression_pattern>;
 
     PHYLANX_EXPORT expression_pattern_list generate_patterns(
@@ -114,8 +113,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             return function{
-                (*f_)(this->locality_, std::move(fargs), name),
-                name};
+                primitive_argument_type{
+                    (*f_)(this->locality_, std::move(fargs), name)
+                }, name};
         }
 
     private:
@@ -152,11 +152,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function operator()(argument_type && arg, std::string const& name) const
         {
             return function{
-                    primitive(
-                        hpx::new_<primitives::define_variable>(
-                            locality_, std::move(arg), name),
-                        name),
-                    name};
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::define_variable>(
+                        locality_, std::move(arg), name),
+                    name}},
+                name};
         }
 
     private:
@@ -170,11 +170,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()() const
         {
-            return function{ast::nil{}, "always_nil"};
+            return function{ast::nil{}, "always-nil"};
         }
         function operator()(std::string && name) const
         {
-            return function{ast::nil{}, "always_nil# " + name};
+            return function{ast::nil{}, "always-nil# " + name};
         }
     };
 
@@ -189,9 +189,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function operator()(std::string const& name) const
         {
             return function{
-                primitive(
+                primitive_argument_type{primitive{
                     hpx::new_<primitives::define_function>(locality_, name),
-                    name),
+                    name}},
                 name};
         }
 
@@ -211,15 +211,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(std::size_t n, std::string const& name) const
         {
-            std::string full_name =
-                "argument#" + std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "access-argument#" +
+                std::to_string(sequence_number_) + "#" + name;
 
             return function{
-                    primitive(
-                        hpx::new_<primitives::access_argument>(locality_, n),
-                        full_name),
-                    full_name
-                };
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::access_argument>(locality_, n),
+                    full_name}},
+                full_name};
         }
 
         std::size_t sequence_number_;
@@ -244,16 +243,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compose(std::list<function> && elements,
             std::string const& name) const
         {
-            std::string full_name =
-                "variable#" + std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "access-variable#" +
+                std::to_string(sequence_number_) + "#" + name;
+
+
             return function{
-                    primitive(
-                        hpx::new_<primitives::wrapped_variable>(
-                            this->locality_, f_.get().arg_,
-                            full_name),
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::wrapped_variable>(
+                        this->locality_, f_.get().arg_,
                         full_name),
-                    full_name
-                };
+                    full_name}},
+                full_name};
         }
     };
 
@@ -283,16 +283,18 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.push_back(arg.arg_);
             }
 
-            std::string full_name =
-                "function#" + std::to_string(sequence_number_) + "#" + name;
+            // NOTE: Check the consistency of names: "function" vs "call-function"
+            std::string full_name = "call-function#" +
+                std::to_string(sequence_number_) + "#" + name;
+
+
             return function{
-                    primitive(
-                        hpx::new_<primitives::wrapped_function>(
-                            this->locality_, f_.get().arg_, std::move(fargs),
-                            full_name),
+                primitive_argument_type{primitive{
+                    hpx::new_<primitives::wrapped_function>(
+                        this->locality_, f_.get().arg_, std::move(fargs),
                         full_name),
-                    full_name
-                };
+                    full_name}},
+                full_name};
         }
     };
 
@@ -381,14 +383,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
     /// corresponding to its structure. Return a function object that - when
     /// executed - will evaluate the generated execution tree.
     PHYLANX_EXPORT function compile(ast::expression const& expr,
-        function_list& snippets, environment& env,
-        expression_pattern_list const& patterns,
-        hpx::id_type const& default_locality);
-
-    /// Compile the given list of AST instances and generate an expression tree
-    /// corresponding to its structure. Return a function object that - when
-    /// executed - will evaluate the generated execution tree.
-    PHYLANX_EXPORT function compile(std::vector<ast::expression> const& exprs,
         function_list& snippets, environment& env,
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);

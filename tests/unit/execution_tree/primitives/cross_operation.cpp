@@ -37,7 +37,7 @@ void test_vector_cross_product()
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -67,7 +67,7 @@ void test_one_vector_with_dimension_2()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -97,7 +97,7 @@ void test_both_vectors_with_dimension_2()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -127,7 +127,7 @@ void test_multiple_vector_cross_products()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -158,7 +158,7 @@ void test_cross_product_1d2d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -188,7 +188,7 @@ void test_cross_product_2d1d()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -219,7 +219,7 @@ void test_cross_product_vector_by_2col_matrix()
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 

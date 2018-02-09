@@ -83,7 +83,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            hpx::future<primitive_result_type> body()
+            hpx::future<primitive_argument_type> body()
             {
                 // Keep data alive with a shared pointer
                 auto this_ = this->shared_from_this();
@@ -100,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             return literal_operand(
                                 this_->operands_[2], this_->args_);
                         }
-                        return hpx::make_ready_future(primitive_result_type{});
+                        return hpx::make_ready_future(primitive_argument_type{});
                     });
             }
 
@@ -112,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // evaluate 'true_case' or 'false_case' based on 'cond'
-    hpx::future<primitive_result_type> if_conditional::eval(
+    hpx::future<primitive_argument_type> if_conditional::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

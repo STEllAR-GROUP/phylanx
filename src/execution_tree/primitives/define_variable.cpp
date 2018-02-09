@@ -46,26 +46,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , name_(std::move(name))
     {}
 
-    std::string define_variable::extract_function_name() const
-    {
-        if (name_.find("define-") == 0)
-        {
-            return name_.substr(7);
-        }
-        return name_;
-    }
-
-    primitive_result_type define_variable::eval_direct(
+    primitive_argument_type define_variable::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
         // this proxy was created where the variable should be created on.
         if (!valid(target_))
         {
             primitive_argument_type operand = body_;
-            target_ = primitive(
+            target_ = primitive_argument_type{primitive{
                 hpx::new_<primitives::variable>(
                     hpx::find_here(), std::move(operand), name_),
-                extract_function_name());
+                name_}};
 
             // bind this name to the result of the expression right away
             primitive* p = util::get_if<primitive>(&target_);
@@ -87,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return extract_ref_value(target_);
     }
 
-    void define_variable::store(primitive_result_type && val)
+    void define_variable::store(primitive_argument_type && val)
     {
         if (!valid(target_))
         {

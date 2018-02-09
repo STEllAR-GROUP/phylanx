@@ -25,7 +25,7 @@ HPX_DEFINE_GET_COMPONENT_TYPE(access_argument_type::wrapped_type)
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    primitive_result_type access_argument::eval_direct(
+    primitive_argument_type access_argument::eval_direct(
         std::vector<primitive_argument_type> const& params) const
     {
         if (argnum_ >= params.size())
