@@ -6,7 +6,7 @@
 
 #include <phylanx/phylanx.hpp>
 
-#include <hpx/hpx_init.hpp>
+#include <hpx/hpx_main.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -14,18 +14,21 @@
 #include <utility>
 #include <vector>
 
-std::string read_user_code(char const* const arg)
-{
-    std::string code;
-    std::ifstream code_stream(arg);
+#include <boost/program_options.hpp>
 
+namespace po = boost::program_options;
+
+std::string read_user_code(std::string const& arg)
+{
+    std::ifstream code_stream(arg);
     if (!code_stream.good())
     {
         HPX_THROW_EXCEPTION(hpx::filesystem_error,
             "read_user_code",
-            "Filed to open the specified file.");
+            "Failed to open the specified file: " + arg);
     }
 
+    std::string code;
     // Find out how much memory we need to allocate
     code_stream.seekg(0, std::ios::end);
     // Allocate all the needed memory upfront
@@ -34,21 +37,21 @@ std::string read_user_code(char const* const arg)
     code_stream.seekg(0, std::ios::beg);
 
     // Read the file
-    code.assign((std::istreambuf_iterator<char>(code_stream)),
+    code.assign(std::istreambuf_iterator<char>(code_stream),
         std::istreambuf_iterator<char>());
 
     return code;
 }
 
-std::vector<phylanx::execution_tree::primitive_argument_type> read_arguments(
-    int const argc,
-    char const* const argv[])
+std::vector<phylanx::execution_tree::primitive_argument_type>
+read_arguments(std::vector<std::string> const& args, std::size_t first_index)
 {
     std::vector<phylanx::execution_tree::primitive_argument_type> result;
-    result.reserve(argc);
-    for (int i = 0; i < argc; ++i)
+    result.reserve(args.size() - 1);
+
+    for (std::size_t i = first_index; i != args.size(); ++i)
     {
-        auto arg = phylanx::ast::generate_ast(argv[i]);
+        auto arg = phylanx::ast::generate_ast(args[i]);
         result.emplace_back(
             phylanx::execution_tree::primitive_argument_type(std::move(arg)));
     }
@@ -56,23 +59,92 @@ std::vector<phylanx::execution_tree::primitive_argument_type> read_arguments(
     return result;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-int hpx_main(int argc, char* argv[])
+int handle_command_line(int argc, char* argv[], po::variables_map& vm)
 {
-    if (argc < 2)
+    try
     {
-        std::cout << "Usage: " << argv[0] << " [<hpx arguments --]"
-                  << " <PhySL snippet file> [<argument> ...]" << std::endl
-                  << "Example: " << argv[0] << " fibonacci.physl 10"
-                  << std::endl;
-        return hpx::finalize();
+        po::options_description cmdline_options(
+            "Usage: interpreter <physl_script> [options] [arguments...]");
+        cmdline_options.add_options()
+            ("help,h", "print out program usage")
+            ("code,c", po::value<std::string>(),
+             "Execute the PhySL code given in argument")
+            ("print,p", "Print the result of evaluation of the last "
+                "PhySL expression encountered in the input")
+        ;
+
+        po::positional_options_description pd;
+        pd.add("positional", -1);
+
+        po::options_description positional_options;
+        positional_options.add_options()
+            ("positional", po::value<std::vector<std::string> >(),
+             "positional options")
+        ;
+
+        po::options_description all_options;
+        all_options.add(cmdline_options).add(positional_options);
+
+        po::parsed_options opts(
+            po::command_line_parser(argc, argv)
+                .options(all_options)
+                .positional(pd)
+                .style(po::command_line_style::unix_style)
+                .run()
+            );
+
+        po::store(opts, vm);
+
+        if (vm.count("help"))
+        {
+            std::cout << cmdline_options << std::endl;
+            return 1;
+        }
+
+        if (vm.count("positional") == 0)
+        {
+            std::cout << cmdline_options << std::endl;
+            return -1;
+        }
+    }
+    catch  (std::exception const& e)
+    {
+        std::cerr << "command line handling: exception caught: " << e.what()
+                  << "\n";
+        return -1;
+    }
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int main(int argc, char* argv[])
+{
+    po::variables_map vm;
+    int cmdline_result = handle_command_line(argc, argv, vm);
+    if (cmdline_result != 0)
+    {
+        return cmdline_result > 0 ? 0 : cmdline_result;
     }
 
     // Read the file containing the source code
-    auto const user_code = read_user_code(argv[1]);
+    auto positional_args = vm["positional"].as<std::vector<std::string>>();
+
+    std::string user_code;
+    std::size_t first_index = 0;
+    if (vm.count("code") != 0)
+    {
+        // execute code as given directly on the command line
+        user_code = vm["code"].as<std::string>();
+    }
+    else
+    {
+        // interpret first arguument as the file name for the PhySL code
+        user_code = read_user_code(positional_args[0]);
+        first_index = 1;
+    }
 
     // Collect the arguments for running the code
-    auto const args = read_arguments(argc - 2, argv + 2);
+    auto const args = read_arguments(positional_args, first_index);
 
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
@@ -82,13 +154,12 @@ int hpx_main(int argc, char* argv[])
     // Evaluate user code using the read data
     auto const result = code(args);
 
-    std::cout << result << std::endl;
+    // Print the result of the last PhySL expression, if requested
+    if (vm.count("print") != 0)
+    {
+        std::cout << result << std::endl;
+    }
 
-    return hpx::finalize();
-}
-
-int main(int argc, char* argv[])
-{
-    return hpx::init(argc, argv);
+    return 0;
 }
 

@@ -194,7 +194,9 @@ namespace phylanx { namespace ast
 
         std::vector<ast::expression> asts;
 
-        if (!boost::spirit::qi::phrase_parse(first, last, expr % ',', skipper, asts))
+        boost::spirit::qi::skip_type skip;
+
+        if (!boost::spirit::qi::phrase_parse(first, last, *expr, skipper, asts))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::ast::generate_ast", strm.str());

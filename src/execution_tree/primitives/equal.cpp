@@ -34,7 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const equal::match_data =
     {
-        hpx::util::make_tuple("eq",
+        hpx::util::make_tuple("__eq",
             std::vector<std::string>{"_1 == _2"},
             &create<equal>)
     };

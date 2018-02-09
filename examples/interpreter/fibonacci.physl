@@ -9,7 +9,7 @@
 // \param iterations Number of iterations
 // \returns the Fibonacci value after specified `iterations`
 
-(block(
+block(
     define(fibonacci, iterations,
         block(
             define(a, 1.0),
@@ -31,5 +31,5 @@
         )
     ),
     fibonacci
-))
+)
 
