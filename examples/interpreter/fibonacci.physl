@@ -1,0 +1,35 @@
+//  Copyright (c) 2018 Parsa Amini
+//  Copyright (c) 2018 Hartmut Kaiser
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+
+// Fibonacci example in PhySL
+// \param iterations Number of iterations
+// \returns the Fibonacci value after specified `iterations`
+
+(block(
+    define(fibonacci, iterations,
+        block(
+            define(a, 1.0),
+            define(result, 0.0),
+            define(b, 1.0),
+            define(tmp, 0.0),
+            define(step, 2),
+            while(
+                step < iterations,
+                block(
+                    store(result, a + b),
+                    store(tmp, b),
+                    store(b, result),
+                    store(a, tmp),
+                    store(step, step + 1)
+                )
+            ),
+            result
+        )
+    ),
+    fibonacci
+))
+
