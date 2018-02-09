@@ -817,6 +817,47 @@ PYBIND11_MODULE(_phylanx, m)
                     });
             },
             "Get the value specified by the x,y index pair")
+        .def("__eq__",
+            [](phylanx::execution_tree::primitive const& p,std::vector<double> const& v) {
+                using namespace phylanx::execution_tree;
+                return hpx::threads::run_as_hpx_thread([&]() {
+                    auto n = numeric_operand(p, {}).get();
+                    if(n.num_dimensions() != 1)
+                        return false;
+                    if(n.dimension(0) != v.size())
+                        return false;
+                    for(int i=0;i<v.size();i++) {
+                        if(n[i] != v[i])
+                            return false;
+                    }
+                    return true;
+                });
+            },"Compare against arrays")
+        .def("__eq__",
+            [](phylanx::execution_tree::primitive const& p,
+               std::vector<std::vector<double>> const& v)
+            {
+                using namespace phylanx::execution_tree;
+                return hpx::threads::run_as_hpx_thread([&]() {
+                    auto n = numeric_operand(p, {}).get();
+                    if(n.num_dimensions() != 2)
+                        return false;
+                    if(n.dimension(0) != v.size())
+                        return false;
+                    if(n.dimension(1) != v[0].size())
+                        return false;
+                    for(int i=0;i<v.size();i++) {
+                        auto& vi = v[i];
+                        for(int j=0;j<vi.size();j++) {
+                            phylanx::ir::node_data<double>::dimensions_type indicies{
+                                std::size_t(i), std::size_t(j)};
+                            if(n[indicies] != vi[j])
+                                return false;
+                        }
+                    }
+                    return true;
+                });
+            },"Compare against arrays")
         .def("__str__",
             &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
         .def("dimension",
