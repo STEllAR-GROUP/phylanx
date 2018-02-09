@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using args_type = std::vector<arg_type>;
             using matrix_type = blaze::DynamicMatrix<double>;
 
-            primitive_result_type linmatrix(args_type&& args) const
+            primitive_argument_type linmatrix(args_type&& args) const
             {
 
                 if (5 != args.size())
@@ -96,7 +96,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -120,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_result_type
+                    [this_](args_type&& args) -> primitive_argument_type
                     {
                         return this_->linmatrix(std::move(args));
                     }),
@@ -129,7 +129,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> linearmatrix::eval(
+    hpx::future<primitive_argument_type> linearmatrix::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
