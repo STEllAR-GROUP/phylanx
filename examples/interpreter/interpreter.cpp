@@ -71,6 +71,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
              "Execute the PhySL code given in argument")
             ("print,p", "Print the result of evaluation of the last "
                 "PhySL expression encountered in the input")
+            ("transform,t", po::value<std::string>(),
+                "file to read transformation rules from")
         ;
 
         po::positional_options_description pd;
@@ -146,13 +148,28 @@ int main(int argc, char* argv[])
     // Collect the arguments for running the code
     auto const args = read_arguments(positional_args, first_index);
 
-    // Compile the given code
-    phylanx::execution_tree::compiler::function_list snippets;
+    // Compile the given code into AST
+    auto ast = phylanx::ast::generate_ast(user_code);
 
-    auto const code = phylanx::execution_tree::compile(user_code, snippets);
+    // Apply transformation rules to AST, if requested
+    if (vm.count("transform") != 0)
+    {
+        std::string transform_rules =
+            read_user_code(vm["transform"].as<std::string>());
+
+        auto rules = phylanx::ast::generate_transform_rules(transform_rules);
+        for (auto const& rule : rules)
+        {
+            ast = phylanx::ast::transform_ast(ast, rules);
+        }
+    }
+
+    // Now compile AST into expression tree (into actual executable code)
+    phylanx::execution_tree::compiler::function_list snippets;
+    auto code = phylanx::execution_tree::compile(ast, snippets);
 
     // Evaluate user code using the read data
-    auto const result = code(args);
+    auto result = code(args);
 
     // Print the result of the last PhySL expression, if requested
     if (vm.count("print") != 0)

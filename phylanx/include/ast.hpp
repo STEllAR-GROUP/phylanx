@@ -13,6 +13,7 @@
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/ast/generate_ast.hpp>
+#include <phylanx/ast/generate_transform_rules.hpp>
 #include <phylanx/ast/match_ast.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ast/transform_ast.hpp>
