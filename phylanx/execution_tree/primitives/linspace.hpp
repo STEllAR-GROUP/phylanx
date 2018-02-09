@@ -1,7 +1,7 @@
-// Copyright (c) 2018 R. Tohid
+//   Copyright (c) 2018 R. Tohid
 //
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//   Distributed under the Boost Software License, Version 1.0. (See accompanying
+//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_PRIMITIVES_LINSPACE_JAN_22_2018_0931AM)
 #define PHYLANX_PRIMITIVES_LINSPACE_JAN_22_2018_0931AM
@@ -43,6 +43,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     public:
         static match_pattern_type const match_data;
+
+        ///
+        /// \brief Default constructor.
+        ///
+        linspace() = default;
+
+        ///
+        /// \brief Creates a linear space of evenly spaced numbers over the given interval.
+        ///
+        /// \param args Is a vector with exactly three elements (in order):
+        ///
+        /// start: the first value of the sequence.\n
+        /// stop: the last value of the sequence. It will be ignored if the number of
+        /// samples is less than 2.\n
+        /// num_samples: number of samples in the sequence.
+        ///
         linspace(std::vector<primitive_argument_type>&& args,
             std::string const& name, std::string const& codename);
 
