@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        // interpret first arguument as the file name for the PhySL code
+        // interpret first argument as the file name for the PhySL code
         user_code = read_user_code(positional_args[0]);
         first_index = 1;
     }
@@ -148,33 +148,38 @@ int main(int argc, char* argv[])
     // Collect the arguments for running the code
     auto const args = read_arguments(positional_args, first_index);
 
-    // Compile the given code into AST
-    auto ast = phylanx::ast::generate_ast(user_code);
-
-    // Apply transformation rules to AST, if requested
-    if (vm.count("transform") != 0)
+    try
     {
-        std::string transform_rules =
-            read_user_code(vm["transform"].as<std::string>());
+        // Compile the given code into AST
+        auto ast = phylanx::ast::generate_ast(user_code);
 
-        auto rules = phylanx::ast::generate_transform_rules(transform_rules);
-        for (auto const& rule : rules)
+        // Apply transformation rules to AST, if requested
+        if (vm.count("transform") != 0)
         {
-            ast = phylanx::ast::transform_ast(ast, rules);
+            std::string transform_rules =
+                read_user_code(vm["transform"].as<std::string>());
+
+            ast = phylanx::ast::transform_ast(
+                ast, phylanx::ast::generate_transform_rules(transform_rules));
+        }
+
+        // Now compile AST into expression tree (into actual executable code)
+        phylanx::execution_tree::compiler::function_list snippets;
+        auto code = phylanx::execution_tree::compile(ast, snippets);
+
+        // Evaluate user code using the read data
+        auto result = code(args);
+
+        // Print the result of the last PhySL expression, if requested
+        if (vm.count("print") != 0)
+        {
+            std::cout << result << std::endl;
         }
     }
-
-    // Now compile AST into expression tree (into actual executable code)
-    phylanx::execution_tree::compiler::function_list snippets;
-    auto code = phylanx::execution_tree::compile(ast, snippets);
-
-    // Evaluate user code using the read data
-    auto result = code(args);
-
-    // Print the result of the last PhySL expression, if requested
-    if (vm.count("print") != 0)
+    catch (std::exception const& e)
     {
-        std::cout << result << std::endl;
+        std::cout << "exception caught:\n" << e.what() << "\n";
+        return -1;
     }
 
     return 0;

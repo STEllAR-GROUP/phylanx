@@ -41,12 +41,10 @@ namespace phylanx { namespace ast
         ast::parser::expression<iterator> expr(error_handler);
         ast::parser::skipper<iterator> skipper;
 
-        std::vector<ast::transform_rule> asts;
-
-        boost::spirit::qi::skip_type skip;
+        std::vector<ast::transform_rule> rules;
 
         if (!boost::spirit::qi::phrase_parse(first, last,
-                *(expr >> ':' >> expr), skipper, asts))
+                *(expr >> ':' >> expr), skipper, rules))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::ast::generate_transform_rule", strm.str());
@@ -61,13 +59,13 @@ namespace phylanx { namespace ast
         }
 
         // replace compile-tags with offsets against begin of input
-        for (auto& ast : asts)
+        for (auto& rule : rules)
         {
-            detail::replace_compile_ids(ast.first, iters, input.begin());
-            detail::replace_compile_ids(ast.second, iters, input.begin());
+            detail::replace_compile_ids(rule.first, iters, input.begin());
+            detail::replace_compile_ids(rule.second, iters, input.begin());
         }
 
-        return asts;
+        return rules;
     }
 }}
 
