@@ -34,14 +34,16 @@ namespace phylanx { namespace ast { namespace detail
         case 5:                     // std::uint64_t
             return true;
 
+        // phylanx::util::recursive_wrapper<expression>
+        case 6:
+            return is_literal_value(util::get<6>(pe.get()).get());
+
         // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
         case 8:
             return is_literal_value(util::get<8>(pe.get()).get());
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 3: HPX_FALLTHROUGH;    // identifier
-        // phylanx::util::recursive_wrapper<expression>
-        case 6: HPX_FALLTHROUGH;
         // phylanx::util::recursive_wrapper<function_call>
         case 7: HPX_FALLTHROUGH;
         default:
@@ -81,14 +83,16 @@ namespace phylanx { namespace ast { namespace detail
         case 5:     // std::uint64_t
             return util::get<5>(pe.get());
 
+        // phylanx::util::recursive_wrapper<expression>
+        case 6:
+            return literal_value(util::get<6>(pe.get()).get());
+
         // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
         case 8:
             return literal_value(util::get<8>(pe.get()).get());
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 3: HPX_FALLTHROUGH;    // identifier
-        // phylanx::util::recursive_wrapper<expression>
-        case 6: HPX_FALLTHROUGH;
         // phylanx::util::recursive_wrapper<function_call>
         case 7: HPX_FALLTHROUGH;
         default:
