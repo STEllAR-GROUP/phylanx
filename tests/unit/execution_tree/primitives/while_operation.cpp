@@ -16,15 +16,15 @@
 void test_while_operation_false()
 {
     phylanx::execution_tree::primitive cond =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), false);
     phylanx::execution_tree::primitive body =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(),
             phylanx::execution_tree::primitive_argument_type{42.0});
 
     phylanx::execution_tree::primitive while_ =
-        hpx::new_<phylanx::execution_tree::primitives::while_operation>(
+        phylanx::execution_tree::primitives::create_while_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 phylanx::execution_tree::primitive_argument_type{std::move(cond)},
@@ -41,10 +41,10 @@ void test_while_operation_false()
 void test_while_operation_true()
 {
     phylanx::execution_tree::primitive cond =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), true);
     phylanx::execution_tree::primitive body =
-        hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+        phylanx::execution_tree::primitives::create_store_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 phylanx::execution_tree::primitive_argument_type{cond},
@@ -52,7 +52,7 @@ void test_while_operation_true()
             });
 
     phylanx::execution_tree::primitive while_ =
-        hpx::new_<phylanx::execution_tree::primitives::while_operation>(
+        phylanx::execution_tree::primitives::create_while_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 phylanx::execution_tree::primitive_argument_type{std::move(cond)},
@@ -69,17 +69,17 @@ void test_while_operation_true()
 void test_while_operation_true_return()
 {
     phylanx::execution_tree::primitive cond =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), true);
     phylanx::execution_tree::primitive store =
-        hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+        phylanx::execution_tree::primitives::create_store_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 phylanx::execution_tree::primitive_argument_type{cond},
                 phylanx::execution_tree::primitive_argument_type{false}
             });
     phylanx::execution_tree::primitive body =
-        hpx::new_<phylanx::execution_tree::primitives::block_operation>(
+        phylanx::execution_tree::primitives::create_block_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 phylanx::execution_tree::primitive_argument_type{std::move(store)},
@@ -87,7 +87,7 @@ void test_while_operation_true_return()
             });
 
     phylanx::execution_tree::primitive while_ =
-        hpx::new_<phylanx::execution_tree::primitives::while_operation>(
+        phylanx::execution_tree::primitives::create_while_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 phylanx::execution_tree::primitive_argument_type{std::move(cond)},

@@ -7,9 +7,10 @@
 #include <phylanx/execution_tree/primitives/diag_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <cmath>
@@ -21,30 +22,29 @@
 
 #include <blaze/Math.h>
 
-//////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::diag_operation>
-    diag_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(diag_operation_type,
-    phylanx_diag_operation_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(diag_operation_type::wrapped_type)
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_diag_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("diag");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const diag_operation::match_data =
     {
         hpx::util::make_tuple("diag",
             std::vector<std::string>{"diag(_1, _2)"},
-            &create<diag_operation>)
+            &create_diag_operation, &create_primitive<diag_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     diag_operation::diag_operation(
-        std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+            std::vector<primitive_argument_type>&& operands)
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

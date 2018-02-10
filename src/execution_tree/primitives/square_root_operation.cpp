@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/square_root_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -20,29 +21,29 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::square_root_operation>
-    square_root_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(square_root_operation_type,
-    phylanx_square_root_operation_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-    HPX_DEFINE_GET_COMPONENT_TYPE(square_root_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_square_root_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("square_root");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const square_root_operation::match_data =
     {
         hpx::util::make_tuple("square_root",
             std::vector<std::string>{"square_root(_1, _2)"},
-            &create<square_root_operation>)
+            &create_square_root_operation,
+            &create_primitive<square_root_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     square_root_operation::square_root_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

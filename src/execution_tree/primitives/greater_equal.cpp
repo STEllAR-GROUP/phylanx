@@ -7,9 +7,10 @@
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -20,28 +21,27 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::greater_equal>
-    greater_equal_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    greater_equal_type, phylanx_greater_equal_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(greater_equal_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_greater_equal(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("__ge");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const greater_equal::match_data =
     {
         hpx::util::make_tuple("__ge",
             std::vector<std::string>{"_1 >= _2"},
-            &create<greater_equal>)
+            &create_greater_equal, &create_primitive<greater_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     greater_equal::greater_equal(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

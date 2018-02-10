@@ -280,8 +280,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 define_function_ + "$" + define_function_name);
 
             // set the body for the compiled function
-            define_function(f.arg_).set_body(hpx::launch::sync,
-                std::move(handle_lambda(args, body).arg_));
+            primitive_operand(f.arg_).set_body(
+                hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
 
             // define-function shouldn't return a function that evaluates
             // to itself, let it return nil{} instead

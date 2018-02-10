@@ -16,15 +16,15 @@
 void test_greater_operation_0d_true()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(41.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive greater;
-    greater = hpx::new_<phylanx::execution_tree::primitives::greater>(
+    greater = phylanx::execution_tree::primitives::create_greater(
         hpx::find_here(),
         std::vector<phylanx::execution_tree::primitive_argument_type>{
             std::move(lhs), std::move(rhs)});
@@ -40,15 +40,15 @@ void test_greater_operation_0d_true()
 void test_greater_operation_0d_false()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(41.0));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -66,11 +66,11 @@ void test_greater_operation_0d_lit_true()
     phylanx::ir::node_data<double> lhs(41.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -88,11 +88,11 @@ void test_greater_operation_0d_lit_false()
     phylanx::ir::node_data<double> lhs(1.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(41.0));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -111,15 +111,15 @@ void test_greater_operation_0d1d()
     blaze::DynamicVector<double> v = gen.generate(1007UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -143,11 +143,11 @@ void test_greater_operation_0d1d_lit()
     phylanx::ir::node_data<double> lhs(1.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -169,15 +169,15 @@ void test_greater_operation_0d2d()
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -201,11 +201,11 @@ void test_greater_operation_0d2d_lit()
     phylanx::ir::node_data<double> lhs(1.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -228,15 +228,15 @@ void test_greater_operation_1d()
     blaze::DynamicVector<double> v2 = gen.generate(100UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -261,11 +261,11 @@ void test_greater_operation_1d_lit()
     phylanx::ir::node_data<double> lhs(v1);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -287,15 +287,15 @@ void test_greater_operation_1d0d()
     blaze::DynamicVector<double> v = gen.generate(1007UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -319,11 +319,11 @@ void test_greater_operation_1d0d_lit()
     phylanx::ir::node_data<double> lhs(v);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -348,15 +348,15 @@ void test_greater_operation_1d2d()
     blaze::DynamicMatrix<double> m = mat_gen.generate(101UL, 104UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -387,11 +387,11 @@ void test_greater_operation_1d2d_lit()
     phylanx::ir::node_data<double> lhs(v);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -418,15 +418,15 @@ void test_greater_operation_2d()
     blaze::DynamicMatrix<double> m2 = gen.generate(1007UL, 1007UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -451,11 +451,11 @@ void test_greater_operation_2d_lit()
     phylanx::ir::node_data<double> lhs(m1);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -477,15 +477,15 @@ void test_greater_operation_2d0d()
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -509,11 +509,11 @@ void test_greater_operation_2d0d_lit()
     phylanx::ir::node_data<double> lhs(m);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -538,15 +538,15 @@ void test_greater_operation_2d1d()
     blaze::DynamicMatrix<double> m = mat_gen.generate(101UL, 104UL, 0, 2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});
@@ -576,11 +576,11 @@ void test_greater_operation_2d1d_lit()
     phylanx::ir::node_data<double> lhs(m);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive greater =
-        hpx::new_<phylanx::execution_tree::primitives::greater>(
+        phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)});

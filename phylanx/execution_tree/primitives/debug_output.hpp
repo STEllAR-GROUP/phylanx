@@ -8,29 +8,31 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/lcos/future.hpp>
 
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class debug_output
-      : public base_primitive
-      , public hpx::components::component_base<debug_output>
+    class debug_output : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
 
         debug_output() = default;
 
-        PHYLANX_EXPORT debug_output(
-            std::vector<primitive_argument_type>&& operands);
+        debug_output(std::vector<primitive_argument_type>&& operands);
 
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
+
+    PHYLANX_EXPORT primitive create_debug_output(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name = "");
 }}}
 
 #endif

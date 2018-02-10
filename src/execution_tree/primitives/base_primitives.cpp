@@ -8,6 +8,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/actions.hpp>
@@ -21,113 +22,8 @@
 #include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
-// Add factory registration functionality
-HPX_REGISTER_COMPONENT_MODULE()
-
-///////////////////////////////////////////////////////////////////////////////
-// Serialization support for the base_file actions
-typedef phylanx::execution_tree::primitives::base_primitive base_primitive_type;
-
-HPX_REGISTER_ACTION(base_primitive_type::eval_action,
-    phylanx_primitive_eval_action)
-HPX_REGISTER_ACTION(base_primitive_type::eval_direct_action,
-    phylanx_primitive_eval_direct_action)
-HPX_REGISTER_ACTION(base_primitive_type::store_action,
-    phylanx_primitive_store_action)
-HPX_REGISTER_ACTION(base_primitive_type::expression_topology_action,
-    phylanx_primitive_expression_topology_action)
-HPX_DEFINE_GET_COMPONENT_TYPE(base_primitive_type)
-
-///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    std::vector<primitive_argument_type> base_primitive::noargs{};
-
-    topology base_primitive::expression_topology() const
-    {
-        std::vector<hpx::future<topology>> results;
-        results.reserve(operands_.size());
-
-        for (auto& operand : operands_)
-        {
-            primitive const* p = util::get_if<primitive>(&operand);
-            if (p != nullptr)
-            {
-                results.push_back(p->expression_topology());
-            }
-        }
-
-        std::vector<topology> children;
-        if (!results.empty())
-        {
-            hpx::wait_all(results);
-
-            for (auto& r : results)
-            {
-                children.emplace_back(r.get());
-            }
-        }
-
-        return topology{std::move(children)};
-    }
-}}}
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
 {
-    namespace primitives
-    {
-        base_primitive::~base_primitive()
-        {
-        }
-
-        //////////////////////////////////////////////////////////////////////
-        hpx::future<primitive_argument_type> base_primitive::eval_nonvirtual(
-            std::vector<primitive_argument_type> const& args) const
-        {
-            hpx::util::scoped_timer<std::int64_t> timer(eval_duration_);
-            ++eval_count_;
-            return eval(args);
-        }
-
-        hpx::future<primitive_argument_type> base_primitive::eval(
-            std::vector<primitive_argument_type> const& params) const
-        {
-            return hpx::make_ready_future(eval_direct(params));
-        }
-
-        primitive_argument_type base_primitive::eval_direct_nonvirtual(
-            std::vector<primitive_argument_type> const& args) const
-        {
-            hpx::util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
-            ++eval_direct_count_;
-            return eval_direct(args);
-        }
-
-        primitive_argument_type base_primitive::eval_direct(
-            std::vector<primitive_argument_type> const& params) const
-        {
-            return eval(params).get();
-        }
-
-        void base_primitive::store_nonvirtual(primitive_argument_type data)
-        {
-            store(std::move(data));
-        }
-
-        void base_primitive::store(primitive_argument_type &&)
-        {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "phylanx::execution_tree::primitives::base_primitive",
-                "store function should only be called in store_primitive");
-        }
-
-        topology base_primitive::expression_topology_nonvirtual() const
-        {
-            return expression_topology();
-        }
-    }
-
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_DEBUG)
     bool primitive::enable_tracing = true;
@@ -189,14 +85,14 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> primitive::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        using action_type = primitives::base_primitive::eval_action;
+        using action_type = primitives::primitive_component::eval_action;
         return detail::lazy_trace("eval", *this,
             hpx::async(action_type(), this->base_type::get_id(), params));
     }
     hpx::future<primitive_argument_type> primitive::eval(
         std::vector<primitive_argument_type> && params) const
     {
-        using action_type = primitives::base_primitive::eval_action;
+        using action_type = primitives::primitive_component::eval_action;
         return detail::lazy_trace("eval", *this,
             hpx::async(
                 action_type(), this->base_type::get_id(), std::move(params)));
@@ -211,14 +107,14 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type primitive::eval_direct(
         std::vector<primitive_argument_type> const& params) const
     {
-        using action_type = primitives::base_primitive::eval_direct_action;
+        using action_type = primitives::primitive_component::eval_direct_action;
         return detail::trace("eval_direct", *this,
             action_type()(this->base_type::get_id(), params));
     }
     primitive_argument_type primitive::eval_direct(
         std::vector<primitive_argument_type> && params) const
     {
-        using action_type = primitives::base_primitive::eval_direct_action;
+        using action_type = primitives::primitive_component::eval_direct_action;
         return detail::trace("eval_direct", *this,
             action_type()(this->base_type::get_id(), std::move(params)));
     }
@@ -231,7 +127,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<void> primitive::store(primitive_argument_type data)
     {
-        using action_type = primitives::base_primitive::store_action;
+        using action_type = primitives::primitive_component::store_action;
         return hpx::async(
             action_type(), this->base_type::get_id(), std::move(data));
     }
@@ -249,7 +145,7 @@ namespace phylanx { namespace execution_tree
         std::string this_name = this->base_type::registered_name();
 
         // retrieve name of component instance
-        using action_type = primitives::base_primitive::
+        using action_type = primitives::primitive_component::
             expression_topology_action;
 
         hpx::future<topology> f =
@@ -273,6 +169,13 @@ namespace phylanx { namespace execution_tree
     topology primitive::expression_topology(hpx::launch::sync_policy) const
     {
         return expression_topology().get();
+    }
+
+    void primitive::set_body(
+        hpx::launch::sync_policy, primitive_argument_type&& target)
+    {
+        using action_type = primitives::primitive_component::set_body_action;
+        return action_type()(this->base_type::get_id(), std::move(target));
     }
 
     ///////////////////////////////////////////////////////////////////////////

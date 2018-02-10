@@ -21,11 +21,11 @@ void test_dot_operation_0d()
     phylanx::ir::node_data<double> lhs(6.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(7.0));
 
     phylanx::execution_tree::primitive dot =
-        hpx::new_<phylanx::execution_tree::primitives::dot_operation>(
+        phylanx::execution_tree::primitives::create_dot_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
@@ -47,15 +47,15 @@ void test_dot_operation_1d()
     double expected = blaze::dot(v1, v2);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive dot =
-        hpx::new_<phylanx::execution_tree::primitives::dot_operation>(
+        phylanx::execution_tree::primitives::create_dot_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
@@ -80,15 +80,15 @@ void test_dot_operation_1d2d()
         1.52932001, 0.3163823, 0.65646171, 1.69273356, 0.92358221};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive dot =
-        hpx::new_<phylanx::execution_tree::primitives::dot_operation>(
+        phylanx::execution_tree::primitives::create_dot_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
@@ -113,15 +113,15 @@ void test_dot_operation_2d1d()
     blaze::DynamicVector<double> expected = m * v;
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive dot =
-        hpx::new_<phylanx::execution_tree::primitives::dot_operation>(
+        phylanx::execution_tree::primitives::create_dot_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
@@ -143,15 +143,15 @@ void test_dot_operation_2d2d()
     blaze::DynamicMatrix<double> expected = m1 * m2;
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive dot =
-        hpx::new_<phylanx::execution_tree::primitives::dot_operation>(
+        phylanx::execution_tree::primitives::create_dot_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)

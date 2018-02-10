@@ -7,31 +7,33 @@
 #define PHYLANX_PRIMITIVES_UNARY_NOT_OPERATION_OCT_10_2017_0310PM
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/ir/node_data.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/lcos/future.hpp>
 
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class unary_not_operation
-      : public base_primitive
-      , public hpx::components::component_base<unary_not_operation>
+    class unary_not_operation : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
 
         unary_not_operation() = default;
 
-        PHYLANX_EXPORT unary_not_operation(
-            std::vector<primitive_argument_type>&& operands);
+        unary_not_operation(std::vector<primitive_argument_type>&& operands);
 
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
     };
+
+    PHYLANX_EXPORT primitive create_unary_not_operation(
+        hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name = "");
 }}}
 
 #endif

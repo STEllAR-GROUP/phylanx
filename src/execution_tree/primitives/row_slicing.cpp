@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/row_slicing.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -21,30 +22,30 @@
 
 #include <blaze/Math.h>
 
-//////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::row_slicing_operation>
-    row_slicing_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(row_slicing_operation_type,
-    phylanx_row_slicing_operation_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(row_slicing_operation_type::wrapped_type)
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_row_slicing_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("slice_row");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const row_slicing_operation::match_data =
     {
         hpx::util::make_tuple("slice_row",
             std::vector<std::string>{"slice_row(_1, _2, _3)"},
-            &create<row_slicing_operation>)
+            &create_row_slicing_operation,
+            &create_primitive<row_slicing_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     row_slicing_operation::row_slicing_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

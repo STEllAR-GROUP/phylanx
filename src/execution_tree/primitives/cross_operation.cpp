@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/cross_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -20,29 +21,27 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::cross_operation>
-    cross_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(cross_operation_type,
-    phylanx_cross_operation_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(cross_operation_type::wrapped_type)
-
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_cross_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("cross");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const cross_operation::match_data =
     {
         hpx::util::make_tuple("cross",
             std::vector<std::string>{"cross(_1, _2)"},
-            &create<cross_operation>)
+            &create_cross_operation, &create_primitive<cross_operation>)
     };
 
     cross_operation::cross_operation(
-        std::vector<primitive_argument_type>&& operands)
-        : base_primitive(std::move(operands))
+            std::vector<primitive_argument_type>&& operands)
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

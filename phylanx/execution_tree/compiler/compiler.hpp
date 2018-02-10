@@ -10,18 +10,12 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
-#include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/define_function.hpp>
-#include <phylanx/execution_tree/primitives/define_variable.hpp>
-#include <phylanx/execution_tree/primitives/variable.hpp>
-#include <phylanx/execution_tree/primitives/wrapped_function.hpp>
-#include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/find_here.hpp>
-#include <hpx/util/assert.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <functional>
@@ -151,11 +145,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(argument_type && arg, std::string const& name) const
         {
+            static std::string type("define-variable");
             return function{
-                primitive_argument_type{primitive{
-                    hpx::new_<primitives::define_variable>(
-                        locality_, std::move(arg), name),
-                    name}},
+                primitive_argument_type{create_primitive_component_with_name(
+                    locality_, type, std::move(arg), name)},
                 name};
         }
 
@@ -188,10 +181,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(std::string const& name) const
         {
+            static std::string type("define-function");
+
             return function{
-                primitive_argument_type{primitive{
-                    hpx::new_<primitives::define_function>(locality_, name),
-                    name}},
+                primitive_argument_type{
+                    create_primitive_component_with_name(locality_, type,
+                        std::vector<primitive_argument_type>{}, name)},
                 name};
         }
 
@@ -211,13 +206,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(std::size_t n, std::string const& name) const
         {
-            std::string full_name = "access-argument$" +
+            static std::string type("access-argument");
+            std::string full_name = type + "$" +
                 std::to_string(sequence_number_) + "$" + name;
 
             return function{
-                primitive_argument_type{primitive{
-                    hpx::new_<primitives::access_argument>(locality_, n),
-                    full_name}},
+                primitive_argument_type{create_primitive_component(locality_,
+                    type, primitive_argument_type{std::int64_t(n)}, full_name)},
                 full_name};
         }
 
@@ -243,16 +238,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compose(std::list<function> && elements,
             std::string const& name) const
         {
-            std::string full_name = "access-variable$" +
+            static std::string type("access-variable");
+            std::string full_name = type + "$" +
                 std::to_string(sequence_number_) + "$" + name;
 
-
             return function{
-                primitive_argument_type{primitive{
-                    hpx::new_<primitives::wrapped_variable>(
-                        this->locality_, f_.get().arg_,
-                        full_name),
-                    full_name}},
+                primitive_argument_type{create_primitive_component_with_name(
+                    this->locality_, type, f_.get().arg_, full_name)},
                 full_name};
         }
     };
@@ -276,24 +268,21 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::string const& name) const
         {
             arguments_type fargs;
-            fargs.reserve(elements.size());
+            fargs.reserve(elements.size() + 1);
 
+            fargs.push_back(f_.get().arg_);
             for (auto const& arg : elements)
             {
                 fargs.push_back(arg.arg_);
             }
 
-            // NOTE: Check the consistency of names: "function" vs "call-function"
-            std::string full_name = "call-function$" +
+            static std::string type("call-function");
+            std::string full_name = type + "$" +
                 std::to_string(sequence_number_) + "$" + name;
 
-
             return function{
-                primitive_argument_type{primitive{
-                    hpx::new_<primitives::wrapped_function>(
-                        this->locality_, f_.get().arg_, std::move(fargs),
-                        full_name),
-                    full_name}},
+                primitive_argument_type{create_primitive_component_with_name(
+                    this->locality_, type, std::move(fargs), full_name)},
                 full_name};
         }
     };

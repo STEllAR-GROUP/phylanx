@@ -7,30 +7,32 @@
 #define PHYLANX_PRIMITIVES_EQUAL_OCT_07_2017_0212PM
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/lcos/future.hpp>
 
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class equal
-      : public base_primitive
-      , public hpx::components::component_base<equal>
+    class equal : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
 
         equal() = default;
 
-        PHYLANX_EXPORT equal(std::vector<primitive_argument_type>&& operands);
+        equal(std::vector<primitive_argument_type>&& operands);
 
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
+
+    PHYLANX_EXPORT primitive create_equal(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name = "");
 }}}
 
 #endif

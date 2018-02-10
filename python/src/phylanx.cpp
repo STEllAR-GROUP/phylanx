@@ -189,34 +189,33 @@ expression_compiler(std::string xexpr, Ts const&... ts)
     return hpx::threads::run_as_hpx_thread(
         [&]() -> et::primitive
         {
-        try
-        {
+            try
+            {
                 et::compiler::function_list eval_snippets;
                 auto x = et::compile(xexpr, eval_snippets);
 
                 et::primitive_argument_type result = x(ts...);
                 switch (result.index())
-            {
+                {
                 case 2: HPX_FALLTHROUGH;    // std::int64_t
                 case 3: HPX_FALLTHROUGH;    // std::string
                 case 4:                     // phylanx::ir::node_data<double>
-                    return et::primitive{
-                        hpx::local_new<et::primitives::variable>(std::move(result))
-                    };
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", std::move(result));
 
                  default:
-                PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
+                    PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
                     break;
+                }
             }
-        }
-        catch (const std::exception& ex)
-        {
-            PyErr_SetString(PyExc_RuntimeError, ex.what());
-        }
-        catch (...)
-        {
-            PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-        }
+            catch (const std::exception& ex)
+            {
+                PyErr_SetString(PyExc_RuntimeError, ex.what());
+            }
+            catch (...)
+            {
+                PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+            }
 
             return {};
     });
@@ -566,41 +565,43 @@ PYBIND11_MODULE(_phylanx, m)
                 [&]()
                 {
                     using namespace phylanx::execution_tree;
-                        return primitive{
-                            hpx::local_new<primitives::variable>(
-                                primitive_argument_type{d})};
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", primitive_argument_type{d});
                 });
         },
         "create a new variable from a floating point value");
     execution_tree.def("var",
         [](const std::string& d) {
             return hpx::threads::run_as_hpx_thread(
-                [&]() {
+                [&]()
+                {
                     using namespace phylanx::execution_tree;
-                    return primitive{hpx::local_new<primitives::variable>(
-                        primitive_argument_type{d})};
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", primitive_argument_type{d});
                 });
         },
         "create a new variable from a string");
     execution_tree.def("var",
         [](const std::vector<double>& d) {
             return hpx::threads::run_as_hpx_thread(
-                [&]() {
+                [&]()
+                {
                     using namespace phylanx::execution_tree;
-                    return primitive{hpx::local_new<primitives::variable>(
-                        primitive_argument_type{
-                            phylanx::ir::node_data<double>{d}})};
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", primitive_argument_type{
+                            phylanx::ir::node_data<double>{d}});
                 });
         },
         "create a new variable from a vector floating point values");
     execution_tree.def("var",
         [](const std::vector<std::vector<double>>& d) {
             return hpx::threads::run_as_hpx_thread(
-                [&]() {
+                [&]()
+                {
                     using namespace phylanx::execution_tree;
-                    return primitive{hpx::local_new<primitives::variable>(
-                        primitive_argument_type{
-                            phylanx::ir::node_data<double>{d}})};
+                    return create_primitive_component(hpx::find_here(),
+                        "variable", primitive_argument_type{
+                            phylanx::ir::node_data<double>{d}});
                 });
         },
         "create a new variable from a matrix floating point values");

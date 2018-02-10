@@ -16,15 +16,15 @@
 void test_diag_operation_0d()
 {
     phylanx::execution_tree::primitive data =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
     phylanx::execution_tree::primitive k =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive diag =
-        hpx::new_<phylanx::execution_tree::primitives::diag_operation>(
+        phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(data), std::move(k)});
@@ -41,15 +41,15 @@ void test_diag_operation_1d()
     blaze::DynamicVector<double> v1{1, 2, 3, 4, 5};
 
     phylanx::execution_tree::primitive vec =
-            hpx::new_<phylanx::execution_tree::primitives::variable>(
+            phylanx::execution_tree::primitives::create_variable(
                     hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive k =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive diag =
-        hpx::new_<phylanx::execution_tree::primitives::diag_operation>(
+        phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(vec), std::move(k)
@@ -74,15 +74,15 @@ void test_diag_operation_1d_plus_one()
     blaze::DynamicVector<double> v1{1, 2, 3, 4, 5};
 
     phylanx::execution_tree::primitive vec =
-            hpx::new_<phylanx::execution_tree::primitives::variable>(
+            phylanx::execution_tree::primitives::create_variable(
                     hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive k =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive diag =
-        hpx::new_<phylanx::execution_tree::primitives::diag_operation>(
+        phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(vec), std::move(k)
@@ -108,15 +108,15 @@ void test_diag_operation_1d_minus_one()
     blaze::DynamicVector<double> v1{1, 2, 3, 4, 5};
 
     phylanx::execution_tree::primitive vec =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive k =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(-1.0));
 
     phylanx::execution_tree::primitive diag =
-        hpx::new_<phylanx::execution_tree::primitives::diag_operation>(
+        phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(vec), std::move(k)
@@ -146,15 +146,15 @@ void test_diag_operation_2d()
                                     { 51,  54,  57,  60, 114}};
 
     phylanx::execution_tree::primitive mat =
-            hpx::new_<phylanx::execution_tree::primitives::variable>(
+            phylanx::execution_tree::primitives::create_variable(
                     hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive k =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive diag =
-        hpx::new_<phylanx::execution_tree::primitives::diag_operation>(
+        phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(mat), std::move(k)
@@ -179,15 +179,15 @@ void test_diag_operation_2d_plus_one()
                                     { 51,  54,  57,  60, 114}};
 
     phylanx::execution_tree::primitive mat =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive k =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive diag =
-        hpx::new_<phylanx::execution_tree::primitives::diag_operation>(
+        phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(mat), std::move(k)
@@ -212,15 +212,15 @@ void test_diag_operation_2d_minus_one()
                                     { 51,  54,  57,  60, 114}};
 
     phylanx::execution_tree::primitive mat =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive k =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(-1.0));
 
     phylanx::execution_tree::primitive diag =
-        hpx::new_<phylanx::execution_tree::primitives::diag_operation>(
+        phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(mat), std::move(k)

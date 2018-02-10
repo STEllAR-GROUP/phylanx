@@ -6,25 +6,41 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <string>
+#include <utility>
 #include <vector>
-
-///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::access_argument>
-    access_argument_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    access_argument_type, phylanx_access_argument_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(access_argument_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const access_argument::match_data =
+    {
+        hpx::util::make_tuple("access-argument",
+            std::vector<std::string>{},
+            nullptr, &create_primitive<access_argument>)
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    access_argument::access_argument(
+            std::vector<primitive_argument_type>&& args)
+      : primitive_component_base(std::move(args))
+    {
+        if (operands_.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_argument::access_argument",
+                "the access_argument primitive expects to be initialized with "
+                    "exactly one argument");
+        }
+
+        argnum_ = extract_integer_value(operands_[0]);
+    }
+
     primitive_argument_type access_argument::eval_direct(
         std::vector<primitive_argument_type> const& params) const
     {

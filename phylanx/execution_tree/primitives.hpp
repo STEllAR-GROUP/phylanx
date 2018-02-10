@@ -32,6 +32,7 @@
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/execution_tree/primitives/file_write_csv.hpp>
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
+#include <phylanx/execution_tree/primitives/function_reference.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
 #include <phylanx/execution_tree/primitives/hstack_operation.hpp>

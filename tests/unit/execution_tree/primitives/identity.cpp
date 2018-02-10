@@ -15,11 +15,11 @@
 void test_identity()
 {
     phylanx::execution_tree::primitive val =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
     phylanx::execution_tree::primitive identity =
-        hpx::new_<phylanx::execution_tree::primitives::identity>(
+        phylanx::execution_tree::primitives::create_identity(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(val)});

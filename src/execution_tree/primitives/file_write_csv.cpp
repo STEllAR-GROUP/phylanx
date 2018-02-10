@@ -6,11 +6,11 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/file_write_csv.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/variant.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <fstream>
@@ -20,29 +20,28 @@
 #include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::file_write_csv>
-    file_write_csv_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(file_write_csv_type,
-    phylanx_file_write_csv_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(file_write_csv_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_file_write_csv(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("file_write_csv");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const file_write_csv::match_data =
     {
         hpx::util::make_tuple("file_write_csv",
             std::vector<std::string>{"file_write_csv(_1, _2)"},
-            &create<file_write_csv>)
+            &create_file_write_csv, &create_primitive<file_write_csv>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     file_write_csv::file_write_csv(
             std::vector<primitive_argument_type> && operands)
-      : operands_(operands)
+      : primitive_component_base(std::move(operands))
     {
     }
 

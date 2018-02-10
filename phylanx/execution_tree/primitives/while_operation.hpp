@@ -7,33 +7,33 @@
 #define PHYLANX_PRIMITIVES_WHILE_OPERATION_OCT_06_2017_1127AM
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/lcos/future.hpp>
 
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class while_operation
-      : public base_primitive
-      , public hpx::components::component_base<while_operation>
+    class while_operation : public primitive_component_base
     {
-        using operands_type = std::vector<primitive_argument_type>;
-
     public:
         static match_pattern_type const match_data;
 
         while_operation() = default;
 
-        PHYLANX_EXPORT while_operation(
-            std::vector<primitive_argument_type>&& operands);
+        while_operation(std::vector<primitive_argument_type>&& operands);
 
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
     };
+
+    PHYLANX_EXPORT primitive create_while_operation(
+        hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name = "");
 }}}
 
 #endif

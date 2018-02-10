@@ -52,7 +52,7 @@
 // The version check enforces the major and minor version numbers to match for
 // every compilation unit to be compiled.
 #define PHYLANX_CHECK_BOOST_VERSION                                           \
-    HPX_PP_CAT(hpx_check_boost_version_, HPX_PP_EXPAND(BOOST_VERSION))        \
+    HPX_PP_CAT(phylanx_check_boost_version_, HPX_PP_EXPAND(BOOST_VERSION))    \
     /**/
 
 ///////////////////////////////////////////////////////////////////////////////

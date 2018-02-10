@@ -16,28 +16,28 @@
 void test_linmatrix()
 {
     phylanx::execution_tree::primitive nx =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), std::int64_t(2));
 
     phylanx::execution_tree::primitive ny =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), std::int64_t(2));
 
     phylanx::execution_tree::primitive base_value =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), phylanx::ir::node_data<double>(1));
 
     phylanx::execution_tree::primitive dx =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), phylanx::ir::node_data<double>(0.5));
 
     phylanx::execution_tree::primitive dy =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), phylanx::ir::node_data<double>(0.5));
 
     using namespace std;
     phylanx::execution_tree::primitive linearmatrix =
-        hpx::new_<phylanx::execution_tree::primitives::linearmatrix>(
+        phylanx::execution_tree::primitives::create_linearmatrix(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 move(nx), move(ny), move(base_value), move(dx), move(dy)});

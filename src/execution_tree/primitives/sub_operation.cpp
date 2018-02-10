@@ -7,9 +7,10 @@
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -21,29 +22,28 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::sub_operation>
-    sub_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    sub_operation_type, phylanx_sub_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(sub_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_sub_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("__sub");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const sub_operation::match_data =
     {
         hpx::util::make_tuple("__sub",
             std::vector<std::string>{"_1 - __2"},
-            &create<sub_operation>)
+            &create_sub_operation, &create_primitive<sub_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     sub_operation::sub_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

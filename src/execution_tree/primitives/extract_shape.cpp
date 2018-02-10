@@ -5,9 +5,10 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/extract_shape.hpp>
+#include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
@@ -19,29 +20,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::extract_shape>
-    extract_shape_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    extract_shape_type, phylanx_extract_shape_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(extract_shape_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_extract_shape(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("shape");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const extract_shape::match_data =
     {
         hpx::util::make_tuple("shape",
             std::vector<std::string>{"shape(_1, _2)", "shape(_1)"},
-            &create<extract_shape>)
+            &create_extract_shape, &create_primitive<extract_shape>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     extract_shape::extract_shape(
             std::vector<primitive_argument_type> && operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     namespace detail
