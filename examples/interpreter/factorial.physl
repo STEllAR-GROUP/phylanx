@@ -8,12 +8,12 @@
 // \param iterations Number of iterations
 // \returns the Factorial value after specified `iterations`
 
-block(
-    define(fact, arg0,
-        if (arg0 <= 1,
-            1,
-            arg0 * fact(arg0 - 1)
-        )
-    ),
-    fact
+define(fact, arg0,
+    if (arg0 <= 1,
+        1,
+        arg0 * fact(arg0 - 1)
+    )
 )
+
+apply(fact, sys_argv)
+

@@ -68,8 +68,8 @@ phylanx::execution_tree::primitive create_literal_value(double value)
 void test_add_primitive()
 {
     char const* variables = R"(
-        define(A, 41.0),
-        define(B, 1.0),
+        define(A, 41.0)
+        define(B, 1.0)
         define(C, 13.0)
     )";
 
@@ -82,8 +82,8 @@ void test_add_primitive()
 void test_sub_primitive()
 {
     char const* variables = R"(
-        define(A, 41.0),
-        define(B, 1.0),
+        define(A, 41.0)
+        define(B, 1.0)
         define(C, 13.0)
     )";
 
@@ -96,8 +96,8 @@ void test_sub_primitive()
 void test_mul_primitive()
 {
     char const* variables = R"(
-        define(A, 41.0),
-        define(B, 1.0),
+        define(A, 41.0)
+        define(B, 1.0)
         define(C, 13.0)
     )";
 
@@ -110,9 +110,9 @@ void test_mul_primitive()
 void test_math_primitives()
 {
     char const* variables = R"(
-        define(A, 41.0),
-        define(B, 1.0),
-        define(C, 13.0),
+        define(A, 41.0)
+        define(B, 1.0)
+        define(C, 13.0)
         define(D, 5.0)
     )";
 
@@ -127,8 +127,8 @@ void test_math_primitives()
 void test_file_io_primitives()
 {
     char const* variables = R"(
-        define(A, 41.0),
-        define(B, 1.0),
+        define(A, 41.0)
+        define(B, 1.0)
         define(C, 13.0)
     )";
 
@@ -139,7 +139,7 @@ void test_file_io_primitives()
 void test_boolean_primitives()
 {
     char const* variables = R"(
-        define(A, 41.0),
+        define(A, 41.0)
         define(B, 0.0)
     )";
 
@@ -177,8 +177,8 @@ void test_boolean_primitives()
 void test_block_primitives()
 {
     char const* variables = R"(
-        define(A, 41.0),
-        define(B, 1.0),
+        define(A, 41.0)
+        define(B, 1.0)
         define(C, 13.0)
     )";
 
@@ -189,9 +189,9 @@ void test_block_primitives()
 void test_store_primitive()
 {
     char const* variables = R"(
-        define(A, 41.0),
-        define(B, 1.0),
-        define(C, 13.0),
+        define(A, 41.0)
+        define(B, 1.0)
+        define(C, 13.0)
         define(D, 42.0)
     )";
 
@@ -205,7 +205,7 @@ void test_store_primitive()
 void test_complex_expression()
 {
     char const* variables = R"(
-        define(A, 3.0),
+        define(A, 3.0)
         define(B, 2.0)
     )";
 
@@ -223,8 +223,8 @@ void test_if_conditional()
     // Test 1
     //  two outcome true case
     char const* variables1 = R"(
-        define(cond, 1.0),
-        define(true_case, 42.0),
+        define(cond, 1.0)
+        define(true_case, 42.0)
         define(false_case, 54.0)
     )";
 
@@ -233,8 +233,8 @@ void test_if_conditional()
     // Test 2
     //  two outcome false case
     char const* variables2 = R"(
-        define(cond, false),
-        define(true_case, 42.0),
+        define(cond, false)
+        define(true_case, 42.0)
         define(false_case, 54.0)
     )";
 
@@ -243,7 +243,7 @@ void test_if_conditional()
     // Test 3
     //  one outcome true case
     char const* variables3 = R"(
-        define(cond, true),
+        define(cond, true)
         define(true_case, 42.0)
     )";
 
@@ -252,7 +252,7 @@ void test_if_conditional()
     // Test 4
     //  one outcome false case
     char const* variables4 = R"(
-        define(cond, false),
+        define(cond, false)
         define(true_case, 42.0)
     )";
 

@@ -34,6 +34,7 @@ namespace phylanx { namespace execution_tree
             primitives::for_operation::match_data,
             primitives::linspace::match_data,
             // binary functions
+            primitives::apply::match_data,
             primitives::cross_operation::match_data,
             primitives::dot_operation::match_data,
             primitives::file_read::match_data,

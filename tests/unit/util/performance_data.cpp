@@ -58,8 +58,8 @@ std::map<std::string, std::vector<std::size_t>> expected_counts =
     { "access-variable#5", { 8, 0, } },
     { "access-variable#5", { 8, 0, } },
     { "access-variable#5", { 8, 0, } },
-    { "add#0", { 8, 0, } },
-    { "add#1", { 8, 0, } },
+    { "__add#0", { 8, 0, } },
+    { "__add#1", { 8, 0, } },
     { "block#0", { 0, 1, } },
     { "block#1", { 0, 1, } },
     { "block#2", { 8, 0, } },
@@ -69,7 +69,7 @@ std::map<std::string, std::vector<std::size_t>> expected_counts =
     { "define-variable#3", { 17, 0, } },
     { "define-variable#4", { 9, 0, } },
     { "define-variable#5", { 18, 0, } },
-    { "lt#0", { 9, 0, } },
+    { "__lt#0", { 9, 0, } },
     { "store#0", { 8, 0, } },
     { "store#1", { 8, 0, } },
     { "store#2", { 8, 0, } },
@@ -113,6 +113,7 @@ int main()
             tags.primitive + "#" + std::to_string(tags.sequence_number));
         auto const& expected_values = expected_counts[expected_key];
 
+        HPX_TEST(!expected_values.empty());
         HPX_TEST_EQ(entry.second[0], expected_values[0]);
         HPX_TEST((entry.second[1] != 0) == (expected_values[0] != 0));
         HPX_TEST_EQ(entry.second[2], expected_values[1]);

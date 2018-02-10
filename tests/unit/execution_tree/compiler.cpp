@@ -59,7 +59,7 @@ void test_builtin_environment_vars()
     env.define("y", phylanx::execution_tree::compiler::external_function{vary});
 
     // extract factory for compiling the '+' primitive
-    phylanx::execution_tree::compiler::compiled_function* cfadd = env.find("add");
+    phylanx::execution_tree::compiler::compiled_function* cfadd = env.find("__add");
     HPX_TEST(cfadd != nullptr);
 
     // extract factory for compiling variables
@@ -102,7 +102,7 @@ void test_builtin_environment_vars_lazy()
     env.define("y", phylanx::execution_tree::compiler::external_function{vary});
 
     // extract factory for compiling the '+' primitive
-    phylanx::execution_tree::compiler::compiled_function* cfadd = env.find("add");
+    phylanx::execution_tree::compiler::compiled_function* cfadd = env.find("__add");
     HPX_TEST(cfadd != nullptr);
 
     // extract factory for compiling variables
@@ -115,7 +115,7 @@ void test_builtin_environment_vars_lazy()
     auto defx = (*cfx)(funcs, "x");
     auto defy = (*cfy)(funcs, "y");
 
-    auto add = (*cfadd)(funcs, "add");
+    auto add = (*cfadd)(funcs, "__add");
 
     // invoking the factory functions defx and defy actually creates and binds
     // the variables
@@ -328,7 +328,7 @@ void test_use_builtin_function_ind()
 {
     auto expr = phylanx::ast::generate_ast(R"(block(
             define(x, f, a, b, f(a, b)),
-            define(y, a, b, x(add, a, b)),
+            define(y, a, b, x(__add, a, b)),
             y
         ))");
 

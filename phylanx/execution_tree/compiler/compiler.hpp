@@ -386,6 +386,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function_list& snippets, environment& env,
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);
+
+    /// Add the given variable to the compilation environment
+    PHYLANX_EXPORT function define_variable(std::string const& name,
+        function_list& snippets, environment& env, primitive_argument_type body,
+        hpx::id_type const& default_locality);
 }}}
 
 #endif

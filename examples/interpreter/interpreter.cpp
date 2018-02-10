@@ -8,6 +8,7 @@
 
 #include <hpx/hpx_main.hpp>
 
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -78,7 +79,7 @@ void print_performance_counter_data_csv()
     }
 
     // Print performance data
-    std::vector<std::string> counter_names{
+    std::vector<std::string> const counter_names{
         "count/eval", "time/eval", "count/eval_direct", "time/eval_direct"};
 
     for (auto const& entry : phylanx::util::retrieve_counter_data(
@@ -126,7 +127,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
         po::options_description all_options;
         all_options.add(cmdline_options).add(positional_options);
 
-        po::parsed_options opts(
+        po::parsed_options const opts(
             po::command_line_parser(argc, argv)
                 .options(all_options)
                 .positional(pd)
@@ -161,7 +162,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
 int main(int argc, char* argv[])
 {
     po::variables_map vm;
-    int cmdline_result = handle_command_line(argc, argv, vm);
+    int const cmdline_result = handle_command_line(argc, argv, vm);
     if (cmdline_result != 0)
     {
         return cmdline_result > 0 ? 0 : cmdline_result;
@@ -198,7 +199,7 @@ int main(int argc, char* argv[])
         // Apply transformation rules to AST, if requested
         if (vm.count("transform") != 0)
         {
-            std::string transform_rules =
+            std::string const transform_rules =
                 read_user_code(vm["transform"].as<std::string>());
 
             ast = phylanx::ast::transform_ast(
@@ -207,14 +208,19 @@ int main(int argc, char* argv[])
 
         // Now compile AST into expression tree (into actual executable code)
         phylanx::execution_tree::compiler::function_list snippets;
-        auto code = phylanx::execution_tree::compile(ast, snippets);
+        phylanx::execution_tree::compiler::environment env =
+            phylanx::execution_tree::compiler::default_environment();
+
+        phylanx::execution_tree::define_variable(
+            "sys_argv", snippets, env, args);
+        auto const code = phylanx::execution_tree::compile(ast, snippets, env);
 
         // Re-init all performance counters to guarantee correct measurement
         // results if those are requested on the command line.
         hpx::reinit_active_counters();
 
         // Evaluate user code using the read data
-        auto result = code(args);
+        auto const result = code();
 
         // Print the result of the last PhySL expression, if requested
         if (vm.count("print") != 0)

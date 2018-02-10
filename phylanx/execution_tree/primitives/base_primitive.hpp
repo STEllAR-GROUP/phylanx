@@ -428,6 +428,14 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
         ast::literal_value_type && val);
+    PHYLANX_EXPORT ir::node_data<double> to_primitive_numeric_type(
+        ast::literal_value_type && val);
+    PHYLANX_EXPORT std::string to_primitive_string_type(
+        ast::literal_value_type && val);
+    PHYLANX_EXPORT std::int64_t to_primitive_int_type(
+        ast::literal_value_type && val);
+    PHYLANX_EXPORT bool to_primitive_bool_type(
+        ast::literal_value_type && val);
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a value type from a given primitive_argument_type, throw

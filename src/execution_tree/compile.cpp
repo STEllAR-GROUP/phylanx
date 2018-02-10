@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree
         }
 
         compiler::function compile(ast::expression const& expr,
-            compiler::function_list& snippets, hpx::id_type const& default_locality)
+            compiler::function_list& snippets,
+            hpx::id_type const& default_locality)
         {
             pattern_list const& patterns = get_all_known_patterns();
             compiler::environment env =
@@ -96,6 +97,17 @@ namespace phylanx { namespace execution_tree
         compiler::function_list& snippets, hpx::id_type const& default_locality)
     {
         return compile(ast::generate_ast(expr), snippets, default_locality);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Add the given variable to the compilation environment
+    compiler::function define_variable(std::string const& name,
+        compiler::function_list& snippets, compiler::environment& env,
+        primitive_argument_type body,
+        hpx::id_type const& default_locality)
+    {
+        return compiler::define_variable(
+            name, snippets, env, body, default_locality)();
     }
 }}
 
