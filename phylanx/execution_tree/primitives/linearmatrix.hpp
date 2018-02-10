@@ -12,7 +12,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT linearmatrix
+    class linearmatrix
       : public base_primitive
       , public hpx::components::component_base<linearmatrix>
     {
@@ -21,9 +21,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         linearmatrix() = default;
 
-        linearmatrix(std::vector<primitive_argument_type>&& args);
+        PHYLANX_EXPORT linearmatrix(
+            std::vector<primitive_argument_type>&& args);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}
