@@ -17,25 +17,26 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT variable
+    class variable
       : public base_primitive
       , public hpx::components::locking_hook<
           hpx::components::component_base<variable>>
     {
     public:
         variable() = default;
-        variable(std::string name);
+        PHYLANX_EXPORT variable(std::string name);
 
-        variable(primitive_argument_type&& operand);
-        variable(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT variable(primitive_argument_type&& operand);
+        PHYLANX_EXPORT variable(std::vector<primitive_argument_type>&& operands);
 
-        variable(primitive_argument_type&& operand, std::string name);
-        variable(
+        PHYLANX_EXPORT variable(
+            primitive_argument_type&& operand, std::string name);
+        PHYLANX_EXPORT variable(
             std::vector<primitive_argument_type>&& operands, std::string name);
 
-        primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
-        void store(primitive_argument_type && data) override;
+        PHYLANX_EXPORT void store(primitive_argument_type && data) override;
 
     private:
         mutable primitive_argument_type data_;

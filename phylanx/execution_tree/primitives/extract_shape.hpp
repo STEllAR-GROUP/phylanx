@@ -19,7 +19,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT extract_shape
+    class extract_shape
         : public base_primitive
         , public hpx::components::component_base<extract_shape>
     {
@@ -28,9 +28,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         extract_shape() = default;
 
-        extract_shape(std::vector<primitive_argument_type> && params);
+        PHYLANX_EXPORT extract_shape(
+            std::vector<primitive_argument_type>&& params);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
     };
 }}}

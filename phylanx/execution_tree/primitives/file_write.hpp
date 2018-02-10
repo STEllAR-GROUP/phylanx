@@ -16,7 +16,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT file_write
+    class file_write
       : public base_primitive
       , public hpx::components::component_base<file_write>
     {
@@ -25,9 +25,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         file_write() = default;
 
-        file_write(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT file_write(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
 
     private:

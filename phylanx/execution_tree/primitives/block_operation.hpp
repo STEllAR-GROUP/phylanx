@@ -18,7 +18,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT block_operation
+    class block_operation
       : public base_primitive
       , public hpx::components::component_base<block_operation>
     {
@@ -27,9 +27,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         block_operation() = default;
 
-        block_operation(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT block_operation(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

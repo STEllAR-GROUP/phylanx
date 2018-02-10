@@ -17,7 +17,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT greater_equal
+    class greater_equal
       : public base_primitive
       , public hpx::components::component_base<greater_equal>
     {
@@ -26,9 +26,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         greater_equal() = default;
 
-        greater_equal(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT greater_equal(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

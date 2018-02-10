@@ -16,7 +16,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT string_output
+    class string_output
       : public base_primitive
       , public hpx::components::component_base<string_output>
     {
@@ -25,9 +25,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         string_output() = default;
 
-        string_output(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT string_output(
+            std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
 }}}

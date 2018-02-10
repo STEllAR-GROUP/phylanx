@@ -29,10 +29,10 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     namespace primitives
     {
-        class HPX_COMPONENT_EXPORT base_primitive;
+        class PHYLANX_EXPORT base_primitive;
     }
 
-    class HPX_COMPONENT_EXPORT primitive;
+    class primitive;
 
     ///////////////////////////////////////////////////////////////////////////
     struct topology
@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree
     struct primitive_argument_type;
 
     ///////////////////////////////////////////////////////////////////////////
-    class PHYLANX_EXPORT primitive
+    class primitive
       : public hpx::components::client_base<primitive,
             primitives::base_primitive>
     {
@@ -90,7 +90,8 @@ namespace phylanx { namespace execution_tree
         {
         }
 
-        primitive(hpx::future<hpx::id_type> && fid, std::string const& name);
+        PHYLANX_EXPORT primitive(
+            hpx::future<hpx::id_type>&& fid, std::string const& name);
 
         primitive(primitive const&) = default;
         primitive(primitive &&) = default;
@@ -98,23 +99,24 @@ namespace phylanx { namespace execution_tree
         primitive& operator=(primitive const&) = default;
         primitive& operator=(primitive &&) = default;
 
-        hpx::future<primitive_argument_type> eval() const;
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval() const;
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> && args) const;
-        hpx::future<primitive_argument_type> eval(
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const;
 
-        primitive_argument_type eval_direct() const;
-        primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval_direct() const;
+        PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> && args) const;
-        primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& args) const;
 
-        hpx::future<void> store(primitive_argument_type);
-        void store(hpx::launch::sync_policy, primitive_argument_type);
+        PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type);
+        PHYLANX_EXPORT void store(
+            hpx::launch::sync_policy, primitive_argument_type);
 
-        hpx::future<topology> expression_topology() const;
-        topology expression_topology(hpx::launch::sync_policy) const;
+        PHYLANX_EXPORT hpx::future<topology> expression_topology() const;
+        PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy) const;
 
     public:
         static bool enable_tracing;
@@ -281,7 +283,7 @@ namespace phylanx { namespace execution_tree
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    class HPX_COMPONENT_EXPORT base_primitive
+    class PHYLANX_EXPORT base_primitive
       : public hpx::traits::detail::component_tag
     {
     public:
@@ -300,49 +302,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
           , eval_direct_duration_(0ll)
         {}
 
-        virtual ~base_primitive() = default;
+        virtual ~base_primitive();
 
+        // eval_action
         hpx::future<primitive_argument_type> eval_nonvirtual(
-            std::vector<primitive_argument_type> const& args) const
-        {
-            hpx::util::scoped_timer<std::int64_t> timer(eval_duration_);
-            ++eval_count_;
-            return eval(args);
-        }
+            std::vector<primitive_argument_type> const& args) const;
+
         virtual hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const
-        {
-            return hpx::make_ready_future(eval_direct(params));
-        }
+            std::vector<primitive_argument_type> const& params) const;
 
+        // direct_eval_action
         primitive_argument_type eval_direct_nonvirtual(
-            std::vector<primitive_argument_type> const& args) const
-        {
-            hpx::util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
-            ++eval_direct_count_;
-            return eval_direct(args);
-        }
+            std::vector<primitive_argument_type> const& args) const;
+
         virtual primitive_argument_type eval_direct(
-            std::vector<primitive_argument_type> const& params) const
-        {
-            return eval(params).get();
-        }
+            std::vector<primitive_argument_type> const& params) const;
 
-        void store_nonvirtual(primitive_argument_type data)
-        {
-            store(std::move(data));
-        }
-        virtual void store(primitive_argument_type &&)
-        {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "phylanx::execution_tree::primitives::base_primitive",
-                "store function should only be called in store_primitive");
-        }
+        // store_action
+        void store_nonvirtual(primitive_argument_type data);
 
-        topology expression_topology_nonvirtual() const
-        {
-            return expression_topology();
-        }
+        virtual void store(primitive_argument_type &&);
+
+        // extract_topology_action
+        topology expression_topology_nonvirtual() const;
+
         virtual topology expression_topology() const;
 
     public:
@@ -367,13 +350,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     public:
         // Pinning functionality helper functions
-        void pin()
+        constexpr void pin()
         {
         }
-        void unpin()
+        constexpr void unpin()
         {
         }
-        std::uint32_t pin_count() const
+        constexpr std::uint32_t pin_count() const
         {
             return 0;
         }

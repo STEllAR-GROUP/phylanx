@@ -18,18 +18,19 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT enable_tracing
-        : public base_primitive
-        , public hpx::components::component_base<enable_tracing>
+    class enable_tracing
+      : public base_primitive
+      , public hpx::components::component_base<enable_tracing>
     {
     public:
         static match_pattern_type const match_data;
 
         enable_tracing() = default;
 
-        enable_tracing(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT enable_tracing(
+            std::vector<primitive_argument_type>&& operands);
 
-        primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
     };
 }}}
