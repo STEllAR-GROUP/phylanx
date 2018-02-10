@@ -31,6 +31,7 @@ set(tests
     less_operation
     less_equal_operation
     literal_value
+    linearmatrix
     linspace
     mul_operation
     not_equal_operation
