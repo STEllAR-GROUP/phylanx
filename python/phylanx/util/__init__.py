@@ -114,7 +114,7 @@ def get_node(node,**kwargs):
     return None
 
 def full_node_name(a, name):
-    return '%s#%d#%d' % (name, a.lineno, a.col_offset)
+    return '%s$%d$%d' % (name, a.lineno, a.col_offset)
 
 def full_name(a):
     return full_node_name(a, a.name)

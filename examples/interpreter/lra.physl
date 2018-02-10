@@ -1,32 +1,34 @@
-//  Copyright (c) 2018 Parsa Amini
-//  Copyright (c) 2018 Hartmut Kaiser
-//
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#! /usr/bin/env physl
+#
+#  Copyright (c) 2018 Parsa Amini
+#  Copyright (c) 2018 Hartmut Kaiser
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+#
+# Linear Regression Algorithm example in PhySL
+# \param filepath
+# \param row_start
+# \param row_stop
+# \param col_start
+# \param col_stop
+# \param alpha
+# \param iterations
+# \param enable_output
+# \returns Calculated weights
 
-
-// Linear Regression Algorithm example in PhySL
-// \param filepath
-// \param row_start
-// \param row_stop
-// \param col_start
-// \param col_stop
-// \param alpha
-// \param iterations
-// \param enable_output
-// \returns Calculated weights
-
-// Read X-data from given CSV file
+# Read X-data from given CSV file
 define(read_x, filepath, row_start, row_stop, col_start, col_stop,
     slice(file_read_csv(filepath), row_start, row_stop, col_start, col_stop)
 )
 
-// Read Y-data from given CSV file
+# Read Y-data from given CSV file
 define(read_y, filepath, row_start, row_stop,
     slice(file_read_csv(filepath), row_start, row_stop, -1, 0)
 )
 
-// Logistic regression analysis algorithm
+# Logistic regression analysis algorithm
 define(lra, filepath, row_start, row_stop, col_start, col_stop, alpha,
             iterations, enable_output,
     block(

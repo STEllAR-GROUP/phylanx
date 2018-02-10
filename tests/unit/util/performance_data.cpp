@@ -44,38 +44,38 @@ char const* const fib_code = R"(block(
 
 std::map<std::string, std::vector<std::size_t>> expected_counts =
 {
-    { "access-variable#0", { 1, 0, } },
-    { "access-variable#1", { 0, 0, } },
-    { "access-variable#1", { 0, 0, } },
-    { "access-variable#2", { 1, 0, } },
-    { "access-variable#2", { 1, 0, } },
-    { "access-variable#2", { 1, 0, } },
-    { "access-variable#3", { 0, 0, } },
-    { "access-variable#3", { 0, 0, } },
-    { "access-variable#3", { 0, 0, } },
-    { "access-variable#4", { 8, 0, } },
-    { "access-variable#4", { 8, 0, } },
-    { "access-variable#5", { 8, 0, } },
-    { "access-variable#5", { 8, 0, } },
-    { "access-variable#5", { 8, 0, } },
-    { "__add#0", { 8, 0, } },
-    { "__add#1", { 8, 0, } },
-    { "block#0", { 0, 1, } },
-    { "block#1", { 0, 1, } },
-    { "block#2", { 8, 0, } },
-    { "define-variable#0", { 2, 0, } },
-    { "define-variable#1", { 9, 0, } },
-    { "define-variable#2", { 10, 0, } },
-    { "define-variable#3", { 17, 0, } },
-    { "define-variable#4", { 9, 0, } },
-    { "define-variable#5", { 18, 0, } },
-    { "__lt#0", { 9, 0, } },
-    { "store#0", { 8, 0, } },
-    { "store#1", { 8, 0, } },
-    { "store#2", { 8, 0, } },
-    { "store#3", { 8, 0, } },
-    { "store#4", { 8, 0, } },
-    { "while#0", { 1, 0, } },
+    { "access-variable$0", { 1, 0, } },
+    { "access-variable$1", { 0, 0, } },
+    { "access-variable$1", { 0, 0, } },
+    { "access-variable$2", { 1, 0, } },
+    { "access-variable$2", { 1, 0, } },
+    { "access-variable$2", { 1, 0, } },
+    { "access-variable$3", { 0, 0, } },
+    { "access-variable$3", { 0, 0, } },
+    { "access-variable$3", { 0, 0, } },
+    { "access-variable$4", { 8, 0, } },
+    { "access-variable$4", { 8, 0, } },
+    { "access-variable$5", { 8, 0, } },
+    { "access-variable$5", { 8, 0, } },
+    { "access-variable$5", { 8, 0, } },
+    { "__add$0", { 8, 0, } },
+    { "__add$1", { 8, 0, } },
+    { "block$0", { 0, 1, } },
+    { "block$1", { 0, 1, } },
+    { "block$2", { 8, 0, } },
+    { "define-variable$0", { 2, 0, } },
+    { "define-variable$1", { 9, 0, } },
+    { "define-variable$2", { 10, 0, } },
+    { "define-variable$3", { 17, 0, } },
+    { "define-variable$4", { 9, 0, } },
+    { "define-variable$5", { 18, 0, } },
+    { "__lt$0", { 9, 0, } },
+    { "store$0", { 8, 0, } },
+    { "store$1", { 8, 0, } },
+    { "store$2", { 8, 0, } },
+    { "store$3", { 8, 0, } },
+    { "store$4", { 8, 0, } },
+    { "while$0", { 1, 0, } },
 };
 
 int main()
@@ -94,7 +94,7 @@ int main()
 
     // Retrieve all primitive instances
     for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*#*"))
+        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
     {
         existing_primitive_instances.push_back(entry.first);
     }
@@ -110,7 +110,7 @@ int main()
                 entry.first);
 
         std::string const expected_key(
-            tags.primitive + "#" + std::to_string(tags.sequence_number));
+            tags.primitive + "$" + std::to_string(tags.sequence_number));
         auto const& expected_values = expected_counts[expected_key];
 
         HPX_TEST(!expected_values.empty());

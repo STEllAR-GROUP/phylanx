@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree
@@ -101,13 +102,13 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     /// Add the given variable to the compilation environment
-    compiler::function define_variable(std::string const& name,
+    compiler::function define_variable(std::string name,
         compiler::function_list& snippets, compiler::environment& env,
         primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
         return compiler::define_variable(
-            name, snippets, env, body, default_locality)();
+            std::move(name), snippets, env, body, default_locality)();
     }
 }}
 

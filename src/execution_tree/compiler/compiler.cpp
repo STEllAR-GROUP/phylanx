@@ -171,12 +171,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             // Note: the compile-id needs to be adjusted to be zero-based.
             std::string result = "/" +
-                std::to_string(snippets_.compile_id_ - 1) + "#" +
+                std::to_string(snippets_.compile_id_ - 1) + "$" +
                 std::to_string(id.id);
 
             if (id.col != -1)
             {
-                result += '#' + std::to_string(id.col);
+                result += '$' + std::to_string(id.col);
             }
 
             return result;
@@ -239,7 +239,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::size_t sequence_number =
                     snippets_.sequence_numbers_[variable]++;
 
-                env_.define(name,
+                env_.define(std::move(name),
                     external_variable(f, sequence_number, default_locality_));
 
                 static std::string define_variable("define-variable");
@@ -252,8 +252,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     default_locality_);
 
                 f = primitive_variable{default_locality_}(
-                        std::move(bf.arg_), define_variable + "#" +
-                            std::to_string(sequence_number) + "#" + full_name);
+                        std::move(bf.arg_), define_variable + "$" +
+                            std::to_string(sequence_number) + "$" + full_name);
                 return f;
             }
 
@@ -265,7 +265,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // two-step initialization of the wrapped_function to support
             // recursion
-            env_.define(name,
+            env_.define(std::move(name),
                 external_function(f, sequence_number, default_locality_));
 
             static std::string define_function_("define-function");
@@ -274,10 +274,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // create define_function helper object
             std::string define_function_name =
-                std::to_string(sequence_number) + "#" + full_name;
+                std::to_string(sequence_number) + "$" + full_name;
 
             f = primitive_function{default_locality_}(
-                define_function_ + "#" + define_function_name);
+                define_function_ + "$" + define_function_name);
 
             // set the body for the compiled function
             define_function(f.arg_).set_body(hpx::launch::sync,
@@ -382,7 +382,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // add sequence number for this primitive component
                 std::size_t sequence_number =
                     snippets_.sequence_numbers_[name]++;
-                name += "#" + std::to_string(sequence_number);
+                name += "$" + std::to_string(sequence_number);
 
                 // get global name of the component created
                 ast::tagged id = ast::detail::tagged_id(expr);
@@ -441,10 +441,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    function define_variable(std::string const& name, function_list& snippets,
+    function define_variable(std::string name, function_list& snippets,
         environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
+        std::string full_name = name;
+        auto p = name.find_first_of("$/");
+        if (p != std::string::npos)
+        {
+            name.erase(p);
+        }
+
         snippets.snippets_.emplace_back(function{});
         function& f = snippets.snippets_.back();
 
@@ -452,15 +459,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
         static std::string variable("variable");
         std::size_t sequence_number = snippets.sequence_numbers_[variable]++;
 
-        env.define(
-            name, external_variable(f, sequence_number, default_locality));
+        env.define(std::move(name),
+            external_variable(f, sequence_number, default_locality));
 
         static std::string define_variable("define-variable");
         sequence_number = snippets.sequence_numbers_[define_variable]++;
 
         f = primitive_variable{default_locality}(
-                std::move(body), define_variable + "#" +
-                    std::to_string(sequence_number) + "#" + name);
+                std::move(body), define_variable + "$" +
+                    std::to_string(sequence_number) + "$" + full_name);
         return f;
     }
 }}}

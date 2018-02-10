@@ -73,7 +73,7 @@ void print_performance_counter_data_csv()
 
     // Retrieve all primitive instances
     for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*#*"))
+        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
     {
         existing_primitive_instances.push_back(entry.first);
     }
@@ -102,7 +102,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
     try
     {
         po::options_description cmdline_options(
-            "Usage: interpreter <physl_script> [options] [arguments...]");
+            "Usage: physl <physl_script> [options] [arguments...]");
         cmdline_options.add_options()
             ("help,h", "print out program usage")
             ("code,c", po::value<std::string>(),
@@ -151,8 +151,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
     }
     catch  (std::exception const& e)
     {
-        std::cerr << "command line handling: exception caught: " << e.what()
-                  << "\n";
+        std::cerr << "physl: command line handling: exception caught: "
+                  << e.what() << "\n";
         return -1;
     }
     return 0;
@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
             phylanx::execution_tree::compiler::default_environment();
 
         phylanx::execution_tree::define_variable(
-            "sys_argv", snippets, env, args);
+            "sys_argv/0$0", snippets, env, args);
         auto const code = phylanx::execution_tree::compile(ast, snippets, env);
 
         // Re-init all performance counters to guarantee correct measurement
@@ -241,7 +241,7 @@ int main(int argc, char* argv[])
     }
     catch (std::exception const& e)
     {
-        std::cout << "exception caught:\n" << e.what() << "\n";
+        std::cout << "physl: exception caught:\n" << e.what() << "\n";
         return -1;
     }
 

@@ -276,7 +276,7 @@ void print_performance_counter_data_csv()
 
     // Retrieve all primitive instances
     for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*#*"))
+        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
     {
         existing_primitive_instances.push_back(entry.first);
     }

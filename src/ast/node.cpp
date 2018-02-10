@@ -442,7 +442,7 @@ namespace phylanx { namespace ast
         out << id.name;
         if (id.id >= 0 && id.col != -1)
         {
-            out << '#' << id.id << '#' << id.col;
+            out << '$' << id.id << '$' << id.col;
         }
         return out;
     }

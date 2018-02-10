@@ -32,16 +32,16 @@ int main(int argc, char* argv[])
     parts.tag1 = 3;
     parts.tag2 = -1;
 
-    test_primitive_name(parts, "/phylanx/add#1/2#3");
+    test_primitive_name(parts, "/phylanx/add$1/2$3");
 
     parts.instance = "test";
-    test_primitive_name(parts, "/phylanx/add#1#test/2#3");
+    test_primitive_name(parts, "/phylanx/add$1$test/2$3");
 
     parts.tag2 = 4;
-    test_primitive_name(parts, "/phylanx/add#1#test/2#3#4");
+    test_primitive_name(parts, "/phylanx/add$1$test/2$3$4");
 
     parts.instance = "";
-    test_primitive_name(parts, "/phylanx/add#1/2#3#4");
+    test_primitive_name(parts, "/phylanx/add$1/2$3$4");
 
     return hpx::util::report_errors();
 }

@@ -31,6 +31,7 @@ namespace phylanx { namespace ast { namespace parser
                     space                               // tab/space/cr/lf
                 |   "/*" >> *(char_ - "*/") >> "*/"     // C-style comments
                 |   "//" >> *(char_ - eol) >> eol       // C++-style comments
+                |   "#" >> *(char_ - eol) >> eol        // bash-style comments
                 ;
         }
 
