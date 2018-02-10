@@ -207,6 +207,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return {};
         }
 
+        explicit operator bool() const
+        {
+            return bool(arg_);
+        }
+
         primitive_argument_type arg_;
 #if defined(_DEBUG)
         std::string name_;

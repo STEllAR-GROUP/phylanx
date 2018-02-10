@@ -239,6 +239,11 @@ namespace phylanx { namespace execution_tree
             return value_operand_sync(*this, args);
         }
 
+        explicit operator bool() const
+        {
+            return variant().index() != 0;
+        }
+
         // workaround for problem in implementation of MSVC14.12
         // variant::visit
         argument_value_type& variant() { return *this; }
@@ -248,11 +253,11 @@ namespace phylanx { namespace execution_tree
     // a argument is valid of its not nil{}
     inline bool valid(primitive_argument_type const& val)
     {
-        return val.index() != 0;
+        return bool(val);
     }
     inline bool valid(primitive_argument_type && val)
     {
-        return val.index() != 0;
+        return bool(val);
     }
 
     inline bool operator==(primitive_argument_type const& lhs,
@@ -422,6 +427,14 @@ namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
+        ast::literal_value_type && val);
+    PHYLANX_EXPORT ir::node_data<double> to_primitive_numeric_type(
+        ast::literal_value_type && val);
+    PHYLANX_EXPORT std::string to_primitive_string_type(
+        ast::literal_value_type && val);
+    PHYLANX_EXPORT std::int64_t to_primitive_int_type(
+        ast::literal_value_type && val);
+    PHYLANX_EXPORT bool to_primitive_bool_type(
         ast::literal_value_type && val);
 
     ///////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
+#include <phylanx/execution_tree/primitives/apply.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>

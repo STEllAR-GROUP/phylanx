@@ -1,0 +1,58 @@
+//  Copyright (c) 2018 Parsa Amini
+//  Copyright (c) 2018 Hartmut Kaiser
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+
+// Linear Regression Algorithm example in PhySL
+// \param filepath
+// \param row_start
+// \param row_stop
+// \param col_start
+// \param col_stop
+// \param alpha
+// \param iterations
+// \param enable_output
+// \returns Calculated weights
+
+// Read X-data from given CSV file
+define(read_x, filepath, row_start, row_stop, col_start, col_stop,
+    slice(file_read_csv(filepath), row_start, row_stop, col_start, col_stop)
+)
+
+// Read Y-data from given CSV file
+define(read_y, filepath, row_start, row_stop,
+    slice(file_read_csv(filepath), row_start, row_stop, -1, 0)
+)
+
+// Logistic regression analysis algorithm
+define(lra, filepath, row_start, row_stop, col_start, col_stop, alpha,
+            iterations, enable_output,
+    block(
+        define(x, read_x(filepath, row_start, row_stop, col_start, col_stop)),
+        define(y, read_y(filepath, row_start, row_stop)),
+        define(weights, constant(0.0, shape(x, 1))),
+        define(transx, transpose(x)),
+        define(pred, constant(0.0, shape(x, 0))),
+        define(error, constant(0.0, shape(x, 0))),
+        define(gradient, constant(0.0, shape(x, 1))),
+        define(step, 0),
+        while(
+            step < iterations,
+            block(
+                if(enable_output, cout("step: ", step, ", ", weights)),
+                store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
+                store(error, pred - y),
+                store(gradient, dot(transx, error)),
+                parallel_block(
+                    store(weights, weights - (alpha * gradient)),
+                    store(step, step + 1)
+                )
+            )
+        ),
+        weights
+    )
+)
+
+apply(lra, sys_argv)

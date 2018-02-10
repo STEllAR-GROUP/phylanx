@@ -439,5 +439,29 @@ namespace phylanx { namespace execution_tree { namespace compiler
         compiler comp{snippets, env, patterns, default_locality};
         return comp(expr);
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    function define_variable(std::string const& name, function_list& snippets,
+        environment& env, primitive_argument_type body,
+        hpx::id_type const& default_locality)
+    {
+        snippets.snippets_.emplace_back(function{});
+        function& f = snippets.snippets_.back();
+
+        // get sequence number of this component
+        static std::string variable("variable");
+        std::size_t sequence_number = snippets.sequence_numbers_[variable]++;
+
+        env.define(
+            name, external_variable(f, sequence_number, default_locality));
+
+        static std::string define_variable("define-variable");
+        sequence_number = snippets.sequence_numbers_[define_variable]++;
+
+        f = primitive_variable{default_locality}(
+                std::move(body), define_variable + "#" +
+                    std::to_string(sequence_number) + "#" + name);
+        return f;
+    }
 }}}
 

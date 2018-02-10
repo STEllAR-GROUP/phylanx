@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const unary_not_operation::match_data =
     {
-        hpx::util::make_tuple("not",
+        hpx::util::make_tuple("__not",
             std::vector<std::string>{"!_1"},
             &create<unary_not_operation>)
     };

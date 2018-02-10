@@ -34,7 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const greater_equal::match_data =
     {
-        hpx::util::make_tuple("ge",
+        hpx::util::make_tuple("__ge",
             std::vector<std::string>{"_1 >= _2"},
             &create<greater_equal>)
     };
