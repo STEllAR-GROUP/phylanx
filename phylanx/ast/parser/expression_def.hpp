@@ -131,8 +131,8 @@ namespace phylanx { namespace ast { namespace parser
 
         identifier =
                 identifier_name
-            >>  (('#' > long_long) | attr(std::int64_t(-1)))
-            >>  (('#' > long_long) | attr(std::int64_t(-1)))
+            >>  (('$' > long_long) | attr(std::int64_t(-1)))
+            >>  (('$' > long_long) | attr(std::int64_t(-1)))
             ;
 
         identifier_name =

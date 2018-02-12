@@ -131,7 +131,7 @@ namespace phylanx { namespace performance_counters
             // Structure of primitives in symbolic namespace:
             //     /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
             auto entries = hpx::agas::find_symbols(hpx::launch::sync,
-                "/phylanx/" + extract_primitive_type() + "#*");
+                "/phylanx/" + extract_primitive_type() + "$*");
 
             // TODO: Only keep entries that live on this locality.
             // This will be a problem when Phylanx becomes distributed.

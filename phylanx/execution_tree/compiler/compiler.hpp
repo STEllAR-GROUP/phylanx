@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
         function operator()(std::string && name) const
         {
-            return function{ast::nil{}, "always-nil# " + name};
+            return function{ast::nil{}, "always-nil$ " + name};
         }
     };
 
@@ -211,8 +211,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function operator()(std::size_t n, std::string const& name) const
         {
-            std::string full_name = "access-argument#" +
-                std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "access-argument$" +
+                std::to_string(sequence_number_) + "$" + name;
 
             return function{
                 primitive_argument_type{primitive{
@@ -243,8 +243,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compose(std::list<function> && elements,
             std::string const& name) const
         {
-            std::string full_name = "access-variable#" +
-                std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "access-variable$" +
+                std::to_string(sequence_number_) + "$" + name;
 
 
             return function{
@@ -284,8 +284,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             // NOTE: Check the consistency of names: "function" vs "call-function"
-            std::string full_name = "call-function#" +
-                std::to_string(sequence_number_) + "#" + name;
+            std::string full_name = "call-function$" +
+                std::to_string(sequence_number_) + "$" + name;
 
 
             return function{
@@ -317,7 +317,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         template <typename F>
-        compiled_function* define(std::string const& name, F && f)
+        compiled_function* define(std::string name, F && f)
         {
             if (definitions_.find(name) != definitions_.end())
             {
@@ -326,14 +326,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     "given name was already defined: " + name);
             }
 
-            auto result = definitions_.emplace(
-                value_type(name, compiled_function(std::forward<F>(f))));
+            auto result = definitions_.emplace(value_type(
+                std::move(name), compiled_function(std::forward<F>(f))));
 
             if (!result.second)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::environment::define",
-                    "couldn't insert name into symbol table: " + name);
+                    "couldn't insert name into symbol table");
             }
 
             return &result.first->second;
@@ -388,7 +388,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         hpx::id_type const& default_locality);
 
     /// Add the given variable to the compilation environment
-    PHYLANX_EXPORT function define_variable(std::string const& name,
+    PHYLANX_EXPORT function define_variable(std::string name,
         function_list& snippets, environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality);
 }}}

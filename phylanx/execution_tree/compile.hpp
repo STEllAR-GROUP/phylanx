@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree
         hpx::id_type const& default_locality = hpx::find_here());
 
     /// Add the given variable to the compilation environment
-    PHYLANX_EXPORT compiler::function define_variable(std::string const& name,
+    PHYLANX_EXPORT compiler::function define_variable(std::string name,
         compiler::function_list& snippets, compiler::environment& env,
         primitive_argument_type body,
         hpx::id_type const& default_locality = hpx::find_here());

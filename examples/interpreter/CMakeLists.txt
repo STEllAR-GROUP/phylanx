@@ -5,7 +5,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(example_programs
-    interpreter
+    physl
    )
 
 foreach(example_program ${example_programs})

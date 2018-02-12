@@ -48,14 +48,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 start =
                         qi::lit("/phylanx/") >> primitive
-                    >   qi::lit('#') > qi::int_
-                    > ((qi::lit('#') > instance) | qi::attr(""))
-                    >   qi::lit('/') > qi::int_
-                    >   qi::lit('#') > qi::int_
-                    > ((qi::lit('#') > qi::int_) | qi::attr(-1))
+                    >>   qi::lit('$') >> qi::int_
+                    >> ((qi::lit('$') >> instance) | qi::attr(""))
+                    >>   qi::lit('/') >> qi::int_
+                    >>   qi::lit('$') >> qi::int_
+                    >> ((qi::lit('$') >> qi::int_) | qi::attr(-1))
                     ;
 
-                primitive = +(qi::char_ - qi::lit('#'));
+                primitive = +(qi::char_ - qi::lit('$'));
                 instance = +(qi::char_ - qi::lit('/'));
 
                 // Debugging support.
@@ -105,22 +105,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         std::string result("/phylanx/");
         result += parts.primitive;
-        result += "#" + std::to_string(
+        result += "$" + std::to_string(
             parts.sequence_number == -1 ? 0 : parts.sequence_number);
 
         if (!parts.instance.empty())
         {
-            result += "#" + parts.instance;
+            result += "$" + parts.instance;
         }
 
         result += "/" + std::to_string(
             parts.compile_id == -1 ? 0 : parts.compile_id);
-        result += "#" + std::to_string(parts.tag1 < 0 ? 0 : parts.tag1);
+        result += "$" + std::to_string(parts.tag1 < 0 ? 0 : parts.tag1);
 
         // column is optional
         if (parts.tag2 != -1)
         {
-            result += '#' + std::to_string(parts.tag2);
+            result += '$' + std::to_string(parts.tag2);
         }
 
         return result;

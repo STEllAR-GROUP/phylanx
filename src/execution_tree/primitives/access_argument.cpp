@@ -32,8 +32,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                    "access_argument::eval_direct",
-                "argument count out of bounds: " + std::to_string(argnum_));
+                "access_argument::eval_direct",
+                "argument count out of bounds, expected at least " +
+                    std::to_string(argnum_ + 1) + " argument(s) "
+                    "while only " + std::to_string(params.size()) +
+                    " argument(s) were supplied");
         }
         return value_operand_ref_sync(params[argnum_], params);
     }

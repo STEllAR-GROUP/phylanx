@@ -15,7 +15,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT apply
+    class apply
       : public base_primitive
       , public hpx::components::component_base<apply>
     {
@@ -24,9 +24,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         apply() = default;
 
-        apply(std::vector<primitive_argument_type> && operands);
+        PHYLANX_EXPORT apply(std::vector<primitive_argument_type>&& operands);
 
-        primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
     };
 }}}

@@ -73,7 +73,7 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // Retrieve all primitive instances
     for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*#*"))
+        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
     {
         existing_primitive_instances.push_back(entry.first);
     }

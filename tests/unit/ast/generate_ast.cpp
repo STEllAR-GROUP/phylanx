@@ -129,11 +129,11 @@ void test_expression(std::string const& expr, std::string const& expected)
 int main(int argc, char* argv[])
 {
     test_ast("A", phylanx::ast::identifier("A"));
-    test_ast("A#1#2", phylanx::ast::identifier("A", 1, 2));
+    test_ast("A$1$2", phylanx::ast::identifier("A", 1, 2));
 
     test_ast("A()",
         phylanx::ast::function_call(phylanx::ast::identifier("A")));
-    test_ast("A#1#2()",
+    test_ast("A$1$2()",
         phylanx::ast::function_call(phylanx::ast::identifier("A", 1, 2)));
 
     test_expression(
@@ -144,9 +144,9 @@ int main(int argc, char* argv[])
     );
 
     test_expression(
-        "A#1#0 + B#1#5",
-            "A#1#0\n"
-            "B#1#5\n"
+        "A$1$0 + B$1$5",
+            "A$1$0\n"
+            "B$1$5\n"
             "+\n"
     );
 
@@ -186,10 +186,10 @@ int main(int argc, char* argv[])
     );
 
     test_expression(
-        "func#1#0(A#1#6, B#1#9)",
-            "func#1#0\n"
-            "A#1#6\n"
-            "B#1#9\n"
+        "func$1$0(A$1$6, B$1$9)",
+            "func$1$0\n"
+            "A$1$6\n"
+            "B$1$9\n"
     );
 
     test_expression(
