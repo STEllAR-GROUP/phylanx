@@ -16,19 +16,19 @@
 void test_linspace0d()
 {
     phylanx::execution_tree::primitive start =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
     phylanx::execution_tree::primitive stop =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), phylanx::ir::node_data<double>(45.0));
 
     phylanx::execution_tree::primitive num_samples =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), std::int64_t(1));
 
     phylanx::execution_tree::primitive linspace =
-        hpx::new_<phylanx::execution_tree::primitives::linspace>(
+        phylanx::execution_tree::primitives::create_linspace(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(start), std::move(stop), std::move(num_samples)});
@@ -46,19 +46,19 @@ void test_linspace0d()
 void test_linspace1d()
 {
     phylanx::execution_tree::primitive start =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
     phylanx::execution_tree::primitive stop =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), phylanx::ir::node_data<double>(45.0));
 
     phylanx::execution_tree::primitive num_samples =
-    hpx::new_<phylanx::execution_tree::primitives::variable>(
+    phylanx::execution_tree::primitives::create_variable(
         hpx::find_here(), std::int64_t(4));
 
     phylanx::execution_tree::primitive linspace =
-        hpx::new_<phylanx::execution_tree::primitives::linspace>(
+        phylanx::execution_tree::primitives::create_linspace(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(start), std::move(stop), std::move(num_samples)});

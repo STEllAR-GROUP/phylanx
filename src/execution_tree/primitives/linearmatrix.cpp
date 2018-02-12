@@ -3,14 +3,14 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/linearmatrix.hpp>
+#include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-
-#include <blaze/Math.h>
 
 #include <cstddef>
 #include <memory>
@@ -18,27 +18,30 @@
 #include <utility>
 #include <vector>
 
-///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::linearmatrix> linearmatrix_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(linearmatrix_type, phylanx_linearmatrix_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(linearmatrix_type::wrapped_type)
+#include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_linearmatrix(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("linearmatrix");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const linearmatrix::match_data =
     {
         hpx::util::make_tuple("linearmatrix",
             std::vector<std::string>{"linearmatrix(_1, _2, _3, _4, _5)"},
-                &create<linearmatrix>)
+            &create_linearmatrix, &create_primitive<linearmatrix>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     linearmatrix::linearmatrix(std::vector<primitive_argument_type>&& args)
-      : base_primitive(std::move(args))
+      : primitive_component_base(std::move(args))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

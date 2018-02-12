@@ -16,11 +16,11 @@
 void test_random_0d()
 {
     phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive const_ =
-        hpx::new_<phylanx::execution_tree::primitives::random>(
+        phylanx::execution_tree::primitives::create_random(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(dim)
@@ -40,11 +40,11 @@ void test_random_1d()
     blaze::DynamicVector<double> v = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v));
 
     phylanx::execution_tree::primitive const_ =
-        hpx::new_<phylanx::execution_tree::primitives::random>(
+        phylanx::execution_tree::primitives::create_random(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(dim)
@@ -65,11 +65,11 @@ void test_random_2d()
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 105UL);
 
     phylanx::execution_tree::primitive dim =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive const_ =
-        hpx::new_<phylanx::execution_tree::primitives::random>(
+        phylanx::execution_tree::primitives::create_random(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(dim)

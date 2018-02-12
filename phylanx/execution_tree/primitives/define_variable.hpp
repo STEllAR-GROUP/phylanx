@@ -7,11 +7,10 @@
 #define PHYLANX_PRIMITIVES_DEF_OPERATION_OCT_13_2017_1120AM
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/node.hpp>
-#include <phylanx/ir/node_data.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/lcos/future.hpp>
 
 #include <string>
 #include <vector>
@@ -23,27 +22,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //
     // This is a helper primitive needed for proper binding of the expression
     // value to a variable.
-    class define_variable
-      : public base_primitive
-      , public hpx::components::component_base<define_variable>
+    class define_variable : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
+        static match_pattern_type const match_data_define;
 
         define_variable() = default;
 
-        PHYLANX_EXPORT define_variable(primitive_argument_type&& operands);
-        PHYLANX_EXPORT define_variable(
-            primitive_argument_type&& operands, std::string name);
+        define_variable(std::vector<primitive_argument_type>&& operands,
+            std::string const& name);
 
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
-        PHYLANX_EXPORT primitive_argument_type eval_direct(
+        primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
-        PHYLANX_EXPORT void store(primitive_argument_type && val) override;
+
+        void store(primitive_argument_type && val) override;
 
         // return the topology for this variable definition
-        PHYLANX_EXPORT topology expression_topology() const override;
+        topology expression_topology() const override;
 
     private:
         primitive_argument_type body_;

@@ -19,16 +19,16 @@ namespace phylanx { namespace execution_tree
         {
             // variadic functions
             primitives::block_operation::match_data,
-            primitives::parallel_block_operation::match_data,
-            primitives::define_variable::match_data,
-            primitives::slicing_operation::match_data,
-            primitives::row_slicing_operation::match_data,
             primitives::column_slicing_operation::match_data,
-            primitives::hstack_operation::match_data,
-            primitives::vstack_operation::match_data,
             primitives::console_output::match_data,
             primitives::debug_output::match_data,
+            primitives::define_variable::match_data_define,
+            primitives::hstack_operation::match_data,
+            primitives::parallel_block_operation::match_data,
+            primitives::row_slicing_operation::match_data,
+            primitives::slicing_operation::match_data,
             primitives::string_output::match_data,
+            primitives::vstack_operation::match_data,
             // n-nary functions
             primitives::if_conditional::match_data,
             primitives::for_operation::match_data,
@@ -37,6 +37,7 @@ namespace phylanx { namespace execution_tree
             // binary functions
             primitives::apply::match_data,
             primitives::cross_operation::match_data,
+            primitives::diag_operation::match_data,
             primitives::dot_operation::match_data,
             primitives::file_read::match_data,
             primitives::file_write::match_data,
@@ -46,13 +47,15 @@ namespace phylanx { namespace execution_tree
             // unary functions
             primitives::constant::match_data,
             primitives::determinant::match_data,
+            primitives::enable_tracing::match_data,
             primitives::exponential_operation::match_data,
             primitives::extract_shape::match_data,
-            primitives::inverse_operation::match_data,
-            primitives::transpose_operation::match_data,
-            primitives::random::match_data,
             primitives::identity::match_data,
-            primitives::enable_tracing::match_data,
+            primitives::inverse_operation::match_data,
+            primitives::power_operation::match_data,
+            primitives::random::match_data,
+            primitives::square_root_operation::match_data,
+            primitives::transpose_operation::match_data,
             // variadic operations
             primitives::add_operation::match_data,
             primitives::and_operation::match_data,
@@ -74,16 +77,14 @@ namespace phylanx { namespace execution_tree
             //
             // compiler-specific (internal) primitives
             //
-            hpx::util::make_tuple("access-argument",
-                std::vector<std::string>{}, nullptr),
-            hpx::util::make_tuple("access-variable",
-                std::vector<std::string>{}, nullptr),
-            hpx::util::make_tuple("define-variable",
-                std::vector<std::string>{}, nullptr),
-            hpx::util::make_tuple("call-function",
-                std::vector<std::string>{}, nullptr),
-            hpx::util::make_tuple("define-function",
-                std::vector<std::string>{}, nullptr)
+            primitives::access_argument::match_data,
+            primitives::function_reference::match_data,
+            primitives::wrapped_function::match_data,
+            primitives::define_function::match_data,
+
+            primitives::variable::match_data,
+            primitives::wrapped_variable::match_data,
+            primitives::define_variable::match_data
         };
 
         return patterns;

@@ -5,15 +5,12 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>
-#include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/ast.hpp>
-#include <phylanx/util/serialization/execution_tree.hpp>
-#include <phylanx/util/variant.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -22,29 +19,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::console_output>
-    console_output_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    console_output_type, phylanx_console_output_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(console_output_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_console_output(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("cout");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const console_output::match_data =
     {
         hpx::util::make_tuple("cout",
             std::vector<std::string>{"cout(__1)"},
-            &create<console_output>)
+            &create_console_output, &create_primitive<console_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     console_output::console_output(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     namespace detail

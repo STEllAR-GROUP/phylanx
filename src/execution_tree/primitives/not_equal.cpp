@@ -7,9 +7,10 @@
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -20,28 +21,27 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::not_equal>
-    not_equal_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    not_equal_type, phylanx_not_equal_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(not_equal_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_not_equal(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("__ne");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const not_equal::match_data =
     {
         hpx::util::make_tuple("__ne",
             std::vector<std::string>{"_1 != _2"},
-            &create<not_equal>)
+            &create_not_equal, &create_primitive<not_equal>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     not_equal::not_equal(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

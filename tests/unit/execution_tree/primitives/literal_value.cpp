@@ -13,7 +13,7 @@
 void test_literal_value()
 {
     phylanx::execution_tree::primitive val =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(),
             phylanx::execution_tree::primitive_argument_type{42.0});
 

@@ -7,20 +7,13 @@
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
-
-///////////////////////////////////////////////////////////////////////////////
-using define_type = hpx::components::component<
-        phylanx::execution_tree::primitives::define_variable>;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    define_type, phylanx_define_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(define_type::wrapped_type)
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -28,59 +21,86 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const define_variable::match_data =
     {
-        // We don't need a creation function as 'define()' is explicitly
-        // handled by generate_tree.
+        hpx::util::make_tuple("define-variable",
+            std::vector<std::string>{},
+            nullptr, &create_primitive_with_name<define_variable>)
+    };
+
+    match_pattern_type const define_variable::match_data_define =
+    {
         hpx::util::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
-            nullptr)
+            nullptr, nullptr)
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    define_variable::define_variable(primitive_argument_type&& operand)
-      : body_(std::move(operand))
-    {}
-
     define_variable::define_variable(
-            primitive_argument_type&& operand, std::string name)
-      : body_(std::move(operand))
-      , name_(std::move(name))
-    {}
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name)
+      : primitive_component_base(std::move(operands))
+      , name_(name)
+    {
+        // body is assumed to be operands_[0]
+        if (operands_.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "define_variable::define_variable",
+                "the define_variable primitive requires exactly one operand");
+        }
+
+        // target is assumed to be operands_[1]
+        operands_.resize(2);
+    }
+
+    static std::string extract_variable_name(std::string const& name)
+    {
+        if (name.find("define-") == 0)
+        {
+            return name.substr(7);
+        }
+        return name;
+    }
 
     primitive_argument_type define_variable::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
         // this proxy was created where the variable should be created on.
-        if (!valid(target_))
+        if (!valid(operands_[1]))
         {
-            primitive_argument_type operand = body_;
-            target_ = primitive_argument_type{primitive{
-                hpx::new_<primitives::variable>(
-                    hpx::find_here(), std::move(operand), name_),
-                name_}};
+            std::vector<primitive_argument_type> operands;
+            operands.push_back(operands_[0]);
+
+            static std::string type("variable");
+
+            operands_[1] = primitive_argument_type{
+                create_primitive_component_with_name(
+                    hpx::find_here(), type, std::move(operands),
+                    extract_variable_name(name_))
+                };
 
             // bind this name to the result of the expression right away
-            primitive* p = util::get_if<primitive>(&target_);
+            primitive* p = util::get_if<primitive>(&operands_[1]);
             if (p != nullptr)
             {
                 p->eval_direct(args);
             }
 
-            return extract_ref_value(target_);
+            return extract_ref_value(operands_[1]);
         }
 
         // just evaluate the expression bound to this name
-        primitive const* p = util::get_if<primitive>(&target_);
+        primitive const* p = util::get_if<primitive>(&operands_[1]);
         if (p != nullptr)
         {
             return extract_value(p->eval_direct(args));
         }
 
-        return extract_ref_value(target_);
+        return extract_ref_value(operands_[1]);
     }
 
     void define_variable::store(primitive_argument_type && val)
     {
-        if (!valid(target_))
+        if (!valid(operands_[1]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::store",
@@ -88,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "initialized yet");
         }
 
-        primitive* p = util::get_if<primitive>(&target_);
+        primitive* p = util::get_if<primitive>(&operands_[1]);
         if (p == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -101,7 +121,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     topology define_variable::expression_topology() const
     {
-        if (!valid(body_))
+        if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::expression_topology",
@@ -109,12 +129,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "initialized yet");
         }
 
-        primitive const* p = util::get_if<primitive>(&body_);
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
             return p->expression_topology(hpx::launch::sync);
         }
-
         return {};
     }
 }}}

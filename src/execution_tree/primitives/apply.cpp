@@ -6,8 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/apply.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <string>
@@ -15,28 +16,27 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::apply>
-    apply_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    apply_type, phylanx_apply_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(apply_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_apply(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("apply");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const apply::match_data =
     {
         hpx::util::make_tuple("apply",
             std::vector<std::string>{"apply(_1, _2)"},
-            &create<apply>)
+            &create_apply, &create_primitive<apply>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     apply::apply(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     primitive_argument_type apply::eval_direct(

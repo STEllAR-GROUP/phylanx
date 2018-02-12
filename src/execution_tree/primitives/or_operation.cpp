@@ -7,9 +7,10 @@
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -20,28 +21,27 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::or_operation>
-    or_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    or_operation_type, phylanx_or_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(or_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_or_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("__or");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const or_operation::match_data =
     {
         hpx::util::make_tuple("__or",
             std::vector<std::string>{"_1 || __2"},
-            &create<or_operation>)
+            &create_or_operation, &create_primitive<or_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     or_operation::or_operation(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

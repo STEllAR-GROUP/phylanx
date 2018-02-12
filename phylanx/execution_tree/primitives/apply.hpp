@@ -8,16 +8,14 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
-
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class apply
-      : public base_primitive
-      , public hpx::components::component_base<apply>
+    class apply : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
@@ -29,6 +27,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
     };
+
+    PHYLANX_EXPORT primitive create_apply(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name = "");
 }}}
 
 #endif

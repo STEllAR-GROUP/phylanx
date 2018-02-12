@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -21,30 +22,30 @@
 
 #include <blaze/Math.h>
 
-//////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-        phylanx::execution_tree::primitives::column_slicing_operation>
-        column_slicing_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-        column_slicing_operation_type, phylanx_column_slicing_operation_component,
-        "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(column_slicing_operation_type::wrapped_type)
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_column_slicing_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("slice_column");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const column_slicing_operation::match_data =
     {
         hpx::util::make_tuple("slice_column",
             std::vector<std::string>{"slice_column(_1, _2, _3)"},
-            &create<column_slicing_operation>)
+            &create_column_slicing_operation,
+            &create_primitive<column_slicing_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     column_slicing_operation::column_slicing_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

@@ -5,12 +5,12 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/if_conditional.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -21,29 +21,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-        phylanx::execution_tree::primitives::if_conditional
-    > if_conditional_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(if_conditional_type,
-    phylanx_if_conditional_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(if_conditional_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_if_conditional(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("if");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const if_conditional::match_data =
     {
         hpx::util::make_tuple("if",
             std::vector<std::string>{"if(_1, _2, _3)", "if(_1, _2)"},
-            &create<if_conditional>)
+            &create_if_conditional, &create_primitive<if_conditional>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     if_conditional::if_conditional(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////

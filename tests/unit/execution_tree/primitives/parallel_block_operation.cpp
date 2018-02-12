@@ -16,17 +16,17 @@
 void test_parallel_block_operation()
 {
     phylanx::execution_tree::primitive arg1 =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::execution_tree::primitive_argument_type{5.0});
     phylanx::execution_tree::primitive arg2 =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::execution_tree::primitive_argument_type{7.0});
     phylanx::execution_tree::primitive arg3 =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::execution_tree::primitive_argument_type{9.0});
 
     phylanx::execution_tree::primitive block =
-        hpx::new_<phylanx::execution_tree::primitives::parallel_block_operation>(
+        phylanx::execution_tree::primitives::create_parallel_block_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 phylanx::execution_tree::primitive_argument_type{std::move(arg1)},

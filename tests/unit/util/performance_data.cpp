@@ -46,17 +46,9 @@ std::map<std::string, std::vector<std::size_t>> expected_counts =
 {
     { "access-variable$0", { 1, 0, } },
     { "access-variable$1", { 0, 0, } },
-    { "access-variable$1", { 0, 0, } },
     { "access-variable$2", { 1, 0, } },
-    { "access-variable$2", { 1, 0, } },
-    { "access-variable$2", { 1, 0, } },
-    { "access-variable$3", { 0, 0, } },
-    { "access-variable$3", { 0, 0, } },
     { "access-variable$3", { 0, 0, } },
     { "access-variable$4", { 8, 0, } },
-    { "access-variable$4", { 8, 0, } },
-    { "access-variable$5", { 8, 0, } },
-    { "access-variable$5", { 8, 0, } },
     { "access-variable$5", { 8, 0, } },
     { "__add$0", { 8, 0, } },
     { "__add$1", { 8, 0, } },
@@ -76,6 +68,12 @@ std::map<std::string, std::vector<std::size_t>> expected_counts =
     { "store$3", { 8, 0, } },
     { "store$4", { 8, 0, } },
     { "while$0", { 1, 0, } },
+    { "variable$0", { 0, 2, } },
+    { "variable$1", { 0, 9, } },
+    { "variable$2", { 0, 10, } },
+    { "variable$3", { 0, 17, } },
+    { "variable$4", { 0, 9, } },
+    { "variable$5", { 0, 18, } },
 };
 
 int main()

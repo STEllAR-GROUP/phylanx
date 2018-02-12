@@ -73,6 +73,7 @@ std::map<std::string, std::size_t> expected_counts =
     { "define-variable", 6 },
     { "call-function", 1 },
     { "define-function", 1 },
+    { "variable", 6 },
 };
 
 int main()

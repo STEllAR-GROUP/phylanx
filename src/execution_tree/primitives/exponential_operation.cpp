@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -22,29 +23,28 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::exponential_operation>
-    exponential_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    exponential_operation_type, phylanx_exponential_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(exponential_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_exponential_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("exp");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const exponential_operation::match_data =
     {
         hpx::util::make_tuple("exp",
             std::vector<std::string>{"exp(_1)"},
-            &create<exponential_operation>)
+            &create_exponential_operation, &create_primitive<exponential_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     exponential_operation::exponential_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
