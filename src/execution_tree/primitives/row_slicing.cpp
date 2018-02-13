@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("slice_row",
             std::vector<std::string>{"slice_row(_1, _2, _3)",
-            "slice_row(_1,_2,_3,_4"},
+            "slice_row(_1,_2,_3,_4)"},
             &create_row_slicing_operation,
             &create_primitive<row_slicing_operation>)
     };
