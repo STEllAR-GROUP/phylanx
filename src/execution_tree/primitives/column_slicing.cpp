@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Bibek Wagle
+//  Copyright (c) 2017-2018 Bibek Wagle
 //  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -53,7 +53,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::vector<int> create_list(int start, int stop, int step, int array_length)
+        std::vector<int> create_list(
+            int start, int stop, int step, int array_length)
         {
             auto actual_start = 0;
             auto actual_stop = 0;
@@ -113,16 +114,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
-            primitive_argument_type column_slicing0d(args_type && args) const
+            primitive_argument_type column_slicing0d(args_type&& args) const
             {
                 return primitive_argument_type(std::move(args[0]));
             }
 
-            primitive_argument_type column_slicing1d(args_type && args) const
+            primitive_argument_type column_slicing1d(args_type&& args) const
             {
                 auto col_start = args[1].scalar();
                 auto col_stop = args[2].scalar();
-                int step=1;
+                int step = 1;
 
                 if (args.size() == 4)
                 {
@@ -137,7 +138,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
 
-                auto init_list = create_list(col_start, col_stop, step, args[0].size());
+                auto init_list =
+                    create_list(col_start, col_stop, step, args[0].size());
 
                 auto sv = blaze::elements(args[0].vector(), init_list);
 
@@ -148,8 +150,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 storage1d_type v{sv};
                 return primitive_argument_type{
-                        ir::node_data<double>(std::move(v))};
-                
+                    ir::node_data<double>(std::move(v))};
             }
 
             primitive_argument_type column_slicing2d(args_type&& args) const
@@ -181,7 +182,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (sm.columns() == 1)
                 {
-                    auto sv = blaze::column(sm,0);
+                    auto sv = blaze::column(sm, 0);
                     if (sv.size() == 1)
                     {
                         return primitive_argument_type{sv[0]};
