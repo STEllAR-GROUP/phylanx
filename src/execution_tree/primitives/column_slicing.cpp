@@ -13,7 +13,6 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
-#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <numeric>

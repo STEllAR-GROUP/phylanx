@@ -24,6 +24,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         slicing_operation() = default;
 
+        /**
+        * @brief Slicing Primitive
+        *
+        * This primitive returns a slice of the original data.
+        * @param operands Vector of phylanx node data objects of
+        * size either five or seven
+        *
+        * If used inside PhySL:
+        *
+        *      slice (input, row_start, row_stop, row_steps(optional)
+        *                , col_start, col_stop, col_steps(optional)
+        *          )
+        *
+        *          input : Scalar, Vector or a Matrix
+        *          row_start     : Starting index of the slice (row)
+        *          row_stop      : Stopping index of the slice (row)
+        *          row_steps     : Go from row_start to row_stop in row_steps
+        *          col_start     : Starting index of the slice (column)
+        *          col_stop      : Stopping index of the slice (column)
+        *          col_steps     : Go from col_start to col_stop in steps
+        *
+        *  Quirks: In case the input is a vector, row_start, row_stop and row_steps
+        *  determine the result. col_start, col_stop and col_step are ignored internally.
+        *
+        *  Limitations: both row_steps and col_steps need to be provieded or omitted.
+        *  Functionality for specifying only row_steps or col_steps is not present.
+        *
+        *  Note: Indices and steps can have negative vlaues and negative values
+        *  indicate direction, similar to python.
+        */
+
         slicing_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_argument_type> eval(

@@ -12,7 +12,9 @@ if (PHYLANX_WITH_DOCUMENTATION)
                 "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/diag_operation.hpp"
                 "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linearmatrix.hpp"
                 "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linspace.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_slicing.hpp")
+                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_slicing.hpp"
+                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_slicing.hpp"
+                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/slicing_operation.hpp")
 
 
         foreach(DOXYGEN_INPUT ${DOXYGEN_DEPENDENCIES})

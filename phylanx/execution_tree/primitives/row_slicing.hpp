@@ -23,6 +23,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         row_slicing_operation() = default;
 
+        /**
+        * @brief Row Slicing Primitive
+        *
+        * This primitive returns a slice of the original data.
+        * @param operands Vector of phylanx node data objects of
+        * size either three or four
+        *
+        * If used inside PhySL:
+        *
+        *      slice_row (input, row_start, row_stop, steps(optional) )
+        *
+        *          input : Scalar, Vector or a Matrix
+        *          row_start     : Starting index of the slice
+        *          row_stop      : Stopping index of the slice
+        *          steps          : Go from row_start to row_stop in steps
+        *  Note: Indices and steps can have negative vlaues and negative values
+        *  indicate direction, similar to python.
+        *
+        */
+
         row_slicing_operation(std::vector<primitive_argument_type>&& operands);
 
         hpx::future<primitive_argument_type> eval(
