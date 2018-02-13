@@ -13,6 +13,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <numeric>
@@ -37,7 +38,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const column_slicing_operation::match_data =
     {
         hpx::util::make_tuple("slice_column",
-            std::vector<std::string>{"slice_column(_1, _2, _3)"},
+            std::vector<std::string>{"slice_column(_1, _2, _3)",
+                "slice_column(_1, _2, _3, _4)"},
             &create_column_slicing_operation,
             &create_primitive<column_slicing_operation>)
     };
@@ -51,6 +53,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        std::vector<int> create_list(int start, int stop, int step, int array_length)
+        {
+            auto actual_start = 0;
+            auto actual_stop = 0;
+
+            if (start >= 0)
+            {
+                actual_start = start;
+            }
+
+            if (start < 0)
+            {
+                actual_start = array_length + start;
+            }
+
+            if (stop >= 0)
+            {
+                actual_stop = stop;
+            }
+
+            if (stop < 0)
+            {
+                actual_stop = array_length + stop;
+            }
+
+            std::vector<int> result;
+
+            if (step > 0)
+            {
+                for (int i = actual_start; i < actual_stop; i += step)
+                {
+                    result.push_back(i);
+                }
+            }
+
+            if (step < 0)
+            {
+                for (int i = actual_start; i > actual_stop; i += step)
+                {
+                    result.push_back(i);
+                }
+            }
+
+            //Note: std::vector will throw Invalid element access index if
+            //bad parameters are passed to start, stop
+            return result;
+        }
+
         struct slicing_column : std::enable_shared_from_this<slicing_column>
         {
             slicing_column() = default;
@@ -59,172 +109,79 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using arg_type = ir::node_data<double>;
             using args_type = std::vector<arg_type>;
 
+            using storage0d_type = typename arg_type::storage0d_type;
+            using storage1d_type = typename arg_type::storage1d_type;
+            using storage2d_type = typename arg_type::storage2d_type;
+
             primitive_argument_type column_slicing0d(args_type && args) const
             {
-                // return the input as it is if the input is of zero dimension or
-                // one dimension. The values passed to col_start, col_stop
-                // does not have an effect on the result.
-
                 return primitive_argument_type(std::move(args[0]));
             }
 
             primitive_argument_type column_slicing1d(args_type && args) const
             {
-                // return elements starting from col_start to col_stop(exclusive)
+                auto col_start = args[1].scalar();
+                auto col_stop = args[2].scalar();
+                int step=1;
 
-                auto col_start = args[1][0];
-                auto col_stop = args[2][0];
-
-                // parameters required by blaze to create a submatrix is as follows:
-                // subvector(vector,column,n)
-                // vector The vector containing the subvector.
-                // column The index of the first column of the subvector.
-                // n The number of columns of the subvector.
-                // return View on the specific subvector of the vector.
-
-                // The following math is a result of converting the arguments
-                // provided in slice primitive so that equivalent operation is
-                // performed in blaze.
-                // vector = vector
-                // column = col_start
-                // n = (col_stop - col_start)
-
-                if (col_start < 0 && col_stop > 0)    // slice from the end
+                if (args.size() == 4)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "column_slicing_operation::column_slicing_operation",
-                        "col_stop can not be positive if col_start is negative");
-                }
-                if (col_start >= 0 && col_stop < 0)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "column_slicing_operation::column_slicing_operation",
-                        "col_stop can not be negative if col_start is positive");
-                }
-
-                using storage0d_type = typename arg_type::storage0d_type;
-                using storage1d_type = typename arg_type::storage1d_type;
-
-                auto arg0 = args[0].vector();
-
-                if (col_start < 0 && col_stop <= 0)    // slice from the end
-                {
-                    auto sv = blaze::subvector(
-                        arg0, arg0.size() + col_start, -col_start + col_stop);
-
-                    if (sv.size() == 1)
+                    step = args[3].scalar();
+                    if (step == 0)
                     {
-                        return primitive_argument_type{sv[0]};
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::primitives::"
+                            "column_slicing_operation::column_slicing_"
+                            "operation",
+                            "step can not be zero");
                     }
-
-                    storage1d_type v{sv};
-                    return primitive_argument_type{
-                        ir::node_data<double>{std::move(v)}};
                 }
 
-                auto sv =
-                    blaze::subvector(arg0, col_start, col_stop - col_start);
+                auto init_list = create_list(col_start, col_stop, step, args[0].size());
 
-                if(sv.size() == 1)
+                auto sv = blaze::elements(args[0].vector(), init_list);
+
+                if (sv.size() == 1)
                 {
                     return primitive_argument_type{sv[0]};
                 }
 
                 storage1d_type v{sv};
                 return primitive_argument_type{
-                    ir::node_data<double>(std::move(v))};
+                        ir::node_data<double>(std::move(v))};
+                
             }
 
-            primitive_argument_type column_slicing2d(args_type && args) const
+            primitive_argument_type column_slicing2d(args_type&& args) const
             {
-                // returns the sliced matrix, depending upon the values
-                // provided in col_start, col_stop.
-
-                // parameters required by phylanx to create a slice is as follows:
-                // matrix The matrix containing the submatrix.
-                // col_start The index of the first column of the submatrix.
-                // col_stop The index of the last column(exclusive) of the submatrix.
-
-                auto col_start = args[1][0];
-                auto col_stop = args[2][0];
+                auto col_start = args[1].scalar();
+                auto col_stop = args[2].scalar();
                 auto num_matrix_rows = args[0].dimensions()[0];
+                auto num_matrix_cols = args[0].dimensions()[1];
 
-                // parameters required by blaze to create a submatrix is as follows:
-                // submatrix(matrix,row,column,m,n)
-                // matrix The matrix containing the submatrix.
-                // row The index of the first row of the submatrix.
-                // column The index of the first column of the submatrix.
-                // m The number of rows of the submatrix.
-                // n The number of columns of the submatrix.
-                // return View on the specific submatrix of the matrix.
+                int step = 1;
 
-                // The following math is a result of converting the arguments
-                // provided in slice primitive so that equivalent operation is
-                // performed in blaze.
-                // matrix = matrix
-                // row = 0
-                // column = col_start
-                // m = number of rows in the input matrix
-                // n = (col_stop - col_start)
-
-                if (col_start < 0 && col_stop > 0)    // column slice from the end
+                if (args.size() == 4)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "column_slicing_operation::column_slicing_operation",
-                        "col_stop can not be positive if col_start is "
-                            "negative");
-                }
-
-                using storage0d_type = typename arg_type::storage0d_type;
-                using storage1d_type = typename arg_type::storage1d_type;
-                using storage2d_type = typename arg_type::storage2d_type;
-
-                auto arg0 = args[0].matrix();
-
-                if (col_start < 0 && col_stop <= 0)
-                {
-                    auto num_cols = arg0.columns();
-
-                    // return a vector and not a matrix if the slice contains
-                    // exactly one column
-                    if (col_stop - col_start == 1)
+                    step = args[3].scalar();
+                    if (step == 0)
                     {
-                        auto sv = blaze::column(
-                            blaze::submatrix(arg0,
-                                0, num_cols + col_start,
-                                num_matrix_rows, 1),
-                            0);
-
-                        if (sv.size() == 1)
-                        {
-                            return primitive_argument_type{sv[0]};
-                        }
-
-                        storage1d_type v{sv};
-                        return primitive_argument_type{
-                            ir::node_data<double>{std::move(v)}};
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::primitives::"
+                            "column_slicing_operation::column_slicing_"
+                            "operation",
+                            "step can not be zero");
                     }
-
-                    auto sm = blaze::submatrix(arg0,
-                        0, num_cols + col_start,
-                        num_matrix_rows, -col_start + col_stop);
-
-                    storage2d_type m{sm};
-                    return primitive_argument_type{
-                        ir::node_data<double>{std::move(m)}};
                 }
 
-                if (col_stop - col_start == 1)
-                {
-                    auto sv = blaze::column(
-                        blaze::submatrix(arg0,
-                            0, col_start,
-                            num_matrix_rows, 1),
-                        0);
+                auto init_list =
+                    create_list(col_start, col_stop, step, num_matrix_cols);
 
+                auto sm = blaze::columns(args[0].matrix(), init_list);
+
+                if (sm.columns() == 1)
+                {
+                    auto sv = blaze::column(sm,0);
                     if (sv.size() == 1)
                     {
                         return primitive_argument_type{sv[0]};
@@ -235,13 +192,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         ir::node_data<double>{std::move(v)}};
                 }
 
-                auto sm = blaze::submatrix(arg0,
-                    0, col_start,
-                    num_matrix_rows, col_stop - col_start);
-
                 storage2d_type m{sm};
+
                 return primitive_argument_type{
-                    ir::node_data<double>{std::move(m)}};
+                    ir::node_data<double>(std::move(m))};
             }
 
         public:
@@ -249,13 +203,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
-                if (operands.size() != 3)
+                if (operands.size() != 3 && operands.size() != 4)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
                             "column_slicing_operation::column_slicing_operation",
-                        "the column_slicing_operation primitive requires exactly "
-                            "three arguments");
+                        "the column_slicing_operation primitive requires either "
+                            "three or four arguments");
                 }
 
                 bool arguments_valid = true;
