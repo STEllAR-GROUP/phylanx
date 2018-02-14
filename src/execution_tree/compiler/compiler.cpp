@@ -186,16 +186,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::vector<ast::expression> const& args,
             ast::expression const& body) const
         {
-            static std::string argument_name("argument");
-
             std::size_t base_arg_num = env_.base_arg_num();
             environment env(&env_, args.size());
             for (std::size_t i = 0; i != args.size(); ++i)
             {
                 // get sequence number of this component
-                std::size_t sequence_number =
-                    snippets_.sequence_numbers_[argument_name]++;
-                argument arg(sequence_number, default_locality_);
+                argument arg(default_locality_);
 
                 HPX_ASSERT(ast::detail::is_identifier(args[i]));
                 env.define(ast::detail::identifier_name(args[i]),
@@ -235,15 +231,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (args.empty())
             {
                 // get sequence number of this component
-                static std::string variable("variable");
-                std::size_t sequence_number =
-                    snippets_.sequence_numbers_[variable]++;
-
-                env_.define(std::move(name),
-                    external_variable(f, sequence_number, default_locality_));
+                env_.define(
+                    std::move(name), external_variable(f, default_locality_));
 
                 static std::string define_variable("define-variable");
-                sequence_number =
+                std::size_t sequence_number =
                     snippets_.sequence_numbers_[define_variable]++;
 
                 // define variable
@@ -456,14 +448,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function& f = snippets.snippets_.back();
 
         // get sequence number of this component
-        static std::string variable("variable");
-        std::size_t sequence_number = snippets.sequence_numbers_[variable]++;
-
-        env.define(std::move(name),
-            external_variable(f, sequence_number, default_locality));
+        env.define(std::move(name), external_variable(f, default_locality));
 
         static std::string define_variable("define-variable");
-        sequence_number = snippets.sequence_numbers_[define_variable]++;
+        std::size_t sequence_number =
+            snippets.sequence_numbers_[define_variable]++;
 
         f = primitive_variable{default_locality}(
                 std::move(body), define_variable + "$" +
