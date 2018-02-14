@@ -173,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     step_col = args[6].scalar();
                     col_start = args[4].scalar();
                     col_stop = args[5].scalar();
-                    
+                                        
                     if (step_row == 0 || step_col == 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
