@@ -19,6 +19,7 @@ set(tests
     extract_shape
     file_primitives
     file_csv_primitives
+    file_hdf5_primitives
     for_operation
     greater_operation
     greater_equal_operation
