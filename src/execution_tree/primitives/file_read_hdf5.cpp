@@ -4,6 +4,8 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+
+#if defined(PHYLANX_HAVE_HIGHFIVE)
 #include <phylanx/execution_tree/primitives/file_read_hdf5.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -13,6 +15,7 @@
 #include <highfive/H5File.hpp>
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
+#include <phylanx/util/detail/blaze-highfive.hpp>
 
 #include <cstddef>
 #include <fstream>
@@ -52,19 +55,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_hdf5::"
-                "eval",
+                "phylanx::execution_tree::primitives::file_read_hdf5::eval",
                 "the file_read_hdf5 primitive requires exactly twe literal "
-                "arguments");
+                    "arguments");
         }
 
         if (!valid(operands_[0]) || !valid(operands_[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_hdf5::"
-                "eval",
+                "phylanx::execution_tree::primitives::file_read_hdf5::eval",
                 "the file_read_hdf5 primitive requires that the given operand "
-                "is valid");
+                    "is valid");
         }
 
         std::string filename = string_operand_sync(operands_[0], args);
@@ -73,39 +74,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HighFive::File infile(filename, HighFive::File::ReadOnly);
         HighFive::DataSet dataSet = infile.getDataSet(datasetName);
         HighFive::DataSpace dataSpace = dataSet.getSpace();
-        std::vector<std::size_t> dims = dataSpace.getDimensions();
 
-        switch(dims.size())
+        switch(dataSpace.getNumberDimensions())
         {
             case 0: {
                 // scalar value
                 double scalar;
                 dataSet.read(scalar);
-                return hpx::make_ready_future(primitive_result_type{
-                        ir::node_data<double>{scalar}});
+                return hpx::make_ready_future(
+                    primitive_result_type{ir::node_data<double>{scalar}});
             }
             case 1: {
                 // vector
+                std::vector<std::size_t> dims = dataSpace.getDimensions();
                 blaze::DynamicVector<double> vector(dims[0]);
                 dataSet.read(vector);
                 return hpx::make_ready_future(primitive_result_type{
-                        ir::node_data<double>{std::move(vector)}});
+                    ir::node_data<double>{std::move(vector)}});
             }
             case 2: {
-
                 // matrix
-                blaze::DynamicMatrix<double> matrix(
-                        dims[0], dims[1]);
+                std::vector<std::size_t> dims = dataSpace.getDimensions();
+                blaze::DynamicMatrix<double> matrix(dims[0], dims[1]);
                 dataSet.read(matrix);
-                return hpx::make_ready_future(
-                        primitive_result_type{ir::node_data<double>{std::move(matrix)}});
+                return hpx::make_ready_future(primitive_result_type{
+                    ir::node_data<double>{std::move(matrix)}});
             }
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "phylanx::execution_tree::primitives::file_read_hdf5::"
-                                            "eval",
-                                    "the input file has incompatible number of dimensions");
+                    "phylanx::execution_tree::primitives::file_read_hdf5::eval",
+                    "the input file has incompatible number of dimensions");
         }
 
     }
 }}}
+
+#endif

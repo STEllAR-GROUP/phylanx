@@ -1,5 +1,7 @@
-
-
+# Copyright (c) 2017 Hartmut Kaiser
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 ################################################################################
 set(phylanx_SOURCES "" CACHE INTERNAL "Sources for libphylanx." FORCE)
@@ -92,13 +94,15 @@ else()
 endif()
 
 target_link_libraries(phylanx_component
-    ${HPX_LIBRARIES}
-    blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  ${HPX_LIBRARIES}
+  blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 if(PHYLANX_WITH_HIGHFIVE)
-  target_link_libraries(phylanx_component
-          HighFive)
-endif(PHYLANX_WITH_HIGHFIVE)
+  target_link_libraries(phylanx_component HighFive)
+  set_property(TARGET phylanx_component APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    "PHYLANX_HAVE_HIGHFIVE")
+endif()
 
 set_target_properties(
   phylanx_component PROPERTIES

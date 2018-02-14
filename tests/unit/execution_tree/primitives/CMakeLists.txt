@@ -19,7 +19,6 @@ set(tests
     extract_shape
     file_primitives
     file_csv_primitives
-    file_hdf5_primitives
     for_operation
     greater_operation
     greater_equal_operation
@@ -48,6 +47,13 @@ set(tests
     vstack_operation
     while_operation
    )
+
+if(PHYLANX_WITH_HIGHFIVE)
+  set(tests ${tests}
+        file_hdf5_primitives
+     )
+  set(file_hdf5_primitives_FLAGS COMPILE_FLAGS -DPHYLANX_HAVE_HIGHFIVE)
+endif()
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

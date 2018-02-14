@@ -30,7 +30,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
             hpx::new_<phylanx::execution_tree::primitives::file_write_hdf5>(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    {filename}, {dataset_name}, litval});
+                    filename, dataset_name, litval});
 
         auto f = outfile.eval();
         f.get();
@@ -43,7 +43,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
             hpx::new_<phylanx::execution_tree::primitives::file_read_hdf5>(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    {filename}, {dataset_name}});
+                    filename, dataset_name});
 
         f = infile.eval();
     }
@@ -64,7 +64,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
             hpx::new_<phylanx::execution_tree::primitives::file_write_hdf5>(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    {filename}, {dataset_name}, in});
+                    filename, dataset_name, in});
 
         auto f = outfile.eval();
         f.get();
@@ -77,7 +77,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
             hpx::new_<phylanx::execution_tree::primitives::file_read_hdf5>(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    {filename}, {dataset_name}});
+                    filename, dataset_name});
 
         f = infile.eval();
     }

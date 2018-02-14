@@ -19,6 +19,7 @@ phylanx_include(
   AddSourceGroup
   AddTest
   AddPythonTest
+  AppendProperty
   CreateSymbolicLink
   DetectCppDialect
   Documentation
