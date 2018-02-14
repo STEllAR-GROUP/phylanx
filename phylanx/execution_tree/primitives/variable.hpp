@@ -13,6 +13,7 @@
 #include <hpx/lcos/future.hpp>
 #include <hpx/lcos/local/spinlock.hpp>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -35,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         void store(primitive_argument_type && data) override;
 
-        topology expression_topology() const override;
+        topology expression_topology(
+            std::set<std::string>&& functions) const override;
 
     private:
         std::string name_;

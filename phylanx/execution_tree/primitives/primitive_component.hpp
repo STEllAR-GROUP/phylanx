@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -74,7 +75,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_EXPORT void store(primitive_argument_type &&);
 
         // extract_topology_action
-        PHYLANX_EXPORT topology expression_topology() const;
+        PHYLANX_EXPORT topology expression_topology(
+            std::set<std::string>&& functions) const;
 
         // set_body_action (define_function only)
         PHYLANX_EXPORT void set_body(primitive_argument_type&& target);

@@ -10,6 +10,8 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -47,7 +49,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // extract_topology_action
-    topology primitive_component_base::expression_topology() const
+    topology primitive_component_base::expression_topology(
+        std::set<std::string>&& functions) const
     {
         std::vector<hpx::future<topology>> results;
         results.reserve(operands_.size());
@@ -57,7 +60,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive const* p = util::get_if<primitive>(&operand);
             if (p != nullptr)
             {
-                results.push_back(p->expression_topology());
+                std::set<std::string> funcs{functions};
+                results.push_back(p->expression_topology(std::move(funcs)));
             }
         }
 

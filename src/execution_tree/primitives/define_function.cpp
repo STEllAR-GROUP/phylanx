@@ -11,6 +11,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -69,8 +70,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         operands_[0] = std::move(body);
     }
 
-    topology define_function::expression_topology() const
+    topology define_function::expression_topology(
+        std::set<std::string>&& functions) const
     {
+        if (functions.find(name_) != functions.end())
+        {
+            return {};      // avoid recursion
+        }
+
         if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -82,7 +89,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            return p->expression_topology(hpx::launch::sync);
+            functions.insert(name_);
+            return p->expression_topology(
+                hpx::launch::sync, std::move(functions));
         }
 
         return {};
