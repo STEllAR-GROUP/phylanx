@@ -76,6 +76,9 @@ std::map<std::string, std::vector<std::size_t>> expected_counts =
     { "variable$5", { 0, 18, } },
 };
 
+const std::vector<std::string> performance_counter_name_last_part{
+    "count/eval", "time/eval", "count/eval_direct", "time/eval_direct"};
+
 int main()
 {
     // Compile the given code
@@ -99,8 +102,7 @@ int main()
 
     for (auto const& entry :
         phylanx::util::retrieve_counter_data(existing_primitive_instances,
-            std::vector<std::string>{"count/eval", "time/eval",
-                "count/eval_direct", "time/eval_direct"},
+            performance_counter_name_last_part,
             hpx::find_here()))
     {
         auto const tags =
@@ -111,7 +113,8 @@ int main()
             tags.primitive + "$" + std::to_string(tags.sequence_number));
         auto const& expected_values = expected_counts[expected_key];
 
-        HPX_TEST(!expected_values.empty());
+        HPX_TEST_EQ(
+            expected_values.size(), performance_counter_name_last_part.size());
         HPX_TEST_EQ(entry.second[0], expected_values[0]);
         HPX_TEST((entry.second[1] != 0) == (expected_values[0] != 0));
         HPX_TEST_EQ(entry.second[2], expected_values[1]);
