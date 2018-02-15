@@ -6,8 +6,10 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/function_reference.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -16,25 +18,25 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-        phylanx::execution_tree::primitives::function_reference
-    > function_reference_type;
-
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    function_reference_type, phylanx_function_reference_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(function_reference_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    function_reference::function_reference(primitive_argument_type target,
-            std::vector<primitive_argument_type>&& args, std::string name)
-      : target_(std::move(target))
-      , args_(std::move(args))
-      , name_(std::move(name))
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const function_reference::match_data =
     {
-        if (!valid(target_))
+        hpx::util::make_tuple("function",
+            std::vector<std::string>{},
+            nullptr, &create_primitive_with_name<function_reference>)
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    function_reference::function_reference(
+            std::vector<primitive_argument_type>&& args,
+            std::string const& name)
+      : primitive_component_base(std::move(args))
+      , name_(name)
+    {
+        // operands_[0] holds the target function
+        if (operands_.empty() || !valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "function_reference::function_reference",
@@ -43,28 +45,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> function_reference::eval(
+    hpx::future<primitive_argument_type> function_reference::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        if (!args_.empty())
+        if (operands_.size() > 1)
         {
+            // the function has prebound arguments
+            std::vector<primitive_argument_type> fargs(
+                operands_.begin() + 1, operands_.end());
+
             if (!params.empty())
             {
-                std::vector<primitive_result_type> fargs(args_);
-                fargs.reserve(args_.size() + params.size());
+                fargs.reserve(operands_.size() + params.size() - 1);
                 std::copy(params.begin(), params.end(), std::back_inserter(fargs));
-                return value_operand(target_, std::move(fargs));
+                return value_operand(operands_[0], std::move(fargs));
             }
 
-            return value_operand(target_, args_);
+            return value_operand(operands_[0], std::move(fargs));
         }
 
-        return value_operand(target_, params);
+        return value_operand(operands_[0], params);
     }
 
     topology function_reference::expression_topology() const
     {
-        primitive const* p = util::get_if<primitive>(&target_);
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
             return p->expression_topology(hpx::launch::sync);

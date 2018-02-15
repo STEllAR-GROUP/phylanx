@@ -10,10 +10,10 @@
 #include <phylanx/util/serialization/execution_tree.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/include/components.hpp>
-#include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -23,29 +23,28 @@
 #include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::string_output>
-    string_output_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    string_output_type, phylanx_string_output_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(string_output_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_string_output(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("string");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const string_output::match_data =
     {
         hpx::util::make_tuple("string",
             std::vector<std::string>{"string(__1)"},
-            &create<string_output>)
+            &create_string_output, &create_primitive<string_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     string_output::string_output(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     namespace detail
@@ -55,20 +54,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             string_output() = default;
 
         protected:
-            using args_type = std::vector<primitive_result_type>;
+            using args_type = std::vector<primitive_argument_type>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_result_type
+                    [this_](args_type && args) -> primitive_argument_type
                     {
                         if (args.empty())
                         {
-                            return primitive_result_type{std::string{}};
+                            return primitive_argument_type{std::string{}};
                         }
 
                         std::stringstream strm;
@@ -77,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             strm << arg;
                         }
 
-                        return primitive_result_type(strm.str());
+                        return primitive_argument_type(strm.str());
                     }),
                     detail::map_operands(
                         operands, functional::value_operand{}, args));
@@ -90,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content
-    hpx::future<primitive_result_type> string_output::eval(
+    hpx::future<primitive_argument_type> string_output::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

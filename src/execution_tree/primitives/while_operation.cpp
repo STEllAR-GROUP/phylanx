@@ -6,10 +6,11 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/while_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/ast.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -18,29 +19,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::while_operation>
-    while_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    while_operation_type, phylanx_while_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(while_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_while_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("while");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const while_operation::match_data =
     {
         hpx::util::make_tuple("while",
             std::vector<std::string>{"while(_1, _2)"},
-            &create<while_operation>)
+            &create_while_operation, &create_primitive<while_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     while_operation::while_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     namespace detail
@@ -71,8 +71,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            hpx::future<primitive_result_type> body(
-                hpx::future<primitive_result_type>&& cond)
+            hpx::future<primitive_argument_type> body(
+                hpx::future<primitive_argument_type>&& cond)
             {
                 if (extract_boolean_value(cond.get()))
                 {
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     auto this_ = this->shared_from_this();
                     return literal_operand(operands_[1], args_).then(
                         [this_](
-                            hpx::future<primitive_result_type> && result
+                            hpx::future<primitive_argument_type> && result
                         ) mutable
                         {
                             this_->result_ = result.get();
@@ -88,17 +88,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         });
                 }
 
-                hpx::future<primitive_result_type> f = p_.get_future();
+                hpx::future<primitive_argument_type> f = p_.get_future();
                 p_.set_value(std::move(result_));
                 return f;
             }
 
-            hpx::future<primitive_result_type> loop()
+            hpx::future<primitive_argument_type> loop()
             {
                 // evaluate condition of while statement
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands_[0], args_).then(
-                    [this_](hpx::future<primitive_result_type> && cond)
+                    [this_](hpx::future<primitive_argument_type> && cond)
                     {
                         return this_->body(std::move(cond));
                     });
@@ -107,13 +107,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         private:
             std::vector<primitive_argument_type> operands_;
             std::vector<primitive_argument_type> args_;
-            hpx::promise<primitive_result_type> p_;
-            primitive_result_type result_;
+            hpx::promise<primitive_argument_type> p_;
+            primitive_argument_type result_;
         };
     }
 
     // start iteration over given while statement
-    hpx::future<primitive_result_type> while_operation::eval(
+    hpx::future<primitive_argument_type> while_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

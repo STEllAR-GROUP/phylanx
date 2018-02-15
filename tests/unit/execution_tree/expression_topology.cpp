@@ -16,10 +16,10 @@ void test_expressiontree_topology(char const* name,
 {
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto f = phylanx::execution_tree::compile(
+    phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(code), snippets);
 
-    auto topology = f.get_expression_topology();
+    auto topology = snippets.get_expression_topology();
     std::string newick_tree =
         phylanx::execution_tree::newick_tree(name, topology);
 
@@ -34,26 +34,26 @@ int main(int argc, char* argv[])
 {
     test_expressiontree_topology("test1",
         "define(x, 42)",
-            "(/phylanx/define-variable#0#x/0#7) test1;",
+            "(/phylanx/define-variable$0$x/0$7) test1;",
             "graph test1 {\n"
-            "    \"/phylanx/define-variable#0#x/0#7\";\n"
+            "    \"/phylanx/define-variable$0$x/0$7\";\n"
             "}\n");
 
     test_expressiontree_topology("test2",
         "block(define(x, 42), define(y, x))",
-            "((/phylanx/define-variable#0#x/0#13,"
-                "(/phylanx/variable#0#x/0#31) "
-                    "/phylanx/define-variable#1#y/0#28) "
-                "/phylanx/block#0/0#0) test2;",
+            "((/phylanx/define-variable$0$x/0$13,"
+                "(/phylanx/access-variable$0$x/0$31) "
+                    "/phylanx/define-variable$1$y/0$28) "
+                "/phylanx/block$0/0$0) test2;",
             "graph test2 {\n"
-            "    \"/phylanx/block#0/0#0\" -- "
-                    "\"/phylanx/define-variable#0#x/0#13\";\n"
-            "    \"/phylanx/define-variable#0#x/0#13\";\n"
-            "    \"/phylanx/block#0/0#0\" -- "
-                    "\"/phylanx/define-variable#1#y/0#28\";\n"
-            "    \"/phylanx/define-variable#1#y/0#28\" -- "
-                    "\"/phylanx/variable#0#x/0#31\";\n"
-            "    \"/phylanx/variable#0#x/0#31\";\n"
+            "    \"/phylanx/block$0/0$0\" -- "
+                    "\"/phylanx/define-variable$0$x/0$13\";\n"
+            "    \"/phylanx/define-variable$0$x/0$13\";\n"
+            "    \"/phylanx/block$0/0$0\" -- "
+                    "\"/phylanx/define-variable$1$y/0$28\";\n"
+            "    \"/phylanx/define-variable$1$y/0$28\" -- "
+                    "\"/phylanx/access-variable$0$x/0$31\";\n"
+            "    \"/phylanx/access-variable$0$x/0$31\";\n"
             "}\n");
 
     return hpx::util::report_errors();

@@ -8,11 +8,11 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/util/serialization/ast.hpp>
 #include <phylanx/util/serialization/execution_tree.hpp>
-#include <phylanx/util/variant.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <fstream>
@@ -22,28 +22,27 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::file_write>
-    file_write_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    file_write_type, phylanx_file_write_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(file_write_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_file_write(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("file_write");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const file_write::match_data =
     {
         hpx::util::make_tuple("file_write",
             std::vector<std::string>{"file_write(_1, _2)"},
-            &create<file_write>)
+            &create_file_write, &create_primitive<file_write>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     file_write::file_write(std::vector<primitive_argument_type>&& operands)
-      : operands_(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     namespace detail
@@ -53,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             file_write() = default;
 
         protected:
-            void write_to_file(primitive_result_type const& val)
+            void write_to_file(primitive_argument_type const& val)
             {
                 std::ofstream outfile(filename_.c_str(),
                     std::ios::binary | std::ios::out | std::ios::trunc);
@@ -75,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -101,8 +100,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return literal_operand(operands[1], args)
                     .then(hpx::util::unwrapping(
-                        [this_](primitive_result_type && val)
-                        ->  primitive_result_type
+                        [this_](primitive_argument_type && val)
+                        ->  primitive_argument_type
                         {
                             if (!valid(val))
                             {
@@ -114,7 +113,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             }
 
                             this_->write_to_file(val);
-                            return primitive_result_type(std::move(val));
+                            return primitive_argument_type(std::move(val));
                         }));
             }
 
@@ -126,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content
-    hpx::future<primitive_result_type> file_write::eval(
+    hpx::future<primitive_argument_type> file_write::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

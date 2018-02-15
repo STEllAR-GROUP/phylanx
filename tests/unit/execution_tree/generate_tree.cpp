@@ -19,7 +19,6 @@ void test_generate_tree(
     phylanx::execution_tree::compiler::function_list snippets;
 
     phylanx::execution_tree::compile(variables, snippets, env);
-    for (auto& f : snippets.defines_) f();     // bind variables
 
     auto f = phylanx::execution_tree::compile(exprstr, snippets, env);
 
@@ -37,7 +36,6 @@ void test_generate_tree(
     phylanx::execution_tree::compiler::function_list snippets;
 
     phylanx::execution_tree::compile(variables, snippets, env);
-    for (auto& f : snippets.defines_) f();     // bind variables
 
     auto f = phylanx::execution_tree::compile(exprstr, snippets, env);
 
@@ -54,7 +52,6 @@ void test_generate_tree_nil(std::string const& exprstr, char const* variables)
     phylanx::execution_tree::compiler::function_list snippets;
 
     phylanx::execution_tree::compile(variables, snippets, env);
-    for (auto& f : snippets.defines_) f();     // bind variables
 
     auto f = phylanx::execution_tree::compile(exprstr, snippets, env);
 
@@ -64,7 +61,7 @@ void test_generate_tree_nil(std::string const& exprstr, char const* variables)
 phylanx::execution_tree::primitive create_literal_value(double value)
 {
     return phylanx::execution_tree::primitive(
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(value)));
 }
 

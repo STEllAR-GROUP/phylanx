@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/power_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -20,29 +21,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::power_operation>
-    power_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(power_operation_type,
-    phylanx_power_operation_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(power_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_power_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("power");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const power_operation::match_data =
     {
         hpx::util::make_tuple("power",
             std::vector<std::string>{"power(_1, _2)"},
-            &create<power_operation>)
+            &create_power_operation, &create_primitive<power_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     power_operation::power_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -56,34 +56,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type power0d(operands_type && ops) const
+            primitive_argument_type power0d(operands_type && ops) const
             {
                 ops[0] = double(std::pow(ops[0].scalar(), ops[1][0]));
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            primitive_result_type power1d(operands_type && ops) const
+            primitive_argument_type power1d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
                 lhs = blaze::pow(lhs.vector(), rhs[0]);
 
-                return std::move(lhs);
+                return primitive_argument_type{std::move(lhs)};
             }
 
-            primitive_result_type power2d(operands_type && ops) const
+            primitive_argument_type power2d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
                 lhs = blaze::pow(lhs.matrix(), rhs[0]);
 
-                return std::move(lhs);
+                return primitive_argument_type{std::move(lhs)};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -105,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         if (ops[1].num_dimensions() != 0)
                         {
@@ -139,7 +139,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> power_operation::eval(
+    hpx::future<primitive_argument_type> power_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

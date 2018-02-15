@@ -48,21 +48,46 @@ namespace phylanx { namespace ast
     {
         tagged()
           : id(--next_id)
+          , col(-1)
         {}
 
         tagged(int tag)
           : id(tag)
+          , col(-1)
         {
         }
 
-        std::int64_t id; // Used to annotate the AST with the iterator position.
-                         // This id is used as a key to a map<int, Iterator>
-                         // (not really part of the AST.)
+        tagged(std::int64_t line, std::int64_t column)
+          : id(line)
+          , col(column)
+        {
+        }
+
+        std::int64_t id;    // Used to annotate the AST with the iterator position.
+                            // This id is used as a key to a map<int, Iterator>
+                            // (not really part of the AST.)
+                            // if 'col' != -1, then id represents the line number
+        std::int64_t col;   // if != -1, represents the column_offset
 
         // default-initialized tags are negative
         PHYLANX_EXPORT static std::int64_t next_id;
     };
 
+    inline bool operator==(tagged const& lhs, tagged const& rhs)
+    {
+        // if one of the col values is == -1 we consider the instances to be equal
+        if (lhs.col == -1 || rhs.col == -1)
+        {
+            return true;
+        }
+        return lhs.id == rhs.id && lhs.col == rhs.col;
+    }
+    inline bool operator!=(tagged const& lhs, tagged const& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     enum class optoken
     {
         // precedence 1
@@ -178,6 +203,18 @@ namespace phylanx { namespace ast
         {
         }
 
+        identifier(
+            std::string const& name, std::int64_t line, std::int64_t column)
+          : tagged(line, column)
+          , name(name)
+        {
+        }
+        identifier(std::string&& name, std::int64_t line, std::int64_t column)
+          : tagged(line, column)
+          , name(std::move(name))
+        {
+        }
+
         std::string name;
 
     private:
@@ -191,7 +228,8 @@ namespace phylanx { namespace ast
 
     inline bool operator==(identifier const& lhs, identifier const& rhs)
     {
-        return lhs.name == rhs.name;
+        return lhs.name == rhs.name &&
+            static_cast<tagged const&>(lhs) == static_cast<tagged const&>(rhs);
     }
     inline bool operator!=(identifier const& lhs, identifier const& rhs)
     {
@@ -261,6 +299,24 @@ namespace phylanx { namespace ast
         {
         }
 
+        primary_expr(std::vector<double> const& val)
+          : expr_node_type(phylanx::ir::node_data<double>{val})
+        {
+        }
+        primary_expr(std::vector<double> && val)
+          : expr_node_type(phylanx::ir::node_data<double>{std::move(val)})
+        {
+        }
+
+        primary_expr(std::vector<std::vector<double>> const& val)
+          : expr_node_type(phylanx::ir::node_data<double>{val})
+        {
+        }
+        primary_expr(std::vector<std::vector<double>> && val)
+          : expr_node_type(phylanx::ir::node_data<double>{std::move(val)})
+        {
+        }
+
         primary_expr(identifier const& val)
           : expr_node_type(val)
         {
@@ -305,6 +361,17 @@ namespace phylanx { namespace ast
         PHYLANX_EXPORT void serialize(
             hpx::serialization::output_archive& ar, unsigned);
     };
+
+    inline bool operator==(primary_expr const& lhs, primary_expr const& rhs)
+    {
+        return static_cast<expr_node_type const&>(lhs) ==
+                static_cast<expr_node_type const&>(rhs) &&
+            static_cast<tagged const&>(lhs) == static_cast<tagged const&>(rhs);
+    }
+    inline bool operator!=(primary_expr const& lhs, primary_expr const& rhs)
+    {
+        return !(lhs == rhs);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     using operand_node_type = phylanx::ast::parser::extended_variant<
@@ -556,6 +623,11 @@ namespace phylanx { namespace ast
           : first(primary_expr(std::move(l)))
         {}
 
+        expression(operand && expr, std::vector<operation> && l)
+          : first(std::move(expr))
+          , rest(std::move(l))
+        {}
+
         void append(operation const& op)
         {
             rest.push_back(op);
@@ -604,6 +676,11 @@ namespace phylanx { namespace ast
         {}
         explicit function_call(identifier && name)
           : function_name(std::move(name))
+        {}
+
+        function_call(identifier name, std::vector<expression>&& l)
+          : function_name(std::move(name))
+          , args(std::move(l))
         {}
 
         void append(expression const& expr)

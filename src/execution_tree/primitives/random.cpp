@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/random.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -20,30 +21,28 @@
 #include <vector>
 
 #include <blaze/Math.h>
-
-///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::random>
-    random_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    random_type, phylanx_random_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(random_type::wrapped_type)
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_random(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("random");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const random::match_data =
     {
         hpx::util::make_tuple("random",
             std::vector<std::string>{"random(_1)"},
-            &create<random>)
+            &create_random, &create_primitive<random>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     random::random(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -53,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             random() = default;
 
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -75,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = 0;
                         if (!ops.empty())
@@ -109,33 +108,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type random0d(operands_type && ops) const
+            primitive_argument_type random0d(operands_type && ops) const
             {
                 blaze::Rand<double> gen{};
-                return operand_type{gen.generate()};
+                return primitive_argument_type{operand_type{gen.generate()}};
             }
 
-            primitive_result_type random1d(operands_type && ops) const
+            primitive_argument_type random1d(operands_type && ops) const
             {
                 std::size_t dim = ops[0].dimension(0);
 
                 blaze::Rand<blaze::DynamicVector<double>> gen{};
 
-                return operand_type{gen.generate(dim)};
+                return primitive_argument_type{operand_type{gen.generate(dim)}};
             }
 
-            primitive_result_type random2d(operands_type && ops) const
+            primitive_argument_type random2d(operands_type && ops) const
             {
                 auto dim = ops[0].dimensions();
 
                 blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 
-                return operand_type{gen.generate(dim[0], dim[1])};
+                return primitive_argument_type{
+                    operand_type{gen.generate(dim[0], dim[1])}};
             }
         };
     }
 
-    hpx::future<primitive_result_type> random::eval(
+    hpx::future<primitive_argument_type> random::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

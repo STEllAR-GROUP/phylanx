@@ -9,9 +9,10 @@
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -23,28 +24,27 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::mul_operation>
-    mul_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(mul_operation_type,
-    phylanx_mul_operation_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(mul_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_mul_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("__mul");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const mul_operation::match_data =
     {
-        hpx::util::make_tuple("mul",
+        hpx::util::make_tuple("__mul",
             std::vector<std::string>{"_1 * __2"},
-            &create<mul_operation>)
+            &create_mul_operation, &create_primitive<mul_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     mul_operation::mul_operation(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operands_type = std::vector<operand_type>;
 
         private:
-            primitive_result_type mul0d(operands_type && ops) const
+            primitive_argument_type mul0d(operands_type && ops) const
             {
                 switch (ops[1].num_dimensions())
                 {
@@ -79,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type mul0d0d(operands_type && ops) const
+            primitive_argument_type mul0d0d(operands_type && ops) const
             {
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
@@ -87,10 +87,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (ops.size() == 2)
                 {
                     lhs.scalar() *= rhs.scalar();
-                    return primitive_result_type{ std::move(lhs) };
+                    return primitive_argument_type{ std::move(lhs) };
                 }
 
-                return primitive_result_type{
+                return primitive_argument_type{
                     std::accumulate(
                         ops.begin() + 1, ops.end(), std::move(lhs),
                         [](operand_type& result, operand_type const& curr) {
@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     };
             }
 
-            primitive_result_type mul0d1d(operands_type && ops) const
+            primitive_argument_type mul0d1d(operands_type && ops) const
             {
                 if (ops.size() > 2)
                 {
@@ -120,10 +120,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& rhs = ops[1];
 
                 rhs = rhs.vector() * lhs.scalar();
-                return primitive_result_type{ std::move(rhs) };
+                return primitive_argument_type{ std::move(rhs) };
             }
 
-            primitive_result_type mul0d2d(operands_type && ops) const
+            primitive_argument_type mul0d2d(operands_type && ops) const
             {
 
                 if (ops.size() > 2)
@@ -137,11 +137,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& rhs = ops[1];
 
                 rhs = rhs.matrix() * lhs.scalar();
-                return primitive_result_type{ std::move(rhs) };
+                return primitive_argument_type{ std::move(rhs) };
             }
 
             ///////////////////////////////////////////////////////////////////
-            primitive_result_type mul1d(operands_type && ops) const
+            primitive_argument_type mul1d(operands_type && ops) const
             {
                 switch (ops[1].num_dimensions())
                 {
@@ -161,7 +161,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type mul1d0d(operands_type && ops) const
+            primitive_argument_type mul1d0d(operands_type && ops) const
             {
                 if (ops.size() > 2)
                 {
@@ -174,18 +174,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& rhs = ops[1];
 
                 lhs = lhs.vector() * rhs.scalar();
-                return primitive_result_type{ std::move(lhs) };
+                return primitive_argument_type{ std::move(lhs) };
             }
 
-            primitive_result_type mul1d1d(operands_type && ops) const
+            primitive_argument_type mul1d1d(operands_type && ops) const
             {
                 if (ops.size() == 2)
                 {
                     ops[0] = ops[0].vector() * ops[1].vector();
-                    return primitive_result_type{ std::move(ops[0]) };
+                    return primitive_argument_type{ std::move(ops[0]) };
                 }
 
-                return primitive_result_type{
+                return primitive_argument_type{
                     std::accumulate(
                         ops.begin() + 1, ops.end(), std::move(ops[0]),
                         [](operand_type& result, operand_type const& curr)
@@ -203,7 +203,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     };
             }
 
-            primitive_result_type mul1d2d(operands_type && ops) const
+            primitive_argument_type mul1d2d(operands_type && ops) const
             {
                 if (ops.size() > 2)
                 {
@@ -217,10 +217,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 rhs = blaze::trans(
                     blaze::trans(lhs.vector()) * rhs.matrix());
-                return primitive_result_type{ std::move(rhs) };
+                return primitive_argument_type{ std::move(rhs) };
             }
 
-            primitive_result_type mul2d(operands_type && ops) const
+            primitive_argument_type mul2d(operands_type && ops) const
             {
                 switch (ops[1].num_dimensions())
                 {
@@ -240,7 +240,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            primitive_result_type mul2d0d(operands_type && ops) const
+            primitive_argument_type mul2d0d(operands_type && ops) const
             {
                 if (ops.size() > 2)
                 {
@@ -253,10 +253,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& rhs = ops[1];
 
                 lhs = lhs.matrix() * rhs.scalar();
-                return primitive_result_type{ std::move(lhs) };
+                return primitive_argument_type{ std::move(lhs) };
             }
 
-            primitive_result_type mul2d1d(operands_type && ops) const
+            primitive_argument_type mul2d1d(operands_type && ops) const
             {
                 if (ops.size() > 2)
                 {
@@ -269,18 +269,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& rhs = ops[1];
 
                 rhs = lhs.matrix() * rhs.vector();
-                return primitive_result_type{ std::move(rhs) };
+                return primitive_argument_type{ std::move(rhs) };
             }
 
-            primitive_result_type mul2d2d(operands_type && ops) const
+            primitive_argument_type mul2d2d(operands_type && ops) const
             {
                 if (ops.size() == 2)
                 {
                     ops[0] = ops[0].matrix() * ops[1].matrix();
-                    return primitive_result_type{ std::move(ops[0]) };
+                    return primitive_argument_type{ std::move(ops[0]) };
                 }
 
-                return primitive_result_type{
+                return primitive_argument_type{
                     std::accumulate(
                         ops.begin() + 1, ops.end(), std::move(ops[0]),
                         [](operand_type& result, operand_type const& curr)
@@ -300,7 +300,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -331,7 +331,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t lhs_dims = ops[0].num_dimensions();
                         switch (lhs_dims)
@@ -359,7 +359,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement '*' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> mul_operation::eval(
+    hpx::future<primitive_argument_type> mul_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

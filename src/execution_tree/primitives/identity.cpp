@@ -4,13 +4,13 @@
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/identity.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -22,28 +22,27 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::identity>
-    identity_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(identity_type,
-    phylanx_identity_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(identity_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_identity(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("identity");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const identity::match_data =
     {
         hpx::util::make_tuple("identity",
             std::vector<std::string>{"identity(_1)"},
-            &create<identity>)
+            &create_identity, &create_primitive<identity>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     identity::identity(std::vector<primitive_argument_type> && operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {
     }
 
@@ -58,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using matrix_type = blaze::IdentityMatrix<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type identity_nd(operands_type&& ops) const
+            primitive_argument_type identity_nd(operands_type&& ops) const
             {
                 if (ops[0].num_dimensions() != 0)
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -66,11 +65,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "input should be a scalar");
 
                 std::size_t dim = static_cast<std::size_t>(ops[0].scalar());
-                return operand_type{blaze::IdentityMatrix<double>(dim)};
+                return primitive_argument_type{
+                    operand_type{blaze::IdentityMatrix<double>(dim)}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -91,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& op0) -> primitive_result_type
+                    [this_](operands_type&& op0) -> primitive_argument_type
                     {
                         return this_->identity_nd(std::move(op0));
                     }),
@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> identity::eval(
+    hpx::future<primitive_argument_type> identity::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

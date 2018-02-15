@@ -9,8 +9,10 @@
 #include <phylanx/util/serialization/ast.hpp>
 #include <phylanx/util/serialization/execution_tree.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <fstream>
@@ -19,32 +21,31 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::file_read>
-    file_read_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    file_read_type, phylanx_file_read_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(file_read_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_file_read(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("file_read");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const file_read::match_data =
     {
         hpx::util::make_tuple("file_read",
             std::vector<std::string>{"file_read(_1)"},
-            &create<file_read>)
+            &create_file_read, &create_primitive<file_read>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     file_read::file_read(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     // read data from given file and return content
-    hpx::future<primitive_result_type> file_read::eval(
+    hpx::future<primitive_argument_type> file_read::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.size() != 1)
@@ -88,8 +89,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     filename);
         }
 
-        // assume data in file is result of a serialized primitive_result_type
-        primitive_result_type val;
+        // assume data in file is result of a serialized primitive_argument_type
+        primitive_argument_type val;
         phylanx::util::unserialize(data, val);
 
         return hpx::make_ready_future(std::move(val));

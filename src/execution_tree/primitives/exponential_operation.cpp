@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -22,29 +23,28 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::exponential_operation>
-    exponential_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    exponential_operation_type, phylanx_exponential_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(exponential_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_exponential_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("exp");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const exponential_operation::match_data =
     {
         hpx::util::make_tuple("exp",
             std::vector<std::string>{"exp(_1)"},
-            &create<exponential_operation>)
+            &create_exponential_operation, &create_primitive<exponential_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     exponential_operation::exponential_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -59,30 +59,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operands_type = std::vector<operand_type>;
 
         protected:
-            ir::node_data<double> exponential0d(operands_type&& ops) const
+            primitive_argument_type exponential0d(operands_type&& ops) const
             {
                 ops[0] = double(std::exp(ops[0].scalar()));
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            ir::node_data<double> exponential1d(operands_type&& ops) const
+            primitive_argument_type exponential1d(operands_type&& ops) const
             {
                 using vector_type = blaze::DynamicVector<double>;
 
                 vector_type result = blaze::exp(ops[0].vector());
-                return ir::node_data<double>(std::move(result));
+                return primitive_argument_type{
+                    ir::node_data<double>(std::move(result))};
             }
 
-            ir::node_data<double> exponentialxd(operands_type&& ops) const
+            primitive_argument_type exponentialxd(operands_type&& ops) const
             {
                 using matrix_type = blaze::DynamicMatrix<double>;
 
                 matrix_type result = blaze::exp(ops[0].matrix());
-                return ir::node_data<double>(std::move(result));
+                return primitive_argument_type{
+                    ir::node_data<double>(std::move(result))};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -105,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
                         switch (dims)
@@ -133,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement 'exp' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> exponential_operation::eval(
+    hpx::future<primitive_argument_type> exponential_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

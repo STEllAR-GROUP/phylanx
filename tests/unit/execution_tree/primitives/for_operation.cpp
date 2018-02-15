@@ -13,39 +13,41 @@
 #include <utility>
 #include <vector>
 
+namespace pe = phylanx::execution_tree;
+
 // condition is false, no iteration is performed
 // init =0.0; reinit=0.0; //some values we will not use
 // for(init, false, reinit, body)
 void test_for_operation_false()
 {
-    phylanx::execution_tree::primitive init =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive init =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{0.0});
 
-  phylanx::execution_tree::primitive reinit =
-      hpx::new_<phylanx::execution_tree::primitives::variable>(
+  pe::primitive reinit =
+      pe::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>{0.0});
 
-    phylanx::execution_tree::primitive cond =
-            hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive cond =
+            pe::primitives::create_variable(
                     hpx::find_here(), false);
 
-    phylanx::execution_tree::primitive body =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive body =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{42.0});
 
-    phylanx::execution_tree::primitive for_ =
-        hpx::new_<phylanx::execution_tree::primitives::for_operation>(
+    pe::primitive for_ =
+        pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            std::vector<pe::primitive_argument_type>{
                 std::move(init), std::move(cond), std::move(reinit),
                 std::move(body)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<pe::primitive_argument_type> f =
         for_.eval();
 
-    HPX_TEST(!phylanx::execution_tree::valid(f.get()));
+    HPX_TEST(!pe::valid(f.get()));
 }
 
 // condition is set to false in first iteration
@@ -53,36 +55,36 @@ void test_for_operation_false()
 // body sets condition to false
 void test_for_operation_true()
 {
-    phylanx::execution_tree::primitive init =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive init =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{0.0});
 
-  phylanx::execution_tree::primitive reinit =
-      hpx::new_<phylanx::execution_tree::primitives::variable>(
+  pe::primitive reinit =
+      pe::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>{0.0});
 
-    phylanx::execution_tree::primitive cond =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive cond =
+        pe::primitives::create_variable(
             hpx::find_here(), true);
-    phylanx::execution_tree::primitive body =
-        hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+    pe::primitive body =
+        pe::primitives::create_store_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            std::vector<pe::primitive_argument_type>{
                 cond, false
             });
 
-    phylanx::execution_tree::primitive for_ =
-        hpx::new_<phylanx::execution_tree::primitives::for_operation>(
+    pe::primitive for_ =
+        pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            std::vector<pe::primitive_argument_type>{
                 std::move(init), std::move(cond), std::move(reinit),
                 std::move(body)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<pe::primitive_argument_type> f =
         for_.eval();
 
-    HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
+    HPX_TEST(!pe::extract_boolean_value(f.get()));
 }
 
 // init is stated at zero
@@ -95,57 +97,61 @@ void test_for_operation_true()
 void test_for_operation_42()
 {
     // initial condition init is set to 0.0
-    phylanx::execution_tree::primitive init =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive init =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{0.0});
 
-    phylanx::execution_tree::primitive forty_two =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive forty_two =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{42.0});
 
-    phylanx::execution_tree::primitive one =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive one =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{1.0});
 
     // check if init is less than to 42 (this is true)
-    phylanx::execution_tree::primitive cond =
-        hpx::new_<phylanx::execution_tree::primitives::less>(
+    pe::primitive cond =
+        pe::primitives::create_less(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            std::vector<pe::primitive_argument_type>{
                 init, forty_two
             });
 
     // set temp=0.0 in the beginning
-    phylanx::execution_tree::primitive temp =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive temp =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{0.0});
 
     // do something in the body
     // here: set temp = init
-    phylanx::execution_tree::primitive body =
-      hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+    pe::primitive body =
+      pe::primitives::create_store_operation(
           hpx::find_here(),
-          std::vector<phylanx::execution_tree::primitive_argument_type>{
+          std::vector<pe::primitive_argument_type>{
               temp, init
           });
 
     // in the reinit statement, add 1 to init
-    phylanx::execution_tree::primitive reinit =
-        hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+    pe::primitive reinit =
+        pe::primitives::create_store_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
-                init, hpx::new_<phylanx::execution_tree::primitives::add_operation>(
-                hpx::find_here(),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    init, one
-                })
+            std::vector<pe::primitive_argument_type>{
+                init,
+                pe::primitive_argument_type{
+                    pe::primitives::create_add_operation(
+                        hpx::find_here(),
+                        std::vector<pe::primitive_argument_type>{
+                            init, one
+                        }
+                    )
+                }
             });
 
     // evaluate the for loop until condition is false
-    phylanx::execution_tree::primitive for_ =
-        hpx::new_<phylanx::execution_tree::primitives::for_operation>(
+    pe::primitive for_ =
+        pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            std::vector<pe::primitive_argument_type>{
                 std::move(init), std::move(cond), std::move(reinit) ,
                 std::move(body)
             });
@@ -153,12 +159,12 @@ void test_for_operation_42()
     // when the loop ends the value obtained as the result
     // should be 41.0 as the condition will fail when
     // init is equal to 42.0
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<pe::primitive_argument_type> f =
         for_.eval();
 
     // store() returns nil
-    HPX_TEST(!phylanx::execution_tree::valid(f.get()));
-    HPX_TEST_EQ(41.0, phylanx::execution_tree::numeric_operand_sync(temp, {})[0]);
+    HPX_TEST(!pe::valid(f.get()));
+    HPX_TEST_EQ(41.0, pe::numeric_operand_sync(temp, {})[0]);
 }
 
 // for(init=3.0; init<42; init=init+5; body
@@ -170,81 +176,86 @@ void test_for_operation_42()
 void test_for_operation_42_with_store()
 {
     //set init to zero
-    phylanx::execution_tree::primitive init =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive init =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
-    phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive rhs =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(3.0));
 
     // store 3 to init
-    phylanx::execution_tree::primitive store =
-        hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+    pe::primitive store =
+        pe::primitives::create_store_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            std::vector<pe::primitive_argument_type>{
                 init, std::move(rhs)
             });
 
-    phylanx::execution_tree::primitive forty_two =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive forty_two =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{42.0});
 
-    phylanx::execution_tree::primitive five =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive five =
+        pe::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>{5.0});
 
     // check if init is less than 42 (this is true)
-    phylanx::execution_tree::primitive cond =
-        hpx::new_<phylanx::execution_tree::primitives::less>(
+    pe::primitive cond =
+        pe::primitives::create_less(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
-                init, forty_two
+            std::vector<pe::primitive_argument_type>{
+                pe::primitive_argument_type{init},
+                pe::primitive_argument_type{forty_two}
             });
 
     // in the reinit statement add five to init
-    phylanx::execution_tree::primitive reinit =
-      hpx::new_<phylanx::execution_tree::primitives::store_operation>(
-          hpx::find_here(),
-          std::vector<phylanx::execution_tree::primitive_argument_type>{
-              init, hpx::new_<phylanx::execution_tree::primitives::add_operation>(
-                  hpx::find_here(),
-                  std::vector<phylanx::execution_tree::primitive_argument_type>{
-                      init, five
-                  })
-          });
+    pe::primitive reinit =
+        pe::primitives::create_store_operation(
+            hpx::find_here(),
+            std::vector<pe::primitive_argument_type>{
+                init,
+                pe::primitive_argument_type{
+                    pe::primitives::create_add_operation(
+                        hpx::find_here(),
+                          std::vector<pe::primitive_argument_type>{
+                              init, five
+                          }
+                    )
+                }
+            });
 
     // set temp=0.0 in the beginning
-    phylanx::execution_tree::primitive temp =
-      hpx::new_<phylanx::execution_tree::primitives::variable>(
+    pe::primitive temp =
+      pe::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>{0.0});
 
     // do something in the body
     // here: set temp = init
-    phylanx::execution_tree::primitive body =
-      hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+    pe::primitive body =
+      pe::primitives::create_store_operation(
           hpx::find_here(),
-          std::vector<phylanx::execution_tree::primitive_argument_type>{
+          std::vector<pe::primitive_argument_type>{
               temp, init
           });
 
     // evaluate the for loop
-    phylanx::execution_tree::primitive for_ =
-        hpx::new_<phylanx::execution_tree::primitives::for_operation>(
+    pe::primitive for_ =
+        pe::primitives::create_for_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            std::vector<pe::primitive_argument_type>{
                 std::move(store), std::move(cond), std::move(reinit),
                 std::move(body)
             });
 
     // when the loop ends the value should be 38.0 as the condition will fail
     // init is greater than 42.0
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<pe::primitive_argument_type> f =
         for_.eval();
 
     // store() returns nil
-    HPX_TEST(!phylanx::execution_tree::valid(f.get()));
-    HPX_TEST_EQ(38.0, phylanx::execution_tree::numeric_operand_sync(temp, {})[0]);
+    HPX_TEST(!pe::valid(f.get()));
+    HPX_TEST_EQ(38.0, pe::numeric_operand_sync(temp, {})[0]);
 }
 
 int main(int argc, char* argv[])

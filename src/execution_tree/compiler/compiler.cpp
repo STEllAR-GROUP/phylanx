@@ -42,9 +42,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         for (auto const& patterns : patterns_list)
         {
+            if (!hpx::util::get<1>(patterns).empty())
+            {
             result.define(hpx::util::get<0>(patterns),
                 builtin_function(
                     hpx::util::get<2>(patterns), default_locality));
+        }
         }
 
         return result;
@@ -65,61 +68,18 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             for (auto const& pattern : hpx::util::get<1>(patterns))
             {
+                auto exprs = ast::generate_ast(pattern);
+                HPX_ASSERT(exprs.size() == 1);
+
                 result.push_back(
                     hpx::util::make_tuple(
                         hpx::util::get<0>(patterns), pattern,
-                        ast::generate_ast(pattern), hpx::util::get<2>(patterns)));
+                        exprs[0], hpx::util::get<2>(patterns)));
             }
         }
 
         return result;
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    struct on_placeholder_match
-    {
-        std::multimap<std::string, ast::expression>& placeholders;
-
-        template <typename Ast1, typename Ast2, typename... Ts>
-        bool operator()(
-            Ast1 const& ast1, Ast2 const& ast2, Ts const&... ts) const
-        {
-            using value_type = typename std::multimap<std::string,
-                ast::expression>::value_type;
-
-            if (ast::detail::is_placeholder(ast1))
-            {
-                if (ast::detail::is_placeholder_ellipses(ast1))
-                {
-                    placeholders.insert(value_type(
-                        ast::detail::identifier_name(ast1).substr(1),
-                        ast::expression(ast2)));
-                }
-                else
-                {
-                    placeholders.insert(
-                        value_type(ast::detail::identifier_name(ast1),
-                            ast::expression(ast2)));
-                }
-            }
-            else if (ast::detail::is_placeholder(ast2))
-            {
-                if (ast::detail::is_placeholder_ellipses(ast1))
-                {
-                    placeholders.insert(value_type(
-                        ast::detail::identifier_name(ast2).substr(1),
-                        ast::expression(ast1)));
-                }
-                else
-                {
-                    placeholders.insert(
-                        value_type(ast::detail::identifier_name(ast2),
-                            ast::expression(ast1)));
-                }
-            }
-            return true;
-        }
-    };
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Iterator>
@@ -207,11 +167,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
     private:
-        std::string annotation(std::int64_t id)
+        std::string annotation(ast::tagged const& id)
         {
             // Note: the compile-id needs to be adjusted to be zero-based.
-            return "/" + std::to_string(snippets_.compile_id_ - 1) + "#" +
-                std::to_string(id);
+            std::string result = "/" +
+                std::to_string(snippets_.compile_id_ - 1) + "$" +
+                std::to_string(id.id);
+
+            if (id.col != -1)
+            {
+                result += '$' + std::to_string(id.col);
+            }
+
+            return result;
         }
 
         function handle_lambda(
@@ -248,16 +216,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined function
             // and store new function description for later use
-            snippets_.defines_.emplace_back(function{});
-            function& f = snippets_.defines_.back();
+            snippets_.snippets_.emplace_back(function{});
+            function& f = snippets_.snippets_.back();
 
             ast::expression name_expr = extract_name(p);
             std::string name = ast::detail::identifier_name(name_expr);
 
             // get global name of the component created
             std::string full_name = name;
-            std::int64_t id = ast::detail::tagged_id(name_expr);
-            if (id >= 0)
+            ast::tagged id = ast::detail::tagged_id(name_expr);
+            if (id.id >= 0)
             {
                 full_name += annotation(id);
             }
@@ -271,7 +239,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::size_t sequence_number =
                     snippets_.sequence_numbers_[variable]++;
 
-                env_.define(name,
+                env_.define(std::move(name),
                     external_variable(f, sequence_number, default_locality_));
 
                 static std::string define_variable("define-variable");
@@ -284,19 +252,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     default_locality_);
 
                 f = primitive_variable{default_locality_}(
-                        std::move(bf.arg_), define_variable + "#" +
-                            std::to_string(sequence_number) + "#" + full_name);
+                        std::move(bf.arg_), define_variable + "$" +
+                            std::to_string(sequence_number) + "$" + full_name);
                 return f;
             }
 
+            // NOTE: Check the consistency of names: "function" vs "call-function"
             // get sequence number of this component
-            static std::string function_("function");
+            static std::string function_("call-function");
             std::size_t sequence_number =
                 snippets_.sequence_numbers_[function_]++;
 
             // two-step initialization of the wrapped_function to support
             // recursion
-            env_.define(name,
+            env_.define(std::move(name),
                 external_function(f, sequence_number, default_locality_));
 
             static std::string define_function_("define-function");
@@ -305,14 +274,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // create define_function helper object
             std::string define_function_name =
-                std::to_string(sequence_number) + "#" + full_name;
+                std::to_string(sequence_number) + "$" + full_name;
 
             f = primitive_function{default_locality_}(
-                define_function_ + "#" + define_function_name);
+                define_function_ + "$" + define_function_name);
 
             // set the body for the compiled function
-            define_function(f.arg_).set_body(hpx::launch::sync,
-                std::move(handle_lambda(args, body).arg_));
+            primitive_operand(f.arg_).set_body(
+                hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
 
             // define-function shouldn't return a function that evaluates
             // to itself, let it return nil{} instead
@@ -324,8 +293,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             if (compiled_function* cf = env_.find(name))
             {
-                std::int64_t id = ast::detail::tagged_id(expr);
-                if (id >= 0)
+                ast::tagged id = ast::detail::tagged_id(expr);
+                if (id.id >= 0)
                 {
                     name += annotation(id);
                 }
@@ -353,8 +322,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         default_locality_));
                 }
 
-                std::int64_t id = ast::detail::tagged_id(expr);
-                if (id >= 0)
+                ast::tagged id = ast::detail::tagged_id(expr);
+                if (id.id >= 0)
                 {
                     name += annotation(id);
                 }
@@ -398,7 +367,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 std::multimap<std::string, ast::expression> placeholders;
                 if (!ast::match_ast(expr, hpx::util::get<2>(pattern),
-                        on_placeholder_match{placeholders}))
+                        ast::detail::on_placeholder_match{placeholders}))
                 {
                     continue;   // no match found for the current pattern
                 }
@@ -413,11 +382,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // add sequence number for this primitive component
                 std::size_t sequence_number =
                     snippets_.sequence_numbers_[name]++;
-                name += "#" + std::to_string(sequence_number);
+                name += "$" + std::to_string(sequence_number);
 
                 // get global name of the component created
-                std::int64_t id = ast::detail::tagged_id(expr);
-                if (id >= 0)
+                ast::tagged id = ast::detail::tagged_id(expr);
+                if (id.id >= 0)
                 {
                     name += annotation(id);
                 }
@@ -471,17 +440,34 @@ namespace phylanx { namespace execution_tree { namespace compiler
         return comp(expr);
     }
 
-    function compile(std::vector<ast::expression> const& exprs,
-        function_list& snippets, environment& env,
-        expression_pattern_list const& patterns,
+    ///////////////////////////////////////////////////////////////////////////
+    function define_variable(std::string name, function_list& snippets,
+        environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
-        compiler comp{snippets, env, patterns, default_locality};
-        function f;
-        for (auto const& expr : exprs)
+        std::string full_name = name;
+        auto p = name.find_first_of("$/");
+        if (p != std::string::npos)
         {
-            f = comp(expr);
+            name.erase(p);
         }
+
+        snippets.snippets_.emplace_back(function{});
+        function& f = snippets.snippets_.back();
+
+        // get sequence number of this component
+        static std::string variable("variable");
+        std::size_t sequence_number = snippets.sequence_numbers_[variable]++;
+
+        env.define(std::move(name),
+            external_variable(f, sequence_number, default_locality));
+
+        static std::string define_variable("define-variable");
+        sequence_number = snippets.sequence_numbers_[define_variable]++;
+
+        f = primitive_variable{default_locality}(
+                std::move(body), define_variable + "$" +
+                    std::to_string(sequence_number) + "$" + full_name);
         return f;
     }
 }}}

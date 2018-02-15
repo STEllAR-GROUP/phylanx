@@ -16,16 +16,16 @@
 void test_exponential_operation_0d()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
     phylanx::execution_tree::primitive exponential =
-        hpx::new_<phylanx::execution_tree::primitives::exponential_operation>(
+        phylanx::execution_tree::primitives::create_exponential_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         exponential.eval();
     HPX_TEST_EQ(std::exp(5.0),
         phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -36,13 +36,13 @@ void test_exponential_operation_0d_lit()
     phylanx::ir::node_data<double> lhs(5.0);
 
     phylanx::execution_tree::primitive exponential =
-        hpx::new_<phylanx::execution_tree::primitives::exponential_operation>(
+        phylanx::execution_tree::primitives::create_exponential_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         exponential.eval();
     HPX_TEST_EQ(std::exp(5.0),
         phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -54,17 +54,17 @@ void test_exponential_operation_2d()
     blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive exponential =
-        hpx::new_<phylanx::execution_tree::primitives::exponential_operation>(
+        phylanx::execution_tree::primitives::create_exponential_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         exponential.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::exp(m);

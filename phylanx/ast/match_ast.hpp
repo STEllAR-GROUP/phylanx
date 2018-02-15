@@ -7,6 +7,7 @@
 #define PHYLANX_AST_MATCH_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/detail/is_identifier.hpp>
 #include <phylanx/ast/detail/is_placeholder.hpp>
 #include <phylanx/ast/detail/is_placeholder_ellipses.hpp>
 #include <phylanx/ast/node.hpp>
@@ -18,12 +19,63 @@
 #include <hpx/util/tuple.hpp>
 
 #include <cstddef>
+#include <map>
 #include <type_traits>
+#include <string>
 #include <utility>
 #include <vector>
 
 namespace phylanx { namespace ast
 {
+    namespace detail
+    {
+        ///////////////////////////////////////////////////////////////////////
+        struct on_placeholder_match
+        {
+            std::multimap<std::string, ast::expression>& placeholders;
+
+            template <typename Ast1, typename Ast2, typename... Ts>
+            bool operator()(
+                Ast1 const& ast1, Ast2 const& ast2, Ts const&... ts) const
+            {
+                using value_type = typename std::multimap<std::string,
+                    ast::expression>::value_type;
+
+                if (ast::detail::is_placeholder(ast1))
+                {
+                    if (ast::detail::is_placeholder_ellipses(ast1))
+                    {
+                        placeholders.insert(value_type(
+                            ast::detail::identifier_name(ast1).substr(1),
+                            ast::expression(ast2)));
+                    }
+                    else
+                    {
+                        placeholders.insert(
+                            value_type(ast::detail::identifier_name(ast1),
+                                ast::expression(ast2)));
+                    }
+                }
+                else if (ast::detail::is_placeholder(ast2))
+                {
+                    if (ast::detail::is_placeholder_ellipses(ast1))
+                    {
+                        placeholders.insert(value_type(
+                            ast::detail::identifier_name(ast2).substr(1),
+                            ast::expression(ast1)));
+                    }
+                    else
+                    {
+                        placeholders.insert(
+                            value_type(ast::detail::identifier_name(ast2),
+                                ast::expression(ast1)));
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Ast1, typename Ast2, typename F, typename ... Ts>
     bool match_ast(Ast1 const& ast1, Ast2 const& ast2, F && f, Ts const&... ts)
@@ -452,7 +504,7 @@ namespace phylanx { namespace ast
                         ++it1;
                     continue;
                 }
-                else if (detail::is_placeholder(curr2))
+                if (detail::is_placeholder(curr2))
                 {
                     if (!hpx::util::invoke(std::forward<F>(f),
                             extract_subexpression(
@@ -504,7 +556,7 @@ namespace phylanx { namespace ast
             {
                 return it2 == end2 || detail::is_placeholder_ellipses(*it2);
             }
-            else if (it2 == end2)
+            if (it2 == end2)
             {
                 return detail::is_placeholder_ellipses(*it1);
             }
@@ -523,7 +575,7 @@ namespace phylanx { namespace ast
                 detail::placeholder_id(expr1),
                 detail::extract_expression(expr2), ts...);
         }
-        else if (detail::is_placeholder(expr2))
+        if (detail::is_placeholder(expr2))
         {
             return hpx::util::invoke(std::forward<F>(f),
                 detail::extract_expression(expr1),
@@ -589,7 +641,7 @@ namespace phylanx { namespace ast
                 ++it2;
                 continue;
             }
-            else if (detail::is_placeholder_ellipses(*it2))
+            if (detail::is_placeholder_ellipses(*it2))
             {
                 if (!hpx::util::invoke(std::forward<F>(f), *it1, *it2, ts...))
                 {
@@ -613,7 +665,7 @@ namespace phylanx { namespace ast
         {
             return it2 == end2 || detail::is_placeholder_ellipses(*it2);
         }
-        else if (it2 == end2)
+        if (it2 == end2)
         {
             return detail::is_placeholder_ellipses(*it1);
         }

@@ -14,11 +14,15 @@
 
 namespace phylanx { namespace ast
 {
-    /// Parse the given string and convert it into an instance of an AST
-    PHYLANX_EXPORT ast::expression generate_ast(std::string const& input);
+    namespace detail
+    {
+        expression& replace_compile_ids(expression& ast,
+            std::vector<std::string::const_iterator> const& iters,
+            std::string::const_iterator begin);
+    }
 
     /// Parse the given string and convert it into a list of AST instances
-    PHYLANX_EXPORT std::vector<ast::expression> generate_asts(
+    PHYLANX_EXPORT std::vector<ast::expression> generate_ast(
         std::string const& input);
 }}
 

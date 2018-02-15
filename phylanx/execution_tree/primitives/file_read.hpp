@@ -8,17 +8,16 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/lcos/future.hpp>
 
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT file_read
-      : public base_primitive
-      , public hpx::components::component_base<file_read>
+    class file_read : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
@@ -27,9 +26,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         file_read(std::vector<primitive_argument_type>&& operands);
 
-        hpx::future<primitive_result_type> eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
     };
+
+    PHYLANX_EXPORT primitive create_file_read(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name = "");
 }}}
 
 #endif

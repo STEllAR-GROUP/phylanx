@@ -22,11 +22,11 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
     // write to file
     {
         phylanx::execution_tree::primitive litval =
-            hpx::new_<phylanx::execution_tree::primitives::variable>(
+            phylanx::execution_tree::primitives::create_variable(
                 hpx::find_here(), in);
 
         phylanx::execution_tree::primitive outfile =
-            hpx::new_<phylanx::execution_tree::primitives::file_write_csv>(
+            phylanx::execution_tree::primitives::create_file_write_csv(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
                     {filename}, litval});
@@ -36,10 +36,10 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
     }
 
     // read back the file
-    hpx::future<phylanx::execution_tree::primitive_result_type> f;
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f;
     {
         phylanx::execution_tree::primitive infile =
-            hpx::new_<phylanx::execution_tree::primitives::file_read_csv>(
+            phylanx::execution_tree::primitives::create_file_read_csv(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
                     {filename}});
@@ -59,7 +59,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
     // write to file
     {
         phylanx::execution_tree::primitive outfile =
-            hpx::new_<phylanx::execution_tree::primitives::file_write_csv>(
+            phylanx::execution_tree::primitives::create_file_write_csv(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
                     {filename}, in});
@@ -69,10 +69,10 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
     }
 
     // read back the file
-    hpx::future<phylanx::execution_tree::primitive_result_type> f;
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f;
     {
         phylanx::execution_tree::primitive infile =
-            hpx::new_<phylanx::execution_tree::primitives::file_read_csv>(
+            phylanx::execution_tree::primitives::create_file_read_csv(
                 hpx::find_here(),
                 std::vector<phylanx::execution_tree::primitive_argument_type>{
                     {filename}});

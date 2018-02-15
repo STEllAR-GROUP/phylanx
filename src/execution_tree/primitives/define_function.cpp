@@ -6,62 +6,72 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/define_function.hpp>
 
-#include <hpx/include/components.hpp>
+#include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-using define_function_type = hpx::components::component<
-        phylanx::execution_tree::primitives::define_function>;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    define_function_type, phylanx_define_function_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(define_function_type::wrapped_type)
-
-HPX_REGISTER_ACTION(define_function_type::set_body_action,
-    phylanx_define_function_set_body_action)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    define_function::define_function(std::string name)
-      : name_(std::move(name))
-    {}
+    match_pattern_type const define_function::match_data =
+    {
+        hpx::util::make_tuple("define-function",
+            std::vector<std::string>{},
+            nullptr, &create_primitive_with_name<define_function>)
+    };
 
-    primitive_result_type define_function::eval_direct(
+    ///////////////////////////////////////////////////////////////////////////
+    define_function::define_function(
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name)
+      : primitive_component_base(std::move(operands))
+      , name_(name)
+    {
+        if (!operands_.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "define_function::define_function",
+                "the define_function primitive is expected to be initialized "
+                    "without arguments");
+        }
+        operands_.resize(1);
+    }
+
+    primitive_argument_type define_function::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (!valid(body_))
+        // body is assumed to be operands_[0]
+        if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_function::eval_direct",
                 "expression representing the function body was not "
                     "initialized yet");
         }
-
-        return body_;
+        return operands_[0];
     }
 
     void define_function::set_body(primitive_argument_type&& body)
     {
-        if (valid(body_))
+        if (valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_function::set_body",
                 "expression representing the function body was already "
                     "initialized");
         }
-
-        body_ = std::move(body);
+        operands_[0] = std::move(body);
     }
 
     topology define_function::expression_topology() const
     {
-        if (!valid(body_))
+        if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_function::expression_topology",
@@ -69,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "initialized yet");
         }
 
-        primitive const* p = util::get_if<primitive>(&body_);
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
             return p->expression_topology(hpx::launch::sync);
@@ -79,13 +89,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 }}}
 
-///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree
-{
-    void define_function::set_body(hpx::launch::sync_policy,
-        primitive_argument_type&& body)
-    {
-        using action_type = primitives::define_function::set_body_action;
-        action_type()(this->primitive::get_id(), std::move(body));
-    }
-}}

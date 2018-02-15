@@ -16,24 +16,27 @@
 void vstack_operation_0d()
 {
     phylanx::execution_tree::primitive first =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(42.0));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{42.0});
 
     phylanx::execution_tree::primitive second =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(5.0));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{5.0});
 
     phylanx::execution_tree::primitive vstack =
-        hpx::new_<phylanx::execution_tree::primitives::vstack_operation>(
+        phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(first), std::move(second)});
+                phylanx::execution_tree::primitive_argument_type{std::move(first)},
+                phylanx::execution_tree::primitive_argument_type{std::move(second)}
+            });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         vstack.eval();
 
-    blaze::DynamicMatrix<double> expected{{42.0},
-                                          {5.0}};
+    blaze::DynamicMatrix<double> expected{{42.0}, {5.0}};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));
@@ -45,20 +48,26 @@ void vstack_operation_1d()
     blaze::DynamicVector<double> v2{11, 12, 13, 14, 15};
 
     phylanx::execution_tree::primitive first =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(v1)});
 
     phylanx::execution_tree::primitive second =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v2));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(v2)});
 
     phylanx::execution_tree::primitive vstack =
-        hpx::new_<phylanx::execution_tree::primitives::vstack_operation>(
+        phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(first), std::move(second)});
+                phylanx::execution_tree::primitive_argument_type{std::move(first)},
+                phylanx::execution_tree::primitive_argument_type{std::move(second)}
+            });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         vstack.eval();
 
     blaze::DynamicMatrix<double> expected{
@@ -71,32 +80,33 @@ void vstack_operation_1d()
 
 void vstack_operation_2d()
 {
-    blaze::DynamicMatrix<double> m1{{1, 2, 3},
-                                    {4, 5, 6}};
-    blaze::DynamicMatrix<double> m2{{11, 22, 33},
-                                    {12, 13, 33}};
+    blaze::DynamicMatrix<double> m1{{1, 2, 3}, {4, 5, 6}};
+    blaze::DynamicMatrix<double> m2{{11, 22, 33}, {12, 13, 33}};
 
     phylanx::execution_tree::primitive first =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(m1));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(m1)});
 
     phylanx::execution_tree::primitive second =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(m2));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(m2)});
 
     phylanx::execution_tree::primitive vstack =
-        hpx::new_<phylanx::execution_tree::primitives::vstack_operation>(
+        phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(first), std::move(second)});
+                phylanx::execution_tree::primitive_argument_type{std::move(first)},
+                phylanx::execution_tree::primitive_argument_type{std::move(second)}
+            });
 
     blaze::DynamicMatrix<double> expected{
-        {1, 2, 3},
-        {4, 5, 6},
-        {11, 22, 33},
-        {12, 13, 33}};
+        {1, 2, 3}, {4, 5, 6}, {11, 22, 33}, {12, 13, 33}};
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         vstack.eval();
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),

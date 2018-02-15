@@ -4,13 +4,13 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/unary_not_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -21,29 +21,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::unary_not_operation>
-    unary_not_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    unary_not_operation_type, phylanx_unary_not_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(unary_not_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_unary_not_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("__not");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const unary_not_operation::match_data =
     {
-        hpx::util::make_tuple("not",
+        hpx::util::make_tuple("__not",
             std::vector<std::string>{"!_1"},
-            &create<unary_not_operation>)
+            &create_unary_not_operation, &create_primitive<unary_not_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     unary_not_operation::unary_not_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -57,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operands_type = std::vector<std::uint8_t>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -79,9 +78,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops) -> primitive_result_type
+                    [this_](operands_type && ops) -> primitive_argument_type
                     {
-                        return primitive_result_type(ops[0] == 0);
+                        return primitive_argument_type(ops[0] == 0);
                     }),
                     detail::map_operands(operands, boolean_operand, args)
                 );
@@ -90,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement unary '!' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> unary_not_operation::eval(
+    hpx::future<primitive_argument_type> unary_not_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

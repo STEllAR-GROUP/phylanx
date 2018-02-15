@@ -61,6 +61,8 @@ macro(phylanx_setup_compiler_flags)
       phylanx_add_compile_flag(/wd4244)
       # warning C4167: conversion from 'size_t' to 'int', possible loss of data
       phylanx_add_compile_flag(/wd4267)
+	  # warning C4552: '*': operator has no effect; expected operator with side-effect
+	  phylanx_add_compile_flag(/wd4552)
 
       # Runtime type information
       phylanx_add_target_compile_option(-GR)

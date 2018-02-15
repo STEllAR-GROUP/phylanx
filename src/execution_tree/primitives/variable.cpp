@@ -6,96 +6,88 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::variable>
-    literal_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    literal_type, phylanx_literal_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(literal_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    variable::variable(std::string name)
-      : name_(std::move(name))
-      , evaluated_(false)
-    {}
-
-    variable::variable(primitive_argument_type&& operand)
-      : data_(extract_copy_value(std::move(operand)))
-      , evaluated_(true)
-    {}
-
-    variable::variable(std::vector<primitive_argument_type>&& operands)
-      : evaluated_(false)
+    ///////////////////////////////////////////////////////////////////////////
+    primitive create_variable(hpx::id_type const& locality,
+        primitive_argument_type&& operand, std::string const& name)
     {
-        if (operands.size() > 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "variable::variable",
-                "the variable primitive requires at most one operand");
-        }
-
-        if (!operands.empty())
-        {
-            data_ = extract_copy_value(std::move(operands[0]));
-            evaluated_ = true;
-        }
+        static std::string type("variable");
+        return create_primitive_component(
+            locality, type, std::move(operand), name);
     }
 
-    variable::variable(primitive_argument_type&& operand, std::string name)
-      : data_(std::move(operand))
-      , name_(std::move(name))
-      , evaluated_(false)
-    {}
+    match_pattern_type const variable::match_data =
+    {
+        hpx::util::make_tuple("variable",
+            std::vector<std::string>{},
+            nullptr, &create_primitive_with_name<variable>)
+    };
 
+    ///////////////////////////////////////////////////////////////////////////
     variable::variable(std::vector<primitive_argument_type>&& operands,
-            std::string name)
-      : name_(std::move(name))
+            std::string const& name)
+      : primitive_component_base(std::move(operands))
+      , name_(name)
       , evaluated_(false)
     {
-        if (operands.size() > 1)
+        if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "variable::variable",
-                "the variable primitive requires at most one operand");
+                "the variable primitive requires exactly one operand");
         }
 
-        if (!operands.empty())
+        if (!operands_.empty())
         {
-            data_ = extract_copy_value(std::move(operands[0]));
-            evaluated_ = true;
+            operands_[0] = extract_copy_value(operands_[0]);
         }
     }
 
-    primitive_result_type variable::eval_direct(
+    primitive_argument_type variable::eval_direct(
         std::vector<primitive_argument_type> const& args) const
     {
+        using lock_type = std::unique_lock<mutex_type>;
+        lock_type l(mtx_);
+
         if (!evaluated_)
         {
-            primitive const* p = util::get_if<primitive>(&data_);
+            primitive const* p = util::get_if<primitive>(&operands_[0]);
             if (p != nullptr)
             {
-                data_ = extract_copy_value(p->eval_direct(args));
-                evaluated_ = true;
+                primitive_argument_type result;
+                {
+                    hpx::util::scoped_unlock<lock_type> ul(l);
+                    result = extract_copy_value(p->eval_direct(args));
+                }
+                operands_[0] = std::move(result);
             }
+            evaluated_ = true;
         }
-        return extract_ref_value(data_);
+
+        return extract_ref_value(operands_[0]);
     }
 
-    void variable::store(primitive_result_type && data)
+    void variable::store(primitive_argument_type && data)
     {
-        data_ = extract_copy_value(std::move(data));
+        std::lock_guard<mutex_type> l(mtx_);
+        operands_[0] = extract_copy_value(std::move(data));
         evaluated_ = true;
+    }
+
+    topology variable::expression_topology() const
+    {
+        return topology{};
     }
 }}}
 

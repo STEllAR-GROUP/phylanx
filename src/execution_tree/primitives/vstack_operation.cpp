@@ -3,14 +3,14 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/vstack_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -21,32 +21,29 @@
 
 #include <blaze/Math.h>
 
-//////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::vstack_operation>
-    vstack_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(vstack_operation_type,
-    phylanx_vstack_operation_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(vstack_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_vstack_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("vstack");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const vstack_operation::match_data =
     {
         hpx::util::make_tuple("vstack",
-            std::vector<std::string>{"vstack(_1, _2)"},
-            &create<vstack_operation>)
+            std::vector<std::string>{"vstack(_1, __2)"},
+            &create_vstack_operation, &create_primitive<vstack_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     vstack_operation::vstack_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -62,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
-            primitive_result_type vstack0d(args_type&& args) const
+            primitive_argument_type vstack0d(args_type&& args) const
             {
                 auto vec_size = args.size();
                 blaze::DynamicVector<double> temp(vec_size);
@@ -75,10 +72,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::DynamicMatrix<double> result(vec_size, 1);
                 blaze::column(result, 0) = temp;
 
-                return ir::node_data<double>{storage2d_type{std::move(result)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(result)}}};
             }
 
-            primitive_result_type vstack1d(args_type&& args) const
+            primitive_argument_type vstack1d(args_type&& args) const
             {
                 auto args_size = args.size();
                 arg_type& first = args[0];
@@ -102,10 +100,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::row(temp, i) = blaze::trans(args[i].vector());
                 }
 
-                return ir::node_data<double>{storage2d_type{std::move(temp)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(temp)}}};
             }
 
-            primitive_result_type vstack2d(args_type&& args) const
+            primitive_argument_type vstack2d(args_type&& args) const
             {
                 auto args_size = args.size();
                 auto total_rows = args[0].dimension(0);
@@ -140,11 +139,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     step = step + num_rows;
                 }
 
-                return ir::node_data<double>{storage2d_type{std::move(temp)}};
+                return primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(temp)}}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -176,7 +176,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_result_type
+                    [this_](args_type&& args) -> primitive_argument_type
                     {
                         std::size_t matrix_dims = args[0].num_dimensions();
                         switch (matrix_dims)
@@ -203,7 +203,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> vstack_operation::eval(
+    hpx::future<primitive_argument_type> vstack_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

@@ -5,6 +5,7 @@
 
 set(example_programs
     generate
+    transform
     traverse
    )
 

@@ -4,13 +4,13 @@
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/inverse_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -20,29 +20,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::inverse_operation>
-    inverse_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    inverse_operation_type, phylanx_inverse_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(inverse_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_inverse_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("inverse");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const inverse_operation::match_data =
     {
         hpx::util::make_tuple("inverse",
             std::vector<std::string>{"inverse(_1)"},
-            &create<inverse_operation>)
+            &create_inverse_operation, &create_primitive<inverse_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     inverse_operation::inverse_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -52,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             inverse() = default;
 
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
@@ -74,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_result_type
+                    [this_](operands_type&& ops) -> primitive_argument_type
                     {
                         std::size_t dims = ops[0].num_dimensions();
                         switch (dims)
@@ -100,13 +99,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_result_type inverse0d(operands_type && ops) const
+            primitive_argument_type inverse0d(operands_type && ops) const
             {
                 ops[0].scalar() = 1 / ops[0].scalar();
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
 
-            primitive_result_type inverse2d(operands_type && ops) const
+            primitive_argument_type inverse2d(operands_type && ops) const
             {
                 if (ops[0].dimension(0) != ops[0].dimension(1))
                 {
@@ -123,12 +122,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     blaze::invert(ops[0].matrix_non_ref());
                 }
-                return std::move(ops[0]);
+                return primitive_argument_type{std::move(ops[0])};
             }
         };
     }
 
-    hpx::future<primitive_result_type> inverse_operation::eval(
+    hpx::future<primitive_argument_type> inverse_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

@@ -20,17 +20,19 @@ void test_power_operation_0d()
     phylanx::ir::node_data<double> lhs(2.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(7.0));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{7.0});
 
     phylanx::execution_tree::primitive power =
-        hpx::new_<phylanx::execution_tree::primitives::power_operation>(
+        phylanx::execution_tree::primitives::create_power_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
+                phylanx::execution_tree::primitive_argument_type{std::move(lhs)},
+                phylanx::execution_tree::primitive_argument_type{std::move(rhs)}
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         power.eval();
     HPX_TEST_EQ(
         128.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
@@ -42,21 +44,24 @@ void test_power_operation_1d()
         1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(v1)});
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(2.0));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{2.0});
 
     phylanx::execution_tree::primitive power =
-        hpx::new_<phylanx::execution_tree::primitives::power_operation>(
+        phylanx::execution_tree::primitives::create_power_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
+                phylanx::execution_tree::primitive_argument_type{std::move(lhs)},
+                phylanx::execution_tree::primitive_argument_type{std::move(rhs)}
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         power.eval();
     blaze::DynamicVector<double> expected = blaze::pow(v1, 2.0);
 
@@ -70,21 +75,24 @@ void test_power_operation_2d()
     blaze::DynamicMatrix<double> m1 = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(m1));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(m1)});
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
-            hpx::find_here(), phylanx::ir::node_data<double>(2.0));
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{2.0});
 
     phylanx::execution_tree::primitive power =
-        hpx::new_<phylanx::execution_tree::primitives::power_operation>(
+        phylanx::execution_tree::primitives::create_power_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(lhs), std::move(rhs)
+                phylanx::execution_tree::primitive_argument_type{std::move(lhs)},
+                phylanx::execution_tree::primitive_argument_type{std::move(rhs)}
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         power.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::pow(m1, 2.0);

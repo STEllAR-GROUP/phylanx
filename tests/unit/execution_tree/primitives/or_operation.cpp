@@ -17,13 +17,13 @@
 void test_or_operation_0d_false()
 {
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 false, false
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -32,13 +32,13 @@ void test_or_operation_0d_false()
 void test_or_operation_0d_true()
 {
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 false, true
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -49,17 +49,17 @@ void test_or_operation_0d_lit_false()
     phylanx::ir::node_data<double> lhs(0.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -70,17 +70,17 @@ void test_or_operation_0d_lit_true()
     phylanx::ir::node_data<double> lhs(41.0);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
@@ -93,21 +93,21 @@ void test_or_operation_1d()
     blaze::DynamicVector<double> v2 = gen.generate(1007UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST_EQ(
@@ -124,17 +124,17 @@ void test_or_operation_1d_lit()
     phylanx::ir::node_data<double> lhs(v1);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST_EQ(
@@ -149,21 +149,21 @@ void test_or_operation_2d()
     blaze::DynamicMatrix<double> m2 = gen.generate(101UL, 101UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST_EQ(
@@ -180,17 +180,17 @@ void test_or_operation_2d_lit()
     phylanx::ir::node_data<double> lhs(m1);
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m2));
 
     phylanx::execution_tree::primitive or_ =
-        hpx::new_<phylanx::execution_tree::primitives::or_operation>(
+        phylanx::execution_tree::primitives::create_or_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         or_.eval();
 
     HPX_TEST_EQ(

@@ -121,7 +121,7 @@ struct data_converter<blaze::CustomVector<T, AF, TF>, void>
 
     inline typename type_of_array<T>::type* transform_read(Vector& vector)
     {
-        throw std::runtime_error("can't read into blaze::CustomVector")
+        throw std::runtime_error("can't read into blaze::CustomVector");
     }
 
     inline typename type_of_array<T>::type* transform_write(Vector& vector)
@@ -188,7 +188,7 @@ struct data_converter<blaze::CustomMatrix<T, AF, PF, SO>, void>
 
     inline typename type_of_array<T>::type* transform_read(Matrix& matrix)
     {
-        throw std::runtime_error("can't read into blaze::CustomMatrix")
+        throw std::runtime_error("can't read into blaze::CustomMatrix");
     }
 
     inline typename type_of_array<T>::type* transform_write(Matrix& matrix)

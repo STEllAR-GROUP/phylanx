@@ -5,11 +5,11 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
-#include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/ast.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -18,29 +18,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::block_operation>
-    block_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    block_operation_type, phylanx_block_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(block_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_block_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("block");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const block_operation::match_data =
     {
         hpx::util::make_tuple("block",
             std::vector<std::string>{"block(__1)"},
-            &create<block_operation>)
+            &create_block_operation, &create_primitive<block_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     block_operation::block_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     namespace detail
@@ -64,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 value_operand(operands_[i], args_).then(
-                    [this_, i](hpx::future<primitive_result_type> && step)
+                    [this_, i](hpx::future<primitive_argument_type> && step)
                     {
                         try
                         {
@@ -85,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
             }
 
-            hpx::future<primitive_result_type> eval()
+            hpx::future<primitive_argument_type> eval()
             {
                 if (operands_.empty())
                 {
@@ -103,12 +102,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         private:
             std::vector<primitive_argument_type> operands_;
             std::vector<primitive_argument_type> args_;
-            hpx::promise<primitive_result_type> result_;
+            hpx::promise<primitive_argument_type> result_;
         };
     }
 
     // start iteration over given block statement
-    hpx::future<primitive_result_type> block_operation::eval(
+    hpx::future<primitive_argument_type> block_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

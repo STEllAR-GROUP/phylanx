@@ -16,16 +16,16 @@
 void test_determinant_0d()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
     phylanx::execution_tree::primitive inverse =
-        hpx::new_<phylanx::execution_tree::primitives::determinant>(
+        phylanx::execution_tree::primitives::create_determinant(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inverse.eval();
 
     HPX_TEST_EQ(
@@ -37,13 +37,13 @@ void test_determinant_0d_lit()
     phylanx::ir::node_data<double> lhs(5.0);
 
     phylanx::execution_tree::primitive inverse =
-        hpx::new_<phylanx::execution_tree::primitives::determinant>(
+        phylanx::execution_tree::primitives::create_determinant(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inverse.eval();
 
     HPX_TEST_EQ(
@@ -56,17 +56,17 @@ void test_determinant_2d()
     blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive determinant =
-        hpx::new_<phylanx::execution_tree::primitives::determinant>(
+        phylanx::execution_tree::primitives::create_determinant(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         determinant.eval();
 
     double expected = blaze::det(m);

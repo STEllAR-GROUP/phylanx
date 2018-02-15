@@ -15,15 +15,15 @@
 void test_store_operation()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(0.0));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
     phylanx::execution_tree::primitive store =
-        hpx::new_<phylanx::execution_tree::primitives::store_operation>(
+        phylanx::execution_tree::primitives::create_store_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 lhs, std::move(rhs)
@@ -31,7 +31,7 @@ void test_store_operation()
 
     HPX_TEST_EQ(0.0, phylanx::execution_tree::numeric_operand_sync(lhs, {})[0]);
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         store.eval();
 
     HPX_TEST(!phylanx::execution_tree::valid(f.get()));

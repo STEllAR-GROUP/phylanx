@@ -5,15 +5,12 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/debug_output.hpp>
-#include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/serialization/ast.hpp>
-#include <phylanx/util/serialization/execution_tree.hpp>
-#include <phylanx/util/variant.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -22,29 +19,28 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::debug_output>
-    debug_output_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    debug_output_type, phylanx_debug_output_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(debug_output_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_debug_output(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("debug");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const debug_output::match_data =
     {
         hpx::util::make_tuple("debug",
             std::vector<std::string>{"debug(__1)"},
-            &create<debug_output>)
+            &create_debug_output, &create_primitive<debug_output>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     debug_output::debug_output(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     namespace detail
@@ -54,16 +50,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             debug_output() = default;
 
         protected:
-            using args_type = std::vector<primitive_result_type>;
+            using args_type = std::vector<primitive_argument_type>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
             {
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_result_type
+                    [this_](args_type && args) -> primitive_argument_type
                     {
                         for (auto const& arg : args)
                         {
@@ -84,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content
-    hpx::future<primitive_result_type> debug_output::eval(
+    hpx::future<primitive_argument_type> debug_output::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

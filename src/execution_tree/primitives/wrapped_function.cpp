@@ -4,29 +4,29 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/function_reference.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_function.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-        phylanx::execution_tree::primitives::wrapped_function
-    > wrapped_function_type;
-
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    wrapped_function_type, phylanx_wrapped_function_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(wrapped_function_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const wrapped_function::match_data =
+    {
+        hpx::util::make_tuple("call-function",
+            std::vector<std::string>{},
+            nullptr, &create_primitive_with_name<wrapped_function>)
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     std::string extract_function_name(std::string const& name)
     {
         if (name.find("define-") == 0)
@@ -36,26 +36,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return name;
     }
 
-    wrapped_function::wrapped_function(primitive_argument_type target,
-            std::string name)
-      : target_(std::move(target))
-      , name_(extract_function_name(name))
-    {
-        if (!valid(target_))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "wrapped_function::wrapped_function",
-                "no target given");
-        }
-    }
-
-    wrapped_function::wrapped_function(primitive_argument_type target,
+    wrapped_function::wrapped_function(
             std::vector<primitive_argument_type>&& args, std::string name)
-      : target_(std::move(target))
-      , args_(std::move(args))
+      : primitive_component_base(std::move(args))
       , name_(extract_function_name(name))
     {
-        if (!valid(target_))
+        // the first entry of operands represents the target
+        if (operands_.empty() || !valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "wrapped_function::wrapped_function",
@@ -64,10 +51,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> wrapped_function::eval(
+    hpx::future<primitive_argument_type> wrapped_function::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        primitive const* p = util::get_if<primitive>(&target_);
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -77,26 +64,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // evaluation of the define-function yields the function body
         auto body = p->eval_direct(params);
 
-        if (args_.empty())
-        {
-            std::vector<primitive_argument_type> fargs(params);
-            return hpx::make_ready_future(
-                primitive_result_type{primitive{
-                    hpx::new_<primitives::function_reference>(
-                        hpx::find_here(), std::move(body), std::move(fargs),
-                        name_),
-                    name_
-                }});
-        }
-
         std::vector<primitive_argument_type> fargs;
-        fargs.reserve(args_.size());
-        for (auto const& arg : args_)
+        if (operands_.size() == 1)
         {
-            fargs.push_back(value_operand_sync(arg, params));
+            // no pre-bound arguments
+            fargs.reserve(params.size() + 1);
+            fargs.push_back(std::move(body));
+            std::copy(params.begin(), params.end(), std::back_inserter(fargs));
+
+            static std::string type("function");
+
+            return hpx::make_ready_future(
+                primitive_argument_type{
+                    create_primitive_component_with_name(hpx::find_here(),
+                        type, std::move(fargs), name_)
+                });
         }
 
-        return value_operand(body, fargs);
+        fargs.reserve(operands_.size() - 1);
+        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+        {
+            fargs.push_back(value_operand_sync(*it, params));
+        }
+        return value_operand(body, std::move(fargs));
+    }
+
+    topology wrapped_function::expression_topology() const
+    {
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            return p->expression_topology(hpx::launch::sync);
+        }
+        return {};
     }
 }}}
 

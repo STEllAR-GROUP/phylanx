@@ -23,21 +23,21 @@ void test_vector_cross_product()
     blaze::DynamicVector<double> expected{{-3.0, 6.0, -3.0}};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive cross =
-        hpx::new_<phylanx::execution_tree::primitives::cross_operation>(
+        phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -53,21 +53,21 @@ void test_one_vector_with_dimension_2()
     blaze::DynamicVector<double> expected{12.0, -6.0, -3.0};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive cross =
-        hpx::new_<phylanx::execution_tree::primitives::cross_operation>(
+        phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -83,21 +83,21 @@ void test_both_vectors_with_dimension_2()
     blaze::DynamicVector<double> expected{0.0, 0.0, -3.0};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive cross =
-        hpx::new_<phylanx::execution_tree::primitives::cross_operation>(
+        phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -113,21 +113,21 @@ void test_multiple_vector_cross_products()
     blaze::DynamicMatrix<double> expected{{-3.0, 6.0, -3.0}, {3.0, -6.0, 3.0}};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive cross =
-        hpx::new_<phylanx::execution_tree::primitives::cross_operation>(
+        phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -144,21 +144,21 @@ void test_cross_product_1d2d()
         {0.0, 0.0, -3.0}, {0.0, 0.0, -6.0}, {0.0, 0.0, 0.0}};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive cross =
-        hpx::new_<phylanx::execution_tree::primitives::cross_operation>(
+        phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -174,21 +174,21 @@ void test_cross_product_2d1d()
     blaze::DynamicMatrix<double> expected{{1.0, 4.0, -3.0}, {10.0, -8.0, 0.0}};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive cross =
-        hpx::new_<phylanx::execution_tree::primitives::cross_operation>(
+        phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 
@@ -205,21 +205,21 @@ void test_cross_product_vector_by_2col_matrix()
         {-15.0, 12.0, -3.0}, {-24.0, 21.0, -6.0}, {-6.0, 3.0, 0.0}};
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::execution_tree::primitive rhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(v2));
 
     phylanx::execution_tree::primitive cross =
-        hpx::new_<phylanx::execution_tree::primitives::cross_operation>(
+        phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
         std::move(lhs), std::move(rhs)
     });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         cross.eval();
 
 

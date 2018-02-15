@@ -16,16 +16,16 @@
 void test_inversion_0d()
 {
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(5.0));
 
     phylanx::execution_tree::primitive inversion =
-        hpx::new_<phylanx::execution_tree::primitives::inverse_operation>(
+        phylanx::execution_tree::primitives::create_inverse_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inversion.eval();
 
     HPX_TEST_EQ(
@@ -37,13 +37,13 @@ void test_inversion_0d_lit()
     phylanx::ir::node_data<double> lhs(5.0);
 
     phylanx::execution_tree::primitive inversion =
-        hpx::new_<phylanx::execution_tree::primitives::inverse_operation>(
+        phylanx::execution_tree::primitives::create_inverse_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inversion.eval();
 
     HPX_TEST_EQ(
@@ -56,17 +56,17 @@ void test_inversion_2d()
     blaze::DynamicMatrix<double> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive lhs =
-        hpx::new_<phylanx::execution_tree::primitives::variable>(
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m));
 
     phylanx::execution_tree::primitive inversion =
-        hpx::new_<phylanx::execution_tree::primitives::inverse_operation>(
+        phylanx::execution_tree::primitives::create_inverse_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs)
             });
 
-    hpx::future<phylanx::execution_tree::primitive_result_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         inversion.eval();
 
     blaze::DynamicMatrix<double> expected = blaze::inv(m);

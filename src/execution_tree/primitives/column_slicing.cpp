@@ -8,9 +8,10 @@
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstddef>
 #include <memory>
@@ -21,30 +22,30 @@
 
 #include <blaze/Math.h>
 
-//////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-        phylanx::execution_tree::primitives::column_slicing_operation>
-        column_slicing_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-        column_slicing_operation_type, phylanx_column_slicing_operation_component,
-        "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(column_slicing_operation_type::wrapped_type)
-
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_column_slicing_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("slice_column");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const column_slicing_operation::match_data =
     {
         hpx::util::make_tuple("slice_column",
             std::vector<std::string>{"slice_column(_1, _2, _3)"},
-            &create<column_slicing_operation>)
+            &create_column_slicing_operation,
+            &create_primitive<column_slicing_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     column_slicing_operation::column_slicing_operation(
             std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -58,21 +59,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using arg_type = ir::node_data<double>;
             using args_type = std::vector<arg_type>;
 
-            primitive_result_type column_slicing0d(args_type && args) const
+            primitive_argument_type column_slicing0d(args_type && args) const
             {
                 // return the input as it is if the input is of zero dimension or
                 // one dimension. The values passed to col_start, col_stop
                 // does not have an effect on the result.
 
-                return primitive_result_type(std::move(args[0]));
+                return primitive_argument_type(std::move(args[0]));
             }
 
-            primitive_result_type column_slicing1d(args_type && args) const
+            primitive_argument_type column_slicing1d(args_type && args) const
             {
                 // return elements starting from col_start to col_stop(exclusive)
 
-                auto col_start  = extract_integer_value(args[1]);
-                auto col_stop = extract_integer_value(args[2]);
+                auto col_start = args[1][0];
+                auto col_stop = args[2][0];
 
                 // parameters required by blaze to create a submatrix is as follows:
                 // subvector(vector,column,n)
@@ -113,14 +114,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     auto sv = blaze::subvector(
                         arg0, arg0.size() + col_start, -col_start + col_stop);
 
-                    if(sv.size() == 1)
+                    if (sv.size() == 1)
                     {
-                        storage0d_type v{sv[0]};
-                        return ir::node_data<double>{std::move(v)};
+                        return primitive_argument_type{sv[0]};
                     }
 
                     storage1d_type v{sv};
-                    return ir::node_data<double>{std::move(v)};
+                    return primitive_argument_type{
+                        ir::node_data<double>{std::move(v)}};
                 }
 
                 auto sv =
@@ -128,15 +129,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if(sv.size() == 1)
                 {
-                    storage0d_type v{sv[0]};
-                    return ir::node_data<double>{std::move(v)};
+                    return primitive_argument_type{sv[0]};
                 }
 
                 storage1d_type v{sv};
-                return ir::node_data<double>(std::move(v));
+                return primitive_argument_type{
+                    ir::node_data<double>(std::move(v))};
             }
 
-            primitive_result_type column_slicing2d(args_type && args) const
+            primitive_argument_type column_slicing2d(args_type && args) const
             {
                 // returns the sliced matrix, depending upon the values
                 // provided in col_start, col_stop.
@@ -146,8 +147,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // col_start The index of the first column of the submatrix.
                 // col_stop The index of the last column(exclusive) of the submatrix.
 
-                auto col_start = extract_integer_value(args[1]);
-                auto col_stop = extract_integer_value(args[2]);
+                auto col_start = args[1][0];
+                auto col_stop = args[2][0];
                 auto num_matrix_rows = args[0].dimensions()[0];
 
                 // parameters required by blaze to create a submatrix is as follows:
@@ -197,14 +198,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 num_matrix_rows, 1),
                             0);
 
-                        if(sv.size() == 1)
+                        if (sv.size() == 1)
                         {
-                            storage0d_type v{sv[0]};
-                            return ir::node_data<double>{std::move(v)};
+                            return primitive_argument_type{sv[0]};
                         }
 
                         storage1d_type v{sv};
-                        return ir::node_data<double>{std::move(v)};
+                        return primitive_argument_type{
+                            ir::node_data<double>{std::move(v)}};
                     }
 
                     auto sm = blaze::submatrix(arg0,
@@ -212,7 +213,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         num_matrix_rows, -col_start + col_stop);
 
                     storage2d_type m{sm};
-                    return ir::node_data<double>{std::move(m)};
+                    return primitive_argument_type{
+                        ir::node_data<double>{std::move(m)}};
                 }
 
                 if (col_stop - col_start == 1)
@@ -223,14 +225,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             num_matrix_rows, 1),
                         0);
 
-                    if(sv.size() == 1)
+                    if (sv.size() == 1)
                     {
-                        storage0d_type v{sv[0]};
-                        return ir::node_data<double>{std::move(v)};
+                        return primitive_argument_type{sv[0]};
                     }
 
                     storage1d_type v{sv};
-                    return ir::node_data<double>{std::move(v)};
+                    return primitive_argument_type{
+                        ir::node_data<double>{std::move(v)}};
                 }
 
                 auto sm = blaze::submatrix(arg0,
@@ -238,11 +240,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     num_matrix_rows, col_stop - col_start);
 
                 storage2d_type m{sm};
-                return ir::node_data<double>{std::move(m)};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(m)}};
             }
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -274,7 +277,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_result_type
+                    [this_](args_type&& args) -> primitive_argument_type
                     {
                         std::size_t matrix_dims = args[0].num_dimensions();
                         switch (matrix_dims)
@@ -301,7 +304,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_result_type> column_slicing_operation::eval(
+    hpx::future<primitive_argument_type> column_slicing_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())

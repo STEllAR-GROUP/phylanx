@@ -7,7 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compile.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
-#include <phylanx/execution_tree/primitives.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/agas.hpp>
@@ -90,7 +90,7 @@ namespace phylanx { namespace performance_counters
         {
             hpx::performance_counters::counter_values_array value;
 
-            value.time_ = hpx::util::high_resolution_clock::now();
+            value.time_ = static_cast<std::int64_t>(hpx::get_system_uptime());
             value.status_ = hpx::performance_counters::status_new_data;
             value.count_ = ++invocation_count_;
 
@@ -131,7 +131,7 @@ namespace phylanx { namespace performance_counters
             // Structure of primitives in symbolic namespace:
             //     /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
             auto entries = hpx::agas::find_symbols(hpx::launch::sync,
-                "/phylanx/" + extract_primitive_type() + "#*");
+                "/phylanx/" + extract_primitive_type() + "$*");
 
             // TODO: Only keep entries that live on this locality.
             // This will be a problem when Phylanx becomes distributed.
@@ -140,7 +140,7 @@ namespace phylanx { namespace performance_counters
             for (auto const& value : entries)
             {
                 auto const& instance = hpx::get_ptr<
-                    phylanx::execution_tree::primitives::base_primitive>(
+                    phylanx::execution_tree::primitives::primitive_component>(
                         hpx::launch::sync, value.second);
 
                 auto instance_info =
@@ -170,10 +170,9 @@ namespace phylanx { namespace performance_counters
 
     private:
         using base_primitive_ptr = std::shared_ptr<
-            phylanx::execution_tree::primitives::base_primitive>;
+            phylanx::execution_tree::primitives::primitive_component>;
 
-        std::vector<base_primitive_ptr>
-            instances_;
+        std::vector<base_primitive_ptr> instances_;
         std::atomic<bool> first_init_;
         bool duration_counter_;
         bool direct_counts_;

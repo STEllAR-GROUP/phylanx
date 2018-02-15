@@ -7,8 +7,10 @@
 #include <phylanx/execution_tree/primitives/file_read_csv.hpp>
 #include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <boost/spirit/include/qi_char.hpp>
 #include <boost/spirit/include/qi_list.hpp>
@@ -23,33 +25,32 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::file_read_csv>
-    file_read_csv_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(file_read_csv_type,
-    phylanx_file_read_csv_component, "phylanx_primitive_component",
-    hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(file_read_csv_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_file_read_csv(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("file_read_csv");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const file_read_csv::match_data =
     {
         hpx::util::make_tuple("file_read_csv",
             std::vector<std::string>{"file_read_csv(_1)"},
-            &create<file_read_csv>)
+            &create_file_read_csv, &create_primitive<file_read_csv>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     file_read_csv::file_read_csv(
             std::vector<primitive_argument_type> && operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     // read data from given file and return content
-    hpx::future<primitive_result_type> file_read_csv::eval(
+    hpx::future<primitive_argument_type> file_read_csv::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.size() != 1)
@@ -133,14 +134,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (n_cols == 1)
             {
                 // scalar value
-                return hpx::make_ready_future(primitive_result_type{
+                return hpx::make_ready_future(primitive_argument_type{
                     ir::node_data<double>{matrix_array[0]}});
             }
 
             // vector
             blaze::DynamicVector<double> vector(n_cols, matrix_array.data());
 
-            return hpx::make_ready_future(primitive_result_type{
+            return hpx::make_ready_future(primitive_argument_type{
                 ir::node_data<double>{std::move(vector)}});
         }
 
@@ -149,6 +150,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             n_rows, n_cols, matrix_array.data());
 
         return hpx::make_ready_future(
-            primitive_result_type{ir::node_data<double>{std::move(matrix)}});
+            primitive_argument_type{ir::node_data<double>{std::move(matrix)}});
     }
 }}}

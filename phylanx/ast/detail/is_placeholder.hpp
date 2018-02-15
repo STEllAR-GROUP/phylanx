@@ -10,6 +10,8 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
 
+#include <cctype>
+
 namespace phylanx { namespace ast { namespace detail
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -48,7 +50,24 @@ namespace phylanx { namespace ast { namespace detail
 
     inline bool is_placeholder(identifier const& id)
     {
-        return !id.name.empty() && id.name[0] == '_';
+        // A symbols is considered a placeholder if it either starts with a
+        // single underscore and is followed by at least one digit.
+        if (id.name.size() < 2 || id.name[0] != '_')
+        {
+            return false;
+        }
+        if (std::isdigit(id.name[1]))
+        {
+            return true;
+        }
+
+        // Alternatively, a placeholder could be two underscores followed by
+        // at least one digit.
+        if (id.name.size() > 2 && id.name[1] == '_')
+        {
+            return std::isdigit(id.name[2]);
+        }
+        return false;
     }
     inline identifier placeholder_id(identifier const& id)
     {

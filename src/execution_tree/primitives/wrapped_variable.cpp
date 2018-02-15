@@ -4,49 +4,62 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
+#include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <string>
 #include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-        phylanx::execution_tree::primitives::wrapped_variable
-    > wrapped_variable_type;
-
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    wrapped_variable_type, phylanx_wrapped_variable_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(wrapped_variable_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    wrapped_variable::wrapped_variable(primitive_argument_type target,
-            std::string name)
-      : target_(std::move(target))
-      , name_(std::move(name))
-    {}
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const wrapped_variable::match_data =
+    {
+        hpx::util::make_tuple("access-variable",
+            std::vector<std::string>{},
+            nullptr, &create_primitive_with_name<wrapped_variable>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_result_type> wrapped_variable::eval(
-        std::vector<primitive_argument_type> const& params) const
+    wrapped_variable::wrapped_variable(
+            std::vector<primitive_argument_type>&& operands,
+            std::string name)
+      : primitive_component_base(std::move(operands))
+      , name_(std::move(name))
     {
-        return value_operand(target_, params);
+        if (operands_.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "wrapped_variable::wrapped_variable",
+                "the wrapped_variable primitive requires exactly one operand");
+        }
     }
 
-    void wrapped_variable::store(primitive_result_type && val)
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::future<primitive_argument_type> wrapped_variable::eval(
+        std::vector<primitive_argument_type> const& params) const
     {
-        primitive* p = util::get_if<primitive>(&target_);
+        return value_operand(operands_[0], params);
+    }
+
+    void wrapped_variable::store(primitive_argument_type && val)
+    {
+        primitive* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
             p->store(hpx::launch::sync, std::move(val));
         }
+    }
+
+    topology wrapped_variable::expression_topology() const
+    {
+        return topology{};
     }
 }}}
 

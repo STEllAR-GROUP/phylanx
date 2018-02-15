@@ -1,0 +1,21 @@
+#! /usr/bin/env physl
+#
+#  Copyright (c) 2018 Parsa Amini
+#  Copyright (c) 2018 Hartmut Kaiser
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+# Recursive Factorial example in PhySL
+# \param iterations Number of iterations
+# \returns the Factorial value after specified `iterations`
+
+define(fact, arg0,
+    if (arg0 <= 1,
+        1,
+        arg0 * fact(arg0 - 1)
+    )
+)
+
+apply(fact, sys_argv)
+

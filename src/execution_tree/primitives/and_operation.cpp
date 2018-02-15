@@ -5,11 +5,11 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
-#include <phylanx/ir/node_data.hpp>
 
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -20,28 +20,27 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef hpx::components::component<
-    phylanx::execution_tree::primitives::and_operation>
-    and_operation_type;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(
-    and_operation_type, phylanx_and_operation_component,
-    "phylanx_primitive_component", hpx::components::factory_enabled)
-HPX_DEFINE_GET_COMPONENT_TYPE(and_operation_type::wrapped_type)
-
-///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
+    primitive create_and_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands, std::string const& name)
+    {
+        static std::string type("__and");
+        return create_primitive_component(
+            locality, type, std::move(operands), name);
+    }
+
     match_pattern_type const and_operation::match_data =
     {
-        hpx::util::make_tuple("and",
+        hpx::util::make_tuple("__and",
             std::vector<std::string>{"_1 && __2"},
-            &create<and_operation>)
+            &create_and_operation, &create_primitive<and_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     and_operation::and_operation(std::vector<primitive_argument_type>&& operands)
-      : base_primitive(std::move(operands))
+      : primitive_component_base(std::move(operands))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -55,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operands_type = std::vector<std::uint8_t>;
 
         public:
-            hpx::future<primitive_result_type> eval(
+            hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
@@ -90,11 +89,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         if (ops.size() == 2)
                         {
-                            return primitive_result_type(
+                            return primitive_argument_type(
                                 ops[0] != 0 && ops[1] != 0);
                         }
 
-                        return primitive_result_type(
+                        return primitive_argument_type(
                             std::all_of(
                                 ops.begin(), ops.end(),
                                 [](std::uint8_t curr)
@@ -109,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // implement '&&' for all possible combinations of lhs and rhs
-    hpx::future<primitive_result_type> and_operation::eval(
+    hpx::future<primitive_argument_type> and_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
