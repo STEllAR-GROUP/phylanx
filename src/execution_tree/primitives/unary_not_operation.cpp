@@ -66,10 +66,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return primitive_argument_type(
                         ir::node_data<bool>{ops.scalar() == false});
                 case 1:
+                    // TODO: SIMD functionality should be added, blaze implementation
+                    // is not currently available
                     return primitive_argument_type(
                         ir::node_data<bool>{blaze::map(
                             ops.vector(), [](bool x) { return x == false; })});
                 case 2:
+                    // TODO: SIMD functionality should be added, blaze implementation
+                    // is not currently available
                     return primitive_argument_type(
                         ir::node_data<bool>{blaze::map(
                             ops.matrix(), [](bool x) { return x == false; })});
@@ -112,6 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
+                //TODO: support for operands.size()>1
                 if (operands.size() != 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,

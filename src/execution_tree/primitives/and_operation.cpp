@@ -394,6 +394,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
+                //TODO: support for operands.size()>2
                 if (operands.size() != 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
