@@ -52,8 +52,60 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             unary_not() = default;
 
-        private:
-            using operands_type = std::vector<std::uint8_t>;
+        protected:
+            using operand_type = ir::node_data<bool>;
+            using operands_type = std::vector<primitive_argument_type>;
+
+        public:
+            primitive_argument_type unary_not_all(operand_type&& ops) const
+            {
+                std::size_t dims = ops.num_dimensions();
+                switch (dims)
+                {
+                case 0:
+                    return primitive_argument_type(
+                        ir::node_data<bool>{ops.scalar() == false});
+                case 1:
+                    return primitive_argument_type(
+                        ir::node_data<bool>{blaze::map(
+                            ops.vector(), [](bool x) { return x == false; })});
+                case 2:
+                    return primitive_argument_type(
+                        ir::node_data<bool>{blaze::map(
+                            ops.matrix(), [](bool x) { return x == false; })});
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "unary_not_operation::eval",
+                        "operand has unsupported number of dimensions");
+                }
+            }
+
+        protected:
+            struct visit_unary_not
+            {
+                template <typename T>
+                primitive_argument_type operator()(T&& ops) const
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "unary_not::eval",
+                        "operand has unsupported type");
+                }
+
+                primitive_argument_type operator()(
+                    ir::node_data<double>&& ops) const
+                {
+                    return unary_not_.unary_not_all(
+                        ir::node_data<bool>{std::move(ops)});
+                }
+
+                primitive_argument_type operator()(
+                    ir::node_data<bool>&& ops) const
+                {
+                    return unary_not_.unary_not_all(std::move(ops));
+                }
+
+                unary_not const& unary_not_;
+            };
 
         public:
             hpx::future<primitive_argument_type> eval(
@@ -64,8 +116,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_not_operation::unary_not_operation",
-                        "the unary_not_operation primitive requires exactly one "
-                            "operand");
+                        "the unary_not_operation primitive requires exactly "
+                        "one operand");
                 }
 
                 if (!valid(operands[0]))
@@ -73,17 +125,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_not_operation::unary_not_operation",
                         "the unary_not_operation primitive requires that the "
-                            "argument given by the operands array is valid");
+                        "argument given by the operands array is valid");
                 }
 
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type && ops) -> primitive_argument_type
-                    {
-                        return primitive_argument_type(ops[0] == 0);
-                    }),
-                    detail::map_operands(operands, boolean_operand, args)
-                );
+                return hpx::dataflow(
+                    hpx::util::unwrapping(
+                        [this_](
+                            operands_type&& ops) -> primitive_argument_type {
+                            return primitive_argument_type(
+                                util::visit(visit_unary_not{*this_},
+                                    std::move(ops[0].variant())));
+
+                        }),
+                    detail::map_operands(
+                        operands, functional::literal_operand{}, args));
             }
         };
     }

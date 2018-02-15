@@ -968,9 +968,6 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:     // phylanx::ir::node_data<bool>
-            return {ast::expression(util::get<1>(val))};
-
         case 2:     // std::uint64_t
             return {ast::expression(util::get<2>(val))};
 
@@ -984,6 +981,8 @@ namespace phylanx { namespace execution_tree
             return util::get<6>(val);
 
         case 0: HPX_FALLTHROUGH;    // nil
+        case 1:
+            HPX_FALLTHROUGH;        // phylanx::ir::node_data<bool>
         case 5: HPX_FALLTHROUGH;    // primitive
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
@@ -1000,9 +999,6 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:     // phylanx::ir::node_data<bool>
-            return {ast::expression(util::get<1>(std::move(val)))};
-
         case 2:     // std::uint64_t
             return {ast::expression(util::get<2>(std::move(val)))};
 
@@ -1016,6 +1012,8 @@ namespace phylanx { namespace execution_tree
             return util::get<6>(std::move(val));
 
         case 0: HPX_FALLTHROUGH;    // nil
+        case 1:
+            HPX_FALLTHROUGH;        // phylanx::ir::node_data<bool>
         case 5: HPX_FALLTHROUGH;    // primitive
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
