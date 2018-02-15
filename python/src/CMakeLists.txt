@@ -19,7 +19,7 @@ add_phylanx_source_group(
   TARGETS ${phylanx_SOURCES})
 
 ###############################################################################
-pybind11_add_module(phylanx_py ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
+pybind11_add_module(phylanx_py SHARED ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
 
 include_directories(${pybind11_INCLUDE_DIR}})
 
