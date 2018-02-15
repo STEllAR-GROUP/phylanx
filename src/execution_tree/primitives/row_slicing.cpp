@@ -96,8 +96,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            //Note: std::vector will throw Invalid element access index if
-            //bad parameters are passed to start, stop
+            if (result.empty())
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                    "row_slicing_operation::create_list_row",
+                    "Slicing will produce empty result, please check your "
+                    "parameters");
+            }
             return result;
         }
 
