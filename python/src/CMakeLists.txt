@@ -19,7 +19,12 @@ add_phylanx_source_group(
   TARGETS ${phylanx_SOURCES})
 
 ###############################################################################
-pybind11_add_module(phylanx_py SHARED ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
+if(APPLE) # OSX requires this to be a shared library, not a module (default)
+    pybind11_add_module(phylanx_py SHARED ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
+else(APPLE)
+    pybind11_add_module(phylanx_py ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
+endif(APPLE)
+
 
 include_directories(${pybind11_INCLUDE_DIR}})
 
