@@ -17,6 +17,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -202,7 +203,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return p->expression_topology(hpx::launch::sync);
+                std::set<std::string> functions;
+                return p->expression_topology(
+                    hpx::launch::sync, std::move(functions));
+            }
+            return {};
+        }
+
+        topology get_expression_topology(std::set<std::string> && functions) const
+        {
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                return p->expression_topology(
+                    hpx::launch::sync, std::move(functions));
             }
             return {};
         }
@@ -239,7 +253,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         topology get_expression_topology() const
         {
-            return snippets_.back().get_expression_topology();
+            std::set<std::string> functions;
+            return snippets_.back().get_expression_topology(
+                std::move(functions));
+        }
+        topology get_expression_topology(
+            std::set<std::string>&& functions) const
+        {
+            return snippets_.back().get_expression_topology(
+                std::move(functions));
         }
 
         std::size_t compile_id_;

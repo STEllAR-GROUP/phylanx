@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -67,12 +68,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return value_operand(operands_[0], params);
     }
 
-    topology function_reference::expression_topology() const
+    topology function_reference::expression_topology(
+        std::set<std::string>&& functions) const
     {
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            return p->expression_topology(hpx::launch::sync);
+            return p->expression_topology(
+                hpx::launch::sync, std::move(functions));
         }
         return {};
     }

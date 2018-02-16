@@ -18,6 +18,7 @@
 #include <initializer_list>
 #include <iosfwd>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -113,8 +114,10 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT void store(
             hpx::launch::sync_policy, primitive_argument_type);
 
-        PHYLANX_EXPORT hpx::future<topology> expression_topology() const;
-        PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy) const;
+        PHYLANX_EXPORT hpx::future<topology> expression_topology(
+            std::set<std::string>&& functions) const;
+        PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
+            std::set<std::string>&& functions) const;
 
         PHYLANX_EXPORT void set_body(
             hpx::launch::sync_policy, primitive_argument_type&& target);

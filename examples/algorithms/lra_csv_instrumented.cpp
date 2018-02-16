@@ -188,7 +188,7 @@ std::tuple<std::size_t, std::size_t, std::size_t> extract_tags(
 // The symbolic names registered in AGAS that identify the created
 // primitive instances have the following structure:
 //
-// /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag1>[#<tag2>]
+// /phylanx/<primitive>$<sequence-nr>[$<instance>]/<compile_id>$<tag1>[$<tag2>]
 //
 //  where:
 //      <primitive>:   the name of primitive type representing the given

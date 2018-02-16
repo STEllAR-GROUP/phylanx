@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -143,9 +144,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // extract_topology_action
-    topology primitive_component::expression_topology() const
+    topology primitive_component::expression_topology(
+        std::set<std::string>&& functions) const
     {
-        return primitive_->expression_topology();
+        return primitive_->expression_topology(std::move(functions));
     }
 
     // set_body_action (define_function only)

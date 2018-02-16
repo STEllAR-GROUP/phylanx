@@ -11,6 +11,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <mutex>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -85,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         evaluated_ = true;
     }
 
-    topology variable::expression_topology() const
+    topology variable::expression_topology(std::set<std::string>&&) const
     {
         return topology{};
     }

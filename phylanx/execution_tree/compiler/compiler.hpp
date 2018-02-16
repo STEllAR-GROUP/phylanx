@@ -197,18 +197,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
     // compose an argument selector
     struct argument
     {
-        argument(std::size_t sequence_number,
-                hpx::id_type const& locality = hpx::find_here())
-          : sequence_number_(sequence_number),
-            locality_(locality)
+        argument(hpx::id_type const& locality = hpx::find_here())
+          : locality_(locality)
         {
         }
 
         function operator()(std::size_t n, std::string const& name) const
         {
+            static std::size_t sequence_number = 0;
             static std::string type("access-argument");
             std::string full_name = type + "$" +
-                std::to_string(sequence_number_) + "$" + name;
+                std::to_string(sequence_number++) + "$" + name;
 
             return function{
                 primitive_argument_type{create_primitive_component(locality_,
@@ -216,7 +215,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 full_name};
         }
 
-        std::size_t sequence_number_;
         hpx::id_type locality_;
     };
 
@@ -225,22 +223,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
     {
         // we must hold f by reference
         std::reference_wrapper<function const> f_;
-        std::size_t sequence_number_;
 
         explicit external_variable(function const& f,
-                std::size_t sequence_number = std::size_t(-1),
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<external_variable>(locality)
-          ,sequence_number_(sequence_number)
           , f_(f)
         {}
 
         function compose(std::list<function> && elements,
             std::string const& name) const
         {
+            static std::size_t sequence_number = 0;
             static std::string type("access-variable");
             std::string full_name = type + "$" +
-                std::to_string(sequence_number_) + "$" + name;
+                std::to_string(sequence_number++) + "$" + name;
 
             return function{
                 primitive_argument_type{create_primitive_component_with_name(

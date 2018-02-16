@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -39,7 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
         // return the topology for this function definition
-        topology expression_topology() const override;
+        topology expression_topology(
+            std::set<std::string>&& functions) const override;
 
         // Initialize the expression representing the function body, this has
         // to be done separately in order to support recursive functions.

@@ -44,6 +44,11 @@ namespace phylanx { namespace execution_tree
             primitives::file_read_csv::match_data,
             primitives::file_write_csv::match_data,
             primitives::while_operation::match_data,
+#if defined(PHYLANX_HAVE_HIGHFIVE)
+            primitives::file_read_hdf5::match_data,
+            primitives::file_write_hdf5::match_data,
+#endif
+
             // unary functions
             primitives::constant::match_data,
             primitives::determinant::match_data,
