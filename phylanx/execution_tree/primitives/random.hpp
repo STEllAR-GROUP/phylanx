@@ -12,13 +12,34 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <array>
+#include <cstdint>
+#include <memory>
+#include <random>
 #include <string>
+#include <tuple>
 #include <vector>
+
+#include <blaze/Math.h>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class random : public primitive_component_base
+    using distribution_parameters_type =
+        std::tuple<std::string, int, double, double>;
+
+    class random
+      : public primitive_component_base
+      , public std::enable_shared_from_this<random>
     {
+        static std::uint32_t seed_;     // The current seed for the generator.
+        static std::uint32_t default_seed();
+
+    public:
+        static std::mt19937 rng_;       // The mersenne twister generator.
+
+        static void set_seed(std::uint32_t);
+        static std::uint32_t get_seed();
+
     public:
         static match_pattern_type const match_data;
 
@@ -103,11 +124,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
+
+        primitive_argument_type random0d(
+            distribution_parameters_type&& params) const;
+        primitive_argument_type random1d(
+            std::size_t dim, distribution_parameters_type&& params) const;
+        primitive_argument_type random2d(std::array<std::size_t, 2> const& dims,
+            distribution_parameters_type&& params) const;
     };
 
     PHYLANX_EXPORT primitive create_random(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
         std::string const& name = "", std::string const& codename = "");
+
+    extern match_pattern_type const get_seed_match_data;
+    extern match_pattern_type const set_seed_match_data;
 }}}
 
 #endif

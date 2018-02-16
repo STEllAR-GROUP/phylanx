@@ -9,16 +9,16 @@ if (PHYLANX_WITH_DOCUMENTATION)
     if (DOXYGEN_FOUND)
         # Add files that needs to be passed to doxygen here
         set(DOXYGEN_DEPENDENCIES
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_set.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_slicing.hpp"
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/diag_operation.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linearmatrix.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linearmatrix.hpp"
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linspace.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/random.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_slicing.hpp")
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_slicing.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/slicing_operation.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/set_operation.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_set.hpp"
-                "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_set.hpp")
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/set_operation.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/slicing_operation.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/random.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_set.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_slicing.hpp")
 
         foreach(DOXYGEN_INPUT ${DOXYGEN_DEPENDENCIES})
             set(DOXYGEN_INPUTS  "${DOXYGEN_INPUTS} ${DOXYGEN_INPUT}")
