@@ -22,6 +22,15 @@ namespace phylanx { namespace util
         std::vector<std::string> const& counter_name_last_parts,
         hpx::naming::id_type const& locality_id)
     {
+        // Ensure counter_name_last_part has at least one entry
+        if (counter_name_last_parts.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "retrieve_counter_data",
+                "counter_name_last_parts cannot be empty");
+        }
+
+        // NOTE: primitive_instances are not verified
+
         // Return value
         std::map<std::string, std::vector<std::int64_t>> result;
 
@@ -31,8 +40,6 @@ namespace phylanx { namespace util
         std::map<std::string, std::vector<std::vector<std::int64_t>>>
             counter_values_pile;
 
-        // NOTE: primitive_instances are not verified
-
         // Iterate through all provided primitive instances
         for (auto const& name : primitive_instances)
         {
@@ -40,25 +47,18 @@ namespace phylanx { namespace util
             auto const tags =
                 phylanx::execution_tree::compiler::parse_primitive_name(name);
 
-            // Ensure counter_name_last_part has at least one entry
-            if (counter_name_last_parts.empty())
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter, "retrieve_counter_data",
-                    "counter_name_last_parts cannot be empty");
-            }
-
             // Performance counter values
             std::vector<std::vector<std::int64_t>>& counter_values =
                 counter_values_pile[tags.primitive];
 
-            // Querying for performance counters is relatively expensive and there
-            // is overlap, thus we can use futures
-            std::vector<
-                hpx::future<hpx::performance_counters::counter_values_array>>
-                futures;
-
             if (counter_values.empty())
             {
+                // Querying for performance counters is relatively expensive and there
+                // is overlap, thus we can use futures
+                std::vector<hpx::future<
+                    hpx::performance_counters::counter_values_array>>
+                    futures;
+
                 // Preallocate memory
                 counter_values.reserve(counter_name_last_parts.size());
 
@@ -74,15 +74,15 @@ namespace phylanx { namespace util
                         counter_name, locality_id);
                     futures.push_back(counter.get_counter_values_array(false));
                 }
-            }
 
-            // We need the performance counter values. Wait until they are done
-            hpx::wait_all(futures);
+                // We need the performance counter values. Wait until they are done
+                hpx::wait_all(futures);
 
-            // Collect the performance counter values
-            for (auto& f : futures)
-            {
-                counter_values.push_back(f.get().values_);
+                // Collect the performance counter values
+                for (auto& f : futures)
+                {
+                    counter_values.push_back(f.get().values_);
+                }
             }
 
             std::vector<std::int64_t> data(counter_name_last_parts.size());
