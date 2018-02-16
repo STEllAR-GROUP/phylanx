@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -41,7 +42,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         void store(primitive_argument_type && val) override;
 
         // return the topology for this variable definition
-        topology expression_topology() const override;
+        topology expression_topology(
+            std::set<std::string>&& functions) const override;
 
     private:
         primitive_argument_type body_;
