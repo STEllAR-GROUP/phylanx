@@ -350,7 +350,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>&& lhs, ir::node_data<bool>&& rhs) const
                 {
                     return not_equal_.not_equal_all(
-                        std::move(lhs), std::move(rhs));
+                        ir::node_data<double>(std::move(lhs)),
+                        ir::node_data<double>(std::move(rhs)));
                 }
 
                 not_equal const& not_equal_;
