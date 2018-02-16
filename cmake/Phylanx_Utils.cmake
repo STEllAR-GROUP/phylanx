@@ -19,12 +19,14 @@ phylanx_include(
   AddSourceGroup
   AddTest
   AddPythonTest
+  AppendProperty
   CreateSymbolicLink
   DetectCppDialect
   Documentation
   ExportTargets
   ForceOutOfTreeBuild
   GetPythonExtensionLocation
+  HighFive
   IsTarget
   SetupCompilerFlags
   SetOutputPaths
