@@ -1,0 +1,211 @@
+#! /usr/bin/env physl
+#
+#  Copyright (c) 2018 Christopher Taylor 
+#
+#  Distributed under the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+#
+# QR decomposition/factorization Algorithm example in PhySL
+#
+# https://github.com/carlsonp/JAMA/blob/master/src/Jama/QRDecomposition.java
+#
+# \param filepath
+# \param row_start
+# \param row_stop
+# \param col_start
+# \param col_stop
+# \param alpha
+# \param iterations
+# \param enable_output
+# \returns Calculated weights
+
+# QR decomposition of a matrix
+#
+define(qr_alloc, A,
+    block(
+        define(QR, A), 
+        QR
+    )
+)
+
+define(qr_rdiag_alloc, A
+    block(
+        define(n, shape(A, 1),
+        define(Rdiag, constant(0.0, n),
+        Rdiag
+    )
+)
+
+define(qr_decomp, A, QR, Rdiag,
+    block(
+        define(m, shape(A, 0),
+        define(n, shape(A, 1),
+        define(k, 0),
+        define(i, 0),
+        define(ii, 0),
+        while( k < n,
+            block(
+                define(nrm, 0.0),
+                store( i, k),
+                while( i < m,
+                    block(
+                        store( nrm, hypot(nrm, slice(QR, i, k)) ),
+                        store( i, i+1)
+                    )
+                ),
+                if( nrm != 0.0,
+                    block(
+                        if( slice(QR, k, k) < 0,
+                            block(
+                                store( nrm, -nrm )
+                            )
+                        ),
+                        store(ii, k),
+                        while(ii < m,
+                            block(
+                                store( slice(QR, i, k), slice(QR, i, k) / nrm )
+                            )
+                        ),
+                        store(slice(QR, k, k), slice(QR, k, k) += 1.0 )
+                        store(j, k+1),
+                        while(j < n,
+                            block(
+                                define(s, 0.0),
+                                store(ii, k),
+                                while(ii < m,
+                                    block(
+                                        store(s, slice(QR, ii, k) * slice(QR, ii, j))
+                                    )
+                                ),
+                                store(s, -s / slice(QR, k, k)),
+                                store(ii, k),
+                                while(ii < m,
+                                    block(
+                                        store( slice(QR, i, j), slice(QR, i, j) + (s * slice(QR, i, k) ) )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                store( slice(Rdiag, k), -nrm),
+                store(k, k+1)
+            )
+        ),
+        QR,
+        Rdiag,
+    )
+)
+
+define(qr_getH, QR,
+    block(
+        define(m, shape(QR, 0)),
+        define(n, shape(QR, 1)),
+        define(X, constant(0.0, m, n)),
+        define(i, 0),
+        define(j, 0),
+        while( i < m,
+            block(
+                while( j < n,
+                    block(
+                        if( i >= j,
+                            block(
+                                store( slice(X, i, j), slice(QR, i, j))
+                            )
+                        ),
+                        if( i < j,
+                            block(
+                                store( slice(X, i, j), 0.0 )
+                            )
+                        ),
+                        store( j, j+1)
+                    )
+                ),
+                store( i, i+1)
+            )
+        ),
+        X
+    )
+)
+
+define(qr_getR, QR, Rdiag,
+    block(
+        define(n, shape(QR, 1)),
+        define(X, constant(0.0, n, n)),
+        define(i, 0),
+        define(j, 0),
+        while( i < n,
+            block(
+                while( j < n,
+                    block(
+                        if( i < j,
+                            block(
+                                store( slice(X, i, j), slice(QR, i, j))
+                            )
+                        ),
+                        if( i == j,
+                            block(
+                                store( slice(X, i, j), slice(Rdiag, i) )
+                            )
+                        ),
+                        store( j, j+1)
+                    )
+                ),
+                store(i, i+1)
+            )
+        ),
+        X
+    )
+)
+
+define(qr_getQ, QR, Rdiag,
+    block(
+        define(m, shape(QR, 0)),
+        define(n, shape(QR, 1)),
+        define(X, constant(0.0, m, n)),
+        define(j, 0),
+        define(i, n-1),
+        while( i >= 0,
+            block(
+                store(j, 0),
+                while( j < m,
+                    block(
+                        store( slice(X, j, i ), 0.0 )
+                    )
+                ),
+                store( slice(X, i, i), 1.0 ),
+                store( j, i),
+                while( j < n,
+                    if( slice(X, i, i) != 0,
+                        block(
+                            define(s, 0.0),
+                            define(k, 0),
+                            while( k < m,
+                                block(
+                                    store( s, slice(QR, k, i)*slice(X, k, j) )
+                                )
+                            ),
+                            store( s, -s/slice(QR, i, i) ),
+                            store( k, 0),
+                            while( k < m,
+                                block(
+                                    store( slice(QR, k, j), slice(QR, k, j) + ( s * slice(QR, k, i) ) )
+                                )
+                            )
+                        )
+                    ),
+                    store(j, j+1)
+                )
+            )
+        )
+    ),
+    X
+)
+
+define(qr_solve, B, QR, Rdiag,
+    block(
+    )
+)
+
+#apply(lra, sys_argv)
