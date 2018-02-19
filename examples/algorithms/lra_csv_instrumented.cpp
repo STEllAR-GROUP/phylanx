@@ -224,7 +224,7 @@ void print_instrumentation(
             continue;
 
         // Find real position of given symbol in source code
-        if (std::get<1>(tags) >= 0)
+        if (std::get<1>(tags) != std::size_t(-1))
         {
             auto pos = get_pos(code, tags);
             std::cout << e.first << ": " << name << "(" << pos.first << ", "
