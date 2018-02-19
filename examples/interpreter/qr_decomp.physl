@@ -18,6 +18,33 @@
 # \param iterations
 # \param enable_output
 # \returns Calculated weights
+define(abs, a,
+    block(
+        define(b, a),
+        if(a < 0.0,
+           store(b, a * -1.0)
+        ),
+        b
+    )
+)
+
+define(hypot, a, b,
+    block(
+        define(r, 0.0),
+        if( abs(a) > abs(b),
+            block(
+                store(r, b/a)
+            )
+        ),
+        if( b != 0.0,
+            block(
+                store(r, a/b),
+                store(r, abs(b) * power((1.0+r*r), 0.5))
+            )
+        ),
+        r
+    )
+)
 
 # QR decomposition of a matrix
 #
@@ -28,20 +55,21 @@ define(qr_alloc, A,
     )
 )
 
-define(qr_rdiag_alloc, A
+define(qr_rdiag_alloc, A,
     block(
-        define(n, shape(A, 1),
-        define(Rdiag, constant(0.0, n),
+        define(n, shape(A, 1)),
+        define(Rdiag, constant(0.0, n)),
         Rdiag
     )
 )
 
 define(qr_decomp, A, QR, Rdiag,
     block(
-        define(m, shape(A, 0),
-        define(n, shape(A, 1),
+        define(m, shape(A, 0)),
+        define(n, shape(A, 1)),
         define(k, 0),
         define(i, 0),
+        define(j, 0),
         define(ii, 0),
         while( k < n,
             block(
@@ -63,10 +91,11 @@ define(qr_decomp, A, QR, Rdiag,
                         store(ii, k),
                         while(ii < m,
                             block(
-                                store( slice(QR, i, k), slice(QR, i, k) / nrm )
+                                store( slice(QR, i, k), slice(QR, i, k) / nrm ),
+                                store(ii, ii+1)
                             )
                         ),
-                        store(slice(QR, k, k), slice(QR, k, k) += 1.0 )
+                        store(slice(QR, k, k), slice(QR, k, k) + 1.0 ),
                         store(j, k+1),
                         while(j < n,
                             block(
@@ -74,14 +103,16 @@ define(qr_decomp, A, QR, Rdiag,
                                 store(ii, k),
                                 while(ii < m,
                                     block(
-                                        store(s, slice(QR, ii, k) * slice(QR, ii, j))
+                                        store(s, slice(QR, ii, k) * slice(QR, ii, j)),
+                                        store(ii, ii+1)
                                     )
                                 ),
                                 store(s, -s / slice(QR, k, k)),
                                 store(ii, k),
                                 while(ii < m,
                                     block(
-                                        store( slice(QR, i, j), slice(QR, i, j) + (s * slice(QR, i, k) ) )
+                                        store( slice(QR, i, j), slice(QR, i, j) + (s * slice(QR, i, k) ) ),
+                                        store(ii, ii+1)
                                     )
                                 )
                             )
@@ -91,9 +122,7 @@ define(qr_decomp, A, QR, Rdiag,
                 store( slice(Rdiag, k), -nrm),
                 store(k, k+1)
             )
-        ),
-        QR,
-        Rdiag,
+        )
     )
 )
 
@@ -257,4 +286,26 @@ define(qr_solve, B, QR, Rdiag,
     )
 )
 
+define(qr_decomp_test,
+    block(
+         define(A, constant(0.0, 4, 3)),
+         store( slice(A, 0, 0), 1.0),
+         store( slice(A, 0, 1), 2.0),
+         store( slice(A, 0, 2), 3.0),
+         store( slice(A, 0, 3), 4.0),
+         store( slice(A, 1, 0), 5.0),
+         store( slice(A, 1, 1), 6.0),
+         store( slice(A, 1, 2), 7.0),
+         store( slice(A, 1, 3), 8.0),
+         store( slice(A, 2, 0), 9.0),
+         store( slice(A, 2, 1), 10.0),
+         store( slice(A, 2, 2), 11.0),
+         store( slice(A, 2, 3), 12.0),
+         define( qr, qr_alloc(A)),
+         define( rdiag, qr_rdiag_alloc(A)),
+         qr_decomp(A, qr, rdiag)
+    )
+)
+
+apply(qr_decomp_test, sys_argv)
 #apply(lra, sys_argv)
