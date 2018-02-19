@@ -226,9 +226,9 @@ define(qr_getQ, QR, Rdiag,
                     store(j, j+1)
                 )
             )
-        )
-    ),
-    X
+        ),
+        X
+    )
 )
 
 define(qr_solve, B, QR, Rdiag,
