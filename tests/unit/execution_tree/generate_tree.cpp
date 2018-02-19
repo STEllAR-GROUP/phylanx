@@ -141,6 +141,8 @@ void test_boolean_primitives()
     char const* variables = R"(
         define(A, 41.0)
         define(B, 0.0)
+        define(C, true)
+        define(D, false)
     )";
 
     test_generate_tree("!A", variables, false);
@@ -155,11 +157,23 @@ void test_boolean_primitives()
     test_generate_tree("B || B", variables, false);
     test_generate_tree("A || B", variables, true);
 
+    test_generate_tree("C && C", variables, true);
+    test_generate_tree("C && D", variables, false);
+
+    test_generate_tree("D || D", variables, false);
+    test_generate_tree("C || D", variables, true);
+
     test_generate_tree("A == A", variables, true);
     test_generate_tree("A == B", variables, false);
 
     test_generate_tree("A != A", variables, false);
     test_generate_tree("A != B", variables, true);
+
+    test_generate_tree("C == C", variables, true);
+    test_generate_tree("C == D", variables, false);
+
+    test_generate_tree("C != C", variables, false);
+    test_generate_tree("C != D", variables, true);
 
     test_generate_tree("A <= A", variables, true);
     test_generate_tree("A <= B", variables, false);

@@ -94,8 +94,15 @@ else()
 endif()
 
 target_link_libraries(phylanx_component
-    ${HPX_LIBRARIES}
-    blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  ${HPX_LIBRARIES}
+  blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+if(PHYLANX_WITH_HIGHFIVE)
+  target_link_libraries(phylanx_component HighFive)
+  set_property(TARGET phylanx_component APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    "PHYLANX_HAVE_HIGHFIVE")
+endif()
 
 set_target_properties(
   phylanx_component PROPERTIES

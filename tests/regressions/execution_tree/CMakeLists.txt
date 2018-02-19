@@ -7,6 +7,7 @@ set(tests
     cout_noargs_prints_nothing_159
     cout_prints_twice_155
     define_loses_values_177
+    expression_topology_213
     negative_integral_value_131
    )
 
