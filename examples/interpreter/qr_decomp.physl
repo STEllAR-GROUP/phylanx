@@ -204,6 +204,56 @@ define(qr_getQ, QR, Rdiag,
 
 define(qr_solve, B, QR, Rdiag,
     block(
+        define(m, shape(B, 0)),
+        define(n, shape(B, 1)),
+        define(i, 0),
+        define(j, 0),
+        define(k, 0),
+        while(k < n,
+            block(
+                while(j < m,
+                    block(
+                        define(s, 0.0),
+                        store(i, k),
+                        while(i < m,
+                            block(
+                                store(s, s + slice(QR, i, k) * slice(B, i, j))
+                            )
+                        ),
+                        store(s, -s/slice(QR, k, k)),
+                        store(i, k),
+                        while(i < m,
+                            block(
+                                store(slice(B, i, j), s * slice(QR, i, k) + slice(B, i, j))
+                            )
+                        ),
+                        store(j, j+1)
+                    )
+                ),
+                store(k, k+1)
+            )
+        ),
+        store(k, n-1),
+        while(k >= 0,
+            block(
+                while(j < n,
+                    block(
+                        store(slice(B, k, j), slice(B, k, j) / slice(Rdiag, k)),
+                        store(j, j+1)
+                    )
+                ),
+                while(i < k,
+                    block(
+                        while(j < nx,
+                            store(slice(X, i, j), slice(X, i, j) - slice(X, k, j)*slice(QR, i, k)),
+                            store(j, j+1)
+                        ),
+                        store(i, i+1)
+                    )
+                ),
+                store(k, k-1)
+            )
+        )
     )
 )
 
