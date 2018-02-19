@@ -42,8 +42,8 @@ char const* const read_y_code = R"(block(
     //
     // Read Y-data from given CSV file
     //
-    define(read_y, filepath, row_start, row_stop,
-        slice(file_read_csv(filepath), row_start, row_stop, -1, 0)
+    define(read_y, filepath, row_start, row_stop, col_stop,
+        slice(file_read_csv(filepath), row_start, row_stop, col_stop , col_stop+1)
     ),
     read_y
 ))";
@@ -109,7 +109,7 @@ int hpx_main(boost::program_options::variables_map& vm)
     // col_start and col_stop omitted in this case as we know the last column
     // in our csv file
     // has the y values.
-    auto y = read_y(vm["data_csv"].as<std::string>(), row_start, row_stop);
+    auto y = read_y(vm["data_csv"].as<std::string>(), row_start, row_stop, col_stop);
 
     auto alpha = vm["alpha"].as<double>();
 

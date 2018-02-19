@@ -53,8 +53,8 @@ std::string const read_y_code = R"(block(
     //
     // Read Y-data from given CSV file
     //
-    define(read_y, filepath, row_start, row_stop,
-        slice(file_read_csv(filepath), row_start, row_stop, -1, 0)
+    define(read_y, filepath, row_start, row_stop,col_stop
+        slice(file_read_csv(filepath), row_start, row_stop, col_stop, col_stop+1)
     ),
     read_y
 ))";
