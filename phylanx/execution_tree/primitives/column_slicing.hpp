@@ -24,6 +24,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         column_slicing_operation() = default;
 
+         /**
+         * @brief Column Slicing Primitive
+         *
+         * This primitive returns a slice of the original data.
+         * @param operands Vector of phylanx node data objects of
+         * size either three or four
+         *
+         * If used inside PhySL:
+         *
+         *      slice_column (input, col_start, col_stop, steps(optional) )
+         *
+         *          input : Scalar, Vector or a Matrix
+         *          col_start     : Starting index of the slice
+         *          col_stop      : Stopping index of the slice
+         *          steps          : Go from col_start to col_stop in steps
+         *
+         *  Note: Indices and steps can have negative vlaues and negative values
+         *  indicate direction, similar to python.
+         */
+
         column_slicing_operation(
             std::vector<primitive_argument_type>&& operands);
 

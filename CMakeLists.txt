@@ -75,14 +75,6 @@ phylanx_setup_output_paths()
 phylanx_detect_cpp_dialect()
 
 ################################################################################
-# Locate dependencies
-phylanx_setup_hpx()
-phylanx_setup_blaze()
-phylanx_setup_pybind11()
-
-include(Phylanx_GitCommit)
-
-################################################################################
 # Build options
 
 phylanx_option(
@@ -129,6 +121,15 @@ else()
     "Force creating pseudo targets and pseudo dependencies (default ON)."
     ON CATEGORY "Build Targets")
 endif()
+
+################################################################################
+# Locate dependencies
+phylanx_setup_hpx()
+phylanx_setup_blaze()
+phylanx_setup_pybind11()
+phylanx_setup_hdf5()
+
+include(Phylanx_GitCommit)
 
 ################################################################################
 # Target specification

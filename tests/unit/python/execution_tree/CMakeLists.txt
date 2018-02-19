@@ -6,6 +6,7 @@
 
 set(tests
   eval
+  for
   make_array
    )
 
