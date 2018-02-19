@@ -19,8 +19,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT file_read_hdf5 : public primitive_component_base
-
+    class file_read_hdf5 : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;

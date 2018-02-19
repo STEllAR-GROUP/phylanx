@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_PRIMITIVES_FILE_WRITE_HDF5_JAN_26_2017_0129PM)
-#define PHYLANX_PRIMITIVES_FILE_WRITE_hdf5_HDF5_JAN_2017_0129PM
+#define PHYLANX_PRIMITIVES_FILE_WRITE_HDF5_JAN_26_2017_0129PM
 
 #include <phylanx/config.hpp>
 
@@ -19,8 +19,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class HPX_COMPONENT_EXPORT file_write_hdf5 : public primitive_component_base
-
+    class file_write_hdf5 : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
