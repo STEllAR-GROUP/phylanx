@@ -288,7 +288,7 @@ define(qr_solve, B, QR, Rdiag,
 
 define(qr_decomp_test,
     block(
-         define(A, constant(0.0, 4, 3)),
+         define(A, constant(0.0, 3, 4)),
          store( slice(A, 0, 0), 1.0),
          store( slice(A, 0, 1), 2.0),
          store( slice(A, 0, 2), 3.0),
