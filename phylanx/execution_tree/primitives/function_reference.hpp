@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
-        topology expression_topology() const override;
+        topology expression_topology(
+            std::set<std::string>&& functions) const override;
 
     private:
         std::string name_;

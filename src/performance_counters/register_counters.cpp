@@ -129,7 +129,7 @@ namespace phylanx { namespace performance_counters
         void reinit(bool reset) override
         {
             // Structure of primitives in symbolic namespace:
-            //     /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag>
+            //     /phylanx/<primitive>$<sequence-nr>[$<instance>]/<compile_id>$<tag>
             auto entries = hpx::agas::find_symbols(hpx::launch::sync,
                 "/phylanx/" + extract_primitive_type() + "$*");
 

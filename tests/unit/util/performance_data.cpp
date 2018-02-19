@@ -44,12 +44,20 @@ char const* const fib_code = R"(block(
 
 std::map<std::string, std::vector<std::size_t>> expected_counts =
 {
-    { "access-variable$0", { 1, 0, } },
+    { "access-variable$0", { 9, 0, } },
     { "access-variable$1", { 0, 0, } },
-    { "access-variable$2", { 1, 0, } },
-    { "access-variable$3", { 0, 0, } },
-    { "access-variable$4", { 8, 0, } },
+    { "access-variable$2", { 8, 0, } },
+    { "access-variable$3", { 8, 0, } },
+    { "access-variable$4", { 0, 0, } },
     { "access-variable$5", { 8, 0, } },
+    { "access-variable$6", { 0, 0, } },
+    { "access-variable$7", { 8, 0, } },
+    { "access-variable$8", { 0, 0, } },
+    { "access-variable$9", { 8, 0, } },
+    { "access-variable$10", { 0, 0, } },
+    { "access-variable$11", { 8, 0, } },
+    { "access-variable$12", { 1, 0, } },
+    { "access-variable$13", { 1, 0, } },
     { "__add$0", { 8, 0, } },
     { "__add$1", { 8, 0, } },
     { "block$0", { 0, 1, } },
@@ -76,6 +84,9 @@ std::map<std::string, std::vector<std::size_t>> expected_counts =
     { "variable$5", { 0, 18, } },
 };
 
+const std::vector<std::string> performance_counter_name_last_part{
+    "count/eval", "time/eval", "count/eval_direct", "time/eval_direct"};
+
 int main()
 {
     // Compile the given code
@@ -99,8 +110,7 @@ int main()
 
     for (auto const& entry :
         phylanx::util::retrieve_counter_data(existing_primitive_instances,
-            std::vector<std::string>{"count/eval", "time/eval",
-                "count/eval_direct", "time/eval_direct"},
+            performance_counter_name_last_part,
             hpx::find_here()))
     {
         auto const tags =
@@ -111,11 +121,12 @@ int main()
             tags.primitive + "$" + std::to_string(tags.sequence_number));
         auto const& expected_values = expected_counts[expected_key];
 
-        HPX_TEST(!expected_values.empty());
+        HPX_TEST_EQ(
+            entry.second.size(), performance_counter_name_last_part.size());
         HPX_TEST_EQ(entry.second[0], expected_values[0]);
-        HPX_TEST((entry.second[1] != 0) == (expected_values[0] != 0));
+        HPX_TEST_EQ(entry.second[1] != 0, expected_values[0] != 0);
         HPX_TEST_EQ(entry.second[2], expected_values[1]);
-        HPX_TEST((entry.second[3] != 0) == (expected_values[1] != 0));
+        HPX_TEST_EQ(entry.second[3] != 0, expected_values[1] != 0);
     }
 
     return hpx::util::report_errors();

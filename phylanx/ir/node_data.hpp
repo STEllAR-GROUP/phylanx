@@ -138,7 +138,7 @@ namespace phylanx { namespace ir
 
         template <typename U, typename U1 =
             typename std::enable_if<!std::is_same<T, U>::value>::type>
-        node_data(node_data<U> const& d)
+        explicit node_data(node_data<U> const& d)
           : data_(init_data_from_type(d))
         {
         }

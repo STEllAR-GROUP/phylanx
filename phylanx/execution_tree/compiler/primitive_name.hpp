@@ -17,7 +17,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 {
     // The full name of every component is patterned after
     //
-    // /phylanx/<primitive>#<sequence-nr>[#<instance>]/<compile_id>#<tag1>[#<tag2>]
+    // /phylanx/<primitive>$<sequence-nr>[$<instance>]/<compile_id>$<tag1>[$<tag2>]
     //
     //  where:
     //      <primitive>:   the name of primitive type representing the given
