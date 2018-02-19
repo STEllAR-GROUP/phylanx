@@ -14,6 +14,9 @@ import phylanx
 et = phylanx.execution_tree
 import inspect, re, ast
 
+def rmline(a):
+    return re.sub(r'\$.*','',a)
+
 def dump_info(a,depth=0):
     "Print detailed information about an AST"
     nm = a.__class__.__name__
@@ -364,8 +367,57 @@ class Recompiler:
                     return "-" + self.recompile(args[1])
             else:
                 raise Exception(nm2)
+        elif nm == "For":
+            n = get_node(a,name="Name",num=0)
+            c = get_node(a,name="Call",num=1)
+            if n != None and c != None:
+                r = get_node(c,name="Name",num=0)
+                assert r.id == "range" or r.id == "xrange"
+                step = get_node(c,num=3)
+                if step == None:
+                    step = ast.Num(1)
+                upper = get_node(c,num=2)
+                if upper == None:
+                    upper = get_node(c,num=1)
+                    lower = ast.Num(0)
+                else:
+                    lower = get_node(c,num=1)
+                ns = self.recompile(n)
+                ls = self.recompile(lower)
+                us = self.recompile(upper)
+                ss = self.recompile(step)
+                bs = "block("
+                blocki = 2
+                while True:
+                    blockn = get_node(a,num=blocki)
+                    if blockn == None:
+                        break
+                    if blocki > 2:
+                        bs += ","
+                    bs += self.recompile(blockn)
+                    blocki += 1
+                bs += ")"
+                # The first arg of the for loop is either
+                # a define() or a store(), depending on whether
+                # the variable has already been defined.
+                sd = "store"
+                if rmline(ns) not in self.defs:
+                    sd = "define"
+                lg = "<"
+                # Determine the direction of iteration, if possible
+                if not re.search(r'[a-zA-Z_]',ss):
+                    if eval(ss) < 0:
+                        lg = ">"
+                    return "for("+sd+"("+ns+","+ls+"),"+ns+" "+lg+" "+us+",store("+ns+","+ns+"+"+ss+"),"+bs+")"
+                else:
+                    # if we can't determine the direction of iteration, make two for loops
+                    ret = "if("+ss+" > 0,"
+                    ret += "for("+sd+"("+ns+","+ls+"),"+ns+" < "+us+",store("+ns+","+ns+"+"+ss+"),"+bs+"),"
+                    ret += "for("+sd+"("+ns+","+ls+"),"+ns+" > "+us+",store("+ns+","+ns+"+"+ss+"),"+bs+"))"
+                    return ret
+            raise Exception("unsupported For loop structure")
         else:
-            raise Exception('unsupport AST node type: %s' % nm)
+            raise Exception('unsupported AST node type: %s' % nm)
 
 def convert_to_phylanx_type(v):
     t = type(v)
