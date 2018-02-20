@@ -80,7 +80,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         switch (dims)
                         {
                         case 0:
-                            return this_->transpose0d(std::move(ops));
+                            HPX_FALLTHROUGH;
+
+                        case 1:
+                            return this_->transpose0d1d(std::move(ops));
 
                         case 2:
                             return this_->transpose2d(std::move(ops));
@@ -100,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using operand_type = ir::node_data<double>;
             using operands_type = std::vector<operand_type>;
 
-            primitive_argument_type transpose0d(operands_type && ops) const
+            primitive_argument_type transpose0d1d(operands_type&& ops) const
             {
                 return primitive_argument_type{std::move(ops[0])};       // no-op
             }
