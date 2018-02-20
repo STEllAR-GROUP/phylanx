@@ -82,85 +82,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Iterator>
-    ast::expression extract_name(std::pair<Iterator, Iterator> const& p)
-    {
-        if (std::distance(p.first, p.second) < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::detail::extract_name",
-                "the define() operation requires at least 2 arguments");
-        }
-
-        if (!ast::detail::is_identifier(p.first->second))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::detail::extract_name",
-                "the define() operation requires that the name of the "
-                    "function to define is represented as a variable name "
-                    "(not an expression)");
-        }
-
-        return p.first->second;
-    }
-
-    template <typename Iterator>
-    std::vector<ast::expression> extract_arguments(
-        std::pair<Iterator, Iterator> const& p)
-    {
-        std::ptrdiff_t size = std::distance(p.first, p.second);
-        if (size < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::detail::extract_arguments",
-                "the define() operation requires at least 2 arguments");
-        }
-
-        std::vector<ast::expression> args;
-        args.reserve(size);
-
-        auto first = p.first; ++first;
-        auto last = p.second; --last;
-
-        std::size_t count = 0;
-        for (auto it = first; it != last; ++it, ++count)
-        {
-            if (count != 0 && count != size-1 &&
-                !ast::detail::is_identifier(it->second))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::detail::extract_arguments",
-                    "the define() operation requires that all arguments "
-                        "are represented as variable names (not "
-                        "expressions)");
-            }
-            args.push_back(it->second);
-        }
-
-        return args;
-    }
-
-    template <typename Iterator>
-    ast::expression extract_body(std::pair<Iterator, Iterator> const& p)
-    {
-        if (std::distance(p.first, p.second) < 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::detail::extract_body",
-                "the define() operation requires at least 2 arguments");
-        }
-
-        auto last = p.second; --last;
-        return last->second;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     struct compiler
     {
-        compiler(function_list& snippets, environment& env,
-                expression_pattern_list const& patterns,
+        compiler(std::string const& name, function_list& snippets,
+                environment& env, expression_pattern_list const& patterns,
                 hpx::id_type const& default_locality)
-          : env_(env)
+          : name_(name)
+          , env_(env)
           , snippets_(snippets)
           , patterns_(patterns)
           , default_locality_(default_locality)
@@ -182,6 +110,99 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return result;
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        static std::string generate_error_message(std::string const& msg,
+            std::string const& name, ast::tagged const& id)
+        {
+            return hpx::util::format(
+                "%1%(%2%, %3%): %4%", name, id.id, id.col, msg);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        template <typename Iterator>
+        ast::expression extract_name(
+            std::pair<Iterator, Iterator> const& p, ast::tagged const& id)
+        {
+            if (std::distance(p.first, p.second) < 2)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::extract_name",
+                    generate_error_message(
+                        "the define() operation requires at least 2 arguments",
+                        name_, id));
+            }
+
+            if (!ast::detail::is_identifier(p.first->second))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::extract_name",
+                    generate_error_message(
+                        "the define() operation requires that the name of the "
+                        "function to define is represented as a variable name "
+                        "(not an expression)",
+                        name_, id));
+            }
+
+            return p.first->second;
+        }
+
+        template <typename Iterator>
+        std::vector<ast::expression> extract_arguments(
+            std::pair<Iterator, Iterator> const& p, ast::tagged const& id)
+        {
+            std::ptrdiff_t size = std::distance(p.first, p.second);
+            if (size < 2)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::extract_arguments",
+                    generate_error_message(
+                        "the define() operation requires at least 2 arguments",
+                        name_, id));
+            }
+
+            std::vector<ast::expression> args;
+            args.reserve(size);
+
+            auto first = p.first; ++first;
+            auto last = p.second; --last;
+
+            std::size_t count = 0;
+            for (auto it = first; it != last; ++it, ++count)
+            {
+                if (count != 0 && count != size-1 &&
+                    !ast::detail::is_identifier(it->second))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::detail::extract_arguments",
+                        generate_error_message(
+                            "the define() operation requires that all "
+                            "arguments are represented as variable "
+                            "names (not expressions)", name_, id));
+                }
+                args.push_back(it->second);
+            }
+
+            return args;
+        }
+
+        template <typename Iterator>
+        ast::expression extract_body(
+            std::pair<Iterator, Iterator> const& p, ast::tagged const& id)
+        {
+            if (std::distance(p.first, p.second) < 2)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::extract_body",
+                    generate_error_message(
+                        "the define() operation requires at least 2 arguments",
+                        name_, id));
+            }
+
+            auto last = p.second; --last;
+            return last->second;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         function handle_lambda(
             std::vector<ast::expression> const& args,
             ast::expression const& body) const
@@ -198,12 +219,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     hpx::util::bind(
                         arg, i + base_arg_num, hpx::util::placeholders::_2));
             }
-            return compile(body, snippets_, env, patterns_, default_locality_);
+            return compile(
+                name_, body, snippets_, env, patterns_, default_locality_);
         }
 
         function handle_define(
             std::multimap<std::string, ast::expression>& placeholders,
-            expression_pattern const& pattern)
+            expression_pattern const& pattern, ast::tagged const& define_id)
         {
             // we know that 'define()' uses '__1' to match arguments
             using iterator =
@@ -215,7 +237,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             snippets_.snippets_.emplace_back(function{});
             function& f = snippets_.snippets_.back();
 
-            ast::expression name_expr = extract_name(p);
+            ast::expression name_expr = extract_name(p, define_id);
             std::string name = ast::detail::identifier_name(name_expr);
 
             // get global name of the component created
@@ -226,8 +248,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 full_name += annotation(id);
             }
 
-            auto args = extract_arguments(p);
-            auto body = extract_body(p);
+            auto args = extract_arguments(p, define_id);
+            auto body = extract_body(p, define_id);
             if (args.empty())
             {
                 // get sequence number of this component
@@ -240,7 +262,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 // define variable
                 environment env(&env_);
-                function bf = compile(body, snippets_, env, patterns_,
+                function bf = compile(name_, body, snippets_, env, patterns_,
                     default_locality_);
 
                 f = primitive_variable{default_locality_}(
@@ -283,9 +305,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function handle_variable_reference(std::string name,
             ast::expression const& expr)
         {
+            ast::tagged id = ast::detail::tagged_id(expr);
             if (compiled_function* cf = env_.find(name))
             {
-                ast::tagged id = ast::detail::tagged_id(expr);
                 if (id.id >= 0)
                 {
                     name += annotation(id);
@@ -295,12 +317,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::compiler::handle_variable",
-                "couldn't find given name in symbol table: " + name);
+                generate_error_message(
+                    "couldn't find variable '" + name + "' in symbol table",
+                    name_, id));
         }
 
         function handle_function_call(std::string name,
             ast::expression const& expr)
         {
+            ast::tagged id = ast::detail::tagged_id(expr);
             if (compiled_function* cf = env_.find(name))
             {
                 std::vector<ast::expression> argexprs =
@@ -310,11 +335,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 for (auto const& argexpr : argexprs)
                 {
                     environment env(&env_);
-                    args.push_back(compile(argexpr, snippets_, env, patterns_,
-                        default_locality_));
+                    args.push_back(compile(name_, argexpr, snippets_, env,
+                        patterns_, default_locality_));
                 }
 
-                ast::tagged id = ast::detail::tagged_id(expr);
                 if (id.id >= 0)
                 {
                     name += annotation(id);
@@ -324,12 +348,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::compiler::handle_function_call",
-                "couldn't find given name in symbol table: " + name);
+                generate_error_message(
+                    "couldn't find function '" + name + "' in symbol table",
+                    name_, id));
         }
 
         function handle_placeholders(
             std::multimap<std::string, ast::expression>& placeholders,
-            std::string const& name, std::string const& global_name)
+            std::string const& name, std::string const& global_name,
+            ast::tagged id)
         {
             if (compiled_function* cf = env_.find(name))
             {
@@ -338,7 +365,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 for (auto const& placeholder : placeholders)
                 {
-                    args.push_back(compile(placeholder.second,
+                    args.push_back(compile(name_, placeholder.second,
                         snippets_, env, patterns_, default_locality_));
                 }
 
@@ -349,12 +376,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
             // otherwise the match was not complete, bail out
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::compiler::handle_placeholders",
-                "couldn't find built-in function in environment: " + name);
+                generate_error_message("couldn't find built-in function '" +
+                        name + "' in compilation environment",
+                    name_, id));
         }
 
     public:
         function operator()(ast::expression const& expr)
         {
+            ast::tagged id = ast::detail::tagged_id(expr);
             for (auto const& pattern : patterns_)
             {
                 std::multimap<std::string, ast::expression> placeholders;
@@ -368,7 +398,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::string name = hpx::util::get<0>(pattern);
                 if (name == "define")
                 {
-                    return handle_define(placeholders, pattern);
+                    return handle_define(placeholders, pattern, id);
                 }
 
                 // add sequence number for this primitive component
@@ -377,14 +407,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 name += "$" + std::to_string(sequence_number);
 
                 // get global name of the component created
-                ast::tagged id = ast::detail::tagged_id(expr);
                 if (id.id >= 0)
                 {
                     name += annotation(id);
                 }
 
                 return handle_placeholders(
-                    placeholders, hpx::util::get<0>(pattern), name);
+                    placeholders, hpx::util::get<0>(pattern), name, id);
             }
 
             // remaining expression could refer to a variable
@@ -411,24 +440,27 @@ namespace phylanx { namespace execution_tree { namespace compiler
             // otherwise the match was not complete, bail out
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::compiler::operator()()",
-                "couldn't fully pattern-match the given expression: " +
-                    ast::to_string(expr));
+                generate_error_message(
+                    "couldn't fully pattern-match the given expression: " +
+                        ast::to_string(expr),
+                    name_, id));
         }
 
     private:
-        environment& env_;
-        function_list& snippets_;
+        std::string name_;          // file name of original code
+        environment& env_;          // current compilation environment
+        function_list& snippets_;   // list of compiled snippets
         expression_pattern_list const& patterns_;
         hpx::id_type default_locality_;
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    function compile(ast::expression const& expr,
+    function compile(std::string const& name, ast::expression const& expr,
         function_list& snippets, environment& env,
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality)
     {
-        compiler comp{snippets, env, patterns, default_locality};
+        compiler comp{name, snippets, env, patterns, default_locality};
         return comp(expr);
     }
 

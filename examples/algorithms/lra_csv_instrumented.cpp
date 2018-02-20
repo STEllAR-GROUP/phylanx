@@ -312,11 +312,11 @@ int hpx_main(boost::program_options::variables_map& vm)
     phylanx::execution_tree::compiler::function_list snippets;
 
     auto read_x = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(read_x_code), snippets);
+        "read_x", phylanx::ast::generate_ast(read_x_code), snippets);
     auto read_y = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(read_y_code), snippets);
+        "read_y", phylanx::ast::generate_ast(read_y_code), snippets);
     auto lra = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(lra_code), snippets);
+        "lra", phylanx::ast::generate_ast(lra_code), snippets);
 
     // Print instrumentation information, if enabled
     if (vm.count("instrument") != 0)

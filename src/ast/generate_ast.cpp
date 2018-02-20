@@ -15,8 +15,10 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace ast
@@ -24,90 +26,120 @@ namespace phylanx { namespace ast
     namespace detail
     {
         ///////////////////////////////////////////////////////////////////////
+        std::pair<std::size_t, std::size_t> get_pos(
+            std::string const& code, std::string::const_iterator pos)
+        {
+            // pos is the offset into the code
+            std::size_t line = 1;
+            std::size_t column = 1;
+
+            for (auto it = code.begin(); it != pos && it != code.end(); ++it)
+            {
+                if (*it == '\r' || *it == '\n')    // CR/LF
+                {
+                    ++line;
+                    column = 1;
+                }
+                else
+                {
+                    ++column;
+                }
+            }
+
+            return std::make_pair(line, column);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         expression& replace_compile_ids(expression& ast,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
 
         template <typename Ast>
         void replace_compile_ids(util::recursive_wrapper<Ast>& ast,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
 
         inline void replace_compile_ids(operand& op,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
         inline void replace_compile_ids(identifier& id,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
         inline void replace_compile_ids(unary_expr& ue,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
         inline void replace_compile_ids(primary_expr& pe,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
         inline void replace_compile_ids(operation& op,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
         inline void replace_compile_ids(function_call& fc,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
 
         ///////////////////////////////////////////////////////////////////////
         template <typename Ast>
         void replace_compile_ids(Ast const&,
             std::vector<std::ptrdiff_t> const&,
-            std::string::const_iterator)
+            std::string const&)
         {
         }
 
         inline void replace_compile_ids(identifier& id,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
             if (id.id >= 0 && id.col == -1 && std::size_t(id.id) < iters.size())
             {
-                id.id = std::distance(begin, iters[id.id]);
+                auto const& p = get_pos(code, iters[id.id]);
+                id.id = p.first;
+                id.col = p.second;
             }
         }
 
         inline void replace_compile_ids(unary_expr& ue,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
             if (ue.id >= 0 && ue.col == -1 && std::size_t(ue.id) < iters.size())
             {
-                ue.id = std::distance(begin, iters[ue.id]);
+                auto const& p = get_pos(code, iters[ue.id]);
+                ue.id = p.first;
+                ue.col = p.second;
             }
-            replace_compile_ids(ue.operand_, iters, begin);
+            replace_compile_ids(ue.operand_, iters, code);
         }
 
         inline void replace_compile_ids(primary_expr& pe,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
             if (pe.id >= 0 && pe.col == -1 && std::size_t(pe.id) < iters.size())
             {
-                pe.id = std::distance(begin, iters[pe.id]);
+                auto const& p = get_pos(code, iters[pe.id]);
+                pe.id = p.first;
+                pe.col = p.second;
             }
 
             switch (pe.index())
             {
             case 3:     // identifier
-                replace_compile_ids(util::get<3>(pe.get()), iters, begin);
+                replace_compile_ids(util::get<3>(pe.get()), iters, code);
                 break;
 
             case 6:     // phylanx::util::recursive_wrapper<expression>
-                replace_compile_ids(util::get<6>(pe.get()).get(), iters, begin);
+                replace_compile_ids(util::get<6>(pe.get()).get(), iters, code);
                 break;
 
             case 7:     // phylanx::util::recursive_wrapper<function_call>
-                replace_compile_ids(util::get<7>(pe.get()).get(), iters, begin);
+                replace_compile_ids(util::get<7>(pe.get()).get(), iters, code);
                 break;
 
             case 8:     // phylanx::util::recursive_wrapper<std::vector<ast::expression>>
                 for (auto& ast : util::get<8>(pe.get()).get())
                 {
-                    replace_compile_ids(ast, iters, begin);
+                    replace_compile_ids(ast, iters, code);
                 }
                 break;
 
@@ -118,16 +150,16 @@ namespace phylanx { namespace ast
 
         inline void replace_compile_ids(operand& op,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
             switch (op.index())
             {
             case 1:     // phylanx::util::recursive_wrapper<primary_expr>
-                replace_compile_ids(util::get<1>(op.get()).get(), iters, begin);
+                replace_compile_ids(util::get<1>(op.get()).get(), iters, code);
                 break;
 
             case 2:     // phylanx::util::recursive_wrapper<unary_expr>
-                replace_compile_ids(util::get<2>(op.get()).get(), iters, begin);
+                replace_compile_ids(util::get<2>(op.get()).get(), iters, code);
                 break;
 
             default:
@@ -137,40 +169,40 @@ namespace phylanx { namespace ast
 
         inline void replace_compile_ids(operation& op,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
-            replace_compile_ids(op.operand_, iters, begin);
+            replace_compile_ids(op.operand_, iters, code);
         }
 
         inline void replace_compile_ids(function_call& fc,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
-            replace_compile_ids(fc.function_name, iters, begin);
+            replace_compile_ids(fc.function_name, iters, code);
             for (auto& arg : fc.args)
             {
-                replace_compile_ids(arg, iters, begin);
+                replace_compile_ids(arg, iters, code);
             }
         }
 
         template <typename Ast>
         void replace_compile_ids(util::recursive_wrapper<Ast>& ast,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
-            replace_compile_ids(ast.get(), iters, begin);
+            replace_compile_ids(ast.get(), iters, code);
         }
 
         ///////////////////////////////////////////////////////////////////////
         expression& replace_compile_ids(expression& ast,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin)
+            std::string const& code)
         {
             for (auto& op : ast.rest)
             {
-                replace_compile_ids(op, iters, begin);
+                replace_compile_ids(op, iters, code);
             }
-            replace_compile_ids(ast.first, iters, begin);
+            replace_compile_ids(ast.first, iters, code);
 
             return ast;
         }
@@ -208,10 +240,10 @@ namespace phylanx { namespace ast
                 "phylanx::ast::generate_ast", strm.str());
         }
 
-        // replace compile-tags with offsets against begin of input
+        // replace compile-tags with line/column information
         for (auto& ast : asts)
         {
-            detail::replace_compile_ids(ast, iters, input.begin());
+            detail::replace_compile_ids(ast, iters, input);
         }
 
         return asts;

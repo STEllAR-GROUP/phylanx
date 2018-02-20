@@ -364,11 +364,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
         pattern_list const& patterns_list,
         hpx::id_type const& default_locality);
 
+    ///////////////////////////////////////////////////////////////////////////
     /// Compile the given AST instance and generate an expression tree
     /// corresponding to its structure. Return a function object that - when
     /// executed - will evaluate the generated execution tree.
-    PHYLANX_EXPORT function compile(ast::expression const& expr,
-        function_list& snippets, environment& env,
+    PHYLANX_EXPORT function compile(std::string const& name,
+        ast::expression const& expr, function_list& snippets, environment& env,
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);
 

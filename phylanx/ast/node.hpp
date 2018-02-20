@@ -228,8 +228,7 @@ namespace phylanx { namespace ast
 
     inline bool operator==(identifier const& lhs, identifier const& rhs)
     {
-        return lhs.name == rhs.name &&
-            static_cast<tagged const&>(lhs) == static_cast<tagged const&>(rhs);
+        return lhs.name == rhs.name;
     }
     inline bool operator!=(identifier const& lhs, identifier const& rhs)
     {
@@ -365,8 +364,7 @@ namespace phylanx { namespace ast
     inline bool operator==(primary_expr const& lhs, primary_expr const& rhs)
     {
         return static_cast<expr_node_type const&>(lhs) ==
-                static_cast<expr_node_type const&>(rhs) &&
-            static_cast<tagged const&>(lhs) == static_cast<tagged const&>(rhs);
+                static_cast<expr_node_type const&>(rhs);
     }
     inline bool operator!=(primary_expr const& lhs, primary_expr const& rhs)
     {
