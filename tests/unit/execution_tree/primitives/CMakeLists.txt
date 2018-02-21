@@ -40,6 +40,7 @@ set(tests
     power_operation
     random
     row_slicing
+    set_operation
     slicing_operation
     square_root_operation
     store_operation

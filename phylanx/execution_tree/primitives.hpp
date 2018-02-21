@@ -52,6 +52,7 @@
 #include <phylanx/execution_tree/primitives/power_operation.hpp>
 #include <phylanx/execution_tree/primitives/random.hpp>
 #include <phylanx/execution_tree/primitives/row_slicing.hpp>
+#include <phylanx/execution_tree/primitives/set_operation.hpp>
 #include <phylanx/execution_tree/primitives/slicing_operation.hpp>
 #include <phylanx/execution_tree/primitives/square_root_operation.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>

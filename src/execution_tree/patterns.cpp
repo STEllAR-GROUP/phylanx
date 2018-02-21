@@ -26,6 +26,7 @@ namespace phylanx { namespace execution_tree
             primitives::hstack_operation::match_data,
             primitives::parallel_block_operation::match_data,
             primitives::row_slicing_operation::match_data,
+            primitives::set_operation::match_data,
             primitives::slicing_operation::match_data,
             primitives::string_output::match_data,
             primitives::vstack_operation::match_data,
