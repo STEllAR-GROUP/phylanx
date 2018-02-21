@@ -34,10 +34,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             locality, type, std::move(operands), name);
     }
 
-    match_pattern_type const set_operation::match_data = {
-        hpx::util::make_tuple("set",
-            std::vector<std::string>{"set(_1,_2,_3,_4,_5,_6,_7,_8)"},
-            &create_set_operation, &create_primitive<set_operation>)};
+    match_pattern_type const set_operation::match_data = {hpx::util::make_tuple(
+        "set", std::vector<std::string>{"set(_1,_2,_3,_4,_5,_6,_7,_8)"},
+        &create_set_operation, &create_primitive<set_operation>)};
 
     ///////////////////////////////////////////////////////////////////////////
     set_operation::set_operation(
@@ -126,7 +125,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_argument_type set1d(args_type&& args) const
             {
-
                 auto row_start = args[1].scalar();
                 auto row_stop = args[2].scalar();
                 int step = args[3].scalar();
@@ -150,8 +148,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "cant store matrix in a vector");
                 }
 
-                auto init_list = create_list_set(
-                    row_start, row_stop, step, args[0].size());
+                auto init_list =
+                    create_list_set(row_start, row_stop, step, args[0].size());
 
                 auto sv = blaze::elements(args[0].vector(), init_list);
 
@@ -214,8 +212,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::DynamicMatrix<double> data(
                         sm.rows(), sm.columns(), args[7].scalar());
                     sm = data;
-                    return primitive_argument_type{
-                        ir::node_data<double>(0)};
+                    return primitive_argument_type{ir::node_data<double>(0)};
                 }
 
                 if (value_dimnum == 1)
@@ -224,8 +221,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::size_t data_size = data.size();
                     std::size_t num_cols = sm.columns();
                     std::size_t num_rows = sm.rows();
-                    blaze::DynamicMatrix<double> temp(
-                        sm.rows(), sm.columns());
+                    blaze::DynamicMatrix<double> temp(sm.rows(), sm.columns());
 
                     if (data_size != num_cols)
                     {
@@ -242,8 +238,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                     sm = temp;
 
-                    return primitive_argument_type{
-                        ir::node_data<double>(0)};
+                    return primitive_argument_type{ir::node_data<double>(0)};
                 }
 
                 auto data = args[7].matrix();
@@ -256,7 +251,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
                         "set_operation::set_operation",
-                        "matrix size mismatch);
+                        "matrix size mismatch");
                 }
                 blaze::DynamicMatrix<double> temp(data);
                 sm = temp;
@@ -296,27 +291,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(
-                    hpx::util::unwrapping([this_](args_type&& args)
-                                              -> primitive_argument_type {
-                        std::size_t lhs_dims = args[0].num_dimensions();
-                        switch (lhs_dims)
-                        {
-                        case 0:
-                            return this_->set0d(std::move(args));
+                    hpx::util::unwrapping(
+                        [this_](args_type&& args) -> primitive_argument_type {
+                            std::size_t lhs_dims = args[0].num_dimensions();
+                            switch (lhs_dims)
+                            {
+                            case 0:
+                                return this_->set0d(std::move(args));
 
-                        case 1:
-                            return this_->set1d(std::move(args));
+                            case 1:
+                                return this_->set1d(std::move(args));
 
-                        case 2:
-                            return this_->set2d(std::move(args));
+                            case 2:
+                                return this_->set2d(std::move(args));
 
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "set_operation::eval",
-                                "left hand side operand has unsupported "
-                                "number of dimensions");
-                        }
-                    }),
+                            default:
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "set_operation::eval",
+                                    "left hand side operand has unsupported "
+                                    "number of dimensions");
+                            }
+                        }),
                     detail::map_operands(
                         operands, functional::numeric_operand{}, args));
             }
