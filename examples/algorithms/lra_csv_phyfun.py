@@ -1,12 +1,14 @@
 #  Copyright (c) 2018 Steven R. Brandt
+#  Copyright (c) 2018 R. Tohid
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-import phylanx
-et = phylanx.execution_tree
-from phylanx.util import *
 
-@phyfun
+import phylanx
+from phylanx.ast import *
+from phylanx.ast.utils import phy_print 
+
+@PhyTransformer
 def lra(file_name,
         xlo1, xhi1, ylo1, yhi1,
         xlo2, xhi2, ylo2, yhi2,

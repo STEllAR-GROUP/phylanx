@@ -1,5 +1,6 @@
 #  Copyright (c) 2018 Steven R. Brandt
 #  Copyright (c) 2018 Christopher Taylor
+#  Copyright (c) 2018 R. Tohid
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -16,9 +17,10 @@
 #  and an implementation available in the public domain
 #
 import phylanx
-from phylanx.util import *
+from phylanx.ast import *
+from phylanx.ast.utils import phy_print 
 
-@phyfun
+@PhyTransformer
 def pca(A):
     M = transpose(A - mean( transpose(A), axis=1))
     # TODO: cov, eig primitives
