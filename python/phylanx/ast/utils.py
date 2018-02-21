@@ -4,6 +4,7 @@
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 import ast
 
 def dump_info(a,depth=0):
@@ -59,7 +60,7 @@ def dump_info(a,depth=0):
             dump_info(n,depth+1)
 
 
-def phy_print(m):
+def printout(m):
     ndim = m.num_dimensions()
     if ndim == 1:
         for i in range(m.dimension(0)):

@@ -1,12 +1,14 @@
 #  Copyright (c) 2018 Steven R. Brandt
+#  Copyright (c) 2018 R. Tohid
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-import phylanx
-et = phylanx.execution_tree
-from phylanx.util import *
 
-@phyfun
+import phylanx
+from phylanx.ast import *
+from phylanx.ast.utils import printout 
+
+@Phylanx
 def lra(file_name,
         xlo1, xhi1, ylo1, yhi1,
         xlo2, xhi2, ylo2, yhi2,
@@ -31,4 +33,4 @@ def lra(file_name,
     return weights
 
 res = lra("breast_cancer.csv", 0,569,0,30, 0,569,30,31, 1e-5,750,0)
-phy_print(res)
+printout(res)

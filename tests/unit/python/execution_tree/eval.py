@@ -1,11 +1,14 @@
 #  Copyright (c) 2017-2018 Hartmut Kaiser
-#  Copyright (c) 2018 R. Tohid
 #  Copyright (c) 2018 Steven R. Brandt
+#  Copyright (c) 2018 R. Tohid
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 import phylanx
-from phylanx.util import phyfun, phy_print
+from phylanx.ast import *
+from phylanx.ast.utils import printout 
+
 et = phylanx.execution_tree
 import numpy as np
 
@@ -34,7 +37,7 @@ block(
 
 assert sum10[0] == 55.0
 
-@phyfun
+@Phylanx
 def fib(n):
     if n < 2:
         return n
@@ -49,7 +52,7 @@ assert fib.__physl_src__ == \
 
 assert fib(10)[0] == 55.0
 
-@phyfun
+@Phylanx
 def pass_str(a):
     return a
 
@@ -58,7 +61,7 @@ assert pass_str.__physl_src__ == \
 
 assert "foo" == str(pass_str("foo"))
 
-@phyfun
+@Phylanx
 def test_slice(a):
     return a[1:3,1:4]
 
@@ -68,7 +71,7 @@ r2 = two[1:3,1:4]
 
 assert r1 == r2
 
-@phyfun
+@Phylanx
 def test_slice1(a):
     return a[2:4]
 
