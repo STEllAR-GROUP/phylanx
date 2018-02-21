@@ -11,6 +11,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives

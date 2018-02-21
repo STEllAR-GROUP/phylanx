@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             hpx::future<primitive_argument_type> init()
             {
                 auto this_ = this->shared_from_this();
-                return literal_operand(operands_[0], args_, name_, codename_)
+                return value_operand(operands_[0], args_, name_, codename_)
                     .then([this_](hpx::future<primitive_argument_type> && val)
                         -> hpx::future<primitive_argument_type>
                     {
@@ -97,7 +97,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             hpx::future<primitive_argument_type> reinit()
             {
                 auto this_ = this->shared_from_this();
-                return literal_operand(operands_[2], args_, name_, codename_)
+                return value_operand(operands_[2], args_, name_, codename_)
                     .then([this_](hpx::future<primitive_argument_type> && val)
                         -> hpx::future<primitive_argument_type>
                     {
@@ -113,7 +113,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     // evaluate body of for statement
                     auto this_ = this->shared_from_this();
-                    return literal_operand(operands_[3], args_, name_, codename_)
+                    return value_operand(operands_[3], args_, name_, codename_)
                         .then([this_](hpx::future<primitive_argument_type> && result)
                             mutable -> hpx::future<primitive_argument_type>
                         {
@@ -131,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // evaluate condition of for statement
                 auto this_ = this->shared_from_this();
-                return literal_operand(operands_[1], args_, name_, codename_)
+                return value_operand(operands_[1], args_, name_, codename_)
                     .then([this_](hpx::future<primitive_argument_type> && cond)
                         -> hpx::future<primitive_argument_type>
                     {

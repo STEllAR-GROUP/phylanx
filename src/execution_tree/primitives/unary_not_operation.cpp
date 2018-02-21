@@ -166,7 +166,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                         }),
                     detail::map_operands(
-                        operands, functional::literal_operand{}, args));
+                        operands, functional::literal_operand{}, args,
+                        name_, codename_));
             }
         };
     }

@@ -319,7 +319,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_value",
             generate_error_message(
                 "primitive_argument_type does not hold a value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -367,7 +367,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_copy_value",
             generate_error_message(
                 "primitive_argument_type does not hold a value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -415,7 +415,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_ref_value",
             generate_error_message(
                 "primitive_argument_type does not hold a value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -443,7 +443,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_value",
             generate_error_message(
                 "primitive_argument_type does not hold a value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -491,7 +491,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_value",
             generate_error_message(
                 "primitive_argument_type does not hold a value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -519,7 +519,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_value",
             generate_error_message(
                 "primitive_argument_type does not hold a value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -562,7 +562,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_literal_value",
             generate_error_message(
                 "primitive_argument_type does not hold a literal value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -616,7 +616,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_literal_value",
             generate_error_message(
                 "primitive_argument_type does not hold a literal value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -657,7 +657,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_literal_value",
             generate_error_message(
                 "primitive_argument_type does not hold a literal value type "
-                    "(type held: " + type + ").",
+                    "(type held: '" + type + "')",
                 name, codename));
     }
 
@@ -704,7 +704,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value",
             generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -749,7 +749,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value",
             generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -778,7 +778,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_boolean_data",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -806,7 +806,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_boolean_data",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -852,7 +852,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_integer_value",
             generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -897,7 +897,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_numeric_value",
             generate_error_message(
                 "primitive_argument_type does not hold a numeric "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -947,7 +947,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_boolean_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -996,7 +996,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_boolean_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1038,7 +1038,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_string_value",
             generate_error_message(
                 "primitive_argument_type does not hold a string "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1079,7 +1079,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_string_value",
             generate_error_message(
                 "primitive_argument_type does not hold a string "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1116,7 +1116,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_ast_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1152,7 +1152,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_ast_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1194,7 +1194,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_list_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
@@ -1241,7 +1241,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_list_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
-                    "value type (type held: " + type + ").",
+                    "value type (type held: '" + type + "')",
                 name, codename));
     }
 
