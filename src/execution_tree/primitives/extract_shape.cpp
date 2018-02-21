@@ -54,6 +54,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using arg_type = ir::node_data<double>;
             using args_type = std::vector<arg_type>;
 
+            primitive_argument_type shape0d(args_type&& args) const
+            {
+                if (args.size() == 1)
+                {
+                    std::vector<primitive_argument_type> result{};
+                    return primitive_argument_type{std::move(result)};
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "extract_shape::eval",
+                    "index out of range");
+            }
+
+            primitive_argument_type shape1d(args_type&& args) const
+            {
+                if (args.size() == 1)
+                {
+                    std::vector<primitive_argument_type> result{
+                        primitive_argument_type{std::int64_t(args[0].size())}};
+                    return primitive_argument_type{std::move(result)};
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "extract_shape::eval",
+                    "index out of range");
+            }
+
+            primitive_argument_type shape2d(args_type&& args) const
+            {
+                auto dims = args[0].dimensions();
+                if (args.size() == 1)
+                {
+                    // return a list of numbers representing the
+                    // dimensions of the first argument
+                    std::vector<primitive_argument_type> result{
+                        primitive_argument_type{std::int64_t(dims[0])},
+                        primitive_argument_type{std::int64_t(dims[1])}};
+                    return primitive_argument_type{std::move(result)};
+                }
+
+                return primitive_argument_type{
+                    std::int64_t(dims[std::size_t(args[1][0])])};
+            }
+
         public:
             hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
@@ -80,20 +124,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](args_type && args) -> primitive_argument_type
                     {
-                        auto dims = args[0].dimensions();
-                        if (args.size() == 1)
+                        auto dims = args[0].num_dimensions();
+                        switch (dims)
                         {
-                            // return a list of numbers representing the
-                            // dimensions of the first argument
-                            std::vector<primitive_argument_type> result{
-                                primitive_argument_type{std::int64_t(dims[0])},
-                                primitive_argument_type{std::int64_t(dims[1])}
-                            };
-                            return primitive_argument_type{std::move(result)};
+                        case 0:
+                            return this_->shape0d(std::move(args));
+                        case 1:
+                            return this_->shape1d(std::move(args));
+                        case 2:
+                            return this_->shape2d(std::move(args));
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "extract_shape::eval",
+                                "first operand has unsupported "
+                                "number of dimensions");
                         }
-
-                        return primitive_argument_type{
-                            std::int64_t(dims[std::size_t(args[1][0])])};
                     }),
                     detail::map_operands(
                         operands, functional::numeric_operand{}, args));
