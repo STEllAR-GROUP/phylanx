@@ -133,13 +133,13 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     /// Add the given variable to the compilation environment
-    compiler::function define_variable(std::string name,
-        compiler::function_list& snippets, compiler::environment& env,
-        primitive_argument_type body,
+    compiler::function define_variable(std::string const& codename,
+        std::string name, compiler::function_list& snippets,
+        compiler::environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
         return compiler::define_variable(
-            std::move(name), snippets, env, body, default_locality)();
+            codename, std::move(name), snippets, env, body, default_locality)();
     }
 }}
 

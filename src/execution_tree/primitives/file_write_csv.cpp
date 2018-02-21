@@ -24,11 +24,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_file_write_csv(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
     {
         static std::string type("file_write_csv");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const file_write_csv::match_data =
@@ -40,8 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     file_write_csv::file_write_csv(
-            std::vector<primitive_argument_type> && operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type> && operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {
     }
 
@@ -49,7 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct file_write_csv : std::enable_shared_from_this<file_write_csv>
         {
-            file_write_csv() = default;
+            file_write_csv(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             void write_to_file_csv(ir::node_data<double> const& val)
@@ -61,7 +71,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
                             "file_write_csv::eval",
-                        "couldn't open file: " + filename_);
+                        generate_error_message(
+                            "couldn't open file: " + filename_,
+                            name_, codename_));
                 }
 
                 outfile << std::setprecision(
@@ -116,7 +128,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::file_write::"
                             "file_write_csv",
-                        "the file_write primitive requires exactly two operands");
+                        generate_error_message(
+                            "the file_write primitive requires exactly two "
+                                "operands",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]) || !valid(operands[1]))
@@ -124,14 +139,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::file_write::"
                             "file_write_csv",
-                        "the file_write primitive requires that the given "
-                            "operands are valid");
+                        generate_error_message("the file_write primitive "
+                            "requires that the given operands are valid",
+                            name_, codename_));
                 }
 
-                filename_ = string_operand_sync(operands[0], args);
+                filename_ =
+                    string_operand_sync(operands[0], args, name_, codename_);
 
                 auto this_ = this->shared_from_this();
-                return numeric_operand(operands[1], args)
+                return numeric_operand(operands[1], args, name_, codename_)
                     .then(hpx::util::unwrapping(
                         [this_](ir::node_data<double> && val)
                         ->  primitive_argument_type
@@ -154,9 +171,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::file_write_csv>()->eval(args, noargs);
+            return std::make_shared<detail::file_write_csv>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::file_write_csv>()->eval(operands_, args);
+        return std::make_shared<detail::file_write_csv>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

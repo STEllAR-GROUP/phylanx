@@ -24,7 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         unary_not_operation() = default;
 
-        unary_not_operation(std::vector<primitive_argument_type>&& operands);
+        unary_not_operation(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
@@ -33,7 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     PHYLANX_EXPORT primitive create_unary_not_operation(
         hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif

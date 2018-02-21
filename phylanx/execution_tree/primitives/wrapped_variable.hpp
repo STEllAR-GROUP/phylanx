@@ -25,8 +25,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         wrapped_variable() = default;
 
-        wrapped_variable(
-            std::vector<primitive_argument_type>&& operands, std::string name);
+        wrapped_variable(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         void store(primitive_argument_type && val) override;
 
@@ -38,7 +38,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         primitive_argument_type target_;
-        std::string name_;
     };
 }}}
 

@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
             phylanx::execution_tree::compiler::default_environment();
 
         phylanx::execution_tree::define_variable(
-            "sys_argv/0$0", snippets, env, args);
+            code_source_name, "sys_argv/0$0", snippets, env, args);
         auto const code = phylanx::execution_tree::compile(
             code_source_name, ast, snippets, env);
 

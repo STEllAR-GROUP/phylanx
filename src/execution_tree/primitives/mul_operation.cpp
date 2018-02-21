@@ -28,11 +28,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_mul_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("__mul");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const mul_operation::match_data =
@@ -43,8 +44,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    mul_operation::mul_operation(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    mul_operation::mul_operation(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -52,7 +54,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct mul : std::enable_shared_from_this<mul>
         {
-            mul() = default;
+            mul(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         private:
             using operand_type = ir::node_data<double>;
@@ -75,7 +85,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul0d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -93,13 +106,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{
                     std::accumulate(
                         ops.begin() + 1, ops.end(), std::move(lhs),
-                        [](operand_type& result, operand_type const& curr) {
-
+                        [this](operand_type& result, operand_type const& curr)
+                        {
                             if (curr.num_dimensions() != 0)
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "mul_operation::mul0d0d",
-                                    "all operands must be scalars");
+                                    generate_error_message(
+                                        "all operands must be scalars",
+                                        name_, codename_));
                             }
                             result.scalar() *= curr.scalar();
                             return std::move(result);
@@ -113,7 +128,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul0d1d",
-                        "can't handle more than 2 operands");
+                        generate_error_message(
+                            "can't handle more than two operands",
+                            name_, codename_));
                 }
 
                 operand_type& lhs = ops[0];
@@ -130,7 +147,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul0d2d",
-                        "can't handle more than 2 operands");
+                        generate_error_message(
+                            "can't handle more than two operands",
+                            name_, codename_));
                 }
 
                 operand_type& lhs = ops[0];
@@ -157,7 +176,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul1d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -167,7 +189,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul1d0d",
-                        "can't handle more than 2 operands");
+                        generate_error_message(
+                            "can't handle more than two operands",
+                            name_, codename_));
                 }
 
                 operand_type& lhs = ops[0];
@@ -188,14 +212,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{
                     std::accumulate(
                         ops.begin() + 1, ops.end(), std::move(ops[0]),
-                        [](operand_type& result, operand_type const& curr)
+                        [this](operand_type& result, operand_type const& curr)
                         ->  operand_type
                         {
                             if (curr.num_dimensions() != 1)
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "mul_operation::mul1d1d",
-                                    "all operands must be vectors");
+                                    generate_error_message(
+                                        "all operands must be vectors",
+                                        name_, codename_));
                             }
                             result = result.vector() * curr.vector();
                             return std::move(result);
@@ -209,7 +235,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul1d2d",
-                        "can't handle more than 2 operands");
+                        generate_error_message(
+                            "can't handle more than two operands",
+                            name_, codename_));
                 }
 
                 operand_type& lhs = ops[0];
@@ -248,7 +276,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul2d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -258,7 +289,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul2d0d",
-                        "can't handle more than 2 operands");
+                        generate_error_message(
+                            "can't handle more than two operands",
+                            name_, codename_));
                 }
 
                 operand_type& lhs = ops[0];
@@ -274,7 +307,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul2d1d",
-                        "can't handle more than 2 operands");
+                        generate_error_message(
+                            "can't handle more than two operands",
+                            name_, codename_));
                 }
 
                 operand_type& lhs = ops[0];
@@ -307,14 +342,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{
                     std::accumulate(
                         ops.begin() + 1, ops.end(), std::move(ops[0]),
-                        [](operand_type& result, operand_type const& curr)
+                        [this](operand_type& result, operand_type const& curr)
                         ->  operand_type
                         {
                             if (curr.num_dimensions() != 2)
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "mul_operation::mul2d2d",
-                                    "all operands must be matrices");
+                                    generate_error_message(
+                                        "all operands must be matrices",
+                                        name_, codename_));
                             }
 
                             result = result.matrix() * curr.matrix();
@@ -332,8 +369,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul_operation",
-                        "the mul_operation primitive requires at least two "
-                        "operands");
+                        generate_error_message(
+                            "the mul_operation primitive requires at least "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 bool arguments_valid = true;
@@ -349,8 +388,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul_operation",
-                        "the mul_operation primitive requires that the "
-                            "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the mul_operation primitive requires that "
+                                "the arguments given by the operands array "
+                                "are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -372,12 +414,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "mul_operation::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    this_->name_, this_->codename_));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -388,9 +433,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::mul>()->eval(args, noargs);
+            return std::make_shared<detail::mul>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::mul>()->eval(operands_, args);
+        return std::make_shared<detail::mul>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

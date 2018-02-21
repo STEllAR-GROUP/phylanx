@@ -22,7 +22,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         apply() = default;
 
-        PHYLANX_EXPORT apply(std::vector<primitive_argument_type>&& operands);
+        PHYLANX_EXPORT apply(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         PHYLANX_EXPORT primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
@@ -30,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     PHYLANX_EXPORT primitive create_apply(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif

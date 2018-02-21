@@ -25,11 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_greater(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("__gt");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const greater::match_data =
@@ -40,8 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    greater::greater(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    greater::greater(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -49,7 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct greater : std::enable_shared_from_this<greater>
         {
-            greater() = default;
+            greater(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -60,8 +70,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                rhs.vector() = blaze::map(
-                    rhs.vector(), [&](double x) { return (x > lhs.scalar()); });
+                rhs.vector() = blaze::map(rhs.vector(),
+                    [&](double x) { return (x > lhs.scalar()); });
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(rhs)});
@@ -72,8 +82,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                rhs.matrix() = blaze::map(
-                    rhs.matrix(), [&](double x) { return (x > lhs.scalar()); });
+                rhs.matrix() = blaze::map(rhs.matrix(),
+                    [&](double x) { return (x > lhs.scalar()); });
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(rhs)});
@@ -98,7 +108,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater0d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -107,8 +120,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                lhs.vector() = blaze::map(
-                    lhs.vector(), [&](double x) { return (x > rhs.scalar()); });
+                lhs.vector() = blaze::map(lhs.vector(),
+                    [&](double x) { return (x > rhs.scalar()); });
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(lhs)});
@@ -124,7 +137,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater1d1d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -146,7 +161,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater1d2d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -179,7 +196,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater1d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -208,7 +228,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater2d1d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -233,11 +255,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater2d2d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
+                //       is not currently available
                 lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
                     [&](double x, double y) { return (x > y); });
 
@@ -263,7 +287,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater2d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -286,8 +313,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::greater_all",
-                        "left hand side operand has unsupported number of "
-                            "dimensions");
+                        generate_error_message(
+                            "left hand side operand has unsupported number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -299,8 +328,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "left hand side and right hand side are incompatible "
-                            "and can't be compared");
+                        generate_error_message(
+                            "left hand side and right hand side are incompatible "
+                                "and can't be compared",
+                            greater_.name_, greater_.codename_));
                 }
 
                 primitive_argument_type operator()(
@@ -309,8 +340,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "left hand side and right hand side are incompatible "
-                        "and can't be compared");
+                        generate_error_message(
+                            "left hand side and right hand side are incompatible "
+                                "and can't be compared",
+                            greater_.name_, greater_.codename_));
                 }
 
                 primitive_argument_type operator()(std::vector<ast::expression>&&,
@@ -318,8 +351,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "left hand side and right hand side are incompatible "
-                            "and can't be compared");
+                        generate_error_message(
+                            "left hand side and right hand side are incompatible "
+                                "and can't be compared",
+                            greater_.name_, greater_.codename_));
                 }
 
                 primitive_argument_type operator()(
@@ -327,16 +362,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "left hand side and right hand side are incompatible "
-                            "and can't be compared");
+                        generate_error_message(
+                            "left hand side and right hand side are incompatible "
+                                "and can't be compared",
+                            greater_.name_, greater_.codename_));
                 }
 
                 primitive_argument_type operator()(primitive&&, primitive&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "left hand side and right hand side are incompatible "
-                            "and can't be compared");
+                        generate_error_message(
+                            "left hand side and right hand side are incompatible "
+                                "and can't be compared",
+                            greater_.name_, greater_.codename_));
                 }
 
                 template <typename T>
@@ -353,9 +392,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::vector<primitive_argument_type>>&&) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "less::eval",
-                        "left hand side and right hand side are incompatible "
-                            "and can't be compared");
+                        "greater::eval",
+                        generate_error_message(
+                            "left hand side and right hand side are incompatible "
+                                "and can't be compared",
+                            greater_.name_, greater_.codename_));
                 }
 
                 primitive_argument_type operator()(
@@ -383,17 +424,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 primitive_argument_type operator()(
+                    operand_type&& lhs, operand_type&& rhs) const
+                {
+                    return greater_.greater_all(
+                        std::move(lhs), std::move(rhs));
+                }
+
+                primitive_argument_type operator()(
                     ir::node_data<bool>&& lhs, ir::node_data<bool>&& rhs) const
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "left hand side and right hand side can't be compared");
-                }
-
-                primitive_argument_type operator()(
-                    operand_type&& lhs, operand_type&& rhs) const
-                {
-                    return greater_.greater_all(std::move(lhs), std::move(rhs));
+                        generate_error_message(
+                            "left hand side and right hand side can't be compared",
+                            greater_.name_, greater_.codename_));
                 }
 
                 greater const& greater_;
@@ -408,15 +452,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "the greater primitive requires exactly two operands");
+                        generate_error_message(
+                            "the greater primitive requires exactly two "
+                                "operands",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]) || !valid(operands[1]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "greater::eval",
-                        "the greater primitive requires that the arguments given "
-                            "by the operands array are valid");
+                        generate_error_message(
+                            "the greater primitive requires that the "
+                                "arguments given by the operands array are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -440,9 +489,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::greater>()->eval(args, noargs);
+            return std::make_shared<detail::greater>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::greater>()->eval(operands_, args);
+        return std::make_shared<detail::greater>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

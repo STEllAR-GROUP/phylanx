@@ -23,11 +23,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_console_output(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("cout");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const console_output::match_data =
@@ -39,8 +40,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     console_output::console_output(
-            std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     namespace detail
@@ -59,8 +61,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(
-                    hpx::util::unwrapping([this_](args_type&& args)
-                                              -> primitive_argument_type {
+                    hpx::util::unwrapping(
+                    [this_](args_type&& args) -> primitive_argument_type
+                    {
                         bool init = true;
                         for (auto const& arg : args)
                         {
@@ -97,7 +100,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return std::make_shared<detail::console_output>()->eval(args, noargs);
         }
-
         return std::make_shared<detail::console_output>()->eval(operands_, args);
     }
 }}}

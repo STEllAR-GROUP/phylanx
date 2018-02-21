@@ -44,10 +44,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             if (!hpx::util::get<1>(patterns).empty())
             {
-            result.define(hpx::util::get<0>(patterns),
-                builtin_function(
-                    hpx::util::get<2>(patterns), default_locality));
-        }
+                result.define(hpx::util::get<0>(patterns),
+                    builtin_function(
+                        hpx::util::get<2>(patterns), default_locality));
+            }
         }
 
         return result;
@@ -216,8 +216,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 HPX_ASSERT(ast::detail::is_identifier(args[i]));
                 env.define(ast::detail::identifier_name(args[i]),
-                    hpx::util::bind(
-                        arg, i + base_arg_num, hpx::util::placeholders::_2));
+                    hpx::util::bind(arg, i + base_arg_num,
+                        hpx::util::placeholders::_2, name_));
             }
             return compile(
                 name_, body, snippets_, env, patterns_, default_locality_);
@@ -267,7 +267,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 f = primitive_variable{default_locality_}(
                         std::move(bf.arg_), define_variable + "$" +
-                            std::to_string(sequence_number) + "$" + full_name);
+                            std::to_string(sequence_number) + "$" + full_name,
+                            name_);
                 return f;
             }
 
@@ -291,10 +292,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::to_string(sequence_number) + "$" + full_name;
 
             f = primitive_function{default_locality_}(
-                define_function_ + "$" + define_function_name);
+                    define_function_ + "$" + define_function_name,
+                    name_);
 
             // set the body for the compiled function
-            primitive_operand(f.arg_).set_body(
+            primitive_operand(f.arg_, define_function_name, name_).set_body(
                 hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
 
             // define-function shouldn't return a function that evaluates
@@ -312,7 +314,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 {
                     name += annotation(id);
                 }
-                return (*cf)(std::list<function>{}, name);
+                return (*cf)(std::list<function>{}, name, name_);
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -343,7 +345,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 {
                     name += annotation(id);
                 }
-                return (*cf)(std::move(args), name);
+                return (*cf)(std::move(args), name, name_);
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -370,7 +372,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
 
                 // create primitive with given arguments
-                return (*cf)(std::move(args), global_name);
+                return (*cf)(std::move(args), global_name, name_);
             }
 
             // otherwise the match was not complete, bail out
@@ -455,18 +457,18 @@ namespace phylanx { namespace execution_tree { namespace compiler
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    function compile(std::string const& name, ast::expression const& expr,
+    function compile(std::string const& codename, ast::expression const& expr,
         function_list& snippets, environment& env,
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality)
     {
-        compiler comp{name, snippets, env, patterns, default_locality};
+        compiler comp{codename, snippets, env, patterns, default_locality};
         return comp(expr);
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    function define_variable(std::string name, function_list& snippets,
-        environment& env, primitive_argument_type body,
+    function define_variable(std::string const& codename, std::string name,
+        function_list& snippets, environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
         std::string full_name = name;
@@ -488,7 +490,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         f = primitive_variable{default_locality}(
                 std::move(body), define_variable + "$" +
-                    std::to_string(sequence_number) + "$" + full_name);
+                    std::to_string(sequence_number) + "$" + full_name,
+                codename);
         return f;
     }
 }}}

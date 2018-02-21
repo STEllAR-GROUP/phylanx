@@ -25,8 +25,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         wrapped_function() = default;
 
-        wrapped_function(
-            std::vector<primitive_argument_type>&& operands, std::string name);
+        wrapped_function(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         // return the topology for this function definition
         topology expression_topology(
@@ -34,9 +34,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
-
-    private:
-        std::string name_;
     };
 }}}
 

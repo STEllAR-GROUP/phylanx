@@ -26,11 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_random(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
     {
         static std::string type("random");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const random::match_data =
@@ -41,8 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    random::random(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    random::random(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -54,27 +56,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
+                std::vector<primitive_argument_type> const& args,
+                std::string const& name, std::string const& codename)
             {
                 if (operands.size() > 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
-                        "the random primitive requires"
-                            "at most one operand");
+                        generate_error_message(
+                            "the random primitive requires"
+                                "at most one operand",
+                            name, codename));
                 }
 
                 if (!valid(operands[0]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
-                        "the random primitive requires that the "
-                            "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the random primitive requires that the "
+                                "arguments given by the operands array "
+                                "are valid",
+                            name, codename));
                 }
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_argument_type
+                    [this_, name, codename](operands_type&& ops)
+                    -> primitive_argument_type
                     {
                         std::size_t dims = 0;
                         if (!ops.empty())
@@ -96,12 +105,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "random::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    name, codename));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name, codename));
             }
 
         protected:
@@ -140,9 +152,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::random>()->eval(args, noargs);
+            return std::make_shared<detail::random>()->eval(
+                args, noargs, name_, codename_);
         }
-
-        return std::make_shared<detail::random>()->eval(operands_, args);
+        return std::make_shared<detail::random>()->eval(
+            operands_, args, name_, codename_);
     }
 }}}

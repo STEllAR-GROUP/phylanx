@@ -26,11 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_div_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("__div");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const div_operation::match_data =
@@ -41,8 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    div_operation::div_operation(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    div_operation::div_operation(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -141,7 +143,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///////////////////////////////////////////////////////////////////////
         struct div : std::enable_shared_from_this<div>
         {
-            div() = default;
+            div(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -174,8 +184,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div0d1d",
-                        "the div_operation primitive can div a single value "
-                            "to a vector only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the div_operation primitive can div a single "
+                                "value to a vector only if there are exactly "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 ops[1].vector() =
@@ -189,8 +202,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div0d2d",
-                        "the div_operation primitive can div a single value "
-                            "to a matrix only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the div_operation primitive can div a single "
+                                "value to a matrix only if there are exactly "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 ops[1].matrix() =
@@ -215,7 +231,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div0d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -225,8 +244,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div0d1d",
-                        "the div_operation primitive can div a single value "
-                            "to a vector only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the div_operation primitive can div a single "
+                                "value to a vector only if there are exactly "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 ops[0].vector() =
@@ -246,7 +268,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d1d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 if (ops.size() == 2)
@@ -260,7 +284,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type(std::accumulate(ops.begin() + 1,
                     ops.end(), std::move(first_term),
                     [](operand_type& result,
-                        operand_type const& curr) -> operand_type {
+                        operand_type const& curr) -> operand_type
+                    {
                         result.vector() = blaze::map(
                             result.vector(), curr.vector(), divndnd_simd());
                         return std::move(result);
@@ -273,16 +298,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d2d",
-                        "the div_operation primitive can divide a vector "
-                        "to a matrix only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the div_operation primitive can divide a vector "
+                                "to a matrix only if there are exactly "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 if (ops[0].vector().size() != ops[1].matrix().columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d2d",
-                        "vector size does not match number of matrix columns");
+                        generate_error_message(
+                            "vector size does not match number of matrix "
+                                "columns",
+                            name_, codename_));
                 }
+
                 // TODO: Blaze does not support broadcasting
                 for (size_t i = 0UL; i < ops[1].matrix().rows(); ++i)
                 {
@@ -308,10 +340,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 2:
                     return div1d2d(std::move(ops));
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -321,8 +357,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div0d2d",
-                        "the div_operation primitive can div a single value "
-                            "to a matrix only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the div_operation primitive can div a single "
+                                "value to a matrix only if there are exactly "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 ops[0].matrix() =
@@ -336,16 +375,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div2d1d",
-                        "the div_operation primitive can divide a matrix "
-                        "to a vector only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the div_operation primitive can divide a matrix "
+                                "to a vector only if there are exactly "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 if (ops[1].vector().size() != ops[0].matrix().columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d2d",
-                        "vector size does not match number of matrix columns");
+                        generate_error_message(
+                            "vector size does not match number of matrix "
+                                "columns",
+                            name_, codename_));
                 }
+
                 // TODO: Blaze does not support broadcasting
                 for (size_t i = 0UL; i < ops[0].matrix().rows(); ++i)
                 {
@@ -368,7 +414,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div2d2d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 if (ops.size() == 2)
@@ -382,7 +430,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type(std::accumulate(ops.begin() + 1,
                     ops.end(), std::move(first_term),
                     [](operand_type& result,
-                        operand_type const& curr) -> operand_type {
+                        operand_type const& curr) -> operand_type
+                    {
                         result.matrix() = blaze::map(
                             result.matrix(), curr.matrix(), divndnd_simd());
                         return std::move(result);
@@ -405,7 +454,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div2d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -418,8 +470,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::eval",
-                        "the div_operation primitive requires at least two "
-                            "operands");
+                        generate_error_message(
+                            "the div_operation primitive requires at least "
+                                "two operands",
+                            name_, codename_));
                 }
 
                 bool arguments_valid = true;
@@ -435,14 +489,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::eval",
-                        "the div_operation primitive requires that the "
-                            "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the div_operation primitive requires that the "
+                                "arguments given by the operands array are "
+                                "valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping([this_](operands_type&& ops)
-                                              -> primitive_argument_type {
+                return hpx::dataflow(hpx::util::unwrapping(
+                    [this_](operands_type&& ops) -> primitive_argument_type
+                    {
                         std::size_t lhs_dims = ops[0].num_dimensions();
                         switch (lhs_dims)
                         {
@@ -458,12 +515,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "div_operation::eval",
-                                "left hand side operand has unsupported number "
-                                "of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    this_->name_, this_->codename_));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -474,9 +534,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::div>()->eval(args, noargs);
+            return std::make_shared<detail::div>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::div>()->eval(operands_, args);
+        return std::make_shared<detail::div>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

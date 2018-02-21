@@ -24,7 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         file_read() = default;
 
-        file_read(std::vector<primitive_argument_type>&& operands);
+        file_read(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
@@ -32,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     PHYLANX_EXPORT primitive create_file_read(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif

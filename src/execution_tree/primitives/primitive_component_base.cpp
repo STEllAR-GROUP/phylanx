@@ -4,10 +4,12 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <set>
@@ -21,8 +23,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     std::vector<primitive_argument_type> primitive_component_base::noargs{};
 
     primitive_component_base::primitive_component_base(
-            std::vector<primitive_argument_type>&& params)
+            std::vector<primitive_argument_type>&& params,
+            std::string const& name, std::string const& codename)
       : operands_(std::move(params))
+      , name_(name)
+      , codename_(codename)
     {
     }
 
@@ -87,4 +92,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "set_body function should only be called for the "
                 "define_function_primitive");
     }
+
+    std::string primitive_component_base::generate_error_message(
+        std::string const& msg) const
+    {
+        return execution_tree::generate_error_message(msg, name_, codename_);
+    }
 }}}
+
+namespace phylanx { namespace execution_tree
+{
+    std::string generate_error_message(std::string const& msg,
+        std::string const& name, std::string const& codename)
+    {
+        if (!name.empty())
+        {
+            auto parts = compiler::parse_primitive_name(name);
+
+            std::string line_col;
+            if (parts.tag1 != -1 && parts.tag2 != -1)
+            {
+                line_col = hpx::util::format("(%1%, %2%)", parts.tag1, parts.tag2);
+            }
+
+            if (!parts.instance.empty())
+            {
+                return hpx::util::format("%1%%2%: %3%$%4%:: %5%",
+                    codename.empty() ? "<unknown>" : codename,
+                    line_col, parts.primitive, parts.instance, msg);
+            }
+
+            return hpx::util::format("%1%%2%: %3%:: %4%",
+                codename.empty() ? "<unknown>" : codename, line_col,
+                parts.primitive, msg);
+        }
+
+        return hpx::util::format(
+            "%1%: %2%", codename.empty() ? "<unknown>" : codename, msg);
+    }
+}}

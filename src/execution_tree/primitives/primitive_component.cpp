@@ -84,7 +84,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /////////////////////////////////////////////////////////////////////////
     std::unique_ptr<primitive_component_base>
     primitive_component::create_primitive(std::string const& type,
-        std::vector<primitive_argument_type>&& args)
+        std::vector<primitive_argument_type>&& args, std::string const& name,
+        std::string const& codename)
     {
         auto const& factories = detail::get_factories();
 
@@ -92,31 +93,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (it == factories.end())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "primitive_component::create_primitive",
+                "primitive_component::create_primitive_no_name",
                 "attempting to instantiate an unknown primitive type: " +
                     type);
         }
 
-        static std::string noname;
-        return (*it).second(std::move(args), noname);
-    }
-
-    std::unique_ptr<primitive_component_base>
-    primitive_component::create_primitive(std::string const& type,
-        std::vector<primitive_argument_type>&& args, std::string const& name)
-    {
-        auto const& factories = detail::get_factories();
-
-        auto it = factories.find(type);
-        if (it == factories.end())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "primitive_component::create_primitive",
-                "attempting to instantiate an unknown primitive type: " +
-                    type);
-        }
-
-        return (*it).second(std::move(args), name);
+        return (*it).second(std::move(args), name, codename);
     }
 
     // eval_action
@@ -159,51 +141,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 namespace phylanx { namespace execution_tree
 {
-    primitive create_primitive_component(hpx::id_type const& locality,
-        std::string const& type,
-        std::vector<primitive_argument_type>&& operands,
-        std::string const& name)
-    {
-        return primitive{
-            hpx::new_<primitives::primitive_component>(
-                locality, type, std::move(operands)),
-            name};
-    }
-
-    primitive create_primitive_component_with_name(
+    primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name)
+        std::string const& name, std::string const& codename)
     {
         return primitive{
             hpx::new_<primitives::primitive_component>(
-                locality, type, std::move(operands), name),
+                locality, type, std::move(operands), name, codename),
             name};
     }
 
-    primitive create_primitive_component(hpx::id_type const& locality,
-        std::string const& type, primitive_argument_type operand,
-        std::string const& name)
+    primitive create_primitive_component(
+        hpx::id_type const& locality, std::string const& type,
+        primitive_argument_type operand, std::string const& name,
+        std::string const& codename)
     {
         std::vector<primitive_argument_type> operands;
         operands.emplace_back(std::move(operand));
 
         return primitive{
             hpx::new_<primitives::primitive_component>(
-                locality, type, std::move(operands)),
-            name};
-    }
-
-    primitive create_primitive_component_with_name(
-        hpx::id_type const& locality, std::string const& type,
-        primitive_argument_type operand, std::string const& name)
-    {
-        std::vector<primitive_argument_type> operands;
-        operands.emplace_back(std::move(operand));
-
-        return primitive{
-            hpx::new_<primitives::primitive_component>(
-                locality, type, std::move(operands), name),
+                locality, type, std::move(operands), name, codename),
             name};
     }
 }}
