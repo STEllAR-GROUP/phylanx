@@ -215,8 +215,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs = blaze::trans(
-                    blaze::trans(lhs.vector()) * rhs.matrix());
+                if (ops[0].vector().size() != ops[1].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul1d2d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < ops[1].matrix().rows(); ++i)
+                {
+                    blaze::row(ops[1].matrix(), i) =
+                        blaze::trans(ops[0].vector()) *
+                        blaze::row(ops[1].matrix(), i);
+                }
+
                 return primitive_argument_type{ std::move(rhs) };
             }
 
@@ -268,16 +280,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs = lhs.matrix() * rhs.vector();
-                return primitive_argument_type{ std::move(rhs) };
+                if (ops[1].vector().size() != ops[0].matrix().columns())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "mul_operation::mul2d1d",
+                        "vector size does not match number of matrix columns");
+                }
+                // TODO: Blaze does not support broadcasting
+                for (size_t i = 0UL; i < ops[0].matrix().rows(); ++i)
+                {
+                    blaze::row(ops[0].matrix(), i) *=
+                        blaze::trans(ops[1].vector());
+                }
+
+                return primitive_argument_type{std::move(lhs)};
             }
 
             primitive_argument_type mul2d2d(operands_type && ops) const
             {
                 if (ops.size() == 2)
                 {
-                    ops[0] = ops[0].matrix() * ops[1].matrix();
-                    return primitive_argument_type{ std::move(ops[0]) };
+                    ops[0] = ops[0].matrix() % ops[1].matrix();
+                    return primitive_argument_type{std::move(ops[0])};
                 }
 
                 return primitive_argument_type{
