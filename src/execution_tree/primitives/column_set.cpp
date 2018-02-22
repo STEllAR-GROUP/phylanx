@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/set_operation.hpp>
+#include <phylanx/execution_tree/primitives/column_set.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -25,31 +25,35 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_set_operation(hpx::id_type const& locality,
+    primitive create_column_set_operation(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
         std::string const& name)
     {
-        static std::string type("set");
+        static std::string type("set_column");
         return create_primitive_component(
             locality, type, std::move(operands), name);
     }
 
-    match_pattern_type const set_operation::match_data = {hpx::util::make_tuple(
-        "set", std::vector<std::string>{"set(_1,_2,_3,_4,_5,_6,_7,_8)"},
-        &create_set_operation, &create_primitive<set_operation>)};
+    match_pattern_type const column_set_operation::match_data = {
+        hpx::util::make_tuple("set_column",
+            std::vector<std::string>{"set_column(_1, _2, _3, _4, _5)"},
+            &create_column_set_operation,
+            &create_primitive<column_set_operation>)};
 
     ///////////////////////////////////////////////////////////////////////////
-    set_operation::set_operation(
+    column_set_operation::column_set_operation(
         std::vector<primitive_argument_type>&& operands)
       : primitive_component_base(std::move(operands))
     {
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::vector<int> create_list_set(
-            int start, int stop, int step, int array_length)
+        std::vector<int> create_list_col_set(int start,
+            int stop,
+            int step,
+            int array_length)
         {
             auto actual_start = 0;
             auto actual_stop = 0;
@@ -96,46 +100,46 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                    "set_operation::create_list_set",
+                    "column_set_operation::create_list_col_set",
                     "Set will produce empty result, please check your "
                     "parameters");
             }
+
             return result;
         }
 
-        struct set : std::enable_shared_from_this<set>
+        struct set_column : std::enable_shared_from_this<set_column>
         {
-            set() = default;
+            set_column() = default;
 
         protected:
             using arg_type = ir::node_data<double>;
             using args_type = std::vector<arg_type>;
+
             using storage0d_type = typename arg_type::storage0d_type;
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
-            primitive_argument_type set0d(args_type&& args) const
+            primitive_argument_type column_set0d(args_type&& args) const
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                    "set_operation::set_"
-                    "operation",
+                    "column_set_operation::column_set_0d",
                     "use store operation for setting value to a variable");
             }
 
-            primitive_argument_type set1d(args_type&& args) const
+            primitive_argument_type column_set1d(args_type&& args) const
             {
-                auto row_start = args[1].scalar();
-                auto row_stop = args[2].scalar();
+                auto col_start = args[1].scalar();
+                auto col_stop = args[2].scalar();
                 int step = args[3].scalar();
-                auto value_dimnum = args[7].num_dimensions();
+                auto value_dimnum = args[4].num_dimensions();
 
                 if (step == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_"
-                        "operation",
+                        "column_set_operation::column_set1d",
                         "step can not be zero");
                 }
 
@@ -143,31 +147,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_"
-                        "operation",
+                        "column_set_operation::column_set1d",
                         "cant store matrix in a vector");
                 }
 
-                auto init_list =
-                    create_list_set(row_start, row_stop, step, args[0].size());
+                auto init_list = create_list_col_set(
+                    col_start, col_stop, step, args[0].size());
 
                 auto sv = blaze::elements(args[0].vector(), init_list);
 
                 if (value_dimnum == 0)
                 {
                     blaze::DynamicVector<double> temp(
-                        sv.size(), args[7].scalar());
+                        sv.size(), args[4].scalar());
                     sv = temp;
                     return primitive_argument_type{ir::node_data<double>(0)};
                 }
 
-                auto temp = args[7].vector();
+                auto temp = args[4].vector();
 
                 if (sv.size() != temp.size())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_operation",
+                        "column_set_operation::column_set1d",
                         "size mismatch");
                 }
 
@@ -175,19 +178,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{ir::node_data<double>(0)};
             }
 
-            primitive_argument_type set2d(args_type&& args) const
+            primitive_argument_type column_set2d(args_type&& args) const
             {
-                auto row_start = args[1].scalar();
-                auto row_stop = args[2].scalar();
-                auto step_row = args[3].scalar();
-                auto col_start = args[4].scalar();
-                auto col_stop = args[5].scalar();
-                auto step_col = args[6].scalar();
+                auto col_start = args[1].scalar();
+                auto col_stop = args[2].scalar();
+                auto step_col = args[3].scalar();
+                auto row_start = 0;
+                auto row_stop = args[0].dimensions()[0];
+                auto step_row = 1;
                 auto num_matrix_rows = args[0].dimensions()[0];
                 auto num_matrix_cols = args[0].dimensions()[1];
-                auto value_dimnum = args[7].num_dimensions();
+                auto value_dimnum = args[4].num_dimensions();
 
-                if (step_row == 0 || step_col == 0)
+                if (step_col == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
@@ -195,25 +198,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "step can not be zero");
                 }
 
-                auto init_list_row = create_list_set(
-                    row_start, row_stop, step_row, num_matrix_rows);
-                auto init_list_col = create_list_set(
+                auto init_list_col = create_list_col_set(
                     col_start, col_stop, step_col, num_matrix_cols);
 
-                auto sm_row = blaze::rows(args[0].matrix(), init_list_row);
-                auto sm = blaze::columns(sm_row, init_list_col);
+                auto sm = blaze::columns(args[0].matrix(), init_list_col);
 
                 if (value_dimnum == 0)
                 {
                     blaze::DynamicMatrix<double> data(
-                        sm.rows(), sm.columns(), args[7].scalar());
+                        sm.rows(), sm.columns(), args[4].scalar());
                     sm = data;
                     return primitive_argument_type{ir::node_data<double>(0)};
                 }
 
                 if (value_dimnum == 1)
                 {
-                    auto data = blaze::trans(args[7].vector());
+                    auto data = blaze::trans(args[4].vector());
                     std::size_t data_size = data.size();
                     std::size_t num_cols = sm.columns();
                     std::size_t num_rows = sm.rows();
@@ -237,7 +237,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return primitive_argument_type{ir::node_data<double>(0)};
                 }
 
-                auto data = args[7].matrix();
+                auto data = args[4].matrix();
                 auto data_rows = data.rows();
                 auto data_cols = data.columns();
                 auto num_cols = sm.columns();
@@ -259,12 +259,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
-                if (operands.size() != 8)
+                if (operands.size() != 5)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_operation",
-                        "the set_operation primitive requires eight "
+                        "column_set_operation::column_set_operation",
+                        "the column_set_operation primitive requires five "
                         "arguments");
                 }
 
@@ -280,8 +280,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (!arguments_valid)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "set_operation::eval",
-                        "the set_operation primitive requires that the "
+                        "column_set_operation::eval",
+                        "the column_set_operation primitive requires that "
+                        "the "
                         "arguments given by the operands array are valid");
                 }
 
@@ -289,21 +290,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::dataflow(
                     hpx::util::unwrapping(
                         [this_](args_type&& args) -> primitive_argument_type {
-                            std::size_t lhs_dims = args[0].num_dimensions();
-                            switch (lhs_dims)
+                            std::size_t matrix_dims = args[0].num_dimensions();
+                            switch (matrix_dims)
                             {
                             case 0:
-                                return this_->set0d(std::move(args));
+                                return this_->column_set0d(std::move(args));
 
                             case 1:
-                                return this_->set1d(std::move(args));
+                                return this_->column_set1d(std::move(args));
 
                             case 2:
-                                return this_->set2d(std::move(args));
+                                return this_->column_set2d(std::move(args));
 
                             default:
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "set_operation::eval",
+                                    "column_set_operation::eval",
                                     "left hand side operand has unsupported "
                                     "number of dimensions");
                             }
@@ -314,14 +315,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    hpx::future<primitive_argument_type> set_operation::eval(
+    hpx::future<primitive_argument_type> column_set_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::set>()->eval(args, noargs);
+            return std::make_shared<detail::set_column>()->eval(args, noargs);
         }
 
-        return std::make_shared<detail::set>()->eval(operands_, args);
+        return std::make_shared<detail::set_column>()->eval(operands_, args);
     }
 }}}
