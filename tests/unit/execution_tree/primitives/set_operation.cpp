@@ -528,46 +528,46 @@ void test_set_operation_2d_negetive_step()
 
 void test_set_operation_2d_single_element_input()
 {
-  blaze::DynamicMatrix<double> m1{
+    blaze::DynamicMatrix<double> m1{
       {0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998},
       {0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144},
       {0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486},
       {0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563},
       {0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477}};
 
-  phylanx::execution_tree::primitive input_matrix =
+    phylanx::execution_tree::primitive input_matrix =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
-  phylanx::execution_tree::primitive row_start =
+    phylanx::execution_tree::primitive row_start =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(4.0));
 
-  phylanx::execution_tree::primitive row_stop =
+    phylanx::execution_tree::primitive row_stop =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(1.0));
-
-  phylanx::execution_tree::primitive step_row =
+    
+    phylanx::execution_tree::primitive step_row =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(-1.0));
 
-  phylanx::execution_tree::primitive col_start =
+    phylanx::execution_tree::primitive col_start =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(4.0));
 
-  phylanx::execution_tree::primitive col_stop =
+    phylanx::execution_tree::primitive col_stop =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(1.0));
 
-  phylanx::execution_tree::primitive step_col =
+    phylanx::execution_tree::primitive step_col =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(-1.0));
 
-  phylanx::execution_tree::primitive set_element =
+    phylanx::execution_tree::primitive set_element =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(0.42));
 
-  phylanx::execution_tree::primitive set =
+    phylanx::execution_tree::primitive set =
       phylanx::execution_tree::primitives::create_set_operation(
           hpx::find_here(),
           std::vector<phylanx::execution_tree::primitive_argument_type>{
@@ -575,22 +575,22 @@ void test_set_operation_2d_single_element_input()
               std::move(step_row), std::move(col_start), std::move(col_stop),
               std::move(step_col), std::move(set_element)});
 
-  blaze::DynamicMatrix<double> expected{
+    blaze::DynamicMatrix<double> expected{
       {0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998},
       {0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144},
       {0.04567072, 0.15471737, 0.42, 0.42, 0.42},
       {0.84430163, 0.22872386, 0.42, 0.42, 0.42},
       {0.63714445, 0.06884843, 0.42, 0.42, 0.42}};
 
-  hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
       set.eval();
 
-  f.get();
+    f.get();
 
-  auto result = phylanx::execution_tree::extract_numeric_value(
+    auto result = phylanx::execution_tree::extract_numeric_value(
       input_matrix.eval().get());
 
-  HPX_TEST_EQ(phylanx::ir::node_data<double>(expected), result);
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(expected), result);
 }
 
 int main(int argc, char* argv[])
