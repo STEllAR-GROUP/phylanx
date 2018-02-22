@@ -546,7 +546,7 @@ void test_set_operation_2d_single_element_input()
     phylanx::execution_tree::primitive row_stop =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(1.0));
-    
+
     phylanx::execution_tree::primitive step_row =
       phylanx::execution_tree::primitives::create_variable(
           hpx::find_here(), phylanx::ir::node_data<double>(-1.0));
