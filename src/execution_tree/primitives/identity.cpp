@@ -26,11 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_identity(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("identity");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const identity::match_data =
@@ -41,8 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    identity::identity(std::vector<primitive_argument_type> && operands)
-      : primitive_component_base(std::move(operands))
+    identity::identity(std::vector<primitive_argument_type> && operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename    )
     {
     }
 
@@ -50,7 +52,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail {
         struct identity : std::enable_shared_from_this<identity>
         {
-            identity() = default;
+            identity(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -62,7 +72,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (ops[0].num_dimensions() != 0)
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "identity::identity_nd",
-                        "input should be a scalar");
+                        generate_error_message(
+                            "input should be a scalar",
+                            name_, codename_));
 
                 std::size_t dim = static_cast<std::size_t>(ops[0].scalar());
                 return primitive_argument_type{
@@ -78,16 +90,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "identity::eval",
-                        "the identity primitive requires"
-                        "at most one operand");
+                        generate_error_message(
+                            "the identity primitive requires"
+                                "at most one operand",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "identity::eval",
-                        "the identity primitive requires that the "
-                        "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the identity primitive requires that the "
+                                "arguments given by the operands array "
+                                "are valid",
+                            name_, codename_));
                 }
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
@@ -96,7 +113,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return this_->identity_nd(std::move(op0));
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -106,9 +124,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::identity>()->eval(args, noargs);
+            return std::make_shared<detail::identity>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::identity>()->eval(operands_, args);
+        return std::make_shared<detail::identity>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

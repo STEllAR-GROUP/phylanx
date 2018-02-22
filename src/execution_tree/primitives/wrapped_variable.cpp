@@ -24,21 +24,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("access-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive_with_name<wrapped_variable>)
+            nullptr, &create_primitive<wrapped_variable>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     wrapped_variable::wrapped_variable(
             std::vector<primitive_argument_type>&& operands,
-            std::string name)
-      : primitive_component_base(std::move(operands))
-      , name_(std::move(name))
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {
         if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "wrapped_variable::wrapped_variable",
-                "the wrapped_variable primitive requires exactly one operand");
+                execution_tree::generate_error_message(
+                    "the wrapped_variable primitive requires exactly one "
+                        "operand",
+                    name_, codename_));
         }
     }
 
@@ -46,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> wrapped_variable::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        return value_operand(operands_[0], params);
+        return value_operand(operands_[0], params, name_, codename_);
     }
 
     void wrapped_variable::store(primitive_argument_type && val)

@@ -18,7 +18,7 @@ namespace phylanx { namespace ast
     {
         expression& replace_compile_ids(expression& ast,
             std::vector<std::string::const_iterator> const& iters,
-            std::string::const_iterator begin);
+            std::string const& code);
     }
 
     /// Parse the given string and convert it into a list of AST instances

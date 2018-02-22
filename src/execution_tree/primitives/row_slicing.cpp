@@ -27,11 +27,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_row_slicing_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
     {
         static std::string type("slice_row");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const row_slicing_operation::match_data =
@@ -45,71 +46,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     row_slicing_operation::row_slicing_operation(
-            std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::vector<int> create_list_row(
-            int start, int stop, int step, int array_length)
-        {
-            auto actual_start = 0;
-            auto actual_stop = 0;
-
-            if (start >= 0)
-            {
-                actual_start = start;
-            }
-
-            if (start < 0)
-            {
-                actual_start = array_length + start;
-            }
-
-            if (stop >= 0)
-            {
-                actual_stop = stop;
-            }
-
-            if (stop < 0)
-            {
-                actual_stop = array_length + stop;
-            }
-
-            std::vector<int> result;
-
-            if (step > 0)
-            {
-                for (int i = actual_start; i < actual_stop; i += step)
-                {
-                    result.push_back(i);
-                }
-            }
-
-            if (step < 0)
-            {
-                for (int i = actual_start; i > actual_stop; i += step)
-                {
-                    result.push_back(i);
-                }
-            }
-
-            if (result.empty())
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                    "row_slicing_operation::create_list_row",
-                    "Slicing will produce empty result, please check your "
-                    "parameters");
-            }
-            return result;
-        }
-
         struct slicing_row : std::enable_shared_from_this<slicing_row>
         {
-            slicing_row() = default;
+            slicing_row(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using arg_type = ir::node_data<double>;
@@ -117,6 +72,63 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage0d_type = typename arg_type::storage0d_type;
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
+
+            std::vector<int> create_list_row(
+                int start, int stop, int step, int array_length) const
+            {
+                auto actual_start = 0;
+                auto actual_stop = 0;
+
+                if (start >= 0)
+                {
+                    actual_start = start;
+                }
+
+                if (start < 0)
+                {
+                    actual_start = array_length + start;
+                }
+
+                if (stop >= 0)
+                {
+                    actual_stop = stop;
+                }
+
+                if (stop < 0)
+                {
+                    actual_stop = array_length + stop;
+                }
+
+                std::vector<int> result;
+
+                if (step > 0)
+                {
+                    for (int i = actual_start; i < actual_stop; i += step)
+                    {
+                        result.push_back(i);
+                    }
+                }
+
+                if (step < 0)
+                {
+                    for (int i = actual_start; i > actual_stop; i += step)
+                    {
+                        result.push_back(i);
+                    }
+                }
+
+                if (result.empty())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                            "row_slicing_operation::create_list_row",
+                        generate_error_message(
+                            "slicing will produce empty result, please "
+                                "check your parameters",
+                            name_, codename_));
+                }
+                return result;
+            }
 
             primitive_argument_type row_slicing0d(args_type&& args) const
             {
@@ -137,9 +149,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "phylanx::execution_tree::primitives::"
-                            "row_slicing_operation::row_slicing_"
-                            "operation",
-                            "step can not be zero");
+                                "row_slicing_operation::row_slicing_operation",
+                            generate_error_message(
+                                "step can not be zero",
+                                name_, codename_));
                     }
                 }
 
@@ -174,9 +187,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "phylanx::execution_tree::primitives::"
-                            "row_slicing_operation::row_slicing_"
-                            "operation",
-                            "step can not be zero");
+                                "row_slicing_operation::row_slicing_operation",
+                            generate_error_message(
+                                "step can not be zero",
+                                name_, codename_));
                     }
                 }
 
@@ -214,8 +228,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
                             "row_slicing_operation::row_slicing_operation",
-                        "the row_slicing_operation primitive requires either "
-                            "three or four arguments");
+                        generate_error_message(
+                            "the row_slicing_operation primitive requires "
+                                "either three or four arguments",
+                            name_, codename_));
                 }
 
                 bool arguments_valid = true;
@@ -231,8 +247,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "row_slicing_operation::eval",
-                        "the row_slicing_operation primitive requires that the "
-                            "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the row_slicing_operation primitive requires "
+                                "that the arguments given by the operands "
+                                "array are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -254,12 +273,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "row_slicing_operation::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    this_->name_, this_->codename_));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -269,9 +291,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::slicing_row>()->eval(args, noargs);
+            return std::make_shared<detail::slicing_row>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::slicing_row>()->eval(operands_, args);
+        return std::make_shared<detail::slicing_row>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

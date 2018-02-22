@@ -27,15 +27,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     access_argument::access_argument(
-            std::vector<primitive_argument_type>&& args)
-      : primitive_component_base(std::move(args))
+            std::vector<primitive_argument_type>&& args,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(args), name, codename)
     {
         if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "access_argument::access_argument",
-                "the access_argument primitive expects to be initialized with "
-                    "exactly one argument");
+                generate_error_message(
+                    "the access_argument primitive expects to be initialized "
+                    "with exactly one argument"));
         }
 
         argnum_ = extract_integer_value(operands_[0]);
@@ -48,12 +50,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                "access_argument::eval_direct",
-                "argument count out of bounds, expected at least " +
-                    std::to_string(argnum_ + 1) + " argument(s) "
-                    "while only " + std::to_string(params.size()) +
-                    " argument(s) were supplied");
+                    "access_argument::eval_direct",
+                generate_error_message(hpx::util::format(
+                    "argument count out of bounds, expected at least "
+                        "%1% argument(s) while only %2% argument(s) "
+                        "were supplied", argnum_ + 1, params.size())));
         }
-        return value_operand_ref_sync(params[argnum_], params);
+        return value_operand_ref_sync(params[argnum_], params, name_, codename_);
     }
 }}}

@@ -19,6 +19,7 @@
 #include <boost/spirit/include/qi_nonterminal.hpp>
 #include <boost/spirit/include/qi_numeric.hpp>
 #include <boost/spirit/include/qi_operator.hpp>
+#include <boost/spirit/include/qi_optional.hpp>
 #include <boost/spirit/include/qi_parse.hpp>
 #include <boost/spirit/include/qi_string.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -47,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
               : primitive_name_parser::base_type(start)
             {
                 start =
-                        qi::lit("/phylanx/") >> primitive
+                       -qi::lit("/phylanx/") >> primitive
                     >>   qi::lit('$') >> qi::int_
                     >> ((qi::lit('$') >> instance) | qi::attr(""))
                     >>   qi::lit('/') >> qi::int_
@@ -86,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::compiler::parse_primitive_name",
-                "could not (fully) parse the give primitive name: " + name);
+                "could not (fully) parse the given primitive name: " + name);
         }
 
         return data;

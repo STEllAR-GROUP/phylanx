@@ -11,6 +11,7 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -22,7 +23,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         access_argument() = default;
 
-        access_argument(std::vector<primitive_argument_type>&& args);
+        access_argument(std::vector<primitive_argument_type>&& args,
+            std::string const& name, std::string const& codename);
 
         primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;

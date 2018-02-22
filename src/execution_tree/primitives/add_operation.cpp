@@ -27,11 +27,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_add_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("__add");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const add_operation::match_data =
@@ -43,8 +44,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     add_operation::add_operation(
-            std::vector<primitive_argument_type> && operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type> && operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -84,7 +86,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         struct add : std::enable_shared_from_this<add>
         {
-            add() = default;
+            add(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {}
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using arg_type = ir::node_data<double>;
@@ -218,8 +227,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add1d2d",
-                        "the add_operation primitive can add a vector "
-                        "to a matrix only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the add_operation primitive can add a vector "
+                            "to a matrix only if there are exactly 2 operands",
+                            name_, codename_));
                 }
 
                 auto cv = args[0].vector();
@@ -228,7 +239,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add1d2d",
-                        "vector size does not match number of matrix columns");
+                        generate_error_message(
+                            "vector size does not match number of matrix "
+                                "columns",
+                            name_, codename_));
                 }
 
                 // TODO: Blaze does not support broadcasting
@@ -258,7 +272,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add1d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -269,8 +286,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add0d2d",
-                        "the add_operation primitive can add a single value "
-                            "to a matrix only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the add_operation primitive can add a single value "
+                            "to a matrix only if there are exactly 2 operands",
+                            name_, codename_));
                 }
 
                 args[0] = blaze::map(
@@ -284,8 +303,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add2d1d",
-                        "the add_operation primitive can add a vector "
-                        "to a matrix only if there are exactly 2 operands");
+                        generate_error_message(
+                            "the add_operation primitive can add a vector "
+                            "to a matrix only if there are exactly 2 operands",
+                            name_, codename_));
                 }
 
                 auto cv = args[1].vector();
@@ -294,7 +315,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add2d1d",
-                        "vector size does not match number of matrix columns");
+                        generate_error_message(
+                            "vector size does not match number of matrix "
+                                "columns",
+                            name_, codename_));
                 }
 
                 // TODO: Blaze does not support broadcasting
@@ -318,7 +342,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add2d2d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 if (args.size() == 2)
@@ -355,7 +381,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::add2d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -368,8 +397,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::eval",
-                        "the add_operation primitive requires at least two "
-                            "operands");
+                        generate_error_message(
+                            "the add_operation primitive requires at least two "
+                                "operands",
+                            name_, codename_));
                 }
 
                 bool arguments_valid = true;
@@ -385,8 +416,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_operation::eval",
-                        "the add_operation primitive requires that the "
-                            "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the add_operation primitive requires that the "
+                            "arguments given by the operands array are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -408,12 +441,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "add_operation::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                    "number of dimensions",
+                                this_->name_, this_->codename_));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -424,9 +460,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::add>()->eval(args, noargs);
+            return std::make_shared<detail::add>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::add>()->eval(operands_, args);
+        return std::make_shared<detail::add>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

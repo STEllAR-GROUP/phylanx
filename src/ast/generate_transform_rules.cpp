@@ -58,11 +58,11 @@ namespace phylanx { namespace ast
                 "phylanx::ast::generate_transform_rule", strm.str());
         }
 
-        // replace compile-tags with offsets against begin of input
+        // replace compile-tags with line/column information
         for (auto& rule : rules)
         {
-            detail::replace_compile_ids(rule.first, iters, input.begin());
-            detail::replace_compile_ids(rule.second, iters, input.begin());
+            detail::replace_compile_ids(rule.first, iters, input);
+            detail::replace_compile_ids(rule.second, iters, input);
         }
 
         return rules;

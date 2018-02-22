@@ -32,7 +32,8 @@ void test_define_operation_var(
     HPX_TEST(cf != nullptr);
 
     auto var_def =
-        (*cf)(std::list<phylanx::execution_tree::compiler::function>{}, name);
+        (*cf)(std::list<phylanx::execution_tree::compiler::function>{}, name,
+            "<unknown>");
     auto var = var_def();       // bind the variable
 
     // evaluate expression
@@ -58,8 +59,8 @@ void test_define_operation(char const* expr, char const* name, double expected,
     auto cf = env.find(name);
     HPX_TEST(cf != nullptr);
 
-    auto def_f =
-        (*cf)(std::list<phylanx::execution_tree::compiler::function>{}, name);
+    auto def_f = (*cf)(std::list<phylanx::execution_tree::compiler::function>{},
+        name, "<unknown>");
     auto f = def_f();     // bind the function
 
     // evaluate expression

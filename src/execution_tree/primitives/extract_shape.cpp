@@ -24,11 +24,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_extract_shape(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("shape");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const extract_shape::match_data =
@@ -40,8 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     extract_shape::extract_shape(
-            std::vector<primitive_argument_type> && operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type> && operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     namespace detail
@@ -101,14 +103,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         public:
             hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
+                std::vector<primitive_argument_type> const& args,
+                std::string const& name, std::string const& codename)
             {
                 if (operands.empty() || operands.size() > 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
-                        "the extract_shape primitive requires one or two "
-                            "operands");
+                        generate_error_message(
+                            "the extract_shape primitive requires one or two "
+                                "operands",
+                            name, codename));
                 }
 
                 if (!valid(operands[0]) ||
@@ -116,8 +121,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
-                        "the extract_shape primitive requires that the "
-                            "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the extract_shape primitive requires that the "
+                                "arguments given by the operands array are "
+                                "valid",
+                            name, codename));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -141,7 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name, codename));
             }
         };
     }
@@ -152,9 +161,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::shape>()->eval(args, noargs);
+            return std::make_shared<detail::shape>()->eval(
+                args, noargs, name_, codename_);
         }
-
-        return std::make_shared<detail::shape>()->eval(operands_, args);
+        return std::make_shared<detail::shape>()->eval(
+            operands_, args, name_, codename_);
     }
 }}}

@@ -23,11 +23,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_linspace(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("linspace");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const linspace::match_data =
@@ -38,8 +39,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    linspace::linspace(std::vector<primitive_argument_type>&& args)
-      : primitive_component_base(std::move(args))
+    linspace::linspace(std::vector<primitive_argument_type>&& args,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(args), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -47,7 +49,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct linspace : std::enable_shared_from_this<linspace>
         {
-            linspace() = default;
+            linspace(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using arg_type = ir::node_data<double>;
@@ -63,8 +73,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (num_samples < 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::detail::linspace1d",
-                        "the linspace primitive requires at least one interval");
+                        "phylanx::execution_tree::primitives::"
+                            "detail::linspace1d",
+                        generate_error_message(
+                            "the linspace primitive requires at least one "
+                                "interval",
+                            name_, codename_));
                 }
 
                 if (1 == num_samples)
@@ -93,7 +107,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::linspace",
-                        "The linspace primitive requires exactly three arguments.");
+                        generate_error_message(
+                            "the linspace primitive requires exactly three "
+                                "arguments.",
+                            name_, codename_));
                 }
 
                 for (std::size_t i = 0; i != operands.size(); ++i)
@@ -102,8 +119,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "linspace::eval",
-                            "at least one of the arguments passed to linspace"
-                               "is not valid.");
+                            generate_error_message(
+                                "at least one of the arguments passed to "
+                                    "linspace is not valid.",
+                                name_, codename_));
                     }
                 }
 
@@ -113,7 +132,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         return this_->linspace1d(std::move(args));
                     }),
-                    detail::map_operands(operands, functional::numeric_operand{}, args));
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -123,8 +144,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::linspace>()->eval(args, noargs);
+            return std::make_shared<detail::linspace>(name_, codename_)
+                ->eval(args, noargs);
         }
-        return std::make_shared<detail::linspace>()->eval(operands_, args);
+        return std::make_shared<detail::linspace>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

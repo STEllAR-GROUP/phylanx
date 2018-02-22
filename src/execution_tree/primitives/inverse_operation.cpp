@@ -24,11 +24,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_inverse_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("inverse");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const inverse_operation::match_data =
@@ -40,8 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     inverse_operation::inverse_operation(
-            std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -49,8 +51,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct inverse : std::enable_shared_from_this<inverse>
         {
-            inverse() = default;
+            inverse(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
 
+        protected:
+            std::string name_;
+            std::string codename_;
+
+        public:
             hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args)
@@ -59,16 +70,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "inverse_operation::eval",
-                        "the inverse_operation primitive requires"
-                        "exactly one operand");
+                        generate_error_message(
+                            "the inverse_operation primitive requires"
+                                "exactly one operand",
+                             name_, codename_));
                 }
 
                 if (!valid(operands[0]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "inverse_operation::eval",
-                        "the inverse_operation primitive requires that the "
-                            "arguments given by the operands array is valid");
+                        generate_error_message(
+                            "the inverse_operation primitive requires that "
+                                "the arguments given by the operands array "
+                                "is valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -84,15 +100,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         case 2:
                             return this_->inverse2d(std::move(ops));
 
+                        case 1: HPX_FALLTHROUGH;
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "inverse_operation::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    this_->name_, this_->codename_));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
 
         protected:
@@ -111,7 +131,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "inverse::inverse2d",
-                        "matrices to inverse have to be quadratic");
+                        generate_error_message(
+                            "matrices to inverse have to be quadratic",
+                            name_, codename_));
                 }
 
                 if (ops[0].is_ref())
@@ -132,9 +154,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::inverse>()->eval(args, noargs);
+            return std::make_shared<detail::inverse>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::inverse>()->eval(operands_, args);
+        return std::make_shared<detail::inverse>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

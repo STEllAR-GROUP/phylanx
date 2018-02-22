@@ -21,11 +21,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_enable_tracing(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("enable_tracing");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const enable_tracing::match_data =
@@ -37,33 +38,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     enable_tracing::enable_tracing(
-            std::vector<primitive_argument_type> && operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type> && operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     namespace detail
     {
         primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args)
+            std::vector<primitive_argument_type> const& args,
+            std::string const& name, std::string const& codename)
         {
             if (operands.size() != 1)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "enable_tracing::eval_direct",
-                    "expected one (boolean) argument");
+                    generate_error_message(
+                        "expected one (boolean) argument",
+                        name, codename));
             }
 
             if (!valid(operands[0]))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "enable_tracing::eval_direct",
-                    "the enable_tracing primitive requires that the "
-                        "argument given by the operand is valid");
+                    generate_error_message(
+                        "the enable_tracing primitive requires that the "
+                            "argument given by the operand is valid",
+                        name, codename));
             }
 
             primitive::enable_tracing =
-                boolean_operand_sync(operands[0], args) != 0;
+                boolean_operand_sync(operands[0], args, name, codename) != 0;
+
             return primitive_argument_type{};
         }
     }
@@ -73,8 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return detail::eval_direct(args, noargs);
+            return detail::eval_direct(args, noargs, name_, codename_);
         }
-        return detail::eval_direct(operands_, args);
+        return detail::eval_direct(operands_, args, name_, codename_);
     }
 }}}

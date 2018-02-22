@@ -15,8 +15,8 @@
     <Type Name="phylanx::ast::identifier">
         <DisplayString>{name}</DisplayString>
         <Expand>
-            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col == -1)">id</Item>
-            <Item Name="[tagged]" Condition="(id != 0 &amp;&amp; col != -1)">id,col</Item>
+            <Item Name="[line]" Condition="id != 0">id</Item>
+            <Item Name="[col]" Condition="col != -1">col</Item>
             <Item Name="[name]">name</Item>
         </Expand>
     </Type>

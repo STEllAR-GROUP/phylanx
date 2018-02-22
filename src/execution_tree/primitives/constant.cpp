@@ -27,11 +27,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_constant(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("constant");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const constant::match_data =
@@ -42,8 +43,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    constant::constant(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    constant::constant(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -69,7 +71,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         struct constant : std::enable_shared_from_this<constant>
         {
-            constant() = default;
+            constant(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -105,8 +115,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "constant::eval",
-                        "the constant primitive requires "
-                            "at least one and at most 2 operands");
+                        generate_error_message(
+                            "the constant primitive requires "
+                                "at least one and at most 2 operands",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]) ||
@@ -114,8 +126,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "constant::eval",
-                        "the constant primitive requires that the "
-                            "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the constant primitive requires that the "
+                            "arguments given by the operands array are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -130,23 +144,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "constant::eval",
-                                    "the first argument must be a literal "
-                                        "scalar value");
+                                    generate_error_message(
+                                        "the first argument must be a literal "
+                                            "scalar value",
+                                        this_->name_, this_->codename_));
                             }
                             if (op1.empty())
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "constant::extract_num_dimensions",
-                                    "the constant primitive requires "
-                                        "for the shape not to be empty");
+                                    generate_error_message(
+                                        "the constant primitive requires "
+                                            "for the shape not to be empty",
+                                        this_->name_, this_->codename_));
                             }
                             if (op1.size() > 2)
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "constant::extract_num_dimensions",
-                                    "the constant primitive requires "
-                                        "for the shape not to have more than "
-                                        "two entries");
+                                    generate_error_message(
+                                        "the constant primitive requires "
+                                            "for the shape not to have more than "
+                                            "two entries",
+                                        this_->name_, this_->codename_));
                             }
 
                             auto dims = extract_dimensions(op1);
@@ -164,17 +184,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             default:
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "constant::eval",
-                                    "left hand side operand has unsupported "
-                                        "number of dimensions");
+                                    generate_error_message(
+                                        "left hand side operand has unsupported "
+                                            "number of dimensions",
+                                        this_->name_, this_->codename_));
                             }
                         }),
-                        numeric_operand(operands[0], args),
-                        list_operand(operands[1], args));
+                        numeric_operand(operands[0], args, name_, codename_),
+                        list_operand(operands[1], args, name_, codename_));
                 }
 
                 // if constant() was invoked with one argument, we simply
                 // provide the argument as the desired result
-                return literal_operand(operands[0], args);
+                return literal_operand(operands[0], args, name_, codename_);
             }
         };
     }
@@ -184,9 +206,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::constant>()->eval(args, noargs);
+            return std::make_shared<detail::constant>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::constant>()->eval(operands_, args);
+        return std::make_shared<detail::constant>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

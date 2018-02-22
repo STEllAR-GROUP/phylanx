@@ -27,11 +27,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_determinant(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("determinant");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const determinant::match_data =
@@ -42,8 +43,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    determinant::determinant(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    determinant::determinant(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -51,7 +53,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct determinant : std::enable_shared_from_this<determinant>
         {
-            determinant() = default;
+            determinant(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         private:
             using operand_type = ir::node_data<double>;
@@ -66,16 +76,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "determinant::eval",
-                        "the determinant primitive requires"
-                            "exactly one operand");
+                        generate_error_message(
+                            "the determinant primitive requires"
+                                "exactly one operand",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "determinant::eval",
-                        "the determinant primitive requires that the "
-                            "argument given by the operands array is valid");
+                        generate_error_message(
+                            "the determinant primitive requires that the "
+                                "argument given by the operands array is "
+                                "valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -95,12 +110,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "determinant::eval",
-                                "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    this_->name_, this_->codename_));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
 
         protected:
@@ -122,9 +140,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::determinant>()->eval(args, noargs);
+            return std::make_shared<detail::determinant>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::determinant>()->eval(operands_, args);
+        return std::make_shared<detail::determinant>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}
