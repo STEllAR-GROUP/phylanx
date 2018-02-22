@@ -400,25 +400,24 @@ def convert_to_phylanx_type(v):
         return v
 
 # Create the decorator
-class PhyTransformer(object):
-    def __init__(self,f):
+class Phylanx(object):
+    targets = {"PhySL": PhySL}
+    def __init__(self, target):
+        self.target = self.targets[target]
+
+    def __call__(self, f):
         self.f = f
-        # Get the source code
-        src = inspect.getsource(f) #getsource(f)
-        # Before recompiling the code, take
-        # off the decorator from the source.
-        src = re.sub(r'^\s*@\w+\s*','',src)
+        src = inspect.getsource(f).split("\n",1)[1]
+        self.tree = ast.parse(src)
+        assert len(self.tree.body) == 1
 
-        # Create the AST
-        tree = ast.parse(src)
-        physl = PhySL()
+        def run(*args):
+            if self.target.__name__ == "PhySL":
+                self.__physl_src__ = '%s(%s)\n' % (
+                    full_node_name(self.tree.body[0], 'block'),
+                    self.target().recompile(self.tree))
 
-        assert len(tree.body) == 1
-
-        self.__physl_src__ = '%s(%s)\n' % (
-            full_node_name(tree.body[0], 'block'), physl.recompile(tree))
-
-    def __call__(self,*args):
-        nargs = tuple(convert_to_phylanx_type(a) for a in args)
-        return et.eval(self.__physl_src__,*nargs)
+                nargs = tuple(convert_to_phylanx_type(a) for a in args)
+                return et.eval(self.__physl_src__,*nargs)
+        return run
 

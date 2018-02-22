@@ -7,7 +7,7 @@
 
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import phy_print 
+from phylanx.ast.utils import printout 
 
 et = phylanx.execution_tree
 import numpy as np
@@ -37,7 +37,7 @@ block(
 
 assert sum10[0] == 55.0
 
-@PhyTransformer
+@Phylanx("PhySL")
 def fib(n):
     if n < 2:
         return n
@@ -52,7 +52,7 @@ assert fib.__physl_src__ == \
 
 assert fib(10)[0] == 55.0
 
-@PhyTransformer
+@Phylanx("PhySL")
 def pass_str(a):
     return a
 
@@ -61,7 +61,7 @@ assert pass_str.__physl_src__ == \
 
 assert "foo" == str(pass_str("foo"))
 
-@PhyTransformer
+@Phylanx("PhySL")
 def test_slice(a):
     return a[1:3,1:4]
 
@@ -71,7 +71,7 @@ r2 = two[1:3,1:4]
 
 assert r1 == r2
 
-@PhyTransformer
+@Phylanx("PhySL")
 def test_slice1(a):
     return a[2:4]
 

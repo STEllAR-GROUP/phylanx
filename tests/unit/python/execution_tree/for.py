@@ -6,9 +6,9 @@
 
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import phy_print 
+from phylanx.ast.utils import printout 
 
-@PhyTransformer
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0
@@ -18,7 +18,7 @@ def sumn():
 
 assert sumn()[0] == 6
 
-@PhyTransformer
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0
@@ -28,7 +28,7 @@ def sumn():
 
 assert sumn()[0] == 6
 
-@PhyTransformer
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0
@@ -40,7 +40,7 @@ def sumn():
 
 assert sumn()[0] == 9
 
-@PhyTransformer
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0

@@ -10,20 +10,20 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import phy_print 
+from phylanx.ast.utils import printout 
 
-@PhyTransformer
+@Phylanx("PhySL")
 def initialize_centroids(points, k):
     centroids = copy(points)
     shuffle(centroids)
     return centroids[:k]
 
-@PhyTransformer
+@Phylanx("PhySL")
 def closest_centroid(points, centroids):
     distances = sqrt( sum( pow( points - centroids[:, newaxis] , 2.0), axis=2) )
     return argmin(distances, axis=0)
 
-@PhyTransformer
+@Phylanx("PhySL")
 def move_centroids(points, closest, centroids):
     k = shape(centroids, 0)
     arr = constant( 0.0, k, shape(centroids, 1) )
@@ -31,7 +31,7 @@ def move_centroids(points, closest, centroids):
        arr = vstack( arr, mean( points[ closest == k_ ], axis=0 ) )
     return arr
 
-@PhyTransformer
+@Phylanx("PhySL")
 def kmeans(points, k, itr):
     centroids = initialize_centroids(points, k)
 
@@ -52,4 +52,4 @@ def create_points():
 if __name__ == "__main__":
     points, k = create_points()
     res = kmeans(points, k)
-    phy_print(res)
+    printout(res)

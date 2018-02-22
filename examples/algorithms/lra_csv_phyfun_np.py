@@ -5,9 +5,9 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import phy_print 
+from phylanx.ast.utils import printout 
 
-@PhyTransformer
+@Phylanx("PhySL")
 def lra(x, y, alpha, iterations, enable_output):
     weights=constant(0.0, shape(x, 1))
     transx=transpose(x)
@@ -34,4 +34,4 @@ x = data[:,:-1]
 y = data[:,-1:]
 y = y.reshape((y.shape[0],))
 res = lra(x,y,1e-5,750,0)
-phy_print(res)
+printout(res)

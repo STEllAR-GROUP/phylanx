@@ -60,7 +60,7 @@ def dump_info(a,depth=0):
             dump_info(n,depth+1)
 
 
-def phy_print(m):
+def printout(m):
     ndim = m.num_dimensions()
     if ndim == 1:
         for i in range(m.dimension(0)):

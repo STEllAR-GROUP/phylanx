@@ -18,9 +18,9 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import phy_print 
+from phylanx.ast.utils import printout 
 
-@PhyTransformer
+@Phylanx
 def pca(A):
     M = transpose(A - mean( transpose(A), axis=1))
     # TODO: cov, eig primitives
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                 [2.5,0.5,2.2,1.9,3.1,2.3,2,1,1.5,1.1] ])
 
     coeff, score, latent = pca(transpose(A))
-    phy_print(coeff, score, latent)
+    printout(coeff, score, latent)
 
     res = princomp(transpose(A))
-    phy_print(res)
+    printout(res)
