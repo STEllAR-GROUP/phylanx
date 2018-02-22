@@ -51,7 +51,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         *  indicate direction, similar to python.
         */
 
-        set_operation(std::vector<primitive_argument_type>&& operands);
+        set_operation(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
@@ -60,7 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     PHYLANX_EXPORT primitive create_set_operation(
         hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif //PHYLANX_SET_OPERATION_1153_02182018_HPP

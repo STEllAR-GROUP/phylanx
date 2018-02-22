@@ -27,11 +27,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     primitive create_set_operation(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name)
+        std::string const& name, std::string const& codename)
     {
         static std::string type("set");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const set_operation::match_data = {hpx::util::make_tuple(
@@ -40,72 +40,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     set_operation::set_operation(
-        std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
-    {
-    }
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
+    {}
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::vector<int> create_list_set(
-            int start, int stop, int step, int array_length)
-        {
-            auto actual_start = 0;
-            auto actual_stop = 0;
-
-            if (start >= 0)
-            {
-                actual_start = start;
-            }
-
-            if (start < 0)
-            {
-                actual_start = array_length + start;
-            }
-
-            if (stop >= 0)
-            {
-                actual_stop = stop;
-            }
-
-            if (stop < 0)
-            {
-                actual_stop = array_length + stop;
-            }
-
-            std::vector<int> result;
-
-            if (step > 0)
-            {
-                for (int i = actual_start; i < actual_stop; i += step)
-                {
-                    result.push_back(i);
-                }
-            }
-
-            if (step < 0)
-            {
-                for (int i = actual_start; i > actual_stop; i += step)
-                {
-                    result.push_back(i);
-                }
-            }
-
-            if (result.empty())
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                    "set_operation::create_list_set",
-                    "Set will produce empty result, please check your "
-                    "parameters");
-            }
-            return result;
-        }
 
         struct set : std::enable_shared_from_this<set>
         {
-            set() = default;
+            set(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using arg_type = ir::node_data<double>;
@@ -114,13 +68,71 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
+            std::vector<int> create_list_set(
+                int start, int stop, int step, int array_length) const
+            {
+                auto actual_start = 0;
+                auto actual_stop = 0;
+
+                if (start >= 0)
+                {
+                    actual_start = start;
+                }
+
+                if (start < 0)
+                {
+                    actual_start = array_length + start;
+                }
+
+                if (stop >= 0)
+                {
+                    actual_stop = stop;
+                }
+
+                if (stop < 0)
+                {
+                    actual_stop = array_length + stop;
+                }
+
+                std::vector<int> result;
+
+                if (step > 0)
+                {
+                    for (int i = actual_start; i < actual_stop; i += step)
+                    {
+                        result.push_back(i);
+                    }
+                }
+
+                if (step < 0)
+                {
+                    for (int i = actual_start; i > actual_stop; i += step)
+                    {
+                        result.push_back(i);
+                    }
+                }
+
+                if (result.empty())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "set_operation::create_list_set",
+                        generate_error_message(
+                            "Set will produce empty result, please check your "
+                            "parameters",
+                            name_, codename_));
+                }
+                return result;
+            }
+
             primitive_argument_type set0d(args_type&& args) const
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                    "set_operation::set_"
-                    "operation",
-                    "use store operation for setting value to a variable");
+                    "set_operation::set0d",
+                    generate_error_message(
+                        "use store operation for setting value to a variable",
+                        name_, codename_));
             }
 
             primitive_argument_type set1d(args_type&& args) const
@@ -134,18 +146,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_"
-                        "operation",
-                        "step can not be zero");
+                        "set_operation::set1d",
+                        generate_error_message(
+                            "step can not be zero", name_, codename_));
                 }
 
                 if (value_dimnum == 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_"
-                        "operation",
-                        "cant store matrix in a vector");
+                        "set_operation::set1d",
+                        generate_error_message(
+                            "can not store matrix in a vetor", name_,
+                            codename_));
                 }
 
                 auto init_list =
@@ -167,8 +180,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_operation",
-                        "size mismatch");
+                        "set_operation::set1d",
+                        generate_error_message("size mismatch, please check "
+                                               "your parameters or set vector",
+                            name_, codename_));
                 }
 
                 sv = temp;
@@ -192,8 +207,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_operation",
-                        "step can not be zero");
+                        "set_operation::set2d",
+                        generate_error_message(
+                            "step can not be zero", name_, codename_));
                 }
 
                 auto init_list_row = create_list_set(
@@ -224,8 +240,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "phylanx::execution_tree::primitives::"
-                            "set_operation::set_operation",
-                            "matrix/vector size mismatch");
+                            "set_operation::set2d",
+                            generate_error_message(
+                                "size of set vector does not match the number "
+                                "of columns in the input matrix",
+                                name_, codename_));
                     }
 
                     for (std::size_t j = 0; j < num_rows; j++)
@@ -247,8 +266,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "set_operation::set_operation",
-                        "matrix size mismatch");
+                        "set_operation::set2d",
+                        generate_error_message(
+                            "matrix sizes dont match", name_, codename_));
                 }
                 blaze::DynamicMatrix<double> temp(data);
                 sm = temp;
@@ -265,8 +285,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
                         "set_operation::set_operation",
-                        "the set_operation primitive requires eight "
-                        "arguments");
+                        generate_error_message(
+                            "the set_operation primitive requires "
+                            "eight arguments",
+                            name_, codename_));
                 }
 
                 bool arguments_valid = true;
@@ -282,8 +304,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "set_operation::eval",
-                        "the set_operation primitive requires that the "
-                        "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the set_operation primitive requires "
+                            "that the arguments given by the operands "
+                            "array are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -305,12 +330,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             default:
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "set_operation::eval",
-                                    "left hand side operand has unsupported "
-                                    "number of dimensions");
+                                    generate_error_message(
+                                        "left hand side operand has "
+                                        "unsupported "
+                                        "number of dimensions",
+                                        this_->name_, this_->codename_));
                             }
                         }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -320,9 +349,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::set>()->eval(args, noargs);
+            return std::make_shared<detail::set>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::set>()->eval(operands_, args);
+        return std::make_shared<detail::set>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

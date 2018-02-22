@@ -46,7 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
          */
 
         row_set_operation(
-            std::vector<primitive_argument_type>&& operands);
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
@@ -55,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     PHYLANX_EXPORT primitive create_row_set_operation(
         hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif //PHYLANX_ROW_SET_HPP
