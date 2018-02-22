@@ -25,11 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_if_conditional(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("if");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const if_conditional::match_data =
@@ -41,8 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     if_conditional::if_conditional(
-            std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -53,15 +55,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct if_impl : std::enable_shared_from_this<if_impl>
         {
             if_impl(std::vector<primitive_argument_type> const& operands,
-                    std::vector<primitive_argument_type> const& args)
+                    std::vector<primitive_argument_type> const& args,
+                    std::string const& name, std::string const& codename)
               : operands_(operands)
               , args_(args)
+              , name_(name)
+              , codename_(codename)
             {
                 if (operands_.size() != 3 && operands_.size() != 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "if_conditional::if_conditional",
-                        "the if_conditional primitive requires three operands");
+                        generate_error_message(
+                            "the if_conditional primitive requires three "
+                                "operands",
+                            name_, codename_));
                 }
 
                 bool arguments_valid = true;
@@ -77,8 +85,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "if_conditional::if_conditional",
-                        "the if_conditional primitive requires that the "
-                            "arguments given by the operands array is valid");
+                        generate_error_message(
+                            "the if_conditional primitive requires that the "
+                                "arguments given by the operands array "
+                                "is valid",
+                            name_, codename_));
                 }
             }
 
@@ -86,18 +97,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // Keep data alive with a shared pointer
                 auto this_ = this->shared_from_this();
-                return boolean_operand(operands_[0], args_).then(
-                    [this_](hpx::future<std::uint8_t> && cond_eval)
+                return boolean_operand(operands_[0], args_, name_, codename_)
+                    .then([this_](hpx::future<std::uint8_t> && cond_eval)
+                        -> hpx::future<primitive_argument_type>
                     {
                         if (cond_eval.get() != 0)
                         {
-                            return literal_operand(
-                                this_->operands_[1], this_->args_);
+                            return literal_operand(this_->operands_[1],
+                                this_->args_, this_->name_, this_->codename_);
                         }
-                        else if (this_->operands_.size() > 2)
+                        if (this_->operands_.size() > 2)
                         {
-                            return literal_operand(
-                                this_->operands_[2], this_->args_);
+                            return literal_operand(this_->operands_[2],
+                                this_->args_, this_->name_, this_->codename_);
                         }
                         return hpx::make_ready_future(primitive_argument_type{});
                     });
@@ -106,6 +118,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         private:
             std::vector<primitive_argument_type> operands_;
             std::vector<primitive_argument_type> args_;
+            std::string name_;
+            std::string codename_;
         };
     }
 
@@ -116,9 +130,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::if_impl>(args, noargs)->body();
+            return std::make_shared<detail::if_impl>(
+                args, noargs, name_, codename_)->body();
         }
-
-        return std::make_shared<detail::if_impl>(operands_, args)->body();
+        return std::make_shared<detail::if_impl>(
+            operands_, args, name_, codename_)->body();
     }
 }}}

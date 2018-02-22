@@ -25,11 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_linearmatrix(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
     {
         static std::string type("linearmatrix");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const linearmatrix::match_data =
@@ -40,8 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    linearmatrix::linearmatrix(std::vector<primitive_argument_type>&& args)
-      : primitive_component_base(std::move(args))
+    linearmatrix::linearmatrix(std::vector<primitive_argument_type>&& args,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(args), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -49,7 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct linearmatrix : std::enable_shared_from_this<linearmatrix>
         {
-            linearmatrix() = default;
+            linearmatrix(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using arg_type = ir::node_data<double>;
@@ -63,7 +73,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "linearmatrix::linmatrix",
-                        "linearmatrix primitive requires 5 arguments.");
+                        generate_error_message(
+                            "linearmatrix primitive requires five "
+                                "arguments.",
+                            name_, codename_));
                 }
 
                 std::size_t nx = extract_integer_value(args[0]);
@@ -75,15 +88,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (nx < 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::detail::linearmatrix",
-                        "the size of matrix in dimension x must at least be one.");
+                        "phylanx::execution_tree::primitives::"
+                            "detail::linearmatrix",
+                        generate_error_message(
+                            "the size of matrix in dimension x must at "
+                                "least be one.",
+                            name_, codename_));
                 }
 
                 if (ny < 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::detail::linearmatrix",
-                        "the size of matrix in dimension y must at least be one.");
+                        "phylanx::execution_tree::primitives::"
+                            "detail::linearmatrix",
+                        generate_error_message(
+                            "the size of matrix in dimension y must at "
+                                "least be one.",
+                            name_, codename_));
                 }
 
                 matrix_type result{nx, ny};
@@ -107,8 +128,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (operands.size() != 5)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::linearmatrix",
-                        "The linearmatrix primitive requires exactly five arguments.");
+                        "phylanx::execution_tree::primitives::"
+                            "linearmatrix",
+                        generate_error_message(
+                            "the linearmatrix primitive requires exactly "
+                                "five arguments.",
+                            name_, codename_));
                 }
 
                 for (std::size_t i = 0; i != operands.size(); ++i)
@@ -117,8 +142,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "linearmatrix::eval",
-                            "at least one of the arguments passed to linearmatrix"
-                               "is not valid.");
+                            generate_error_message(
+                                "at least one of the arguments passed to "
+                                    "linearmatrix is not valid.",
+                                name_, codename_));
                     }
                 }
 
@@ -128,7 +155,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         return this_->linmatrix(std::move(args));
                     }),
-                    detail::map_operands(operands, functional::numeric_operand{}, args));
+                    detail::map_operands(
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -138,8 +167,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::linearmatrix>()->eval(args, noargs);
+            return std::make_shared<detail::linearmatrix>(name_, codename_)
+                ->eval(args, noargs);
         }
-        return std::make_shared<detail::linearmatrix>()->eval(operands_, args);
+        return std::make_shared<detail::linearmatrix>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

@@ -381,8 +381,7 @@ void test_or_operation_0d1d_double_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x || 1.0); });
+    blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -408,8 +407,7 @@ void test_or_operation_0d1d_double_lit_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x || 1.0); });
+    blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -494,7 +492,7 @@ void test_or_operation_0d2d_double_false()
         or_operation.eval().get();
 
     blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x || 0.0); });
+        blaze::map(m, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -521,7 +519,7 @@ void test_or_operation_0d2d_double_lit_false()
         or_operation.eval().get();
 
     blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x || 0.0); });
+        blaze::map(m, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -605,8 +603,7 @@ void test_or_operation_0d2d_double_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x || 2.0); });
+    blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -632,8 +629,7 @@ void test_or_operation_0d2d_double_lit_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x || 2.0); });
+    blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -834,7 +830,7 @@ void test_or_operation_1d0d_double_false()
         or_operation.eval().get();
 
     blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x || 0.0); });
+        blaze::map(v, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -861,7 +857,7 @@ void test_or_operation_1d0d_double_lit_false()
         or_operation.eval().get();
 
     blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x || 0.0); });
+        blaze::map(v, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -945,8 +941,7 @@ void test_or_operation_1d0d_double_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x || 2.0); });
+    blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -972,8 +967,7 @@ void test_or_operation_1d0d_double_lit_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x || 2.0); });
+    blaze::DynamicVector<double> expected(v.size(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -1369,8 +1363,7 @@ void test_or_operation_2d0d_double_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x || 2.0); });
+    blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -1396,8 +1389,7 @@ void test_or_operation_2d0d_double_lit_true()
     phylanx::execution_tree::primitive_argument_type f =
         or_operation.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x || 2.0); });
+    blaze::DynamicMatrix<double> expected(m.rows(), m.columns(), 1.0);
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -1426,7 +1418,7 @@ void test_or_operation_2d0d_double_false()
         or_operation.eval().get();
 
     blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x || 0.0); });
+        blaze::map(m, [](double x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
@@ -1453,7 +1445,7 @@ void test_or_operation_2d0d_double_lit_false()
         or_operation.eval().get();
 
     blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](bool x) { return (x || 0.0); });
+        blaze::map(m, [](bool x) { return (x != 0.0); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));

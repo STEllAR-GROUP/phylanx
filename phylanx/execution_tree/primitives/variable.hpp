@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         variable() = default;
 
         variable(std::vector<primitive_argument_type>&& operands,
-            std::string const& name);
+            std::string const& name, std::string const& codename);
 
         primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& params) const override;
@@ -40,13 +40,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::set<std::string>&& functions) const override;
 
     private:
-        std::string name_;
         mutable bool evaluated_;
         mutable mutex_type mtx_;
     };
 
     PHYLANX_EXPORT primitive create_variable(hpx::id_type const& locality,
-        primitive_argument_type&& operand, std::string const& name = "");
+        primitive_argument_type&& operand,
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif

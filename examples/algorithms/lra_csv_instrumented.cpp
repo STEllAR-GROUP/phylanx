@@ -53,7 +53,7 @@ std::string const read_y_code = R"(block(
     //
     // Read Y-data from given CSV file
     //
-    define(read_y, filepath, row_start, row_stop,col_stop
+    define(read_y, filepath, row_start, row_stop, col_stop,
         slice(file_read_csv(filepath), row_start, row_stop, col_stop, col_stop+1)
     ),
     read_y
@@ -312,11 +312,11 @@ int hpx_main(boost::program_options::variables_map& vm)
     phylanx::execution_tree::compiler::function_list snippets;
 
     auto read_x = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(read_x_code), snippets);
+        "read_x", phylanx::ast::generate_ast(read_x_code), snippets);
     auto read_y = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(read_y_code), snippets);
+        "read_y", phylanx::ast::generate_ast(read_y_code), snippets);
     auto lra = phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(lra_code), snippets);
+        "lra", phylanx::ast::generate_ast(lra_code), snippets);
 
     // Print instrumentation information, if enabled
     if (vm.count("instrument") != 0)
@@ -337,7 +337,8 @@ int hpx_main(boost::program_options::variables_map& vm)
     // Read the data from the files
     auto x = read_x(vm["data_csv"].as<std::string>(), row_start, row_stop,
         col_start, col_stop);
-    auto y = read_y(vm["data_csv"].as<std::string>(), row_start, row_stop);
+    auto y =
+        read_y(vm["data_csv"].as<std::string>(), row_start, row_stop, col_stop);
 
     // Remaining command line options
     auto alpha = vm["alpha"].as<double>();

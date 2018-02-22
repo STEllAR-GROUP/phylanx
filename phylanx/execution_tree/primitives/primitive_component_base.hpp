@@ -32,7 +32,8 @@ namespace phylanx { namespace execution_tree
             primitive_component_base() = default;
 
             primitive_component_base(
-                std::vector<primitive_argument_type>&& params);
+                std::vector<primitive_argument_type>&& params,
+                std::string const& name, std::string const& codename);
 
             virtual ~primitive_component_base() = default;
 
@@ -55,8 +56,14 @@ namespace phylanx { namespace execution_tree
             virtual void set_body(primitive_argument_type&& target);
 
         protected:
+            std::string generate_error_message(std::string const& msg) const;
+
+        protected:
             static std::vector<primitive_argument_type> noargs;
             mutable std::vector<primitive_argument_type> operands_;
+
+            std::string name_;          // the unique name of this primitive
+            std::string codename_;      // the name of the original code source
         };
     }
 
@@ -64,11 +71,12 @@ namespace phylanx { namespace execution_tree
     // Factory functions
     using factory_function_type = primitive (*)(
         hpx::id_type const&, std::vector<primitive_argument_type>&&,
-        std::string const&);
+        std::string const&, std::string const&);
 
     using primitive_factory_function_type =
-        std::unique_ptr<primitives::primitive_component_base>(*)(
-            std::vector<primitive_argument_type>&&, std::string const&);
+        std::unique_ptr<primitives::primitive_component_base> (*)(
+            std::vector<primitive_argument_type>&&, std::string const&,
+            std::string const&);
 
     using match_pattern_type = hpx::util::tuple<std::string,
         std::vector<std::string>, factory_function_type,
@@ -80,38 +88,26 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
-
-    PHYLANX_EXPORT primitive create_primitive_component_with_name(
-        hpx::id_type const& locality, std::string const& type,
-        std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
 
     PHYLANX_EXPORT primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
-        primitive_argument_type operand, std::string const& name = "");
+        primitive_argument_type operand, std::string const& name = "",
+        std::string const& codename = "<unknown>");
 
-    PHYLANX_EXPORT primitive create_primitive_component_with_name(
-        hpx::id_type const& locality, std::string const& type,
-        primitive_argument_type operand, std::string const& name = "");
+    ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT std::string generate_error_message(std::string const& msg,
+        std::string const& name, std::string const& codename);
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Primitive>
     std::unique_ptr<primitives::primitive_component_base>
     create_primitive(std::vector<primitive_argument_type>&& args,
-        std::string const&)
+        std::string const& name, std::string const& codename)
     {
         return std::unique_ptr<primitives::primitive_component_base>{
-            new Primitive(std::move(args))};
-    }
-
-    template <typename Primitive>
-    std::unique_ptr<primitives::primitive_component_base>
-    create_primitive_with_name(std::vector<primitive_argument_type>&& args,
-        std::string const& name)
-    {
-        return std::unique_ptr<primitives::primitive_component_base>{
-            new Primitive(std::move(args), name)};
+            new Primitive(std::move(args), name, codename)};
     }
 }}
 

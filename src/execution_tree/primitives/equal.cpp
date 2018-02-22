@@ -25,11 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_equal(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("__eq");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const equal::match_data =
@@ -40,8 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    equal::equal(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    equal::equal(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -49,7 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct equal : std::enable_shared_from_this<equal>
         {
-            equal() = default;
+            equal(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using operand_type = ir::node_data<double>;
@@ -98,7 +108,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal0d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -124,7 +137,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal1d1d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -146,7 +161,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal1d2d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -179,7 +196,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal1d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -208,7 +228,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal2d1d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -233,7 +255,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal2d2d",
-                        "the dimensions of the operands do not match");
+                        generate_error_message(
+                            "the dimensions of the operands do not match",
+                            name_, codename_));
                 }
 
                 // TODO: SIMD functionality should be added, blaze implementation
@@ -263,7 +287,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal2d",
-                        "the operands have incompatible number of dimensions");
+                        generate_error_message(
+                            "the operands have incompatible number of "
+                                "dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -286,8 +313,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::equal_all",
-                        "left hand side operand has unsupported number of "
-                            "dimensions");
+                        generate_error_message(
+                            "left hand side operand has unsupported number "
+                                "of dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -299,8 +328,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::eval",
-                        "left hand side and right hand side are incompatible "
-                            "and can't be compared");
+                        generate_error_message(
+                            "left hand side and right hand side are "
+                                "incompatible and can't be compared",
+                            equal_.name_, equal_.codename_));
                 }
 
                 template <typename T>
@@ -360,15 +391,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::eval",
-                        "the equal primitive requires exactly two operands");
+                        generate_error_message(
+                            "the equal primitive requires exactly two operands",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]) || !valid(operands[1]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "equal::eval",
-                        "the equal primitive requires that the arguments given "
-                            "by the operands array are valid");
+                        generate_error_message(
+                            "the equal primitive requires that the arguments "
+                                "given by the operands array are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -381,7 +416,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 std::move(ops[1].variant())));
                     }),
                     detail::map_operands(
-                        operands, functional::literal_operand{}, args));
+                        operands, functional::literal_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -392,9 +428,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::equal>()->eval(args, noargs);
+            return std::make_shared<detail::equal>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::equal>()->eval(operands_, args);
+        return std::make_shared<detail::equal>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

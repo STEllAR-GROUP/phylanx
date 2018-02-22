@@ -26,11 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_vstack_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
     {
         static std::string type("vstack");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const vstack_operation::match_data =
@@ -42,8 +43,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     vstack_operation::vstack_operation(
-            std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -51,7 +53,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct vstack : std::enable_shared_from_this<vstack>
         {
-            vstack() = default;
+            vstack(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using arg_type = ir::node_data<double>;
@@ -88,9 +98,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "phylanx::execution_tree::primitives::"
-                            "vstack_operation::vstack_operation",
-                            "the vstack_operation primitive requires the fist "
-                            "dimension be equal for all vectors to be stacked");
+                                "vstack_operation::vstack_operation",
+                            generate_error_message(
+                                "the vstack_operation primitive requires "
+                                    "for the first dimension to be equal "
+                                    "for all vectors to be stacked",
+                                name_, codename_));
                     }
                 }
 
@@ -115,10 +128,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "phylanx::execution_tree::primitives::"
-                            "vstack_operation::vstack_operation",
-                            "the vstack_operation primitive requires the "
-                            "number of  "
-                            "columns be equal for all matrix being stacked");
+                                "vstack_operation::vstack_operation",
+                            generate_error_message(
+                                "the vstack_operation primitive requires "
+                                    "for the number of columns to be equal "
+                                    "for all matrices being stacked",
+                                name_, codename_));
                     }
 
                     total_rows += args[i].dimension(0);
@@ -152,9 +167,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
-                        "vstack_operation::vstack_operation",
-                        "the vstack_operation primitive requires exactly "
-                        "two arguments");
+                            "vstack_operation::vstack_operation",
+                        generate_error_message(
+                            "the vstack_operation primitive requires exactly "
+                                "two arguments",
+                            name_, codename_));
                 }
 
                 bool arguments_valid = true;
@@ -170,8 +187,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "vstack_operation::eval",
-                        "the vstack_operation primitive requires that the "
-                        "arguments given by the operands array are valid");
+                        generate_error_message(
+                            "the vstack_operation primitive requires "
+                                "that the arguments given by the operands "
+                                "array are valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -193,12 +213,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "vstack_operation::eval",
-                                "left hand side operand has unsupported "
-                                "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    this_->name_, this_->codename_));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -208,9 +231,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::vstack>()->eval(args, noargs);
+            return std::make_shared<detail::vstack>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::vstack>()->eval(operands_, args);
+        return std::make_shared<detail::vstack>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

@@ -34,6 +34,29 @@ namespace phylanx { namespace execution_tree
 
     namespace detail
     {
+        ///////////////////////////////////////////////////////////////////////
+        char const* const primitive_argument_type_names[] = {
+            "phylanx::ast::nil",
+            "phylanx::ir::node_data<bool>",
+            "std::int64_t",
+            "std::string",
+            "phylanx::ir::node_data<double>",
+            "phylanx::execution_tree::primitive",
+            "std::vector<phylanx::ast::expression>",
+            "std::vector<primitive_argument_type>"
+        };
+
+        static char const* const get_primitive_argument_type_name(std::size_t index)
+        {
+            if (index > sizeof(primitive_argument_type_names) /
+                    sizeof(primitive_argument_type_names[0]))
+            {
+                return "unknown";
+            }
+            return primitive_argument_type_names[index];
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         primitive_argument_type trace(char const* const func,
             primitive const& this_, primitive_argument_type&& data)
         {
@@ -272,7 +295,8 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type extract_value(primitive_argument_type const& val)
+    primitive_argument_type extract_value(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -290,12 +314,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            "primitive_argument_type does not hold a value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
-    primitive_argument_type extract_copy_value(primitive_argument_type const& val)
+    primitive_argument_type extract_copy_value(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -333,12 +362,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_copy_value",
-            "primitive_argument_type does not hold a value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
-    primitive_argument_type extract_ref_value(primitive_argument_type const& val)
+    primitive_argument_type extract_ref_value(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -376,12 +410,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_ref_value",
-            "primitive_argument_type does not hold a value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
-    primitive_argument_type extract_value(primitive_argument_type&& val)
+    primitive_argument_type extract_value(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -399,12 +438,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            "primitive_argument_type does not hold a value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
-    primitive_argument_type extract_copy_value(primitive_argument_type&& val)
+    primitive_argument_type extract_copy_value(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -442,12 +486,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            "primitive_argument_type does not hold a value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
-    primitive_argument_type extract_ref_value(primitive_argument_type&& val)
+    primitive_argument_type extract_ref_value(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -465,14 +514,19 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            "primitive_argument_type does not hold a value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type extract_literal_value(
-        primitive_argument_type const& val)
+        primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -503,13 +557,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_literal_value",
-            "primitive_argument_type does not hold a literal value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a literal value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
     primitive_argument_type extract_literal_ref_value(
-        primitive_argument_type const& val)
+        primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -552,12 +611,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_literal_value",
-            "primitive_argument_type does not hold a literal value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a literal value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
-    primitive_argument_type extract_literal_value(primitive_argument_type&& val)
+    primitive_argument_type extract_literal_value(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -588,14 +652,19 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_literal_value",
-            "primitive_argument_type does not hold a literal value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a literal value type "
+                    "(type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> extract_numeric_value(
-        primitive_argument_type const& val)
+        primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -630,12 +699,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            "primitive_argument_type does not hold a numeric value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a numeric "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
-    ir::node_data<double> extract_numeric_value(primitive_argument_type&& val)
+    ir::node_data<double> extract_numeric_value(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -670,13 +744,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            "primitive_argument_type does not hold a numeric value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a numeric "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<bool> extract_boolean_data(primitive_argument_type const& val)
+    ir::node_data<bool> extract_boolean_data(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -694,12 +773,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_data",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
-    ir::node_data<bool> extract_boolean_data(primitive_argument_type&& val)
+    ir::node_data<bool> extract_boolean_data(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -717,13 +801,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_data",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::int64_t extract_integer_value(primitive_argument_type const& val)
+    std::int64_t extract_integer_value(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -758,12 +847,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_integer_value",
-            "primitive_argument_type does not hold a numeric value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a numeric "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
-    std::int64_t extract_integer_value(primitive_argument_type&& val)
+    std::int64_t extract_integer_value(primitive_argument_type&& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -798,13 +892,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            "primitive_argument_type does not hold a numeric value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a numeric "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::uint8_t extract_boolean_value(primitive_argument_type const& val)
+    std::uint8_t extract_boolean_value(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -843,12 +942,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_value",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
-    std::uint8_t extract_boolean_value(primitive_argument_type && val)
+    std::uint8_t extract_boolean_value(primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -887,13 +991,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_value",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::string extract_string_value(primitive_argument_type const& val)
+    std::string extract_string_value(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -924,12 +1033,17 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_string_value",
-            "primitive_argument_type does not hold a string value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a string "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
-    std::string extract_string_value(primitive_argument_type && val)
+    std::string extract_string_value(primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -960,14 +1074,19 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_string_value",
-            "primitive_argument_type does not hold a string value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a string "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     std::vector<ast::expression> extract_ast_value(
-        primitive_argument_type const& val)
+        primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -992,13 +1111,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_ast_value",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     std::vector<ast::expression> extract_ast_value(
-        primitive_argument_type && val)
+        primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -1023,14 +1147,19 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_ast_value",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     std::vector<primitive_argument_type> extract_list_value(
-        primitive_argument_type const& val)
+        primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -1060,13 +1189,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_list_value",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     std::vector<primitive_argument_type> extract_list_value(
-        primitive_argument_type && val)
+        primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
@@ -1102,13 +1236,18 @@ namespace phylanx { namespace execution_tree
             break;
         }
 
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_list_value",
-            "primitive_argument_type does not hold a boolean value type");
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive primitive_operand(primitive_argument_type const& val)
+    primitive primitive_operand(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -1116,7 +1255,9 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_primitive",
-            "primitive_value_type does not hold a primitive");
+            generate_error_message(
+                "primitive_value_type does not hold a primitive",
+                name, codename));
     }
 
     bool is_primitive_operand(primitive_argument_type const& val)
@@ -1127,454 +1268,493 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_value(f.get());
+                    return extract_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(val));
+        return hpx::make_ready_future(extract_ref_value(val, name, codename));
     }
 
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(std::move(args)).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_value(f.get());
+                    return extract_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(val));
+        return hpx::make_ready_future(extract_ref_value(val, name, codename));
     }
 
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_value(f.get());
+                    return extract_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(std::move(val)));
+        return hpx::make_ready_future(
+            extract_ref_value(std::move(val), name, codename));
     }
 
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_value(f.get());
+                    return extract_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(std::move(val)));
+        return hpx::make_ready_future(
+            extract_ref_value(std::move(val), name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args));
+            return extract_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_value(val);
+        return extract_value(val, name, codename);
     }
 
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(std::move(args)));
+            return extract_value(
+                p->eval_direct(std::move(args)), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_value(val);
+        return extract_value(val, name, codename);
     }
 
     primitive_argument_type value_operand_sync(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args));
+            return extract_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_value(std::move(val));
+        return extract_value(std::move(val), name, codename);
     }
 
     primitive_argument_type value_operand_sync(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(std::move(args)));
+            return extract_value(
+                p->eval_direct(std::move(args)), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_value(std::move(val));
+        return extract_value(std::move(val), name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type value_operand_ref_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args));
+            return extract_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_ref_value(val);
+        return extract_ref_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_literal_value(f.get());
+                    return extract_literal_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_literal_ref_value(val));
+        return hpx::make_ready_future(
+            extract_literal_ref_value(val, name, codename));
     }
 
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(std::move(args)).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type>&& f)
                 {
-                    return extract_literal_value(f.get());
+                    return extract_literal_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_literal_ref_value(val));
+        return hpx::make_ready_future(
+            extract_literal_ref_value(val, name, codename));
     }
 
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_literal_value(f.get());
+                    return extract_literal_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
         return hpx::make_ready_future(
-            extract_literal_ref_value(std::move(val)));
+            extract_literal_ref_value(std::move(val), name, codename));
     }
 
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(std::move(args)).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_literal_value(f.get());
+                    return extract_literal_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
         return hpx::make_ready_future(
-            extract_literal_ref_value(std::move(val)));
+            extract_literal_ref_value(std::move(val), name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type literal_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_literal_value(p->eval_direct(args));
+            return extract_literal_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_literal_ref_value(val);
+        return extract_literal_ref_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_numeric_value(f.get());
+                    return extract_numeric_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_numeric_value(val));
+        return hpx::make_ready_future(
+            extract_numeric_value(val, name, codename));
     }
 
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(std::move(args)).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_numeric_value(f.get());
+                    return extract_numeric_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_numeric_value(val));
+        return hpx::make_ready_future(
+            extract_numeric_value(val, name, codename));
     }
 
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_numeric_value(f.get());
+                    return extract_numeric_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_numeric_value(std::move(val)));
+        return hpx::make_ready_future(
+            extract_numeric_value(std::move(val), name, codename));
     }
 
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args)
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return p->eval(std::move(args)).then(
-                [](hpx::future<primitive_argument_type> && f)
+            return p->eval(std::move(args))
+                .then([&](hpx::future<primitive_argument_type>&& f)
                 {
-                    return extract_numeric_value(f.get());
+                    return extract_numeric_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_numeric_value(std::move(val)));
+        return hpx::make_ready_future(
+            extract_numeric_value(std::move(val), name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> numeric_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_numeric_value(p->eval_direct(args));
+            return extract_numeric_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_numeric_value(val);
+        return extract_numeric_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::uint8_t> boolean_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type>&& f)
                 {
-                    return extract_boolean_value(f.get());
+                    return extract_boolean_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_boolean_value(val));
+        return hpx::make_ready_future(
+            extract_boolean_value(val, name, codename));
     }
 
     std::uint8_t boolean_operand_sync(primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_boolean_value(p->eval_direct(args));
+            return extract_boolean_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_boolean_value(val);
+        return extract_boolean_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::string> string_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_string_value(f.get());
+                    return extract_string_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_string_value(val));
+        return hpx::make_ready_future(
+            extract_string_value(val, name, codename));
     }
 
     std::string string_operand_sync(primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_string_value(p->eval_direct(args));
+            return extract_string_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_string_value(val);
+        return extract_string_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::vector<ast::expression>> ast_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_ast_value(f.get());
+                    return extract_ast_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ast_value(val));
+        return hpx::make_ready_future(extract_ast_value(val, name, codename));
     }
 
     std::vector<ast::expression> ast_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_ast_value(p->eval_direct(args));
+            return extract_ast_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_ast_value(val);
+        return extract_ast_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::vector<primitive_argument_type>> list_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return p->eval(args).then(
-                [](hpx::future<primitive_argument_type> && f)
+                [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_list_value(f.get());
+                    return extract_list_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_list_value(val));
+        return hpx::make_ready_future(extract_list_value(val, name, codename));
     }
 
     std::vector<primitive_argument_type> list_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args)
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_list_value(p->eval_direct(args));
+            return extract_list_value(p->eval_direct(args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_list_value(val);
+        return extract_list_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////

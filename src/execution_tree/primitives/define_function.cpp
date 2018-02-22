@@ -24,22 +24,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define-function",
             std::vector<std::string>{},
-            nullptr, &create_primitive_with_name<define_function>)
+            nullptr, &create_primitive<define_function>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     define_function::define_function(
             std::vector<primitive_argument_type>&& operands,
-            std::string const& name)
-      : primitive_component_base(std::move(operands))
-      , name_(name)
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {
         if (!operands_.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "define_function::define_function",
-                "the define_function primitive is expected to be initialized "
-                    "without arguments");
+                execution_tree::generate_error_message(
+                    "the define_function primitive is expected to be "
+                        "initialized without arguments",
+                    name_, codename_));
         }
         operands_.resize(1);
     }
@@ -52,8 +53,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_function::eval_direct",
-                "expression representing the function body was not "
-                    "initialized yet");
+                execution_tree::generate_error_message(
+                    "the expression representing the function body "
+                        "was not initialized yet",
+                    name_, codename_));
         }
         return operands_[0];
     }
@@ -64,8 +67,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_function::set_body",
-                "expression representing the function body was already "
-                    "initialized");
+                execution_tree::generate_error_message(
+                    "the expression representing the function body "
+                        "was already initialized",
+                    name_, codename_));
         }
         operands_[0] = std::move(body);
     }
@@ -82,8 +87,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_function::expression_topology",
-                "expression representing the function body was not "
-                    "initialized yet");
+                execution_tree::generate_error_message(
+                    "the expression representing the function body "
+                        "was not initialized yet",
+                    name_, codename_));
         }
 
         primitive const* p = util::get_if<primitive>(&operands_[0]);

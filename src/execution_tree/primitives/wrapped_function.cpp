@@ -24,7 +24,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("call-function",
             std::vector<std::string>{},
-            nullptr, &create_primitive_with_name<wrapped_function>)
+            nullptr, &create_primitive<wrapped_function>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -38,16 +38,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     wrapped_function::wrapped_function(
-            std::vector<primitive_argument_type>&& args, std::string name)
-      : primitive_component_base(std::move(args))
-      , name_(extract_function_name(name))
+            std::vector<primitive_argument_type>&& args,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(args), name, codename)
     {
         // the first entry of operands represents the target
         if (operands_.empty() || !valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "wrapped_function::wrapped_function",
-                "no target given");
+                execution_tree::generate_error_message(
+                    "no target given",
+                    name_, codename_));
         }
     }
 
@@ -59,7 +61,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (p == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                " wrapped_function::eval", "no target given");
+                " wrapped_function::eval",
+                execution_tree::generate_error_message(
+                    "no target given",
+                    name_, codename_));
         }
 
         // evaluation of the define-function yields the function body
@@ -77,17 +82,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             return hpx::make_ready_future(
                 primitive_argument_type{
-                    create_primitive_component_with_name(hpx::find_here(),
-                        type, std::move(fargs), name_)
+                    create_primitive_component(hpx::find_here(),
+                        type, std::move(fargs),
+                        extract_function_name(name_), codename_)
                 });
         }
 
         fargs.reserve(operands_.size() - 1);
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
-            fargs.push_back(value_operand_sync(*it, params));
+            fargs.push_back(value_operand_sync(*it, params, name_, codename_));
         }
-        return value_operand(body, std::move(fargs));
+        return value_operand(body, std::move(fargs), name_, codename_);
     }
 
     topology wrapped_function::expression_topology(

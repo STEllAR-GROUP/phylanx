@@ -26,22 +26,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("function",
             std::vector<std::string>{},
-            nullptr, &create_primitive_with_name<function_reference>)
+            nullptr, &create_primitive<function_reference>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     function_reference::function_reference(
-            std::vector<primitive_argument_type>&& args,
-            std::string const& name)
-      : primitive_component_base(std::move(args))
-      , name_(name)
+            std::vector<primitive_argument_type>&& args, std::string const& name,
+            std::string const& codename)
+      : primitive_component_base(std::move(args), name, codename)
     {
         // operands_[0] holds the target function
         if (operands_.empty() || !valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "function_reference::function_reference",
-                "no target given");
+                execution_tree::generate_error_message(
+                    "no target given",
+                    name_, codename_));
         }
     }
 
@@ -59,13 +60,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 fargs.reserve(operands_.size() + params.size() - 1);
                 std::copy(params.begin(), params.end(), std::back_inserter(fargs));
-                return value_operand(operands_[0], std::move(fargs));
+                return value_operand(
+                    operands_[0], std::move(fargs), name_, codename_);
             }
 
-            return value_operand(operands_[0], std::move(fargs));
+            return value_operand(
+                operands_[0], std::move(fargs), name_, codename_);
         }
 
-        return value_operand(operands_[0], params);
+        return value_operand(operands_[0], params, name_, codename_);
     }
 
     topology function_reference::expression_topology(
