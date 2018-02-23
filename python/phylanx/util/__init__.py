@@ -12,62 +12,67 @@ except Exception:
 
 import phylanx
 et = phylanx.execution_tree
-import inspect, re, ast
+import inspect
+import re
+import ast
+
 
 def rmline(a):
-    return re.sub(r'\$.*','',a)
+    return re.sub(r'\$.*', '', a)
 
-def dump_info(a,depth=0):
+
+def dump_info(a, depth=0):
     "Print detailed information about an AST"
     nm = a.__class__.__name__
-    print("  "*depth,end="")
+    print("  " * depth, end="")
     iter_children = True
     if nm == "Num":
-        if type(a.n)==int:
-            print("%s=%d" % (nm,a.n))
+        if type(a.n) == int:
+            print("%s=%d" % (nm, a.n))
         else:
-            print("%s=%f" % (nm,a.n))
+            print("%s=%f" % (nm, a.n))
     elif nm == "Global":
-        print("Global:",dir(a))
+        print("Global:", dir(a))
     elif nm == "Str":
-        print("%s='%s'" % (nm,a.s))
+        print("%s='%s'" % (nm, a.s))
     elif nm == "Name":
-        print("%s='%s'" %(nm,a.id))
+        print("%s='%s'" % (nm, a.id))
     elif nm == "arg":
-        print("%s='%s'" %(nm,a.arg))
+        print("%s='%s'" % (nm, a.arg))
     elif nm == "Slice":
         print("Slice:")
-        print("  "*depth,end="")
+        print("  " * depth, end="")
         print("  Upper:")
-        if a.upper != None:
-            dump_info(a.upper,depth+4)
-        print("  "*depth,end="")
+        if a.upper is not None:
+            dump_info(a.upper, depth + 4)
+        print("  " * depth, end="")
         print("  Lower:")
-        if a.lower != None:
-            dump_info(a.lower,depth+4)
-        print("  "*depth,end="")
+        if a.lower is not None:
+            dump_info(a.lower, depth + 4)
+        print("  " * depth, end="")
         print("  Step:")
-        if a.step != None:
-            dump_info(a.step,depth+4)
+        if a.step is not None:
+            dump_info(a.step, depth + 4)
     elif nm == "If":
         iter_children = False
         print(nm)
-        dump_info(a.test,depth)
+        dump_info(a.test, depth)
         for n in a.body:
-            dump_info(n,depth+1)
-        if len(a.orelse)>0:
-            print("  "*depth,end="")
+            dump_info(n, depth + 1)
+        if len(a.orelse) > 0:
+            print("  " * depth, end="")
             print("Else")
             for n in a.orelse:
-                dump_info(n,depth+1)
+                dump_info(n, depth + 1)
     else:
         print(nm)
-    for (f,v) in ast.iter_fields(a):
+    for (f, v) in ast.iter_fields(a):
         if type(f) == str and type(v) == str:
-            print("%s:attr[%s]=%s" % ("  "*(depth+1),f,v))
+            print("%s:attr[%s]=%s" % ("  " * (depth + 1), f, v))
     if iter_children:
         for n in ast.iter_child_nodes(a):
-            dump_info(n,depth+1)
+            dump_info(n, depth + 1)
+
 
 def phy_print(m):
     ndim = m.num_dimensions()
@@ -90,44 +95,49 @@ def phy_print(m):
     else:
         print("ndim=", ndim)
 
-def get_node(node,**kwargs):
-    if node == None:
+
+def get_node(node, **kwargs):
+    if node is None:
         return None
     args = [arg for arg in ast.iter_child_nodes(node)]
-    params = {"name":None,"num":None}
+    params = {"name": None, "num": None}
     for k in kwargs:
         if k not in params:
             raise Exception("Invalid argument '%s'" % k)
         else:
             params[k] = kwargs[k]
     name = params["name"]
-    num  = params["num"]
-    if name != None:
+    num = params["num"]
+    if name is not None:
         for i in range(len(args)):
             a = args[i]
             nm = a.__class__.__name__
             if nm == name:
-                if num == None or num == i:
+                if num is None or num == i:
                     return a
-    elif num != None:
+    elif num is not None:
         if num < len(args):
             return args[num]
 
     # if we can't find what we're looking for...
     return None
 
+
 def full_node_name(a, name):
     return '%s$%d$%d' % (name, a.lineno, a.col_offset)
 
+
 def full_name(a):
     return full_node_name(a, a.name)
+
 
 class Recompiler:
     def __init__(self):
         self.defs = {}
         self.priority = 0
         self.groupAggressively = True
-    def recompile(self,a,allowreturn=False):
+
+    def recompile(self, a, allowreturn=False):
         nm = a.__class__.__name__
         if nm == "Num":
             return str(a.n)
@@ -138,66 +148,67 @@ class Recompiler:
         elif nm == "Expr":
             args = [arg for arg in ast.iter_child_nodes(a)]
             s = ""
-            if len(args)==1:
+            if len(args) == 1:
                 s += self.recompile(args[0])
             else:
-                raise Exception('unexpected: expression has more than one sub-expression')
+                raise Exception(
+                    'unexpected: expression has more than one sub-expression')
             return s
         elif nm == "Subscript":
-            e = get_node(a,name="ExtSlice")
-            s0 = get_node(e,name="Slice",num=0)
-            s1 = get_node(e,name="Slice",num=1)
-            s0alt = get_node(a,name="Slice",num=1)
-            if s0 != None and s1 != None:
+            e = get_node(a, name="ExtSlice")
+            s0 = get_node(e, name="Slice", num=0)
+            s1 = get_node(e, name="Slice", num=1)
+            s0alt = get_node(a, name="Slice", num=1)
+            if s0 is not None and s1 is not None:
                 xlo = s0.lower
                 xhi = s0.upper
                 ylo = s1.lower
                 yhi = s1.upper
-                sname = self.recompile(get_node(a,num=0))
+                sname = self.recompile(get_node(a, num=0))
                 s = "slice("
                 s += sname
                 s += ","
-                if xlo == None:
+                if xlo is None:
                     s += "0"
                 else:
                     s += self.recompile(xlo)
                 s += ","
-                if xhi == None:
+                if xhi is None:
                     s += "shape(" + sname + ",0)"
                 else:
                     s += self.recompile(xhi)
                 s += ","
-                if ylo == None:
+                if ylo is None:
                     s += "0"
                 else:
                     s += self.recompile(ylo)
                 s += ","
-                if yhi == None:
+                if yhi is None:
                     s += "shape(" + sname + ",1)"
                 else:
                     s += self.recompile(yhi)
                 s += ")"
                 return s
-            elif s0alt != None:
-                sname = self.recompile(get_node(a,num=0))
+            elif s0alt is not None:
+                sname = self.recompile(get_node(a, num=0))
                 xlo = s0alt.lower
                 xhi = s0alt.upper
                 s = 'slice_column('
                 s += sname
                 s += ','
-                if xlo == None:
+                if xlo is None:
                     s += "0"
                 else:
                     s += self.recompile(xlo)
                 s += ','
-                if xhi == None:
-                    s += "shape("+sname+",0)"
+                if xhi is None:
+                    s += "shape(" + sname + ",0)"
                 else:
                     s += self.recompile(xhi)
                 s += ")"
                 return s
             else:
-                raise Exception("Unsupported slicing: line=%d"%a.lineno)
+                raise Exception("Unsupported slicing: line=%d" % a.lineno)
         elif nm == "FunctionDef":
             args = [arg for arg in ast.iter_child_nodes(a)]
             s = ""
@@ -207,17 +218,17 @@ class Recompiler:
             for arg in ast.iter_child_nodes(args[0]):
                 s += full_node_name(arg, arg.arg)
                 s += ", "
-            if len(args)==2:
+            if len(args) == 2:
                 s += self.recompile(args[1], True).strip(' ')
             else:
                 s += '%s(' % full_node_name(a, 'block')
                 sargs = args[1:]
                 for i in range(len(sargs)):
                     aa = sargs[i]
-                    if i+1 == len(sargs):
-                        s += self.recompile(aa,True)
+                    if i + 1 == len(sargs):
+                        s += self.recompile(aa, True)
                     else:
-                        s += self.recompile(aa,False)
+                        s += self.recompile(aa, False)
                         s += ", "
                 s += ")"
             s += "), " + full_name(a)
@@ -258,8 +269,8 @@ class Recompiler:
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
-            s = args[0].id+'('
-            for n in range(1,len(args)):
+            s = args[0].id + '('
+            for n in range(1, len(args)):
                 if n > 1:
                     s += ', '
                 s += self.recompile(args[n])
@@ -270,9 +281,11 @@ class Recompiler:
             return self.recompile(args[0])
         elif nm == "Return":
             if not allowreturn:
-                raise Exception("Return only allowed at end of function: line=%d\n" % a.lineno)
+                raise Exception(
+                    "Return only allowed at end of function: line=%d\n" %
+                    a.lineno)
             args = [arg for arg in ast.iter_child_nodes(a)]
-            return " "+self.recompile(args[0])
+            return " " + self.recompile(args[0])
         elif nm == "Assign":
             args = [arg for arg in ast.iter_child_nodes(a)]
             s = ""
@@ -280,8 +293,8 @@ class Recompiler:
                 s += "store"
             else:
                 s += "define"
-                self.defs[args[0].id]=1
-            s += "("+args[0].id+","+self.recompile(args[1])+")"
+                self.defs[args[0].id] = 1
+            s += "(" + args[0].id + "," + self.recompile(args[1]) + ")"
             return s
         elif nm == "AugAssign":
             args = [arg for arg in ast.iter_child_nodes(a)]
@@ -289,11 +302,12 @@ class Recompiler:
             nn = args[1].__class__.__name__
             if nn == "Add":
                 sym = "+"
-            return "store("+args[0].id+","+args[0].id + sym + self.recompile(args[2])+")"
+            return "store(" + args[0].id + "," + args[0].id + \
+                sym + self.recompile(args[2]) + ")"
         elif nm == "While":
             args = [arg for arg in ast.iter_child_nodes(a)]
-            s = "while("+self.recompile(args[0])+","
-            if len(args)==2:
+            s = "while(" + self.recompile(args[0]) + ","
+            if len(args) == 2:
                 s += self.recompile(args[1])
             else:
                 tw = "block("
@@ -305,34 +319,34 @@ class Recompiler:
             s += ")"
             return s
         elif nm == "If":
-            s = "if("+self.recompile(a.test)+","
-            if len(a.body)>1:
+            s = "if(" + self.recompile(a.test) + ","
+            if len(a.body) > 1:
                 s += "block("
                 for j in range(len(a.body)):
                     aa = a.body[j]
                     if j > 0:
                         s += ", "
                     if j + 1 == len(a.body):
-                        s += self.recompile(aa,allowreturn)
+                        s += self.recompile(aa, allowreturn)
                     else:
                         s += self.recompile(aa)
                 s += ")"
             else:
-                s += self.recompile(a.body[0],allowreturn)
+                s += self.recompile(a.body[0], allowreturn)
             s += ","
-            if len(a.orelse)>1:
+            if len(a.orelse) > 1:
                 s += "block("
                 for j in range(len(a.orelse)):
                     aa = a.orelse[j]
                     if j > 0:
                         s += ", "
                     if j + 1 == len(a.orelse):
-                        s += self.recompile(aa,allowreturn)
+                        s += self.recompile(aa, allowreturn)
                     else:
                         s += self.recompile(aa)
                 s += ")"
-            elif len(a.orelse)==1:
-                s += self.recompile(a.orelse[0],allowreturn)
+            elif len(a.orelse) == 1:
+                s += self.recompile(a.orelse[0], allowreturn)
             else:
                 s += "block()"
             s += ")"
@@ -355,33 +369,33 @@ class Recompiler:
                 sym = " == "
             else:
                 raise Exception('boolean operation not supported: %s' % nn)
-            return self.recompile(args[0])+sym+self.recompile(args[2])
+            return self.recompile(args[0]) + sym + self.recompile(args[2])
         elif nm == "UnaryOp":
             args = [arg for arg in ast.iter_child_nodes(a)]
             nm2 = args[0].__class__.__name__
             nm3 = args[1].__class__.__name__
             if nm2 == "USub":
                 if nm3 == "BinOp" or self.groupAggressively:
-                    return "-(" + self.recompile(args[1])+")"
+                    return "-(" + self.recompile(args[1]) + ")"
                 else:
                     return "-" + self.recompile(args[1])
             else:
                 raise Exception(nm2)
         elif nm == "For":
-            n = get_node(a,name="Name",num=0)
-            c = get_node(a,name="Call",num=1)
-            if n != None and c != None:
-                r = get_node(c,name="Name",num=0)
+            n = get_node(a, name="Name", num=0)
+            c = get_node(a, name="Call", num=1)
+            if n is not None and c is not None:
+                r = get_node(c, name="Name", num=0)
                 assert r.id == "range" or r.id == "xrange"
-                step = get_node(c,num=3)
-                if step == None:
+                step = get_node(c, num=3)
+                if step is None:
                     step = ast.Num(1)
-                upper = get_node(c,num=2)
-                if upper == None:
-                    upper = get_node(c,num=1)
+                upper = get_node(c, num=2)
+                if upper is None:
+                    upper = get_node(c, num=1)
                     lower = ast.Num(0)
                 else:
-                    lower = get_node(c,num=1)
+                    lower = get_node(c, num=1)
                 ns = self.recompile(n)
                 ls = self.recompile(lower)
                 us = self.recompile(upper)
@@ -389,8 +403,8 @@ class Recompiler:
                 bs = "block("
                 blocki = 2
                 while True:
-                    blockn = get_node(a,num=blocki)
-                    if blockn == None:
+                    blockn = get_node(a, num=blocki)
+                    if blockn is None:
                         break
                     if blocki > 2:
                         bs += ","
@@ -405,19 +419,24 @@ class Recompiler:
                     sd = "define"
                 lg = "<"
                 # Determine the direction of iteration, if possible
-                if not re.search(r'[a-zA-Z_]',ss):
+                if not re.search(r'[a-zA-Z_]', ss):
                     if eval(ss) < 0:
                         lg = ">"
-                    return "for("+sd+"("+ns+","+ls+"),"+ns+" "+lg+" "+us+",store("+ns+","+ns+"+"+ss+"),"+bs+")"
+                    return "for(" + sd + "(" + ns + "," + ls + ")," + ns + " " + lg + \
+                        " " + us + ",store(" + ns + "," + ns + "+" + ss + ")," + bs + ")"
                 else:
-                    # if we can't determine the direction of iteration, make two for loops
-                    ret = "if("+ss+" > 0,"
-                    ret += "for("+sd+"("+ns+","+ls+"),"+ns+" < "+us+",store("+ns+","+ns+"+"+ss+"),"+bs+"),"
-                    ret += "for("+sd+"("+ns+","+ls+"),"+ns+" > "+us+",store("+ns+","+ns+"+"+ss+"),"+bs+"))"
+                    # if we can't determine the direction of iteration, make
+                    # two for loops
+                    ret = "if(" + ss + " > 0,"
+                    ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " < " + \
+                        us + ",store(" + ns + "," + ns + "+" + ss + ")," + bs + "),"
+                    ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " > " + \
+                        us + ",store(" + ns + "," + ns + "+" + ss + ")," + bs + "))"
                     return ret
             raise Exception("unsupported For loop structure")
         else:
             raise Exception('unsupported AST node type: %s' % nm)
+
 
 def convert_to_phylanx_type(v):
     t = type(v)
@@ -425,22 +444,24 @@ def convert_to_phylanx_type(v):
         import numpy
         if t == numpy.ndarray:
             return et.var(v)
-    except:
-          pass
+    except BaseException:
+        pass
     if t == int or t == float or t == list or t == str:
         return et.var(v)
     else:
         return v
 
 # Create the decorator
+
+
 class phyfun(object):
-    def __init__(self,f):
+    def __init__(self, f):
         self.f = f
         # Get the source code
-        src = inspect.getsource(f) #getsource(f)
+        src = inspect.getsource(f)  # getsource(f)
         # Before recompiling the code, take
         # off the decorator from the source.
-        src = re.sub(r'^\s*@\w+\s*','',src)
+        src = re.sub(r'^\s*@\w+\s*', '', src)
 
         # Create the AST
         tree = ast.parse(src)
@@ -451,6 +472,6 @@ class phyfun(object):
         self.__physl_src__ = '%s(%s)\n' % (
             full_node_name(tree.body[0], 'block'), r.recompile(tree))
 
-    def __call__(self,*args):
+    def __call__(self, *args):
         nargs = tuple(convert_to_phylanx_type(a) for a in args)
-        return et.eval(self.__physl_src__,*nargs)
+        return et.eval(self.__physl_src__, *nargs)

@@ -27,7 +27,7 @@ print("Breast Cancer")
 m = et.eval("file_read_csv(\"./breast_cancer.csv\")")
 print(m)
 phy_print(m)
-phy_print(et.eval("slice",m, et.var(0), et.var(3), et.var(0), et.var(3)))
+phy_print(et.eval("slice", m, et.var(0), et.var(3), et.var(0), et.var(3)))
 three = et.eval("3")
 four = et.eval("4")
 

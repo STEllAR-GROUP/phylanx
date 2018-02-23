@@ -13,8 +13,10 @@ import platform
 sys.path.append(os.path.dirname(__file__))
 pathenv = os.environ['PATH']
 
+
 def add_to_environ(path, pathenv):
     return '{}{}{}'.format(path, os.pathsep, pathenv)
+
 
 try:
     if platform.system() == "Windows":
@@ -36,7 +38,7 @@ except Exception:
             phylanx_bindir = PHYLANX_INSTALL_PATH + '\\Debug\\bin'
             hpx_bindir = HPX_INSTALL_PATH + '\\Debug\\bin'
         else:
-            phylanx_bindir= PHYLANX_INSTALL_PATH + '/lib'
+            phylanx_bindir = PHYLANX_INSTALL_PATH + '/lib'
             hpx_bindir = HPX_INSTALL_PATH + '/lib'
 
         os.environ['PATH'] = add_to_environ(phylanx_bindir, pathenv)
@@ -57,9 +59,11 @@ except Exception:
 # make sure hpx is stopped when the module is unloaded
 import atexit
 
+
 @atexit.register
 def stop_hpx():
     stop_hpx_runtime()
+
 
 # load and initialize the HPX runtime
 init_hpx_runtime()
