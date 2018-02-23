@@ -354,7 +354,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         name_, codename_));
                             }
 
-                            result = result.matrix() * curr.matrix();
+                            result = result.matrix() % curr.matrix();
                             return std::move(result);
                         })
                     };

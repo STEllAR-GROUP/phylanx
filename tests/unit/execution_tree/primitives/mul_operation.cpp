@@ -392,6 +392,39 @@ void test_mul_operation_1d1d_numpy()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_mul_operation_1d1d_numpy_1()
+{
+    blaze::DynamicVector<double> v1{4.0, 5.0, 6.0};
+    blaze::DynamicVector<double> v2{7.0, 8.0, 9.0};
+    blaze::DynamicVector<double> v3{1.0, 3.0, 2.0};
+
+    phylanx::execution_tree::primitive ops1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+
+    phylanx::execution_tree::primitive ops2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v2));
+
+    phylanx::execution_tree::primitive ops3 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v3));
+
+    phylanx::execution_tree::primitive mul =
+        phylanx::execution_tree::primitives::create_mul_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(ops1), std::move(ops2), std::move(ops3)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        mul.eval();
+
+    blaze::DynamicVector<double> expected{28.0, 120.0, 108.0};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
 void test_mul_operation_1d2d()
 {
     blaze::Rand<blaze::DynamicVector<double>> gen{};
@@ -753,6 +786,38 @@ void test_mul_operation_2d_numpy()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+void test_mul_operation_2d_numpy_1()
+{
+    blaze::DynamicMatrix<double> m1{{4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}};
+    blaze::DynamicMatrix<double> m2{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
+    blaze::DynamicMatrix<double> m3{{2.0, 0.0, 3.0}, {1.0, 3.0, 7.0}};
+
+    phylanx::execution_tree::primitive ops1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(m1));
+
+    phylanx::execution_tree::primitive ops2 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(m2));
+    phylanx::execution_tree::primitive ops3 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(m3));
+
+    phylanx::execution_tree::primitive mul =
+        phylanx::execution_tree::primitives::create_mul_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(ops1), std::move(ops2), std::move(ops3)});
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        mul.eval();
+
+    blaze::DynamicMatrix<double> expected{
+        {8.0, 0.0, 54.0}, {28.0, 120.0, 378.0}};
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
 int main(int argc, char* argv[])
 {
     test_mul_operation_0d();
@@ -773,6 +838,7 @@ int main(int argc, char* argv[])
     test_mul_operation_1d1d();
     test_mul_operation_1d1d_lit();
     test_mul_operation_1d1d_numpy();
+    test_mul_operation_1d1d_numpy_1();
 
     test_mul_operation_1d2d();
     test_mul_operation_1d2d_lit();
@@ -789,6 +855,7 @@ int main(int argc, char* argv[])
     test_mul_operation_2d();
     test_mul_operation_2d_lit();
     test_mul_operation_2d_numpy();
+    test_mul_operation_2d_numpy_1();
 
     return hpx::util::report_errors();
 }
