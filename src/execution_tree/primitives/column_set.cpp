@@ -83,8 +83,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     actual_start = start;
                 }
-
-                if (start < 0)
+                else //(start < 0)
                 {
                     actual_start = array_length + start;
                 }
@@ -93,8 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     actual_stop = stop;
                 }
-
-                if (stop < 0)
+                else //(stop < 0)
                 {
                     actual_stop = array_length + stop;
                 }
@@ -108,8 +106,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         result.push_back(i);
                     }
                 }
-
-                if (step < 0)
+                else //(step < 0)
                 {
                     for (int i = actual_start; i > actual_stop; i += step)
                     {
@@ -177,7 +174,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::DynamicVector<double> temp(
                         sv.size(), args[4].scalar());
                     sv = temp;
-                    return primitive_argument_type{ir::node_data<double>(0)};
+                    return primitive_argument_type{
+                        ir::node_data<double>(args[0].vector())};
                 }
 
                 auto temp = args[4].vector();
@@ -193,7 +191,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 sv = temp;
-                return primitive_argument_type{ir::node_data<double>(0)};
+                return primitive_argument_type{
+                    ir::node_data<double>(args[0].vector())};
             }
 
             primitive_argument_type column_set2d(args_type&& args) const
@@ -227,7 +226,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::DynamicMatrix<double> data(
                         sm.rows(), sm.columns(), args[4].scalar());
                     sm = data;
-                    return primitive_argument_type{ir::node_data<double>(0)};
+                    return primitive_argument_type{
+                        ir::node_data<double>(args[0].matrix())};
                 }
 
                 if (value_dimnum == 1)
@@ -256,7 +256,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                     sm = temp;
 
-                    return primitive_argument_type{ir::node_data<double>(0)};
+                    return primitive_argument_type{
+                        ir::node_data<double>(args[0].matrix())};
                 }
 
                 auto data = args[4].matrix();
