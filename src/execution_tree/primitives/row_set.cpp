@@ -101,6 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (step > 0)
                 {
+                    result.reserve((actual_stop - actual_start + step)/step);
                     for (int i = actual_start; i < actual_stop; i += step)
                     {
                         result.push_back(i);
@@ -108,6 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 else //(step < 0)
                 {
+                    result.reserve((actual_start - actual_stop - step)/(-step));
                     for (int i = actual_start; i > actual_stop; i += step)
                     {
                         result.push_back(i);
@@ -198,14 +200,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto row_start = args[1].scalar();
                 auto row_stop = args[2].scalar();
                 auto step_row = args[3].scalar();
-                auto col_start = 0;
-                auto col_stop = args[0].dimensions()[1];
-                auto step_col = 1;
                 auto num_matrix_rows = args[0].dimensions()[0];
                 auto num_matrix_cols = args[0].dimensions()[1];
                 auto value_dimnum = args[4].num_dimensions();
 
-                if (step_col == 0)
+                if (step_row == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"

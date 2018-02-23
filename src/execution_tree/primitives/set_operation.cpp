@@ -96,13 +96,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (step > 0)
                 {
+                    result.reserve((actual_stop - actual_start + step)/step);
                     for (int i = actual_start; i < actual_stop; i += step)
                     {
                         result.push_back(i);
                     }
                 }
                 else //(step < 0)
-                {
+                {   
+                    result.reserve((actual_start - actual_stop - step)/(-step));
                     for (int i = actual_start; i > actual_stop; i += step)
                     {
                         result.push_back(i);
