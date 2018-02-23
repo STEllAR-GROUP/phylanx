@@ -77,3 +77,8 @@ def test_slice1(a):
 
 v1 = np.arange(10)
 assert test_slice1(v1) == v1[2:4]
+
+@Phylanx("PhySL")
+def foo():
+    return 3
+foo()
