@@ -158,7 +158,9 @@ struct manage_global_runtime
             // disable HPX' short options
             "hpx.commandline.aliasing!=0",
             // run one thread only (for now)
-            "hpx.os_threads!=1"
+            "hpx.os_threads!=1",
+            // don't print diagnostics during forced terminate
+            "hpx.diagnostics_on_terminate!=0"
         };
 
         using hpx::util::placeholders::_1;
