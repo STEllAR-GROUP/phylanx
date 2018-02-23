@@ -71,6 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<int> create_list_set(
                 int start, int stop, int step, int array_length) const
             {
+                HPX_ASSERT(step != 0);
                 auto actual_start = 0;
                 auto actual_stop = 0;
 
@@ -103,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
                 else //(step < 0)
-                {   
+                {
                     result.reserve((actual_start - actual_stop - step)/(-step));
                     for (int i = actual_start; i > actual_stop; i += step)
                     {
@@ -140,15 +141,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto row_stop = args[2].scalar();
                 int step = args[3].scalar();
                 auto value_dimnum = args[7].num_dimensions();
-
-                if (step == 0)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                        "set_operation::set1d",
-                        generate_error_message(
-                            "step can not be zero", name_, codename_));
-                }
 
                 if (value_dimnum == 2)
                 {
@@ -202,15 +194,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto num_matrix_cols = args[0].dimensions()[1];
                 auto value_dimnum = args[7].num_dimensions();
                 auto matrix_data = args[0].matrix();
-
-                if (step_row == 0 || step_col == 0)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                        "set_operation::set2d",
-                        generate_error_message(
-                            "step can not be zero", name_, codename_));
-                }
 
                 auto init_list_row = create_list_set(
                     row_start, row_stop, step_row, num_matrix_rows);
