@@ -158,7 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "can not store matrix in a vector", name_,
                             codename_));
                 }
-                
+
                 auto init_list = create_list_row_set(
                     row_start, row_stop, step, args[0].size());
 
