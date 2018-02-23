@@ -3,12 +3,12 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-PHYLANX_INSTALL_PATH = '@PHYLANX_INSTALL_PATH@'
-HPX_INSTALL_PATH = '@HPX_INSTALL_PATH@'
-
 import os
 import sys
 import platform
+
+PHYLANX_INSTALL_PATH = '@PHYLANX_INSTALL_PATH@'
+HPX_INSTALL_PATH = '@HPX_INSTALL_PATH@'
 
 sys.path.append(os.path.dirname(__file__))
 pathenv = os.environ['PATH']
