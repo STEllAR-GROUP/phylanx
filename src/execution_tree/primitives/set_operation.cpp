@@ -98,6 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (step > 0)
                 {
+                    HPX_ASSERT(actual_stop > actual_start);
                     result.reserve((actual_stop - actual_start + step)/step);
                     for (int i = actual_start; i < actual_stop; i += step)
                     {
@@ -106,6 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 else //(step < 0)
                 {
+                    HPX_ASSERT(actual_start > actual_stop);
                     result.reserve((actual_start - actual_stop - step)/(-step));
                     for (int i = actual_start; i > actual_stop; i += step)
                     {
