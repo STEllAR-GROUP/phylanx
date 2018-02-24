@@ -82,3 +82,25 @@ assert test_slice1(v1) == v1[2:4]
 def foo():
     return 3
 foo()
+
+@Phylanx("PhySL")
+def foo(n):
+    if n == 1:
+        return 2
+    elif n == 3:
+        return 4
+    else:
+        return 5
+
+assert foo(1)[0] == 2 and foo(3)[0] == 4 and foo(5)[0] == 5
+
+@Phylanx("PhySL")
+def foo():
+    sumn = 0
+    i = 0
+    while i < 10:
+        sumn += i
+        i += 1
+    return sumn
+
+assert foo()[0] == 45
