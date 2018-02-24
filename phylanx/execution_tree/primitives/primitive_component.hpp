@@ -33,30 +33,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         PHYLANX_EXPORT static std::unique_ptr<primitive_component_base>
         create_primitive(std::string const& type,
-            std::vector<primitive_argument_type> && params);
-
-        PHYLANX_EXPORT static std::unique_ptr<primitive_component_base>
-        create_primitive(std::string const& type,
             std::vector<primitive_argument_type>&& params,
-            std::string const& name);
+            std::string const& name, std::string const& codename);
 
     public:
         primitive_component() = default;
 
         primitive_component(std::string const& type,
-                std::vector<primitive_argument_type>&& operands)
-          : primitive_(create_primitive(type, std::move(operands)))
-          , eval_count_(0ll)
-          , eval_duration_(0ll)
-          , eval_direct_count_(0ll)
-          , eval_direct_duration_(0ll)
-        {
-        }
-
-        primitive_component(std::string const& type,
                 std::vector<primitive_argument_type>&& operands,
-                std::string const& name)
-          : primitive_(create_primitive(type, std::move(operands), name))
+                std::string const& name, std::string const& codename)
+          : primitive_(
+                create_primitive(type, std::move(operands), name, codename))
           , eval_count_(0ll)
           , eval_duration_(0ll)
           , eval_direct_count_(0ll)
@@ -109,6 +96,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             return hpx::util::get_and_reset_value(eval_direct_count_, reset);
         }
+
         std::int64_t get_eval_duration(bool reset, bool direct) const
         {
             if (!direct)

@@ -7,7 +7,7 @@
 macro(phylanx_setup_hdf5)
     if(PHYLANX_WITH_HIGHFIVE)
 
-        find_package(HDF5 NO_MODULE NO_CMAKE_PACKAGE_REGISTRY)
+        find_package(HDF5)
         if(NOT HDF5_FOUND)
             phylanx_warn("The HDF5 libraries could not be found, please set HDF5_DIR to help locating it.")
             set(PHYLANX_WITH_HIGHFIVE OFF)

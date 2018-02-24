@@ -1139,18 +1139,19 @@ namespace phylanx { namespace ir
         switch (dims)
         {
         case 0:
-            out << std::to_string(nd[0]);
+            out << std::boolalpha << std::to_string(nd[0]);
             break;
 
         case 1: HPX_FALLTHROUGH;
         case 3:
+            out << std::boolalpha;
             detail::print_array(out, nd.vector(), nd.size());
             break;
 
         case 2: HPX_FALLTHROUGH;
         case 4:
             {
-                out << "[";
+                out << std::boolalpha << "[";
                 auto data = nd.matrix();
                 for (std::size_t row = 0; row != data.rows(); ++row)
                 {

@@ -66,9 +66,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function operator()(std::list<function> elements,
-            std::string const& name) const
+            std::string const& name,
+            std::string const& codename = "<unknown>") const
         {
-            return derived().compose(std::move(elements), name);
+            return derived().compose(std::move(elements), name, codename);
         }
 
         template <typename ... Ts>
@@ -96,7 +97,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function compose(std::list<function> && args,
-            std::string const& name) const
+            std::string const& name, std::string const& codename) const
         {
             arguments_type fargs;
             fargs.reserve(args.size());
@@ -108,7 +109,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             return function{
                 primitive_argument_type{
-                    (*f_)(this->locality_, std::move(fargs), name)
+                    (*f_)(this->locality_, std::move(fargs), name,
+                        codename)
                 }, name};
         }
 
@@ -143,12 +145,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
           : locality_(locality)
         {}
 
-        function operator()(argument_type && arg, std::string const& name) const
+        function operator()(argument_type && arg, std::string const& name,
+            std::string const& codename = "<unknown>") const
         {
             static std::string type("define-variable");
             return function{
-                primitive_argument_type{create_primitive_component_with_name(
-                    locality_, type, std::move(arg), name)},
+                primitive_argument_type{create_primitive_component(
+                    locality_, type, std::move(arg), name, codename)},
                 name};
         }
 
@@ -179,14 +182,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
           : locality_(locality)
         {}
 
-        function operator()(std::string const& name) const
+        function operator()(std::string const& name,
+            std::string const& codename = "<unknown>") const
         {
             static std::string type("define-function");
 
             return function{
                 primitive_argument_type{
-                    create_primitive_component_with_name(locality_, type,
-                        std::vector<primitive_argument_type>{}, name)},
+                    create_primitive_component(locality_, type,
+                        std::vector<primitive_argument_type>{}, name,
+                        codename)},
                 name};
         }
 
@@ -202,7 +207,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
         }
 
-        function operator()(std::size_t n, std::string const& name) const
+        function operator()(std::size_t n, std::string const& name,
+            std::string const& codename = "<unknown>") const
         {
             static std::size_t sequence_number = 0;
             static std::string type("access-argument");
@@ -211,7 +217,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             return function{
                 primitive_argument_type{create_primitive_component(locality_,
-                    type, primitive_argument_type{std::int64_t(n)}, full_name)},
+                    type, primitive_argument_type{std::int64_t(n)}, full_name,
+                    codename)},
                 full_name};
         }
 
@@ -231,7 +238,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function compose(std::list<function> && elements,
-            std::string const& name) const
+            std::string const& name, std::string const& codename) const
         {
             static std::size_t sequence_number = 0;
             static std::string type("access-variable");
@@ -239,8 +246,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::to_string(sequence_number++) + "$" + name;
 
             return function{
-                primitive_argument_type{create_primitive_component_with_name(
-                    this->locality_, type, f_.get().arg_, full_name)},
+                primitive_argument_type{create_primitive_component(
+                    this->locality_, type, f_.get().arg_, full_name,
+                    codename)},
                 full_name};
         }
     };
@@ -261,7 +269,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function compose(std::list<function> && elements,
-            std::string const& name) const
+            std::string const& name, std::string const& codename) const
         {
             arguments_type fargs;
             fargs.reserve(elements.size() + 1);
@@ -277,16 +285,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::to_string(sequence_number_) + "$" + name;
 
             return function{
-                primitive_argument_type{create_primitive_component_with_name(
-                    this->locality_, type, std::move(fargs), full_name)},
+                primitive_argument_type{create_primitive_component(
+                    this->locality_, type, std::move(fargs), full_name,
+                    codename)},
                 full_name};
         }
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    typedef hpx::util::function_nonser<
-            function(std::list<function> const&, std::string const&)
-        > compiled_function;
+    typedef hpx::util::function_nonser<function(
+            std::list<function> const&, std::string const&, std::string const&
+        )> compiled_function;
 
     class environment
     {
@@ -364,18 +373,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
         pattern_list const& patterns_list,
         hpx::id_type const& default_locality);
 
+    ///////////////////////////////////////////////////////////////////////////
     /// Compile the given AST instance and generate an expression tree
     /// corresponding to its structure. Return a function object that - when
     /// executed - will evaluate the generated execution tree.
-    PHYLANX_EXPORT function compile(ast::expression const& expr,
-        function_list& snippets, environment& env,
+    PHYLANX_EXPORT function compile(std::string const& name,
+        ast::expression const& expr, function_list& snippets, environment& env,
         expression_pattern_list const& patterns,
         hpx::id_type const& default_locality);
 
     /// Add the given variable to the compilation environment
-    PHYLANX_EXPORT function define_variable(std::string name,
-        function_list& snippets, environment& env, primitive_argument_type body,
-        hpx::id_type const& default_locality);
+    PHYLANX_EXPORT function define_variable(std::string const& codename,
+        std::string name, function_list& snippets, environment& env,
+        primitive_argument_type body, hpx::id_type const& default_locality);
 }}}
 
 #endif

@@ -25,11 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_unary_not_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("__not");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const unary_not_operation::match_data =
@@ -41,8 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     unary_not_operation::unary_not_operation(
-            std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -50,7 +52,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct unary_not : std::enable_shared_from_this<unary_not>
         {
-            unary_not() = default;
+            unary_not(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             using operand_type = ir::node_data<bool>;
@@ -65,22 +75,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 0:
                     return primitive_argument_type(
                         ir::node_data<bool>{ops.scalar() == false});
+
                 case 1:
                     // TODO: SIMD functionality should be added, blaze implementation
                     // is not currently available
                     return primitive_argument_type(
                         ir::node_data<bool>{blaze::map(
                             ops.vector(), [](bool x) { return x == false; })});
+
                 case 2:
                     // TODO: SIMD functionality should be added, blaze implementation
                     // is not currently available
                     return primitive_argument_type(
                         ir::node_data<bool>{blaze::map(
                             ops.matrix(), [](bool x) { return x == false; })});
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_not_operation::eval",
-                        "operand has unsupported number of dimensions");
+                        generate_error_message(
+                            "operand has unsupported number of dimensions",
+                            name_, codename_));
                 }
             }
 
@@ -92,7 +107,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_not::eval",
-                        "operand has unsupported type");
+                        generate_error_message(
+                            "operand has unsupported type",
+                            unary_not_.name_, unary_not_.codename_));
                 }
 
                 primitive_argument_type operator()(
@@ -121,16 +138,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_not_operation::unary_not_operation",
-                        "the unary_not_operation primitive requires exactly "
-                        "one operand");
+                        generate_error_message(
+                            "the unary_not_operation primitive requires "
+                                "exactly one operand",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_not_operation::unary_not_operation",
-                        "the unary_not_operation primitive requires that the "
-                        "argument given by the operands array is valid");
+                        generate_error_message(
+                            "the unary_not_operation primitive requires "
+                                "that the argument given by the operands "
+                                "array is valid",
+                            name_, codename_));
                 }
 
                 auto this_ = this->shared_from_this();
@@ -144,7 +166,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                         }),
                     detail::map_operands(
-                        operands, functional::literal_operand{}, args));
+                        operands, functional::literal_operand{}, args,
+                        name_, codename_));
             }
         };
     }
@@ -155,9 +178,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::unary_not>()->eval(args, noargs);
+            return std::make_shared<detail::unary_not>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::unary_not>()->eval(operands_, args);
+        return std::make_shared<detail::unary_not>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

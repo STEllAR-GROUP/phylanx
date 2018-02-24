@@ -21,32 +21,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_variable(hpx::id_type const& locality,
-        primitive_argument_type&& operand, std::string const& name)
+        primitive_argument_type&& operand, std::string const& name,
+        std::string const& codename)
     {
         static std::string type("variable");
         return create_primitive_component(
-            locality, type, std::move(operand), name);
+            locality, type, std::move(operand), name, codename);
     }
 
     match_pattern_type const variable::match_data =
     {
         hpx::util::make_tuple("variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive_with_name<variable>)
+            nullptr, &create_primitive<variable>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
     variable::variable(std::vector<primitive_argument_type>&& operands,
-            std::string const& name)
-      : primitive_component_base(std::move(operands))
-      , name_(name)
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
       , evaluated_(false)
     {
         if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "variable::variable",
-                "the variable primitive requires exactly one operand");
+                execution_tree::generate_error_message(
+                    "the variable primitive requires exactly one operand",
+                    name_, codename_));
         }
 
         if (!operands_.empty())

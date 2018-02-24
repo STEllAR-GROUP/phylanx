@@ -20,11 +20,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_apply(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands, std::string const& name,
+        std::string const& codename)
     {
         static std::string type("apply");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const apply::match_data =
@@ -35,8 +36,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    apply::apply(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    apply::apply(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     primitive_argument_type apply::eval_direct(
@@ -46,7 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "apply::eval_direct",
-                "the apply primitive requires exactly two operands");
+                generate_error_message(
+                    "the apply primitive requires exactly two operands"));
         }
 
         primitive const* p = util::get_if<primitive>(&operands_[0]);
@@ -54,9 +57,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "apply::eval_direct",
-                "the first argument to apply must be an invocable object");
+                generate_error_message(
+                    "the first argument to apply must be an invocable object"));
         }
 
-        return p->eval_direct(list_operand_sync(operands_[1], params));
+        return p->eval_direct(
+            list_operand_sync(operands_[1], params, name_, codename_));
     }
 }}}

@@ -25,11 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_square_root_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
     {
         static std::string type("square_root");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const square_root_operation::match_data =
@@ -42,8 +43,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     square_root_operation::square_root_operation(
-            std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -80,28 +82,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         public:
             hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
+                std::vector<primitive_argument_type> const& args,
+                std::string const& name, std::string const& codename)
             {
                 if (operands.size() != 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "square_root_operation::eval",
-                        "the square_root_operation primitive requires "
-                        "exactly one operands");
+                        generate_error_message(
+                            "the square_root_operation primitive "
+                                "requires exactly one operand",
+                            name, codename));
                 }
 
                 if (!valid(operands[0]))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "square_root_operation::eval",
-                        "the square_root_operation primitive requires "
-                        "that the arguments given by the operands "
-                        "array are valid");
+                        generate_error_message(
+                            "the square_root_operation primitive "
+                                "requires that the argument given "
+                                "by the operands array is valid",
+                            name, codename));
                 }
 
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_argument_type
+                    [this_, name, codename](operands_type&& ops)
+                    -> primitive_argument_type
                     {
 
                         switch (ops[0].num_dimensions())
@@ -118,12 +126,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         default:
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "square_root_operation::eval",
-                                "left hand side operand has unsupported "
-                                "number of dimensions");
+                                generate_error_message(
+                                    "left hand side operand has unsupported "
+                                        "number of dimensions",
+                                    name, codename));
                         }
                     }),
                     detail::map_operands(
-                        operands, functional::numeric_operand{}, args));
+                        operands, functional::numeric_operand{}, args,
+                        name, codename));
             }
         };
     }
@@ -134,9 +145,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::square_root>()->eval(args, noargs);
+            return std::make_shared<detail::square_root>()->eval(
+                args, noargs, name_, codename_);
         }
-
-        return std::make_shared<detail::square_root>()->eval(operands_, args);
+        return std::make_shared<detail::square_root>()->eval(
+            operands_, args, name_, codename_);
     }
 }}}

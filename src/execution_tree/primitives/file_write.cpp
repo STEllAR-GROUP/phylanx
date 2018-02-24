@@ -26,11 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_file_write(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
     {
         static std::string type("file_write");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const file_write::match_data =
@@ -41,15 +42,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    file_write::file_write(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    file_write::file_write(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     namespace detail
     {
         struct file_write : std::enable_shared_from_this<file_write>
         {
-            file_write() = default;
+            file_write(std::string const& name, std::string const& codename)
+              : name_(name)
+              , codename_(codename)
+            {
+            }
+
+        protected:
+            std::string name_;
+            std::string codename_;
 
         protected:
             void write_to_file(primitive_argument_type const& val)
@@ -60,7 +70,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::file_write::eval",
-                        "couldn't open file: " + filename_);
+                        generate_error_message(
+                            "couldn't open file: " + filename_,
+                            name_, codename_));
                 }
 
                 std::vector<char> data = phylanx::util::serialize(val);
@@ -68,8 +80,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::file_write::eval",
-                        "couldn't read expected number of bytes from file: " +
-                            filename_);
+                        generate_error_message(
+                            "couldn't read expected number of bytes from "
+                                "file: " + filename_,
+                            name_, codename_));
                 }
             }
 
@@ -83,7 +97,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::file_write::"
                             "eval",
-                        "the file_write primitive requires exactly two operands");
+                        generate_error_message(
+                            "the file_write primitive requires exactly two "
+                                "operands",
+                            name_, codename_));
                 }
 
                 if (!valid(operands[0]) || !valid(operands[1]))
@@ -91,14 +108,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::file_write::"
                             "eval",
-                        "the file_write primitive requires that the given "
-                            "operands are valid");
+                        generate_error_message(
+                            "the file_write primitive requires that the "
+                                "given operands are valid",
+                            name_, codename_));
                 }
 
-                filename_ = string_operand_sync(operands[0], args);
+                filename_ =
+                    string_operand_sync(operands[0], args, name_, codename_);
 
                 auto this_ = this->shared_from_this();
-                return literal_operand(operands[1], args)
+                return literal_operand(operands[1], args, name_, codename_)
                     .then(hpx::util::unwrapping(
                         [this_](primitive_argument_type && val)
                         ->  primitive_argument_type
@@ -107,9 +127,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             {
                                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                     "file_write::eval",
-                                    "the file_write primitive requires that the "
-                                        "argument value given by the operand is "
-                                        "non-empty");
+                                    generate_error_message(
+                                        "the file_write primitive requires "
+                                            "that the argument value given "
+                                            "by the operand is non-empty",
+                                    this_->name_, this_->codename_));
                             }
 
                             this_->write_to_file(val);
@@ -130,9 +152,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::file_write>()->eval(args, noargs);
+            return std::make_shared<detail::file_write>(name_, codename_)
+                ->eval(args, noargs);
         }
-
-        return std::make_shared<detail::file_write>()->eval(operands_, args);
+        return std::make_shared<detail::file_write>(name_, codename_)
+            ->eval(operands_, args);
     }
 }}}

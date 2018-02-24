@@ -24,7 +24,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive_with_name<define_variable>)
+            nullptr, &create_primitive<define_variable>)
     };
 
     match_pattern_type const define_variable::match_data_define =
@@ -37,16 +37,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     define_variable::define_variable(
             std::vector<primitive_argument_type>&& operands,
-            std::string const& name)
-      : primitive_component_base(std::move(operands))
-      , name_(name)
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {
         // body is assumed to be operands_[0]
         if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "define_variable::define_variable",
-                "the define_variable primitive requires exactly one operand");
+                execution_tree::generate_error_message(
+                    "the define_variable primitive requires exactly one "
+                        "operand",
+                    name_, codename_));
         }
 
         // target is assumed to be operands_[1]
@@ -74,9 +76,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             static std::string type("variable");
 
             operands_[1] = primitive_argument_type{
-                create_primitive_component_with_name(
+                create_primitive_component(
                     hpx::find_here(), type, std::move(operands),
-                    extract_variable_name(name_))
+                    extract_variable_name(name_), codename_)
                 };
 
             // bind this name to the result of the expression right away
@@ -105,8 +107,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::store",
-                "the variable associated with this define has not been "
-                    "initialized yet");
+                execution_tree::generate_error_message(
+                    "the variable associated with this define has not been "
+                        "initialized yet",
+                    name_, codename_));
         }
 
         primitive* p = util::get_if<primitive>(&operands_[1]);
@@ -114,8 +118,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::store",
-                "the variable associated with this define has not been "
-                    "properly initialized");
+                execution_tree::generate_error_message(
+                    "the variable associated with this define has not been "
+                        "properly initialized",
+                    name_, codename_));
         }
         p->store(hpx::launch::sync, std::move(val));
     }
@@ -127,8 +133,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::expression_topology",
-                "expression represented by the variable was not "
-                    "initialized yet");
+                execution_tree::generate_error_message(
+                    "expression represented by the variable was not "
+                        "initialized yet",
+                    name_, codename_));
         }
 
         primitive const* p = util::get_if<primitive>(&operands_[0]);

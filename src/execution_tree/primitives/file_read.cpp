@@ -25,11 +25,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_file_read(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands, std::string const& name)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
     {
         static std::string type("file_read");
         return create_primitive_component(
-            locality, type, std::move(operands), name);
+            locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const file_read::match_data =
@@ -40,8 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    file_read::file_read(std::vector<primitive_argument_type>&& operands)
-      : primitive_component_base(std::move(operands))
+    file_read::file_read(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     // read data from given file and return content
@@ -52,19 +54,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                "the file_read primitive requires exactly one literal "
-                    "argument");
+                execution_tree::generate_error_message(
+                    "the file_read primitive requires exactly one "
+                        "literal argument",
+                    name_, codename_));
         }
 
         if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                "the file_read primitive requires that the given operand is "
-                    "valid");
+                execution_tree::generate_error_message(
+                    "the file_read primitive requires that the given "
+                        "operand is valid",
+                    name_, codename_));
         }
 
-        std::string filename = string_operand_sync(operands_[0], args);
+        std::string filename =
+            string_operand_sync(operands_[0], args, name_, codename_);
         std::ifstream infile(filename.c_str(),
             std::ios::binary | std::ios::in | std::ios::ate);
 
@@ -72,7 +79,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                "couldn't open file: " + filename);
+                execution_tree::generate_error_message(
+                    "couldn't open file: " + filename,
+                    name_, codename_));
         }
 
         std::streamsize count = infile.tellg();
@@ -85,8 +94,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                "couldn't read expected number of bytes from file: " +
-                    filename);
+                execution_tree::generate_error_message(
+                    "couldn't read expected number of bytes from file: " +
+                        filename,
+                    name_, codename_));
         }
 
         // assume data in file is result of a serialized primitive_argument_type

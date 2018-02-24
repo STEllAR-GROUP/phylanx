@@ -9,11 +9,13 @@ set(tests
     define_loses_values_177
     expression_topology_213
     negative_integral_value_131
+    out_of_scope_variable_232
    )
 
 set(cout_noargs_prints_nothing_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(define_loses_values_177_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(out_of_scope_variable_232_FLAGS COMPONENT_DEPENDENCIES iostreams)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

@@ -24,7 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         not_equal() = default;
 
-        not_equal(std::vector<primitive_argument_type>&& operands);
+        not_equal(std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
@@ -32,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     PHYLANX_EXPORT primitive create_not_equal(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "");
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif

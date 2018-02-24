@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         define_function(
             std::vector<primitive_argument_type>&& operands,
-            std::string const& name);
+            std::string const& name, std::string const& codename);
 
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
@@ -46,9 +46,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Initialize the expression representing the function body, this has
         // to be done separately in order to support recursive functions.
         void set_body(primitive_argument_type&& target) override;
-
-    private:
-        std::string name_;
     };
 }}}
 

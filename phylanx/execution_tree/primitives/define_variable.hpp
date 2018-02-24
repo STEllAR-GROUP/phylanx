@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         define_variable() = default;
 
         define_variable(std::vector<primitive_argument_type>&& operands,
-            std::string const& name);
+            std::string const& name, std::string const& codename);
 
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
@@ -48,7 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         primitive_argument_type body_;
         mutable primitive_argument_type target_;
-        std::string name_;
     };
 }}}
 

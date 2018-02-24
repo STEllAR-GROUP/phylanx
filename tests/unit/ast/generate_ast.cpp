@@ -138,8 +138,8 @@ int main(int argc, char* argv[])
 
     test_expression(
         "A + B",
-            "A\n"
-            "B\n"
+            "A$1$1\n"
+            "B$1$5\n"
             "+\n"
     );
 
@@ -152,37 +152,37 @@ int main(int argc, char* argv[])
 
     test_expression(
         "A + B + -C",
-            "A\n"
-            "B\n"
+            "A$1$1\n"
+            "B$1$5\n"
             "+\n"
-            "C\n"
+            "C$1$10\n"
             "-\n"
             "+\n"
     );
 
     test_expression(
         "A + B * C",
-            "A\n"
-            "B\n"
-            "C\n"
+            "A$1$1\n"
+            "B$1$5\n"
+            "C$1$9\n"
             "*\n"
             "+\n"
     );
 
     test_expression(
         "A * B + C",
-            "A\n"
-            "B\n"
+            "A$1$1\n"
+            "B$1$5\n"
             "*\n"
-            "C\n"
+            "C$1$9\n"
             "+\n"
     );
 
     test_expression(
         "func(A, B)",
-            "func\n"
-            "A\n"
-            "B\n"
+            "func$1$1\n"
+            "A$1$6\n"
+            "B$1$9\n"
     );
 
     test_expression(
@@ -201,10 +201,10 @@ int main(int argc, char* argv[])
         "1.0 / (1.0 + exp(-dot(A, B)))",
             "1\n"
             "1\n"
-            "exp\n"
-            "dot\n"
-            "A\n"
-            "B\n"
+            "exp$1$14\n"
+            "dot$1$19\n"
+            "A$1$23\n"
+            "B$1$26\n"
             "-\n"
             "+\n"
             "/\n"
@@ -220,9 +220,9 @@ int main(int argc, char* argv[])
             "true\n"
             "1\n"
             "1\n"
-            "A\n"
-            "A\n"
-            "B\n"
+            "A$1$17\n"
+            "A$1$20\n"
+            "B$1$24\n"
             "+\n"
     );
 
@@ -231,9 +231,9 @@ int main(int argc, char* argv[])
             "true\n"
             "1\n"
             "1\n"
-            "A\n"
-            "A\n"
-            "B\n"
+            "A$1$19\n"
+            "A$1$22\n"
+            "B$1$26\n"
             "+\n"
     );
 
