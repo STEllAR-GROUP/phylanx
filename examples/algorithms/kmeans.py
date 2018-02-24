@@ -12,24 +12,28 @@ import phylanx
 from phylanx.ast import *
 from phylanx.ast.utils import printout 
 
+
 @Phylanx("PhySL")
 def initialize_centroids(points, k):
     centroids = copy(points)
     shuffle(centroids)
     return centroids[:k]
 
+
 @Phylanx("PhySL")
 def closest_centroid(points, centroids):
-    distances = sqrt( sum( pow( points - centroids[:, newaxis] , 2.0), axis=2) )
+    distances = sqrt(sum(pow(points - centroids[:, newaxis], 2.0), axis=2))
     return argmin(distances, axis=0)
+
 
 @Phylanx("PhySL")
 def move_centroids(points, closest, centroids):
     k = shape(centroids, 0)
-    arr = constant( 0.0, k, shape(centroids, 1) )
+    arr = constant(0.0, k, shape(centroids, 1))
     for k_ in range(k):
-       arr = vstack( arr, mean( points[ closest == k_ ], axis=0 ) )
+        arr = vstack(arr, mean(points[closest == k_], axis=0))
     return arr
+
 
 @Phylanx("PhySL")
 def kmeans(points, k, itr):
@@ -41,13 +45,15 @@ def kmeans(points, k, itr):
 
     return centroids
 
+
 def create_points():
     from numpy import vstack, array
     from numpy.random import randn
 
-    return vstack( randn(150, 2) * 0.75 + array([1, 0]),
-        randn(50, 2) * 0.25 + array([-0.5, -0.5]),
-        randn(150, 2) * 0.75 + array([-0.5, -0.5]) ), 3
+    return vstack(randn(150, 2) * 0.75 + array([1, 0]),
+                  randn(50, 2) * 0.25 + array([-0.5, -0.5]),
+                  randn(150, 2) * 0.75 + array([-0.5, -0.5])), 3
+
 
 if __name__ == "__main__":
     points, k = create_points()

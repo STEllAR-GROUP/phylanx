@@ -9,4 +9,3 @@ try:
 
 except Exception:
     from _phylanxd.util import *
-

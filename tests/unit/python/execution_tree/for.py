@@ -16,15 +16,17 @@ def sumn():
         sum += n
     return sum
 
+
 assert sumn()[0] == 6
 
 @Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0
-    for n in range(1,4):
+    for n in range(1, 4):
         sum += n
     return sum
+
 
 assert sumn()[0] == 6
 
@@ -33,10 +35,11 @@ def sumn():
     n = 0
     sum = 0
     c = 0
-    for n in range(3,0,-1):
+    for n in range(3, 0, -1):
         sum += n
         c += 1
-    return sum+c
+    return sum + c
+
 
 assert sumn()[0] == 9
 
@@ -46,9 +49,10 @@ def sumn():
     sum = 0
     c = 0
     ss = -1
-    for n in xrange(3,0,ss):
+    for n in xrange(3, 0, ss):
         sum += n
         c += 1
-    return sum+c
+    return sum + c
+
 
 assert sumn()[0] == 9
