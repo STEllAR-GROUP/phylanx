@@ -21,7 +21,7 @@ dependencies:
         - mkdir -p build
 
     override:
-        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
+        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On -DHighFive_DIR=/highfive/share/HighFive/CMake ..
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2
         - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2 -k tools.inspect
 
