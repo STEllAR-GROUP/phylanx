@@ -28,8 +28,8 @@ dependencies:
 
 test:
     override:
-        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2 tests
         - docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} ./build/bin/inspect --all --output=./build/phylanx_inspect_report.html /phylanx
+        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2 tests
         - cp $PWD/build/phylanx_inspect_report.html ${CIRCLE_ARTIFACTS}/
 
 deployment:

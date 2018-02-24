@@ -5,13 +5,13 @@
 
 # algorithm provided by http://math.nist.gov/javanumerics/jama/
 #
-import phylanx as p
+import phylanx as pnx
 
 
 def lu_decomp(A, B):
     m = A.shape[0]  # row
     n = A.shape[1]  # col
-    LU = A.copy()  # deep copy of p.matrix into LU
+    LU = A.copy()  # deep copy of pnx.matrix into LU
 
     # phylanx problem context
     # makes computing easier to
@@ -52,7 +52,7 @@ def lu_decomp(A, B):
             k = piv[p]
             piv[p] = piv[j]
             piv[j] = k
-            pivsign = -pivsign
+            pivsign = -pivsign  # noqa: F823
             return piv, pivsign
 
         def compute_multipliers(A, j, m):
@@ -101,7 +101,7 @@ def get_l(LU):
 
 
 def get_u(LU):
-    m = LU.shape[0]  # row
+    # m = LU.shape[0]  # row
     n = LU.shape[1]  # col
     c = LU.context()
     U = c.matrix(float, n, n)
@@ -117,14 +117,14 @@ def get_u(LU):
 
 if __name__ == "__main__":
 
-    c = p.context()
-    A = p.matrix(float, 100, 100)
-    p.random(A)
+    c = pnx.context()
+    A = pnx.matrix(float, 100, 100)
+    pnx.random(A)
 
     Bmat, LU = lu_decomp(A)
     L = get_l(LU)
     U = get_u(LU)
 
-    [v.write(p.stdout) for v in [Bmat, LU, L, U]]
+    [v.write(pnx.stdout) for v in [Bmat, LU, L, U]]
 
-    p.compute(c)
+    pnx.compute(c)

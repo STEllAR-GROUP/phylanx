@@ -10,11 +10,14 @@ try:
 except Exception:
     from _phylanxd.util import *
 
+
 import phylanx
-et = phylanx.execution_tree
 import inspect
 import re
 import ast
+
+
+et = phylanx.execution_tree
 
 
 def rmline(a):

@@ -99,7 +99,6 @@ a4 = Val("e")
 
 # Create an expression
 expr = a1 * a2 * a0 + a3 * -a4
-#expr = (a1 + a2)+a3-a4
 
 # Convert the AST to a string and check the value
 if str(expr.value) == '(((3.14 * "b") * "c") + ("d" * -"e"))':

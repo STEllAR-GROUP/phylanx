@@ -20,6 +20,7 @@ def test_serialization(in_ast):
     out_ast = pickle.loads(pickled_data)
     assert(in_ast == out_ast)
 
+
 ###############################################################################
 
 
@@ -38,7 +39,7 @@ def test_identifier():
 
 def test_primary_expr():
     pe1 = ast.primary_expr(False)
-    assert(pe1.value == False)
+    assert(not pe1.value)
 
     ident1 = ast.identifier('ident1')
     pe2 = ast.primary_expr(ident1)

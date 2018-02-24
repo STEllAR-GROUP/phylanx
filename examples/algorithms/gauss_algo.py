@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     B = p.matrix(float, 100, 100)
     B = p.randomize(B)
-    B = guass_elim2(B)
+    B = gauss_elim2(B)
     B.write(p.stdout)
 
     p.compute(c)

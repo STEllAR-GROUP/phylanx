@@ -41,7 +41,6 @@ class Ops:
         self.b = b
         e1 = ast.expression(oper(a.value))
         op2 = oper(b.value)
-        #e1.rest.append([self.code(), op2])
         op3 = ast.operation(self.code(), op2)
         util.append_operation(e1, op3)
         self.value = e1
@@ -98,7 +97,6 @@ a4 = Arr("e")
 
 # Create an expression
 expr = a1 * a2 * a0 + a3 * -a4
-#expr = (a1 + a2)+a3-a4
 
 # Convert the AST to a string and print it
 print(str(expr.value))

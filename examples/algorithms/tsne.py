@@ -42,14 +42,14 @@ def calc_prob_mat(distances, sigmas=None):
 
 @phyfun
 def bin_search(
-    eval_fn,
-    target,
-    i_iter,
-    sigma_,
-    tol=1e-10,
-    max_iter=10000,
-    lower=1e-20,
-     upper=1000.0):
+        eval_fn,
+        target,
+        i_iter,
+        sigma_,
+        tol=1e-10,
+        max_iter=10000,
+        lower=1e-20,
+        upper=1000.0):
     for i in range(max_iter):
         guess = (lower + upper) / 2.0
         val = eval_fn(guess, i, sigma)
@@ -66,7 +66,7 @@ def bin_search(
 @phyfun
 def calc_perplexity(prob_matrix):
     entropy = -sum(prob_matrix * log2(prob_matrix), axis=1)
-    perplexity = pow(2.0, entropy)
+    # perplexity = pow(2.0, entropy)
     return entropy
 
 
@@ -98,7 +98,7 @@ def p_conditional_to_joint(P):
 
 # NOTE: Ignore these for now...
 #
-#@phyfun
+# @phyfun
 # def q_joint(Y):
 #    dists = neg_squared_euc_dists(Y)
 #    exp_dists = exp(distances)
@@ -110,7 +110,7 @@ def p_conditional_to_joint(P):
 #    #
 #    return exp_dists / sum(exp_dists), None
 #
-#@phyfun
+# @phyfun
 # def symmetric_sne_grad(P, Q, Y):
 #    pq_diff = P-Q
 #    pq_expanded = expand_dims(pq_diff, 2) # NxNx1
@@ -154,56 +154,57 @@ def p_joint(X, target_preplexity):
 
 @phyfun
 def estimate_sne(
-    X,
-    y,
-    P,
-    rng,
-    num_iters,
-    q_fn,
-    grad_fn,
-    learning_rate,
-     momentum):
+        X,
+        y,
+        P,
+        rng,
+        num_iters,
+        q_fn,
+        grad_fn,
+        learning_rate,
+        momentum):
     shape_x_arr = array(0, 2)
     shape_x_arr[0] = shape(X, 0)
     shape_x_arr[1] = 2
 
     # TODO:
     # https://docs.scipy.org/doc/numpy/reference/generated/numpy.random.RandomState.html
-    Y = random('normal', (0.0, 0.0001, shape_x_arr)
+    Y = random('normal', (0.0, 0.0001, shape_x_arr))
 
     # TODO: original line didn't have shape_x_arr...originally expressed as...
     # Y = rng.normal(0.0, 0.0001, [shape(X, 0), 2])
     #
 
-    if momentum:
-        Y_m2=Y  # TODO: copy
-        Y_m1=Y  # TODO: copy
+    if momentum:  # noqa: E999
+        Y_m2 = Y  # TODO: copy
+        Y_m1 = Y  # TODO: copy
 
     for i in range(num_iters):
-        Q, distances=q_fn(Y)
-        grads=grad_fn(P, Q, Y, distances)
-        Y=Y - learning_rate * grads
+        Q, distances = q_fn(Y)
+        grads = grad_fn(P, Q, Y, distances)
+        Y = Y - learning_rate * grads
         if momentum:
             Y += momentum * (Y_m1 - Y_m2)
-            Y_m2=Y_m1  # TODO: copy
-            Y_m1=Y  # TODO: copy
+            Y_m2 = Y_m1  # TODO: copy
+            Y_m1 = Y  # TODO: copy
 
-     return Y
+    return Y
+
 
 if __name__ == "__main__":
-    PERPLEX=20
-    NUM_ITERS=500
-    LR=10.0
-    M=0.9
+    PERPLEX = 20
+    NUM_ITERS = 500
+    LR = 10.0
+    M = 0.9
 
-    P=p_joint(X, PERPLEX)
-    Y=estimate_sne(
-    X,
-    y,
-    P,
-    num_iters=NUM_ITERS,
-    q_fn=q_tsne,
-    grad_fn=tsne_grad,
-    learning_rate=LR,
-     momentum=M)
+    P = p_joint(X, PERPLEX)
+    Y = estimate_sne(
+        X,
+        y,
+        P,
+        num_iters=NUM_ITERS,
+        q_fn=q_tsne,
+        grad_fn=tsne_grad,
+        learning_rate=LR,
+        momentum=M)
     phy_print(Y)

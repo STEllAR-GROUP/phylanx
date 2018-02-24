@@ -3,8 +3,10 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
-et = phylanx.execution_tree
 from phylanx.util import *
+import numpy as np
+
+et = phylanx.execution_tree
 
 
 @phyfun
@@ -28,7 +30,6 @@ def lra(x, y, alpha, iterations, enable_output):
 
 file_name = "breast_cancer.csv"
 
-import numpy as np
 data = np.genfromtxt(file_name, skip_header=1, delimiter=",")
 x = data[:, :-1]
 y = data[:, -1:]

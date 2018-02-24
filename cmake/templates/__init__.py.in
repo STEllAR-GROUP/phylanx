@@ -6,6 +6,8 @@
 import os
 import sys
 import platform
+import atexit
+
 
 PHYLANX_INSTALL_PATH = '@PHYLANX_INSTALL_PATH@'
 HPX_INSTALL_PATH = '@HPX_INSTALL_PATH@'
@@ -56,10 +58,8 @@ except Exception:
 
         sys.exit(1)
 
+
 # make sure hpx is stopped when the module is unloaded
-import atexit
-
-
 @atexit.register
 def stop_hpx():
     stop_hpx_runtime()

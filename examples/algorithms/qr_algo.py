@@ -48,7 +48,8 @@ def qr_decomp(A):
     for k in range(n):
         nrm = c.scalar(0.0)
         for i in range(k, m):
-            rnm = hypot(nrm, QR[i, k])
+            # rnm = hypot(nrm, QR[i, k])
+            pass
 
         nrm.conditional(nrm != 0.0, khousevec(m, n, k, nrm, QR))
         Rdiag[k] = -nrm
@@ -100,6 +101,7 @@ def get_q(QR, Rdiag):
 
 
 def get_r(QR, Rdiag):
+    n = None  # TODO: What is this supposed to be?
     c = QR.context()
     R = c.matrix(float, (n, n), 0.0)
     for (i, j) in getindices(n, n):
