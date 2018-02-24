@@ -6,9 +6,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 cmake_policy(PUSH)
-if(POLICY CMP0054)
-  cmake_policy(SET CMP0054 NEW)
-endif()
+phylanx_set_cmake_policy(SET CMP0054 NEW)
 
 function(phylanx_setup_target target)
   # retrieve arguments
@@ -77,15 +75,10 @@ function(phylanx_setup_target target)
   if(PHYLANX_WITH_STATIC_LINKING)
     set(target_STATIC_LINKING ON)
   else()
-    if(POLICY CMP0045)
-      cmake_policy(PUSH)
-      cmake_policy(SET CMP0045 OLD)
-    endif()
 
-    get_target_property(_phylanx_library_type hpx TYPE)
-
-    if(POLICY CMP0045)
-      cmake_policy(POP)
+    set(_phylanx_library_type)
+    if(TARGET phylanx)
+      get_target_property(_phylanx_library_type phylanx TYPE)
     endif()
 
     if("${_phylanx_library_type}" STREQUAL "STATIC_LIBRARY")
