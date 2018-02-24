@@ -32,6 +32,7 @@ def khousevec(m, n, k, nrm, QR):
             QR[i, j] += s * QR[i, k]
     return QR
 
+
 # A is a p.matrix
 #
 

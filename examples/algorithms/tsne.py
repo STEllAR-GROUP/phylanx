@@ -1,5 +1,5 @@
 #  Copyright (c) 2018 Steven R. Brandt
-#  Copyright (c) 2018 Christopher Taylor 
+#  Copyright (c) 2018 Christopher Taylor
 #  Copyright (c) 2018 R. Tohid
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -13,13 +13,15 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout 
+from phylanx.ast.utils import printout
+
 
 @Phylanx("PhySL")
 def neg_squared_euc_distance(X):
     sum_X = sum(pow(X, 2.0), axis=1)
     D = ((transpose((-2.0 * dot(X, transpose(X))) + sum_X)) + sum_X)
     return -D
+
 
 @Phylanx("PhySL")
 def softmax(X, diag_zero=True):
@@ -30,6 +32,7 @@ def softmax(X, diag_zero=True):
 
     return e_x / reshape(sum(e_x, axis=1), [-1, 1])
 
+
 @Phylanx("PhySL")
 def calc_prob_mat(distances, sigmas=None):
     if sigmas is not None:
@@ -38,8 +41,16 @@ def calc_prob_mat(distances, sigmas=None):
     else:
         return softmax(distances)
 
+
 @Phylanx("PhySL")
-def bin_search(eval_fn, target, i_iter, sigma_, tol=1e-10, max_iter=10000, lower=1e-20, upper=1000.0):
+def bin_search(eval_fn,
+               target,
+               i_iter,
+               sigma_,
+               tol=1e-10,
+               max_iter=10000,
+               lower=1e-20,
+               upper=1000.0):
 
     for i in range(max_iter):
         guess = (lower + upper) / 2.0
@@ -65,6 +76,7 @@ def calc_perplexity(prob_matrix):
 def perplexity(distances, sigmas):
     return calc_perplexity(calc_prob_matrix(distances, sigmas))
 
+
 @Phylanx("PhySL")
 def eval_fn(distances, i, sigma):
     return perplexity(distances[i:i + 1, :], sigma)
@@ -86,27 +98,29 @@ def find_optimal_sigmas(distances, target_perplexity):
 def p_conditional_to_joint(P):
     return (P + transpose(P)) / (2.0 * float(shape(P, 0)))
 
+
 # NOTE: Ignore these for now...
 #
-#@Phylanx("PhySL")
-#def q_joint(Y):
-#    dists = neg_squared_euc_dists(Y)
-#    exp_dists = exp(distances)
-#    # TODO: does fill return a ref to inv_distances?
-#    #
-#    fill_diagonal(exp_dists, 0.0)
+# @Phylanx("PhySL")
+# def q_joint(Y):
+#     dists = neg_squared_euc_dists(Y)
+#     exp_dists = exp(distances)
+#     # TODO: does fill return a ref to inv_distances?
+#     #
+#     fill_diagonal(exp_dists, 0.0)
 #
-#    # TODO: return tuples?
-#    #
-#    return exp_dists / sum(exp_dists), None
+#     # TODO: return tuples?
+#     #
+#     return exp_dists / sum(exp_dists), None
 #
-#@Phylanx("PhySL")
-#def symmetric_sne_grad(P, Q, Y):
-#    pq_diff = P-Q
-#    pq_expanded = expand_dims(pq_diff, 2) # NxNx1
-#    y_diffs = expand_dims(Y, 1) - expand_dims(Y, 0) # NxNx2
-#    grad = 4.0 * sum(pq_expanded * y_diffs, axis=1) # Nx2
-#    return grad
+# @Phylanx("PhySL")
+# def symmetric_sne_grad(P, Q, Y):
+#     pq_diff = P-Q
+#     pq_expanded = expand_dims(pq_diff, 2) # NxNx1
+#     y_diffs = expand_dims(Y, 1) - expand_dims(Y, 0) # NxNx2
+#     grad = 4.0 * sum(pq_expanded * y_diffs, axis=1) # Nx2
+#     return grad
+
 
 @Phylanx("PhySL")
 def q_tsne(Y):
@@ -120,6 +134,7 @@ def q_tsne(Y):
     #
     return inv_distances / sum(inv_distances), inv_distances
 
+
 @Phylanx("PhySL")
 def tsne_grad(P, Q, Y, distances):
     pq_diff = P - Q
@@ -130,6 +145,7 @@ def tsne_grad(P, Q, Y, distances):
     grad = 4.0 * sum(pq_expanded * y_diffs_wt, axis=1)  # Nx2
     return grad
 
+
 @Phylanx("PhySL")
 def p_joint(X, target_preplexity):
     distances = neg_squared_euc_dists(X)
@@ -138,8 +154,10 @@ def p_joint(X, target_preplexity):
     P = p_conditional_joint(p_conditional)
     return P
 
+
 @Phylanx("PhySL")
-def estimate_sne(X, y, P, rng, num_iters, q_fn, grad_fn, learning_rate, momentum):
+def estimate_sne(X, y, P, rng, num_iters, q_fn, grad_fn, learning_rate,
+                 momentum):
     shape_x_arr = array(0, 2)
     shape_x_arr[0] = shape(X, 0)
     shape_x_arr[1] = 2
@@ -175,5 +193,13 @@ if __name__ == "__main__":
     M = 0.9
 
     P = p_joint(X, PERPLEX)
-    Y = estimate_sne(X, y, P, num_iters=NUM_ITERS, q_fn=q_tsne, grad_fn=tsne_grad, learning_rate=LR, momentum=M)
+    Y = estimate_sne(
+        X,
+        y,
+        P,
+        num_iters=NUM_ITERS,
+        q_fn=q_tsne,
+        grad_fn=tsne_grad,
+        learning_rate=LR,
+        momentum=M)
     printout(Y)

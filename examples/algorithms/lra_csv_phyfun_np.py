@@ -4,8 +4,9 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
+import numpy as np
 from phylanx.ast import *
-from phylanx.ast.utils import printout 
+from phylanx.ast.utils import printout
 
 
 @Phylanx("PhySL")
@@ -17,7 +18,7 @@ def lra(x, y, alpha, iterations, enable_output):
     gradient = constant(0.0, shape(x, 1))
     step = 0
     while step < iterations:
-        if(enable_output):
+        if (enable_output):
             print("step: ", step, ", ", weights)
         pred = 1.0 / (1.0 + exp(-dot(x, weights)))
         error = pred - y
@@ -32,6 +33,6 @@ file_name = "breast_cancer.csv"
 data = np.genfromtxt(file_name, skip_header=1, delimiter=",")
 x = data[:, :-1]
 y = data[:, -1:]
-y = y.reshape((y.shape[0],))
-res = lra(x,y,1e-5,750,0)
+y = y.reshape((y.shape[0], ))
+res = lra(x, y, 1e-5, 750, 0)
 printout(res)

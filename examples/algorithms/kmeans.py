@@ -10,7 +10,7 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout 
+from phylanx.ast.utils import printout
 
 
 @Phylanx("PhySL")
@@ -50,9 +50,10 @@ def create_points():
     from numpy import vstack, array
     from numpy.random import randn
 
-    return vstack(randn(150, 2) * 0.75 + array([1, 0]),
-                  randn(50, 2) * 0.25 + array([-0.5, -0.5]),
-                  randn(150, 2) * 0.75 + array([-0.5, -0.5])), 3
+    return vstack(
+        randn(150, 2) * 0.75 + array([1, 0]),
+        randn(50, 2) * 0.25 + array([-0.5, -0.5]),
+        randn(150, 2) * 0.75 + array([-0.5, -0.5])), 3
 
 
 if __name__ == "__main__":

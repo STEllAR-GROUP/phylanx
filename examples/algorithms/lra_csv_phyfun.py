@@ -6,13 +6,12 @@
 
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout 
+from phylanx.ast.utils import printout
+
 
 @Phylanx("PhySL")
-def lra(file_name,
-        xlo1, xhi1, ylo1, yhi1,
-        xlo2, xhi2, ylo2, yhi2,
-        alpha, iterations, enable_output):
+def lra(file_name, xlo1, xhi1, ylo1, yhi1, xlo2, xhi2, ylo2, yhi2, alpha,
+        iterations, enable_output):
     data = file_read_csv(file_name)
     x = data[xlo1:xhi1, ylo1:yhi1]
     y = data[xlo2:xhi2, ylo2:yhi2]
@@ -31,5 +30,7 @@ def lra(file_name,
         weights = weights - (alpha * gradient)
         step += 1
     return weights
+
+
 res = lra("breast_cancer.csv", 0, 569, 0, 30, 0, 569, 30, 31, 1e-5, 750, 0)
 printout(res)

@@ -6,6 +6,7 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
 from phylanx.util import *
+from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
@@ -29,7 +30,7 @@ m = et.eval("file_read_csv(\"./breast_cancer.csv\")")
 print(m)
 
 printout(m)
-printout(et.eval("slice",m, et.var(0), et.var(3), et.var(0), et.var(3)))
+printout(et.eval("slice", m, et.var(0), et.var(3), et.var(0), et.var(3)))
 
 three = et.eval("3")
 four = et.eval("4")
@@ -37,7 +38,8 @@ four = et.eval("4")
 print("The answer is 42")
 print(et.eval("block(42.0)")[0])
 print(et.eval("block(define(x,42),x)")[0])
-print(et.eval("""
+print(
+    et.eval("""
     block(
         define(arg0,10),
         define(fact,arg0,
@@ -49,7 +51,8 @@ print(et.eval("""
         fact(arg0)
     )""")[0])
 print("3=", three[0])
-print(et.eval("""
+print(
+    et.eval("""
     block(
         define(fact,arg0,
             if(arg0 <= 1,
@@ -60,8 +63,8 @@ print(et.eval("""
         fact
     )""", three)[0])
 printout(et.eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
-printout(et.eval(
-    "block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
+printout(
+    et.eval("block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
 et.eval('cout("Hello ",3," - ",4.1-2.9)')
 et.eval("""
     block(

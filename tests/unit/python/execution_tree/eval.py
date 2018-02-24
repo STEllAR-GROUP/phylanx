@@ -8,12 +8,9 @@
 import phylanx
 from phylanx.ast import *
 from phylanx.ast.utils import printout
-
-et = phylanx.execution_tree
 import numpy as np
 
 et = phylanx.execution_tree
-
 
 fib10 = et.eval("""
 block(
@@ -40,6 +37,7 @@ block(
 
 assert sum10[0] == 55.0
 
+
 @Phylanx("PhySL")
 def fib(n):
     if n < 2:
@@ -56,6 +54,7 @@ def fib(n):
 
 assert fib(10)[0] == 55.0
 
+
 @Phylanx("PhySL")
 def pass_str(a):
     return a
@@ -65,6 +64,7 @@ assert pass_str.__physl_src__ == \
     'block$1$0(define$1$0(pass_str$1$0, a$1$13, a$2$11), pass_str$1$0)\n'
 
 assert "foo" == str(pass_str("foo"))
+
 
 @Phylanx("PhySL")
 def test_slice(a):
@@ -77,6 +77,7 @@ r2 = two[1:3, 1:4]
 
 assert r1 == r2
 
+
 @Phylanx("PhySL")
 def test_slice1(a):
     return a[2:4]
@@ -85,10 +86,14 @@ def test_slice1(a):
 v1 = np.arange(10)
 assert test_slice1(v1) == v1[2:4]
 
+
 @Phylanx("PhySL")
 def foo():
     return 3
+
+
 foo()
+
 
 @Phylanx("PhySL")
 def foo(n):
@@ -99,7 +104,9 @@ def foo(n):
     else:
         return 5
 
+
 assert foo(1)[0] == 2 and foo(3)[0] == 4 and foo(5)[0] == 5
+
 
 @Phylanx("PhySL")
 def foo():
@@ -109,5 +116,6 @@ def foo():
         sumn += i
         i += 1
     return sumn
+
 
 assert foo()[0] == 45

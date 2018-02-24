@@ -18,7 +18,7 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout 
+from phylanx.ast.utils import printout
 
 
 @Phylanx

@@ -5,6 +5,7 @@
 
 import phylanx.ast as ast
 import phylanx.util as util
+
 # A simple way to turn a python3 expression into a data structure (AST)
 
 
@@ -18,6 +19,7 @@ def oper(x):
         return ast.operand(x)
     else:
         raise Exception(str(t))
+
 
 # First overload some basic operators.
 # All the other classes will inherit from this.
@@ -48,39 +50,44 @@ class Ops:
     def __str__(self):
         return str(self.value)
 
+
 # Unary negation
 
 
-class Neg (Ops):
+class Neg(Ops):
     def __init__(self, a):
         self.a = a
         self.value = ast.unary_expr(ast.optoken.op_negative, oper(a.value))
 
+
 # The "+" operator
 
 
-class Plus (Ops):
+class Plus(Ops):
     def code(self):
         return ast.optoken.op_plus
+
 
 # The "-" operator
 
 
-class Sub (Ops):
+class Sub(Ops):
     def code(self):
         return ast.optoken.op_minus
+
 
 # The "*" operator
 
 
-class Mul (Ops):
+class Mul(Ops):
     def code(self):
         return ast.optoken.op_times
+
 
 # A basic representation of an xs by ys matrix
 
 
-class Arr (Ops):
+class Arr(Ops):
     def __init__(self, ident):
         self.value = ast.primary_expr(ident)
 

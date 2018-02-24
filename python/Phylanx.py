@@ -22,10 +22,11 @@ class Ops:
     def __neg__(self):
         return Neg(self)
 
+
 # Unary negation
 
 
-class Neg (Ops):
+class Neg(Ops):
     def __init__(self, a):
         self.a = a
 
@@ -35,10 +36,11 @@ class Neg (Ops):
     def size(self):
         return self.a.size()
 
+
 # The "+" operator
 
 
-class Plus (Ops):
+class Plus(Ops):
     def __init__(self, a, b):
         self.a = a
         self.b = b
@@ -53,10 +55,11 @@ class Plus (Ops):
     def size(self):
         return self.a.size()
 
+
 # The "-" operator
 
 
-class Sub (Ops):
+class Sub(Ops):
     def __init__(self, a, b):
         self.a = a
         self.b = b
@@ -71,10 +74,11 @@ class Sub (Ops):
     def size(self):
         return self.a.size()
 
+
 # The "*" operator
 
 
-class Mul (Ops):
+class Mul(Ops):
     def __init__(self, a, b):
         self.a = a
         self.b = b
@@ -89,10 +93,11 @@ class Mul (Ops):
     def size(self):
         return [self.a.size()[0], self.b.size()[1]]
 
+
 # A basic representation of an xs by ys matrix
 
 
-class Arr (Ops):
+class Arr(Ops):
     def __init__(self, xs, ys):
         self.xs = xs
         self.ys = ys
