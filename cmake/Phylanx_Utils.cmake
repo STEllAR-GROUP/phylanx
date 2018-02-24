@@ -28,6 +28,7 @@ phylanx_include(
   GetPythonExtensionLocation
   HighFive
   IsTarget
+  SetCMakePolicy
   SetupCompilerFlags
   SetOutputPaths
   SetupTarget

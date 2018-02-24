@@ -31,9 +31,7 @@ set(PHYLANX_LIBRARY_VERSION "${PHYLANX_VERSION}")
 set(PHYLANX_SOVERSION ${PHYLANX_MAJOR_VERSION})
 set(PHYLANX_PACKAGE_NAME Phylanx)
 
-if(MSVC)
-  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 ################################################################################
 # CMake configuration
@@ -129,7 +127,7 @@ phylanx_setup_blaze()
 phylanx_setup_pybind11()
 phylanx_setup_hdf5()
 
-include(Phylanx_GitCommit)
+phylanx_include(GitCommit)
 
 ################################################################################
 # Target specification
@@ -229,7 +227,7 @@ install(
   DESTINATION share/phylanx-${PHYLANX_VERSION}
   COMPONENT license)
 
-include(Phylanx_GeneratePackage)
+phylanx_include(GeneratePackage)
 
 # Create a symlink in share pointing to the latest Phylanx installation
 create_symbolic_link("${CMAKE_BINARY_DIR}/share/phylanx-${PHYLANX_VERSION}"
