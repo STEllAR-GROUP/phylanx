@@ -13,6 +13,7 @@ RUN apt-get update  &&                                                          
     pip3 install setuptools &&                                                   \
     pip3 install pytest &&                                                       \
     pip3 install numpy &&                                                        \
+    pip3 install flake8 &&                                                       \
     cd / &&                                                                      \
     git clone --depth 1 https://github.com/pybind/pybind11.git pybind11-src &&   \
     cd pybind11-src &&                                                           \
