@@ -74,8 +74,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
-            std::vector<int> create_list_row_set(
-                int start, int stop, int step, int array_length) const
+            std::vector<std::int64_t> create_list_row_set(std::int64_t start,
+                std::int64_t stop, std::int64_t step,
+                std::int64_t array_length) const
             {
                 HPX_ASSERT(step != 0);
                 auto actual_start = 0;
@@ -85,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     actual_start = start;
                 }
-                else //(start < 0)
+                else    //(start < 0)
                 {
                     actual_start = array_length + start;
                 }
@@ -94,27 +95,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     actual_stop = stop;
                 }
-                else //(stop < 0)
+                else    //(stop < 0)
                 {
                     actual_stop = array_length + stop;
                 }
 
-                std::vector<int> result;
+                std::vector<std::int64_t> result;
 
                 if (step > 0)
                 {
                     HPX_ASSERT(actual_stop > actual_start);
-                    result.reserve((actual_stop - actual_start + step)/step);
-                    for (int i = actual_start; i < actual_stop; i += step)
+                    result.reserve((actual_stop - actual_start + step) / step);
+                    for (std::int64_t i = actual_start; i < actual_stop;
+                         i += step)
                     {
                         result.push_back(i);
                     }
                 }
-                else //(step < 0)
+                else    //(step < 0)
                 {
                     HPX_ASSERT(actual_start > actual_stop);
-                    result.reserve((actual_start - actual_stop - step)/(-step));
-                    for (int i = actual_start; i > actual_stop; i += step)
+                    result.reserve(
+                        (actual_start - actual_stop - step) / (-step));
+                    for (std::int64_t i = actual_start; i > actual_stop;
+                         i += step)
                     {
                         result.push_back(i);
                     }
@@ -146,10 +150,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_argument_type row_set1d(args_type&& args) const
             {
-                auto row_start = args[1].scalar();
-                auto row_stop = args[2].scalar();
-                int step = args[3].scalar();
-                auto value_dimnum = args[4].num_dimensions();
+                std::int64_t row_start = args[1].scalar();
+                std::int64_t row_stop = args[2].scalar();
+                std::int64_t step = args[3].scalar();
+                std::size_t value_dimnum = args[4].num_dimensions();
 
                 if (value_dimnum == 2)
                 {
@@ -192,12 +196,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_argument_type row_set2d(args_type&& args) const
             {
-                auto row_start = args[1].scalar();
-                auto row_stop = args[2].scalar();
-                auto step_row = args[3].scalar();
-                auto num_matrix_rows = args[0].dimensions()[0];
-                auto num_matrix_cols = args[0].dimensions()[1];
-                auto value_dimnum = args[4].num_dimensions();
+                std::int64_t row_start = args[1].scalar();
+                std::int64_t row_stop = args[2].scalar();
+                std::int64_t step_row = args[3].scalar();
+                std::size_t  num_matrix_rows = args[0].dimensions()[0];
+                std::size_t  num_matrix_cols = args[0].dimensions()[1];
+                std::size_t  value_dimnum = args[4].num_dimensions();
 
                 auto init_list_row = create_list_row_set(
                     row_start, row_stop, step_row, num_matrix_rows);
@@ -243,10 +247,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 auto data = args[4].matrix();
-                auto data_rows = data.rows();
-                auto data_cols = data.columns();
-                auto num_cols = sm.columns();
-                auto num_rows = sm.rows();
+                std::size_t  data_rows = data.rows();
+                std::size_t  data_cols = data.columns();
+                std::size_t  num_cols = sm.columns();
+                std::size_t  num_rows = sm.rows();
                 if (data_rows != num_rows || data_cols != num_cols)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
