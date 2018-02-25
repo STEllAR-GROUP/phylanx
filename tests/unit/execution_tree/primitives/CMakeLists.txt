@@ -7,6 +7,7 @@ set(tests
     add_operation
     and_operation
     block_operation
+    column_set
     column_slicing
     constant
     define_operation
@@ -39,7 +40,9 @@ set(tests
     parallel_block_operation
     power_operation
     random
+    row_set
     row_slicing
+    set_operation
     slicing_operation
     square_root_operation
     store_operation
