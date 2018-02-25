@@ -45,6 +45,7 @@
 #include <phylanx/execution_tree/primitives/less_equal.hpp>
 #include <phylanx/execution_tree/primitives/linearmatrix.hpp>
 #include <phylanx/execution_tree/primitives/linspace.hpp>
+#include <phylanx/execution_tree/primitives/make_vector.hpp>
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>

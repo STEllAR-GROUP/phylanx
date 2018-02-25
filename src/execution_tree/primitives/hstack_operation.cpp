@@ -152,13 +152,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> const& operands,
                 std::vector<primitive_argument_type> const& args) const
             {
-                if (operands.size() != 2)
+                if (operands.size() < 2)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::primitives::"
                             "hstack_operation::hstack_operation",
                         generate_error_message(
-                            "the hstack_operation primitive requires exactly "
+                            "the hstack_operation primitive requires at least "
                                 "two arguments",
                             name_, codename_));
                 }
