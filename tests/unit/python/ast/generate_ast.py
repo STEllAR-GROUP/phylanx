@@ -6,25 +6,29 @@
 import phylanx
 
 ###############################################################################
+
+
 class traverse_ast:
     def __init__(self):
         self.result = ''
 
-    def __call__(self, ast, delimiter = ''):
+    def __call__(self, ast, delimiter=''):
         self.result += str(ast) + delimiter
         return True
+
 
 class traverse_ast_enter_exit:
     def __init__(self):
         self.result = ''
 
-    def on_enter(self, ast, delimiter = ''):
+    def on_enter(self, ast, delimiter=''):
         self.result += str(ast) + delimiter
         return True
 
     # optional, can be ommitted
     def on_exit(self, ast, *args):
         return True
+
 
 def test_expression(expr, expected, delimiter):
     ast = phylanx.ast.generate_ast(expr)
@@ -47,49 +51,49 @@ def test_expression(expr, expected, delimiter):
 test_expression(
     'A + B',
     '(A$1$1 + B$1$5)\n' +
-        'A$1$1\n' +
-        'B$1$5\n' +
-        '+\n',
+    'A$1$1\n' +
+    'B$1$5\n' +
+    '+\n',
     '\n')
 
 test_expression(
     'A + B + -C',
     '(A$1$1 + B$1$5 + -C$1$10)\n' +
-        'A$1$1\n' +
-        'B$1$5\n' +
-        '+\n' +
-        'C$1$10\n' +
-        '-\n' +
-        '+\n',
+    'A$1$1\n' +
+    'B$1$5\n' +
+    '+\n' +
+    'C$1$10\n' +
+    '-\n' +
+    '+\n',
     '\n')
 
 test_expression(
     'A + B * C',
     '(A$1$1 + B$1$5 * C$1$9)\n' +
-        'A$1$1\n' +
-        'B$1$5\n' +
-        'C$1$9\n' +
-        '*\n' +
-        '+\n',
+    'A$1$1\n' +
+    'B$1$5\n' +
+    'C$1$9\n' +
+    '*\n' +
+    '+\n',
     '\n')
 
 test_expression(
     'A * B + C',
     '(A$1$1 * B$1$5 + C$1$9)\n' +
-        'A$1$1\n' +
-        'B$1$5\n' +
-        '*\n' +
-        'C$1$9\n' +
-        '+\n',
+    'A$1$1\n' +
+    'B$1$5\n' +
+    '*\n' +
+    'C$1$9\n' +
+    '+\n',
     '\n')
 
 test_expression(
     'func(A, B)',
     'func$1$1(A$1$6, B$1$9)\n' +
-        'func$1$1(A$1$6, B$1$9)\n' +
-            'func$1$1\n' +
-            'A$1$6\n' +
-                'A$1$6\n' +
-            'B$1$9\n' +
-                'B$1$9\n',
+    'func$1$1(A$1$6, B$1$9)\n' +
+    'func$1$1\n' +
+    'A$1$6\n' +
+    'A$1$6\n' +
+    'B$1$9\n' +
+    'B$1$9\n',
     '\n')

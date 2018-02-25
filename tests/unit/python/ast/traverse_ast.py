@@ -6,6 +6,8 @@
 import phylanx
 
 ###############################################################################
+
+
 class traverse_ast:
     def __init__(self):
         self.generated_string = ''
@@ -18,6 +20,7 @@ class traverse_ast:
     # optional, can be ommitted
     def on_exit(self, ast):
         return True
+
 
 def test_traverse(expr, expected):
     ast = phylanx.ast.generate_ast(expr)
@@ -33,5 +36,6 @@ def test_traverse(expr, expected):
 
 ###############################################################################
 test_traverse('A + B', '(A$1$1 + B$1$5)\nA$1$1\nB$1$5\n+\n')
-test_traverse('A + B - C', '(A$1$1 + B$1$5 - C$1$9)\nA$1$1\nB$1$5\n+\nC$1$9\n-\n')
-
+test_traverse(
+    'A + B - C',
+    '(A$1$1 + B$1$5 - C$1$9)\nA$1$1\nB$1$5\n+\nC$1$9\n-\n')

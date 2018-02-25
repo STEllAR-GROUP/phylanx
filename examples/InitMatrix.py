@@ -5,9 +5,10 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
-et = phylanx.execution_tree
 from phylanx.util import *
 import numpy as np
+
+et = phylanx.execution_tree
 
 # Create a vector of zeros
 vz = et.var(np.zeros(10))
@@ -27,7 +28,7 @@ print("Breast Cancer")
 m = et.eval("file_read_csv(\"./breast_cancer.csv\")")
 print(m)
 phy_print(m)
-phy_print(et.eval("slice",m, et.var(0), et.var(3), et.var(0), et.var(3)))
+phy_print(et.eval("slice", m, et.var(0), et.var(3), et.var(0), et.var(3)))
 three = et.eval("3")
 four = et.eval("4")
 
