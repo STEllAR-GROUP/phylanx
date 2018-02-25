@@ -305,7 +305,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             name_, codename_));
                 }
 
-                if (ops[0].vector().size() != ops[1].matrix().columns())
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                auto cv = lhs.vector();
+                auto cm = rhs.matrix();
+
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d2d",
@@ -316,14 +322,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // TODO: Blaze does not support broadcasting
-                for (size_t i = 0UL; i < ops[1].matrix().rows(); ++i)
+                if (rhs.is_ref())
                 {
-                    blaze::row(ops[1].matrix(), i) =
-                        blaze::trans(ops[0].vector()) /
-                        blaze::row(ops[1].matrix(), i);
+                    blaze::DynamicMatrix<double> m{cm.rows(), cv.size()};
+                    for (std::size_t i = 0; i < cm.rows(); ++i)
+                    {
+                        blaze::row(m, i) = blaze::trans(cv) / blaze::row(cm, i);
+                    }
+                    return primitive_argument_type{std::move(m)};
                 }
 
-                return primitive_argument_type(std::move(ops[1]));
+                for (std::size_t i = 0; i < cm.rows(); ++i)
+                {
+                    blaze::row(cm, i) = blaze::trans(cv) / blaze::row(cm, i);
+                }
+                return primitive_argument_type{std::move(rhs)};
             }
 
             primitive_argument_type div1d(operands_type && ops) const
@@ -382,7 +395,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             name_, codename_));
                 }
 
-                if (ops[1].vector().size() != ops[0].matrix().columns())
+                operand_type& lhs = ops[0];
+                operand_type& rhs = ops[1];
+
+                auto cv = rhs.vector();
+                auto cm = lhs.matrix();
+
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "div_operation::div1d2d",
@@ -393,13 +412,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // TODO: Blaze does not support broadcasting
-                for (size_t i = 0UL; i < ops[0].matrix().rows(); ++i)
+                if (rhs.is_ref())
                 {
-                    blaze::row(ops[0].matrix(), i) /=
-                        blaze::trans(ops[1].vector());
+                    blaze::DynamicMatrix<double> m{cm.rows(), cv.size()};
+                    for (std::size_t i = 0; i < cm.rows(); ++i)
+                    {
+                        blaze::row(m, i) = blaze::row(cm, i) / blaze::trans(cv);
+                    }
+                    return primitive_argument_type{std::move(m)};
                 }
 
-                return primitive_argument_type(std::move(ops[0]));
+                for (std::size_t i = 0; i < cm.rows(); ++i)
+                {
+                    blaze::row(cm, i) /= blaze::trans(cv);
+                }
+                return primitive_argument_type{std::move(lhs)};
             }
 
             primitive_argument_type div2d2d(operands_type && ops) const

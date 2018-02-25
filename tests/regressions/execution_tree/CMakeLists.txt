@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    assign_wrong_variable_245
     cout_noargs_prints_nothing_159
     cout_prints_twice_155
     define_loses_values_177
@@ -12,6 +13,7 @@ set(tests
     out_of_scope_variable_232
    )
 
+set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_noargs_prints_nothing_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(define_loses_values_177_FLAGS COMPONENT_DEPENDENCIES iostreams)

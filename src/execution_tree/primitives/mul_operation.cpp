@@ -136,7 +136,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs = rhs.vector() * lhs.scalar();
+                if (ops[0].is_ref())
+                {
+                    rhs = rhs.vector() * lhs.scalar();
+                }
+                else
+                {
+                    rhs.vector() *= lhs.scalar();
+                }
                 return primitive_argument_type{ std::move(rhs) };
             }
 
@@ -155,7 +162,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                rhs = rhs.matrix() * lhs.scalar();
+                if (ops[1].is_ref())
+                {
+                    rhs = rhs.matrix() * lhs.scalar();
+                }
+                else
+                {
+                    rhs.matrix() *= lhs.scalar();
+                }
                 return primitive_argument_type{ std::move(rhs) };
             }
 
@@ -197,15 +211,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs = lhs.vector() * rhs.scalar();
-                return primitive_argument_type{ std::move(lhs) };
+                if (ops[0].is_ref())
+                {
+                    lhs = lhs.vector() * rhs.scalar();
+                }
+                else
+                {
+                    lhs.vector() *= rhs.scalar();
+                }
+                return primitive_argument_type{std::move(lhs)};
             }
 
             primitive_argument_type mul1d1d(operands_type && ops) const
             {
                 if (ops.size() == 2)
                 {
-                    ops[0] = ops[0].vector() * ops[1].vector();
+                    if (ops[0].is_ref())
+                    {
+                        ops[0] = ops[0].vector() * ops[1].vector();
+                    }
+                    else
+                    {
+                        ops[0].vector() *= ops[1].vector();
+                    }
                     return primitive_argument_type{ std::move(ops[0]) };
                 }
 
@@ -223,7 +251,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         "all operands must be vectors",
                                         name_, codename_));
                             }
-                            result = result.vector() * curr.vector();
+
+                            if (result.is_ref())
+                            {
+                                result = result.vector() * curr.vector();
+                            }
+                            else
+                            {
+                                result.vector() *= curr.vector();
+                            }
                             return std::move(result);
                         })
                     };
@@ -243,21 +279,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                if (ops[0].vector().size() != ops[1].matrix().columns())
+                auto cv = lhs.vector();
+                auto cm = rhs.matrix();
+
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul1d2d",
                         "vector size does not match number of matrix columns");
                 }
+
                 // TODO: Blaze does not support broadcasting
-                for (size_t i = 0UL; i < ops[1].matrix().rows(); ++i)
+                if (rhs.is_ref())
                 {
-                    blaze::row(ops[1].matrix(), i) =
-                        blaze::trans(ops[0].vector()) *
-                        blaze::row(ops[1].matrix(), i);
+                    blaze::DynamicMatrix<double> m{cm.rows(), cv.size()};
+                    for (std::size_t i = 0; i < cm.rows(); ++i)
+                    {
+                        blaze::row(m, i) = blaze::trans(cv) * blaze::row(cm, i);
+                    }
+                    return primitive_argument_type{std::move(m)};
                 }
 
-                return primitive_argument_type{ std::move(rhs) };
+                for (std::size_t i = 0; i < rhs.matrix().rows(); ++i)
+                {
+                    blaze::row(cm, i) = blaze::trans(cv) * blaze::row(cm, i);
+                }
+                return primitive_argument_type{std::move(rhs)};
             }
 
             primitive_argument_type mul2d(operands_type && ops) const
@@ -297,8 +344,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                lhs = lhs.matrix() * rhs.scalar();
-                return primitive_argument_type{ std::move(lhs) };
+                if (lhs.is_ref())
+                {
+                    lhs = lhs.matrix() * rhs.scalar();
+                }
+                else
+                {
+                    lhs.matrix() *= rhs.scalar();
+                }
+                return primitive_argument_type{std::move(lhs)};
             }
 
             primitive_argument_type mul2d1d(operands_type && ops) const
@@ -315,19 +369,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                if (ops[1].vector().size() != ops[0].matrix().columns())
+                auto cv = rhs.vector();
+                auto cm = lhs.matrix();
+
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "mul_operation::mul2d1d",
                         "vector size does not match number of matrix columns");
                 }
+
                 // TODO: Blaze does not support broadcasting
-                for (size_t i = 0UL; i < ops[0].matrix().rows(); ++i)
+                if (lhs.is_ref())
                 {
-                    blaze::row(ops[0].matrix(), i) *=
-                        blaze::trans(ops[1].vector());
+                    blaze::DynamicMatrix<double> m{cm.rows(), cv.size()};
+                    for (std::size_t i = 0; i < cm.rows(); ++i)
+                    {
+                        blaze::row(m, i) = blaze::row(cm, i) * blaze::trans(cv);
+                    }
+                    return primitive_argument_type{std::move(m)};
                 }
 
+                for (std::size_t i = 0; i < cm.rows(); ++i)
+                {
+                    blaze::row(cm, i) *= blaze::trans(cv);
+                }
                 return primitive_argument_type{std::move(lhs)};
             }
 
@@ -335,7 +401,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (ops.size() == 2)
                 {
-                    ops[0] = ops[0].matrix() % ops[1].matrix();
+                    if (ops[0].is_ref())
+                    {
+                        ops[0] = ops[0].matrix() % ops[1].matrix();
+                    }
+                    else
+                    {
+                        ops[0].matrix() %= ops[1].matrix();
+                    }
                     return primitive_argument_type{std::move(ops[0])};
                 }
 
@@ -354,7 +427,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                         name_, codename_));
                             }
 
-                            result = result.matrix() % curr.matrix();
+                            if (result.is_ref())
+                            {
+                                result = result.matrix() % curr.matrix();
+                            }
+                            else
+                            {
+                                result.matrix() %= curr.matrix();
+                            }
                             return std::move(result);
                         })
                     };
