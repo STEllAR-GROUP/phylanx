@@ -73,6 +73,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
+            bool check_col_set_parameters(std::int64_t start, std::int64_t stop,
+                std::int64_t step, std::size_t array_length) const
+            {
+                if (start < 0)
+                {
+                    start = array_length + start;
+                }
+
+                if (stop < 0)
+                {
+                    stop = array_length + stop;
+                }
+
+                if (step > 0)
+                {
+                    return (stop > start);
+                }
+                else
+                {
+                    return (start > stop);
+                }
+            }
+
             std::vector<std::int64_t> create_list_col_set(std::int64_t start,
                 std::int64_t stop,
                 std::int64_t step,
@@ -165,6 +188,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             codename_));
                 }
 
+                if (step == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "col_set_operation::col_set1d",
+                        generate_error_message(
+                            "argument 'step' can not be zero", name_,
+                            codename_));
+                }
+
+                if (!check_col_set_parameters(
+                        col_start, col_stop, step, args[0].size()))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "col_set_operation::col_set1d",
+                        generate_error_message(
+                            "argument 'col_start' or 'col_stop' are not valid",
+                            name_, codename_));
+                }
+
                 auto init_list = create_list_col_set(
                     col_start, col_stop, step, args[0].size());
 
@@ -204,6 +248,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t num_matrix_rows = args[0].dimensions()[0];
                 std::size_t num_matrix_cols = args[0].dimensions()[1];
                 std::size_t value_dimnum = args[4].num_dimensions();
+
+                if (step_col == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "col_set_operation::col_set2d",
+                        generate_error_message(
+                            "argument 'step' can not be zero", name_,
+                            codename_));
+                }
+
+                if (!check_col_set_parameters(
+                        col_start, col_stop, step_col, num_matrix_cols))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "col_set_operation::col_set2d",
+                        generate_error_message(
+                            "argument 'col_start' or 'col_stop' are not valid",
+                            name_, codename_));
+                }
 
                 auto init_list_col = create_list_col_set(
                     col_start, col_stop, step_col, num_matrix_cols);
@@ -297,7 +362,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "column_set_operation::eval",
                         generate_error_message(
-                            "the set_operation primitive requires "
+                            "the column_set_operation primitive requires "
                             "that the arguments given by the operands "
                             "array are valid",
                             name_, codename_));

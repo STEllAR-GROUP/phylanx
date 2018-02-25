@@ -75,6 +75,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             using storage1d_type = typename arg_type::storage1d_type;
             using storage2d_type = typename arg_type::storage2d_type;
 
+            bool check_row_set_parameters(std::int64_t start, std::int64_t stop,
+                std::int64_t step, std::size_t array_length) const
+            {
+                if (start < 0)
+                {
+                    start = array_length + start;
+                }
+
+                if (stop < 0)
+                {
+                    stop = array_length + stop;
+                }
+
+                if (step > 0)
+                {
+                    return (stop > start);
+                }
+                else
+                {
+                    return (start > stop);
+                }
+            }
+
             std::vector<std::int64_t> create_list_row_set(std::int64_t start,
                 std::int64_t stop, std::int64_t step,
                 std::int64_t array_length) const
@@ -166,6 +189,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             codename_));
                 }
 
+                if (step == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "row_set_operation::row_set1d",
+                        generate_error_message(
+                            "argument 'step' can not be zero", name_,
+                            codename_));
+                }
+
+                if (!check_row_set_parameters(
+                        row_start, row_stop, step, args[0].size()))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "row_set_operation::row_set1d",
+                        generate_error_message(
+                            "argument 'start' or 'stop' are not valid", name_,
+                            codename_));
+                }
+
                 auto init_list = create_list_row_set(
                     row_start, row_stop, step, args[0].size());
 
@@ -203,6 +247,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t  num_matrix_rows = args[0].dimensions()[0];
                 std::size_t  num_matrix_cols = args[0].dimensions()[1];
                 std::size_t  value_dimnum = args[4].num_dimensions();
+
+                if (step_row == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "row_set_operation::row_set2d",
+                        generate_error_message(
+                            "argument 'step' can not be zero", name_,
+                            codename_));
+                }
+
+                if (!check_row_set_parameters(
+                        row_start, row_stop, step_row, num_matrix_rows))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "row_set_operation::row_set2d",
+                        generate_error_message(
+                            "argument 'row_start' or 'row_stop' are not valid",
+                            name_, codename_));
+                }
 
                 auto init_list_row = create_list_row_set(
                     row_start, row_stop, step_row, num_matrix_rows);
