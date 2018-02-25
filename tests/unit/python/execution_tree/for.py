@@ -1,11 +1,15 @@
 #  Copyright (c) 2018 Steven R. Brandt
+#  Copyright (c) 2018 R. Tohid
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-from phylanx.util import *
+
+import phylanx
+from phylanx.ast import *
+from phylanx.ast.utils import printout
 
 
-@phyfun
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0
@@ -17,7 +21,7 @@ def sumn():
 assert sumn()[0] == 6
 
 
-@phyfun
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0
@@ -29,7 +33,7 @@ def sumn():
 assert sumn()[0] == 6
 
 
-@phyfun
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0
@@ -43,7 +47,7 @@ def sumn():
 assert sumn()[0] == 9
 
 
-@phyfun
+@Phylanx("PhySL")
 def sumn():
     n = 0
     sum = 0

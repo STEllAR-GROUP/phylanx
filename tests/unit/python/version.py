@@ -10,7 +10,7 @@ except Exception:
     # then try debug version
     import phylanxd as phylanx
 
-assert(phylanx.major_version() == 0)
-assert(phylanx.minor_version() == 0)
-assert(phylanx.subminor_version() == 1)
-assert(phylanx.full_version_as_string() == '0.0.1')
+assert (phylanx.major_version() == 0)
+assert (phylanx.minor_version() == 0)
+assert (phylanx.subminor_version() == 1)
+assert (phylanx.full_version_as_string() == '0.0.1')

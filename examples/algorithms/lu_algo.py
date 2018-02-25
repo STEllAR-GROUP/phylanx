@@ -62,9 +62,11 @@ def lu_decomp(A, B):
 
         pp = c.scalar(j)
         for i in range(j + 1, m):
+
             def set(p, i):
                 p = i
                 return p
+
             pp.conditional(pp.abs(lucolj[i]) > pp.abs(lucolj[pp]), set(pp, i))
             pp.conditional(pp != j, compute_piv(A, n, pp, j, k, piv))
 

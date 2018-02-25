@@ -45,10 +45,7 @@ for i in range(nx):
     for j in range(ny):
         assert m[i, j] == 0
 
-m2 = [
-    [1.0, 2.0, 3.0],
-    [1.1, 2, 2, 3.2],
-    [1.5, 2.6, 3.7]]
+m2 = [[1.0, 2.0, 3.0], [1.1, 2, 2, 3.2], [1.5, 2.6, 3.7]]
 m3 = et.var(m2)
 for i in range(len(m2)):
     for j in range(len(m2[0])):

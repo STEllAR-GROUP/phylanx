@@ -1,16 +1,16 @@
 #  Copyright (c) 2017-2018 Hartmut Kaiser
-#  Copyright (c) 2018 R. Tohid
 #  Copyright (c) 2018 Steven R. Brandt
+#  Copyright (c) 2018 R. Tohid
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx.util import phyfun, phy_print
+from phylanx.ast import *
+from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
-
 
 fib10 = et.eval("""
 block(
@@ -38,7 +38,7 @@ block(
 assert sum10[0] == 55.0
 
 
-@phyfun
+@Phylanx("PhySL")
 def fib(n):
     if n < 2:
         return n
@@ -55,7 +55,7 @@ def fib(n):
 assert fib(10)[0] == 55.0
 
 
-@phyfun
+@Phylanx("PhySL")
 def pass_str(a):
     return a
 
@@ -66,7 +66,7 @@ assert pass_str.__physl_src__ == \
 assert "foo" == str(pass_str("foo"))
 
 
-@phyfun
+@Phylanx("PhySL")
 def test_slice(a):
     return a[1:3, 1:4]
 
@@ -78,10 +78,44 @@ r2 = two[1:3, 1:4]
 assert r1 == r2
 
 
-@phyfun
+@Phylanx("PhySL")
 def test_slice1(a):
     return a[2:4]
 
 
 v1 = np.arange(10)
 assert test_slice1(v1) == v1[2:4]
+
+
+@Phylanx("PhySL")
+def foo():
+    return 3
+
+
+foo()
+
+
+@Phylanx("PhySL")
+def foo(n):
+    if n == 1:
+        return 2
+    elif n == 3:
+        return 4
+    else:
+        return 5
+
+
+assert foo(1)[0] == 2 and foo(3)[0] == 4 and foo(5)[0] == 5
+
+
+@Phylanx("PhySL")
+def foo():
+    sumn = 0
+    i = 0
+    while i < 10:
+        sumn += i
+        i += 1
+    return sumn
+
+
+assert foo()[0] == 45
