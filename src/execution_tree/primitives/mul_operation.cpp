@@ -136,7 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type& lhs = ops[0];
                 operand_type& rhs = ops[1];
 
-                if (ops[0].is_ref())
+                if (ops[1].is_ref())
                 {
                     rhs = rhs.vector() * lhs.scalar();
                 }
