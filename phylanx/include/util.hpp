@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/util/performance_data.hpp>
+#include <phylanx/util/repr_manip.hpp>
 #include <phylanx/util/serialization/ast.hpp>
 #include <phylanx/util/serialization/blaze.hpp>
 #include <phylanx/util/serialization/variant.hpp>

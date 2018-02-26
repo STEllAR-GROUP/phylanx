@@ -98,7 +98,8 @@ target_link_libraries(phylanx_component
   blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 if(PHYLANX_WITH_HIGHFIVE)
-  target_link_libraries(phylanx_component HighFive)
+  target_link_libraries(phylanx_component
+    HighFive ${PHYLANX_HDF5_LIBRARIES})
   set_property(TARGET phylanx_component APPEND
     PROPERTY COMPILE_DEFINITIONS
     "PHYLANX_HAVE_HIGHFIVE")

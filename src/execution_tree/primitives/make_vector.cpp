@@ -77,26 +77,54 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::dataflow(hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
             {
-                std::size_t vec_size = args.size();
-                blaze::DynamicVector<double> temp(vec_size);
+                std::size_t size = 0;
 
-                for (std::size_t i = 0; i != vec_size; ++i)
+                std::size_t args_size = args.size();
+                for (std::size_t i = 0; i != args_size; ++i)
                 {
-                    if (args[i].num_dimensions() != 0)
+                    switch(args[i].num_dimensions())
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "make_vector::eval",
-                            execution_tree::generate_error_message(
-                                "the make_vector primitive requires that "
-                                    "all arguments evaluate to zero-"
-                                    "dimensional values",
-                                this_->name_, this_->codename_));
+                    case 0:
+                        ++size;
+                        break;
+
+                    case 1:
+                        size += args[i].dimension(0);
+                        break;
+
+                    case 2: HPX_FALLTHROUGH;
+                    default:
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "make_vector::eval",
+                                execution_tree::generate_error_message(
+                                    "the make_vector primitive requires that "
+                                        "all arguments evaluate to zero-"
+                                        "dimensional values",
+                                    this_->name_, this_->codename_));
+                        }
+                        break;
                     }
-                    temp[i] = args[i].scalar();
                 }
 
+                blaze::DynamicVector<double> result(size);
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i != args_size; ++i)
+                {
+                    if (args[i].num_dimensions() == 0)
+                    {
+                        result[idx++] = args[i].scalar();
+                    }
+                    else
+                    {
+                        for (auto const& elem : args[i].vector())
+                        {
+                            result[idx++] = elem;
+                        }
+                    }
+                }
                 return primitive_argument_type{
-                    ir::node_data<double>{storage1d_type{std::move(temp)}}};
+                    ir::node_data<double>{storage1d_type{std::move(result)}}};
             }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,

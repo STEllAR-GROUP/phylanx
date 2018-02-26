@@ -26,8 +26,80 @@
 
 namespace phylanx { namespace ir
 {
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    class PHYLANX_EXPORT node_data
+    class PHYLANX_EXPORT node_data;
+
+    namespace detail
+    {
+        /// \cond NOINTERNAL
+
+        ///////////////////////////////////////////////////////////////////////
+        template <typename T>
+        class node_data_iterator
+          : public hpx::util::iterator_facade<node_data_iterator<T>,
+                T,
+                std::random_access_iterator_tag,
+                T const&,
+                std::ptrdiff_t,
+                T const*>
+        {
+        private:
+            using base_type =
+                hpx::util::iterator_facade<node_data_iterator<T>,
+                    T,
+                    std::random_access_iterator_tag,
+                    T const&,
+                    std::ptrdiff_t,
+                    T const*>;
+
+        public:
+            node_data_iterator(node_data<T> const& nd, std::size_t index = 0)
+              : nd_(nd), index_(index)
+            {
+            }
+
+        private:
+            friend class hpx::util::iterator_core_access;
+
+            typename base_type::reference dereference() const
+            {
+                return nd_[index_];
+            }
+
+            bool equal(node_data_iterator const& x) const
+            {
+                return &nd_ == &x.nd_ && index_ == x.index_;
+            }
+
+            void advance(typename base_type::difference_type n)
+            {
+                index_ += n;
+            }
+
+            void increment()
+            {
+                ++index_;
+            }
+
+            void decrement()
+            {
+                --index_;
+            }
+
+            typename base_type::difference_type distance_to(
+                node_data_iterator const& y) const
+            {
+                return y.index_ - index_;
+            }
+
+            node_data<T> const& nd_;
+            std::size_t index_;
+        };
+    }
+
+    template <typename T>
+    class node_data
     {
     private:
         static void increment_copy_construction_count();
@@ -179,6 +251,9 @@ namespace phylanx { namespace ir
         T& operator[](dimensions_type const& indicies);
         T const& operator[](dimensions_type const& indicies) const;
 
+        T& at(std::size_t index1, std::size_t index2);
+        T const& at(std::size_t index1, std::size_t index2) const;
+
         std::size_t size() const;
 
         storage2d_type& matrix_non_ref();
@@ -224,6 +299,14 @@ namespace phylanx { namespace ir
         {
             return !bool(*this);
         }
+
+        using const_iterator = detail::node_data_iterator<T>;
+
+        const_iterator begin() const;
+        const_iterator end() const;
+
+        const_iterator cbegin() const;
+        const_iterator cend() const;
 
     private:
         /// \cond NOINTERNAL

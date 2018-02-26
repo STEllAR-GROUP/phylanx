@@ -15,6 +15,7 @@
 #include <hpx/runtime/threads/run_as_hpx_thread.hpp>
 #include <hpx/util/detail/pp/stringize.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -24,15 +25,16 @@
 #include <vector>
 
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
-PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::operation>);
-PYBIND11_MAKE_OPAQUE(std::vector<phylanx::ast::expression>);
+PYBIND11_MAKE_OPAQUE(phylanx::ir::node_data<double>);
+PYBIND11_MAKE_OPAQUE(phylanx::ir::node_data<bool>);
 
 // older versions of pybind11 don't support variant-like types
 namespace pybind11 { namespace detail
 {
-#if !defined(_MSC_VER) || _MSC_VER < 1912
     ///////////////////////////////////////////////////////////////////////////
     // Expose phylanx::util::variant and phylanx::ast::parser::extended_variant
+
+#if !(defined(_MSC_VER) && _MSC_VER >= 1912 && defined(_HAS_CXX17) && (_HAS_CXX17 != 0))
     template <typename... Ts>
     struct type_caster<phylanx::util::variant<Ts...>>
       : variant_caster<phylanx::util::variant<Ts...>>
@@ -49,14 +51,76 @@ namespace pybind11 { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     // Expose phylanx::util::recursive_wrapper
     template <typename T>
-    class type_caster<phylanx::util::recursive_wrapper<T>>
-      : public type_caster_base<T>
+    constexpr auto get_name()
     {
+        return make_caster<T>::name;
+    }
+
+    // specialize get_name for vector<primitive_argument_type> to avoid infinite recursion
+    template <>
+    constexpr auto
+    get_name<std::vector<phylanx::execution_tree::primitive_argument_type>>()
+    {
+#if defined(_DEBUG)
+        return _("List[_phylanxd.execution_tree.primitive_argument_type]");
+#else
+        return _("List[_phylanx.execution_tree.primitive_argument_type]");
+#endif
+    }
+
+    template <>
+    constexpr auto
+    get_name<phylanx::execution_tree::primitive_argument_type>()
+    {
+#if defined(_DEBUG)
+        return _("_phylanxd.execution_tree.primitive_argument_type");
+#else
+        return _("_phylanx.execution_tree.primitive_argument_type");
+#endif
+    }
+
+    template <typename T>
+    class type_caster<phylanx::util::recursive_wrapper<T>>
+    {
+    private:
+        using caster_t = make_caster<T>;
+        caster_t subcaster;
+
+        using subcaster_cast_op_type =
+            typename caster_t::template cast_op_type<T>;
+
     public:
+        bool load(handle src, bool convert)
+        {
+            return subcaster.load(src, convert);
+        }
+
+        static constexpr auto name =
+            _("recursive_wrapper[") + get_name<T>() + _("]");
+
         static handle cast(phylanx::util::recursive_wrapper<T> const& src,
             return_value_policy policy, handle parent)
         {
-            return type_caster_base<T>::cast(&src.get(), policy, parent);
+            // It is definitely wrong to take ownership of this pointer,
+            // so mask that rvp
+            if (policy == return_value_policy::take_ownership ||
+                policy == return_value_policy::automatic)
+            {
+                policy = return_value_policy::automatic_reference;
+            }
+            return caster_t::cast(&src.get(), policy, parent);
+        }
+        static handle cast(phylanx::util::recursive_wrapper<T> && src,
+            return_value_policy policy, handle parent)
+        {
+            // It is definitely wrong to take ownership of this pointer,
+            // so mask that rvp
+            if (policy == return_value_policy::take_ownership ||
+                policy == return_value_policy::automatic)
+            {
+                policy = return_value_policy::automatic_reference;
+            }
+            return caster_t::cast(&src.get(), policy, parent);
         }
 
         template <typename T_>
@@ -64,8 +128,115 @@ namespace pybind11 { namespace detail
 
         operator phylanx::util::recursive_wrapper<T>()
         {
-            return phylanx::util::recursive_wrapper<T>(*((T*)this->value));
+            return phylanx::util::recursive_wrapper<T>(
+                subcaster.operator subcaster_cast_op_type&());
         }
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Derived, typename Variant>
+    struct variant_caster_helper;
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
+    struct variant_caster_helper<Derived, V<Ts...>>
+    {
+        PYBIND11_TYPE_CASTER(Derived,
+            _("Union[") + detail::concat(make_caster<Ts>::name...) + _("]"));
+
+        static_assert(sizeof...(Ts) > 0,
+            "Variant must consist of at least one alternative.");
+
+        template <typename U, typename... Us>
+        bool load_alternative(handle src, bool convert, type_list<U, Us...>)
+        {
+            auto caster = make_caster<U>();
+            if (caster.load(src, convert))
+            {
+                value = cast_op<U>(caster);
+                return true;
+            }
+            return load_alternative(src, convert, type_list<Us...>{});
+        }
+
+        template <typename U, typename... Us>
+        bool load_alternative(handle src, bool convert,
+            type_list<phylanx::util::recursive_wrapper<U>, Us...>)
+        {
+            auto caster = make_caster<U>();
+            if (caster.load(src, convert))
+            {
+                value = cast_op<U>(caster);
+                return true;
+            }
+            return load_alternative(src, convert, type_list<Us...>{});
+        }
+
+        bool load_alternative(handle, bool, type_list<>) { return false; }
+
+        bool load(handle src, bool convert)
+        {
+            // Do a first pass without conversions to improve constructor resolution.
+            // E.g. `py::int_(1).cast<variant<double, int>>()` needs to fill the `int`
+            // slot of the variant. Without two-pass loading `double` would be filled
+            // because it appears first and a conversion is possible.
+            if (convert && load_alternative(src, false, type_list<Ts...>{}))
+                return true;
+            return load_alternative(src, convert, type_list<Ts...>{});
+        }
+
+        template <typename Derived_>
+        static handle cast(
+            Derived_&& src, return_value_policy policy, handle parent)
+        {
+            return visit_helper<V>::call(variant_caster_visitor{policy, parent},
+                                         std::forward<Derived_>(src));
+        }
+    };
+
+    template <>
+    class type_caster<phylanx::execution_tree::primitive_argument_type>
+    {
+    private:
+        using caster_t = variant_caster_helper<
+            phylanx::execution_tree::primitive_argument_type,
+            phylanx::execution_tree::argument_value_type>;
+
+    public:
+        static constexpr auto name =
+            get_name<phylanx::execution_tree::primitive_argument_type>();
+
+        bool load(handle src, bool convert)
+        {
+            return subcaster.load(src, convert);
+        }
+
+        template <typename T>
+        static handle cast(T&& src, return_value_policy policy, handle parent)
+        {
+            return caster_t::cast(std::forward<T>(src), policy, parent);
+        }
+
+        template <typename T>
+        using cast_op_type = typename caster_t::template cast_op_type<T>;
+
+        operator phylanx::execution_tree::primitive_argument_type*()
+        {
+            return subcaster.operator
+                phylanx::execution_tree::primitive_argument_type*();
+        }
+        operator phylanx::execution_tree::primitive_argument_type&()
+        {
+            return subcaster.operator
+                phylanx::execution_tree::primitive_argument_type&();
+        }
+        operator phylanx::execution_tree::primitive_argument_type&&() &&
+        {
+            return std::move(subcaster).operator
+                phylanx::execution_tree::primitive_argument_type &&();
+        }
+
+    private:
+        caster_t subcaster;
     };
 }}
 
@@ -126,11 +297,20 @@ namespace phylanx { namespace bindings
 
     ///////////////////////////////////////////////////////////////////////////
     // support for __str__
-    template <typename Ast>
-    std::string as_string(Ast const& ast)
+    template <typename T>
+    std::string as_string(T const& value)
     {
         std::stringstream strm;
-        strm << ast;
+        strm << value;
+        return strm.str();
+    }
+
+    // support for __repr__
+    template <typename T>
+    std::string repr(T const& value)
+    {
+        std::stringstream strm;
+        strm << phylanx::util::repr << value << phylanx::util::norepr;
         return strm.str();
     }
 
@@ -159,7 +339,6 @@ namespace phylanx { namespace bindings
 
         for (auto const& item : dict)
         {
-            std::string key = pybind11::str(item.first);
             phylanx::execution_tree::primitive value =
                 item.second.cast<phylanx::execution_tree::primitive>();
             args.emplace_back(std::move(value));
@@ -179,36 +358,33 @@ void stop_hpx_runtime();
 char const* const expression_compiler_help =
     "compile and evaluate a numerical expression in Phylanx lisp";
 
-template <typename... Ts>
-typename hpx::util::invoke_result<
-    phylanx::execution_tree::primitive(Ts...), Ts...
->::type
-expression_compiler(std::string xexpr, Ts const&... ts)
+phylanx::execution_tree::primitive_argument_type
+expression_compiler(std::string xexpr, pybind11::args args)
 {
     namespace et = phylanx::execution_tree;
     return hpx::threads::run_as_hpx_thread(
-        [&]() -> et::primitive
+        [&]() -> et::primitive_argument_type
         {
             try
             {
                 et::compiler::function_list eval_snippets;
                 auto x = et::compile(xexpr, eval_snippets);
 
-                et::primitive_argument_type result = x(ts...);
-                switch (result.index())
-                {
-                case 2: HPX_FALLTHROUGH;    // std::int64_t
-                case 3: HPX_FALLTHROUGH;    // std::string
-                case 4:                     // phylanx::ir::node_data<double>
-                    return create_primitive_component(hpx::find_here(),
-                        "variable", std::move(result));
+                std::vector<phylanx::execution_tree::primitive_argument_type>
+                    fargs;
+                fargs.reserve(args.size());
 
-                 default:
-                    PyErr_SetString(PyExc_RuntimeError, "Unsupported return type");
-                    break;
+                for (auto const& item : args)
+                {
+                    phylanx::execution_tree::primitive_argument_type value =
+                        item.cast<
+                            phylanx::execution_tree::primitive_argument_type>();
+                    fargs.emplace_back(std::move(value));
                 }
+
+                return x(std::move(fargs));
             }
-            catch (const std::exception& ex)
+            catch (std::exception const& ex)
             {
                 PyErr_SetString(PyExc_RuntimeError, ex.what());
             }
@@ -216,7 +392,6 @@ expression_compiler(std::string xexpr, Ts const&... ts)
             {
                 PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
             }
-
             return {};
     });
 };
@@ -293,9 +468,22 @@ PYBIND11_MODULE(_phylanx, m)
         .value("op_post_incr", phylanx::ast::optoken::op_post_incr)
         .value("op_post_decr", phylanx::ast::optoken::op_post_decr)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::optoken>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::optoken>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::optoken>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::optoken>));
+
+    // phylanx::ast::nil
+    pybind11::class_<phylanx::ast::nil>(
+        ast, "nil", "AST node representing nil")
+        .def(pybind11::init<>(), "initialize nil instance")
+        .def(pybind11::self == pybind11::self)
+        .def(pybind11::self != pybind11::self)
+        .def("__str__", &phylanx::bindings::as_string<phylanx::ast::nil>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::nil>)
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ast::nil>,
+            &phylanx::bindings::unpickle_helper<phylanx::ast::nil>));
 
     // phylanx::ast::identifier
     pybind11::class_<phylanx::ast::identifier>(
@@ -307,6 +495,7 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::identifier>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::identifier>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::identifier>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::identifier>));
@@ -338,6 +527,7 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::primary_expr>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::primary_expr>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::primary_expr>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::primary_expr>));
@@ -369,6 +559,7 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operand>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::operand>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::operand>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::operand>));
@@ -385,6 +576,7 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::unary_expr>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::unary_expr>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::unary_expr>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::unary_expr>));
@@ -403,6 +595,7 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::operation>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::operation>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::operation>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::operation>));
@@ -435,67 +628,10 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::expression>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::expression>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::expression>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::expression>));
-
-    // list of phylanx::ast::operations
-    pybind11::class_<std::vector<phylanx::ast::operation>>(
-        ast, "operation_list", "A list of operations")
-        .def(pybind11::init<>())
-        .def("pop_back", &std::vector<phylanx::ast::operation>::pop_back)
-        .def("append",
-            [](std::vector<phylanx::ast::operation>& v,
-               phylanx::ast::operation const& f)
-            {
-                v.push_back(f);
-            })
-        .def("__len__",
-            [](const std::vector<phylanx::ast::operation>& v)
-            {
-                return v.size();
-            })
-        .def("__getitem__",
-            [](const std::vector<phylanx::ast::operation>& v, std::size_t i)
-            {
-                if (i >= v.size()) throw pybind11::index_error();
-                return v[i];
-            })
-        .def("__iter__",
-            [](std::vector<phylanx::ast::operation>& v)
-            {
-                return pybind11::make_iterator(v.begin(), v.end());
-            },
-            pybind11::keep_alive<0, 1>());
-
-    // list of phylanx::ast::expressions
-    pybind11::class_<std::vector<phylanx::ast::expression>>(
-        ast, "expression_list", "A list of expressions")
-        .def(pybind11::init<>())
-        .def("pop_back", &std::vector<phylanx::ast::expression>::pop_back)
-        .def("append",
-            [](std::vector<phylanx::ast::expression>& v,
-               phylanx::ast::expression const& f)
-            {
-                v.push_back(f);
-            })
-        .def("__len__",
-            [](const std::vector<phylanx::ast::expression>& v)
-            {
-                return v.size();
-            })
-        .def("__getitem__",
-            [](const std::vector<phylanx::ast::expression>& v, std::size_t i)
-            {
-                if (i >= v.size()) throw pybind11::index_error();
-                return v[i];
-            })
-        .def("__iter__",
-            [](std::vector<phylanx::ast::expression>& v)
-            {
-                return pybind11::make_iterator(v.begin(), v.end());
-            },
-            pybind11::keep_alive<0, 1>());
 
     // phylanx::ast::function_call
     pybind11::class_<phylanx::ast::function_call>(
@@ -516,6 +652,7 @@ PYBIND11_MODULE(_phylanx, m)
         .def(pybind11::self == pybind11::self)
         .def(pybind11::self != pybind11::self)
         .def("__str__", &phylanx::bindings::as_string<phylanx::ast::function_call>)
+        .def("__repr__", &phylanx::bindings::repr<phylanx::ast::function_call>)
         .def(pybind11::pickle(
             &phylanx::bindings::pickle_helper<phylanx::ast::function_call>,
             &phylanx::bindings::unpickle_helper<phylanx::ast::function_call>));
@@ -551,9 +688,167 @@ PYBIND11_MODULE(_phylanx, m)
         "traverse the given AST expression and call the provided function "
         "on each part of it");
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Expose node_data
+    auto ir = m.def_submodule("ir");
+
+    pybind11::class_<phylanx::ir::node_data<double>>(
+        ir, "node_data_double", "A node_data<double> object")
+        .def(pybind11::init<double>())
+        .def(pybind11::init<std::vector<double> const&>())
+        .def(pybind11::init<std::vector<std::vector<double>> const&>())
+        .def("__len__",
+            [](phylanx::ir::node_data<double> const& nd)
+            {
+                return nd.size();
+            })
+        .def("__getitem__",
+            [](phylanx::ir::node_data<double> const& nd, std::size_t i)
+            {
+                if (i >= nd.size()) throw pybind11::index_error();
+                return nd[i];
+            })
+        .def("__getitem__",
+            [](phylanx::ir::node_data<double> const& nd,
+                std::tuple<int, int> const& pt)
+            {
+                return nd.at(std::get<0>(pt), std::get<1>(pt));
+            })
+        .def("__setitem__",
+            [](phylanx::ir::node_data<bool>& nd, std::size_t i, double value)
+            {
+                if (i >= nd.size()) throw pybind11::index_error();
+                nd[i] = value;
+            })
+        .def("__setitem__",
+            [](phylanx::ir::node_data<bool>& nd,
+                std::tuple<int, int> const& pt, double value)
+            {
+                nd.at(std::get<0>(pt), std::get<1>(pt)) = value;
+            })
+        .def("__str__",
+            &phylanx::bindings::as_string<phylanx::ir::node_data<double>>)
+        .def("__repr__",
+            &phylanx::bindings::repr<phylanx::ir::node_data<double>>)
+        .def("__iter__",
+            [](phylanx::ir::node_data<double> const& nd)
+            {
+                return pybind11::make_iterator(nd.begin(), nd.end());
+            })
+        .def("__eq__",
+            [](phylanx::ir::node_data<double> const& nd,
+                std::vector<double> const& v)
+            {
+                if (nd.num_dimensions() != 1)
+                    return false;
+                if (nd.dimension(0) != v.size())
+                    return false;
+                return std::equal(nd.begin(), nd.end(), v.begin(), v.end());
+            },"Compare against arrays")
+        .def("__eq__",
+            [](phylanx::ir::node_data<double> const& nd,
+                std::vector<std::vector<double>> const& v)
+            {
+                if (nd.num_dimensions() != 2)
+                    return false;
+                if (nd.dimension(0) != v.size())
+                    return false;
+                if (nd.dimension(1) != v[0].size())
+                    return false;
+                for (std::size_t i = 0; i != v.size(); i++)
+                {
+                    auto& vi = v[i];
+                    for (int j = 0; j < vi.size(); j++)
+                    {
+                        if (nd.at(i, j) != vi[j])
+                            return false;
+                    }
+                }
+                return true;
+            },"Compare against arrays")
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ir::node_data<double>>,
+            &phylanx::bindings::unpickle_helper<phylanx::ir::node_data<double>>));
+
+    pybind11::class_<phylanx::ir::node_data<bool>>(
+        ir, "node_data_bool", "A node_data<bool> object")
+        .def(pybind11::init<bool>())
+        .def("__len__",
+            [](phylanx::ir::node_data<bool> const& nd)
+            {
+                return nd.size();
+            })
+        .def("__getitem__",
+            [](phylanx::ir::node_data<bool> const& nd, std::size_t i)
+            {
+                if (i >= nd.size()) throw pybind11::index_error();
+                return nd[i];
+            })
+        .def("__getitem__",
+            [](phylanx::ir::node_data<bool> const& nd,
+                std::tuple<int, int> const& pt)
+            {
+                return nd.at(std::get<0>(pt), std::get<1>(pt));
+            })
+        .def("__setitem__",
+            [](phylanx::ir::node_data<bool>& nd, std::size_t i, bool value)
+            {
+                if (i >= nd.size()) throw pybind11::index_error();
+                nd[i] = value;
+            })
+        .def("__setitem__",
+            [](phylanx::ir::node_data<bool>& nd,
+                std::tuple<int, int> const& pt, bool value)
+            {
+                nd.at(std::get<0>(pt), std::get<1>(pt)) = value;
+            })
+        .def("__str__",
+            &phylanx::bindings::as_string<phylanx::ir::node_data<bool>>)
+        .def("__repr__",
+            &phylanx::bindings::as_string<phylanx::ir::node_data<bool>>)
+        .def("__iter__",
+            [](phylanx::ir::node_data<bool> const& nd)
+            {
+                return pybind11::make_iterator(nd.begin(), nd.end());
+            })
+        .def("__eq__",
+            [](phylanx::ir::node_data<bool> const& nd,
+                std::vector<bool> const& v)
+            {
+                if (nd.num_dimensions() != 1)
+                    return false;
+                if (nd.dimension(0) != v.size())
+                    return false;
+                return std::equal(nd.begin(), nd.end(), v.begin(), v.end());
+            },"Compare against arrays")
+        .def("__eq__",
+            [](phylanx::ir::node_data<bool> const& nd,
+                std::vector<std::vector<bool>> const& v)
+            {
+                if (nd.num_dimensions() != 2)
+                    return false;
+                if (nd.dimension(0) != v.size())
+                    return false;
+                if (nd.dimension(1) != v[0].size())
+                    return false;
+                for (std::size_t i = 0; i != v.size(); i++)
+                {
+                    auto& vi = v[i];
+                    for (int j = 0; j < vi.size(); j++)
+                    {
+                        if (nd.at(i, j) != vi[j])
+                            return false;
+                    }
+                }
+                return true;
+            },"Compare against arrays")
+        .def(pybind11::pickle(
+            &phylanx::bindings::pickle_helper<phylanx::ir::node_data<bool>>,
+            &phylanx::bindings::unpickle_helper<phylanx::ir::node_data<bool>>));
+
 
     ///////////////////////////////////////////////////////////////////////////
-    // expose expression tree
+    // expose execution tree
     auto execution_tree = m.def_submodule("execution_tree");
 
     execution_tree.def("generate_tree", &phylanx::bindings::generate_tree,
@@ -606,157 +901,11 @@ PYBIND11_MODULE(_phylanx, m)
         },
         "create a new variable from a matrix floating point values");
 
-    execution_tree.def(
-        "eval", expression_compiler<>, expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
-    execution_tree.def("eval",
-        expression_compiler<
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&,
-            phylanx::execution_tree::primitive const&>,
-        expression_compiler_help);
+    execution_tree.def("eval", expression_compiler, expression_compiler_help);
 
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")
+        .def(pybind11::init<>())
         .def("eval", [](phylanx::execution_tree::primitive const& p)
             {
                 return hpx::threads::run_as_hpx_thread(
@@ -805,30 +954,32 @@ PYBIND11_MODULE(_phylanx, m)
             [](phylanx::execution_tree::primitive const& p,
                     const std::tuple<int, int>& pt)
             {
-                const int index1 = std::get<0>(pt);
-                const int index2 = std::get<1>(pt);
+                const std::size_t index1 = std::get<0>(pt);
+                const std::size_t index2 = std::get<1>(pt);
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
                         auto n = numeric_operand(
                             primitive_argument_type{p}, {}).get();
-                        phylanx::ir::node_data<double>::dimensions_type indicies{
-                            std::size_t(index1), std::size_t(index2)};
-                        return n[indicies];
+                        return n.at(index1, index2);
                     });
             },
             "Get the value specified by the x,y index pair")
         .def("__eq__",
-            [](phylanx::execution_tree::primitive const& p,std::vector<double> const& v) {
+            [](phylanx::execution_tree::primitive const& p,
+                std::vector<double> const& v)
+            {
                 using namespace phylanx::execution_tree;
-                return hpx::threads::run_as_hpx_thread([&]() {
+                return hpx::threads::run_as_hpx_thread([&]()
+                {
                     auto n = numeric_operand(p, {}).get();
-                    if(n.num_dimensions() != 1)
+                    if (n.num_dimensions() != 1)
                         return false;
-                    if(n.dimension(0) != v.size())
+                    if (n.dimension(0) != v.size())
                         return false;
-                    for(int i=0;i<v.size();i++) {
-                        if(n[i] != v[i])
+                    for (int i = 0; i < v.size(); i++)
+                    {
+                        if (n[i] != v[i])
                             return false;
                     }
                     return true;
@@ -841,18 +992,18 @@ PYBIND11_MODULE(_phylanx, m)
                 using namespace phylanx::execution_tree;
                 return hpx::threads::run_as_hpx_thread([&]() {
                     auto n = numeric_operand(p, {}).get();
-                    if(n.num_dimensions() != 2)
+                    if (n.num_dimensions() != 2)
                         return false;
-                    if(n.dimension(0) != v.size())
+                    if (n.dimension(0) != v.size())
                         return false;
-                    if(n.dimension(1) != v[0].size())
+                    if (n.dimension(1) != v[0].size())
                         return false;
-                    for(int i=0;i<v.size();i++) {
+                    for (int i = 0; i < v.size(); i++)
+                    {
                         auto& vi = v[i];
-                        for(int j=0;j<vi.size();j++) {
-                            phylanx::ir::node_data<double>::dimensions_type indicies{
-                                std::size_t(i), std::size_t(j)};
-                            if(n[indicies] != vi[j])
+                        for (int j = 0; j < vi.size(); j++)
+                        {
+                            if (n.at(i, j) != vi[j])
                                 return false;
                         }
                     }
@@ -861,6 +1012,8 @@ PYBIND11_MODULE(_phylanx, m)
             },"Compare against arrays")
         .def("__str__",
             &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
+        .def("__repr__",
+            &phylanx::bindings::repr<phylanx::execution_tree::primitive>)
         .def("dimension",
             [](phylanx::execution_tree::primitive const& p, int index)
             {
@@ -878,6 +1031,8 @@ PYBIND11_MODULE(_phylanx, m)
     // expose util submodule
     auto util = m.def_submodule("util");
 
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::nil>,
+        "serialize an AST optoken object into a byte-stream");
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::optoken>,
         "serialize an AST optoken object into a byte-stream");
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::identifier>,
@@ -895,6 +1050,11 @@ PYBIND11_MODULE(_phylanx, m)
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::function_call>,
         "serialize an AST expression object into a byte-stream");
 
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ir::node_data<double>>,
+        "serialize a node_data<double> expression object into a byte-stream");
+    util.def("serialize", &phylanx::bindings::serialize<phylanx::ir::node_data<bool>>,
+        "serialize a node_data<bool> expression object into a byte-stream");
+
     util.def("unserialize", &phylanx::util::unserialize,
-        "un-serialize a byte-stream into an AST expression object");
+        "un-serialize a byte-stream into a Phylanx object");
 }

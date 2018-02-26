@@ -36,7 +36,7 @@ foreach(subdir ${subdirs})
   add_phylanx_pseudo_target(tests.unit.python_execution_tree.python_${subdir})
   add_subdirectory(${subdir})
   add_phylanx_pseudo_dependencies(
-    tests.unit.python_execution_tree 
+    tests.unit.python_execution_tree
     tests.unit.python_execution_tree.python_${subdir})
 endforeach()
 

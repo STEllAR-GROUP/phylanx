@@ -433,6 +433,31 @@ namespace phylanx { namespace ir
     }
 
     template <typename T>
+    T& node_data<T>::at(std::size_t index1, std::size_t index2)
+    {
+        switch(data_.index())
+        {
+        case 0:
+            return scalar();
+
+        case 1: HPX_FALLTHROUGH;
+        case 3:
+            return vector()[index1];
+
+        case 2: HPX_FALLTHROUGH;
+        case 4:
+            return matrix()(index1, index2);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::at()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
     T const& node_data<T>::operator[](std::size_t index) const
     {
         switch(data_.index())
@@ -488,6 +513,31 @@ namespace phylanx { namespace ir
     }
 
     template <typename T>
+    T const& node_data<T>::at(std::size_t index1, std::size_t index2) const
+    {
+        switch(data_.index())
+        {
+        case 0:
+            return scalar();
+
+        case 1: HPX_FALLTHROUGH;
+        case 3:
+            return vector()[index1];
+
+        case 2: HPX_FALLTHROUGH;
+        case 4:
+            return matrix()(index1, index2);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::at()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
     std::size_t node_data<T>::size() const
     {
         switch(data_.index())
@@ -513,6 +563,30 @@ namespace phylanx { namespace ir
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::operator[]()",
             "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    typename node_data<T>::const_iterator node_data<T>::begin() const
+    {
+        return const_iterator(*this, 0);
+    }
+
+    template <typename T>
+    typename node_data<T>::const_iterator  node_data<T>::end() const
+    {
+        return const_iterator(*this, size());
+    }
+
+    template <typename T>
+    typename node_data<T>::const_iterator  node_data<T>::cbegin() const
+    {
+        return const_iterator(*this, 0);
+    }
+
+    template <typename T>
+    typename node_data<T>::const_iterator  node_data<T>::cend() const
+    {
+        return const_iterator(*this, size());
     }
 
     template <typename T>
