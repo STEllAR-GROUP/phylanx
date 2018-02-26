@@ -6,6 +6,8 @@
 set(tests
     add_operation
     and_operation
+    argmin
+    argmax
     block_operation
     column_set
     column_slicing

@@ -11,6 +11,8 @@
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/execution_tree/primitives/apply.hpp>
+#include <phylanx/execution_tree/primitives/argmax.hpp>
+#include <phylanx/execution_tree/primitives/argmin.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/column_set.hpp>
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
