@@ -61,7 +61,7 @@ def pass_str(a):
 
 
 assert pass_str.__physl_src__ == \
-    'block$1$0(define$1$0(pass_str$1$0, a$1$13, a$2$11), pass_str$1$0)\n'
+    'block$59$0(define$59$0(pass_str$59$0, a$59$13, a$60$11), pass_str$59$0)\n'
 
 assert "foo" == str(pass_str("foo"))
 

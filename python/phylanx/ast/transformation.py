@@ -223,7 +223,8 @@ class PhySL:
         else:
             s += "define"
             self.defs[args[0].id] = 1
-        s += "(" + args[0].id + "," + self.recompile(args[1]) + ")"
+        a = '%s' % full_node_name(args[0], args[0].id)
+        s += "(" + a + "," + self.recompile(args[1]) + ")"
         return s
 
     def _AugAssign(self, a):
@@ -232,7 +233,8 @@ class PhySL:
         nn = args[1].__class__.__name__
         if nn == "Add":
             sym = "+"
-        return "store(" + args[0].id + "," + args[0].id + sym + self.recompile(
+        arg0 = '%s' % full_node_name(args[0], args[0].id)
+        return "store(" + arg0 + "," + arg0 + sym + self.recompile(
             args[2]) + ")"
 
     def _While(self, a):
@@ -413,7 +415,6 @@ def convert_to_phylanx_type(v):
     else:
         return v
 
-
 # Create the decorator
 def Phylanx(target="PhySL"):
     class PhyTransformer(object):
@@ -423,6 +424,7 @@ def Phylanx(target="PhySL"):
             self.f = f
             self.target = target
             # Get the source code
+            actual_lineno = inspect.getsourcelines(f)[-1]
             src = inspect.getsource(f)
             # Before recompiling the code, take
             # off the decorator from the source.
@@ -430,12 +432,14 @@ def Phylanx(target="PhySL"):
 
             # Create the AST
             tree = ast.parse(src)
-            physl = PhySL()
+            ast.increment_lineno(tree, actual_lineno)
+            transormation = self.targets[target]()
 
             assert len(tree.body) == 1
 
-            self.__physl_src__ = '%s(%s)\n' % (
-                full_node_name(tree.body[0], 'block'), physl.recompile(tree))
+            if target == "PhySL":
+                self.__physl_src__ = '%s(%s)\n' % (
+                    full_node_name(tree.body[0], 'block'), transormation.recompile(tree))
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
