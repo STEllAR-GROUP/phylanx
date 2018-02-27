@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -77,7 +78,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ///////////////////////////////////////////////////////////////////////////
             primitive_argument_type argmax1d(args_type && args) const
             {
+                // `axis` is optional
+                if (args.size() == 2)
+                {
+                    // `axis` must be a scalar if provided
+                    if (args[1].num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmax::argmax2d",
+                            generate_error_message(
+                                "operand axis must be a scalar", name_,
+                                codename_));
+                    }
+                    const int axis = args[1].scalar();
+                    // `axis` can only be -1 or 0
+                    if (axis < -1 || axis > 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmax::argmax2d",
+                            generate_error_message(
+                                "operand axis can only between -1 and 0 for "
+                                "an a operand that is 1d",
+                                name_, codename_));
+                    }
+                }
+
                 auto a = args[0].vector();
+
+                if (a.size() == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "argmax::argmax2d",
+                        generate_error_message(
+                            "attempt to get argmax of an empty sequence",
+                            name_, codename_));
+                }
+
                 const auto max_it = std::max_element(a.begin(), a.end());
 
                 return std::distance(a.begin(), max_it);
@@ -90,6 +126,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto a = arg_a.matrix();
 
+                if (a.rows() == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "argmax::argmax2d",
+                        generate_error_message(
+                            "attempt to get argmax of an empty sequence",
+                            name_, codename_));
+                }
+
                 const matrix_row_iterator<decltype(a)> a_begin(a);
                 const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
@@ -100,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     const auto local_max = std::max_element(it->begin(), it->end());
                     const auto local_max_val = *local_max;
-                    
+
                     if (local_max_val > global_max)
                     {
                         global_max = local_max_val;
@@ -124,8 +169,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto it = a_begin; it != a_end; ++it)
                 {
                     const auto local_max = std::max_element(it->begin(), it->end());
-                    auto index = std::distance(it->begin(), local_max);
-                    result.emplace_back(std::move(index));
+                    std::int64_t index = std::distance(it->begin(), local_max);
+                    result.emplace_back(primitive_argument_type(index));
                 }
                 return result;
             }
@@ -142,8 +187,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto it = a_begin; it != a_end; ++it)
                 {
                     const auto local_max = std::max_element(it->begin(), it->end());
-                    auto index = std::distance(it->begin(), local_max);
-                    result.emplace_back(std::move(index));
+                    std::int64_t index = std::distance(it->begin(), local_max);
+                    result.emplace_back(primitive_argument_type(index));
                 }
                 return result;
             }
@@ -172,15 +217,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "argmax::argmax2d",
                         generate_error_message(
-                            "operand axis can only be -2, -1, 0, or 1 for "
-                            "an a operand that is 2d",
+                            "operand axis can only between -2 and 1 for an a "
+                            "operand that is 2d",
                             name_, codename_));
                 }
                 switch (axis)
                 {
                 // Option 2: Find max among rows
                 case -2: HPX_FALLTHROUGH;
-                case -0:
+                case 0:
                     return argmax2d_x_axis(std::move(args[0]));
 
                 // Option 3: Find max among columns

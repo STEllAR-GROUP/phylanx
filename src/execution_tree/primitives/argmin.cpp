@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>
@@ -94,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 const matrix_row_iterator<decltype(a)> a_begin(a);
                 const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
-                double global_min = std::numeric_limits<double>::max();
+                double global_min = (std::numeric_limits<double>::max)();
                 std::size_t global_index = 0ul;
                 std::size_t passed_rows = 0ul;
                 for (auto it = a_begin; it != a_end; ++it, ++passed_rows)
@@ -102,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     const auto local_min = std::min_element(it->begin(), it->end());
                     const auto local_min_val = *local_min;
 
-                    if (local_min_val > global_min)
+                    if (local_min_val < global_min)
                     {
                         global_min = local_min_val;
                         global_index = std::distance(it->begin(), local_min) +
@@ -125,8 +126,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto it = a_begin; it != a_end; ++it)
                 {
                     const auto local_min = std::min_element(it->begin(), it->end());
-                    auto index = std::distance(it->begin(), local_min);
-                    result.emplace_back(index);
+                    std::int64_t index = std::distance(it->begin(), local_min);
+                    result.emplace_back(primitive_argument_type(index));
                 }
                 return result;
             }
@@ -143,8 +144,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto it = a_begin; it != a_end; ++it)
                 {
                     const auto local_min = std::min_element(it->begin(), it->end());
-                    auto index = std::distance(it->begin(), local_min);
-                    result.emplace_back(index);
+                    std::int64_t index = std::distance(it->begin(), local_min);
+                    result.emplace_back(primitive_argument_type(index));
                 }
                 return result;
             }
@@ -179,12 +180,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 switch (axis)
                 {
-                    // Option 2: Find min among rows
+                // Option 2: Find min among rows
                 case -2: HPX_FALLTHROUGH;
-                case -0:
+                case 0:
                     return argmin2d_x_axis(std::move(args[0]));
 
-                    // Option 3: Find min among columns
+                // Option 3: Find min among columns
                 case -1: HPX_FALLTHROUGH;
                 case 1:
                     return argmin2d_y_axis(std::move(args[0]));

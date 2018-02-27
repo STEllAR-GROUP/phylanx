@@ -7,6 +7,7 @@
 #if !defined(PHYLANX_MATRIX_ITERATORS)
 #define PHYLANX_MATRIX_ITERATORS
 
+#include <cstddef>
 #include <blaze/Math.h>
 
 namespace phylanx { namespace util
