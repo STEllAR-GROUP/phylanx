@@ -25,7 +25,6 @@
 #include <vector>
 
 // See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
-PYBIND11_MAKE_OPAQUE(phylanx::ir::node_data<double>);
 PYBIND11_MAKE_OPAQUE(phylanx::ir::node_data<bool>);
 
 // older versions of pybind11 don't support variant-like types
@@ -79,6 +78,82 @@ namespace pybind11 { namespace detail
 #endif
     }
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <>
+    class type_caster<phylanx::ir::node_data<double>>
+    {
+        bool load0d(handle src, bool convert)
+        {
+            auto caster = make_caster<double>();
+            if (caster.load(src, convert))
+            {
+                value = cast_op<double>(caster);
+                return true;
+            }
+            return false;
+        }
+
+        bool load1d(handle src, bool convert)
+        {
+            auto caster = make_caster<std::vector<double>>();
+            if (caster.load(src, convert))
+            {
+                value = cast_op<std::vector<double>>(caster);
+                return true;
+            }
+            return false;
+        }
+
+        bool load2d(handle src, bool convert)
+        {
+            auto caster = make_caster<std::vector<std::vector<double>>>();
+            if (caster.load(src, convert))
+            {
+                value = cast_op<std::vector<std::vector<double>>>(caster);
+                return true;
+            }
+            return false;
+        }
+
+    public:
+        bool load(handle src, bool convert)
+        {
+            return load0d(src, convert) || load1d(src, convert) ||
+                load2d(src, convert);
+        }
+
+        template <typename NodeData>
+        static handle cast(
+            NodeData&& src, return_value_policy policy, handle parent)
+        {
+            switch (src.index())
+            {
+            case 0:                     // T
+                return make_caster<double>::cast(
+                    std::forward<NodeData>(src).scalar(), policy, parent);
+
+            case 1: HPX_FALLTHROUGH;    // blaze::DynamicVector<T>
+            case 3:                     // blaze::CustomVector<T>
+                return make_caster<std::vector<double>>::cast(
+                    std::forward<NodeData>(src).as_vector(), policy, parent);
+
+            case 2: HPX_FALLTHROUGH;    // blaze::DynamicMatrix<T>
+            case 4:                     // blaze::CustomMatrix<T>
+                return make_caster<std::vector<std::vector<double>>>::cast(
+                    std::forward<NodeData>(src).as_matrix(), policy, parent);
+
+            default:
+                break;
+            }
+            return handle();
+        }
+
+        using Type = phylanx::ir::node_data<double>;
+        PYBIND11_TYPE_CASTER(Type, _("node_data[") + get_name<double>() + _("]"));
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     class type_caster<phylanx::util::recursive_wrapper<T>>
     {
@@ -692,84 +767,6 @@ PYBIND11_MODULE(_phylanx, m)
     // Expose node_data
     auto ir = m.def_submodule("ir");
 
-    pybind11::class_<phylanx::ir::node_data<double>>(
-        ir, "node_data_double", "A node_data<double> object")
-        .def(pybind11::init<double>())
-        .def(pybind11::init<std::vector<double> const&>())
-        .def(pybind11::init<std::vector<std::vector<double>> const&>())
-        .def("__len__",
-            [](phylanx::ir::node_data<double> const& nd)
-            {
-                return nd.size();
-            })
-        .def("__getitem__",
-            [](phylanx::ir::node_data<double> const& nd, std::size_t i)
-            {
-                if (i >= nd.size()) throw pybind11::index_error();
-                return nd[i];
-            })
-        .def("__getitem__",
-            [](phylanx::ir::node_data<double> const& nd,
-                std::tuple<int, int> const& pt)
-            {
-                return nd.at(std::get<0>(pt), std::get<1>(pt));
-            })
-        .def("__setitem__",
-            [](phylanx::ir::node_data<bool>& nd, std::size_t i, double value)
-            {
-                if (i >= nd.size()) throw pybind11::index_error();
-                nd[i] = value;
-            })
-        .def("__setitem__",
-            [](phylanx::ir::node_data<bool>& nd,
-                std::tuple<int, int> const& pt, double value)
-            {
-                nd.at(std::get<0>(pt), std::get<1>(pt)) = value;
-            })
-        .def("__str__",
-            &phylanx::bindings::as_string<phylanx::ir::node_data<double>>)
-        .def("__repr__",
-            &phylanx::bindings::repr<phylanx::ir::node_data<double>>)
-        .def("__iter__",
-            [](phylanx::ir::node_data<double> const& nd)
-            {
-                return pybind11::make_iterator(nd.begin(), nd.end());
-            })
-        .def("__eq__",
-            [](phylanx::ir::node_data<double> const& nd,
-                std::vector<double> const& v)
-            {
-                if (nd.num_dimensions() != 1)
-                    return false;
-                if (nd.dimension(0) != v.size())
-                    return false;
-                return std::equal(nd.begin(), nd.end(), v.begin(), v.end());
-            },"Compare against arrays")
-        .def("__eq__",
-            [](phylanx::ir::node_data<double> const& nd,
-                std::vector<std::vector<double>> const& v)
-            {
-                if (nd.num_dimensions() != 2)
-                    return false;
-                if (nd.dimension(0) != v.size())
-                    return false;
-                if (nd.dimension(1) != v[0].size())
-                    return false;
-                for (std::size_t i = 0; i != v.size(); i++)
-                {
-                    auto& vi = v[i];
-                    for (int j = 0; j < vi.size(); j++)
-                    {
-                        if (nd.at(i, j) != vi[j])
-                            return false;
-                    }
-                }
-                return true;
-            },"Compare against arrays")
-        .def(pybind11::pickle(
-            &phylanx::bindings::pickle_helper<phylanx::ir::node_data<double>>,
-            &phylanx::bindings::unpickle_helper<phylanx::ir::node_data<double>>));
-
     pybind11::class_<phylanx::ir::node_data<bool>>(
         ir, "node_data_bool", "A node_data<bool> object")
         .def(pybind11::init<bool>())
@@ -926,106 +923,11 @@ PYBIND11_MODULE(_phylanx, m)
                     });
             },
             "assign another value to variable")
-        .def("num_dimensions",
-            [](phylanx::execution_tree::primitive const& p)
-            {
-                return hpx::threads::run_as_hpx_thread(
-                    [&]() {
-                        using namespace phylanx::execution_tree;
-                        auto n = numeric_operand(
-                            primitive_argument_type{p}, {}).get();
-                        return n.num_dimensions();
-                    });
-            },
-            "get the number of dimensions")
-        .def("__getitem__",
-            [](phylanx::execution_tree::primitive const& p, int index)
-            {
-                return hpx::threads::run_as_hpx_thread(
-                    [&]() {
-                        using namespace phylanx::execution_tree;
-                        auto n = numeric_operand(
-                            primitive_argument_type{p}, {}).get();
-                        return n[index];
-                    });
-            },
-            "Get the value at the specified index")
-        .def("__getitem__",
-            [](phylanx::execution_tree::primitive const& p,
-                    const std::tuple<int, int>& pt)
-            {
-                const std::size_t index1 = std::get<0>(pt);
-                const std::size_t index2 = std::get<1>(pt);
-                return hpx::threads::run_as_hpx_thread(
-                    [&]() {
-                        using namespace phylanx::execution_tree;
-                        auto n = numeric_operand(
-                            primitive_argument_type{p}, {}).get();
-                        return n.at(index1, index2);
-                    });
-            },
-            "Get the value specified by the x,y index pair")
-        .def("__eq__",
-            [](phylanx::execution_tree::primitive const& p,
-                std::vector<double> const& v)
-            {
-                using namespace phylanx::execution_tree;
-                return hpx::threads::run_as_hpx_thread([&]()
-                {
-                    auto n = numeric_operand(p, {}).get();
-                    if (n.num_dimensions() != 1)
-                        return false;
-                    if (n.dimension(0) != v.size())
-                        return false;
-                    for (int i = 0; i < v.size(); i++)
-                    {
-                        if (n[i] != v[i])
-                            return false;
-                    }
-                    return true;
-                });
-            },"Compare against arrays")
-        .def("__eq__",
-            [](phylanx::execution_tree::primitive const& p,
-               std::vector<std::vector<double>> const& v)
-            {
-                using namespace phylanx::execution_tree;
-                return hpx::threads::run_as_hpx_thread([&]() {
-                    auto n = numeric_operand(p, {}).get();
-                    if (n.num_dimensions() != 2)
-                        return false;
-                    if (n.dimension(0) != v.size())
-                        return false;
-                    if (n.dimension(1) != v[0].size())
-                        return false;
-                    for (int i = 0; i < v.size(); i++)
-                    {
-                        auto& vi = v[i];
-                        for (int j = 0; j < vi.size(); j++)
-                        {
-                            if (n.at(i, j) != vi[j])
-                                return false;
-                        }
-                    }
-                    return true;
-                });
-            },"Compare against arrays")
         .def("__str__",
             &phylanx::bindings::as_string<phylanx::execution_tree::primitive>)
         .def("__repr__",
             &phylanx::bindings::repr<phylanx::execution_tree::primitive>)
-        .def("dimension",
-            [](phylanx::execution_tree::primitive const& p, int index)
-            {
-                return hpx::threads::run_as_hpx_thread(
-                    [&]() {
-                        using namespace phylanx::execution_tree;
-                        auto n = numeric_operand(
-                            primitive_argument_type{p}, {}).get();
-                        return n.dimension(index);
-                    });
-            },
-            "Get the size of the given dimension");
+    ;
 
     ///////////////////////////////////////////////////////////////////////////
     // expose util submodule

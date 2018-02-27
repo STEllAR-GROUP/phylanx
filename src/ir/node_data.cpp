@@ -19,6 +19,8 @@
 #include <iosfwd>
 #include <string>
 #include <utility>
+#include <vector>
+
 
 namespace phylanx { namespace ir
 {

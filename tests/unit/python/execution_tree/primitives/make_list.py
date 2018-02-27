@@ -5,25 +5,24 @@
 
 import phylanx
 from phylanx.ast import *
-from phylanx.util import *
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_list_empty():
     return make_list()
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_list_one():
     return make_list(42)
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_list_literals():
     return make_list(1, 2, 3, 4)
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_list():
     a = 1
     b = 2
@@ -31,7 +30,7 @@ def test_make_list():
     return make_list(a, b, c)
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_list2():
     a = 1
     b = 2
@@ -39,7 +38,7 @@ def test_make_list2():
     return make_list(a, make_list(a, b, c), c)
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_list_arg(l):
     a = 1
     c = 3

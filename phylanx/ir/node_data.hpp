@@ -142,6 +142,17 @@ namespace phylanx { namespace ir
         explicit node_data(storage1d_type const& values);
         explicit node_data(storage1d_type && values);
 
+        explicit node_data(custom_storage1d_type const& values);
+        explicit node_data(custom_storage1d_type && values);
+
+        /// Create node data for a 2-dimensional value
+        explicit node_data(storage2d_type const& values);
+        explicit node_data(storage2d_type && values);
+
+        explicit node_data(custom_storage2d_type const& values);
+        explicit node_data(custom_storage2d_type && values);
+
+        // conversion helpers for Python bindings
         template <typename U = T, typename U1 =
             typename std::enable_if<!std::is_same<U, bool>::value>::type>
         explicit node_data(std::vector<T> const& values)
@@ -164,16 +175,6 @@ namespace phylanx { namespace ir
                 }
             }
         }
-
-        explicit node_data(custom_storage1d_type const& values);
-        explicit node_data(custom_storage1d_type && values);
-
-        /// Create node data for a 2-dimensional value
-        explicit node_data(storage2d_type const& values);
-        explicit node_data(storage2d_type && values);
-
-        explicit node_data(custom_storage2d_type const& values);
-        explicit node_data(custom_storage2d_type && values);
 
     private:
         static storage_type init_data_from(node_data const& d);
@@ -228,6 +229,21 @@ namespace phylanx { namespace ir
 
         node_data& operator=(custom_storage2d_type const& val);
         node_data& operator=(custom_storage2d_type && val);
+
+        // conversion helpers for Python bindings
+        template <typename U = T, typename U1 =
+            typename std::enable_if<!std::is_same<U, bool>::value>::type>
+        node_data& operator=(std::vector<T> const& val)
+        {
+            return *this;
+        }
+
+        template <typename U = T, typename U1 =
+            typename std::enable_if<!std::is_same<U, bool>::value>::type>
+        node_data& operator=(std::vector<std::vector<T>> const& val)
+        {
+            return *this;
+        }
 
     private:
         static storage_type copy_data_from(node_data const& d);
@@ -307,6 +323,64 @@ namespace phylanx { namespace ir
 
         const_iterator cbegin() const;
         const_iterator cend() const;
+
+        // conversion helpers for Python bindings
+        template <typename U = T, typename U1 =
+            typename std::enable_if<!std::is_same<U, bool>::value>::type>
+        std::vector<T> as_vector() const
+        {
+            switch(data_.index())
+            {
+            case 1: HPX_FALLTHROUGH;
+            case 3:
+                {
+                    auto v = vector();
+                    return std::vector<T>(v.begin(), v.end());
+                }
+
+            case 0: HPX_FALLTHROUGH;
+            case 2: HPX_FALLTHROUGH;
+            case 4: HPX_FALLTHROUGH;
+            default:
+                break;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::as_vector()",
+                "node_data object holds unsupported data type");
+        }
+
+        template <typename U = T, typename U1 =
+            typename std::enable_if<!std::is_same<U, bool>::value>::type>
+        std::vector<std::vector<T>> as_matrix() const
+        {
+            switch(data_.index())
+            {
+            case 2: HPX_FALLTHROUGH;
+            case 4:
+                {
+                    auto m = matrix();
+                    std::vector<std::vector<T>> result(m.rows());
+                    for (std::size_t i = 0; i != m.rows(); ++i)
+                    {
+                        result[i].assign(m.begin(i), m.end(i));
+                    }
+                    return result;
+                }
+
+            case 0: HPX_FALLTHROUGH;
+            case 1: HPX_FALLTHROUGH;
+            case 3: HPX_FALLTHROUGH;
+            default:
+                break;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::as_vector()",
+                "node_data object holds unsupported data type");
+        }
+
+        std::size_t index() const { return data_.index(); }
 
     private:
         /// \cond NOINTERNAL
