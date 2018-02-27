@@ -7,6 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/argmax.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/matrix_iterators.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -16,9 +17,7 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <memory>
-#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,95 +54,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        template <typename T>
-        class matrix_row_iterator
-          : public hpx::util::iterator_facade<
-                matrix_row_iterator<T>,
-                blaze::Row<T>,
-                std::random_access_iterator_tag,
-                blaze::Row<T>>
-        {
-        public:
-            matrix_row_iterator(T& t, std::size_t index = 0)
-              : data_(t)
-              , index_(index)
-            {
-            }
-
-        private:
-            friend class hpx::util::iterator_core_access;
-
-            void increment()
-            {
-                ++index_;
-            }
-            void decrement()
-            {
-                --index_;
-            }
-            void advance(std::size_t n)
-            {
-                index_ += n;
-            }
-            bool equal(matrix_row_iterator const& other) const
-            {
-                return index_ == other.index_;
-            }
-            blaze::Row<T> dereference() const
-            {
-                return blaze::row(data_, index_);
-            }
-
-        private:
-            T& data_;
-            std::size_t index_;
-        };
-
-        template <typename T>
-        class matrix_column_iterator
-            : public hpx::util::iterator_facade<
-                matrix_column_iterator<T>,
-                blaze::Column<T>,
-                std::random_access_iterator_tag,
-                blaze::Column<T>>
-        {
-        public:
-            matrix_column_iterator(T& t, std::size_t index = 0)
-              : data_(t)
-              , index_(index)
-            {
-            }
-
-        private:
-            friend class hpx::util::iterator_core_access;
-
-            void increment()
-            {
-                ++index_;
-            }
-            void decrement()
-            {
-                --index_;
-            }
-            void advance(std::size_t n)
-            {
-                index_ += n;
-            }
-            bool equal(matrix_column_iterator const& other) const
-            {
-                return index_ == other.index_;
-            }
-            blaze::Column<T> dereference() const
-            {
-                return blaze::column(data_, index_);
-            }
-
-        private:
-            T& data_;
-            std::size_t index_;
-        };
-
-
         struct argmax : std::enable_shared_from_this<argmax>
         {
             argmax(std::string const& name, std::string const& codename)
@@ -168,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type argmax1d(args_type && args) const
             {
                 auto a = args[0].vector();
-                auto max_it = std::max_element(a.begin(), a.end());
+                const auto max_it = std::max_element(a.begin(), a.end());
 
                 return std::distance(a.begin(), max_it);
             }
@@ -176,23 +86,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ///////////////////////////////////////////////////////////////////////////
             primitive_argument_type argmax2d_flatten(arg_type && arg_a) const
             {
+                using phylanx::util::matrix_row_iterator;
+
                 auto a = arg_a.matrix();
 
-                matrix_row_iterator<decltype(a)> a_begin(a);
-                matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+                const matrix_row_iterator<decltype(a)> a_begin(a);
+                const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
                 double global_max = 0.;
                 std::size_t global_index = 0ul;
                 std::size_t passed_rows = 0ul;
                 for (auto it = a_begin; it != a_end; ++it, ++passed_rows)
                 {
-                    auto local_max = std::max_element(it->begin(), it->end());
-                    auto local_max_val = *local_max;
+                    const auto local_max = std::max_element(it->begin(), it->end());
+                    const auto local_max_val = *local_max;
                     
                     if (local_max_val > global_max)
                     {
                         global_max = local_max_val;
-                        auto index = std::distance(it->begin(), local_max) +
+                        global_index = std::distance(it->begin(), local_max) +
                             passed_rows * it->size();
                     }
                 }
@@ -201,15 +113,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_argument_type argmax2d_x_axis(arg_type && arg_a) const
             {
+                using phylanx::util::matrix_row_iterator;
+
                 auto a = arg_a.matrix();
 
-                matrix_row_iterator<decltype(a)> a_begin(a);
-                matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+                const matrix_row_iterator<decltype(a)> a_begin(a);
+                const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
                 std::vector<primitive_argument_type> result;
                 for (auto it = a_begin; it != a_end; ++it)
                 {
-                    auto local_max = std::max_element(it->begin(), it->end());
+                    const auto local_max = std::max_element(it->begin(), it->end());
                     auto index = std::distance(it->begin(), local_max);
                     result.emplace_back(std::move(index));
                 }
@@ -217,18 +131,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             primitive_argument_type argmax2d_y_axis(arg_type && arg_a) const
             {
+                using phylanx::util::matrix_column_iterator;
 
                 auto a = arg_a.matrix();
 
-                matrix_column_iterator<decltype(a)> a_begin(a);
-                matrix_column_iterator<decltype(a)> a_end(a, a.columns());
+                const matrix_column_iterator<decltype(a)> a_begin(a);
+                const matrix_column_iterator<decltype(a)> a_end(a, a.columns());
 
                 std::vector<primitive_argument_type> result;
                 for (auto it = a_begin; it != a_end; ++it)
                 {
-                    auto local_max = std::max_element(it->begin(), it->end());
-                    //auto index = std::distance(it->begin(), local_max);
-                    //result.emplace_back(std::move(index));
+                    const auto local_max = std::max_element(it->begin(), it->end());
+                    auto index = std::distance(it->begin(), local_max);
+                    result.emplace_back(std::move(index));
                 }
                 return result;
             }
@@ -250,7 +165,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         generate_error_message(
                             "operand axis must be a scalar", name_, codename_));
                 }
-                int axis = args[1].scalar();
+                const int axis = args[1].scalar();
                 // `axis` can only be -2, -1, 0, or 1
                 if (axis < -2 || axis > 1)
                 {
