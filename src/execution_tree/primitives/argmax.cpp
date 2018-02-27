@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (args[1].num_dimensions() != 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "argmax::argmax2d",
+                            "argmax::argmax1d",
                             generate_error_message(
                                 "operand axis must be a scalar", name_,
                                 codename_));
@@ -95,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (axis < -1 || axis > 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "argmax::argmax2d",
+                            "argmax::argmax1d",
                             generate_error_message(
                                 "operand axis can only between -1 and 0 for "
                                 "an a operand that is 1d",
@@ -105,17 +105,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 auto a = args[0].vector();
 
+                // a should not be empty
                 if (a.size() == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "argmax::argmax2d",
+                        "argmax::argmax1d",
                         generate_error_message(
                             "attempt to get argmax of an empty sequence",
                             name_, codename_));
                 }
 
+                // Find the maximum value among the elements
                 const auto max_it = std::max_element(a.begin(), a.end());
 
+                // Return max's index
                 return std::distance(a.begin(), max_it);
             }
 
@@ -125,15 +128,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 using phylanx::util::matrix_row_iterator;
 
                 auto a = arg_a.matrix();
-
-                if (a.rows() == 0)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "argmax::argmax2d",
-                        generate_error_message(
-                            "attempt to get argmax of an empty sequence",
-                            name_, codename_));
-                }
 
                 const matrix_row_iterator<decltype(a)> a_begin(a);
                 const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
@@ -195,6 +189,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_argument_type argmax2d(args_type && args) const
             {
+                // a should not be empty
+                if (args[0].matrix().rows() == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "argmax::argmax2d",
+                        generate_error_message(
+                            "attempt to get argmax of an empty sequence",
+                            name_, codename_));
+                }
+
                 // `axis` is optional
                 if (args.size() == 1)
                 {

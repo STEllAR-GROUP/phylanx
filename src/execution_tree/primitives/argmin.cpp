@@ -79,9 +79,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ///////////////////////////////////////////////////////////////////////////
             primitive_argument_type argmin1d(args_type && args) const
             {
+                // `axis` is optional
+                if (args.size() == 2)
+                {
+                    // `axis` must be a scalar if provided
+                    if (args[1].num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmin::argmin1d",
+                            generate_error_message(
+                                "operand axis must be a scalar", name_,
+                                codename_));
+                    }
+                    const int axis = args[1].scalar();
+                    // `axis` can only be -1 or 0
+                    if (axis < -1 || axis > 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmin::argmin1d",
+                            generate_error_message(
+                                "operand axis can only between -1 and 0 for "
+                                "an a operand that is 1d",
+                                name_, codename_));
+                    }
+                }
+
                 auto a = args[0].vector();
+
+                // a should not be empty
+                if (a.size() == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "argmin::argmin1d",
+                        generate_error_message(
+                            "attempt to get argmin of an empty sequence",
+                            name_, codename_));
+                }
+
+                // Find the minimum value among the elements
                 const auto min_it = std::min_element(a.begin(), a.end());
 
+                // Return min's index
                 return std::distance(a.begin(), min_it);
             }
 
@@ -152,6 +190,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_argument_type argmin2d(args_type && args) const
             {
+                // a should not be empty
+                if (args[0].matrix().rows() == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "argmax::argmin2d",
+                        generate_error_message(
+                            "attempt to get argmax of an empty sequence",
+                            name_, codename_));
+                }
+
                 // `axis` is optional
                 if (args.size() == 1)
                 {

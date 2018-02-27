@@ -11,6 +11,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
