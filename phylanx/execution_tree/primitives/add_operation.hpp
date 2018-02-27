@@ -21,7 +21,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class add_operation
         : public primitive_component_base
-        , std::enable_shared_from_this<add_operation>
+        , public std::enable_shared_from_this<add_operation>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
