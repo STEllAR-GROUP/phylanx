@@ -18,6 +18,10 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    /// \brief Implementation of argmax as a Phylanx primitive
+    /// This implementation is intended to behave like [NumPy implementation
+    /// of argmax]
+    /// (https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.argmax.html).
     class argmax : public primitive_component_base
     {
     public:
@@ -25,6 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         argmax() = default;
 
+        /// \brief Calculates argmin of a node_data
+        /// \param args A scalar value, vector, or matrix
         argmax(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 

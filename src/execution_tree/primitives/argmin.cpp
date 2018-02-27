@@ -47,10 +47,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    argmin::argmin(
-        std::vector<primitive_argument_type> && operands,
+    argmin::argmin(std::vector<primitive_argument_type>&& operands,
         std::string const& name, std::string const& codename)
-        : primitive_component_base(std::move(operands), name, codename)
+      : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -59,8 +58,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct argmin : std::enable_shared_from_this<argmin>
         {
             argmin(std::string const& name, std::string const& codename)
-                : name_(name)
-                , codename_(codename)
+              : name_(name)
+              , codename_(codename)
             {}
 
         protected:
@@ -68,11 +67,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string codename_;
 
         protected:
-            using arg_type = ir::node_data<double>;
+            using val_type = double;
+            using arg_type = ir::node_data<val_type>;
             using args_type = std::vector<arg_type>;
 
             primitive_argument_type argmin0d(args_type && args) const
             {
+                // `axis` is optional
+                if (args.size() == 2)
+                {
+                    // `axis` must be a scalar if provided
+                    if (args[1].num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmin::argmin0d",
+                            generate_error_message(
+                                "operand axis must be a scalar", name_,
+                                codename_));
+                    }
+                    const int axis = args[1].scalar();
+                    // `axis` can only be -1 or 0
+                    if (axis < -1 || axis > 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmin::argmin0d",
+                            generate_error_message(
+                                "operand axis can only between -1 and 0 for "
+                                "an a operand that is 0d",
+                                name_, codename_));
+                    }
+                }
+
                 return 0ul;
             }
 
@@ -133,7 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 const matrix_row_iterator<decltype(a)> a_begin(a);
                 const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
-                double global_min = (std::numeric_limits<double>::max)();
+                val_type global_min = (std::numeric_limits<val_type>::max)();
                 std::size_t global_index = 0ul;
                 std::size_t passed_rows = 0ul;
                 for (auto it = a_begin; it != a_end; ++it, ++passed_rows)
@@ -191,7 +216,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type argmin2d(args_type && args) const
             {
                 // a should not be empty
-                if (args[0].matrix().rows() == 0)
+                if (args[0].matrix().rows() == 0 ||
+                    args[0].matrix().columns() == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "argmax::argmin2d",
@@ -222,8 +248,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "argmin::argmin2d",
                         generate_error_message(
-                            "operand axis can only be -2, -1, 0, or 1 for "
-                            "an a operand that is 2d",
+                            "operand axis can only between -2 and 1 for an a "
+                            "operand that is 2d",
                             name_, codename_));
                 }
                 switch (axis)
@@ -283,30 +309,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::util::unwrapping(
                     [this_](args_type&& args) -> primitive_argument_type
-                {
-                    std::size_t a_dims = args[0].num_dimensions();
-                    switch (a_dims)
                     {
-                    case 0:
-                        return this_->argmin0d(std::move(args));
+                        std::size_t a_dims = args[0].num_dimensions();
+                        switch (a_dims)
+                        {
+                        case 0:
+                            return this_->argmin0d(std::move(args));
 
-                    case 1:
-                        return this_->argmin1d(std::move(args));
+                        case 1:
+                            return this_->argmin1d(std::move(args));
 
-                    case 2:
-                        return this_->argmin2d(std::move(args));
+                        case 2:
+                            return this_->argmin2d(std::move(args));
 
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "argmin::eval",
-                            generate_error_message(
-                                "operand a has an invalid "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
-                    }
-                }),
-                    // TODO: Check what value -1 is going to turn into.
-                    // node_data of doubles?
+                        default:
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                "argmin::eval",
+                                generate_error_message(
+                                    "operand a has an invalid "
+                                    "number of dimensions",
+                                    this_->name_, this_->codename_));
+                        }
+                    }),
                     detail::map_operands(
                         operands, functional::numeric_operand{}, args,
                         name_, codename_));

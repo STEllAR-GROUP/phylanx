@@ -46,9 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    argmax::argmax(
-            std::vector<primitive_argument_type> && operands,
-            std::string const& name, std::string const& codename)
+    argmax::argmax(std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
@@ -67,11 +66,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string codename_;
 
         protected:
-            using arg_type = ir::node_data<double>;
+            using val_type = double;
+            using arg_type = ir::node_data<val_type>;
             using args_type = std::vector<arg_type>;
 
             primitive_argument_type argmax0d(args_type && args) const
             {
+                // `axis` is optional
+                if (args.size() == 2)
+                {
+                    // `axis` must be a scalar if provided
+                    if (args[1].num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmax::argmax0d",
+                            generate_error_message(
+                                "operand axis must be a scalar", name_,
+                                codename_));
+                    }
+                    const int axis = args[1].scalar();
+                    // `axis` can only be -1 or 0
+                    if (axis < -1 || axis > 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "argmax::argmax0d",
+                            generate_error_message(
+                                "operand axis can only between -1 and 0 for "
+                                "an a operand that is 0d",
+                                name_, codename_));
+                    }
+                }
+
                 return 0ul;
             }
 
@@ -132,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 const matrix_row_iterator<decltype(a)> a_begin(a);
                 const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
-                double global_max = 0.;
+                val_type global_max = 0.;
                 std::size_t global_index = 0ul;
                 std::size_t passed_rows = 0ul;
                 for (auto it = a_begin; it != a_end; ++it, ++passed_rows)
@@ -190,7 +215,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type argmax2d(args_type && args) const
             {
                 // a should not be empty
-                if (args[0].matrix().rows() == 0)
+                if (args[0].matrix().rows() == 0 ||
+                    args[0].matrix().columns() == 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "argmax::argmax2d",
