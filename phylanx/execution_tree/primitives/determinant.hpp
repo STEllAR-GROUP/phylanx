@@ -10,16 +10,28 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class determinant : public primitive_component_base
+    class determinant
+        : public primitive_component_base
+        , public std::enable_shared_from_this<determinant>
     {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
+
+        using operand_type = ir::node_data<double>;
+        using operands_type = std::vector<operand_type>;
+
     public:
         static match_pattern_type const match_data;
 
@@ -30,6 +42,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    private:
+        primitive_argument_type determinant0d(operands_type && ops) const;
+        primitive_argument_type determinant2d(operands_type && ops) const;
     };
 
     PHYLANX_EXPORT primitive create_determinant(hpx::id_type const& locality,
