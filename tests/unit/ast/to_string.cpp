@@ -51,7 +51,7 @@ void test_primary_expr()
     test_to_string(p3, strm.str());
 
     phylanx::ast::primary_expr p4{"some string"};
-    test_to_string(p4, "\"some string\"");
+    test_to_string(p4, "some string");
 
     phylanx::ast::primary_expr p5{std::uint64_t(42)};
     test_to_string(p5, "42");
@@ -71,7 +71,7 @@ void test_operand()
 
     phylanx::ast::primary_expr p3{"some string"};
     phylanx::ast::operand op3(std::move(p3));
-    test_to_string(op3, "\"some string\"");
+    test_to_string(op3, "some string");
 
     phylanx::ast::primary_expr p4{std::uint64_t(42)};
     phylanx::ast::operand op4(std::move(p4));

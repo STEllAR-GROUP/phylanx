@@ -125,7 +125,7 @@ endif()
 phylanx_setup_hpx()
 phylanx_setup_blaze()
 phylanx_setup_pybind11()
-phylanx_setup_hdf5()
+phylanx_setup_highfive()
 
 phylanx_include(GitCommit)
 

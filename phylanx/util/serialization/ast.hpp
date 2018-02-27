@@ -16,14 +16,18 @@ namespace phylanx { namespace util
 {
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::vector<char> serialize(ir::node_data<double> const&);
+    PHYLANX_EXPORT std::vector<char> serialize(ir::node_data<bool> const&);
 
     namespace detail
     {
         PHYLANX_EXPORT void unserialize(
             std::vector<char> const&, ir::node_data<double>&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ir::node_data<bool>&);
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT std::vector<char> serialize(ast::nil);
     PHYLANX_EXPORT std::vector<char> serialize(ast::optoken);
     PHYLANX_EXPORT std::vector<char> serialize(ast::identifier const&);
     PHYLANX_EXPORT std::vector<char> serialize(ast::primary_expr const&);
@@ -39,6 +43,8 @@ namespace phylanx { namespace util
 
     namespace detail
     {
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ast::nil&);
         PHYLANX_EXPORT void unserialize(
             std::vector<char> const&, ast::optoken&);
         PHYLANX_EXPORT void unserialize(

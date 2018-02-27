@@ -22,8 +22,8 @@ std::string const read_code = R"(block(
     define(read, data_m, data_v, data_0,
         block(
             debug("Scalar Data Received = ", data_0),
-            debug("Vector Data Recieved = ", data_v),
-            debug("Matrix Data Recieved = ", data_m)
+            debug("Vector Data Received = ", data_v),
+            debug("Matrix Data Received = ", data_m)
         )
     ),
     read
@@ -54,8 +54,8 @@ int main(int argc, char* argv[])
     std::stringstream const& strm = hpx::get_consolestream();
     HPX_TEST_EQ(strm.str(), std::string(
         "Scalar Data Received = 42\n"
-        "Vector Data Recieved = [1, 10, 11, 12, 13, 14, 15, 16]\n"
-        "Matrix Data Recieved = [[1, 10, 11], [12, 13, 14], [15, 16, 17]]\n"));
+        "Vector Data Received = [1, 10, 11, 12, 13, 14, 15, 16]\n"
+        "Matrix Data Received = [[1, 10, 11], [12, 13, 14], [15, 16, 17]]\n"));
 
     return hpx::util::report_errors();
 }

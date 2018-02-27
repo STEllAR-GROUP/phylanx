@@ -217,6 +217,13 @@ namespace phylanx { namespace execution_tree
                 std::vector<primitive_argument_type>>{std::move(val)}}
         {}
 
+        primitive_argument_type(argument_value_type const& val)
+          : argument_value_type{val}
+        {}
+        primitive_argument_type(argument_value_type&& val)
+          : argument_value_type{std::move(val)}
+        {}
+
         inline primitive_argument_type operator()() const;
 
         inline primitive_argument_type
@@ -657,6 +664,35 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::vector<primitive_argument_type>> list_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::vector<primitive_argument_type>> list_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::vector<primitive_argument_type>> list_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    namespace functional
+    {
+        struct list_operand
+        {
+            template <typename... Ts>
+            hpx::future<std::vector<primitive_argument_type>> operator()(
+                Ts&&... ts) const
+            {
+                return execution_tree::list_operand(std::forward<Ts>(ts)...);
+            }
+        };
+    }
+
     PHYLANX_EXPORT std::vector<primitive_argument_type> list_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,

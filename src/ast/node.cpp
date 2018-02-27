@@ -7,6 +7,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
@@ -428,6 +429,10 @@ namespace phylanx { namespace ast
 
     std::ostream& operator<<(std::ostream& out, nil)
     {
+        if (util::is_repr(out))
+        {
+            out << "<nil>";
+        }
         return out;
     }
 
@@ -453,26 +458,32 @@ namespace phylanx { namespace ast
         {
             void operator()(bool ast) const
             {
-                out_ << (ast ? "true" : "false");
+                out_ << std::boolalpha << ast;
             }
 
             void operator()(std::string const& ast) const
             {
-                out_ << "\"";
+                if (util::is_repr(out_))
+                {
+                    out_ << "\"";
+                }
                 for (char c : ast)
                 {
                     switch (c)
                     {
                     case '\b':  out_ << "\\\b"; break;
-                    case '\n':  out_ << "\\\n"; break;
-                    case '\r':  out_ << "\\\r"; break;
-                    case '\t':  out_ << "\\\t"; break;
+                    case '\n':  out_ << "\\n"; break;
+                    case '\r':  out_ << "\\r"; break;
+                    case '\t':  out_ << "\\t"; break;
                     case '\\':  out_ << "\\\\"; break;
                     case '\"':  out_ << "\\\""; break;
                     default:    out_ << c;
                     }
                 }
-                out_ << "\"";
+                if (util::is_repr(out_))
+                {
+                    out_ << "\"";
+                }
             }
 
             template <typename Ast>
