@@ -9,16 +9,28 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class add_operation : public primitive_component_base
+    class add_operation
+        : public primitive_component_base
+        , std::enable_shared_from_this<add_operation>
     {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
+
+        using arg_type = ir::node_data<double>;
+        using args_type = std::vector<arg_type>;
+
     public:
         static match_pattern_type const match_data;
 
@@ -29,9 +41,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    private:
+        primitive_argument_type add0d0d(args_type && args) const;
+        primitive_argument_type add0d1d(args_type && args) const;
+        primitive_argument_type add0d2d(args_type && args) const;
+        primitive_argument_type add0d(args_type && args) const;
+        primitive_argument_type add1d0d(args_type && args) const;
+        primitive_argument_type add1d1d(args_type && args) const;
+        primitive_argument_type add1d2d(args_type&& args) const;
+        primitive_argument_type add1d(args_type && args) const;
+        primitive_argument_type add2d0d(args_type && args) const;
+        primitive_argument_type add2d1d(args_type&& args) const;
+        primitive_argument_type add2d2d(args_type && args) const;
+        primitive_argument_type add2d(args_type && args) const;
+
     };
 
-    PHYLANX_EXPORT primitive create_add_operation(hpx::id_type const& locality,
+    PHYLANX_EXPORT primitive create_add_operation(
+        hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
         std::string const& name = "", std::string const& codename = "");
 }}}

@@ -25,44 +25,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    ///////////////////////////////////////////////////////////////////////////
-    primitive create_add_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-        std::string const& name, std::string const& codename)
-    {
-        static std::string type("__add");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
-    match_pattern_type const add_operation::match_data =
-    {
-        hpx::util::make_tuple("__add",
-            std::vector<std::string>{"_1 + __2"},
-            &create_add_operation, &create_primitive<add_operation>)
-    };
-
-    ///////////////////////////////////////////////////////////////////////////
-    add_operation::add_operation(
-            std::vector<primitive_argument_type> && operands,
-            std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename)
-    {}
-
-    ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
         struct add_simd
         {
         public:
             explicit add_simd(double scalar)
-              : scalar_(scalar)
+                : scalar_(scalar)
             {
             }
 
             template <typename T>
             BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-            ->  decltype(a + std::declval<double>())
+                ->  decltype(a + std::declval<double>())
             {
                 return a + scalar_;
             }
@@ -84,422 +59,432 @@ namespace phylanx { namespace execution_tree { namespace primitives
             double scalar_;
         };
 
-        struct add : std::enable_shared_from_this<add>
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive create_add_operation(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
+    {
+        static std::string type("__add");
+        return create_primitive_component(
+            locality, type, std::move(operands), name, codename);
+    }
+
+    match_pattern_type const add_operation::match_data =
+    {
+        hpx::util::make_tuple("__add",
+            std::vector<std::string>{"_1 + __2"},
+            &create_add_operation, &create_primitive<add_operation>)
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    add_operation::add_operation(
+            std::vector<primitive_argument_type> && operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
+    {}
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    primitive_argument_type add_operation::add0d0d(args_type && args) const
+    {
+        arg_type& lhs = args[0];
+        arg_type& rhs = args[1];
+
+        if (args.size() == 2)
         {
-            add(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
-            {}
+            lhs.scalar() += rhs.scalar();
+            return primitive_argument_type(std::move(lhs));
+        }
 
-        protected:
-            std::string name_;
-            std::string codename_;
+        return primitive_argument_type(std::accumulate(
+            args.begin() + 1, args.end(), std::move(lhs),
+            [](arg_type& result, arg_type const& curr)
+            ->  arg_type
+        {
+            result.scalar() += curr.scalar();
+            return std::move(result);
+        }));
+    }
 
-        protected:
-            using arg_type = ir::node_data<double>;
-            using args_type = std::vector<arg_type>;
+    primitive_argument_type add_operation::add0d1d(args_type && args) const
+    {
+        if (args.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d1d",
+                "the add_operation primitive can add a single value "
+                "to a vector only if there are exactly 2 operands");
+        }
 
-            primitive_argument_type add0d0d(args_type && args) const
+        args[1] = blaze::map(
+            args[1].vector(), detail::add_simd(args[0].scalar()));
+
+        return primitive_argument_type(std::move(args[1]));
+    }
+
+    primitive_argument_type add_operation::add0d2d(args_type && args) const
+    {
+        if (args.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d2d",
+                "the add_operation primitive can add a single value "
+                "to a matrix only if there are exactly 2 operands");
+        }
+
+        args[1] = blaze::map(
+            args[1].matrix(), detail::add_simd(args[0].scalar()));
+
+        return primitive_argument_type(std::move(args[1]));
+    }
+
+    primitive_argument_type add_operation::add0d(args_type && args) const
+    {
+        std::size_t rhs_dims = args[1].num_dimensions();
+        switch (rhs_dims)
+        {
+        case 0:
+            return add0d0d(std::move(args));
+
+        case 1:
+            return add0d1d(std::move(args));
+
+        case 2:
+            return add0d2d(std::move(args));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d",
+                "the operands have incompatible number of dimensions");
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type add_operation::add1d0d(args_type && args) const
+    {
+        if (args.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d1d",
+                "the add_operation primitive can add a single value "
+                "to a vector only if there are exactly 2 operands");
+        }
+
+        args[0] = blaze::map(
+            args[0].vector(), detail::add_simd(args[1].scalar()));
+
+        return primitive_argument_type(std::move(args[0]));
+    }
+
+    primitive_argument_type add_operation::add1d1d(args_type && args) const
+    {
+        arg_type& lhs = args[0];
+        arg_type& rhs = args[1];
+
+        std::size_t lhs_size = lhs.dimension(0);
+        std::size_t rhs_size = rhs.dimension(0);
+
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add1d1d",
+                "the dimensions of the operands do not match");
+        }
+
+        if (args.size() == 2)
+        {
+            if (lhs.is_ref())
             {
-                arg_type& lhs = args[0];
-                arg_type& rhs = args[1];
-
-                if (args.size() == 2)
-                {
-                    lhs.scalar() += rhs.scalar();
-                    return primitive_argument_type(std::move(lhs));
-                }
-
-                return primitive_argument_type(std::accumulate(
-                    args.begin() + 1, args.end(), std::move(lhs),
-                    [](arg_type& result, arg_type const& curr)
-                    ->  arg_type
-                    {
-                        result.scalar() += curr.scalar();
-                        return std::move(result);
-                    }));
+                lhs = lhs.vector() + rhs.vector();
             }
-
-            primitive_argument_type add0d1d(args_type && args) const
+            else
             {
-                if (args.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add0d1d",
-                        "the add_operation primitive can add a single value "
-                            "to a vector only if there are exactly 2 operands");
-                }
-
-                args[1] = blaze::map(
-                    args[1].vector(), add_simd(args[0].scalar()));
-
-                return primitive_argument_type(std::move(args[1]));
+                lhs.vector() += rhs.vector();
             }
+            return primitive_argument_type(std::move(lhs));
+        }
 
-            primitive_argument_type add0d2d(args_type && args) const
+        arg_type& first_term = *args.begin();
+        return primitive_argument_type(std::accumulate(
+            args.begin() + 1, args.end(), std::move(first_term),
+            [](arg_type& result, arg_type const& curr) -> arg_type
+        {
+            if (result.is_ref())
             {
-                if (args.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add0d2d",
-                        "the add_operation primitive can add a single value "
-                            "to a matrix only if there are exactly 2 operands");
-                }
-
-                args[1] = blaze::map(
-                    args[1].matrix(), add_simd(args[0].scalar()));
-
-                return primitive_argument_type(std::move(args[1]));
+                result = result.vector() + curr.vector();
             }
-
-            primitive_argument_type add0d(args_type && args) const
+            else
             {
-                std::size_t rhs_dims = args[1].num_dimensions();
-                switch(rhs_dims)
-                {
-                case 0:
-                    return add0d0d(std::move(args));
-
-                case 1:
-                    return add0d1d(std::move(args));
-
-                case 2:
-                    return add0d2d(std::move(args));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add0d",
-                        "the operands have incompatible number of dimensions");
-                }
+                result.vector() += curr.vector();
             }
+            return std::move(result);
+        }));
+    }
 
-            ///////////////////////////////////////////////////////////////////////////
-            primitive_argument_type add1d0d(args_type && args) const
+    primitive_argument_type add_operation::add1d2d(args_type&& args) const
+    {
+        if (args.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add1d2d",
+                execution_tree::generate_error_message(
+                    "the add_operation primitive can add a vector "
+                    "to a matrix only if there are exactly 2 operands",
+                    name_, codename_));
+        }
+
+        auto cv = args[0].vector();
+        auto cm = args[1].matrix();
+
+        if (cv.size() != cm.columns())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add1d2d",
+                execution_tree::generate_error_message(
+                    "vector size does not match number of matrix "
+                    "columns",
+                    name_, codename_));
+        }
+
+        // TODO: Blaze does not support broadcasting
+        if (args[1].is_ref())
+        {
+            blaze::DynamicMatrix<double> m{ cm.rows(), cm.columns() };
+            for (std::size_t i = 0; i != cm.rows(); ++i)
             {
-                if (args.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add0d1d",
-                        "the add_operation primitive can add a single value "
-                            "to a vector only if there are exactly 2 operands");
-                }
-
-                args[0] = blaze::map(
-                    args[0].vector(), add_simd(args[1].scalar()));
-
-                return primitive_argument_type(std::move(args[0]));
+                blaze::row(m, i) = blaze::row(cm, i) + blaze::trans(cv);
             }
+            return primitive_argument_type{ std::move(m) };
+        }
 
-            primitive_argument_type add1d1d(args_type && args) const
+        for (std::size_t i = 0; i != cm.rows(); ++i)
+        {
+            blaze::row(cm, i) += blaze::trans(cv);
+        }
+        return primitive_argument_type{ std::move(args[1]) };
+    }
+
+    primitive_argument_type add_operation::add1d(args_type && args) const
+    {
+        std::size_t rhs_dims = args[1].num_dimensions();
+
+        switch (rhs_dims)
+        {
+        case 0:
+            return add1d0d(std::move(args));
+
+        case 1:
+            return add1d1d(std::move(args));
+
+        case 2:
+            return add1d2d(std::move(args));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add1d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of "
+                    "dimensions",
+                    name_, codename_));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type add_operation::add2d0d(args_type && args) const
+    {
+        if (args.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add0d2d",
+                execution_tree::generate_error_message(
+                    "the add_operation primitive can add a single value "
+                    "to a matrix only if there are exactly 2 operands",
+                    name_, codename_));
+        }
+
+        args[0] = blaze::map(
+            args[0].matrix(), detail::add_simd(args[1].scalar()));
+        return primitive_argument_type(std::move(args[0]));
+    }
+
+    primitive_argument_type add_operation::add2d1d(args_type&& args) const
+    {
+        if (args.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add2d1d",
+                execution_tree::generate_error_message(
+                    "the add_operation primitive can add a vector "
+                    "to a matrix only if there are exactly 2 operands",
+                    name_, codename_));
+        }
+
+        auto cv = args[1].vector();
+        auto cm = args[0].matrix();
+
+        if (cv.size() != cm.columns())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add2d1d",
+                execution_tree::generate_error_message(
+                    "vector size does not match number of matrix "
+                    "columns",
+                    name_, codename_));
+        }
+
+        // TODO: Blaze does not support broadcasting
+        if (args[0].is_ref())
+        {
+            blaze::DynamicMatrix<double> m{ cm.rows(), cm.columns() };
+            for (std::size_t i = 0; i != cm.rows(); ++i)
             {
-                arg_type& lhs = args[0];
-                arg_type& rhs = args[1];
-
-                std::size_t lhs_size = lhs.dimension(0);
-                std::size_t rhs_size = rhs.dimension(0);
-
-                if (lhs_size != rhs_size)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add1d1d",
-                        "the dimensions of the operands do not match");
-                }
-
-                if (args.size() == 2)
-                {
-                    if (lhs.is_ref())
-                    {
-                        lhs = lhs.vector() + rhs.vector();
-                    }
-                    else
-                    {
-                        lhs.vector() += rhs.vector();
-                    }
-                    return primitive_argument_type(std::move(lhs));
-                }
-
-                arg_type& first_term = *args.begin();
-                return primitive_argument_type(std::accumulate(
-                    args.begin() + 1, args.end(), std::move(first_term),
-                    [](arg_type& result, arg_type const& curr) -> arg_type
-                    {
-                        if (result.is_ref())
-                        {
-                            result = result.vector() + curr.vector();
-                        }
-                        else
-                        {
-                            result.vector() += curr.vector();
-                        }
-                        return std::move(result);
-                    }));
+                blaze::row(m, i) = blaze::row(cm, i) + blaze::trans(cv);
             }
+            return primitive_argument_type{ std::move(m) };
+        }
 
-            primitive_argument_type add1d2d(args_type&& args) const
+        for (std::size_t i = 0; i != cm.rows(); ++i)
+        {
+            blaze::row(cm, i) += blaze::trans(cv);
+        }
+        return primitive_argument_type{ std::move(args[0]) };
+    }
+
+    primitive_argument_type add_operation::add2d2d(args_type && args) const
+    {
+        arg_type& lhs = args[0];
+        arg_type& rhs = args[1];
+
+        auto lhs_size = lhs.dimensions();
+        auto rhs_size = rhs.dimensions();
+
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add2d2d",
+                execution_tree::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
+
+        if (args.size() == 2)
+        {
+            if (lhs.is_ref())
             {
-                if (args.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add1d2d",
-                        generate_error_message(
-                            "the add_operation primitive can add a vector "
-                            "to a matrix only if there are exactly 2 operands",
-                            name_, codename_));
-                }
-
-                auto cv = args[0].vector();
-                auto cm = args[1].matrix();
-
-                if (cv.size() != cm.columns())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add1d2d",
-                        generate_error_message(
-                            "vector size does not match number of matrix "
-                                "columns",
-                            name_, codename_));
-                }
-
-                // TODO: Blaze does not support broadcasting
-                if (args[1].is_ref())
-                {
-                    blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
-                    for (std::size_t i = 0; i != cm.rows(); ++i)
-                    {
-                        blaze::row(m, i) = blaze::row(cm, i) + blaze::trans(cv);
-                    }
-                    return primitive_argument_type{std::move(m)};
-                }
-
-                for (std::size_t i = 0; i != cm.rows(); ++i)
-                {
-                    blaze::row(cm, i) += blaze::trans(cv);
-                }
-                return primitive_argument_type{std::move(args[1])};
+                lhs = lhs.matrix() + rhs.matrix();
             }
-
-            primitive_argument_type add1d(args_type && args) const
+            else
             {
-                std::size_t rhs_dims = args[1].num_dimensions();
-
-                switch(rhs_dims)
-                {
-                case 0:
-                    return add1d0d(std::move(args));
-
-                case 1:
-                    return add1d1d(std::move(args));
-
-                case 2:
-                    return add1d2d(std::move(args));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add1d",
-                        generate_error_message(
-                            "the operands have incompatible number of "
-                                "dimensions",
-                            name_, codename_));
-                }
+                lhs.matrix() += rhs.matrix();
             }
+            return primitive_argument_type(std::move(lhs));
+        }
 
-            ///////////////////////////////////////////////////////////////////////////
-            primitive_argument_type add2d0d(args_type && args) const
+        arg_type& first_term = *args.begin();
+        return primitive_argument_type(std::accumulate(
+            args.begin() + 1, args.end(), std::move(first_term),
+            [](arg_type& result, arg_type const& curr)
+            ->  arg_type
+        {
+            if (result.is_ref())
             {
-                if (args.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add0d2d",
-                        generate_error_message(
-                            "the add_operation primitive can add a single value "
-                            "to a matrix only if there are exactly 2 operands",
-                            name_, codename_));
-                }
-
-                args[0] = blaze::map(
-                    args[0].matrix(), add_simd(args[1].scalar()));
-                return primitive_argument_type(std::move(args[0]));
+                result = result.matrix() + curr.matrix();
             }
-
-            primitive_argument_type add2d1d(args_type&& args) const
+            else
             {
-                if (args.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add2d1d",
-                        generate_error_message(
-                            "the add_operation primitive can add a vector "
-                            "to a matrix only if there are exactly 2 operands",
-                            name_, codename_));
-                }
-
-                auto cv = args[1].vector();
-                auto cm = args[0].matrix();
-
-                if (cv.size() != cm.columns())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add2d1d",
-                        generate_error_message(
-                            "vector size does not match number of matrix "
-                                "columns",
-                            name_, codename_));
-                }
-
-                // TODO: Blaze does not support broadcasting
-                if (args[0].is_ref())
-                {
-                    blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
-                    for (std::size_t i = 0; i != cm.rows(); ++i)
-                    {
-                        blaze::row(m, i) = blaze::row(cm, i) + blaze::trans(cv);
-                    }
-                    return primitive_argument_type{std::move(m)};
-                }
-
-                for (std::size_t i = 0; i != cm.rows(); ++i)
-                {
-                    blaze::row(cm, i) += blaze::trans(cv);
-                }
-                return primitive_argument_type{std::move(args[0])};
+                result.matrix() += curr.matrix();
             }
+            return std::move(result);
+        }));
+    }
 
-            primitive_argument_type add2d2d(args_type && args) const
+    primitive_argument_type add_operation::add2d(args_type && args) const
+    {
+        std::size_t rhs_dims = args[1].num_dimensions();
+        switch (rhs_dims)
+        {
+        case 0:
+            return add2d0d(std::move(args));
+
+        case 2:
+            return add2d2d(std::move(args));
+
+        case 1:
+            return add2d1d(std::move(args));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::add2d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of "
+                    "dimensions",
+                    name_, codename_));
+        }
+    }
+
+    hpx::future<primitive_argument_type> add_operation::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands.size() < 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::eval",
+                execution_tree::generate_error_message(
+                    "the add_operation primitive requires at least two "
+                    "operands",
+                    name_, codename_));
+        }
+
+        bool arguments_valid = true;
+        for (std::size_t i = 0; i != operands.size(); ++i)
+        {
+            if (!valid(operands[i]))
             {
-                arg_type& lhs = args[0];
-                arg_type& rhs = args[1];
-
-                auto lhs_size = lhs.dimensions();
-                auto rhs_size = rhs.dimensions();
-
-                if (lhs_size != rhs_size)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add2d2d",
-                        generate_error_message(
-                            "the dimensions of the operands do not match",
-                            name_, codename_));
-                }
-
-                if (args.size() == 2)
-                {
-                    if (lhs.is_ref())
-                    {
-                        lhs = lhs.matrix() + rhs.matrix();
-                    }
-                    else
-                    {
-                        lhs.matrix() += rhs.matrix();
-                    }
-                    return primitive_argument_type(std::move(lhs));
-                }
-
-                arg_type& first_term = *args.begin();
-                return primitive_argument_type(std::accumulate(
-                    args.begin() + 1, args.end(), std::move(first_term),
-                    [](arg_type& result, arg_type const& curr)
-                    ->  arg_type
-                    {
-                        if (result.is_ref())
-                        {
-                            result = result.matrix() + curr.matrix();
-                        }
-                        else
-                        {
-                            result.matrix() += curr.matrix();
-                        }
-                        return std::move(result);
-                    }));
+                arguments_valid = false;
             }
+        }
 
-            primitive_argument_type add2d(args_type && args) const
+        if (!arguments_valid)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_operation::eval",
+                execution_tree::generate_error_message(
+                    "the add_operation primitive requires that the "
+                    "arguments given by the operands array are valid",
+                    name_, codename_));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](args_type&& args) -> primitive_argument_type
+        {
+            std::size_t lhs_dims = args[0].num_dimensions();
+            switch (lhs_dims)
             {
-                std::size_t rhs_dims = args[1].num_dimensions();
-                switch(rhs_dims)
-                {
-                case 0:
-                    return add2d0d(std::move(args));
+            case 0:
+                return this_->add0d(std::move(args));
 
-                case 2:
-                    return add2d2d(std::move(args));
+            case 1:
+                return this_->add1d(std::move(args));
 
-                case 1:
-                    return add2d1d(std::move(args));
+            case 2:
+                return this_->add2d(std::move(args));
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::add2d",
-                        generate_error_message(
-                            "the operands have incompatible number of "
-                                "dimensions",
-                            name_, codename_));
-                }
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "add_operation::eval",
+                    execution_tree::generate_error_message(
+                        "left hand side operand has unsupported "
+                        "number of dimensions",
+                        this_->name_, this_->codename_));
             }
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args) const
-            {
-                if (operands.size() < 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::eval",
-                        generate_error_message(
-                            "the add_operation primitive requires at least two "
-                                "operands",
-                            name_, codename_));
-                }
-
-                bool arguments_valid = true;
-                for (std::size_t i = 0; i != operands.size(); ++i)
-                {
-                    if (!valid(operands[i]))
-                    {
-                        arguments_valid = false;
-                    }
-                }
-
-                if (!arguments_valid)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::eval",
-                        generate_error_message(
-                            "the add_operation primitive requires that the "
-                            "arguments given by the operands array are valid",
-                            name_, codename_));
-                }
-
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_argument_type
-                    {
-                        std::size_t lhs_dims = args[0].num_dimensions();
-                        switch (lhs_dims)
-                        {
-                        case 0:
-                            return this_->add0d(std::move(args));
-
-                        case 1:
-                            return this_->add1d(std::move(args));
-
-                        case 2:
-                            return this_->add2d(std::move(args));
-
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "add_operation::eval",
-                                generate_error_message(
-                                    "left hand side operand has unsupported "
-                                    "number of dimensions",
-                                this_->name_, this_->codename_));
-                        }
-                    }),
-                    detail::map_operands(
-                        operands, functional::numeric_operand{}, args,
-                        name_, codename_));
-            }
-        };
+        }),
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
+                name_, codename_));
     }
 
     // implement '+' for all possible combinations of lhs and rhs
@@ -508,10 +493,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::add>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::add>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}

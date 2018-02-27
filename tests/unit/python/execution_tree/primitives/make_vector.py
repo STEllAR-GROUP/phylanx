@@ -7,22 +7,22 @@ import phylanx
 from phylanx.util import *
 
 
-@phyfun
+@Phylanx
 def test_make_vector_empty():
     return make_vector()
 
 
-@phyfun
+@Phylanx
 def test_make_vector_one():
     return make_vector(42)
 
 
-@phyfun
+@Phylanx
 def test_make_vector_literals():
     return make_vector(1, 2, 3, 4)
 
 
-@phyfun
+@Phylanx
 def test_make_vector():
     a = 1
     b = 2
@@ -30,7 +30,7 @@ def test_make_vector():
     return make_vector(a, b, c)
 
 
-@phyfun
+@Phylanx
 def test_make_vector2():
     a = 1
     b = 2

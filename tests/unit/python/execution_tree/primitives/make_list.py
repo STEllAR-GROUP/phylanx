@@ -7,22 +7,22 @@ import phylanx
 from phylanx.util import *
 
 
-@phyfun
+@Phylanx
 def test_make_list_empty():
     return make_list()
 
 
-@phyfun
+@Phylanx
 def test_make_list_one():
     return make_list(42)
 
 
-@phyfun
+@Phylanx
 def test_make_list_literals():
     return make_list(1, 2, 3, 4)
 
 
-@phyfun
+@Phylanx
 def test_make_list():
     a = 1
     b = 2
@@ -30,7 +30,7 @@ def test_make_list():
     return make_list(a, b, c)
 
 
-@phyfun
+@Phylanx
 def test_make_list2():
     a = 1
     b = 2
@@ -38,7 +38,7 @@ def test_make_list2():
     return make_list(a, make_list(a, b, c), c)
 
 
-@phyfun
+@Phylanx
 def test_make_list_arg(l):
     a = 1
     c = 3
