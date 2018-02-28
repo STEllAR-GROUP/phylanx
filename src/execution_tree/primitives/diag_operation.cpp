@@ -1,7 +1,7 @@
 // Copyright (c) 2018 Bibek Wagle
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/diag_operation.hpp>
@@ -50,139 +50,117 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
+
+    primitive_argument_type diag_operation::diag0d(args_type&& args) const
     {
-        struct diag_primitive : std::enable_shared_from_this<diag_primitive>
+        return primitive_argument_type(std::move(args[0]));
+    }
+
+    primitive_argument_type diag_operation::diag1d(args_type&& args) const
+    {
+        auto vecsize = args[0].dimension(0);
+        auto k = 0;
+        auto incr = 0;
+
+        if (args.size() == 2)
         {
-            diag_primitive(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
+            k = args[1].scalar();
+            incr = std::abs(k);
+        }
+
+        blaze::DynamicMatrix<double> result(
+            vecsize + incr, vecsize + incr, 0);
+
+        blaze::Band<blaze::DynamicMatrix<double>> diag =
+            blaze::band(result, k);
+
+        diag = args[0].vector();
+
+        return primitive_argument_type{ ir::node_data<double>{
+            storage2d_type{std::move(result)}} };
+    }
+
+    primitive_argument_type diag_operation::diag2d(args_type&& args) const
+    {
+        auto k = 0;
+
+        if (args.size() == 2)
+        {
+            k = args[1].scalar();
+        }
+
+        blaze::Band<blaze::CustomMatrix<double, true, true>> diag =
+            blaze::band(args[0].matrix(), k);
+
+        blaze::DynamicVector<double> result(diag);
+
+        return primitive_argument_type{ ir::node_data<double>{
+            storage1d_type{std::move(result)}} };
+    }
+
+    hpx::future<primitive_argument_type> diag_operation::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands.size() > 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                "diag_operation::diag_operation",
+                execution_tree::generate_error_message(
+                    "the diag_operation primitive requires "
+                    "either one or two arguments",
+                    name_, codename_));
+        }
+
+        bool arguments_valid = true;
+        for (std::size_t i = 0; i != operands.size(); ++i)
+        {
+            if (!valid(operands[i]))
             {
+                arguments_valid = false;
             }
+        }
 
-        protected:
-            std::string name_;
-            std::string codename_;
+        if (!arguments_valid)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "diag_operation::eval",
+                execution_tree::generate_error_message(
+                    "the diag_operation primitive requires "
+                    "that the arguments given by the operands "
+                    "array are valid",
+                    name_, codename_));
+        }
 
-        protected:
-            using arg_type = ir::node_data<double>;
-            using args_type = std::vector<arg_type>;
-            using storage1d_type = typename arg_type::storage1d_type;
-            using storage2d_type = typename arg_type::storage2d_type;
-
-            primitive_argument_type diag0d(args_type&& args) const
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(
+            hpx::util::unwrapping([this_](args_type&& args)
+                -> primitive_argument_type {
+            std::size_t matrix_dims = args[0].num_dimensions();
+            switch (matrix_dims)
             {
-                return primitive_argument_type(std::move(args[0]));
+            case 0:
+                return this_->diag0d(std::move(args));
+
+            case 1:
+                return this_->diag1d(std::move(args));
+
+            case 2:
+                return this_->diag2d(std::move(args));
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "diag_operation::eval",
+                    execution_tree::generate_error_message(
+                        "left hand side operand has unsupported "
+                        "number of dimensions",
+                        this_->name_, this_->codename_));
             }
-
-            primitive_argument_type diag1d(args_type&& args) const
-            {
-                auto vecsize = args[0].dimension(0);
-                auto k = 0;
-                auto incr = 0;
-
-                if (args.size() == 2)
-                {
-                    k = args[1].scalar();
-                    incr = std::abs(k);
-                }
-
-                blaze::DynamicMatrix<double> result(
-                    vecsize + incr, vecsize + incr, 0);
-
-                blaze::Band<blaze::DynamicMatrix<double>> diag =
-                    blaze::band(result, k);
-
-                diag = args[0].vector();
-
-                return primitive_argument_type{ir::node_data<double>{
-                    storage2d_type{std::move(result)}}};
-            }
-
-            primitive_argument_type diag2d(args_type&& args) const
-            {
-                auto k = 0;
-
-                if (args.size() == 2)
-                {
-                    k = args[1].scalar();
-                }
-
-                blaze::Band<blaze::CustomMatrix<double, true, true>> diag =
-                    blaze::band(args[0].matrix(), k);
-
-                blaze::DynamicVector<double> result(diag);
-
-                return primitive_argument_type{ir::node_data<double>{
-                    storage1d_type{std::move(result)}}};
-            }
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args) const
-            {
-                if (operands.size() > 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "diag_operation::diag_operation",
-                        generate_error_message(
-                            "the diag_operation primitive requires "
-                                "either one or two arguments",
-                            name_, codename_));
-                }
-
-                bool arguments_valid = true;
-                for (std::size_t i = 0; i != operands.size(); ++i)
-                {
-                    if (!valid(operands[i]))
-                    {
-                        arguments_valid = false;
-                    }
-                }
-
-                if (!arguments_valid)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "diag_operation::eval",
-                        generate_error_message(
-                            "the diag_operation primitive requires "
-                                "that the arguments given by the operands "
-                                "array are valid",
-                            name_, codename_));
-                }
-
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping([this_](args_type&& args)
-                                              -> primitive_argument_type {
-                        std::size_t matrix_dims = args[0].num_dimensions();
-                        switch (matrix_dims)
-                        {
-                        case 0:
-                            return this_->diag0d(std::move(args));
-
-                        case 1:
-                            return this_->diag1d(std::move(args));
-
-                        case 2:
-                            return this_->diag2d(std::move(args));
-
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "diag_operation::eval",
-                                generate_error_message(
-                                    "left hand side operand has unsupported "
-                                        "number of dimensions",
-                                this_->name_, this_->codename_));
-                        }
-                    }),
-                    detail::map_operands(
-                        operands, functional::numeric_operand{}, args,
-                        name_, codename_));
-            }
-        };
+        }),
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
+                name_, codename_));
     }
 
     hpx::future<primitive_argument_type> diag_operation::eval(
@@ -190,10 +168,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::diag_primitive>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::diag_primitive>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}
