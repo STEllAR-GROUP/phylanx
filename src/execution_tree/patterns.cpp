@@ -66,6 +66,7 @@ namespace phylanx { namespace execution_tree
             primitives::inverse_operation::match_data,
             primitives::power_operation::match_data,
             primitives::random::match_data,
+            primitives::shuffle_operation::match_data,
             primitives::square_root_operation::match_data,
             primitives::transpose_operation::match_data,
             // variadic operations

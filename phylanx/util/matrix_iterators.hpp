@@ -50,6 +50,10 @@ namespace phylanx { namespace util
         {
             return blaze::row(data_, index_);
         }
+        std::ptrdiff_t distance_to(matrix_row_iterator const& other) const
+        {
+            return other.index_ - index_;
+        }
 
     private:
         T & data_;
@@ -93,6 +97,10 @@ namespace phylanx { namespace util
         blaze::Column<T> dereference() const
         {
             return blaze::column(data_, index_);
+        }
+        std::ptrdiff_t distance_to(matrix_column_iterator const& other) const
+        {
+            return other.index_ - index_;
         }
 
     private:
