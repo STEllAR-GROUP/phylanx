@@ -6,10 +6,14 @@
 #include <hpx/hpx.hpp>
 #include <hpx/hpx_start.hpp>
 
+#include "init_hpx.hpp"
+
 #include <mutex>
 #include <string>
 #include <vector>
 
+namespace phylanx { namespace bindings
+{
 ///////////////////////////////////////////////////////////////////////////////
 // Store the command line arguments in global variables to make them available
 // to the startup code.
@@ -261,3 +265,5 @@ void stop_hpx_runtime()
     rts = nullptr;
     delete r;
 }
+
+}}
