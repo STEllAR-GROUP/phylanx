@@ -1,4 +1,4 @@
-//  Copyright (c) 2016-2017 Hartmut Kaiser
+//  Copyright (c) 2016-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -256,7 +256,8 @@ manage_global_runtime* rts = nullptr;
 
 void init_hpx_runtime()
 {
-    rts = new manage_global_runtime;
+    if (rts == nullptr)
+        rts = new manage_global_runtime;
 }
 
 void stop_hpx_runtime()

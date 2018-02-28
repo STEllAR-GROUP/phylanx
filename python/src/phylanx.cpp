@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //  Copyright (c) 2018 R. Tohid
 //  Copyright (c) 2018 Steven R. Brandt
 //
@@ -40,7 +40,24 @@ PYBIND11_MODULE(_phylanx, m)
     m.def("init_hpx_runtime", &phylanx::bindings::init_hpx_runtime);
     m.def("stop_hpx_runtime", &phylanx::bindings::stop_hpx_runtime);
 
+    ///////////////////////////////////////////////////////////////////////////
+    // expose the other modules
     phylanx::bindings::bind_ast(m);
     phylanx::bindings::bind_execution_tree(m);
     phylanx::bindings::bind_util(m);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // make sure HPX is unloaded at module unload
+
+    // Register a callback function that is invoked when the BaseClass object
+    // is collected
+    pybind11::cpp_function cleanup_callback(
+        [](pybind11::handle weakref)
+        {
+            phylanx::bindings::stop_hpx_runtime();
+            weakref.dec_ref();    // release weak reference
+        });
+
+    // Create a weak reference with a cleanup callback and initially leak it
+    (void) pybind11::weakref(m, cleanup_callback).release();
 }
