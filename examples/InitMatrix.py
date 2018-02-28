@@ -36,8 +36,8 @@ three = et.eval("3")
 four = et.eval("4")
 
 print("The answer is 42")
-print(et.eval("block(42.0)")[0])
-print(et.eval("block(define(x,42),x)")[0])
+print(et.eval("block(42.0)"))
+print(et.eval("block(define(x,42),x)"))
 print(
     et.eval("""
     block(
@@ -49,8 +49,8 @@ print(
             )
         ),
         fact(arg0)
-    )""")[0])
-print("3=", three[0])
+    )"""))
+print("3=", three)
 print(
     et.eval("""
     block(
@@ -61,7 +61,7 @@ print(
             )
         ),
         fact
-    )""", three)[0])
+    )""", three))
 printout(et.eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
 printout(
     et.eval("block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))

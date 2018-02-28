@@ -5,7 +5,6 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
-from phylanx.util import *
 import numpy as np
 
 # Create a vector
@@ -13,9 +12,10 @@ x0 = 0
 nx = 11
 dx = 1.0
 et = phylanx.execution_tree
-r = et.var(np.linspace(x0, (nx - 1) * dx, nx))
-assert r.num_dimensions() == 1
-assert r.dimension(0) == nx
+var = et.var(np.linspace(x0, (nx - 1) * dx, nx))
+r = var.eval()
+assert isinstance(r, list)
+assert len(r) == nx
 sum2 = 0
 for i in range(11):
     sum2 += i * i
@@ -23,30 +23,30 @@ for i in range(11):
 
 # Test creation from a python array
 va = [1, 2, 3, 4, 5]
-vx = et.var(va)
+vx = et.var(va).eval()
 for i in range(len(va)):
     assert vx[i] == va[i]
 
 # Create a vector that's all zeros
-r = et.var(np.zeros(nx))
-assert r.num_dimensions() == 1
-assert r.dimension(0) == nx
+r = et.var(np.zeros(nx)).eval()
+assert isinstance(r, list)
+assert len(r) == nx
 for i in range(11):
     assert 0 == r[i]
 
 # Create a matrix that's all zeros
 nx = 5
 ny = 4
-m = et.var(np.zeros((nx, ny)))
-assert m.num_dimensions() == 2
-assert m.dimension(0) == nx
-assert m.dimension(1) == ny
+m = et.var(np.zeros((nx, ny))).eval()
+assert isinstance(m, type([[]]))
+assert len(m) == nx
+assert len(m[1]) == ny
 for i in range(nx):
     for j in range(ny):
-        assert m[i, j] == 0
+        assert m[i][j] == 0
 
 m2 = [[1.0, 2.0, 3.0], [1.1, 2, 2, 3.2], [1.5, 2.6, 3.7]]
-m3 = et.var(m2)
+m3 = et.var(m2).eval()
 for i in range(len(m2)):
     for j in range(len(m2[0])):
-        assert m3[i, j] == m2[i][j]
+        assert m3[i][j] == m2[i][j]

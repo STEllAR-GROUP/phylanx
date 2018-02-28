@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    matrix_iterators
     performance_data
     serialization_variant
    )
