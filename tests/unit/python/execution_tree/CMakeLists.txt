@@ -7,6 +7,7 @@
 set(tests
     eval
     for
+    make_array
    )
 
 foreach(test ${tests})

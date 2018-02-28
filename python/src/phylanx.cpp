@@ -834,8 +834,8 @@ PYBIND11_MODULE(_phylanx, m)
                 return hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        return numeric_operand(
-                            primitive_argument_type{p}, {}).get()[0];
+                        return numeric_operand(primitive_argument_type{p}, {})
+                            .get();
                     });
             },
             "evaluate execution tree")
@@ -844,8 +844,7 @@ PYBIND11_MODULE(_phylanx, m)
                 hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        p.store(hpx::launch::sync,
-                            primitive_argument_type{d});
+                        p.store(hpx::launch::sync, primitive_argument_type{d});
                     });
             },
             "assign another value to variable")
