@@ -408,10 +408,7 @@ def convert_to_phylanx_type(v):
             return et.var(v)
     except NotImplementedError:
         pass
-    if t == int or t == float or t == list or t == str:
-        return et.var(v)
-    else:
-        return v
+    return v
 
 
 # Create the decorator

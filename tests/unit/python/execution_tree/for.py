@@ -18,7 +18,7 @@ def sumn():
     return sum
 
 
-assert sumn()[0] == 6
+assert sumn() == 6
 
 
 @Phylanx("PhySL")
@@ -30,7 +30,7 @@ def sumn():
     return sum
 
 
-assert sumn()[0] == 6
+assert sumn() == 6
 
 
 @Phylanx("PhySL")
@@ -44,7 +44,7 @@ def sumn():
     return sum + c
 
 
-assert sumn()[0] == 9
+assert sumn() == 9
 
 
 @Phylanx("PhySL")
@@ -59,4 +59,4 @@ def sumn():
     return sum + c
 
 
-assert sumn()[0] == 9
+assert sumn() == 9

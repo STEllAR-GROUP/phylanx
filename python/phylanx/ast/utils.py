@@ -81,11 +81,3 @@ def printout(m):
         print(m[0])
     else:
         print("ndim=", ndim)
-
-
-def full_node_name(a, name):
-    return '%s$%d$%d' % (name, a.lineno, a.col_offset)
-
-
-def full_name(a):
-    return full_node_name(a, a.name)

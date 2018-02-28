@@ -142,11 +142,19 @@ namespace phylanx { namespace ir
         explicit node_data(storage1d_type const& values);
         explicit node_data(storage1d_type && values);
 
-        template <typename U = T, typename U1 =
-            typename std::enable_if<!std::is_same<U, bool>::value>::type>
-        explicit node_data(std::vector<T> const& values)
-          : data_(storage1d_type(values.size(), values.data()))
-        {}
+        explicit node_data(custom_storage1d_type const& values);
+        explicit node_data(custom_storage1d_type && values);
+
+        /// Create node data for a 2-dimensional value
+        explicit node_data(storage2d_type const& values);
+        explicit node_data(storage2d_type && values);
+
+        explicit node_data(custom_storage2d_type const& values);
+        explicit node_data(custom_storage2d_type && values);
+
+        // conversion helpers for Python bindings
+        explicit node_data(std::vector<T> const& values);
+        explicit node_data(std::vector<std::vector<T>> const& values);
 
         template <typename U = T, typename U1 =
             typename std::enable_if<!std::is_same<U, bool>::value>::type>
@@ -164,16 +172,6 @@ namespace phylanx { namespace ir
                 }
             }
         }
-
-        explicit node_data(custom_storage1d_type const& values);
-        explicit node_data(custom_storage1d_type && values);
-
-        /// Create node data for a 2-dimensional value
-        explicit node_data(storage2d_type const& values);
-        explicit node_data(storage2d_type && values);
-
-        explicit node_data(custom_storage2d_type const& values);
-        explicit node_data(custom_storage2d_type && values);
 
     private:
         static storage_type init_data_from(node_data const& d);
@@ -228,6 +226,10 @@ namespace phylanx { namespace ir
 
         node_data& operator=(custom_storage2d_type const& val);
         node_data& operator=(custom_storage2d_type && val);
+
+        // conversion helpers for Python bindings
+        node_data& operator=(std::vector<T> const& val);
+        node_data& operator=(std::vector<std::vector<T>> const& values);
 
     private:
         static storage_type copy_data_from(node_data const& d);
@@ -307,6 +309,11 @@ namespace phylanx { namespace ir
 
         const_iterator cbegin() const;
         const_iterator cend() const;
+
+        // conversion helpers for Python bindings
+        std::vector<T> as_vector() const;
+        std::vector<std::vector<T>> as_matrix() const;
+        std::size_t index() const { return data_.index(); }
 
     private:
         /// \cond NOINTERNAL
