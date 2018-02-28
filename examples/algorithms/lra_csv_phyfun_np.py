@@ -6,7 +6,6 @@
 import phylanx
 import numpy as np
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 
 
 @Phylanx("PhySL")
@@ -35,4 +34,4 @@ x = data[:, :-1]
 y = data[:, -1:]
 y = y.reshape((y.shape[0], ))
 res = lra(x, y, 1e-5, 750, 0)
-printout(res)
+print(res)

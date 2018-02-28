@@ -7,7 +7,6 @@
 
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
@@ -105,7 +104,7 @@ def foo(n):
         return 5
 
 
-assert foo(1)[0] == 2 and foo(3)[0] == 4 and foo(5)[0] == 5
+assert foo(1) == 2 and foo(3) == 4 and foo(5) == 5
 
 
 @Phylanx("PhySL")
@@ -117,5 +116,4 @@ def foo():
         i += 1
     return sumn
 
-
-assert foo()[0] == 45
+assert foo() == 45

@@ -8,6 +8,7 @@
 #include <phylanx/phylanx.hpp>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/iostream.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
 
@@ -901,7 +902,13 @@ PYBIND11_MODULE(_phylanx, m)
         },
         "create a new variable from a matrix floating point values");
 
-    execution_tree.def("eval", expression_compiler, expression_compiler_help);
+    execution_tree.def("eval", [](std::string const& expr, pybind11::args args) {
+    pybind11::scoped_ostream_redirect stream(
+        std::cout,                                     // std::ostream&
+        pybind11::module::import("sys").attr("stdout") // Python output
+    );
+    return expression_compiler(expr, args);
+});
 
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")
