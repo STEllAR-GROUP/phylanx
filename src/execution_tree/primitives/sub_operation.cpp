@@ -166,7 +166,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             name_, codename_));
                 }
 
-                ops[1].vector() =
+                ops[1] =
                     blaze::map(ops[1].vector(), sub0dnd_simd(ops[0].scalar()));
                 return primitive_argument_type(std::move(ops[1]));
             }
@@ -184,7 +184,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             name_, codename_));
                 }
 
-                ops[1].matrix() =
+                ops[1] =
                     blaze::map(ops[1].matrix(), sub0dnd_simd(ops[0].scalar()));
                 return primitive_argument_type(std::move(ops[1]));
             }
@@ -226,7 +226,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             name_, codename_));
                 }
 
-                ops[0].vector() =
+                ops[0] =
                     blaze::map(ops[0].vector(), subnd0d_simd(ops[1].scalar()));
                 return primitive_argument_type(std::move(ops[0]));
             }
@@ -362,7 +362,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             name_, codename_));
                 }
 
-                ops[0].matrix() =
+                ops[0] =
                     blaze::map(ops[0].matrix(), subnd0d_simd(ops[1].scalar()));
                 return primitive_argument_type(std::move(ops[0]));
             }

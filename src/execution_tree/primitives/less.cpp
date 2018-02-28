@@ -70,8 +70,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                rhs.vector() = blaze::map(rhs.vector(),
-                    [&](double x) { return (x < lhs.scalar()); });
+                if (rhs.is_ref())
+                {
+                    rhs = blaze::map(rhs.vector(),
+                        [&](double x) { return (x < lhs.scalar()); });
+                }
+                else
+                {
+                    rhs.vector() = blaze::map(rhs.vector(),
+                        [&](double x) { return (x < lhs.scalar()); });
+                }
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(rhs)});
@@ -82,8 +90,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                rhs.matrix() = blaze::map(rhs.matrix(),
-                    [&](double x) { return (x < lhs.scalar()); });
+                if (rhs.is_ref())
+                {
+                    rhs = blaze::map(rhs.matrix(),
+                        [&](double x) { return (x < lhs.scalar()); });
+                }
+                else
+                {
+                    rhs.matrix() = blaze::map(rhs.matrix(),
+                        [&](double x) { return (x < lhs.scalar()); });
+                }
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(rhs)});
@@ -120,8 +136,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                lhs.vector() = blaze::map(lhs.vector(),
-                    [&](double x) { return (x < rhs.scalar()); });
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.vector(),
+                        [&](double x) { return (x < rhs.scalar()); });
+                }
+                else
+                {
+                    lhs.vector() = blaze::map(lhs.vector(),
+                        [&](double x) { return (x < rhs.scalar()); });
+                }
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(lhs)});
@@ -144,8 +168,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
-                    [&](double x, double y) { return (x < y); });
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.vector(), rhs.vector(),
+                        [&](double x, double y) { return (x < y); });
+                }
+                else
+                {
+                    lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
+                        [&](double x, double y) { return (x < y); });
+                }
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(lhs)});
@@ -154,10 +186,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type less1d2d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
-                std::size_t lhs_size = lhs.dimension(0);
-                auto rhs_size = rhs.dimensions();
+                auto cv = lhs.vector();
+                auto cm = rhs.matrix();
 
-                if (lhs_size != rhs_size[1])
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::less1d2d",
@@ -168,12 +200,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                for (size_t i = 0UL; i < rhs.matrix().rows(); i++)
-                    blaze::row(rhs.matrix(), i) =
-                        blaze::map(blaze::row(rhs.matrix(), i),
-                            blaze::trans(lhs.vector()),
-                            [](double x, double y) { return x < y; });
+                if (rhs.is_ref())
+                {
+                    blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
 
+                    for (size_t i = 0UL; i != cm.rows(); i++)
+                        blaze::row(m, i) = blaze::map(blaze::row(cm, i),
+                            blaze::trans(cv),
+                            [](double x, double y) { return x < y; });
+                    return primitive_argument_type(
+                        ir::node_data<bool>{std::move(m)});
+                }
+
+                for (size_t i = 0UL; i != cm.rows(); i++)
+                    blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
+                        blaze::trans(cv),
+                        [](double x, double y) { return x < y; });
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(rhs)});
             }
@@ -211,8 +253,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                lhs.matrix() = blaze::map(
-                    lhs.matrix(), [&](double x) { return (x < rhs.scalar()); });
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.matrix(),
+                        [&](double x) { return (x < rhs.scalar()); });
+                }
+                else
+                {
+                    lhs.matrix() = blaze::map(lhs.matrix(),
+                        [&](double x) { return (x < rhs.scalar()); });
+                }
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(lhs)});
@@ -221,10 +271,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type less2d1d(
                 operand_type&& lhs, operand_type&& rhs) const
             {
-                std::size_t rhs_size = rhs.dimension(0);
-                auto lhs_size = lhs.dimensions();
+                auto cv = rhs.vector();
+                auto cm = lhs.matrix();
 
-                if (rhs_size != lhs_size[1])
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "less::less2d1d",
@@ -235,11 +285,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                for (size_t i = 0UL; i < lhs.matrix().rows(); i++)
-                    blaze::row(lhs.matrix(), i) =
-                        blaze::map(blaze::row(lhs.matrix(), i),
-                            blaze::trans(rhs.vector()),
+                if (lhs.is_ref())
+                {
+                    blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
+
+                    for (size_t i = 0UL; i != cm.rows(); i++)
+                        blaze::row(m, i) = blaze::map(blaze::row(cm, i),
+                            blaze::trans(cv),
                             [](double x, double y) { return x < y; });
+                    return primitive_argument_type(
+                        ir::node_data<bool>{std::move(m)});
+                }
+
+                for (size_t i = 0UL; i != cm.rows(); i++)
+                    blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
+                        blaze::trans(cv),
+                        [](double x, double y) { return x < y; });
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(lhs)});
@@ -262,8 +323,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 //       is not currently available
-                lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
-                    [&](double x, double y) { return (x < y); });
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.matrix(), rhs.matrix(),
+                        [&](double x, double y) { return (x < y); });
+                }
+                else
+                {
+                    lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
+                        [&](double x, double y) { return (x < y); });
+                }
 
                 return primitive_argument_type(
                     ir::node_data<bool>{std::move(lhs)});
