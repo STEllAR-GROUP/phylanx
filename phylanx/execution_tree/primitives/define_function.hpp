@@ -26,13 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // value to a variable.
     class define_function
         : public primitive_component_base
-        , public std::enable_shared_from_this<define_function>
     {
-    protected:
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
-
     public:
         static match_pattern_type const match_data;
 

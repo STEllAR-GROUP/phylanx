@@ -4,25 +4,25 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx.util import *
+from phylanx.ast import *
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_vector_empty():
     return make_vector()
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_vector_one():
     return make_vector(42)
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_vector_literals():
     return make_vector(1, 2, 3, 4)
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_vector():
     a = 1
     b = 2
@@ -30,7 +30,7 @@ def test_make_vector():
     return make_vector(a, b, c)
 
 
-@Phylanx
+@Phylanx("PhySL")
 def test_make_vector2():
     a = 1
     b = 2

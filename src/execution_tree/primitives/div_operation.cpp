@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        ops[1].vector() =
+        ops[1] =
             blaze::map(ops[1].vector(), div0dnd_simd(ops[0].scalar()));
         return primitive_argument_type(std::move(ops[1]));
     }
@@ -192,7 +192,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        ops[1].matrix() =
+        ops[1] =
             blaze::map(ops[1].matrix(), div0dnd_simd(ops[0].scalar()));
         return primitive_argument_type(std::move(ops[1]));
     }
@@ -226,7 +226,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (ops.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div0d1d",
+                "div_operation::div1d0d",
                 execution_tree::generate_error_message(
                     "the div_operation primitive can div a single "
                         "value to a vector only if there are exactly "
@@ -234,7 +234,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        ops[0].vector() =
+        ops[0] =
             blaze::map(ops[0].vector(), divnd0d_simd(ops[1].scalar()));
         return primitive_argument_type(std::move(ops[0]));
     }
@@ -258,8 +258,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (ops.size() == 2)
         {
-            lhs.vector() =
-                blaze::map(lhs.vector(), rhs.vector(), divndnd_simd());
+            if (lhs.is_ref())
+            {
+                lhs = blaze::map(lhs.vector(), rhs.vector(), divndnd_simd());
+            }
+            else
+            {
+                lhs.vector() = blaze::map(
+                    lhs.vector(), rhs.vector(), divndnd_simd());
+            }
+                
             return primitive_argument_type(std::move(lhs));
         }
 
@@ -269,8 +277,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [](operand_type& result,
                 operand_type const& curr) -> operand_type
             {
-                result.vector() = blaze::map(
-                    result.vector(), curr.vector(), divndnd_simd());
+                if (result.is_ref())
+                {
+                    result = blaze::map(
+                        result.vector(), curr.vector(), divndnd_simd());
+                }
+                else
+                {
+                    result.vector() = blaze::map(
+                        result.vector(), curr.vector(), divndnd_simd());
+                }
                 return std::move(result);
             }));
     }
@@ -352,7 +368,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (ops.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div0d2d",
+                "div_operation::div2d0d",
                 execution_tree::generate_error_message(
                     "the div_operation primitive can div a single "
                         "value to a matrix only if there are exactly "
@@ -360,7 +376,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        ops[0].matrix() =
+        ops[0] =
             blaze::map(ops[0].matrix(), divnd0d_simd(ops[1].scalar()));
         return primitive_argument_type(std::move(ops[0]));
     }
