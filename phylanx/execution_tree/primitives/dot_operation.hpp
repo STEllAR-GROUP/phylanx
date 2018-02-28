@@ -10,16 +10,28 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class dot_operation : public primitive_component_base
+    class dot_operation
+        : public primitive_component_base
+        , public std::enable_shared_from_this<dot_operation>
     {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
+
+        using operand_type = ir::node_data<double>;
+        using operands_type = std::vector<operand_type>;
+
     public:
         static match_pattern_type const match_data;
 
@@ -30,6 +42,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    private:
+        primitive_argument_type dot0d(operands_type && ops) const;
+        primitive_argument_type dot1d(operands_type && ops) const;
+        primitive_argument_type dot1d1d(operand_type& lhs, operand_type& rhs) const;
+        primitive_argument_type dot1d2d(operand_type& lhs, operand_type& rhs) const;
+        primitive_argument_type dot2d(operands_type && ops) const;
+        primitive_argument_type dot2d1d(operand_type& lhs, operand_type& rhs) const;
+        primitive_argument_type dot2d2d(operand_type& lhs, operand_type& rhs) const;
+
     };
 
     PHYLANX_EXPORT primitive create_dot_operation(hpx::id_type const& locality,
