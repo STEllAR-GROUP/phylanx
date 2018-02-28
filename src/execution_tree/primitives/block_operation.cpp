@@ -47,7 +47,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     void block_operation::next(std::size_t i,
-        std::vector<primitive_argument_type> && args) const
+        std::vector<primitive_argument_type> && args,
+        hpx::promise<primitive_argument_type> && result) const
     {
         // skip statements that don't return anything
         while (i != operands_.size() && !valid(operands_[i]))
@@ -58,26 +59,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         auto f = value_operand(operands_[i], args, name_, codename_);
-        f.then([this_, i, args = std::move(args)](
-                   hpx::future<primitive_argument_type>&& step) mutable {
-            try
+        f.then(
+            [this_, i, args = std::move(args), result = std::move(result)](
+                hpx::future<primitive_argument_type>&& step) mutable -> void
             {
-                // the value of the last step is returned
-                if (i == this_->operands_.size() - 1)
+                try
                 {
-                    this_->result_.set_value(step.get());
-                    return;
-                }
+                    // the value of the last step is returned
+                    if (i == this_->operands_.size() - 1)
+                    {
+                        result.set_value(step.get());
+                        return;
+                    }
 
-                step.get();            // rethrow exception
-                this_->next(i + 1, std::move(args));    // trigger next step
-            }
-            catch (...)
-            {
-                this_->result_.set_exception(
-                    std::current_exception());
-            }
-        });
+                    step.get();    // rethrow exception
+
+                    // trigger next step
+                    this_->next(i + 1, std::move(args), std::move(result));
+                }
+                catch (...)
+                {
+                    result.set_exception(std::current_exception());
+                }
+            });
     }
 
     hpx::future<primitive_argument_type> block_operation::eval(
@@ -95,8 +99,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        next(0, std::move(args));    // trigger first step
-        return result_.get_future();
+        hpx::promise<primitive_argument_type> result;
+        auto f = result.get_future();
+        next(0, std::move(args), std::move(result));    // trigger first step
+        return f;
     }
 
     //////////////////////////////////////////////////////////////////////////

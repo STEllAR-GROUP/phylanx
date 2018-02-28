@@ -267,7 +267,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lhs.vector() = blaze::map(
                     lhs.vector(), rhs.vector(), divndnd_simd());
             }
-                
+
             return primitive_argument_type(std::move(lhs));
         }
 

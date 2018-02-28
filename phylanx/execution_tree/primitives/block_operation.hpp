@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -40,10 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        mutable hpx::promise<primitive_argument_type> result_;
-
         void next(std::size_t i,
-            std::vector<primitive_argument_type> && args) const;
+            std::vector<primitive_argument_type>&& args,
+            hpx::promise<primitive_argument_type>&& result) const;
     };
 
     PHYLANX_EXPORT primitive create_block_operation(
