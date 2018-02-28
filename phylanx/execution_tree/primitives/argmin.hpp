@@ -18,10 +18,12 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    /// \brief Implementation of argmin as a Phylanx primitive
-    /// This implementation is intended to behave like [NumPy implementation
-    /// of argmin]
-    /// (https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.argmin.html).
+    /// \brief Implementation of argmin as a Phylanx primitive.
+    /// Returns the index of the smallest element of argument a.
+    /// This implementation is intended to behave like [NumPy implementation of argmax]
+    /// (https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.argmax.html).
+    /// \param a It may be a scalar value, vector, or matrix
+    /// \param axis The dimension along which the indices of the min value(s) should be found
     class argmin
         : public primitive_component_base
         , public std::enable_shared_from_this<argmin>
@@ -40,8 +42,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         argmin() = default;
 
-        /// \brief Calculates argmin of a node_data
-        /// \param args A scalar value, vector, or matrix
         argmin(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 

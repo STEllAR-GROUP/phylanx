@@ -18,10 +18,12 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    /// \brief Implementation of argmax as a Phylanx primitive
-    /// This implementation is intended to behave like [NumPy implementation
-    /// of argmax]
+    /// \brief Implementation of argmax as a Phylanx primitive.
+    /// Returns the index of the largest element of argument a.
+    /// This implementation is intended to behave like [NumPy implementation of argmax]
     /// (https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.argmax.html).
+    /// \param a It may be a scalar value, vector, or matrix
+    /// \param axis The dimension along which the indices of the max value(s) should be found
     class argmax
         : public primitive_component_base
         , public std::enable_shared_from_this<argmax>
@@ -40,8 +42,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         argmax() = default;
 
-        /// \brief Calculates argmax of a node_data
-        /// \param args A scalar value, vector, or matrix
         argmax(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
