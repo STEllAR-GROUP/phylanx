@@ -5,7 +5,6 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
-from phylanx.util import *
 import numpy as np
 
 # Create a vector
@@ -15,7 +14,7 @@ dx = 1.0
 et = phylanx.execution_tree
 var = et.var(np.linspace(x0, (nx - 1) * dx, nx))
 r = var.eval()
-assert type(r) == type([])
+assert isinstance(r, list)
 assert len(r) == nx
 sum2 = 0
 for i in range(11):
@@ -30,7 +29,7 @@ for i in range(len(va)):
 
 # Create a vector that's all zeros
 r = et.var(np.zeros(nx)).eval()
-assert type(r) == type([])
+assert isinstance(r, list)
 assert len(r) == nx
 for i in range(11):
     assert 0 == r[i]
@@ -39,7 +38,7 @@ for i in range(11):
 nx = 5
 ny = 4
 m = et.var(np.zeros((nx, ny))).eval()
-assert type(m) == type([[]])
+assert isinstance(m, type([[]]))
 assert len(m) == nx
 assert len(m[1]) == ny
 for i in range(nx):
