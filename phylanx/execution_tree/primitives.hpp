@@ -9,7 +9,9 @@
 
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
+#include <phylanx/execution_tree/primitives/all_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
+#include <phylanx/execution_tree/primitives/any_operation.hpp>
 #include <phylanx/execution_tree/primitives/apply.hpp>
 #include <phylanx/execution_tree/primitives/argmax.hpp>
 #include <phylanx/execution_tree/primitives/argmin.hpp>

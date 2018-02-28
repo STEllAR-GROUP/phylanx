@@ -55,6 +55,8 @@ namespace phylanx { namespace execution_tree
 #endif
 
             // unary functions
+            primitives::all_operation::match_data,
+            primitives::any_operation::match_data,
             primitives::argmin::match_data,
             primitives::argmax::match_data,
             primitives::constant::match_data,

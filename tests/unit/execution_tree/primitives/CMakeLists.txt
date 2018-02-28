@@ -5,7 +5,9 @@
 
 set(tests
     add_operation
+    all_operation
     and_operation
+    any_operation
     argmin
     argmax
     block_operation
