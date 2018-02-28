@@ -116,26 +116,6 @@ namespace phylanx { namespace bindings
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    inline phylanx::execution_tree::primitive generate_tree(
-        std::string const& expr, pybind11::dict const& dict)
-    {
-        std::vector<phylanx::execution_tree::primitive_argument_type> args;
-        args.reserve(dict.size());
-
-        for (auto const& item : dict)
-        {
-            phylanx::execution_tree::primitive value =
-                item.second.cast<phylanx::execution_tree::primitive>();
-            args.emplace_back(std::move(value));
-        }
-
-        phylanx::execution_tree::compiler::function_list snippets;
-        auto f = phylanx::execution_tree::compile(expr, snippets);
-
-        return phylanx::execution_tree::primitive_operand(f.arg_);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     inline phylanx::execution_tree::primitive_argument_type
     expression_compiler(std::string xexpr, pybind11::args args)
     {
@@ -160,6 +140,7 @@ namespace phylanx { namespace bindings
                         fargs.emplace_back(std::move(value));
                     }
 
+                    pybind11::gil_scoped_release release;       // release GIL
                     return x(std::move(fargs));
                 }
                 catch (std::exception const& ex)

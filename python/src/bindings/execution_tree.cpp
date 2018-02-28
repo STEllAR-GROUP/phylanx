@@ -21,9 +21,6 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
 {
     auto execution_tree = m.def_submodule("execution_tree");
 
-    execution_tree.def("generate_tree", &phylanx::bindings::generate_tree,
-        "generate expression tree from given expression");
-
     execution_tree.def("var",
         [](double d) {
             return hpx::threads::run_as_hpx_thread(
