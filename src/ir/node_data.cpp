@@ -21,7 +21,6 @@
 #include <utility>
 #include <vector>
 
-
 namespace phylanx { namespace ir
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -187,6 +186,34 @@ namespace phylanx { namespace ir
         increment_move_construction_count();
     }
 
+    // conversion helpers for Python bindings
+    template <typename T>
+    node_data<T>::node_data(std::vector<T> const& values)
+      : data_(storage1d_type(values.size()))
+    {
+        std::size_t const nx = values.size();
+        for (std::size_t i = 0; i != nx; ++i)
+        {
+            util::get<1>(data_)[i] = values[i];
+        }
+    }
+
+    template <typename T>
+    node_data<T>::node_data(std::vector<std::vector<T>> const& values)
+      : data_(storage2d_type{values.size(), values[0].size()})
+    {
+        std::size_t const nx = values.size();
+        for (std::size_t i = 0; i != nx; ++i)
+        {
+            std::vector<T> const& row = values[i];
+            std::size_t const ny = row.size();
+            for (std::size_t j = 0; j != ny; ++j)
+            {
+                util::get<2>(data_)(i, j) = row[j];
+            }
+        }
+    }
+
     template <typename T>
     typename node_data<T>::storage_type node_data<T>::init_data_from(
         node_data const& d)
@@ -312,6 +339,36 @@ namespace phylanx { namespace ir
     {
         increment_move_assignment_count();
         data_ = std::move(val);
+        return *this;
+    }
+
+    template <typename T>
+    node_data<T>& node_data<T>::operator=(std::vector<T> const& values)
+    {
+        data_ = storage1d_type(values.size());
+        std::size_t const nx = values.size();
+        for (std::size_t i = 0; i != nx; ++i)
+        {
+            util::get<1>(data_)[i] = values[i];
+        }
+        return *this;
+    }
+
+    template <typename T>
+    node_data<T>& node_data<T>::operator=(
+        std::vector<std::vector<T>> const& values)
+    {
+        data_ = storage2d_type{values.size(), values[0].size()};
+        std::size_t const nx = values.size();
+        for (std::size_t i = 0; i != nx; ++i)
+        {
+            std::vector<T> const& row = values[i];
+            std::size_t const ny = row.size();
+            for (std::size_t j = 0; j != ny; ++j)
+            {
+                util::get<2>(data_)(i, j) = row[j];
+            }
+        }
         return *this;
     }
 
@@ -981,6 +1038,60 @@ namespace phylanx { namespace ir
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::is_ref()",
+            "node_data object holds unsupported data type");
+    }
+
+    // conversion helpers for Python bindings
+    template <typename T>
+    std::vector<T> node_data<T>::as_vector() const
+    {
+        switch(data_.index())
+        {
+        case 1: HPX_FALLTHROUGH;
+        case 3:
+            {
+                auto v = vector();
+                return std::vector<T>(v.begin(), v.end());
+            }
+
+        case 0: HPX_FALLTHROUGH;
+        case 2: HPX_FALLTHROUGH;
+        case 4: HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::as_vector()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    std::vector<std::vector<T>> node_data<T>::as_matrix() const
+    {
+        switch(data_.index())
+        {
+        case 2: HPX_FALLTHROUGH;
+        case 4:
+            {
+                auto m = matrix();
+                std::vector<std::vector<T>> result(m.rows());
+                for (std::size_t i = 0; i != m.rows(); ++i)
+                {
+                    result[i].assign(m.begin(i), m.end(i));
+                }
+                return result;
+            }
+
+        case 0: HPX_FALLTHROUGH;
+        case 1: HPX_FALLTHROUGH;
+        case 3: HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::as_matrix()",
             "node_data object holds unsupported data type");
     }
 

@@ -24,8 +24,14 @@
 #include <utility>
 #include <vector>
 
-// See http://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
-PYBIND11_MAKE_OPAQUE(phylanx::ir::node_data<bool>);
+// Pybind11 V2.3 changed the interface for the description strings
+#if defined(PYBIND11_DESCR)
+#define PHYLANX_PYBIND_DESCR PYBIND11_DESCR
+#define PHYLANX_PYBIND_DESCR_NAME name()
+#else
+#define PHYLANX_PYBIND_DESCR constexpr auto
+#define PHYLANX_PYBIND_DESCR_NAME name
+#endif
 
 // older versions of pybind11 don't support variant-like types
 namespace pybind11 { namespace detail
@@ -50,14 +56,14 @@ namespace pybind11 { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     // Expose phylanx::util::recursive_wrapper
     template <typename T>
-    constexpr auto get_name()
+    PHYLANX_PYBIND_DESCR get_name()
     {
-        return make_caster<T>::name;
+        return make_caster<T>::PHYLANX_PYBIND_DESCR_NAME;
     }
 
     // specialize get_name for vector<primitive_argument_type> to avoid infinite recursion
     template <>
-    constexpr auto
+    PHYLANX_PYBIND_DESCR
     get_name<std::vector<phylanx::execution_tree::primitive_argument_type>>()
     {
 #if defined(_DEBUG)
@@ -68,7 +74,7 @@ namespace pybind11 { namespace detail
     }
 
     template <>
-    constexpr auto
+    PHYLANX_PYBIND_DESCR
     get_name<phylanx::execution_tree::primitive_argument_type>()
     {
 #if defined(_DEBUG)
@@ -80,15 +86,15 @@ namespace pybind11 { namespace detail
 
 
     ///////////////////////////////////////////////////////////////////////////
-    template <>
-    class type_caster<phylanx::ir::node_data<double>>
+    template <typename T>
+    class type_caster<phylanx::ir::node_data<T>>
     {
         bool load0d(handle src, bool convert)
         {
-            auto caster = make_caster<double>();
+            auto caster = make_caster<T>();
             if (caster.load(src, convert))
             {
-                value = cast_op<double>(caster);
+                value = cast_op<T>(caster);
                 return true;
             }
             return false;
@@ -96,10 +102,10 @@ namespace pybind11 { namespace detail
 
         bool load1d(handle src, bool convert)
         {
-            auto caster = make_caster<std::vector<double>>();
+            auto caster = make_caster<std::vector<T>>();
             if (caster.load(src, convert))
             {
-                value = cast_op<std::vector<double>>(caster);
+                value = cast_op<std::vector<T>>(caster);
                 return true;
             }
             return false;
@@ -107,10 +113,10 @@ namespace pybind11 { namespace detail
 
         bool load2d(handle src, bool convert)
         {
-            auto caster = make_caster<std::vector<std::vector<double>>>();
+            auto caster = make_caster<std::vector<std::vector<T>>>();
             if (caster.load(src, convert))
             {
-                value = cast_op<std::vector<std::vector<double>>>(caster);
+                value = cast_op<std::vector<std::vector<T>>>(caster);
                 return true;
             }
             return false;
@@ -130,17 +136,17 @@ namespace pybind11 { namespace detail
             switch (src.index())
             {
             case 0:                     // T
-                return make_caster<double>::cast(
+                return make_caster<T>::cast(
                     std::forward<NodeData>(src).scalar(), policy, parent);
 
             case 1: HPX_FALLTHROUGH;    // blaze::DynamicVector<T>
             case 3:                     // blaze::CustomVector<T>
-                return make_caster<std::vector<double>>::cast(
+                return make_caster<std::vector<T>>::cast(
                     std::forward<NodeData>(src).as_vector(), policy, parent);
 
             case 2: HPX_FALLTHROUGH;    // blaze::DynamicMatrix<T>
             case 4:                     // blaze::CustomMatrix<T>
-                return make_caster<std::vector<std::vector<double>>>::cast(
+                return make_caster<std::vector<std::vector<T>>>::cast(
                     std::forward<NodeData>(src).as_matrix(), policy, parent);
 
             default:
@@ -149,8 +155,8 @@ namespace pybind11 { namespace detail
             return handle();
         }
 
-        using Type = phylanx::ir::node_data<double>;
-        PYBIND11_TYPE_CASTER(Type, _("node_data[") + get_name<double>() + _("]"));
+        using Type = phylanx::ir::node_data<T>;
+        PYBIND11_TYPE_CASTER(Type, _("node_data[") + get_name<T>() + _("]"));
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -170,7 +176,7 @@ namespace pybind11 { namespace detail
             return subcaster.load(src, convert);
         }
 
-        static constexpr auto name =
+        static PHYLANX_PYBIND_DESCR PHYLANX_PYBIND_DESCR_NAME =
             _("recursive_wrapper[") + get_name<T>() + _("]");
 
         static handle cast(phylanx::util::recursive_wrapper<T> const& src,
@@ -277,7 +283,7 @@ namespace pybind11 { namespace detail
             phylanx::execution_tree::argument_value_type>;
 
     public:
-        static constexpr auto name =
+        static PHYLANX_PYBIND_DESCR PHYLANX_PYBIND_DESCR_NAME =
             get_name<phylanx::execution_tree::primitive_argument_type>();
 
         bool load(handle src, bool convert)
@@ -762,86 +768,6 @@ PYBIND11_MODULE(_phylanx, m)
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::function_call>,
         "traverse the given AST expression and call the provided function "
         "on each part of it");
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Expose node_data
-    auto ir = m.def_submodule("ir");
-
-    pybind11::class_<phylanx::ir::node_data<bool>>(
-        ir, "node_data_bool", "A node_data<bool> object")
-        .def(pybind11::init<bool>())
-        .def("__len__",
-            [](phylanx::ir::node_data<bool> const& nd)
-            {
-                return nd.size();
-            })
-        .def("__getitem__",
-            [](phylanx::ir::node_data<bool> const& nd, std::size_t i)
-            {
-                if (i >= nd.size()) throw pybind11::index_error();
-                return nd[i];
-            })
-        .def("__getitem__",
-            [](phylanx::ir::node_data<bool> const& nd,
-                std::tuple<int, int> const& pt)
-            {
-                return nd.at(std::get<0>(pt), std::get<1>(pt));
-            })
-        .def("__setitem__",
-            [](phylanx::ir::node_data<bool>& nd, std::size_t i, bool value)
-            {
-                if (i >= nd.size()) throw pybind11::index_error();
-                nd[i] = value;
-            })
-        .def("__setitem__",
-            [](phylanx::ir::node_data<bool>& nd,
-                std::tuple<int, int> const& pt, bool value)
-            {
-                nd.at(std::get<0>(pt), std::get<1>(pt)) = value;
-            })
-        .def("__str__",
-            &phylanx::bindings::as_string<phylanx::ir::node_data<bool>>)
-        .def("__repr__",
-            &phylanx::bindings::as_string<phylanx::ir::node_data<bool>>)
-        .def("__iter__",
-            [](phylanx::ir::node_data<bool> const& nd)
-            {
-                return pybind11::make_iterator(nd.begin(), nd.end());
-            })
-        .def("__eq__",
-            [](phylanx::ir::node_data<bool> const& nd,
-                std::vector<bool> const& v)
-            {
-                if (nd.num_dimensions() != 1)
-                    return false;
-                if (nd.dimension(0) != v.size())
-                    return false;
-                return std::equal(nd.begin(), nd.end(), v.begin(), v.end());
-            },"Compare against arrays")
-        .def("__eq__",
-            [](phylanx::ir::node_data<bool> const& nd,
-                std::vector<std::vector<bool>> const& v)
-            {
-                if (nd.num_dimensions() != 2)
-                    return false;
-                if (nd.dimension(0) != v.size())
-                    return false;
-                if (nd.dimension(1) != v[0].size())
-                    return false;
-                for (std::size_t i = 0; i != v.size(); i++)
-                {
-                    auto& vi = v[i];
-                    for (int j = 0; j < vi.size(); j++)
-                    {
-                        if (nd.at(i, j) != vi[j])
-                            return false;
-                    }
-                }
-                return true;
-            },"Compare against arrays")
-        .def(pybind11::pickle(
-            &phylanx::bindings::pickle_helper<phylanx::ir::node_data<bool>>,
-            &phylanx::bindings::unpickle_helper<phylanx::ir::node_data<bool>>));
 
 
     ///////////////////////////////////////////////////////////////////////////
