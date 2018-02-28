@@ -60,6 +60,7 @@ def dump_info(a, depth=0):
         for n in ast.iter_child_nodes(a):
             dump_info(n, depth + 1)
 
+
 # based on http://bit.ly/2C58jl8
 def dump_ast(node, level=0):
     if isinstance(node, ast.AST):
@@ -86,6 +87,7 @@ def dump_ast(node, level=0):
             lines[-1] += ']'
         return '\n'.join(lines)
     return repr(node)
+
 
 def printout(m):
     ndim = m.num_dimensions()

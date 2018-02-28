@@ -415,6 +415,7 @@ def convert_to_phylanx_type(v):
     else:
         return v
 
+
 # Create the decorator
 def Phylanx(target="PhySL"):
     class PhyTransformer(object):
@@ -439,7 +440,8 @@ def Phylanx(target="PhySL"):
 
             if target == "PhySL":
                 self.__physl_src__ = '%s(%s)\n' % (
-                    full_node_name(tree.body[0], 'block'), transormation.recompile(tree))
+                    full_node_name(tree.body[0], 'block'),
+                    transormation.recompile(tree))
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
