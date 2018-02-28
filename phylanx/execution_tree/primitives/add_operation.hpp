@@ -55,7 +55,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type add2d1d(args_type&& args) const;
         primitive_argument_type add2d2d(args_type && args) const;
         primitive_argument_type add2d(args_type && args) const;
-
     };
 
     PHYLANX_EXPORT primitive create_add_operation(

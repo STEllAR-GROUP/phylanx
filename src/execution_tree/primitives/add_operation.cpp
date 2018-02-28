@@ -86,7 +86,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-
     primitive_argument_type add_operation::add0d0d(args_type && args) const
     {
         arg_type& lhs = args[0];
@@ -487,7 +486,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name_, codename_));
     }
 
-    // implement '+' for all possible combinations of lhs and rhs
+    // Implement '+' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> add_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {

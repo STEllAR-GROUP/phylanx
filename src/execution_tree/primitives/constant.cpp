@@ -45,7 +45,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             return result;
         }
-
     }
 
     ///////////////////////////////////////////////////////////////////////////

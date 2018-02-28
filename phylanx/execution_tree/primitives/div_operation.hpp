@@ -59,8 +59,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type div2d1d(operands_type&& ops) const;
         primitive_argument_type div2d2d(operands_type && ops) const;
         primitive_argument_type div2d(operands_type && ops) const;
-
-
     };
 
     PHYLANX_EXPORT primitive create_div_operation(hpx::id_type const& locality,
