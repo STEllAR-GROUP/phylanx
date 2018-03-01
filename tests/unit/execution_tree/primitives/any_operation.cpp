@@ -16,6 +16,40 @@ void test_any_operation_0d_true()
 {
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(true, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_0d_false()
+{
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_0d_double_true()
+{
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(3.0));
 
     phylanx::execution_tree::primitive any =
@@ -29,7 +63,7 @@ void test_any_operation_0d_true()
     HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value(f));
 }
 
-void test_any_operation_0d_false()
+void test_any_operation_0d_double_false()
 {
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
@@ -47,6 +81,45 @@ void test_any_operation_0d_false()
 }
 
 void test_any_operation_1d()
+{
+    blaze::Rand<blaze::DynamicVector<int>> gen{};
+    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(
+        v.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_1d_false()
+{
+    blaze::DynamicVector<bool> v(1007UL, 0);
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_1d_double()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
     blaze::DynamicVector<double> v = gen.generate(1007UL, 0, 1);
@@ -67,7 +140,7 @@ void test_any_operation_1d()
         v.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value(f));
 }
 
-void test_any_operation_1d_false()
+void test_any_operation_1d_double_false()
 {
     blaze::DynamicVector<double> v(1007UL, 0.0);
 
@@ -87,7 +160,7 @@ void test_any_operation_1d_false()
 
 void test_any_operation_1d_numpy_false()
 {
-    blaze::DynamicVector<double> v{0.0, 0.0, 0.0};
+    blaze::DynamicVector<double> v{false, false, false};
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
@@ -105,6 +178,44 @@ void test_any_operation_1d_numpy_false()
 }
 
 void test_any_operation_1d_numpy_true()
+{
+    blaze::DynamicVector<double> v{true, false, false};
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_1d_double_numpy_false()
+{
+    blaze::DynamicVector<double> v{0.0, 0.0, 0.0};
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_1d_double_numpy_true()
 {
     blaze::DynamicVector<double> v{1.0, 0.0, 0.0};
 
@@ -126,6 +237,46 @@ void test_any_operation_1d_numpy_true()
 void test_any_operation_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
+    blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(
+        m.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_2d_false()
+{
+    blaze::DynamicMatrix<bool> m(101UL, 101UL, 0);
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_2d_double()
+{
+    blaze::Rand<blaze::DynamicMatrix<int>> gen{};
     blaze::DynamicMatrix<double> m = gen.generate(101UL, 101UL, 0, 1);
 
     phylanx::execution_tree::primitive arg1 =
@@ -144,7 +295,7 @@ void test_any_operation_2d()
         m.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value(f));
 }
 
-void test_any_operation_2d_false()
+void test_any_operation_2d_double_false()
 {
     blaze::DynamicMatrix<double> m(101UL, 101UL, 0.0);
 
@@ -165,6 +316,45 @@ void test_any_operation_2d_false()
 
 void test_any_operation_2d_numpy_false()
 {
+    blaze::DynamicMatrix<double> m{
+        {false, false, false}, {false, false, false}};
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_2d_numpy_true()
+{
+    blaze::DynamicMatrix<double> m{{true, false, true}, {false, true, true}};
+
+    phylanx::execution_tree::primitive arg1 =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+
+    phylanx::execution_tree::primitive any =
+        phylanx::execution_tree::primitives::create_any_operation(
+            hpx::find_here(),
+            std::vector<phylanx::execution_tree::primitive_argument_type>{
+                std::move(arg1)});
+
+    phylanx::execution_tree::primitive_argument_type f = any.eval().get();
+
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value(f));
+}
+
+void test_any_operation_2d_double_numpy_false()
+{
     blaze::DynamicMatrix<double> m{{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 
     phylanx::execution_tree::primitive arg1 =
@@ -182,7 +372,7 @@ void test_any_operation_2d_numpy_false()
     HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value(f));
 }
 
-void test_any_operation_2d_numpy_true()
+void test_any_operation_2d_double_numpy_true()
 {
     blaze::DynamicMatrix<double> m{{1.0, 0.0, 3.0}, {0.0, 1.0, 6.0}};
 
@@ -205,16 +395,26 @@ int main(int argc, char* argv[])
 {
     test_any_operation_0d_true();
     test_any_operation_0d_false();
+    test_any_operation_0d_double_true();
+    test_any_operation_0d_double_false();
 
     test_any_operation_1d();
     test_any_operation_1d_false();
+    test_any_operation_1d_double();
+    test_any_operation_1d_double_false();
     test_any_operation_1d_numpy_false();
     test_any_operation_1d_numpy_true();
+    test_any_operation_1d_double_numpy_false();
+    test_any_operation_1d_double_numpy_true();
 
     test_any_operation_2d();
     test_any_operation_2d_false();
+    test_any_operation_2d_double();
+    test_any_operation_2d_double_false();
     test_any_operation_2d_numpy_false();
     test_any_operation_2d_numpy_true();
+    test_any_operation_2d_double_numpy_false();
+    test_any_operation_2d_double_numpy_true();
 
     return hpx::util::report_errors();
 }

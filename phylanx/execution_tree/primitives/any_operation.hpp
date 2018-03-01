@@ -22,8 +22,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<any_operation>
     {
     protected:
-        using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
+        using arg_type = ir::node_data<bool>;
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& operands,
@@ -41,9 +40,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params) const override;
 
     private:
-        primitive_argument_type any0d(args_type&& args) const;
-        primitive_argument_type any1d(args_type&& args) const;
-        primitive_argument_type any2d(args_type&& args) const;
+        primitive_argument_type any0d(arg_type&& args) const;
+        primitive_argument_type any1d(arg_type&& args) const;
+        primitive_argument_type any2d(arg_type&& args) const;
+        primitive_argument_type any_nd(arg_type&& args) const;
+
     };
 
     PHYLANX_EXPORT primitive create_any_operation(hpx::id_type const& locality,

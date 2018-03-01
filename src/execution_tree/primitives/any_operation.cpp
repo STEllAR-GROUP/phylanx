@@ -45,24 +45,45 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
 
-    primitive_argument_type any_operation::any0d(args_type && args) const
+    primitive_argument_type any_operation::any0d(arg_type && arg) const
     {
         return primitive_argument_type{
-            ir::node_data<bool>{args[0].scalar() != 0}};
+            ir::node_data<bool>{arg.scalar() != 0}};
     }
 
-    primitive_argument_type any_operation::any1d(args_type && args) const
+    primitive_argument_type any_operation::any1d(arg_type && arg) const
     {
-        auto value = args[0].vector();
+        auto value = arg.vector();
         return primitive_argument_type{
             ir::node_data<bool>{value.nonZeros() != 0}};
     }
 
-    primitive_argument_type any_operation::any2d(args_type && args) const
+    primitive_argument_type any_operation::any2d(arg_type && arg) const
     {
-        auto value = args[0].matrix();
+        auto value = arg.matrix();
         return primitive_argument_type{
             ir::node_data<bool>{value.nonZeros() != 0}};
+    }
+
+    primitive_argument_type any_operation::any_nd(arg_type&& arg) const
+    {
+        auto dims = arg.num_dimensions();
+        switch (dims)
+        {
+        case 0:
+            return any0d(std::move(arg));
+        case 1:
+            return any1d(std::move(arg));
+        case 2:
+            return any2d(std::move(arg));
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "all_operation::eval",
+                execution_tree::generate_error_message(
+                    "operand has unsupported "
+                    "number of dimensions",
+                    name_, codename_));
+        }
     }
 
     hpx::future<primitive_argument_type> any_operation::eval(
@@ -91,29 +112,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
-            hpx::util::unwrapping(
-                [this_](args_type&& args) -> primitive_argument_type {
-                    auto dims = args[0].num_dimensions();
-                    switch (dims)
-                    {
-                    case 0:
-                        return this_->any0d(std::move(args));
-                    case 1:
-                        return this_->any1d(std::move(args));
-                    case 2:
-                        return this_->any2d(std::move(args));
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "any_operation::eval",
-                            execution_tree::generate_error_message(
-                                "operand has unsupported "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
-                    }
-                }),
-            detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_));
+        hpx::future<primitive_argument_type> f =
+            value_operand(operands[0], args, name_, codename_);
+
+        return f.then(hpx::util::unwrapping(
+            [this_](primitive_argument_type&& op) -> primitive_argument_type {
+                switch (op.index())
+                {
+                case 1:
+                    return this_->any_nd(util::get<1>(std::move(op)));
+                case 4:
+                    return this_->any_nd(
+                        ir::node_data<bool>{util::get<4>(std::move(op))});
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "any_operation::eval",
+                        execution_tree::generate_error_message(
+                            "operand has unsupported "
+                            "type",
+                            this_->name_, this_->codename_));
+                }
+            }));
     }
 
     ///////////////////////////////////////////////////////////////////////////
