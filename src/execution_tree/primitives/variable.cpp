@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands_.empty())
         {
-            operands_[0] = extract_copy_value(operands_[0]);
+            operands_[0] = extract_copy_value(std::move(operands_[0]));
         }
     }
 

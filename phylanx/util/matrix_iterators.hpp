@@ -22,7 +22,7 @@ namespace phylanx { namespace util
     {
     public:
         explicit matrix_row_iterator(T& t, const std::size_t index = 0)
-            : data_(t)
+            : data_(&t)
             , index_(index)
         {
         }
@@ -34,29 +34,34 @@ namespace phylanx { namespace util
         {
             ++index_;
         }
+
         void decrement()
         {
             --index_;
         }
+
         void advance(std::size_t n)
         {
             index_ += n;
         }
+
         bool equal(matrix_row_iterator const& other) const
         {
             return index_ == other.index_;
         }
+
         blaze::Row<T> dereference() const
         {
-            return blaze::row(data_, index_);
+            return blaze::row(*data_, index_);
         }
+
         std::ptrdiff_t distance_to(matrix_row_iterator const& other) const
         {
             return other.index_ - index_;
         }
 
     private:
-        T & data_;
+        T* data_;
         std::size_t index_;
     };
 
@@ -70,7 +75,7 @@ namespace phylanx { namespace util
     {
     public:
         explicit matrix_column_iterator(T& t, const std::size_t index = 0)
-            : data_(t)
+            : data_(&t)
             , index_(index)
         {
         }
@@ -82,29 +87,34 @@ namespace phylanx { namespace util
         {
             ++index_;
         }
+
         void decrement()
         {
             --index_;
         }
+
         void advance(std::size_t n)
         {
             index_ += n;
         }
+
         bool equal(matrix_column_iterator const& other) const
         {
             return index_ == other.index_;
         }
+
         blaze::Column<T> dereference() const
         {
-            return blaze::column(data_, index_);
+            return blaze::column(*data_, index_);
         }
+
         std::ptrdiff_t distance_to(matrix_column_iterator const& other) const
         {
             return other.index_ - index_;
         }
 
     private:
-        T & data_;
+        T* data_;
         std::size_t index_;
     };
 }}

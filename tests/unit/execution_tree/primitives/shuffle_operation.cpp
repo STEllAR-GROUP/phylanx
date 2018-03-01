@@ -29,7 +29,7 @@ void test_shuffle_operation_1d()
 
     phylanx::ir::node_data<double> v2_node =
         phylanx::execution_tree::extract_numeric_value(lhs.eval_direct());
-    op_type v2 = v2_node.vector();
+    auto v2 = v2_node.vector();
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_shuffle_operation(
@@ -41,20 +41,21 @@ void test_shuffle_operation_1d()
     auto actual = phylanx::execution_tree::extract_numeric_value(f.get());
     auto actual_val = actual.vector();
 
-    // Is it the same l-value?
+    // Does it have the same value as the p?
     HPX_TEST_EQ(actual_val, v2);
 
     // Has it changed?
-    //HPX_TEST_NEQ(actual_val, v1);
+    HPX_TEST_NEQ(actual_val, v1);
 
     // Is it the same size
-    //HPX_TEST_EQ(actual_val.size(), v1.size());
+    HPX_TEST_EQ(actual_val.size(), v1.size());
 
-    //// Does it contain all the elements?
-    //for (double const& i : v1)
-    //{
-    //    //HPX_TEST_NEQ(std::find(actual_val.begin(), actual_val.end(), i), -1);
-    //}
+    // Does it contain all the elements?
+    for (double const& i : v1)
+    {
+        HPX_TEST(std::find(actual_val.begin(), actual_val.end(), i) !=
+            actual_val.end());
+    }
 }
 
 void test_shuffle_operation_2d()
@@ -64,11 +65,14 @@ void test_shuffle_operation_2d()
 
     blaze::Rand<op_type> gen{};
     op_type m1 = gen.generate(20ul, 20ul);
-    op_type m2 = m1;
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
+
+    phylanx::ir::node_data<double> m2_node =
+        phylanx::execution_tree::extract_numeric_value(lhs.eval_direct());
+    auto m2 = m2_node.matrix(); // auto is CustomMatrix of with a lot of template args
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_shuffle_operation(
@@ -80,30 +84,30 @@ void test_shuffle_operation_2d()
     auto actual = phylanx::execution_tree::extract_numeric_value(f.get());
     auto actual_val = actual.matrix();
 
-    // Is it the same l-value?
-    //HPX_TEST_EQ(actual_val, m1);
+    // Does it have the same value as the p?
+    HPX_TEST_EQ(actual_val, m2);
 
     // Has it changed?
-    HPX_TEST_NEQ(actual_val, m2);
+    HPX_TEST_NEQ(actual_val, m1);
 
     // Is it the same size
     HPX_TEST_EQ(actual_val.rows(), m2.rows());
     HPX_TEST_EQ(actual_val.columns(), m2.columns());
 
     // Does it contain all the elements?
-    auto m2_end = matrix_row_iterator<op_type>(m2, m2.rows());
+    auto m2_end = matrix_row_iterator<decltype(m2)>(m2, m2.rows());
 
-    //// Does it contain all the elements?
-    //for (auto it = matrix_row_iterator<op_type>(m2); it != m2_end; ++it)
-    //{
-    //    /*HPX_TEST_NEQ(
-    //        std::find_if(
-    //            matrix_row_iterator<decltype(actual_val)>(actual_val),
-    //            matrix_row_iterator<decltype(actual_val)>(
-    //                actual_val, actual_val.rows()),
-    //            [&it](auto x) { return *x == *it; }),
-    //        -1);*/
-    //}
+    // Does it contain all the elements?
+    for (auto it = matrix_row_iterator<decltype(m2)>(m2); it != m2_end; ++it)
+    {
+        auto val = *it;
+        auto actual_val_begin = matrix_row_iterator<decltype(actual_val)>(
+            actual_val);
+        auto actual_val_end = matrix_row_iterator<decltype(actual_val)>(
+            actual_val, actual_val.rows());
+
+        HPX_TEST(std::find(actual_val_begin, actual_val_end, val) != actual_val_end);
+    }
 }
 
 int main(int argc, char* argv[])
