@@ -51,13 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type exponential_operation::exponential0d(operands_type&& ops) const
+    primitive_argument_type exponential_operation::exponential0d(
+        operands_type&& ops) const
     {
         ops[0] = double(std::exp(ops[0].scalar()));
         return primitive_argument_type{std::move(ops[0])};
     }
 
-    primitive_argument_type exponential_operation::exponential1d(operands_type&& ops) const
+    primitive_argument_type exponential_operation::exponential1d(
+        operands_type&& ops) const
     {
         using vector_type = blaze::DynamicVector<double>;
 
@@ -66,7 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<double>(std::move(result))};
     }
 
-    primitive_argument_type exponential_operation::exponentialxd(operands_type&& ops) const
+    primitive_argument_type exponential_operation::exponentialxd(
+        operands_type&& ops) const
     {
         using matrix_type = blaze::DynamicMatrix<double>;
 

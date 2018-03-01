@@ -67,7 +67,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type equal_all(
             operand_type&& lhs, operand_type&& rhs) const;
-
     };
 
     PHYLANX_EXPORT primitive create_equal(hpx::id_type const& locality,

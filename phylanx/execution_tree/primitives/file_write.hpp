@@ -20,7 +20,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class file_write
         : public primitive_component_base
-        , std::enable_shared_from_this<file_write>
+        , public std::enable_shared_from_this<file_write>
     {
     protected:
         hpx::future<primitive_argument_type> eval(

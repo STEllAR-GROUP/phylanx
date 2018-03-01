@@ -19,7 +19,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class file_write_csv
         : public primitive_component_base
-        , std::enable_shared_from_this<file_write_csv>
+        , public std::enable_shared_from_this<file_write_csv>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
