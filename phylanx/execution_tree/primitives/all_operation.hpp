@@ -40,11 +40,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params) const override;
 
     private:
-        primitive_argument_type all0d(arg_type&& args) const;
-        primitive_argument_type all1d(arg_type&& args) const;
-        primitive_argument_type all2d(arg_type&& args) const;
-        primitive_argument_type all_nd(arg_type && args) const;
+        template <typename T>
+        primitive_argument_type all0d(T&& arg) const;
 
+        template <typename T>
+        primitive_argument_type all1d(T&& arg) const;
+
+        template <typename T>
+        primitive_argument_type all2d(T&& arg) const;
+
+        template <typename T>
+        primitive_argument_type all_nd(T&& arg) const;
     };
 
     PHYLANX_EXPORT primitive create_all_operation(hpx::id_type const& locality,

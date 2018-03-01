@@ -44,46 +44,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
-    primitive_argument_type all_operation::all0d(arg_type && arg) const
+    template <typename T>
+    primitive_argument_type all_operation::all0d(T&& arg) const
     {
-        return primitive_argument_type{
-            ir::node_data<bool>{arg.scalar()}};
+        return primitive_argument_type{ir::node_data<bool>{arg.scalar()}};
     }
 
-    primitive_argument_type all_operation::all1d(arg_type && arg) const
+    template <typename T>
+    primitive_argument_type all_operation::all1d(T&& arg) const
     {
         auto value = arg.vector();
-
         return primitive_argument_type{
             ir::node_data<bool>{value.nonZeros() == value.size()}};
     }
 
-    primitive_argument_type all_operation::all2d(arg_type && arg) const
+    template <typename T>
+    primitive_argument_type all_operation::all2d(T&& arg) const
     {
         auto value = arg.matrix();
         return primitive_argument_type{ir::node_data<bool>{
             value.nonZeros() == value.rows() * value.columns()}};
     }
 
-    primitive_argument_type all_operation::all_nd(arg_type && arg) const
+    template <typename T>
+    primitive_argument_type all_operation::all_nd(T&& arg) const
     {
         auto dims = arg.num_dimensions();
         switch (dims)
         {
-            case 0:
-                return all0d(std::move(arg));
-            case 1:
-                return all1d(std::move(arg));
-            case 2:
-                return all2d(std::move(arg));
-            default:
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "all_operation::eval",
-                                    execution_tree::generate_error_message(
-                                            "operand has unsupported "
-                                                    "number of dimensions",
-                                            name_, codename_));
+        case 0:
+            return all0d(std::move(arg));
+        case 1:
+            return all1d(std::move(arg));
+        case 2:
+            return all2d(std::move(arg));
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "all_operation::eval",
+                execution_tree::generate_error_message(
+                    "operand has unsupported "
+                    "number of dimensions",
+                    name_, codename_));
         }
     }
 
@@ -113,7 +114,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        hpx::future<primitive_argument_type> f =value_operand(operands[0],args, name_, codename_);
+        hpx::future<primitive_argument_type> f =
+            value_operand(operands[0], args, name_, codename_);
 
         return f.then(hpx::util::unwrapping(
             [this_](primitive_argument_type&& op) -> primitive_argument_type {
@@ -122,8 +124,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return this_->all_nd(util::get<1>(std::move(op)));
                 case 4:
-                    return this_->all_nd(
-                        ir::node_data<bool>{util::get<4>(std::move(op))});
+                    return this_->all_nd(util::get<4>(std::move(op)));
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "all_operation::eval",
