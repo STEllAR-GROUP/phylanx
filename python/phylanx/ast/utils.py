@@ -6,6 +6,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
+import re
 
 
 def dump_info(a, depth=0):
@@ -111,7 +112,11 @@ def printout(m):
         print("ndim=", ndim)
 
 
-def full_node_name(a, name):
+def print_physl(physl_src):
+    print(re.sub(r'\$\d+', '', physl_src))
+
+
+def full_node_name(a, name=''):
     return '%s$%d$%d' % (name, a.lineno, a.col_offset)
 
 
