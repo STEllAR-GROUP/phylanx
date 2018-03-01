@@ -16,7 +16,8 @@
 namespace phylanx { namespace util
 {
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
+    namespace detail
+    {
         template <typename Ast>
         std::vector<char> serialize(Ast const& input)
         {
@@ -34,9 +35,19 @@ namespace phylanx { namespace util
         }
     }
 
+    std::vector<char> serialize(ir::node_data<bool> const& ast)
+    {
+        return detail::serialize(ast);
+    }
+
     std::vector<char> serialize(ir::node_data<double> const& ast)
     {
         return detail::serialize(ast);
+    }
+
+    std::vector<char> serialize(ast::nil ast)
+    {
+        return std::vector<char>{};
     }
 
     std::vector<char> serialize(ast::optoken ast)
@@ -103,6 +114,16 @@ namespace phylanx { namespace util
             std::vector<char> const& input, ir::node_data<double>& ast)
         {
             detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(
+            std::vector<char> const& input, ir::node_data<bool>& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(std::vector<char> const& input, ast::nil& ast)
+        {
         }
 
         void unserialize(std::vector<char> const& input, ast::optoken& ast)

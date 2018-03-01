@@ -11,6 +11,8 @@
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
 #include <phylanx/execution_tree/primitives/apply.hpp>
+#include <phylanx/execution_tree/primitives/argmax.hpp>
+#include <phylanx/execution_tree/primitives/argmin.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
 #include <phylanx/execution_tree/primitives/column_set.hpp>
 #include <phylanx/execution_tree/primitives/column_slicing.hpp>
@@ -46,6 +48,8 @@
 #include <phylanx/execution_tree/primitives/less_equal.hpp>
 #include <phylanx/execution_tree/primitives/linearmatrix.hpp>
 #include <phylanx/execution_tree/primitives/linspace.hpp>
+#include <phylanx/execution_tree/primitives/make_list.hpp>
+#include <phylanx/execution_tree/primitives/make_vector.hpp>
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>

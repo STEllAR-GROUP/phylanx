@@ -9,16 +9,26 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class block_operation : public primitive_component_base
+    class block_operation
+        : public primitive_component_base
+        , public std::enable_shared_from_this<block_operation>
     {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> args) const;
+
     public:
         static match_pattern_type const match_data;
 
@@ -29,6 +39,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    private:
+        void next(std::size_t i,
+            std::vector<primitive_argument_type>&& args,
+            hpx::promise<primitive_argument_type>&& result) const;
     };
 
     PHYLANX_EXPORT primitive create_block_operation(

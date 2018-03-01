@@ -9,8 +9,10 @@ set(tests
     cout_prints_twice_155
     define_loses_values_177
     expression_topology_213
+    list_of_variables_244
     negative_integral_value_131
     out_of_scope_variable_232
+    vector_of_variables_244
    )
 
 set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)

@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree
         std::string const&, std::string const&);
 
     using primitive_factory_function_type =
-        std::unique_ptr<primitives::primitive_component_base> (*)(
+        std::shared_ptr<primitives::primitive_component_base> (*)(
             std::vector<primitive_argument_type>&&, std::string const&,
             std::string const&);
 
@@ -102,12 +102,12 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Primitive>
-    std::unique_ptr<primitives::primitive_component_base>
+    std::shared_ptr<primitives::primitive_component_base>
     create_primitive(std::vector<primitive_argument_type>&& args,
         std::string const& name, std::string const& codename)
     {
-        return std::unique_ptr<primitives::primitive_component_base>{
-            new Primitive(std::move(args), name, codename)};
+        return std::static_pointer_cast<primitives::primitive_component_base>(
+            std::make_shared<Primitive>(std::move(args), name, codename));
     }
 }}
 

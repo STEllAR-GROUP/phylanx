@@ -82,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     /////////////////////////////////////////////////////////////////////////
-    std::unique_ptr<primitive_component_base>
+    std::shared_ptr<primitive_component_base>
     primitive_component::create_primitive(std::string const& type,
         std::vector<primitive_argument_type>&& args, std::string const& name,
         std::string const& codename)

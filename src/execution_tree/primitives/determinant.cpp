@@ -49,90 +49,71 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
+
+    hpx::future<primitive_argument_type> determinant::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
     {
-        struct determinant : std::enable_shared_from_this<determinant>
+        if (operands.size() != 1)
         {
-            determinant(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "determinant::eval",
+                execution_tree::generate_error_message(
+                    "the determinant primitive requires"
+                        "exactly one operand",
+                    name_, codename_));
+        }
+
+        if (!valid(operands[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "determinant::eval",
+                execution_tree::generate_error_message(
+                    "the determinant primitive requires that the "
+                        "argument given by the operands array is "
+                        "valid",
+                    name_, codename_));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](operands_type&& ops) -> primitive_argument_type
             {
-            }
-
-        protected:
-            std::string name_;
-            std::string codename_;
-
-        private:
-            using operand_type = ir::node_data<double>;
-            using operands_type = std::vector<operand_type>;
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
-            {
-                if (operands.size() != 1)
+                std::size_t dims = ops[0].num_dimensions();
+                switch (dims)
                 {
+                case 0:
+                    return this_->determinant0d(std::move(ops));
+
+                case 2:
+                    return this_->determinant2d(std::move(ops));
+
+                case 1: HPX_FALLTHROUGH;
+                default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "determinant::eval",
-                        generate_error_message(
-                            "the determinant primitive requires"
-                                "exactly one operand",
-                            name_, codename_));
+                        execution_tree::generate_error_message(
+                            "left hand side operand has unsupported "
+                                "number of dimensions",
+                            this_->name_, this_->codename_));
                 }
+            }),
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
+                name_, codename_));
+    }
 
-                if (!valid(operands[0]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "determinant::eval",
-                        generate_error_message(
-                            "the determinant primitive requires that the "
-                                "argument given by the operands array is "
-                                "valid",
-                            name_, codename_));
-                }
+    primitive_argument_type determinant::determinant0d(
+        operands_type&& ops) const
+    {
+        return primitive_argument_type{std::move(ops[0])};       // no-op
+    }
 
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_argument_type
-                    {
-                        std::size_t dims = ops[0].num_dimensions();
-                        switch (dims)
-                        {
-                        case 0:
-                            return this_->determinant0d(std::move(ops));
-
-                        case 2:
-                            return this_->determinant2d(std::move(ops));
-
-                        case 1: HPX_FALLTHROUGH;
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "determinant::eval",
-                                generate_error_message(
-                                    "left hand side operand has unsupported "
-                                        "number of dimensions",
-                                    this_->name_, this_->codename_));
-                        }
-                    }),
-                    detail::map_operands(
-                        operands, functional::numeric_operand{}, args,
-                        name_, codename_));
-            }
-
-        protected:
-            primitive_argument_type determinant0d(operands_type && ops) const
-            {
-                return primitive_argument_type{std::move(ops[0])};       // no-op
-            }
-
-            primitive_argument_type determinant2d(operands_type && ops) const
-            {
-                double d = blaze::det(ops[0].matrix());
-                return primitive_argument_type{operand_type(d)};
-            }
-        };
+    primitive_argument_type determinant::determinant2d(
+        operands_type&& ops) const
+    {
+        double d = blaze::det(ops[0].matrix());
+        return primitive_argument_type{operand_type(d)};
     }
 
     hpx::future<primitive_argument_type> determinant::eval(
@@ -140,10 +121,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::determinant>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::determinant>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}

@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
@@ -1164,27 +1165,36 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
-            return {primitive_argument_type{util::get<0>(val)}};
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<0>(val)}};
 
         case 1:    // phylanx::ir::node_data<bool>
-            return {primitive_argument_type{util::get<1>(val)}};
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<1>(val)}};
 
         case 2:     // std::uint64_t
-            return {primitive_argument_type{util::get<2>(val)}};
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<2>(val)}};
 
         case 3:     // string
-            return {primitive_argument_type{util::get<3>(val)}};
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<3>(val)}};
 
         case 4:     // phylanx::ir::node_data<double>
-            return {primitive_argument_type{util::get<4>(val)}};
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<4>(val)}};
+
+        case 5:     // primitive
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<5>(val)}};
 
         case 6:     // std::vector<ast::expression>
-            return {primitive_argument_type{util::get<6>(val)}};
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<6>(val)}};
 
         case 7:     // std::vector<primitive_argument_type>
             return util::get<7>(val).get();
 
-        case 5: HPX_FALLTHROUGH;    // primitive
         default:
             break;
         }
@@ -1224,6 +1234,10 @@ namespace phylanx { namespace execution_tree
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<4>(std::move(val))}};
 
+        case 5:     // primitive
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<5>(std::move(val))}};
+
         case 6:     // std::vector<ast::expression>
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<6>(std::move(val))}};
@@ -1231,7 +1245,6 @@ namespace phylanx { namespace execution_tree
         case 7:     // std::vector<primitive_argument_type>
             return util::get<7>(std::move(val)).get();
 
-        case 5: HPX_FALLTHROUGH;    // primitive
         default:
             break;
         }
@@ -1332,7 +1345,7 @@ namespace phylanx { namespace execution_tree
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return p->eval(args).then(
+            return p->eval(std::move(args)).then(
                 [&](hpx::future<primitive_argument_type> && f)
                 {
                     return extract_value(f.get(), name, codename);
@@ -1742,6 +1755,65 @@ namespace phylanx { namespace execution_tree
         return hpx::make_ready_future(extract_list_value(val, name, codename));
     }
 
+    hpx::future<std::vector<primitive_argument_type>> list_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            return p->eval(std::move(args)).then(
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(extract_list_value(val, name, codename));
+    }
+
+    hpx::future<std::vector<primitive_argument_type>> list_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string && codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            return p->eval(args).then(
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_list_value(std::move(val), name, codename));
+    }
+
+    hpx::future<std::vector<primitive_argument_type>> list_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string && codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            return p->eval(std::move(args)).then(
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_list_value(std::move(val), name, codename));
+    }
+
     std::vector<primitive_argument_type> list_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
@@ -1917,8 +1989,8 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
-            os << "<nil>";
-            return os;  // no output
+            os << util::get<0>(val);
+            return os;
 
         case 1:    // phylanx::ir::node_data<bool>
             os << util::get<1>(val);
@@ -1929,7 +2001,14 @@ namespace phylanx { namespace execution_tree
             return os;
 
         case 3:     // std::string
-            os << util::get<3>(val);
+            if (util::is_repr(os))
+            {
+                os << "\"" << util::get<3>(val) << "\"";
+            }
+            else
+            {
+                os << util::get<3>(val);
+            }
             return os;
 
         case 4:     // phylanx::ir::node_data<double>
@@ -1937,7 +2016,7 @@ namespace phylanx { namespace execution_tree
             return os;
 
         case 5:
-            os << value_operand_sync(val, {});
+            os << util::get<5>(val);
             return os;
 
         case 6:     // std::vector<ast::expression>
@@ -1948,9 +2027,19 @@ namespace phylanx { namespace execution_tree
             return os;
 
         case 7:     // std::vector<primitive_argument_type>
-            for (auto const& elem : util::get<7>(val).get())
             {
-                os << elem;
+                os << "'(";
+                bool first = true;
+                for (auto const& elem : util::get<7>(val).get())
+                {
+                    if (!first)
+                    {
+                        os << ", ";
+                    }
+                    first = false;
+                    os << elem;
+                }
+                os << ")";
             }
             return os;
 

@@ -25,6 +25,8 @@ namespace phylanx { namespace execution_tree
             primitives::debug_output::match_data,
             primitives::define_variable::match_data_define,
             primitives::hstack_operation::match_data,
+            primitives::make_list::match_data,
+            primitives::make_vector::match_data,
             primitives::parallel_block_operation::match_data,
             primitives::row_set_operation::match_data,
             primitives::row_slicing_operation::match_data,
@@ -53,6 +55,8 @@ namespace phylanx { namespace execution_tree
 #endif
 
             // unary functions
+            primitives::argmin::match_data,
+            primitives::argmax::match_data,
             primitives::constant::match_data,
             primitives::determinant::match_data,
             primitives::enable_tracing::match_data,

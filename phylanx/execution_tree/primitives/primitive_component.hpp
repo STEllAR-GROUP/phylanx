@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public hpx::components::component_base<primitive_component>
     {
     private:
-        PHYLANX_EXPORT static std::unique_ptr<primitive_component_base>
+        PHYLANX_EXPORT static std::shared_ptr<primitive_component_base>
         create_primitive(std::string const& type,
             std::vector<primitive_argument_type>&& params,
             std::string const& name, std::string const& codename);
@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
     private:
-        std::unique_ptr<primitive_component_base> primitive_;
+        std::shared_ptr<primitive_component_base> primitive_;
 
         // Performance counter data
         mutable std::int64_t eval_count_;

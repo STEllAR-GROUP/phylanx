@@ -17,9 +17,9 @@ block(
     define(fib,n,
     if(n<2,n,
         fib(n-1)+fib(n-2))),
-    fib)""", et.var(10))
+    fib)""", 10)
 
-assert fib10[0] == 55.0
+assert fib10 == 55.0
 
 sum10 = et.eval("""
 block(
@@ -35,7 +35,7 @@ block(
             i)),
     sum10)""")
 
-assert sum10[0] == 55.0
+assert sum10 == 55.0
 
 
 @Phylanx("PhySL")
@@ -52,7 +52,7 @@ def fib(n):
 #     '(fib((n$5$19 - 1)) + fib((n$5$28 - 2))))' + \
 #     '), fib$1$0)\n'
 
-assert fib(10)[0] == 55.0
+assert fib(10) == 55.0
 
 
 @Phylanx("PhySL")
@@ -75,7 +75,7 @@ two = np.reshape(np.arange(30), (5, 6))
 r1 = test_slice(two)
 r2 = two[1:3, 1:4]
 
-assert r1 == r2
+assert (r1 == r2).all()
 
 
 @Phylanx("PhySL")
@@ -84,7 +84,7 @@ def test_slice1(a):
 
 
 v1 = np.arange(10)
-assert test_slice1(v1) == v1[2:4]
+assert (test_slice1(v1) == v1[2:4]).all()
 
 
 @Phylanx("PhySL")
@@ -92,7 +92,7 @@ def foo():
     return 3
 
 
-foo()
+assert foo() == 3
 
 
 @Phylanx("PhySL")
@@ -105,7 +105,7 @@ def foo(n):
         return 5
 
 
-assert foo(1)[0] == 2 and foo(3)[0] == 4 and foo(5)[0] == 5
+assert foo(1) == 2 and foo(3) == 4 and foo(5) == 5
 
 
 @Phylanx("PhySL")
@@ -118,4 +118,4 @@ def foo():
     return sumn
 
 
-assert foo()[0] == 45
+assert foo() == 45
