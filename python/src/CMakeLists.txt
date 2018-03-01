@@ -10,13 +10,22 @@ if(MSVC)
 endif()
 
 add_phylanx_library_sources(phylanx_py
-  GLOB GLOBS "${PROJECT_SOURCE_DIR}/python/src/*.cpp")
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/python/src/*.cpp")
 
 add_phylanx_source_group(
   NAME phylanx_py
   CLASS "Source Files"
-  ROOT "${PROJECT_SOURCE_DIR}"
-  TARGETS ${phylanx_SOURCES})
+  ROOT "${PROJECT_SOURCE_DIR}/python/src"
+  TARGETS ${phylanx_py_SOURCES})
+
+add_hpx_library_headers(phylanx_py
+  GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/python/src/*.hpp")
+
+add_phylanx_source_group(
+  NAME phylanx_py
+  CLASS "Header Files"
+  ROOT "${PROJECT_SOURCE_DIR}/python/src"
+  TARGETS ${phylanx_py_HEADERS})
 
 # create pseudo project holding all Phylanx Python files
 add_phylanx_library_sources(phylanx_python
@@ -42,16 +51,23 @@ add_phylanx_source_group(
 
 ###############################################################################
 if(APPLE) # OSX requires this to be a shared library, not a module (default)
-    pybind11_add_module(phylanx_py SHARED ${phylanx_py_SOURCES} ${phylanx_py_HEADERS})
+    pybind11_add_module(phylanx_py SHARED
+        ${phylanx_py_SOURCES}
+        ${phylanx_py_HEADERS})
 else(APPLE)
-    pybind11_add_module(phylanx_py ${phylanx_py_SOURCES} ${phylanx_py_HEADERS} ${phylanx_python_SOURCES})
+    pybind11_add_module(phylanx_py
+        ${phylanx_py_SOURCES}
+        ${phylanx_py_HEADERS}
+        ${phylanx_python_SOURCES})
 endif(APPLE)
 
-
-include_directories(${pybind11_INCLUDE_DIR}})
+include_directories(${pybind11_INCLUDE_DIR})
 
 target_link_libraries(phylanx_py PRIVATE phylanx_component ${pybind11_LIBRARIES})
 target_compile_definitions(phylanx_py PRIVATE NOMINMAX)
+target_include_directories(phylanx_py PRIVATE
+    ${pybind11_INCLUDE_DIR}
+    "${PROJECT_SOURCE_DIR}/python/src")
 
 set_target_properties(
   phylanx_py PROPERTIES
