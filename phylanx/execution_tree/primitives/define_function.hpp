@@ -1,7 +1,7 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_PRIMITIVES_DEF_FUNCTION_NOV_01_2017_1242PM)
 #define PHYLANX_PRIMITIVES_DEF_FUNCTION_NOV_01_2017_1242PM
@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -23,7 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //
     // This is a helper primitive needed for proper binding of the expression
     // value to a variable.
-    class define_function : public primitive_component_base
+    class define_function
+        : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
