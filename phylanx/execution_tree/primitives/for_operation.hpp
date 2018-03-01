@@ -12,12 +12,15 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class for_operation : public primitive_component_base
+    class for_operation
+        : public primitive_component_base
+        , std::enable_shared_from_this<for_operation>
     {
     public:
         static match_pattern_type const match_data;
@@ -29,6 +32,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    private:
+        struct iteration_for;
     };
 
     PHYLANX_EXPORT primitive create_for_operation(hpx::id_type const& locality,
