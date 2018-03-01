@@ -48,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     void file_write::write_to_file(
-        primitive_argument_type const& val, std::string const filename) const
+        primitive_argument_type const& val, std::string const& filename) const
     {
         std::ofstream outfile(filename.c_str(),
             std::ios::binary | std::ios::out | std::ios::trunc);
@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return literal_operand(operands[1], args, name_, codename_)
             .then(hpx::util::unwrapping(
-                [this_, filename](primitive_argument_type && val)
+                [this_, &filename](primitive_argument_type && val)
                 ->  primitive_argument_type
         {
             if (!valid(val))

@@ -39,7 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        void write_to_file(primitive_argument_type const& val, std::string const filename) const;
+        void write_to_file(primitive_argument_type const& val,
+            std::string const& filename) const;
 
         std::string filename_;
         primitive_argument_type operand_;
