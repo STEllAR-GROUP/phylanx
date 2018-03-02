@@ -47,34 +47,71 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-
-    primitive_argument_type dot_operation::dot0d(operands_type && ops) const
+    primitive_argument_type dot_operation::dot0d0d(
+        operand_type& lhs, operand_type& rhs) const
     {
-        if (ops[1].num_dimensions() != 0UL)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot0d",
-                execution_tree::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
-        }
-
-        ops[0].scalar() *= ops[1].scalar();
-        return primitive_argument_type{
-            ir::node_data<double>{std::move(ops[0])}};
+        lhs.scalar() *= rhs.scalar();
+        return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
     }
 
-    // lhs_num_dims == 1
-    // Case 1: Inner product of two vectors
-    // Case 2: Inner product of a vector and an array of vectors
-    primitive_argument_type dot_operation::dot1d(operands_type && ops) const
+    primitive_argument_type dot_operation::dot0d1d(
+        operand_type& lhs, operand_type& rhs) const
+    {
+        rhs = rhs.vector() * lhs.scalar();
+        return primitive_argument_type{std::move(rhs)};
+    }
+
+    primitive_argument_type dot_operation::dot0d2d(
+        operand_type& lhs, operand_type& rhs) const
+    {
+        rhs = rhs.matrix() * lhs.scalar();
+        return primitive_argument_type{std::move(rhs)};
+    }
+
+    primitive_argument_type dot_operation::dot0d(operands_type && ops) const
     {
         operand_type& lhs = ops[0];
         operand_type& rhs = ops[1];
 
         switch (rhs.num_dimensions())
         {
+        case 0:
+            // If is_scalar(lhs) && is_scalar(rhs)
+            return dot0d0d(lhs, rhs);
+
+        case 1:
+            // If is_scalar(lhs) && is_vector(rhs)
+            return dot0d1d(lhs, rhs);
+
+        case 2:
+            // If is_scalar(lhs) && is_matrix(rhs)
+            return dot0d2d(lhs, rhs);
+
+        default:
+            // lhs_order == 1 && rhs_order != 2
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "dot_operation::dot1d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of "
+                    "dimensions",
+                    name_, codename_));
+        }
+    }
+
+    // lhs_num_dims == 1
+    // Case 1: Inner product of two vectors
+    // Case 2: Inner product of a vector and an array of vectors
+    primitive_argument_type dot_operation::dot1d(operands_type&& ops) const
+    {
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
+
+        switch (rhs.num_dimensions())
+        {
+        case 0:
+            // If is_vector(lhs) && is_scalar(rhs)
+            return dot1d0d(lhs, rhs);
+
         case 1:
             // If is_vector(lhs) && is_vector(rhs)
             return dot1d1d(lhs, rhs);
@@ -83,16 +120,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // If is_vector(lhs) && is_matrix(rhs)
             return dot1d2d(lhs, rhs);
 
-        case 0: HPX_FALLTHROUGH;
+            HPX_FALLTHROUGH;
         default:
             // lhs_order == 1 && rhs_order != 2
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d",
                 execution_tree::generate_error_message(
                     "the operands have incompatible number of "
-                        "dimensions",
+                    "dimensions",
                     name_, codename_));
         }
+    }
+
+    primitive_argument_type dot_operation::dot1d0d(
+        operand_type& lhs, operand_type& rhs) const
+    {
+        lhs = lhs.vector() * rhs.scalar();
+        return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
     }
 
     primitive_argument_type dot_operation::dot1d1d(
@@ -135,28 +179,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // lhs_num_dims == 2
     // Multiply a matrix with a vector
     // Regular matrix multiplication
-    primitive_argument_type dot_operation::dot2d(operands_type && ops) const
+    primitive_argument_type dot_operation::dot2d(operands_type&& ops) const
     {
         operand_type& lhs = ops[0];
         operand_type& rhs = ops[1];
 
         switch (rhs.num_dimensions())
         {
+        case 0:
+            // If is_matrix(lhs) && is_scalar(rhs)
+            return dot2d0d(lhs, rhs);
+
         case 1:
+            // If is_matrix(lhs) && is_vector(rhs)
             return dot2d1d(lhs, rhs);
 
         case 2:
+            // If is_matrix(lhs) && is_matrix(rhs)
             return dot2d2d(lhs, rhs);
 
-        case 0: HPX_FALLTHROUGH;
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d",
                 execution_tree::generate_error_message(
                     "the operands have incompatible number of "
-                        "dimensions",
+                    "dimensions",
                     name_, codename_));
         }
+    }
+
+    primitive_argument_type dot_operation::dot2d0d(
+        operand_type& lhs, operand_type& rhs) const
+    {
+        lhs = lhs.matrix() * rhs.scalar();
+        return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
     }
 
     primitive_argument_type dot_operation::dot2d1d(
