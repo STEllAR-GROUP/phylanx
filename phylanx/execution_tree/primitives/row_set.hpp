@@ -13,6 +13,8 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,13 +32,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /// If used inside PhySL:
     ///
     ///      set_row (input, col_start, col_stop, steps, value )
-    /// 
+    ///
     ///          input         : Vector or a Matrix
     ///          row_start     : Starting index of the set
     ///          row_stop      : Stopping index of the set
     ///          steps         : Go from row_start to row_stop in steps
     ///          value         : The value to set
-    /// 
+    ///
     ///  Note: Indices and steps can have negative values and negative values
     ///  indicate direction, similar to python.
     ///

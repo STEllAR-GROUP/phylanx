@@ -48,140 +48,116 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
+    primitive_argument_type unary_not_operation::unary_not_all(operand_type&& ops) const
     {
-        struct unary_not : std::enable_shared_from_this<unary_not>
+        std::size_t dims = ops.num_dimensions();
+        switch (dims)
         {
-            unary_not(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
-            {
-            }
+        case 0:
+            return primitive_argument_type(
+                ir::node_data<bool>{ops.scalar() == false});
 
-        protected:
-            std::string name_;
-            std::string codename_;
+        case 1:
+            // TODO: SIMD functionality should be added, blaze implementation
+            // is not currently available
+            return primitive_argument_type(
+                ir::node_data<bool>{blaze::map(
+                    ops.vector(), [](bool x) { return x == false; })});
 
-        protected:
-            using operand_type = ir::node_data<bool>;
-            using operands_type = std::vector<primitive_argument_type>;
+        case 2:
+            // TODO: SIMD functionality should be added, blaze implementation
+            // is not currently available
+            return primitive_argument_type(
+                ir::node_data<bool>{blaze::map(
+                    ops.matrix(), [](bool x) { return x == false; })});
 
-        public:
-            primitive_argument_type unary_not_all(operand_type&& ops) const
-            {
-                std::size_t dims = ops.num_dimensions();
-                switch (dims)
-                {
-                case 0:
-                    return primitive_argument_type(
-                        ir::node_data<bool>{ops.scalar() == false});
-
-                case 1:
-                    // TODO: SIMD functionality should be added, blaze implementation
-                    // is not currently available
-                    return primitive_argument_type(
-                        ir::node_data<bool>{blaze::map(
-                            ops.vector(), [](bool x) { return x == false; })});
-
-                case 2:
-                    // TODO: SIMD functionality should be added, blaze implementation
-                    // is not currently available
-                    return primitive_argument_type(
-                        ir::node_data<bool>{blaze::map(
-                            ops.matrix(), [](bool x) { return x == false; })});
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "unary_not_operation::eval",
-                        generate_error_message(
-                            "operand has unsupported number of dimensions",
-                            name_, codename_));
-                }
-            }
-
-        protected:
-            struct visit_unary_not
-            {
-                template <typename T>
-                primitive_argument_type operator()(T&& ops) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "unary_not::eval",
-                        generate_error_message(
-                            "operand has unsupported type",
-                            unary_not_.name_, unary_not_.codename_));
-                }
-
-                primitive_argument_type operator()(
-                    ir::node_data<double>&& ops) const
-                {
-                    return unary_not_.unary_not_all(
-                        ir::node_data<bool>{std::move(ops)});
-                }
-
-                primitive_argument_type operator()(
-                    ir::node_data<bool>&& ops) const
-                {
-                    return unary_not_.unary_not_all(std::move(ops));
-                }
-
-                unary_not const& unary_not_;
-            };
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args) const
-            {
-                //TODO: support for operands.size()>1
-                if (operands.size() != 1)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "unary_not_operation::unary_not_operation",
-                        generate_error_message(
-                            "the unary_not_operation primitive requires "
-                                "exactly one operand",
-                            name_, codename_));
-                }
-
-                if (!valid(operands[0]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "unary_not_operation::unary_not_operation",
-                        generate_error_message(
-                            "the unary_not_operation primitive requires "
-                                "that the argument given by the operands "
-                                "array is valid",
-                            name_, codename_));
-                }
-
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping(
-                        [this_](
-                            operands_type&& ops) -> primitive_argument_type {
-                            return primitive_argument_type(
-                                util::visit(visit_unary_not{*this_},
-                                    std::move(ops[0].variant())));
-
-                        }),
-                    detail::map_operands(
-                        operands, functional::literal_operand{}, args,
-                        name_, codename_));
-            }
-        };
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "unary_not_operation::eval",
+                execution_tree::generate_error_message(
+                    "operand has unsupported number of dimensions",
+                    name_, codename_));
+        }
     }
 
-    // implement unary '!' for all possible combinations of lhs and rhs
+    struct unary_not_operation::visit_unary_not
+    {
+        template <typename T>
+        primitive_argument_type operator()(T&& ops) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "unary_not::eval",
+                execution_tree::generate_error_message(
+                    "operand has unsupported type",
+                    that_.name_, that_.codename_));
+        }
+
+        primitive_argument_type operator()(
+            ir::node_data<double>&& ops) const
+        {
+            return that_.unary_not_all(
+                ir::node_data<bool>{std::move(ops)});
+        }
+
+        primitive_argument_type operator()(
+            ir::node_data<bool>&& ops) const
+        {
+            return that_.unary_not_all(std::move(ops));
+        }
+
+        unary_not_operation const& that_;
+    };
+
+    hpx::future<primitive_argument_type> unary_not_operation::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        //TODO: support for operands.size()>1
+        if (operands.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "unary_not_operation::unary_not_operation",
+                execution_tree::generate_error_message(
+                    "the unary_not_operation primitive requires "
+                        "exactly one operand",
+                    name_, codename_));
+        }
+
+        if (!valid(operands[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "unary_not_operation::unary_not_operation",
+                execution_tree::generate_error_message(
+                    "the unary_not_operation primitive requires "
+                        "that the argument given by the operands "
+                        "array is valid",
+                    name_, codename_));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(
+            hpx::util::unwrapping(
+                [this_](
+                    operands_type&& ops) -> primitive_argument_type {
+                    return primitive_argument_type(
+                        util::visit(visit_unary_not{*this_},
+                            std::move(ops[0].variant())));
+
+                }),
+            detail::map_operands(
+                operands, functional::literal_operand{}, args,
+                name_, codename_));
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Implement unary '!' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> unary_not_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::unary_not>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::unary_not>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}
