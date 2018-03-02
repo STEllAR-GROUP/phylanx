@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto x = args[0].matrix();
         auto x_begin = util::matrix_row_iterator<decltype(x)>(x);
         auto x_end = util::matrix_row_iterator<decltype(x)>(x, x.rows());
-        std::shuffle(x_begin, x_end, std::mt19937{ std::random_device{}() });
+        std::shuffle(x_begin, x_end, std::mt19937{std::random_device{}()});
 
         return primitive_argument_type(std::move(x));
     }

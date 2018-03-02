@@ -1,17 +1,45 @@
-//  Copyright (c) 2018 Parsa Amini
-//  Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_MATRIX_ITERATORS)
 #define PHYLANX_MATRIX_ITERATORS
 
 #include <cstddef>
+#include <utility>
+
 #include <blaze/Math.h>
+
+namespace blaze
+{
+    // BADBAD: This overload of swap is necessary to work around the problems
+    //         caused by matrix_row_iterator not being a real random access
+    //         iterator. Dereferencing matrix_row_iterator does not yield a
+    //         true reference but only a temporary blaze::Row holding true
+    //         references.
+    //
+    // A real fix for this problem is proposed in PR0022R0
+    // (http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0022r0.html)
+    //
+    template <typename T>
+    HPX_FORCEINLINE
+        void swap(Row<T>&& x, Row<T>&& y)
+    {
+        for (auto a = x.begin(), b = y.begin(); a != x.end() && b != y.end();
+             ++a, ++b)
+        {
+            using std::iter_swap;
+
+            iter_swap(a, b);
+        }
+    }
+}
 
 namespace phylanx { namespace util
 {
+
     template <typename T>
     class matrix_row_iterator
         : public hpx::util::iterator_facade<
