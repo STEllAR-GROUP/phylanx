@@ -17,8 +17,14 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class file_write_csv : public primitive_component_base
+    class file_write_csv
+        : public primitive_component_base
+        , public std::enable_shared_from_this<file_write_csv>
     {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
     public:
         static match_pattern_type const match_data;
 
@@ -29,6 +35,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+    private:
+        void write_to_file_csv(ir::node_data<double> const& val,
+            std::string const& filename) const;
     };
 
     PHYLANX_EXPORT primitive create_file_write_csv(hpx::id_type const& locality,

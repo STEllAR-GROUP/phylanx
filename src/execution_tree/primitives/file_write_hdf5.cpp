@@ -52,125 +52,103 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     }
 
-    namespace detail {
-        struct file_write_hdf5 : std::enable_shared_from_this<file_write_hdf5>
+    void file_write_hdf5::write_to_file_hdf5(ir::node_data<double> const& val,
+        std::string const& filename, std::string const& dataset_name) const
+    {
+        HighFive::File outfile(filename,
+            HighFive::File::ReadWrite | HighFive::File::Create |
+                HighFive::File::Truncate);
+
+        switch (val.num_dimensions())
         {
-            file_write_hdf5(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
+        case 0:
             {
+                auto scalar = val.scalar();
+                HighFive::DataSet dataSet =
+                    outfile.createDataSet<double>(
+                        dataset_name, HighFive::DataSpace::From(scalar));
+                dataSet.write(scalar);
             }
+            break;
 
-        protected:
-            std::string name_;
-            std::string codename_;
-
-        protected:
-            void write_to_file_hdf5(ir::node_data<double> const& val)
+        case 1:
             {
-                HighFive::File outfile(filename_,
-                    HighFive::File::ReadWrite | HighFive::File::Create |
-                        HighFive::File::Truncate);
-
-                switch (val.num_dimensions())
-                {
-                case 0:
-                    {
-                        auto scalar = val.scalar();
-                        HighFive::DataSet dataSet =
-                            outfile.createDataSet<double>(
-                                datasetName_, HighFive::DataSpace::From(scalar));
-                        dataSet.write(scalar);
-                    }
-                    break;
-
-                case 1:
-                    {
-                        auto vector = val.vector();
-                        std::vector<std::size_t> dims(1);
-                        dims[0] = vector.size();
-                        HighFive::DataSet dataSet =
-                            outfile.createDataSet<double>(
-                                datasetName_, HighFive::DataSpace(dims));
-                        dataSet.write(vector);
-                    }
-                    break;
-
-                case 2:
-                    {
-                        auto matrix = val.matrix();
-                        std::vector<std::size_t> dims(2);
-                        dims[0] = matrix.rows();
-                        dims[1] = matrix.columns();
-                        HighFive::DataSet dataSet =
-                            outfile.createDataSet<double>(
-                                datasetName_, HighFive::DataSpace(dims));
-                        dataSet.write(matrix);
-                    }
-                    break;
-                }
+                auto vector = val.vector();
+                std::vector<std::size_t> dims(1);
+                dims[0] = vector.size();
+                HighFive::DataSet dataSet =
+                    outfile.createDataSet<double>(
+                        dataset_name, HighFive::DataSpace(dims));
+                dataSet.write(vector);
             }
+            break;
 
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
+        case 2:
             {
-                if (operands.size() != 3)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_write::"
-                            "file_write_hdf5",
-                        generate_error_message(
-                            "the file_write primitive requires exactly "
-                                "three operands",
-                            name_, codename_));
-                }
-
-                if (!valid(operands[0]) || !valid(operands[1]) ||
-                    !valid(operands[2]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_write::"
-                            "file_write_hdf5",
-                        generate_error_message(
-                            "the file_write primitive requires that the "
-                                "given operands are valid",
-                            name_, codename_));
-                }
-
-                filename_ =
-                    string_operand_sync(operands[0], args, name_, codename_);
-                datasetName_ =
-                    string_operand_sync(operands[1], args, name_, codename_);
-
-                auto this_ = this->shared_from_this();
-                return numeric_operand(operands[2], args, name_, codename_)
-                    .then(hpx::util::unwrapping(
-                        [this_](ir::node_data<double>&& val)
-                        -> primitive_argument_type
-                        {
-                            if (!valid(val))
-                            {
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "file_write_hdf5::eval",
-                                    generate_error_message(
-                                        "the file_write_hdf5 primitive requires "
-                                            "that the argument value given by "
-                                            "the operand is non-empty",
-                                        this_->name_, this_->codename_));
-                            }
-
-                            this_->write_to_file_hdf5(val);
-                            return primitive_argument_type(std::move(val));
-                        }));
+                auto matrix = val.matrix();
+                std::vector<std::size_t> dims(2);
+                dims[0] = matrix.rows();
+                dims[1] = matrix.columns();
+                HighFive::DataSet dataSet =
+                    outfile.createDataSet<double>(
+                        dataset_name, HighFive::DataSpace(dims));
+                dataSet.write(matrix);
             }
+            break;
+        }
+    }
 
-        private:
-            std::string filename_;
-            std::string datasetName_;
-            primitive_argument_type operand_;
-        };
+    hpx::future<primitive_argument_type> file_write_hdf5::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands.size() != 3)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_write::file_write_hdf5",
+                execution_tree::generate_error_message(
+                    "the file_write primitive requires exactly three operands",
+                    name_, codename_));
+        }
+
+        if (!valid(operands[0]) || !valid(operands[1]) ||
+            !valid(operands[2]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_write::file_write_hdf5",
+                execution_tree::generate_error_message(
+                    "the file_write primitive requires that the given operands "
+                    "are valid",
+                    name_, codename_));
+        }
+
+        std::string filename =
+            string_operand_sync(operands[0], args, name_, codename_);
+        std::string dataset_name =
+            string_operand_sync(operands[1], args, name_, codename_);
+
+        auto this_ = this->shared_from_this();
+        return numeric_operand(operands[2], args, name_, codename_)
+            .then(hpx::util::unwrapping(
+                [this_, filename = std::move(filename),
+                    dataset_name = std::move(dataset_name)](
+                    ir::node_data<double>&& val) -> primitive_argument_type
+                {
+                    if (!valid(val))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "file_write_hdf5::eval",
+                            execution_tree::generate_error_message(
+                                "the file_write_hdf5 primitive requires that "
+                                "the argument value given by the operand is "
+                                "non-empty",
+                                this_->name_, this_->codename_));
+                    }
+
+                    this_->write_to_file_hdf5(val, std::move(filename),
+                        std::move(dataset_name));
+                    return primitive_argument_type(std::move(val));
+                }));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -180,11 +158,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::file_write_hdf5>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::file_write_hdf5>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}
 
