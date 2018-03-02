@@ -47,121 +47,100 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     }
 
-    namespace detail
+    void file_write_csv::write_to_file_csv(
+        ir::node_data<double> const& val, std::string const& filename) const
     {
-        struct file_write_csv : std::enable_shared_from_this<file_write_csv>
+        std::ofstream outfile(
+            filename.c_str(), std::ios::out | std::ios::trunc);
+        if (!outfile.is_open())
         {
-            file_write_csv(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                    "file_write_csv::eval",
+                execution_tree::generate_error_message(
+                    "couldn't open file: " + filename,
+                    name_, codename_));
+        }
+
+        outfile << std::setprecision(
+            std::numeric_limits<long double>::digits10 + 1);
+        outfile << std::scientific;
+
+        switch (val.num_dimensions())
+        {
+        case 0:
+            outfile << val.scalar() << '\n';
+            break;
+
+        case 1:
             {
-            }
-
-        protected:
-            std::string name_;
-            std::string codename_;
-
-        protected:
-            void write_to_file_csv(ir::node_data<double> const& val)
-            {
-                std::ofstream outfile(
-                    filename_.c_str(), std::ios::out | std::ios::trunc);
-                if (!outfile.is_open())
+                auto v = val.vector();
+                for (std::size_t i = 0UL; i != v.size(); ++i)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "file_write_csv::eval",
-                        generate_error_message(
-                            "couldn't open file: " + filename_,
-                            name_, codename_));
-                }
-
-                outfile << std::setprecision(
-                    std::numeric_limits<long double>::digits10 + 1);
-                outfile << std::scientific;
-
-                switch (val.num_dimensions())
-                {
-                case 0:
-                    outfile << val.scalar() << '\n';
-                    break;
-
-                case 1:
+                    if (i != 0)
                     {
-                        auto v = val.vector();
-                        for (std::size_t i = 0UL; i != v.size(); ++i)
-                        {
-                            if (i != 0)
-                            {
-                                outfile << ',';
-                            }
-                            outfile << v[i];
-                        }
-                        outfile << '\n';
+                        outfile << ',';
                     }
-                    break;
-
-                case 2:
-                    {
-                        auto matrix = val.matrix();
-                        for (std::size_t i = 0UL; i != matrix.rows(); ++i)
-                        {
-                            outfile << matrix(i, 0);
-                            for (std::size_t j = 1UL; j != matrix.columns(); ++j)
-                            {
-                                outfile << ',' << matrix(i, j);
-                            }
-                            outfile << '\n';
-                        }
-                    }
-                    break;
+                    outfile << v[i];
                 }
+                outfile << '\n';
             }
+            break;
 
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
+        case 2:
             {
-                if (operands.size() != 2)
+                auto matrix = val.matrix();
+                for (std::size_t i = 0UL; i != matrix.rows(); ++i)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_write::"
-                            "file_write_csv",
-                        generate_error_message(
-                            "the file_write primitive requires exactly two "
-                                "operands",
-                            name_, codename_));
+                    outfile << matrix(i, 0);
+                    for (std::size_t j = 1UL; j != matrix.columns(); ++j)
+                    {
+                        outfile << ',' << matrix(i, j);
+                    }
+                    outfile << '\n';
                 }
-
-                if (!valid(operands[0]) || !valid(operands[1]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_write::"
-                            "file_write_csv",
-                        generate_error_message("the file_write primitive "
-                            "requires that the given operands are valid",
-                            name_, codename_));
-                }
-
-                filename_ =
-                    string_operand_sync(operands[0], args, name_, codename_);
-
-                auto this_ = this->shared_from_this();
-                return numeric_operand(operands[1], args, name_, codename_)
-                    .then(hpx::util::unwrapping(
-                        [this_](ir::node_data<double> && val)
-                        ->  primitive_argument_type
-                        {
-                            this_->write_to_file_csv(val);
-                            return primitive_argument_type(std::move(val));
-                        }));
             }
+            break;
+        }
+    }
 
-        private:
-            std::string filename_;
-            primitive_argument_type operand_;
-        };
+    hpx::future<primitive_argument_type> file_write_csv::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_write::"
+                    "file_write_csv",
+                execution_tree::generate_error_message(
+                    "the file_write primitive requires exactly two "
+                        "operands",
+                    name_, codename_));
+        }
+
+        if (!valid(operands[0]) || !valid(operands[1]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::file_write::"
+                    "file_write_csv",
+                execution_tree::generate_error_message("the file_write primitive "
+                    "requires that the given operands are valid",
+                    name_, codename_));
+        }
+
+        std::string filename =
+            string_operand_sync(operands[0], args, name_, codename_);
+
+        auto this_ = this->shared_from_this();
+        return numeric_operand(operands[1], args, name_, codename_)
+            .then(hpx::util::unwrapping(
+                [this_, filename = std::move(filename)](
+                    ir::node_data<double> && val) ->  primitive_argument_type
+                {
+                    this_->write_to_file_csv(val, std::move(filename));
+                    return primitive_argument_type(std::move(val));
+                }));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -171,10 +150,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::file_write_csv>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::file_write_csv>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}

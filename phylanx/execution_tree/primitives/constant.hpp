@@ -49,7 +49,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             operand_type&& op, std::size_t dim) const;
         primitive_argument_type constant2d(operand_type&& op,
             operand_type::dimensions_type const& dim) const;
-
     };
 
     PHYLANX_EXPORT primitive create_constant(hpx::id_type const& locality,

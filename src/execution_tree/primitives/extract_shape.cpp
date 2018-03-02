@@ -1,7 +1,7 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/extract_shape.hpp>
@@ -46,113 +46,100 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    namespace detail
+    primitive_argument_type extract_shape::shape0d(args_type&& args) const
     {
-        struct shape : std::enable_shared_from_this<shape>
+        if (args.size() == 1)
         {
-            shape() = default;
+            std::vector<primitive_argument_type> result{};
+            return primitive_argument_type{std::move(result)};
+        }
 
-        protected:
-            using arg_type = ir::node_data<double>;
-            using args_type = std::vector<arg_type>;
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "extract_shape::eval",
+            "index out of range");
+    }
 
-            primitive_argument_type shape0d(args_type&& args) const
+    primitive_argument_type extract_shape::shape1d(args_type&& args) const
+    {
+        if (args.size() == 1)
+        {
+            std::vector<primitive_argument_type> result{
+                primitive_argument_type{std::int64_t(args[0].size())}};
+            return primitive_argument_type{std::move(result)};
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "extract_shape::eval",
+            "index out of range");
+    }
+
+    primitive_argument_type extract_shape::shape2d(args_type&& args) const
+    {
+        auto dims = args[0].dimensions();
+        if (args.size() == 1)
+        {
+            // return a list of numbers representing the
+            // dimensions of the first argument
+            std::vector<primitive_argument_type> result{
+                primitive_argument_type{std::int64_t(dims[0])},
+                primitive_argument_type{std::int64_t(dims[1])}};
+            return primitive_argument_type{std::move(result)};
+        }
+
+        return primitive_argument_type{
+            std::int64_t(dims[std::size_t(args[1][0])])};
+    }
+
+    hpx::future<primitive_argument_type> extract_shape::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename) const
+    {
+        if (operands.empty() || operands.size() > 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "extract_shape::eval",
+                execution_tree::generate_error_message(
+                    "the extract_shape primitive requires one or two "
+                        "operands",
+                    name, codename));
+        }
+
+        if (!valid(operands[0]) ||
+            (operands.size() == 2 && !valid(operands[1])))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "extract_shape::eval",
+                execution_tree::generate_error_message(
+                    "the extract_shape primitive requires that the "
+                        "arguments given by the operands array are "
+                        "valid",
+                    name, codename));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](args_type && args) -> primitive_argument_type
             {
-                if (args.size() == 1)
+                auto dims = args[0].num_dimensions();
+                switch (dims)
                 {
-                    std::vector<primitive_argument_type> result{};
-                    return primitive_argument_type{std::move(result)};
-                }
-
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "extract_shape::eval",
-                    "index out of range");
-            }
-
-            primitive_argument_type shape1d(args_type&& args) const
-            {
-                if (args.size() == 1)
-                {
-                    std::vector<primitive_argument_type> result{
-                        primitive_argument_type{std::int64_t(args[0].size())}};
-                    return primitive_argument_type{std::move(result)};
-                }
-
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "extract_shape::eval",
-                    "index out of range");
-            }
-
-            primitive_argument_type shape2d(args_type&& args) const
-            {
-                auto dims = args[0].dimensions();
-                if (args.size() == 1)
-                {
-                    // return a list of numbers representing the
-                    // dimensions of the first argument
-                    std::vector<primitive_argument_type> result{
-                        primitive_argument_type{std::int64_t(dims[0])},
-                        primitive_argument_type{std::int64_t(dims[1])}};
-                    return primitive_argument_type{std::move(result)};
-                }
-
-                return primitive_argument_type{
-                    std::int64_t(dims[std::size_t(args[1][0])])};
-            }
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args,
-                std::string const& name, std::string const& codename)
-            {
-                if (operands.empty() || operands.size() > 2)
-                {
+                case 0:
+                    return this_->shape0d(std::move(args));
+                case 1:
+                    return this_->shape1d(std::move(args));
+                case 2:
+                    return this_->shape2d(std::move(args));
+                default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
-                        generate_error_message(
-                            "the extract_shape primitive requires one or two "
-                                "operands",
-                            name, codename));
+                        "first operand has unsupported "
+                        "number of dimensions");
                 }
-
-                if (!valid(operands[0]) ||
-                    (operands.size() == 2 && !valid(operands[1])))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "extract_shape::eval",
-                        generate_error_message(
-                            "the extract_shape primitive requires that the "
-                                "arguments given by the operands array are "
-                                "valid",
-                            name, codename));
-                }
-
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_argument_type
-                    {
-                        auto dims = args[0].num_dimensions();
-                        switch (dims)
-                        {
-                        case 0:
-                            return this_->shape0d(std::move(args));
-                        case 1:
-                            return this_->shape1d(std::move(args));
-                        case 2:
-                            return this_->shape2d(std::move(args));
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "extract_shape::eval",
-                                "first operand has unsupported "
-                                "number of dimensions");
-                        }
-                    }),
-                    detail::map_operands(
-                        operands, functional::numeric_operand{}, args,
-                        name, codename));
-            }
-        };
+            }),
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -161,10 +148,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::shape>()->eval(
+            return eval(
                 args, noargs, name_, codename_);
         }
-        return std::make_shared<detail::shape>()->eval(
+        return eval(
             operands_, args, name_, codename_);
     }
 }}}
