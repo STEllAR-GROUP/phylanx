@@ -27,6 +27,17 @@
 //////////////////////////////////////////////////////////////////////////
 namespace blaze
 {
+    namespace _row_swap
+    {
+        using std::swap;
+
+        template <typename T>
+        void check_swap() noexcept(
+            noexcept(swap(std::declval<typename T::BaseType&>(),
+                std::declval<typename T::BaseType&>())))
+        {}
+    }
+
     // BADBAD: This overload of swap is necessary to work around the problems
     //         caused by matrix_row_iterator not being a real random access
     //         iterator. Dereferencing matrix_row_iterator does not yield a
@@ -36,14 +47,16 @@ namespace blaze
     // A real fix for this problem is proposed in PR0022R0
     // (http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0022r0.html)
     //
+    using std::iter_swap;
+
     template <typename T>
-    void swap(Row<T>&& x, Row<T>&& y)
+    void swap(Row<T>&& x, Row<T>&& y) noexcept(
+        noexcept(_row_swap::check_swap<T>()) &&
+        noexcept(*std::declval<typename T::Iterator>()))
     {
         for (auto a = x.begin(), b = y.begin(); a != x.end() && b != y.end();
             ++a, ++b)
         {
-            using std::iter_swap;
-
             iter_swap(a, b);
         }
     }
