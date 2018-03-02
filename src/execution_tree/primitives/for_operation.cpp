@@ -91,41 +91,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 });
         }
 
-        hpx::future<primitive_argument_type> reinit()
-        {
-            auto this_ = this->shared_from_this();
-            return value_operand(
-                that_->operands_[2], args_, that_->name_, that_->codename_)
-                .then([this_](hpx::future<primitive_argument_type>&& val)
-                          -> hpx::future<primitive_argument_type> {
-                    val.get();
-                    return this_->loop();   // call the loop again
-                });
-        }
-
-        hpx::future<primitive_argument_type> body(
-            hpx::future<primitive_argument_type>&& cond)
-        {
-            if (extract_boolean_value(cond.get(), that_->name_, that_->codename_))
-            {
-                // evaluate body of for statement
-                auto this_ = this->shared_from_this();
-                return value_operand(
-                    that_->operands_[3], args_, that_->name_, that_->codename_)
-                    .then([this_](hpx::future<primitive_argument_type>&&
-                                  result) mutable
-                        -> hpx::future<primitive_argument_type> {
-                        this_->result_ = result.get();
-                        return this_->reinit();    // do the reinit statement
-                    });
-            }
-
-            return hpx::make_ready_future(result_);
-        }
-
         hpx::future<primitive_argument_type> loop()
         {
-            // evaluate condition of for statement
+            // Evaluate condition of for statement
             auto this_ = this->shared_from_this();
             return value_operand(
                 that_->operands_[1], args_, that_->name_, that_->codename_)
@@ -136,13 +104,45 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 });
         }
 
+        hpx::future<primitive_argument_type> body(
+            hpx::future<primitive_argument_type>&& cond)
+        {
+            if (extract_boolean_value(cond.get(), that_->name_, that_->codename_))
+            {
+                // Evaluate body of for statement
+                auto this_ = this->shared_from_this();
+                return value_operand(
+                    that_->operands_[3], args_, that_->name_, that_->codename_)
+                    .then([this_](hpx::future<primitive_argument_type>&&
+                                  result) mutable
+                        -> hpx::future<primitive_argument_type> {
+                        this_->result_ = result.get();
+                        return this_->reinit();    // Do the reinit statement
+                    });
+            }
+
+            return hpx::make_ready_future(result_);
+        }
+
+        hpx::future<primitive_argument_type> reinit()
+        {
+            auto this_ = this->shared_from_this();
+            return value_operand(
+                that_->operands_[2], args_, that_->name_, that_->codename_)
+                .then([this_](hpx::future<primitive_argument_type>&& val)
+                          -> hpx::future<primitive_argument_type> {
+                    val.get();
+                    return this_->loop();   // Call the loop again
+                });
+        }
+
     private:
         std::vector<primitive_argument_type> args_;
         primitive_argument_type result_;
         std::shared_ptr<for_operation const> that_;
     };
 
-    // start iteration over given for statement
+    // Start iteration over given for statement
     hpx::future<primitive_argument_type> for_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {

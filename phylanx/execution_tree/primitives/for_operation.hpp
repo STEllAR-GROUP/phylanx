@@ -20,7 +20,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class for_operation
         : public primitive_component_base
-        , std::enable_shared_from_this<for_operation>
+        , public std::enable_shared_from_this<for_operation>
     {
     public:
         static match_pattern_type const match_data;
