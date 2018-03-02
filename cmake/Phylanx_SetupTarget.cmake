@@ -10,7 +10,7 @@ phylanx_set_cmake_policy(SET CMP0054 NEW)
 
 function(phylanx_setup_target target)
   # retrieve arguments
-  set(options EXPORT NOPHYLANX_INIT INSTALL NOLIBS PLUGIN NONAMEPREFIX)
+  set(options EXPORT NOHPX_INIT INSTALL NOLIBS PLUGIN NONAMEPREFIX)
   set(one_value_args TYPE FOLDER NAME SOVERSION VERSION PHYLANX_PREFIX)
   set(multi_value_args DEPENDENCIES COMPONENT_DEPENDENCIES COMPILE_FLAGS LINK_FLAGS INSTALL_FLAGS)
   cmake_parse_arguments(target "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
@@ -66,11 +66,6 @@ function(phylanx_setup_target target)
     set(name "${target}")
   endif()
 
-  set(nohpxinit FALSE)
-  if(target_NOPHYLANX_INIT)
-    set(nohpxinit TRUE)
-  endif()
-
   set(target_STATIC_LINKING OFF)
   if(PHYLANX_WITH_STATIC_LINKING)
     set(target_STATIC_LINKING ON)
@@ -112,7 +107,6 @@ function(phylanx_setup_target target)
   endif()
 
   if("${_type}" STREQUAL "LIBRARY")
-    set(nohpxinit FALSE)
     if(DEFINED PHYLANX_LIBRARY_VERSION AND DEFINED PHYLANX_SOVERSION)
       # set properties of generated shared library
       set_target_properties(${target}
@@ -129,7 +123,6 @@ function(phylanx_setup_target target)
       # allow creating static and shared libs without conflicts
       CLEAN_DIRECT_OUTPUT 1
       OUTPUT_NAME ${name})
-    set(nohpxinit TRUE)
 
     set_property(TARGET ${target} APPEND
                  PROPERTY COMPILE_DEFINITIONS

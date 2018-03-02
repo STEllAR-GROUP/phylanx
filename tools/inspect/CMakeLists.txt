@@ -7,6 +7,7 @@
 
 add_phylanx_executable(inspect
   AUTOGLOB
+  NOLIBS
   FOLDER "Tools/Inspect")
 
 set_property(TARGET inspect_exe APPEND
@@ -14,7 +15,7 @@ set_property(TARGET inspect_exe APPEND
   "PHYLANX_HAVE_GIT_COMMIT=\"${PHYLANX_WITH_GIT_COMMIT}\"")
 
 if((NOT MSVC) OR HPX_WITH_VCPKG)
-  target_link_libraries(inspect_exe ${Boost_LIBRARIES})
+  target_link_libraries(inspect_exe ${HPX_LIBRARIES})
 endif()
 
 # add dependencies to pseudo-target
