@@ -18,25 +18,25 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    /**
-    * @brief Row Slicing Primitive
-    *
-    * This primitive returns a slice of the original data.
-    * @param operands Vector of phylanx node data objects of
-    * size either three or four
-    *
-    * If used inside PhySL:
-    *
-    *      slice_row (input, row_start, row_stop, steps(optional) )
-    *
-    *          input : Scalar, Vector or a Matrix
-    *          row_start     : Starting index of the slice
-    *          row_stop      : Stopping index of the slice
-    *          steps          : Go from row_start to row_stop in steps
-    *  Note: Indices and steps can have negative values and negative values
-    *  indicate direction, similar to python.
-    *
-    */
+    ///
+    /// \brief Row Slicing Primitive
+    /// 
+    /// This primitive returns a slice of the original data.
+    /// \param operands Vector of phylanx node data objects of
+    /// size either three or four
+    /// 
+    /// If used inside PhySL:
+    /// 
+    ///      slice_row (input, row_start, row_stop, steps(optional) )
+    /// 
+    ///          input : Scalar, Vector or a Matrix
+    ///          row_start     : Starting index of the slice
+    ///          row_stop      : Stopping index of the slice
+    ///          steps          : Go from row_start to row_stop in steps
+    ///  Note: Indices and steps can have negative values and negative values
+    ///  indicate direction, similar to python.
+    /// 
+    /// 
     class row_slicing_operation
         : public primitive_component_base
         , public std::enable_shared_from_this<row_slicing_operation>
