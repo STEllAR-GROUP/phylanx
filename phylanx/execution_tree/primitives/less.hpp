@@ -9,16 +9,28 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class less : public primitive_component_base
+    class less
+        : public primitive_component_base
+        , public std::enable_shared_from_this<less>
     {
+    protected:
+        using operand_type = ir::node_data<double>;
+        using operands_type = std::vector<primitive_argument_type>;
+
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
+
     public:
         static match_pattern_type const match_data;
 
@@ -29,6 +41,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
+
+    private:
+        primitive_argument_type less0d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less0d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less1d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less1d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less1d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less2d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less2d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less2d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type less_all(
+            operand_type&& lhs, operand_type&& rhs) const;
+
+    private:
+        struct visit_less;
     };
 
     PHYLANX_EXPORT primitive create_less(hpx::id_type const& locality,
