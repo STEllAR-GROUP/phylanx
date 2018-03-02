@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using storage1d_type = typename arg_type::storage1d_type;
         using storage2d_type = typename arg_type::storage2d_type;
 
-        hpx::future<primitive_argument_type> slicing_operation::eval(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& operands,
             std::vector<primitive_argument_type> const& args) const;
 
