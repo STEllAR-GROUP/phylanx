@@ -44,6 +44,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
+    std::mt19937 shuffle_operation::rand_machine{std::random_device{}()};
+
     shuffle_operation::shuffle_operation(
             std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
@@ -54,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type shuffle_operation::shuffle_1d(args_type && args) const
     {
         auto x = args[0].vector();
-        std::shuffle(x.begin(), x.end(), std::mt19937{std::random_device{}()});
+        std::shuffle(x.begin(), x.end(), rand_machine);
 
         return primitive_argument_type(std::move(x));
     }
@@ -64,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto x = args[0].matrix();
         auto x_begin = util::matrix_row_iterator<decltype(x)>(x);
         auto x_end = util::matrix_row_iterator<decltype(x)>(x, x.rows());
-        std::shuffle(x_begin, x_end, std::mt19937{std::random_device{}()});
+        std::shuffle(x_begin, x_end, rand_machine);
 
         return primitive_argument_type(std::move(x));
     }

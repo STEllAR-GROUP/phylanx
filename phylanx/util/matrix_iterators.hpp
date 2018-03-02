@@ -7,6 +7,7 @@
 #if !defined(PHYLANX_MATRIX_ITERATORS)
 #define PHYLANX_MATRIX_ITERATORS
 
+#include <algorithm>
 #include <cstddef>
 #include <utility>
 
