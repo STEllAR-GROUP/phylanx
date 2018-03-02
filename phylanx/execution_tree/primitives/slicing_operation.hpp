@@ -9,16 +9,31 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class slicing_operation : public primitive_component_base
+    class slicing_operation
+        : public primitive_component_base
+        , public std::enable_shared_from_this<slicing_operation>
     {
+    protected:
+        using arg_type = ir::node_data<double>;
+        using args_type = std::vector<arg_type>;
+        using storage0d_type = typename arg_type::storage0d_type;
+        using storage1d_type = typename arg_type::storage1d_type;
+        using storage2d_type = typename arg_type::storage2d_type;
+
+        hpx::future<primitive_argument_type> slicing_operation::eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
+
     public:
         static match_pattern_type const match_data;
 
@@ -48,10 +63,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         *  Quirks: In case the input is a vector, row_start, row_stop and row_steps
         *  determine the result. col_start, col_stop and col_step are ignored internally.
         *
-        *  Limitations: both row_steps and col_steps need to be provieded or omitted.
+        *  Limitations: both row_steps and col_steps need to be provided or omitted.
         *  Functionality for specifying only row_steps or col_steps is not present.
         *
-        *  Note: Indices and steps can have negative vlaues and negative values
+        *  Note: Indices and steps can have negative values and negative values
         *  indicate direction, similar to python.
         */
 
@@ -60,6 +75,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
+
+    private:
+        std::vector<int> create_list_slice(
+            int start, int stop, int step, int array_length) const;
+        primitive_argument_type slicing0d(args_type&& args) const;
+        primitive_argument_type slicing1d(args_type&& args) const;
+        primitive_argument_type slicing2d(args_type&& args) const;
     };
 
     PHYLANX_EXPORT primitive create_slicing_operation(
