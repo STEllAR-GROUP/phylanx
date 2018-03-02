@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///    stop: the last value of the sequence. It will be ignored if the
     ///    number of samples is less than 2.
     ///    num_samples: number of samples in the sequence.
-    ///    
+    ///
     class linspace
         : public primitive_component_base
         , public std::enable_shared_from_this<linspace>

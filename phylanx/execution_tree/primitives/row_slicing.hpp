@@ -36,7 +36,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///  Note: Indices and steps can have negative values and negative values
     ///  indicate direction, similar to python.
     /// 
-    /// 
     class row_slicing_operation
         : public primitive_component_base
         , public std::enable_shared_from_this<row_slicing_operation>

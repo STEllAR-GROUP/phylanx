@@ -52,8 +52,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    bool row_set_operation::check_row_set_parameters(std::int64_t start, std::int64_t stop,
-        std::int64_t step, std::size_t array_length) const
+    bool row_set_operation::check_row_set_parameters(std::int64_t start,
+        std::int64_t stop, std::int64_t step, std::size_t array_length) const
     {
         if (start < 0)
         {
@@ -75,8 +75,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    std::vector<std::int64_t> row_set_operation::create_list_row_set(std::int64_t start,
-        std::int64_t stop, std::int64_t step,
+    std::vector<std::int64_t> row_set_operation::create_list_row_set(
+        std::int64_t start, std::int64_t stop, std::int64_t step,
         std::int64_t array_length) const
     {
         HPX_ASSERT(step != 0);
@@ -207,8 +207,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set1d",
-                execution_tree::generate_error_message("size mismatch, please check "
-                                        "your parameters or set vector",
+                execution_tree::generate_error_message(
+                    "size mismatch, please check your parameters or set vector",
                     name_, codename_));
         }
 

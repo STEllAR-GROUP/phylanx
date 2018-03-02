@@ -20,15 +20,15 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
 
-    /// 
+    ///
     /// \brief Row Set Primitive
-    /// 
+    ///
     /// This primitive returns a sets value to specific row.
     /// \param operands Vector of phylanx node data objects of
     /// size five
-    /// 
+    ///
     /// If used inside PhySL:
-    /// 
+    ///
     ///      set_row (input, col_start, col_stop, steps, value )
     /// 
     ///          input         : Vector or a Matrix
@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /// 
     ///  Note: Indices and steps can have negative values and negative values
     ///  indicate direction, similar to python.
-    /// 
+    ///
     class row_set_operation
         : public primitive_component_base
         , public std::enable_shared_from_this<row_set_operation>

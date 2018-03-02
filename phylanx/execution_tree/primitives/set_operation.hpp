@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -19,17 +20,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///
     /// \brief Set Primitive
-    /// 
+    ///
     /// This primitive sets new value to  a slice of the original data.
     /// \param operands Vector of phylanx node data objects of
     /// size eight
-    /// 
+    ///
     /// If used inside PhySL:
-    /// 
+    ///
     ///      slice (input, row_start, row_stop, row_steps
     ///                , col_start, col_stop, col_steps , value_to_set
     ///          )
-    /// 
+    ///
     ///          input         : Vector or a Matrix
     ///          row_start     : Starting index of the slice (row)
     ///          row_stop      : Stopping index of the slice (row)
@@ -38,11 +39,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///          col_stop      : Stopping index of the slice (column)
     ///          col_steps     : Go from col_start to col_stop in steps
     ///          value_to_set  : value to set to the referenced region in the input
-    /// 
-    /// 
+    ///
     ///  Note: Indices and steps can have negative values and negative values
     ///  indicate direction, similar to python.
-    /// 
+    ///
     class set_operation
         : public primitive_component_base
         , public std::enable_shared_from_this<set_operation>
