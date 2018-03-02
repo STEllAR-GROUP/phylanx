@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///          value_to_set  : value to set to the referenced region in the input
     /// 
     /// 
-    ///  Note: Indices and steps can have negative vlaues and negative values
+    ///  Note: Indices and steps can have negative values and negative values
     ///  indicate direction, similar to python.
     /// 
     class set_operation
