@@ -1,7 +1,7 @@
-//  Copyright (c) 2017 Alireza kheirkhahan
+// Copyright (c) 2017 Alireza kheirkhahan
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_PRIMITIVES_STORE_PRIMITIVE_OCT_05_2017_0204PM)
 #define PHYLANX_PRIMITIVES_STORE_PRIMITIVE_OCT_05_2017_0204PM
