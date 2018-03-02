@@ -17,11 +17,37 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <blaze/Math.h>
+
+//////////////////////////////////////////////////////////////////////////
+namespace blaze
+{
+    // BADBAD: This overload of swap is necessary to work around the problems
+    //         caused by matrix_row_iterator not being a real random access
+    //         iterator. Dereferencing matrix_row_iterator does not yield a
+    //         true reference but only a temporary blaze::Row holding true
+    //         references.
+    //
+    // A real fix for this problem is proposed in PR0022R0
+    // (http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0022r0.html)
+    //
+    template <typename T>
+    void swap(Row<T>&& x, Row<T>&& y)
+    {
+        for (auto a = x.begin(), b = y.begin(); a != x.end() && b != y.end();
+            ++a, ++b)
+        {
+            using std::iter_swap;
+
+            iter_swap(a, b);
+        }
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives

@@ -7,40 +7,16 @@
 #if !defined(PHYLANX_MATRIX_ITERATORS)
 #define PHYLANX_MATRIX_ITERATORS
 
-#include <algorithm>
 #include <cstddef>
 #include <utility>
 
+#include <hpx/include/util.hpp>
+
 #include <blaze/Math.h>
-
-namespace blaze
-{
-    // BADBAD: This overload of swap is necessary to work around the problems
-    //         caused by matrix_row_iterator not being a real random access
-    //         iterator. Dereferencing matrix_row_iterator does not yield a
-    //         true reference but only a temporary blaze::Row holding true
-    //         references.
-    //
-    // A real fix for this problem is proposed in PR0022R0
-    // (http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0022r0.html)
-    //
-    template <typename T>
-    HPX_FORCEINLINE
-        void swap(Row<T>&& x, Row<T>&& y)
-    {
-        for (auto a = x.begin(), b = y.begin(); a != x.end() && b != y.end();
-             ++a, ++b)
-        {
-            using std::iter_swap;
-
-            iter_swap(a, b);
-        }
-    }
-}
 
 namespace phylanx { namespace util
 {
-
+    // NOTE: These iterators are not swappable.
     template <typename T>
     class matrix_row_iterator
         : public hpx::util::iterator_facade<

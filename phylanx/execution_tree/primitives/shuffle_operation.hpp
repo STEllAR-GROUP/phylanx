@@ -22,7 +22,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     /// \brief Randomly shuffles the elements of a PhySL list or the rows of a
     /// PhySL matrix in place. Unlike [NumPy shuffle](
-    /// https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random.shuffle.html)
+    /// https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random
+    /// .shuffle.html)
     /// it returns the shuffled matrix or list
     ///
     /// \returns The PhySL matrix or PhySL list that was shuffled in place
