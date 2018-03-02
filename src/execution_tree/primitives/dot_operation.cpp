@@ -68,7 +68,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(rhs)};
     }
 
-    primitive_argument_type dot_operation::dot0d(operands_type && ops) const
+    primitive_argument_type dot_operation::dot0d(operands_type&& ops) const
     {
         operand_type& lhs = ops[0];
         operand_type& rhs = ops[1];
@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             // lhs_order == 1 && rhs_order != 2
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dot_operation::dot1d",
+                "dot_operation::dot0d",
                 execution_tree::generate_error_message(
                     "the operands have incompatible number of "
                     "dimensions",
@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // lhs_num_dims == 1
     // Case 1: Inner product of two vectors
     // Case 2: Inner product of a vector and an array of vectors
-    primitive_argument_type dot_operation::dot1d(operands_type&& ops) const
+    primitive_argument_type dot_operation::dot1d(operands_type && ops) const
     {
         operand_type& lhs = ops[0];
         operand_type& rhs = ops[1];
@@ -120,14 +120,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // If is_vector(lhs) && is_matrix(rhs)
             return dot1d2d(lhs, rhs);
 
-            HPX_FALLTHROUGH;
         default:
-            // lhs_order == 1 && rhs_order != 2
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d",
                 execution_tree::generate_error_message(
                     "the operands have incompatible number of "
-                    "dimensions",
+                        "dimensions",
                     name_, codename_));
         }
     }
@@ -179,7 +177,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // lhs_num_dims == 2
     // Multiply a matrix with a vector
     // Regular matrix multiplication
-    primitive_argument_type dot_operation::dot2d(operands_type&& ops) const
+    primitive_argument_type dot_operation::dot2d(operands_type && ops) const
     {
         operand_type& lhs = ops[0];
         operand_type& rhs = ops[1];
@@ -203,7 +201,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "dot_operation::dot2d",
                 execution_tree::generate_error_message(
                     "the operands have incompatible number of "
-                    "dimensions",
+                        "dimensions",
                     name_, codename_));
         }
     }
