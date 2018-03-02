@@ -9,6 +9,9 @@ macro(phylanx_setup_hpx)
     set(HPX_DIR ${HPX_ROOT}/lib/cmake/HPX)
   endif()
 
+  if(NOT HPX_DIR AND EXISTS "$ENV{HPX_DIR}")
+    set(HPX_DIR $ENV{HPX_DIR})
+  endif()
   if(EXISTS "${HPX_DIR}")
     find_package(HPX REQUIRED NO_CMAKE_PACKAGE_REGISTRY)
 
