@@ -23,10 +23,12 @@
 // Pybind11 V2.3 changed the interface for the description strings
 #if defined(PYBIND11_DESCR)
 #define PHYLANX_PYBIND_DESCR PYBIND11_DESCR
-#define PHYLANX_PYBIND_DESCR_NAME name()
+#define PHYLANX_PYBIND_DESCR_NAME(x) name() { return x; }
+#define PHYLANX_PYBIND_DESCR_GETNAME() name()
 #else
 #define PHYLANX_PYBIND_DESCR constexpr auto
-#define PHYLANX_PYBIND_DESCR_NAME name
+#define PHYLANX_PYBIND_DESCR_NAME(x) name = x;
+#define PHYLANX_PYBIND_DESCR_GETNAME() name
 #endif
 
 // older versions of pybind11 don't support variant-like types
@@ -52,14 +54,14 @@ namespace pybind11 { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     // Expose phylanx::util::recursive_wrapper
     template <typename T>
-    PHYLANX_PYBIND_DESCR get_name()
+    inline PHYLANX_PYBIND_DESCR get_name()
     {
-        return make_caster<T>::PHYLANX_PYBIND_DESCR_NAME;
+        return make_caster<T>::PHYLANX_PYBIND_DESCR_GETNAME();
     }
 
     // specialize get_name for vector<primitive_argument_type> to avoid infinite recursion
     template <>
-    PHYLANX_PYBIND_DESCR
+    inline PHYLANX_PYBIND_DESCR
     get_name<std::vector<phylanx::execution_tree::primitive_argument_type>>()
     {
 #if defined(_DEBUG)
@@ -70,7 +72,7 @@ namespace pybind11 { namespace detail
     }
 
     template <>
-    PHYLANX_PYBIND_DESCR
+    inline PHYLANX_PYBIND_DESCR
     get_name<phylanx::execution_tree::primitive_argument_type>()
     {
 #if defined(_DEBUG)
@@ -79,7 +81,6 @@ namespace pybind11 { namespace detail
         return _("_phylanx.execution_tree.primitive_argument_type");
 #endif
     }
-
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
@@ -172,8 +173,8 @@ namespace pybind11 { namespace detail
             return subcaster.load(src, convert);
         }
 
-        static PHYLANX_PYBIND_DESCR PHYLANX_PYBIND_DESCR_NAME =
-            _("recursive_wrapper[") + get_name<T>() + _("]");
+        static PHYLANX_PYBIND_DESCR PHYLANX_PYBIND_DESCR_NAME(
+            _("recursive_wrapper[") + get_name<T>() + _("]"));
 
         static handle cast(phylanx::util::recursive_wrapper<T> const& src,
             return_value_policy policy, handle parent)
@@ -279,8 +280,8 @@ namespace pybind11 { namespace detail
             phylanx::execution_tree::argument_value_type>;
 
     public:
-        static PHYLANX_PYBIND_DESCR PHYLANX_PYBIND_DESCR_NAME =
-            get_name<phylanx::execution_tree::primitive_argument_type>();
+        static PHYLANX_PYBIND_DESCR PHYLANX_PYBIND_DESCR_NAME(
+            get_name<phylanx::execution_tree::primitive_argument_type>());
 
         bool load(handle src, bool convert)
         {
