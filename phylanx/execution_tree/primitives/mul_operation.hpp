@@ -22,7 +22,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class mul_operation
         : public primitive_component_base
-        , std::enable_shared_from_this<mul_operation>
+        , public std::enable_shared_from_this<mul_operation>
     {
     protected:
         using operand_type = ir::node_data<double>;
