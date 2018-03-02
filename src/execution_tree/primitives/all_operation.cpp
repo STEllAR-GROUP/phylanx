@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename T>
     primitive_argument_type all_operation::all0d(T&& arg) const
     {
-        return primitive_argument_type{ir::node_data<bool>{arg.scalar()}};
+        return primitive_argument_type{ir::node_data<bool>{arg.scalar() != 0}};
     }
 
     template <typename T>

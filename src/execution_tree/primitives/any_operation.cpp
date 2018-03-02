@@ -44,28 +44,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
-    primitive_argument_type any_operation::any0d(arg_type && arg) const
+    template <typename T>
+    primitive_argument_type any_operation::any0d(T&& arg) const
     {
-        return primitive_argument_type{
-            ir::node_data<bool>{arg.scalar() != 0}};
+        return primitive_argument_type{ir::node_data<bool>{arg.scalar() != 0}};
     }
 
-    primitive_argument_type any_operation::any1d(arg_type && arg) const
+    template <typename T>
+    primitive_argument_type any_operation::any1d(T&& arg) const
     {
         auto value = arg.vector();
         return primitive_argument_type{
             ir::node_data<bool>{value.nonZeros() != 0}};
     }
 
-    primitive_argument_type any_operation::any2d(arg_type && arg) const
+    template <typename T>
+
+    primitive_argument_type any_operation::any2d(T&& arg) const
     {
         auto value = arg.matrix();
         return primitive_argument_type{
             ir::node_data<bool>{value.nonZeros() != 0}};
     }
 
-    primitive_argument_type any_operation::any_nd(arg_type&& arg) const
+    template <typename T>
+
+    primitive_argument_type any_operation::any_nd(T&& arg) const
     {
         auto dims = arg.num_dimensions();
         switch (dims)
@@ -78,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return any2d(std::move(arg));
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "all_operation::eval",
+                "any_operation::eval",
                 execution_tree::generate_error_message(
                     "operand has unsupported "
                     "number of dimensions",
@@ -122,8 +126,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return this_->any_nd(util::get<1>(std::move(op)));
                 case 4:
-                    return this_->any_nd(
-                        ir::node_data<bool>{util::get<4>(std::move(op))});
+                    return this_->any_nd(util::get<4>(std::move(op)));
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "any_operation::eval",
