@@ -48,92 +48,69 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    // struct containing implementation of evaluate
-    // (used to resolve lifetime issues)
-    namespace detail
+    hpx::future<primitive_argument_type> if_conditional::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
     {
-        struct if_impl : std::enable_shared_from_this<if_impl>
+        if (operands_.size() != 3 && operands_.size() != 2)
         {
-            if_impl(std::vector<primitive_argument_type> const& operands,
-                    std::vector<primitive_argument_type> const& args,
-                    std::string const& name, std::string const& codename)
-              : operands_(operands)
-              , args_(args)
-              , name_(name)
-              , codename_(codename)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "if_conditional::if_conditional",
+                execution_tree::generate_error_message(
+                    "the if_conditional primitive requires three "
+                    "operands",
+                    name_, codename_));
+        }
+
+        bool arguments_valid = true;
+        for (std::size_t i = 0; i != operands_.size(); ++i)
+        {
+            if (!valid(operands_[i]))
             {
-                if (operands_.size() != 3 && operands_.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "if_conditional::if_conditional",
-                        generate_error_message(
-                            "the if_conditional primitive requires three "
-                                "operands",
-                            name_, codename_));
-                }
-
-                bool arguments_valid = true;
-                for (std::size_t i = 0; i != operands_.size(); ++i)
-                {
-                    if (!valid(operands_[i]))
-                    {
-                        arguments_valid = false;
-                    }
-                }
-
-                if (!arguments_valid)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "if_conditional::if_conditional",
-                        generate_error_message(
-                            "the if_conditional primitive requires that the "
-                                "arguments given by the operands array "
-                                "is valid",
-                            name_, codename_));
-                }
+                arguments_valid = false;
             }
+        }
 
-            hpx::future<primitive_argument_type> body()
-            {
-                // Keep data alive with a shared pointer
-                auto this_ = this->shared_from_this();
-                return boolean_operand(operands_[0], args_, name_, codename_)
-                    .then([this_](hpx::future<std::uint8_t> && cond_eval)
-                        -> hpx::future<primitive_argument_type>
-                    {
-                        if (cond_eval.get() != 0)
-                        {
-                            return literal_operand(this_->operands_[1],
-                                this_->args_, this_->name_, this_->codename_);
-                        }
-                        if (this_->operands_.size() > 2)
-                        {
-                            return literal_operand(this_->operands_[2],
-                                this_->args_, this_->name_, this_->codename_);
-                        }
-                        return hpx::make_ready_future(primitive_argument_type{});
-                    });
-            }
+        if (!arguments_valid)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "if_conditional::if_conditional",
+                execution_tree::generate_error_message(
+                    "the if_conditional primitive requires that the "
+                    "arguments given by the operands array "
+                    "is valid",
+                    name_, codename_));
+        }
 
-        private:
-            std::vector<primitive_argument_type> operands_;
-            std::vector<primitive_argument_type> args_;
-            std::string name_;
-            std::string codename_;
-        };
+        // Keep data alive with a shared pointer
+        auto this_ = this->shared_from_this();
+        return boolean_operand(operands_[0], args, name_, codename_)
+            .then([this_, args = std::move(args)](
+                      hpx::future<std::uint8_t>&& cond_eval)
+                      -> hpx::future<primitive_argument_type> {
+                if (cond_eval.get() != 0)
+                {
+                    return literal_operand(this_->operands_[1],
+                        args, this_->name_, this_->codename_);
+                }
+                if (this_->operands_.size() > 2)
+                {
+                    return literal_operand(this_->operands_[2],
+                        args, this_->name_, this_->codename_);
+                }
+                return hpx::make_ready_future(primitive_argument_type{});
+            });
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // evaluate 'true_case' or 'false_case' based on 'cond'
+    // Evaluate 'true_case' or 'false_case' based on 'cond'
     hpx::future<primitive_argument_type> if_conditional::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::if_impl>(
-                args, noargs, name_, codename_)->body();
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::if_impl>(
-            operands_, args, name_, codename_)->body();
+        return eval(operands_, args);
     }
 }}}
