@@ -45,14 +45,6 @@ def rmline(a):
     return re.sub(r'\$.*', '', a)
 
 
-def full_node_name(a, name):
-    return '%s$%d$%d' % (name, a.lineno, a.col_offset)
-
-
-def full_name(a):
-    return full_node_name(a, a.name)
-
-
 class PhySL:
     def __init__(self):
         self.defs = {}
@@ -85,11 +77,14 @@ class PhySL:
         s0alt = get_node(a, name="Slice", num=1)
         if s0 is not None and s1 is not None:
             xlo = s0.lower
+            xlo_info = full_node_name(xlo)
             xhi = s0.upper
+            xhi_info = full_node_name(xhi)
             ylo = s1.lower
             yhi = s1.upper
+            yhi_info = full_node_name(yhi)
             sname = self.recompile(get_node(a, num=0))
-            s = "slice("
+            s = "slice%s(" % xlo_info
             s += sname
             s += ","
             if xlo is None:
@@ -98,7 +93,7 @@ class PhySL:
                 s += self.recompile(xlo)
             s += ","
             if xhi is None:
-                s += "shape(" + sname + ",0)"
+                s += "shape%s(" % xhi_info + sname + ",0)"
             else:
                 s += self.recompile(xhi)
             s += ","
@@ -108,7 +103,7 @@ class PhySL:
                 s += self.recompile(ylo)
             s += ","
             if yhi is None:
-                s += "shape(" + sname + ",1)"
+                s += "shape%s(" % yhi_info + sname + ",1)"
             else:
                 s += self.recompile(yhi)
             s += ")"
@@ -116,8 +111,10 @@ class PhySL:
         elif s0alt is not None:
             sname = self.recompile(get_node(a, num=0))
             xlo = s0alt.lower
+            xlo_info = full_node_name(xlo)
             xhi = s0alt.upper
-            s = 'slice_column('
+            xhi_info = full_node_name(xhi)
+            s = 'slice_column%s(' % xlo_info
             s += sname
             s += ','
             if xlo is None:
@@ -126,7 +123,7 @@ class PhySL:
                 s += self.recompile(xlo)
             s += ','
             if xhi is None:
-                s += "shape(" + sname + ",0)"
+                s += "shape%s(" % xhi_info + sname + ",0)"
             else:
                 s += self.recompile(xhi)
             s += ")"
@@ -193,10 +190,11 @@ class PhySL:
         return s
 
     def _Call(self, a):
+        symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         if args[0].id == "print":
             args[0].id = "cout"
-        s = args[0].id + '('
+        s = args[0].id + symbol_info + '('
         for n in range(1, len(args)):
             if n > 1:
                 s += ', '
@@ -216,32 +214,37 @@ class PhySL:
         return " " + self.recompile(args[0])
 
     def _Assign(self, a):
+        symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
         if args[0].id in self.defs:
-            s += "store"
+            s += "store" + symbol_info
         else:
-            s += "define"
+            s += "define" + symbol_info
             self.defs[args[0].id] = 1
-        s += "(" + args[0].id + "," + self.recompile(args[1]) + ")"
+        a = '%s' % full_node_name(args[0], args[0].id)
+        s += "(" + a + "," + self.recompile(args[1]) + ")"
         return s
 
     def _AugAssign(self, a):
+        symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         sym = "?"
         nn = args[1].__class__.__name__
         if nn == "Add":
             sym = "+"
-        return "store(" + args[0].id + "," + args[0].id + sym + self.recompile(
+        arg0 = '%s' % full_node_name(args[0], args[0].id)
+        return "store%s(" % symbol_info + arg0 + "," + arg0 + sym + self.recompile(
             args[2]) + ")"
 
     def _While(self, a):
+        symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = "while(" + self.recompile(args[0]) + ","
         if len(args) == 2:
             s += self.recompile(args[1])
         else:
-            tw = "block("
+            tw = "block" + symbol_info + "("
             for aa in args[1:]:
                 s += tw
                 tw = ", "
@@ -251,9 +254,10 @@ class PhySL:
         return s
 
     def _If(self, a, allowreturn=False):
+        symbol_info = full_node_name(a)
         s = "if(" + self.recompile(a.test) + ","
         if len(a.body) > 1:
-            s += "block("
+            s += "block" + symbol_info + "("
             for j in range(len(a.body)):
                 aa = a.body[j]
                 if j > 0:
@@ -267,7 +271,7 @@ class PhySL:
             s += self.recompile(a.body[0], allowreturn)
         s += ","
         if len(a.orelse) > 1:
-            s += "block("
+            s += "block" + symbol_info + "("
             for j in range(len(a.orelse)):
                 aa = a.orelse[j]
                 if j > 0:
@@ -280,7 +284,7 @@ class PhySL:
         elif len(a.orelse) == 1:
             s += self.recompile(a.orelse[0], allowreturn)
         else:
-            s += "block()"
+            s += "block" + symbol_info + "()"
         s += ")"
         return s
 
@@ -317,6 +321,7 @@ class PhySL:
             raise Exception(nm2)
 
     def _For(self, a):
+        symbol_info = full_node_name(a)
         n = get_node(a, name="Name", num=0)
         c = get_node(a, name="Call", num=1)
         if n is not None and c is not None:
@@ -335,7 +340,7 @@ class PhySL:
             ls = self.recompile(lower)
             us = self.recompile(upper)
             ss = self.recompile(step)
-            bs = "block("
+            bs = "block" + symbol_info + "("
             blocki = 2
             while True:
                 blockn = get_node(a, num=blocki)
@@ -349,23 +354,26 @@ class PhySL:
             # The first arg of the for loop is either
             # a define() or a store(), depending on whether
             # the variable has already been defined.
-            sd = "store"
+            sd = "store" + symbol_info
             if rmline(ns) not in self.defs:
-                sd = "define"
+                sd = "define" + symbol_info
             lg = "<"
             # Determine the direction of iteration, if possible
             if not re.search(r'[a-zA-Z_]', ss):
                 if eval(ss) < 0:
                     lg = ">"
                 return "for(" + sd + "(" + ns + "," + ls + ")," + ns + " " + lg + " " \
-                       + us + ",store(" + ns + "," + ns + "+" + ss + ")," + bs + ")"
+                       + us + ",store%s(" % symbol_info + ns + "," + ns + \
+                    "+" + ss + ")," + bs + ")"
             else:
                 # if we can't determine the direction of iteration, make two for loops
                 ret = "if(" + ss + " > 0,"
                 ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " < " + us + \
-                    ",store(" + ns + "," + ns + "+" + ss + ")," + bs + "),"
+                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
+                    + "),"
                 ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " > " + us + \
-                    ",store(" + ns + "," + ns + "+" + ss + ")," + bs + "))"
+                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
+                    + "))"
                 return ret
             raise Exception("unsupported For loop structure")
 
@@ -420,6 +428,7 @@ def Phylanx(target="PhySL"):
             self.f = f
             self.target = target
             # Get the source code
+            actual_lineno = inspect.getsourcelines(f)[-1]
             src = inspect.getsource(f)
             # Before recompiling the code, take
             # off the decorator from the source.
@@ -427,12 +436,18 @@ def Phylanx(target="PhySL"):
 
             # Create the AST
             tree = ast.parse(src)
-            physl = PhySL()
+            ast.increment_lineno(tree, actual_lineno)
+            transformation = self.targets[target]()
 
             assert len(tree.body) == 1
 
-            self.__physl_src__ = '%s(%s)\n' % (
-                full_node_name(tree.body[0], 'block'), physl.recompile(tree))
+            if target == "PhySL":
+                self.__physl_src__ = '%s(%s)\n' % (
+                    full_node_name(tree.body[0], 'block'),
+                    transformation.recompile(tree))
+            else:
+                raise Exception(
+                    "Invalid target to Phylanx transformer: '%s'" % target)
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)

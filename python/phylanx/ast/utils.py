@@ -6,6 +6,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import ast
+import re
 
 
 def dump_info(a, depth=0):
@@ -61,6 +62,34 @@ def dump_info(a, depth=0):
             dump_info(n, depth + 1)
 
 
+# based on http://bit.ly/2C58jl8
+def dump_ast(node, level=0):
+    if isinstance(node, ast.AST):
+        if isinstance(node, ast.With):
+            for body in node.body:
+                fields = [(a, dump_ast(b, level))
+                          for a, b in ast.iter_fields(body)]
+        fields = [(a, dump_ast(b, level)) for a, b in ast.iter_fields(node)]
+        if node._attributes:
+            fields.extend([(a, dump_ast(getattr(node, a), level))
+                           for a in node._attributes])
+        return ''.join([
+            node.__class__.__name__, '(', ', '.join(
+                ('%s=%s' % field for field in fields)), ')'
+        ])
+    elif isinstance(node, list):
+        indent = '    '
+        lines = ['[']
+        lines.extend((indent * (level + 2) + dump_ast(x, level + 2) + ','
+                      for x in node))
+        if len(lines) > 1:
+            lines.append(indent * (level + 1) + ']')
+        else:
+            lines[-1] += ']'
+        return '\n'.join(lines)
+    return repr(node)
+
+
 def printout(m):
     ndim = m.num_dimensions()
     if ndim == 1:
@@ -81,3 +110,15 @@ def printout(m):
         print(m[0])
     else:
         print("ndim=", ndim)
+
+
+def print_physl(physl_src):
+    print(re.sub(r'\$\d+', '', physl_src))
+
+
+def full_node_name(a, name=''):
+    return '%s$%d$%d' % (name, a.lineno, a.col_offset)
+
+
+def full_name(a):
+    return full_node_name(a, a.name)
