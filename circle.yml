@@ -1,41 +1,57 @@
-#  Copyright (c) 2017  R. Tohid
+# Copyright (c) 2017 R. Tohid
+# Copyright (c) 2018 Parsa Amini
 #
-#  Distributed under the Boost Software License, Version 1.0. (See accompanying
-#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-machine:
-    services:
-        - docker
-    environment:
-        IMAGE_NAME: stellargroup/phylanx:dev
-
-general:
-    branches:
-        ignore:
-            - gh-pages
-
-dependencies:
-    pre:
-        - docker build -t $IMAGE_NAME tools/docker:
-            timeout: 1200
-        - mkdir -p build
-
-    override:
-        - docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} flake8 --config=tools/flake8/config.ini .
-        - docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On -DHighFive_DIR=/highfive/share/HighFive/CMake ..
-        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2 -k tools.inspect
-        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2
-
-test:
-    override:
-        - docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} ./build/bin/inspect --all --output=./build/phylanx_inspect_report.html /phylanx
-        - docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j 2 tests
-        - cp $PWD/build/phylanx_inspect_report.html ${CIRCLE_ARTIFACTS}/
-
-deployment:
-    hub:
-        branch: master
-        commands:
-            - docker login -e ${DOCKER_EMAIL} -u ${DOCKER_USER} -p ${DOCKER_PASS}
-            - docker push ${IMAGE_NAME}
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+version: 2
+jobs:
+    build:
+        machine: true
+        environment:
+            IMAGE_NAME: stellargroup/phylanx:dev
+        branches:
+            ignore:
+                - gh-pages
+        steps:
+            - checkout
+            - run:
+                name: Build the build environment Docker image
+                command: docker build -t $IMAGE_NAME tools/docker
+            - run:
+                name: Create build and artifact collection directories
+                command: mkdir -p build artifacts
+            - run:
+                name: Check the formatting of Phylanx's Python files
+                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} flake8 --config=tools/flake8/config.ini .
+            # CMake
+            - run:
+                name: Run CMake
+                command: docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dpybind11_DIR=/pybind11/share/cmake/pybind11/ -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On -DHighFive_DIR=/highfive/share/HighFive/CMake ..
+            - run:
+                name: Build the Inspect tool
+                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2 -k tools.inspect
+            - run:
+                name: Check the formatting of Phylanx's C++ files
+                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} ./build/bin/inspect --all --output=./build/phylanx_inspect_report.html /phylanx
+            - run:
+                name: Build all targets
+                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2
+            # Tests
+            - run:
+                name: Run all tests
+                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2 tests
+            # Build Artifacts
+            - run:
+                name: Collect build artifacts
+                command: cp build/phylanx_inspect_report.html artifacts
+            - store_artifacts:
+                path: artifacts
+            # Deployment
+            - deploy:
+                name: Push the Phylanx build environment Docker image
+                command: |
+                    if [ "$CIRCLE_BRANCH" == "master" ]; then
+                        docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+                        docker push ${IMAGE_NAME}
+                    fi
 
