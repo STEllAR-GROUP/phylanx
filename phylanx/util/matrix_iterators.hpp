@@ -1,17 +1,22 @@
-//  Copyright (c) 2018 Parsa Amini
-//  Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_MATRIX_ITERATORS)
 #define PHYLANX_MATRIX_ITERATORS
 
 #include <cstddef>
+#include <utility>
+
+#include <hpx/include/util.hpp>
+
 #include <blaze/Math.h>
 
 namespace phylanx { namespace util
 {
+    // NOTE: These iterators are not swappable.
     template <typename T>
     class matrix_row_iterator
         : public hpx::util::iterator_facade<
@@ -22,7 +27,7 @@ namespace phylanx { namespace util
     {
     public:
         explicit matrix_row_iterator(T& t, const std::size_t index = 0)
-            : data_(t)
+            : data_(&t)
             , index_(index)
         {
         }
@@ -34,25 +39,34 @@ namespace phylanx { namespace util
         {
             ++index_;
         }
+
         void decrement()
         {
             --index_;
         }
+
         void advance(std::size_t n)
         {
             index_ += n;
         }
+
         bool equal(matrix_row_iterator const& other) const
         {
             return index_ == other.index_;
         }
+
         blaze::Row<T> dereference() const
         {
-            return blaze::row(data_, index_);
+            return blaze::row(*data_, index_);
+        }
+
+        std::ptrdiff_t distance_to(matrix_row_iterator const& other) const
+        {
+            return other.index_ - index_;
         }
 
     private:
-        T & data_;
+        T* data_;
         std::size_t index_;
     };
 
@@ -66,7 +80,7 @@ namespace phylanx { namespace util
     {
     public:
         explicit matrix_column_iterator(T& t, const std::size_t index = 0)
-            : data_(t)
+            : data_(&t)
             , index_(index)
         {
         }
@@ -78,25 +92,34 @@ namespace phylanx { namespace util
         {
             ++index_;
         }
+
         void decrement()
         {
             --index_;
         }
+
         void advance(std::size_t n)
         {
             index_ += n;
         }
+
         bool equal(matrix_column_iterator const& other) const
         {
             return index_ == other.index_;
         }
+
         blaze::Column<T> dereference() const
         {
-            return blaze::column(data_, index_);
+            return blaze::column(*data_, index_);
+        }
+
+        std::ptrdiff_t distance_to(matrix_column_iterator const& other) const
+        {
+            return other.index_ - index_;
         }
 
     private:
-        T & data_;
+        T* data_;
         std::size_t index_;
     };
 }}

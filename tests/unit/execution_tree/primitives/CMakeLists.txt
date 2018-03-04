@@ -47,6 +47,7 @@ set(tests
     row_set
     row_slicing
     set_operation
+    shuffle_operation
     slicing_operation
     square_root_operation
     store_operation
