@@ -13,13 +13,21 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class if_conditional : public primitive_component_base
+    class if_conditional
+        : public primitive_component_base
+        , public std::enable_shared_from_this<if_conditional>
     {
+    protected:
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
+
     public:
         static match_pattern_type const match_data;
 

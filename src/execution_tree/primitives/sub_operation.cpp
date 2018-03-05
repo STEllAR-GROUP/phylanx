@@ -1,7 +1,7 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
@@ -49,520 +49,498 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
+    struct sub_operation::sub0dnd_simd
     {
-        struct sub0dnd_simd
+    public:
+        explicit sub0dnd_simd(double scalar)
+            : scalar_(scalar)
         {
-        public:
-            explicit sub0dnd_simd(double scalar)
-              : scalar_(scalar)
-            {
-            }
+        }
 
-            template <typename T>
-            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-            ->  decltype(std::declval<double>() - a)
-            {
-                return scalar_ - a;
-            }
-
-            template <typename T>
-            static constexpr bool simdEnabled()
-            {
-                return blaze::HasSIMDSub<T, double>::value;
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-            {
-                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-                return blaze::set(scalar_) - a;
-            }
-
-        private:
-            double scalar_;
-        };
-
-        struct subnd0d_simd
+        template <typename T>
+        BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+        ->  decltype(std::declval<double>() - a)
         {
-        public:
-            explicit subnd0d_simd(double scalar)
-              : scalar_(scalar)
-            {
-            }
+            return scalar_ - a;
+        }
 
-            template <typename T>
-            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-            ->  decltype(a - std::declval<double>())
-            {
-                return a - scalar_;
-            }
-
-            template <typename T>
-            static constexpr bool simdEnabled()
-            {
-                return blaze::HasSIMDSub<T, double>::value;
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-            {
-                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-                return a - blaze::set(scalar_);
-            }
-
-        private:
-            double scalar_;
-        };
-
-        ///////////////////////////////////////////////////////////////////////
-        struct sub : std::enable_shared_from_this<sub>
+        template <typename T>
+        static constexpr bool simdEnabled()
         {
-            sub(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
+            return blaze::HasSIMDSub<T, double>::value;
+        }
+
+        template <typename T>
+        BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+        {
+            BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+            return blaze::set(scalar_) - a;
+        }
+
+    private:
+        double scalar_;
+    };
+
+    struct sub_operation::subnd0d_simd
+    {
+    public:
+        explicit subnd0d_simd(double scalar)
+            : scalar_(scalar)
+        {
+        }
+
+        template <typename T>
+        BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+        ->  decltype(a - std::declval<double>())
+        {
+            return a - scalar_;
+        }
+
+        template <typename T>
+        static constexpr bool simdEnabled()
+        {
+            return blaze::HasSIMDSub<T, double>::value;
+        }
+
+        template <typename T>
+        BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+        {
+            BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+            return a - blaze::set(scalar_);
+        }
+
+    private:
+        double scalar_;
+    };
+
+    ///////////////////////////////////////////////////////////////////////
+    primitive_argument_type sub_operation::sub0d0d(operands_type && ops) const
+    {
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
+
+        if (ops.size() == 2)
+        {
+            lhs.scalar() -= rhs.scalar();
+            return primitive_argument_type(std::move(lhs));
+        }
+
+        return primitive_argument_type(std::accumulate(
+            ops.begin() + 1, ops.end(), std::move(lhs),
+            [](operand_type& result, operand_type const& curr)
+            ->  operand_type
             {
-            }
-
-        protected:
-            std::string name_;
-            std::string codename_;
-
-        protected:
-            using operand_type = ir::node_data<double>;
-            using operands_type = std::vector<operand_type>;
-
-            primitive_argument_type sub0d0d(operands_type && ops) const
-            {
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
-
-                if (ops.size() == 2)
-                {
-                    lhs.scalar() -= rhs.scalar();
-                    return primitive_argument_type(std::move(lhs));
-                }
-
-                return primitive_argument_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(lhs),
-                    [](operand_type& result, operand_type const& curr)
-                    ->  operand_type
-                    {
-                        result.scalar() -= curr.scalar();
-                        return std::move(result);
-                    }));
-            }
-
-            primitive_argument_type sub0d1d(operands_type && ops) const
-            {
-                if (ops.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub0d1d",
-                        generate_error_message(
-                            "the sub_operation primitive can sub a single "
-                                "value to a vector only if there are exactly "
-                                "two operands",
-                            name_, codename_));
-                }
-
-                ops[1] =
-                    blaze::map(ops[1].vector(), sub0dnd_simd(ops[0].scalar()));
-                return primitive_argument_type(std::move(ops[1]));
-            }
-
-            primitive_argument_type sub0d2d(operands_type && ops) const
-            {
-                if (ops.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub0d2d",
-                        generate_error_message(
-                            "the sub_operation primitive can sub a single "
-                                "value to a matrix only if there are exactly "
-                                "two operands",
-                            name_, codename_));
-                }
-
-                ops[1] =
-                    blaze::map(ops[1].matrix(), sub0dnd_simd(ops[0].scalar()));
-                return primitive_argument_type(std::move(ops[1]));
-            }
-
-            primitive_argument_type sub0d(operands_type && ops) const
-            {
-                std::size_t rhs_dims = ops[1].num_dimensions();
-                switch(rhs_dims)
-                {
-                case 0:
-                    return sub0d0d(std::move(ops));
-
-                case 1:
-                    return sub0d1d(std::move(ops));
-
-                case 2:
-                    return sub0d2d(std::move(ops));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub0d",
-                        generate_error_message(
-                            "the operands have incompatible number of dimensions",
-                            name_, codename_));
-                }
-            }
-
-            ///////////////////////////////////////////////////////////////////
-            primitive_argument_type sub1d0d(operands_type && ops) const
-            {
-                if (ops.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub0d1d",
-                        generate_error_message(
-                            "the sub_operation primitive can sub a single "
-                                "value to a vector only if there are exactly "
-                                "two operands",
-                            name_, codename_));
-                }
-
-                ops[0] =
-                    blaze::map(ops[0].vector(), subnd0d_simd(ops[1].scalar()));
-                return primitive_argument_type(std::move(ops[0]));
-            }
-
-            primitive_argument_type sub1d1d(operands_type && ops) const
-            {
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
-
-                if (lhs.size() != rhs.size())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub1d1d",
-                        generate_error_message(
-                            "the dimensions of the operands do not match",
-                            name_, codename_));
-                }
-
-                if (ops.size() == 2)
-                {
-                    if (lhs.is_ref())
-                    {
-                        lhs = lhs.vector() - rhs.vector();
-                    }
-                    else
-                    {
-                        lhs.vector() -= rhs.vector();
-                    }
-                    return primitive_argument_type{std::move(lhs)};
-                }
-
-                operand_type& first_term = *ops.begin();
-                return primitive_argument_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result,
-                        operand_type const& curr) -> operand_type
-                    {
-                        if (result.is_ref())
-                        {
-                            result = result.vector() - curr.vector();
-                        }
-                        else
-                        {
-                            result.vector() -= curr.vector();
-                        }
-                        return std::move(result);
-                    }));
-            }
-
-            primitive_argument_type sub1d2d(operands_type&& ops) const
-            {
-                if (ops.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub1d2d",
-                        generate_error_message(
-                            "the sub_operation primitive can sub a vector "
-                                "from a matrix only if there are exactly "
-                                "two operands",
-                            name_, codename_));
-                }
-
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
-
-                auto cv = lhs.vector();
-                auto cm = rhs.matrix();
-
-                if (cv.size() != cm.columns())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub1d2d",
-                        generate_error_message(
-                            "vector size does not match number of matrix "
-                                "columns",
-                            name_, codename_));
-                }
-
-                // TODO: Blaze does not support broadcasting
-                if (rhs.is_ref())
-                {
-                    blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
-                    for (std::size_t i = 0; i < cm.rows(); ++i)
-                    {
-                        blaze::row(m, i) = blaze::trans(cv) - blaze::row(cm, i);
-                    }
-                    return primitive_argument_type{std::move(m)};
-                }
-
-                for (std::size_t i = 0; i < cm.rows(); ++i)
-                {
-                    blaze::row(cm, i) = blaze::trans(cv) - blaze::row(cm, i);
-                }
-                return primitive_argument_type{std::move(rhs)};
-            }
-
-            primitive_argument_type sub1d(operands_type && ops) const
-            {
-                std::size_t rhs_dims = ops[1].num_dimensions();
-
-                switch(rhs_dims)
-                {
-                case 0:
-                    return sub1d0d(std::move(ops));
-
-                case 1:
-                    return sub1d1d(std::move(ops));
-
-                case 2:
-                    return sub1d2d(std::move(ops));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub1d",
-                        generate_error_message(
-                            "the operands have incompatible number of "
-                                "dimensions",
-                            name_, codename_));
-                }
-            }
-
-            ///////////////////////////////////////////////////////////////////////////
-            primitive_argument_type sub2d0d(operands_type && ops) const
-            {
-                if (ops.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub0d2d",
-                        generate_error_message(
-                            "the sub_operation primitive can sub a single "
-                                "value to a matrix only if there are exactly "
-                                "two operands",
-                            name_, codename_));
-                }
-
-                ops[0] =
-                    blaze::map(ops[0].matrix(), subnd0d_simd(ops[1].scalar()));
-                return primitive_argument_type(std::move(ops[0]));
-            }
-
-            primitive_argument_type sub2d1d(operands_type&& ops) const
-            {
-                if (ops.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub2d1d",
-                        generate_error_message(
-                            "the sub_operation primitive can sub a vector "
-                                "from a matrix only if there are exactly "
-                                "two operands",
-                            name_, codename_));
-                }
-
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
-
-                auto cv = rhs.vector();
-                auto cm = lhs.matrix();
-
-                if (cv.size() != cm.columns())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub2d1d",
-                        generate_error_message(
-                            "vector size does not match number of matrix "
-                                "columns",
-                            name_, codename_));
-                }
-
-                // TODO: Blaze does not support broadcasting
-                if (lhs.is_ref())
-                {
-                    blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
-                    for (std::size_t i = 0; i < cm.rows(); ++i)
-                    {
-                        blaze::row(m, i) = blaze::row(cm, i) - blaze::trans(cv);
-                    }
-                    return primitive_argument_type{std::move(m)};
-                }
-
-                for (std::size_t i = 0; i < cm.rows(); ++i)
-                {
-                    blaze::row(cm, i) -= blaze::trans(cv);
-                }
-                return primitive_argument_type{std::move(lhs)};
-            }
-
-            primitive_argument_type sub2d2d(operands_type && ops) const
-            {
-                operand_type& lhs = ops[0];
-                operand_type& rhs = ops[1];
-
-                auto lhs_size = lhs.dimensions();
-                auto rhs_size = rhs.dimensions();
-
-                if (lhs_size != rhs_size)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub2d2d",
-                        generate_error_message(
-                            "the dimensions of the operands do not match",
-                            name_, codename_));
-                }
-
-                if (ops.size() == 2)
-                {
-                    if (lhs.is_ref())
-                    {
-                        lhs = lhs.matrix() - rhs.matrix();
-                    }
-                    else
-                    {
-                        lhs.matrix() -= rhs.matrix();
-                    }
-                    return primitive_argument_type{std::move(lhs)};
-                }
-
-                operand_type& first_term = *ops.begin();
-                return primitive_argument_type(std::accumulate(
-                    ops.begin() + 1, ops.end(), std::move(first_term),
-                    [](operand_type& result,
-                        operand_type const& curr) -> operand_type
-                    {
-                        if (result.is_ref())
-                        {
-                            result = result.matrix() - curr.matrix();
-                        }
-                        else
-                        {
-                            result.matrix() -= curr.matrix();
-                        }
-                        return std::move(result);
-                    }));
-            }
-
-            primitive_argument_type sub2d(operands_type && ops) const
-            {
-                std::size_t rhs_dims = ops[1].num_dimensions();
-                switch(rhs_dims)
-                {
-                case 0:
-                    return sub2d0d(std::move(ops));
-
-                case 1:
-                    return sub2d1d(std::move(ops));
-
-                case 2:
-                    return sub2d2d(std::move(ops));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub2d",
-                        generate_error_message(
-                            "the operands have incompatible number of "
-                                "dimensions",
-                            name_, codename_));
-                }
-            }
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args) const
-            {
-                if (operands.size() < 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub_operation",
-                        generate_error_message(
-                            "the sub_operation primitive requires at "
-                                "least two operands",
-                            name_, codename_));
-                }
-
-                bool arguments_valid = true;
-                for (std::size_t i = 0; i != operands.size(); ++i)
-                {
-                    if (!valid(operands[i]))
-                    {
-                        arguments_valid = false;
-                    }
-                }
-
-                if (!arguments_valid)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sub_operation::sub_operation",
-                        generate_error_message(
-                            "the sub_operation primitive requires that the "
-                                "arguments given by the operands array "
-                                "are valid",
-                            name_, codename_));
-                }
-
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_argument_type
-                    {
-                        std::size_t lhs_dims = ops[0].num_dimensions();
-                        switch (lhs_dims)
-                        {
-                        case 0:
-                            return this_->sub0d(std::move(ops));
-
-                        case 1:
-                            return this_->sub1d(std::move(ops));
-
-                        case 2:
-                            return this_->sub2d(std::move(ops));
-
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "sub_operation::eval",
-                                generate_error_message(
-                                    "left hand side operand has unsupported "
-                                        "number of dimensions",
-                                this_->name_, this_->codename_));
-                        }
-                    }),
-                    detail::map_operands(
-                        operands, functional::numeric_operand{}, args,
-                        name_, codename_));
-            }
-        };
+                result.scalar() -= curr.scalar();
+                return std::move(result);
+            }));
     }
 
-    // implement '-' for all possible combinations of lhs and rhs
+    primitive_argument_type sub_operation::sub0d1d(operands_type && ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub0d1d",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive can sub a single "
+                        "value to a vector only if there are exactly "
+                        "two operands",
+                    name_, codename_));
+        }
+
+        ops[1] =
+            blaze::map(ops[1].vector(), sub0dnd_simd(ops[0].scalar()));
+        return primitive_argument_type(std::move(ops[1]));
+    }
+
+    primitive_argument_type sub_operation::sub0d2d(operands_type && ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub0d2d",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive can sub a single "
+                        "value to a matrix only if there are exactly "
+                        "two operands",
+                    name_, codename_));
+        }
+
+        ops[1] =
+            blaze::map(ops[1].matrix(), sub0dnd_simd(ops[0].scalar()));
+        return primitive_argument_type(std::move(ops[1]));
+    }
+
+    primitive_argument_type sub_operation::sub0d(operands_type && ops) const
+    {
+        std::size_t rhs_dims = ops[1].num_dimensions();
+        switch(rhs_dims)
+        {
+        case 0:
+            return sub0d0d(std::move(ops));
+
+        case 1:
+            return sub0d1d(std::move(ops));
+
+        case 2:
+            return sub0d2d(std::move(ops));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub0d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of dimensions",
+                    name_, codename_));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    primitive_argument_type sub_operation::sub1d0d(operands_type && ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub0d1d",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive can sub a single "
+                        "value to a vector only if there are exactly "
+                        "two operands",
+                    name_, codename_));
+        }
+
+        ops[0] =
+            blaze::map(ops[0].vector(), subnd0d_simd(ops[1].scalar()));
+        return primitive_argument_type(std::move(ops[0]));
+    }
+
+    primitive_argument_type sub_operation::sub1d1d(operands_type && ops) const
+    {
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
+
+        if (lhs.size() != rhs.size())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub1d1d",
+                execution_tree::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
+
+        if (ops.size() == 2)
+        {
+            if (lhs.is_ref())
+            {
+                lhs = lhs.vector() - rhs.vector();
+            }
+            else
+            {
+                lhs.vector() -= rhs.vector();
+            }
+            return primitive_argument_type{std::move(lhs)};
+        }
+
+        operand_type& first_term = *ops.begin();
+        return primitive_argument_type(std::accumulate(
+            ops.begin() + 1, ops.end(), std::move(first_term),
+            [](operand_type& result,
+                operand_type const& curr) -> operand_type
+            {
+                if (result.is_ref())
+                {
+                    result = result.vector() - curr.vector();
+                }
+                else
+                {
+                    result.vector() -= curr.vector();
+                }
+                return std::move(result);
+            }));
+    }
+
+    primitive_argument_type sub_operation::sub1d2d(operands_type&& ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub1d2d",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive can sub a vector "
+                        "from a matrix only if there are exactly "
+                        "two operands",
+                    name_, codename_));
+        }
+
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
+
+        auto cv = lhs.vector();
+        auto cm = rhs.matrix();
+
+        if (cv.size() != cm.columns())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub1d2d",
+                execution_tree::generate_error_message(
+                    "vector size does not match number of matrix "
+                        "columns",
+                    name_, codename_));
+        }
+
+        // TODO: Blaze does not support broadcasting
+        if (rhs.is_ref())
+        {
+            blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
+            for (std::size_t i = 0; i < cm.rows(); ++i)
+            {
+                blaze::row(m, i) = blaze::trans(cv) - blaze::row(cm, i);
+            }
+            return primitive_argument_type{std::move(m)};
+        }
+
+        for (std::size_t i = 0; i < cm.rows(); ++i)
+        {
+            blaze::row(cm, i) = blaze::trans(cv) - blaze::row(cm, i);
+        }
+        return primitive_argument_type{std::move(rhs)};
+    }
+
+    primitive_argument_type sub_operation::sub1d(operands_type && ops) const
+    {
+        std::size_t rhs_dims = ops[1].num_dimensions();
+
+        switch(rhs_dims)
+        {
+        case 0:
+            return sub1d0d(std::move(ops));
+
+        case 1:
+            return sub1d1d(std::move(ops));
+
+        case 2:
+            return sub1d2d(std::move(ops));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub1d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of "
+                        "dimensions",
+                    name_, codename_));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type sub_operation::sub2d0d(operands_type && ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub0d2d",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive can sub a single "
+                        "value to a matrix only if there are exactly "
+                        "two operands",
+                    name_, codename_));
+        }
+
+        ops[0] =
+            blaze::map(ops[0].matrix(), subnd0d_simd(ops[1].scalar()));
+        return primitive_argument_type(std::move(ops[0]));
+    }
+
+    primitive_argument_type sub_operation::sub2d1d(operands_type&& ops) const
+    {
+        if (ops.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub2d1d",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive can sub a vector "
+                        "from a matrix only if there are exactly "
+                        "two operands",
+                    name_, codename_));
+        }
+
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
+
+        auto cv = rhs.vector();
+        auto cm = lhs.matrix();
+
+        if (cv.size() != cm.columns())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub2d1d",
+                execution_tree::generate_error_message(
+                    "vector size does not match number of matrix "
+                        "columns",
+                    name_, codename_));
+        }
+
+        // TODO: Blaze does not support broadcasting
+        if (lhs.is_ref())
+        {
+            blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
+            for (std::size_t i = 0; i < cm.rows(); ++i)
+            {
+                blaze::row(m, i) = blaze::row(cm, i) - blaze::trans(cv);
+            }
+            return primitive_argument_type{std::move(m)};
+        }
+
+        for (std::size_t i = 0; i < cm.rows(); ++i)
+        {
+            blaze::row(cm, i) -= blaze::trans(cv);
+        }
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    primitive_argument_type sub_operation::sub2d2d(operands_type && ops) const
+    {
+        operand_type& lhs = ops[0];
+        operand_type& rhs = ops[1];
+
+        auto lhs_size = lhs.dimensions();
+        auto rhs_size = rhs.dimensions();
+
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub2d2d",
+                execution_tree::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
+
+        if (ops.size() == 2)
+        {
+            if (lhs.is_ref())
+            {
+                lhs = lhs.matrix() - rhs.matrix();
+            }
+            else
+            {
+                lhs.matrix() -= rhs.matrix();
+            }
+            return primitive_argument_type{std::move(lhs)};
+        }
+
+        operand_type& first_term = *ops.begin();
+        return primitive_argument_type(std::accumulate(
+            ops.begin() + 1, ops.end(), std::move(first_term),
+            [](operand_type& result,
+                operand_type const& curr) -> operand_type
+            {
+                if (result.is_ref())
+                {
+                    result = result.matrix() - curr.matrix();
+                }
+                else
+                {
+                    result.matrix() -= curr.matrix();
+                }
+                return std::move(result);
+            }));
+    }
+
+    primitive_argument_type sub_operation::sub2d(operands_type && ops) const
+    {
+        std::size_t rhs_dims = ops[1].num_dimensions();
+        switch(rhs_dims)
+        {
+        case 0:
+            return sub2d0d(std::move(ops));
+
+        case 1:
+            return sub2d1d(std::move(ops));
+
+        case 2:
+            return sub2d2d(std::move(ops));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub2d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of "
+                        "dimensions",
+                    name_, codename_));
+        }
+    }
+
+    hpx::future<primitive_argument_type> sub_operation::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands.size() < 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub_operation",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive requires at "
+                        "least two operands",
+                    name_, codename_));
+        }
+
+        bool arguments_valid = true;
+        for (std::size_t i = 0; i != operands.size(); ++i)
+        {
+            if (!valid(operands[i]))
+            {
+                arguments_valid = false;
+            }
+        }
+
+        if (!arguments_valid)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "sub_operation::sub_operation",
+                execution_tree::generate_error_message(
+                    "the sub_operation primitive requires that the "
+                        "arguments given by the operands array "
+                        "are valid",
+                    name_, codename_));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](operands_type&& ops) -> primitive_argument_type
+            {
+                std::size_t lhs_dims = ops[0].num_dimensions();
+                switch (lhs_dims)
+                {
+                case 0:
+                    return this_->sub0d(std::move(ops));
+
+                case 1:
+                    return this_->sub1d(std::move(ops));
+
+                case 2:
+                    return this_->sub2d(std::move(ops));
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "sub_operation::eval",
+                        execution_tree::generate_error_message(
+                            "left hand side operand has unsupported "
+                                "number of dimensions",
+                        this_->name_, this_->codename_));
+                }
+            }),
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
+                name_, codename_));
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Implement '-' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> sub_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::sub>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::sub>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}

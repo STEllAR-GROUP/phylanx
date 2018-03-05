@@ -48,26 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        struct or_operation : std::enable_shared_from_this<or_operation>
-        {
-            or_operation(std::string const& name, std::string const& codename)
-              : name_(name)
-              , codename_(codename)
-            {
-            }
-
-        protected:
-            std::string name_;
-            std::string codename_;
-
-        protected:
-            using operand_type = ir::node_data<bool>;
-            using operands_type = std::vector<primitive_argument_type>;
-
-            primitive_argument_type or_operation0d1d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation0d1d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
@@ -78,8 +60,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(rhs)});
             }
 
-            primitive_argument_type or_operation0d2d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation0d2d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
@@ -90,8 +72,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(rhs)});
             }
 
-            primitive_argument_type or_operation0d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation0d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch (rhs_dims)
@@ -109,15 +91,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation0d",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "the operands have incompatible number of "
                                 "dimensions",
                             name_, codename_));
                 }
             }
 
-            primitive_argument_type or_operation1d0d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation1d0d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
@@ -128,8 +110,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(lhs)});
             }
 
-            primitive_argument_type or_operation1d1d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation1d1d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -138,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation1d1d",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -152,8 +134,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(lhs)});
             }
 
-            primitive_argument_type or_operation1d2d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation1d2d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 auto rhs_size = rhs.dimensions();
@@ -162,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation1d2d",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -179,8 +161,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(rhs)});
             }
 
-            primitive_argument_type or_operation1d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation1d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch (rhs_dims)
@@ -197,15 +179,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation1d",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "the operands have incompatible number of "
                                 "dimensions",
                             name_, codename_));
                 }
             }
 
-            primitive_argument_type or_operation2d0d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation2d0d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -219,8 +201,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(lhs)});
             }
 
-            primitive_argument_type or_operation2d1d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation2d1d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_size = rhs.dimension(0);
                 auto lhs_size = lhs.dimensions();
@@ -229,7 +211,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation2d1d",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -246,8 +228,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(lhs)});
             }
 
-            primitive_argument_type or_operation2d2d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation2d2d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 auto lhs_size = lhs.dimensions();
                 auto rhs_size = rhs.dimensions();
@@ -256,7 +238,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation2d2d",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -270,8 +252,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<bool>{std::move(lhs)});
             }
 
-            primitive_argument_type or_operation2d(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_operation2d(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch (rhs_dims)
@@ -288,16 +270,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation2d",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "the operands have incompatible number of "
                                 "dimensions",
                             name_, codename_));
                 }
             }
 
-        public:
-            primitive_argument_type or_all(
-                operand_type&& lhs, operand_type&& rhs) const
+    primitive_argument_type or_operation::or_all(
+        operand_type&& lhs, operand_type&& rhs) const
             {
                 std::size_t lhs_dims = lhs.num_dimensions();
                 switch (lhs_dims)
@@ -314,189 +295,184 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_all",
-                        generate_error_message(
+                        execution_tree::generate_error_message(
                             "left hand side operand has unsupported number of "
                                 "dimensions",
                             name_, codename_));
                 }
             }
 
-        protected:
-            struct visit_or_operation
-            {
-                template <typename T1, typename T2>
-                primitive_argument_type operator()(T1, T2) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side are incompatible "
-                                "and can't be compared",
-                            or_.name_, or_.codename_));
-                }
+    struct or_operation::visit_or_operation
+    {
+        template <typename T1, typename T2>
+        primitive_argument_type operator()(T1, T2) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side are incompatible "
+                        "and can't be compared",
+                    or_.name_, or_.codename_));
+        }
 
-                primitive_argument_type operator()(
-                    ir::node_data<primitive_argument_type>&&,
-                    ir::node_data<primitive_argument_type>&&) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side can't be "
-                                "compared",
-                            or_.name_, or_.codename_));
-                }
+        primitive_argument_type operator()(
+            ir::node_data<primitive_argument_type>&&,
+            ir::node_data<primitive_argument_type>&&) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side can't be "
+                        "compared",
+                    or_.name_, or_.codename_));
+        }
 
-                primitive_argument_type operator()(
-                    std::vector<ast::expression>&&,
-                    std::vector<ast::expression>&&) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side can't be "
-                                "compared",
-                            or_.name_, or_.codename_));
-                }
+        primitive_argument_type operator()(
+            std::vector<ast::expression>&&,
+            std::vector<ast::expression>&&) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side can't be "
+                        "compared",
+                    or_.name_, or_.codename_));
+        }
 
-                primitive_argument_type operator()(
-                    ast::expression&&, ast::expression&&) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side can't be "
-                                "compared",
-                            or_.name_, or_.codename_));
-                }
+        primitive_argument_type operator()(
+            ast::expression&&, ast::expression&&) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side can't be "
+                        "compared",
+                    or_.name_, or_.codename_));
+        }
 
-                primitive_argument_type operator()(
-                    primitive&&, primitive&&) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side can't be "
-                                "compared",
-                            or_.name_, or_.codename_));
-                }
+        primitive_argument_type operator()(
+            primitive&&, primitive&&) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side can't be "
+                        "compared",
+                    or_.name_, or_.codename_));
+        }
 
-                template <typename T>
-                primitive_argument_type operator()(T&& lhs, T&& rhs) const
+        template <typename T>
+        primitive_argument_type operator()(T&& lhs, T&& rhs) const
+        {
+            return primitive_argument_type(
+                ir::node_data<bool>{lhs && rhs});
+        }
+
+        primitive_argument_type operator()(
+            ast::nil lhs, ast::nil rhs) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side can't be "
+                        "compared",
+                    or_.name_, or_.codename_));
+        }
+
+        primitive_argument_type operator()(
+            phylanx::util::recursive_wrapper<
+                std::vector<primitive_argument_type>>
+                lhs,
+            phylanx::util::recursive_wrapper<
+                std::vector<primitive_argument_type>>
+                rhs) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side can't be "
+                        "compared",
+                    or_.name_, or_.codename_));
+        }
+
+        primitive_argument_type operator()(
+            std::string lhs, std::string rhs) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "left hand side and right hand side can't be "
+                        "compared",
+                    or_.name_, or_.codename_));
+        }
+
+        primitive_argument_type operator()(ir::node_data<double>&& lhs,
+            ir::node_data<double>&& rhs) const
+        {
+            return or_.or_all(ir::node_data<bool>{std::move(lhs)},
+                ir::node_data<bool>{std::move(rhs)});
+        }
+
+        primitive_argument_type operator()(
+            operand_type&& lhs, operand_type&& rhs) const
+        {
+            return or_.or_all(std::move(lhs), std::move(rhs));
+        }
+
+        or_operation const& or_;
+    };
+
+    hpx::future<primitive_argument_type> or_operation::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        //TODO: support for operands.size()>2
+        if (operands.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "the or_operation primitive requires exactly "
+                        "two operands",
+                    name_, codename_));
+        }
+
+        if (!valid(operands[0]) || !valid(operands[1]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                execution_tree::generate_error_message(
+                    "the or_operation primitive requires that the "
+                        "arguments given by the operands array "
+                        "are valid",
+                    name_, codename_));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(
+            hpx::util::unwrapping(
+                [this_](
+                    operands_type&& ops) -> primitive_argument_type
                 {
                     return primitive_argument_type(
-                        ir::node_data<bool>{lhs && rhs});
-                }
-
-                primitive_argument_type operator()(
-                    ast::nil lhs, ast::nil rhs) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side can't be "
-                                "compared",
-                            or_.name_, or_.codename_));
-                }
-
-                primitive_argument_type operator()(
-                    phylanx::util::recursive_wrapper<
-                        std::vector<primitive_argument_type>>
-                        lhs,
-                    phylanx::util::recursive_wrapper<
-                        std::vector<primitive_argument_type>>
-                        rhs) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side can't be "
-                                "compared",
-                            or_.name_, or_.codename_));
-                }
-
-                primitive_argument_type operator()(
-                    std::string lhs, std::string rhs) const
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "left hand side and right hand side can't be "
-                                "compared",
-                            or_.name_, or_.codename_));
-                }
-
-                primitive_argument_type operator()(ir::node_data<double>&& lhs,
-                    ir::node_data<double>&& rhs) const
-                {
-                    return or_.or_all(ir::node_data<bool>{std::move(lhs)},
-                        ir::node_data<bool>{std::move(rhs)});
-                }
-
-                primitive_argument_type operator()(
-                    operand_type&& lhs, operand_type&& rhs) const
-                {
-                    return or_.or_all(std::move(lhs), std::move(rhs));
-                }
-
-                or_operation const& or_;
-            };
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args) const
-            {
-                //TODO: support for operands.size()>2
-                if (operands.size() != 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "the or_operation primitive requires exactly "
-                                "two operands",
-                            name_, codename_));
-                }
-
-                if (!valid(operands[0]) || !valid(operands[1]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::eval",
-                        generate_error_message(
-                            "the or_operation primitive requires that the "
-                                "arguments given by the operands array "
-                                "are valid",
-                            name_, codename_));
-                }
-
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(
-                    hpx::util::unwrapping(
-                        [this_](
-                            operands_type&& ops) -> primitive_argument_type
-                        {
-                            return primitive_argument_type(
-                                util::visit(visit_or_operation{*this_},
-                                    std::move(ops[0].variant()),
-                                    std::move(ops[1].variant())));
-                        }),
-                    detail::map_operands(
-                        operands, functional::literal_operand{}, args,
-                        name_, codename_));
-            }
-        };
+                        util::visit(visit_or_operation{*this_},
+                            std::move(ops[0].variant()),
+                            std::move(ops[1].variant())));
+                }),
+            detail::map_operands(
+                operands, functional::literal_operand{}, args,
+                name_, codename_));
     }
 
-    // implement '||' for all possible combinations of lhs and rhs
+    //////////////////////////////////////////////////////////////////////////
+    // Implement '||' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> or_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::or_operation>(name_, codename_)
-                ->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::or_operation>(name_, codename_)
-            ->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}

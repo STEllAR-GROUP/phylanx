@@ -1,7 +1,7 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/parallel_block_operation.hpp>
@@ -48,54 +48,47 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    namespace detail
+    hpx::future<primitive_argument_type> parallel_block_operation::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename) const
     {
-        struct block : std::enable_shared_from_this<block>
+        if (operands.empty())
         {
-            block() = default;
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                    "parallel_block_operation::eval",
+                execution_tree::generate_error_message(
+                    "the parallel_block_operation primitive "
+                        "requires at least one argument",
+                    name, codename));
+        }
 
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args,
-                std::string const& name, std::string const& codename) const
+        // Evaluate condition of while statement
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](std::vector<primitive_argument_type> && ops)
+            ->  primitive_argument_type
             {
-                if (operands.empty())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "parallel_block_operation::eval",
-                        generate_error_message(
-                            "the parallel_block_operation primitive "
-                                "requires at least one argument",
-                            name, codename));
-                }
-
-                // evaluate condition of while statement
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](std::vector<primitive_argument_type> && ops)
-                    ->  primitive_argument_type
-                    {
-                        return ops.back();
-                    }),
-                    detail::map_operands(
-                        operands, functional::value_operand{}, args,
-                        name, codename));
-            }
-        };
+                return ops.back();
+            }),
+            detail::map_operands(
+                operands, functional::value_operand{}, args,
+                name, codename));
     }
 
-    // start iteration over given parallel-block statement
+    //////////////////////////////////////////////////////////////////////////
+    // Start iteration over given parallel-block statement
     hpx::future<primitive_argument_type> parallel_block_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::block>()->eval(
+            return eval(
                 args, noargs, name_, codename_);
         }
 
-        return std::make_shared<detail::block>()->eval(
+        return eval(
             operands_, args, name_, codename_);
     }
 }}}

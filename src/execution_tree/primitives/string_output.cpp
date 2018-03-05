@@ -1,7 +1,7 @@
-//  Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>
@@ -45,55 +45,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    namespace detail
+    hpx::future<primitive_argument_type> string_output::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
     {
-        struct string_output : std::enable_shared_from_this<string_output>
-        {
-            string_output() = default;
-
-        protected:
-            using args_type = std::vector<primitive_argument_type>;
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](args_type && args) -> primitive_argument_type
             {
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type && args) -> primitive_argument_type
-                    {
-                        if (args.empty())
-                        {
-                            return primitive_argument_type{std::string{}};
-                        }
+                if (args.empty())
+                {
+                    return primitive_argument_type{std::string{}};
+                }
 
-                        std::stringstream strm;
-                        for (auto const& arg : args)
-                        {
-                            strm << arg;
-                        }
+                std::stringstream strm;
+                for (auto const& arg : args)
+                {
+                    strm << arg;
+                }
 
-                        return primitive_argument_type(strm.str());
-                    }),
-                    detail::map_operands(
-                        operands, functional::value_operand{}, args));
-            }
-
-        private:
-            primitive_argument_type operand_;
-        };
+                return primitive_argument_type(strm.str());
+            }),
+            detail::map_operands(
+                operands, functional::value_operand{}, args));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // write data to given file and return content
+    // Write data to given file and return content
     hpx::future<primitive_argument_type> string_output::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return std::make_shared<detail::string_output>()->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::string_output>()->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}
