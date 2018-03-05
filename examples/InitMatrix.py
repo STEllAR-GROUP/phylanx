@@ -62,8 +62,7 @@ print(
         fact
     )""", three)[0])
 print(et.eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
-print(
-    et.eval("block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
+print(et.eval("block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
 et.eval('cout("Hello ",3," - ",4.1-2.9)')
 et.eval("""
     block(

@@ -116,4 +116,5 @@ def foo():
         i += 1
     return sumn
 
+
 assert foo() == 45
