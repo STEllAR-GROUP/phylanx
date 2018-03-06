@@ -18,21 +18,21 @@ RUN apt-get update  &&                                                          
     git clone --depth 1 https://github.com/pybind/pybind11.git pybind11-src &&   \
     cd pybind11-src &&                                                           \
     mkdir build && cd build &&                                                   \
-    cmake  -DPYBIND11_TEST=OFF -DCMAKE_INSTALL_PREFIX=/pybind11 .. &&            \
+    cmake  -DPYBIND11_TEST=OFF .. &&                                             \
     make install &&                                                              \
     cd / &&                                                                      \
     rm -rf /pybind11-src &&                                                      \
     git clone --depth 1 https://bitbucket.org/blaze-lib/blaze.git blaze-src &&   \
     cd blaze-src &&                                                              \
     mkdir build && cd build &&                                                   \
-    cmake -DCMAKE_INSTALL_PREFIX=/blaze -DBLAZE_SMP_THREADS=C++11 .. &&          \
+    cmake -DBLAZE_SMP_THREADS=C++11 .. &&                                        \
     make install &&                                                              \
     cd / &&                                                                      \
     rm -rf /blaze-src  &&                                                        \
     git clone --depth 1 https://github.com/BlueBrain/HighFive.git highfive-src &&\
     cd highfive-src &&                                                           \
     mkdir build && cd build &&                                                   \
-    cmake -DCMAKE_INSTALL_PREFIX=/highfive -DUSE_BOOST=Off .. &&                 \
+    cmake -DUSE_BOOST=Off .. &&                                                  \
     make install &&                                                              \
     cd / &&                                                                      \
     rm -rf /highfive-src
