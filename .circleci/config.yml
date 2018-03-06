@@ -23,7 +23,9 @@ jobs:
                 command: mkdir -p build
             - run:
                 name: Check the formatting of Phylanx's Python files
-                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} flake8 --config=tools/flake8/config.ini .
+                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} flake8 --config=tools/flake8/config.ini --tee --output-file=./build/phylanx_flake8_report.txt .
+            - store_artifacts:
+                path: build/phylanx_flake8_report.txt
             # CMake
             - run:
                 name: Run CMake
