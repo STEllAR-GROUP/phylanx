@@ -8,7 +8,7 @@ jobs:
     build:
         machine: true
         environment:
-            IMAGE_NAME: stellargroup/phylanx:dev
+            IMAGE_NAME: stellargroup/phylanx
         branches:
             ignore:
                 - gh-pages
@@ -45,12 +45,18 @@ jobs:
             - run:
                 name: Run all tests
                 command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2 tests
+            - run:
+                name: Install to the image
+                command: docker run --name live -v $PWD:/.data ${IMAGE_NAME} bash /.data/tools/docker/install.sh
             # Deployment
             - deploy:
                 name: Push the Phylanx build environment Docker image
                 command: |
-                    if [ "$CIRCLE_BRANCH" == "master" ]; then
+                    if [ "$CIRCLE_BRANCH" == "cci2_sync_master" ]; then
                         docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-                        docker push ${IMAGE_NAME}
+                        docker tag $IMAGE_NAME $IMAGE_NAME:prerequisites
+                        docker commit live $IMAGE_NAME:latest
+                        docker push ${IMAGE_NAME}:prerequisites
+                        docker push ${IMAGE_NAME}:latest
                     fi
 
