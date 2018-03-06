@@ -6,7 +6,6 @@
 
 set(tests
     make_list
-    make_vector
    )
 
 foreach(test ${tests})

@@ -19,7 +19,7 @@ std::string const code = R"(block(
         define(b, 6),
         define(lst1, make_list(a, b, 42)),
         debug(lst1),
-        define(lst2, make_list(make_vector(a, b), lst1, "string")),
+        define(lst2, make_list(hstack(a, b), lst1, "string")),
         debug(lst2)
     )),
     f
