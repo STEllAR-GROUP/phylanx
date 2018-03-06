@@ -44,6 +44,7 @@ set(tests
     linspace
     map_operation
     mul_operation
+    mean_operation
     not_equal_operation
     or_operation
     parallel_block_operation
