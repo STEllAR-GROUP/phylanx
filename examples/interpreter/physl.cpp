@@ -233,14 +233,14 @@ int main(int argc, char* argv[])
         // and the associate performance counter data
         if (vm.count("performance") != 0)
         {
+            auto topology = snippets.snippets_.back().get_expression_topology();
+
             std::cout << "\n"
-                << phylanx::execution_tree::dot_tree(code_source_name,
-                       snippets.snippets_.back().get_expression_topology())
+                << phylanx::execution_tree::dot_tree(code_source_name, topology)
                 << "\n";
 
             std::cout << "\n"
-                << phylanx::execution_tree::newick_tree(code_source_name,
-                       snippets.snippets_.back().get_expression_topology())
+                << phylanx::execution_tree::newick_tree(code_source_name, topology)
                 << "\n\n";
 
             print_performance_counter_data_csv();
