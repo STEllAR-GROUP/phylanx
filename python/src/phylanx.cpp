@@ -11,9 +11,6 @@
 #include <bindings/binding_helpers.hpp>
 
 #include <pybind11/pybind11.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
-#include <pybind11/stl.h>
 
 #include <hpx/util/detail/pp/stringize.hpp>
 
