@@ -68,6 +68,7 @@ namespace phylanx { namespace execution_tree
             primitives::extract_shape::match_data,
             primitives::identity::match_data,
             primitives::inverse_operation::match_data,
+            primitives::mean_operation::match_data,
             primitives::power_operation::match_data,
             primitives::random::match_data,
             primitives::shuffle_operation::match_data,
