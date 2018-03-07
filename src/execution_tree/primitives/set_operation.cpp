@@ -22,6 +22,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#include <blaze/math/Elements.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
