@@ -32,7 +32,11 @@ class IORedirecter:
         os.close(1)
         os.dup(self.saveStdout)
 
-iod = IORedirecter()
+class DoNothing:
+    def __enter__(self):
+        pass
+    def __exit__(self,type,value,traceback):
+        pass
 
 def get_node(node, **kwargs):
     if node is None:
@@ -460,9 +464,9 @@ def convert_to_phylanx_type(v):
 # IORedirector.
 try:
     get_ipython()
-    use_iod = True
+    iod = IORedirecter()
 except:
-    use_iod = False
+    iod = DoNothing()
 
 # Create the decorator
 def Phylanx(target="PhySL"):
@@ -496,10 +500,7 @@ def Phylanx(target="PhySL"):
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            if use_iod:
-                with iod:
-                    return et.eval(self.__physl_src__, *nargs)
-            else:
+            with iod:
                 return et.eval(self.__physl_src__, *nargs)
 
     return PhyTransformer
