@@ -183,7 +183,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto matrix = arg_a.matrix();
 
                 const matrix_column_iterator<decltype(matrix)> matrix_begin(matrix);
-                const matrix_column_iterator<decltype(matrix)> matrix_end(matrix, matrix.rows());
+                const matrix_column_iterator<decltype(matrix)> matrix_end(matrix, matrix.columns());
 
                 std::vector<primitive_argument_type> result;
                 for (auto it = matrix_begin; it != matrix_end; ++it)
