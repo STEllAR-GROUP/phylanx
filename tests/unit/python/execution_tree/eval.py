@@ -119,23 +119,3 @@ def foo():
 
 
 assert foo() == 45
-
-@Phylanx()
-def foo():
-    return [0,1,2,3,"x"]
-
-res = foo()
-assert res[0] == 0
-assert res[1] == 1
-assert res[2] == 2
-assert res[3] == 3
-assert res[4] == 'x'
-
-@Phylanx()
-def foo():
-    sumn = 0
-    for i in [1,3,5]:
-        sumn += i
-    return sumn
-
-assert foo() == 9
