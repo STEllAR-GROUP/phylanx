@@ -48,8 +48,8 @@ jobs:
             - run:
                 name: Install to the image
                 command: |
-                    docker run --name live -v $PWD:/.data ${IMAGE_NAME} bash /.data/tools/circleci/install.sh
-                    docker commit live $IMAGE_NAME:latest
+                    docker run --name live -v $PWD:/.data ${IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && make -C /phylanx/build install"
+                    docker commit live $IMAGE_NAME:dev
             # Deployment
             - deploy:
                 name: Push the Phylanx build environment Docker image
@@ -57,7 +57,7 @@ jobs:
                     if [ "$CIRCLE_BRANCH" == "master" ]; then
                         docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
                         docker tag $IMAGE_NAME $IMAGE_NAME:prerequisites
-                        docker push ${IMAGE_NAME}:prerequisites
-                        docker push ${IMAGE_NAME}:latest
+                        docker push ${IMAGE_NAME}:devel-prerequisites
+                        docker push ${IMAGE_NAME}:devel
                     fi
 
