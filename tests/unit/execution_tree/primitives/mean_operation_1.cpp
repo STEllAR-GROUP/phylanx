@@ -27,8 +27,7 @@ void test_mean_operation_0d()
             phylanx::execution_tree::primitives::create_mean_operation(
                     hpx::find_here(),
                     std::vector<phylanx::execution_tree::primitive_argument_type>{
-                            std::move(first)//, std::move(second)
-                    });
+                            std::move(first), std::move(second)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
             mean.eval();
@@ -55,7 +54,7 @@ void test_mean_operation_1d()
             phylanx::execution_tree::primitives::create_mean_operation(
                     hpx::find_here(),
                     std::vector<phylanx::execution_tree::primitive_argument_type>{
-                            std::move(first)//, std::move(second)
+                            std::move(first), std::move(second)
                     });
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -84,7 +83,7 @@ void test_mean_operation_2d_flat()
             phylanx::execution_tree::primitives::create_mean_operation(
                     hpx::find_here(),
                     std::vector<phylanx::execution_tree::primitive_argument_type>{
-                            std::move(first)//, std::move(second)
+                            std::move(first), std::move(second)
                     });
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
@@ -92,84 +91,86 @@ void test_mean_operation_2d_flat()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
                 phylanx::execution_tree::extract_numeric_value(f.get()));
+//    std::cout << "\n--------------------------" << phylanx::execution_tree::extract_numeric_value(f.get());
+//    std::cout << " --------------------------\n";
 
 }
 
-//void test_mean_operation_2d_x_axis()
-//{
-//    using arg_type = phylanx::execution_tree::primitive_argument_type;
-//    blaze::DynamicMatrix<double> matrix_1{ { 1.0, 2.0, 6.0 },{ 4.0, 5.0, 6.0 } };
-//
-//    std::vector<arg_type> expected{
-//            arg_type{static_cast<double>(3.0)},
-//            arg_type{static_cast<double>(5.0)}};
-//
-//    phylanx::execution_tree::primitive first =
-//            phylanx::execution_tree::primitives::create_variable(
-//                    hpx::find_here(), phylanx::ir::node_data<double>(matrix_1));
-//
-//    phylanx::execution_tree::primitive second =
-//            phylanx::execution_tree::primitives::create_variable(
-//                    hpx::find_here(), phylanx::ir::node_data<double>(0));
-//
-//
-//    phylanx::execution_tree::primitive p =
-//            phylanx::execution_tree::primitives::create_mean_operation(
-//                    hpx::find_here(),
-//                    std::vector<phylanx::execution_tree::primitive_argument_type>{
-//                            std::move(first), std::move(second)
-//                    });
-//
-//    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-//            p.eval();
-//
-//
-//    auto actual = phylanx::execution_tree::extract_list_value(f.get());
-//
-//    HPX_TEST_EQ(expected, actual);
-//}
-//
-//
-//void test_mean_operation_2d_y_axis()
-//{
-//    using arg_type = phylanx::execution_tree::primitive_argument_type;
-//    blaze::DynamicMatrix<double> matrix_1{ { 1.0, 2.0, 6.0 },{ 4.0, 5.0, 6.0 } };
-//
-//    std::vector<arg_type> expected{
-//            arg_type{static_cast<double>(2.5)},
-//            arg_type{static_cast<double>(3.5)},
-//            arg_type{static_cast<double>(6.0)}};
-//
-//    phylanx::execution_tree::primitive first =
-//            phylanx::execution_tree::primitives::create_variable(
-//                    hpx::find_here(), phylanx::ir::node_data<double>(matrix_1));
-//
-//    phylanx::execution_tree::primitive second =
-//            phylanx::execution_tree::primitives::create_variable(
-//                    hpx::find_here(), phylanx::ir::node_data<double>(1));
-//
-//
-//    phylanx::execution_tree::primitive p =
-//            phylanx::execution_tree::primitives::create_mean_operation(
-//                    hpx::find_here(),
-//                    std::vector<phylanx::execution_tree::primitive_argument_type>{
-//                            std::move(first), std::move(second)
-//                    });
-//
-//    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-//            p.eval();
-//
-//
-//    auto actual = phylanx::execution_tree::extract_list_value(f.get());
-//
-//    HPX_TEST_EQ(expected, actual);
-//}
+void test_mean_operation_2d_x_axis()
+{
+    using arg_type = phylanx::execution_tree::primitive_argument_type;
+    blaze::DynamicMatrix<double> matrix_1{ { 1.0, 2.0, 6.0 },{ 4.0, 5.0, 6.0 } };
+
+    std::vector<arg_type> expected{
+            arg_type{static_cast<double>(3.0)},
+            arg_type{static_cast<double>(5.0)}};
+
+    phylanx::execution_tree::primitive first =
+            phylanx::execution_tree::primitives::create_variable(
+                    hpx::find_here(), phylanx::ir::node_data<double>(matrix_1));
+
+    phylanx::execution_tree::primitive second =
+            phylanx::execution_tree::primitives::create_variable(
+                    hpx::find_here(), phylanx::ir::node_data<double>(0));
+
+
+    phylanx::execution_tree::primitive p =
+            phylanx::execution_tree::primitives::create_mean_operation(
+                    hpx::find_here(),
+                    std::vector<phylanx::execution_tree::primitive_argument_type>{
+                            std::move(first), std::move(second)
+                    });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+            p.eval();
+
+
+    auto actual = phylanx::execution_tree::extract_list_value(f.get());
+
+    HPX_TEST_EQ(expected, actual);
+}
+
+
+void test_mean_operation_2d_y_axis()
+{
+    using arg_type = phylanx::execution_tree::primitive_argument_type;
+    blaze::DynamicMatrix<double> matrix_1{ { 1.0, 2.0, 6.0 },{ 4.0, 5.0, 6.0 } };
+
+    std::vector<arg_type> expected{
+            arg_type{static_cast<double>(2.5)},
+            arg_type{static_cast<double>(3.5)},
+            arg_type{static_cast<double>(6.0)}};
+
+    phylanx::execution_tree::primitive first =
+            phylanx::execution_tree::primitives::create_variable(
+                    hpx::find_here(), phylanx::ir::node_data<double>(matrix_1));
+
+    phylanx::execution_tree::primitive second =
+            phylanx::execution_tree::primitives::create_variable(
+                    hpx::find_here(), phylanx::ir::node_data<double>(1));
+
+
+    phylanx::execution_tree::primitive p =
+            phylanx::execution_tree::primitives::create_mean_operation(
+                    hpx::find_here(),
+                    std::vector<phylanx::execution_tree::primitive_argument_type>{
+                            std::move(first), std::move(second)
+                    });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+            p.eval();
+
+
+    auto actual = phylanx::execution_tree::extract_list_value(f.get());
+
+    HPX_TEST_EQ(expected, actual);
+}
 
 int main(int argc, char* argv[])
 {
     test_mean_operation_0d();
     test_mean_operation_1d();
-    test_mean_operation_2d_flat();
+    //test_mean_operation_2d_flat();
     //test_mean_operation_2d_x_axis();
     //test_mean_operation_2d_y_axis();
 

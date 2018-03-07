@@ -37,11 +37,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             , public std::enable_shared_from_this<mean_operation>
             {
             protected:
-                using arg_type = ir::node_data<double>;
+                using val_type = double;
+                using arg_type = ir::node_data<val_type>;
                 using args_type = std::vector<arg_type>;
-                using storage0d_type = typename arg_type::storage0d_type;
-                //using storage1d_type = typename arg_type::storage1d_type;
-                //using storage2d_type = typename arg_type::storage2d_type;
 
                 hpx::future<primitive_argument_type> eval(
                         std::vector<primitive_argument_type> const& operands,
@@ -59,10 +57,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::vector<primitive_argument_type> const& params) const override;
 
             private:
-                //std::vector<int> create_list_row(
-                  //      int start, int stop, int step, int array_length) const;
+
                 primitive_argument_type mean0d(args_type&& args) const;
                 primitive_argument_type mean1d(args_type&& args) const;
+                primitive_argument_type mean2d_flatten(arg_type&& arg_a) const;
+                primitive_argument_type mean2d_x_axis(arg_type&& arg_a) const;
+                primitive_argument_type mean2d_y_axis(arg_type&& arg_a) const;
                 primitive_argument_type mean2d(args_type&& args) const;
             };
 

@@ -8,15 +8,19 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/mean_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/matrix_iterators.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/iterator_facade.hpp>
 
+#include <algorithm>
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <memory>
-#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,6 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         locality, type, std::move(operands), name, codename);
             }
 
+
             match_pattern_type const mean_operation::match_data =
             {
                     hpx::util::make_tuple("mean",
@@ -43,6 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                           &create_mean_operation,
                                           &create_primitive<mean_operation>)
             };
+
 
             ///////////////////////////////////////////////////////////////////////////
             mean_operation::mean_operation(
@@ -119,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                         "mean_operation::mean1d",
                                         execution_tree::generate_error_message(
-                                                "attempt to get argmin of an empty sequence",
+                                                "attempt to get mean of an empty sequence",
                                                 name_, codename_));
                 }
 
@@ -130,6 +136,128 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return sum / a.size();
             }
 
+            ///////////////////////////////////////////////////////////////////////////
+            primitive_argument_type mean_operation::mean2d_flatten(arg_type && arg_a) const
+            {
+                using phylanx::util::matrix_row_iterator;
+
+                auto matrix = arg_a.matrix();
+
+                const matrix_row_iterator<decltype(matrix)> matrix_begin(matrix);
+                const matrix_row_iterator<decltype(matrix)> matrix_end(matrix, matrix.rows());
+
+                val_type global_sum = 0.0d;
+                std::size_t global_size = 0ul;
+                for (auto it = matrix_begin; it != matrix_end; ++it)
+                {
+                    global_sum += std::accumulate(it->begin(), it->end(), 0.0);
+                    global_size += (*it).size();
+                }
+
+                return global_sum / global_size;
+            }
+
+            primitive_argument_type mean_operation::mean2d_x_axis(arg_type && arg_a) const
+            {
+                using phylanx::util::matrix_row_iterator;
+
+                auto matrix = arg_a.matrix();
+
+                const matrix_row_iterator<decltype(matrix)> matrix_begin(matrix);
+                const matrix_row_iterator<decltype(matrix)> matrix_end(matrix, matrix.rows());
+
+                std::vector<primitive_argument_type> result;
+                for (auto it = matrix_begin; it != matrix_end; ++it)
+                {
+                    const auto local_sum = std::accumulate(it->begin(), it->end(), 0.0);
+                    const auto local_size = (*it).size();
+                    result.emplace_back(primitive_argument_type(local_sum / local_size));
+                }
+                return result;
+            }
+
+            primitive_argument_type mean_operation::mean2d_y_axis(arg_type && arg_a) const
+            {
+                using phylanx::util::matrix_column_iterator;
+
+                auto matrix = arg_a.matrix();
+
+                const matrix_column_iterator<decltype(matrix)> matrix_begin(matrix);
+                const matrix_column_iterator<decltype(matrix)> matrix_end(matrix, matrix.rows());
+
+                std::vector<primitive_argument_type> result;
+                for (auto it = matrix_begin; it != matrix_end; ++it)
+                {
+                    const auto local_sum = std::accumulate(it->begin(), it->end(), 0.0);
+                    const auto local_size = (*it).size();
+                    result.emplace_back(primitive_argument_type(local_sum / local_size));
+                }
+                return result;
+            }
+
+
+            primitive_argument_type mean_operation::mean2d(args_type&& args) const
+            {
+                // matrix should not be empty
+                if (args[0].matrix().rows() == 0 ||
+                    args[0].matrix().columns() == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "mean_operation::mean2d",
+                                        execution_tree::generate_error_message(
+                                                "attempt to get mean of an empty sequence",
+                                                name_, codename_));
+                }
+
+                // `axis` is optional
+                if (args.size() == 1) // it should not be two
+                {
+                    // Option 1: Flatten and find mean
+                    return mean2d_flatten(std::move(args[0]));
+                }
+
+                // `axis` must be a scalar if provided
+                if (args[1].num_dimensions() != 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "mean_operation::mean2d",
+                                        execution_tree::generate_error_message(
+                                                "operand axis must be a scalar", name_, codename_));
+                }
+                const int axis = args[1].scalar();
+                // `axis` can only be -2, -1, 0, or 1
+                if (axis < -2 || axis > 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "mean_operation::mean2d",
+                                        execution_tree::generate_error_message(
+                                                "operand axis can only between -2 and 1 for an a "
+                                                        "operand that is 2d",
+                                                name_, codename_));
+                }
+                switch (axis)
+                {
+                    // Option 2: Find min among rows
+                    case -2: HPX_FALLTHROUGH;
+                    case 0:
+                        return mean2d_x_axis(std::move(args[0]));
+
+                        // Option 3: Find min among columns
+                    case -1: HPX_FALLTHROUGH;
+                    case 1:
+                        return mean2d_y_axis(std::move(args[0]));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                            "mean_operation::mean2d",
+                                            execution_tree::generate_error_message(
+                                                    "operand a has an invalid number of "
+                                                            "dimensions",
+                                                    name_, codename_));
+                }
+
+
+            }
 
             hpx::future<primitive_argument_type> mean_operation::eval(
                     std::vector<primitive_argument_type> const& operands,
@@ -180,7 +308,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     return this_->mean1d(std::move(args));
 
                                 case 2:
-                                    return this_->mean0d(std::move(args));
+                                    return this_->mean2d(std::move(args));
 
                                 default:
                                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
