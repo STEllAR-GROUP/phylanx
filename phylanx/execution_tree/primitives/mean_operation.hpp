@@ -62,8 +62,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 //std::vector<int> create_list_row(
                   //      int start, int stop, int step, int array_length) const;
                 primitive_argument_type mean0d(args_type&& args) const;
-                //primitive_argument_type row_slicing1d(args_type&& args) const;
-                //primitive_argument_type row_slicing2d(args_type&& args) const;
+                primitive_argument_type mean1d(args_type&& args) const;
+                primitive_argument_type mean2d(args_type&& args) const;
             };
 
             PHYLANX_EXPORT primitive create_mean_operation(

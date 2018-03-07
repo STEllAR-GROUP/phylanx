@@ -56,9 +56,79 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             primitive_argument_type mean_operation::mean0d(args_type&& args) const
             {
+                // `axis` is optional
+                if (args.size() == 2)
+                {
+                    // `axis` must be a scalar if provided
+                    if (args[1].num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                            "mean_operation::mean0d",
+                                            execution_tree::generate_error_message(
+                                                    "operand axis must be a scalar", name_,
+                                                    codename_));
+                    }
+                    const int axis = args[1].scalar();
+                    // `axis` can only be -1 or 0
+                    if (axis < -1 || axis > 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                            "mean_operation::mean0d",
+                                            execution_tree::generate_error_message(
+                                                    "operand axis can only between -1 and 0 for "
+                                                            "an a operand that is 0d",
+                                                    name_, codename_));
+                    }
+                }
                 return primitive_argument_type{std::move(args[0])};
             }
 
+            ///////////////////////////////////////////////////////////////////////////
+            primitive_argument_type mean_operation::mean1d(args_type&& args) const
+            {
+                // `axis` is optional
+                if (args.size() == 2)
+                {
+                    // `axis` must be a scalar if provided
+                    if (args[1].num_dimensions() != 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                            "mean_operation::mean1d",
+                                            execution_tree::generate_error_message(
+                                                    "operand axis must be a scalar", name_,
+                                                    codename_));
+                    }
+                    const int axis = args[1].scalar();
+                    // `axis` can only be -1 or 0
+                    if (axis < -1 || axis > 0)
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                            "mean_operation::mean1d",
+                                            execution_tree::generate_error_message(
+                                                    "operand axis can only between -1 and 0 for "
+                                                            "an a operand that is 1d",
+                                                    name_, codename_));
+                    }
+                }
+
+                auto a = args[0].vector();
+
+                // a should not be empty
+                if (a.size() == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "mean_operation::mean1d",
+                                        execution_tree::generate_error_message(
+                                                "attempt to get argmin of an empty sequence",
+                                                name_, codename_));
+                }
+
+                // Find the sum of all the elements
+                const auto sum = std::accumulate(a.begin(), a.end(), 0.0);
+
+                // Return the mean
+                return sum / a.size();
+            }
 
 
             hpx::future<primitive_argument_type> mean_operation::eval(
@@ -107,10 +177,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     return this_->mean0d(std::move(args));
 
                                 case 1:
-                                    return this_->mean0d(std::move(args)); //this_->row_slicing1d(std::move(args));
+                                    return this_->mean1d(std::move(args));
 
                                 case 2:
-                                    return this_->mean0d(std::move(args)); //this_->row_slicing2d(std::move(args));
+                                    return this_->mean0d(std::move(args));
 
                                 default:
                                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
