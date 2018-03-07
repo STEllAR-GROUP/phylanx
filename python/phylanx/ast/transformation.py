@@ -5,14 +5,34 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-import ast
-import re
 import phylanx
 import inspect
 from .utils import *
 
 et = phylanx.execution_tree
 
+import ast,re,os
+from threading import Thread
+
+def readfds(fd):
+    while True:
+        result=os.read(fd,1000)
+        print(result.decode('utf-8'),end='')
+
+class IORedirecter:
+    def __init__(self):
+        self.fds = os.pipe()
+        self.threadReadFDs = Thread(target=readfds,args=(self.fds[0],))
+        self.threadReadFDs.start()
+        self.saveStdout = os.dup(1)
+    def __enter__(self):
+        os.close(1)
+        os.dup(self.fds[1])
+    def __exit__(self,type,value,traceback):
+        os.close(1)
+        os.dup(self.saveStdout)
+
+iod = IORedirecter()
 
 def get_node(node, **kwargs):
     if node is None:
@@ -151,8 +171,6 @@ class PhySL:
                 if i + 1 == len(sargs):
                     s += self.recompile(aa, True)
                 else:
-                    print("=" * 50)
-                    dump_info(aa)
                     s += self.recompile(aa, False)
                     s += ", "
             s += ")"
@@ -436,6 +454,15 @@ def convert_to_phylanx_type(v):
         pass
     return v
 
+# Determine whether we are
+# running in a notebook or
+# not. If we are, use the
+# IORedirector.
+try:
+    get_ipython()
+    use_iod = True
+except:
+    use_iod = False
 
 # Create the decorator
 def Phylanx(target="PhySL"):
@@ -469,6 +496,10 @@ def Phylanx(target="PhySL"):
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            return et.eval(self.__physl_src__, *nargs)
+            if use_iod:
+                with iod:
+                    return et.eval(self.__physl_src__, *nargs)
+            else:
+                return et.eval(self.__physl_src__, *nargs)
 
     return PhyTransformer
