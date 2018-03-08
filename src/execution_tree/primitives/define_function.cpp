@@ -68,6 +68,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return operands_[0];
     }
 
+    primitive_argument_type define_function::bind(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        // body is assumed to be operands_[0]
+        if (!valid(operands_[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_function::bind",
+                execution_tree::generate_error_message(
+                    "the expression representing the function body "
+                        "was not initialized yet",
+                    name_, codename_));
+        }
+        return operands_[0];
+    }
+
     void define_function::set_body(primitive_argument_type&& body)
     {
         if (valid(operands_[0]))

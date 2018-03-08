@@ -52,6 +52,10 @@ namespace phylanx { namespace execution_tree
             virtual topology expression_topology(
                 std::set<std::string>&& functions) const;
 
+            // bind_action
+            virtual primitive_argument_type bind(
+                std::vector<primitive_argument_type> const& params) const;
+
             // set_body_action (define_function only)
             virtual void set_body(primitive_argument_type&& target);
 

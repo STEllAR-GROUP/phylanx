@@ -38,6 +38,7 @@ set(tests
     literal_value
     linearmatrix
     linspace
+    map_operation
     mul_operation
     not_equal_operation
     or_operation
