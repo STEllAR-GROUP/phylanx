@@ -5,38 +5,46 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+import ast
+import re
+import os
 import phylanx
 import inspect
-from .utils import *
+from .utils import full_name, full_node_name
+from threading import Thread
 
 et = phylanx.execution_tree
 
-import ast,re,os
-from threading import Thread
 
 def readfds(fd):
     while True:
-        result=os.read(fd,1000)
-        print(result.decode('utf-8'),end='')
+        result = os.read(fd, 1000)
+        print(result.decode('utf-8'), end='')
+
 
 class IORedirecter:
     def __init__(self):
         self.fds = os.pipe()
-        self.threadReadFDs = Thread(target=readfds,args=(self.fds[0],))
+        self.threadReadFDs = Thread(target=readfds, args=(self.fds[0],))
         self.threadReadFDs.start()
         self.saveStdout = os.dup(1)
+
     def __enter__(self):
         os.close(1)
         os.dup(self.fds[1])
-    def __exit__(self,type,value,traceback):
+
+    def __exit__(self, type, value, traceback):
         os.close(1)
         os.dup(self.saveStdout)
+
 
 class DoNothing:
     def __enter__(self):
         pass
-    def __exit__(self,type,value,traceback):
+
+    def __exit__(self, type, value, traceback):
         pass
+
 
 def get_node(node, **kwargs):
     if node is None:
@@ -451,6 +459,7 @@ try:
     iod = IORedirecter()
 except:
     iod = DoNothing()
+
 
 # Create the decorator
 def Phylanx(target="PhySL"):
