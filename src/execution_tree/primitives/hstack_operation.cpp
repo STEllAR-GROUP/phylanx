@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const hstack_operation::match_data =
     {
         hpx::util::make_tuple("hstack",
-            std::vector<std::string>{"hstack(_1, __2)"},
+            std::vector<std::string>{"hstack(__1)"},
             &create_hstack_operation, &create_primitive<hstack_operation>)
     };
 
@@ -166,14 +166,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() < 2)
+        if (operands.size() < 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "hstack_operation::hstack_operation",
                 execution_tree::generate_error_message(
                     "the hstack_operation primitive requires at least "
-                        "two arguments",
+                        "one argument",
                     name_, codename_));
         }
 
