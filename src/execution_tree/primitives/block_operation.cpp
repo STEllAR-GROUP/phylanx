@@ -1,7 +1,7 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/block_operation.hpp>
@@ -89,6 +89,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> args) const
     {
         // Empty blocks are allowed (Issue #278)
+        if (operands_.empty())
+        {
+            return hpx::make_ready_future(primitive_argument_type{ast::nil{}});
+        }
         hpx::promise<primitive_argument_type> result;
         auto f = result.get_future();
         next(0, std::move(args), std::move(result));    // trigger first step

@@ -13,12 +13,10 @@
 
 #include <string>
 
-std::string const code = "block()";
-
-int hpx_main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(code, snippets);
+    auto f = phylanx::execution_tree::compile("block()", snippets);
 
     f();
 
