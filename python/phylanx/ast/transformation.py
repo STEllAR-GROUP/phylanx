@@ -418,14 +418,16 @@ def convert_to_phylanx_type(v):
         pass
     return v
 
+cs = phylanx.compiler_state()
 
 # Create the decorator
-def Phylanx(target="PhySL"):
+def Phylanx(target="PhySL",compiler_state=cs):
     class PhyTransformer(object):
         targets = {"PhySL": PhySL}
 
         def __init__(self, f):
             self.f = f
+            self.cs = cs
             self.target = target
             # Get the source code
             actual_lineno = inspect.getsourcelines(f)[-1]
@@ -443,13 +445,13 @@ def Phylanx(target="PhySL"):
 
             if target == "PhySL":
                 self.__physl_src__ = transformation.recompile(tree)
-                et.eval(self.__physl_src__)
+                et.eval(self.__physl_src__, self.cs)
             else:
                 raise Exception(
                     "Invalid target to Phylanx transformer: '%s'" % target)
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            return et.eval(self.f.__name__, *nargs)
+            return et.eval(self.f.__name__, self.cs, *nargs)
 
     return PhyTransformer
