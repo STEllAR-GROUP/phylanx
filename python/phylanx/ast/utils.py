@@ -9,10 +9,10 @@ import ast
 import re
 
 
-def physl_fmt(src,tag=4):
+def physl_fmt(src, tag=4):
     """Pretty print PhySL source code"""
     # Remove line number info
-    src = re.sub(r'\$\d+','',src)
+    src = re.sub(r'\$\d+', '', src)
 
     # The regex below matches one of the following three
     # things in order of priority:
@@ -21,24 +21,25 @@ def physl_fmt(src,tag=4):
     # 3: a single character
     pat = re.compile(r'"(?:\\.|[^"\\])*"|\([^()]*\)|.')
     indent = 0
-    for s in re.findall(pat,src):
+    tab = 4
+    for s in re.findall(pat, src):
         if s in " \t\r\b\n":
             pass
         elif s == '(':
             print(s)
             indent += 1
-            print(" " * indent * tab,end="")
+            print(" " * indent * tab, end="")
         elif s == ')':
             indent -= 1
-            print("",sep="")
-            print(" " * indent * tab,end="")
-            print(s,end="")
+            print("", sep="")
+            print(" " * indent * tab, end="")
+            print(s, end="")
         elif s == ',':
             print(s)
-            print(" " * indent * tab,end="")
+            print(" " * indent * tab, end="")
         else:
-            print(s,end="",sep="")
-    print("",sep="")
+            print(s, end="", sep="")
+    print("", sep="")
 
 
 def dump_info(a, depth=0):
