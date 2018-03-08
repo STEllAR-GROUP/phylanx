@@ -450,6 +450,7 @@ def convert_to_phylanx_type(v):
         pass
     return v
 
+
 # Determine whether we are
 # running in a notebook or
 # not. If we are, use the
@@ -457,7 +458,7 @@ def convert_to_phylanx_type(v):
 try:
     get_ipython()
     iod = IORedirecter()
-except:
+except NameError:
     iod = DoNothing()
 
 
