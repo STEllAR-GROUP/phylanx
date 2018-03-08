@@ -409,6 +409,70 @@ void test_recursive_function()
         )[0]);
 }
 
+void test_define_call_lambda_function_noarg()
+{
+    auto expr = phylanx::ast::generate_ast(R"(block(
+            define(x, lambda(42)),
+            define(y, x()),
+            y
+        ))");
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+
+    HPX_TEST_EQ(42.0,
+        phylanx::execution_tree::extract_numeric_value(
+            y()
+        )[0]);
+}
+
+void test_define_call_lambda_function()
+{
+    auto expr = phylanx::ast::generate_ast(R"(block(
+            define(x, lambda(a, a + 1)),
+            x
+        ))");
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto x = phylanx::execution_tree::compile(expr, snippets, env);
+
+    auto arg = phylanx::ir::node_data<double>{42.0};
+    HPX_TEST_EQ(43.0,
+        phylanx::execution_tree::extract_numeric_value(
+            x(std::move(arg))
+        )[0]);
+}
+
+void test_define_call_lambda_function_ind()
+{
+    auto expr = phylanx::ast::generate_ast(R"(block(
+            define(x, b, lambda(a, a + b)),
+            define(y, b, x(b)),
+            y
+        ))");
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+
+    auto arg_a = phylanx::ir::node_data<double>{42.0};
+    phylanx::execution_tree::compiler::function lambda = y(std::move(arg_a));
+
+    auto arg_b = phylanx::ir::node_data<double>{1.0};
+    HPX_TEST_EQ(43.0,
+        phylanx::execution_tree::extract_numeric_value(
+            lambda(std::move(arg_b))
+        )[0]);
+}
+
 int main(int argc, char* argv[])
 {
     test_builtin_environment();
@@ -433,6 +497,10 @@ int main(int argc, char* argv[])
     test_define_curry_function();
 
     test_recursive_function();
+
+    test_define_call_lambda_function_noarg();
+    test_define_call_lambda_function();
+    test_define_call_lambda_function_ind();
 
     return hpx::util::report_errors();
 }

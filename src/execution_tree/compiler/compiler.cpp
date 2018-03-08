@@ -147,14 +147,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         template <typename Iterator>
-        std::vector<ast::expression> extract_arguments(
+        std::vector<ast::expression> extract_define_arguments(
             std::pair<Iterator, Iterator> const& p, ast::tagged const& id)
         {
             std::ptrdiff_t size = std::distance(p.first, p.second);
             if (size < 2)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::detail::extract_arguments",
+                    "phylanx::execution_tree::detail::"
+                        "extract_define_arguments",
                     generate_error_message(
                         "the define() operation requires at least 2 arguments",
                         name_, id));
@@ -173,7 +174,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     !ast::detail::is_identifier(it->second))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::detail::extract_arguments",
+                        "phylanx::execution_tree::detail::"
+                            "extract_define_arguments",
                         generate_error_message(
                             "the define() operation requires that all "
                             "arguments are represented as variable "
@@ -186,15 +188,75 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         template <typename Iterator>
-        ast::expression extract_body(
+        std::vector<ast::expression> extract_lambda_arguments(
+            std::pair<Iterator, Iterator> const& p, ast::tagged const& id)
+        {
+            std::ptrdiff_t size = std::distance(p.first, p.second);
+            if (size == 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::"
+                        "extract_lambda_arguments",
+                    generate_error_message(
+                        "the define() operation requires at least 1 arguments",
+                        name_, id));
+            }
+
+            std::vector<ast::expression> args;
+            args.reserve(size);
+
+            auto first = p.first;
+            auto last = p.second; --last;
+
+            std::size_t count = 0;
+            for (auto it = first; it != last; ++it, ++count)
+            {
+                if (count != 0 && count != size-1 &&
+                    !ast::detail::is_identifier(it->second))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::detail::"
+                            "extract_lambda_arguments",
+                        generate_error_message(
+                            "the lambda() operation requires that all "
+                            "arguments are represented as variable "
+                            "names (not expressions)", name_, id));
+                }
+                args.push_back(it->second);
+            }
+
+            return args;
+        }
+
+        template <typename Iterator>
+        ast::expression extract_define_body(
             std::pair<Iterator, Iterator> const& p, ast::tagged const& id)
         {
             if (std::distance(p.first, p.second) < 2)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::detail::extract_body",
+                    "phylanx::execution_tree::detail::extract_define_body",
                     generate_error_message(
-                        "the define() operation requires at least 2 arguments",
+                        "the define() operation requires at least "
+                            "2 arguments",
+                        name_, id));
+            }
+
+            auto last = p.second; --last;
+            return last->second;
+        }
+
+        template <typename Iterator>
+        ast::expression extract_lambda_body(
+            std::pair<Iterator, Iterator> const& p, ast::tagged const& id)
+        {
+            if (std::distance(p.first, p.second) == 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::extract_lambda_body",
+                    generate_error_message(
+                        "the lambda() operation requires at least 1 "
+                            "argument (the body of the lambda)",
                         name_, id));
             }
 
@@ -223,6 +285,46 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 name_, body, snippets_, env, patterns_, default_locality_);
         }
 
+        function handle_lambda(
+            std::multimap<std::string, ast::expression>& placeholders,
+            expression_pattern const& pattern, ast::tagged const& lambda_id)
+        {
+            // we know that 'lambda()' uses '__1' to match arguments
+            using iterator =
+                typename std::multimap<std::string, ast::expression>::iterator;
+            std::pair<iterator, iterator> p = placeholders.equal_range("__1");
+
+            auto args = extract_lambda_arguments(p, lambda_id);
+            auto body = extract_lambda_body(p, lambda_id);
+
+            static std::string define_lambda_("define-lambda");
+            std::size_t sequence_number =
+                snippets_.sequence_numbers_[define_lambda_]++;
+
+            // extract expressions representing the newly defined function
+            // and store new function description for later use
+            snippets_.snippets_.emplace_back(function{});
+            function& f = snippets_.snippets_.back();
+
+            std::string lambda_name("lambda" + std::to_string(sequence_number) +
+                "/" + annotation(lambda_id));
+
+            static std::string function_("call-function");
+            sequence_number =
+                snippets_.sequence_numbers_[function_]++;
+
+            auto extf = external_function(f, sequence_number, default_locality_);
+
+            // create define_function helper object
+            f = primitive_function{default_locality_}(lambda_name, name_);
+
+            // set the body for the compiled function
+            primitive_operand(f.arg_, lambda_name, name_).set_body(
+                hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
+
+            return extf({}, lambda_name, name_);
+        }
+
         function handle_define(
             std::multimap<std::string, ast::expression>& placeholders,
             expression_pattern const& pattern, ast::tagged const& define_id)
@@ -248,8 +350,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 full_name += annotation(id);
             }
 
-            auto args = extract_arguments(p, define_id);
-            auto body = extract_body(p, define_id);
+            auto args = extract_define_arguments(p, define_id);
+            auto body = extract_define_body(p, define_id);
             if (args.empty())
             {
                 // get sequence number of this component
@@ -401,6 +503,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 if (name == "define")
                 {
                     return handle_define(placeholders, pattern, id);
+                }
+
+                if (name == "lambda")
+                {
+                    return handle_lambda(placeholders, pattern, id);
                 }
 
                 // add sequence number for this primitive component
