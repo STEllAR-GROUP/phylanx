@@ -418,10 +418,12 @@ def convert_to_phylanx_type(v):
         pass
     return v
 
+
 cs = phylanx.compiler_state()
 
+
 # Create the decorator
-def Phylanx(target="PhySL",compiler_state=cs):
+def Phylanx(target="PhySL", compiler_state=cs):
     class PhyTransformer(object):
         targets = {"PhySL": PhySL}
 
