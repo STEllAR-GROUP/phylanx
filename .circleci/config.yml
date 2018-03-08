@@ -56,7 +56,7 @@ jobs:
                 command: |
                     if [ "$CIRCLE_BRANCH" == "master" ]; then
                         docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-                        docker tag $IMAGE_NAME $IMAGE_NAME:prerequisites
+                        docker tag $IMAGE_NAME $IMAGE_NAME:devel-prerequisites
                         docker push ${IMAGE_NAME}:devel-prerequisites
                         docker push ${IMAGE_NAME}:devel
                     fi
