@@ -9,6 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/unlock_guard.hpp>
 
 #include <mutex>
 #include <set>
@@ -70,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 primitive_argument_type result;
                 {
-                    hpx::util::scoped_unlock<lock_type> ul(l);
+                    hpx::util::unlock_guard<lock_type> ul(l);
                     result = extract_copy_value(p->eval_direct(args));
                 }
                 operands_[0] = std::move(result);
