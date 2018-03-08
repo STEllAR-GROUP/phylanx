@@ -117,7 +117,7 @@ namespace phylanx { namespace bindings
 
     ///////////////////////////////////////////////////////////////////////////
     inline phylanx::execution_tree::primitive_argument_type
-    expression_compiler(std::string xexpr, pybind11::args args)
+    expression_compiler(std::string xexpr_str, pybind11::args args)
     {
         namespace et = phylanx::execution_tree;
         return hpx::threads::run_as_hpx_thread(
@@ -125,8 +125,16 @@ namespace phylanx { namespace bindings
             {
                 try
                 {
-                    et::compiler::function_list eval_snippets;
-                    auto x = et::compile(xexpr, eval_snippets);
+                    static phylanx::execution_tree::compiler::environment *eval_env = nullptr;
+                    static et::compiler::function_list *eval_snippets = nullptr;
+                    if(eval_snippets == nullptr)
+                        eval_snippets = new et::compiler::function_list();
+                    if(eval_env == nullptr)
+                        eval_env = new phylanx::execution_tree::compiler::environment(
+                            phylanx::execution_tree::compiler::default_environment());
+
+                    auto xexpr = phylanx::ast::generate_ast(xexpr_str);
+                    auto x = phylanx::execution_tree::compile(xexpr, *eval_snippets, *eval_env);
 
                     std::vector<phylanx::execution_tree::primitive_argument_type>
                         fargs;
