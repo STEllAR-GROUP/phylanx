@@ -264,7 +264,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (value_dimnum == 1)
         {
-            auto data = blaze::trans(args[4].vector());
+            auto input_vector = args[4].vector();
+            auto data = blaze::trans(input_vector);
             std::size_t data_size = data.size();
             std::size_t num_cols = sm.columns();
             std::size_t num_rows = sm.rows();
