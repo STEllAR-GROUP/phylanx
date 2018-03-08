@@ -450,6 +450,6 @@ def Phylanx(target="PhySL"):
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            return et.eval(self.__physl_src__, *nargs)
+            return et.eval(self.f.__name__, *nargs)
 
     return PhyTransformer
