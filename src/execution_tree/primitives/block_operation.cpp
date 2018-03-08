@@ -88,17 +88,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> args) const
     {
-        if (operands_.empty())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::block_operation"
-                "block_operation::eval",
-                execution_tree::generate_error_message(
-                    "the block_operation primitive requires at least "
-                    "one argument",
-                    name_, codename_));
-        }
-
+        // Empty blocks are allowed (Issue #278)
         hpx::promise<primitive_argument_type> result;
         auto f = result.get_future();
         next(0, std::move(args), std::move(result));    // trigger first step
