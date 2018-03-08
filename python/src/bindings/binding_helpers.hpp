@@ -29,6 +29,17 @@ namespace phylanx { namespace bindings
     void bind_util(pybind11::module m);
 
     ///////////////////////////////////////////////////////////////////////////
+    // support for compilers
+    struct compiler_state
+    {
+        //namespace et = phylanx::execution_tree;
+        phylanx::execution_tree::compiler::environment eval_env;
+        phylanx::execution_tree::compiler::function_list eval_snippets;
+        compiler_state() : eval_env(phylanx::execution_tree::compiler::default_environment()), eval_snippets() {}
+        ~compiler_state() {}
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     // support for the traverse API
     struct traverse_helper
     {
@@ -117,7 +128,7 @@ namespace phylanx { namespace bindings
 
     ///////////////////////////////////////////////////////////////////////////
     inline phylanx::execution_tree::primitive_argument_type
-    expression_compiler(std::string xexpr_str, pybind11::args args)
+    expression_compiler(std::string xexpr_str, compiler_state& c, pybind11::args args)
     {
         namespace et = phylanx::execution_tree;
         return hpx::threads::run_as_hpx_thread(
@@ -125,16 +136,9 @@ namespace phylanx { namespace bindings
             {
                 try
                 {
-                    static phylanx::execution_tree::compiler::environment *eval_env = nullptr;
-                    static et::compiler::function_list *eval_snippets = nullptr;
-                    if(eval_snippets == nullptr)
-                        eval_snippets = new et::compiler::function_list();
-                    if(eval_env == nullptr)
-                        eval_env = new phylanx::execution_tree::compiler::environment(
-                            phylanx::execution_tree::compiler::default_environment());
 
                     auto xexpr = phylanx::ast::generate_ast(xexpr_str);
-                    auto x = phylanx::execution_tree::compile(xexpr, *eval_snippets, *eval_env);
+                    auto x = phylanx::execution_tree::compile(xexpr, c.eval_snippets, c.eval_env);
 
                     std::vector<phylanx::execution_tree::primitive_argument_type>
                         fargs;

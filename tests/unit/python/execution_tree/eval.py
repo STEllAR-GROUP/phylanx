@@ -11,13 +11,14 @@ from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
+cs = phylanx.compiler_state()
 
 fib10 = et.eval("""
 block(
     define(fib,n,
     if(n<2,n,
         fib(n-1)+fib(n-2))),
-    fib)""", 10)
+    fib)""", cs, 10)
 
 assert fib10 == 55.0
 
@@ -33,7 +34,7 @@ block(
                   store(i,i+n)
                 )),
             i)),
-    sum10)""")
+    sum10)""",cs)
 
 assert sum10 == 55.0
 
@@ -61,7 +62,7 @@ def pass_str(a):
 
 
 assert pass_str.__physl_src__ == \
-    'define$59$0(pass_str$59$0, a$59$13, a$60$11)', pass_str.__physl_src__
+    'define$60$0(pass_str$60$0, a$60$13, a$61$11)', pass_str.__physl_src__
 
 assert "foo" == str(pass_str("foo"))
 
