@@ -49,7 +49,7 @@ jobs:
                 name: Install to the image
                 command: |
                     docker run --name live -v $PWD:/.data ${IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && make -C /phylanx/build install"
-                    docker commit live $IMAGE_NAME:dev
+                    docker commit live $IMAGE_NAME:devel
             # Deployment
             - deploy:
                 name: Push the Phylanx build environment Docker image
