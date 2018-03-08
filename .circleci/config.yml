@@ -1,0 +1,63 @@
+# Copyright (c) 2017 R. Tohid
+# Copyright (c) 2018 Parsa Amini
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+version: 2
+jobs:
+    build:
+        machine: true
+        environment:
+            IMAGE_NAME: stellargroup/phylanx
+        branches:
+            ignore:
+                - gh-pages
+        steps:
+            - checkout
+            - run:
+                name: Build the build environment Docker image
+                command: docker build -t $IMAGE_NAME tools/docker
+                no_output_timeout: 1200s
+            - run:
+                name: Create build directory
+                command: mkdir -p build
+            - run:
+                name: Check the formatting of Phylanx's Python files
+                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} flake8 --config=tools/flake8/config.ini --tee --output-file=./build/phylanx_flake8_report.txt .
+            - store_artifacts:
+                path: build/phylanx_flake8_report.txt
+            # CMake
+            - run:
+                name: Run CMake
+                command: docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On ..
+            - run:
+                name: Build the Inspect tool
+                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2 -k tools.inspect
+            - run:
+                name: Check the formatting of Phylanx's C++ files
+                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} ./build/bin/inspect --all --output=./build/phylanx_inspect_report.html /phylanx
+            - store_artifacts:
+                path: build/phylanx_inspect_report.html
+            - run:
+                name: Build all targets
+                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2
+            # Tests
+            - run:
+                name: Run all tests
+                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2 tests
+            - run:
+                name: Install to the image
+                command: |
+                    docker run --name live -v $PWD:/.data ${IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && make -C /phylanx/build install"
+                    docker commit live $IMAGE_NAME:devel
+            # Deployment
+            - deploy:
+                name: Push the Phylanx build environment Docker image
+                command: |
+                    if [ "$CIRCLE_BRANCH" == "master" ]; then
+                        docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+                        docker tag $IMAGE_NAME $IMAGE_NAME:devel-prerequisites
+                        docker push ${IMAGE_NAME}:devel-prerequisites
+                        docker push ${IMAGE_NAME}:devel
+                    fi
+
