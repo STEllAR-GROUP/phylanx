@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Monil, Mohammad Alaul Haque
+// Copyright (c) 2018 Monil, Mohammad Alaul Haque
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -142,7 +142,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_row_iterator<decltype(matrix)> matrix_end(
             matrix, matrix.rows());
 
-        val_type global_sum = 0.0d;
+        val_type global_sum = 0.0;
         std::size_t global_size = 0ul;
         for (auto it = matrix_begin; it != matrix_end; ++it)
         {

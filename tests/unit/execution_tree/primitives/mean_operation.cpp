@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Monil, Mohammad Alaul Haque
+// Copyright (c) 2018 Monil, Mohammad Alaul Haque
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -56,9 +56,9 @@ void test_mean_operation_1d()
 
 void test_mean_operation_2d_flat()
 {
-    blaze::DynamicMatrix<double> matrix_1{{1.0, 2.0, 6.0}, {4.0, 5.0, 6.0}};
+    blaze::DynamicMatrix<double> matrix_1{{1.0, 5.0, 6.0}, {4.0, 5.0, 6.0}};
 
-    double expected = 4.0;
+    double expected = 4.5;
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -83,7 +83,7 @@ void test_mean_operation_2d_x_axis()
     blaze::DynamicMatrix<double> matrix_1{{1.0, 2.0, 6.0}, {4.0, 5.0, 6.0}};
 
     std::vector<arg_type> expected{
-        arg_type{static_cast<double>(3.0)}, arg_type{static_cast<double>(5.0)}};
+        arg_type{3.0}, arg_type{5.0}};
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -111,8 +111,8 @@ void test_mean_operation_2d_y_axis()
     using arg_type = phylanx::execution_tree::primitive_argument_type;
     blaze::DynamicMatrix<double> matrix_1{{1.0, 2.0, 6.0}, {4.0, 5.0, 6.0}};
 
-    std::vector<arg_type> expected{arg_type{static_cast<double>(2.5)},
-        arg_type{static_cast<double>(3.5)}, arg_type{static_cast<double>(6.0)}};
+    std::vector<arg_type> expected{arg_type{2.5},
+        arg_type{3.5}, arg_type{6.0}};
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
