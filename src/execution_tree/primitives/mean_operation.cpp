@@ -237,12 +237,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 switch (axis)
                 {
-                    // Option 2: Find min among rows
+                    // Option 2: Find mean among rows
                     case -2: HPX_FALLTHROUGH;
                     case 0:
                         return mean2d_x_axis(std::move(args[0]));
 
-                        // Option 3: Find min among columns
+                        // Option 3: Find mean among columns
                     case -1: HPX_FALLTHROUGH;
                     case 1:
                         return mean2d_y_axis(std::move(args[0]));
