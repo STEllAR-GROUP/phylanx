@@ -7,11 +7,43 @@
 
 import ast
 import re
+import os
 import phylanx
 import inspect
-from .utils import *
+from .utils import full_name, full_node_name
+from threading import Thread
 
 et = phylanx.execution_tree
+
+
+def readfds(fd):
+    while True:
+        result = os.read(fd, 1000)
+        print(result.decode('utf-8'), end='')
+
+
+class IORedirecter:
+    def __init__(self):
+        self.fds = os.pipe()
+        self.threadReadFDs = Thread(target=readfds, args=(self.fds[0],))
+        self.threadReadFDs.start()
+        self.saveStdout = os.dup(1)
+
+    def __enter__(self):
+        os.close(1)
+        os.dup(self.fds[1])
+
+    def __exit__(self, type, value, traceback):
+        os.close(1)
+        os.dup(self.saveStdout)
+
+
+class DoNothing:
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        pass
 
 
 def get_node(node, **kwargs):
@@ -153,7 +185,7 @@ class PhySL:
                     s += self.recompile(aa, False)
                     s += ", "
             s += ")"
-        s += "), " + full_name(a)
+        s += ")"
         return s
 
     def _BinOp(self, a):
@@ -419,6 +451,17 @@ def convert_to_phylanx_type(v):
     return v
 
 
+# Determine whether we are
+# running in a notebook or
+# not. If we are, use the
+# IORedirector.
+try:
+    get_ipython()
+    iod = IORedirecter()
+except NameError:
+    iod = DoNothing()
+
+
 # Create the decorator
 def Phylanx(target="PhySL"):
     class PhyTransformer(object):
@@ -442,15 +485,15 @@ def Phylanx(target="PhySL"):
             assert len(tree.body) == 1
 
             if target == "PhySL":
-                self.__physl_src__ = '%s(%s)\n' % (
-                    full_node_name(tree.body[0], 'block'),
-                    transformation.recompile(tree))
+                self.__physl_src__ = transformation.recompile(tree)
+                et.eval(self.__physl_src__)
             else:
                 raise Exception(
                     "Invalid target to Phylanx transformer: '%s'" % target)
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            return et.eval(self.__physl_src__, *nargs)
+            with iod:
+                return et.eval(self.f.__name__, *nargs)
 
     return PhyTransformer
