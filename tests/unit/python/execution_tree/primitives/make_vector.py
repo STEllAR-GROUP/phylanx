@@ -6,9 +6,11 @@
 import phylanx
 from phylanx.ast import *
 
+
 @Phylanx("PhySL")
 def test_make_vector_one():
     return hstack(42)
+
 
 @Phylanx("PhySL")
 def test_make_vector_literals():
@@ -29,6 +31,7 @@ def test_make_vector2():
     b = 2
     c = 3
     return hstack(a, hstack(a, b, c), c)
+
 
 assert test_make_vector_one() == [42]
 assert test_make_vector_literals() == [1, 2, 3, 4]
