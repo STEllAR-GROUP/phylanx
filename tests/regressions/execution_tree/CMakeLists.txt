@@ -13,6 +13,7 @@ set(tests
     negative_integral_value_131
     out_of_scope_variable_232
     vector_of_variables_244
+    allow_empty_blocks_278
    )
 
 set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)
