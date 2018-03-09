@@ -32,11 +32,23 @@ namespace phylanx { namespace bindings
     // support for compilers
     struct compiler_state
     {
-        //namespace et = phylanx::execution_tree;
+        // keep module alive until this has been free'd
+        pybind11::weakref m;
+
+        // namespace et = phylanx::execution_tree;
         phylanx::execution_tree::compiler::environment eval_env;
         phylanx::execution_tree::compiler::function_list eval_snippets;
-        compiler_state() : eval_env(phylanx::execution_tree::compiler::default_environment()), eval_snippets() {}
-        ~compiler_state() {}
+
+        compiler_state()
+#if defined(_DEBUG)
+          : m(pybind11::module::import("_phylanxd"))
+#else
+          : m(pybind11::module::import("_phylanx"))
+#endif
+          , eval_env(phylanx::execution_tree::compiler::default_environment())
+          , eval_snippets()
+        {
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -127,8 +139,8 @@ namespace phylanx { namespace bindings
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    inline phylanx::execution_tree::primitive_argument_type
-    expression_compiler(std::string xexpr_str, compiler_state& c, pybind11::args args)
+    inline phylanx::execution_tree::primitive_argument_type expression_compiler(
+        std::string xexpr_str, compiler_state& c, pybind11::args args)
     {
         namespace et = phylanx::execution_tree;
         return hpx::threads::run_as_hpx_thread(
@@ -136,9 +148,9 @@ namespace phylanx { namespace bindings
             {
                 try
                 {
-
                     auto xexpr = phylanx::ast::generate_ast(xexpr_str);
-                    auto x = phylanx::execution_tree::compile(xexpr, c.eval_snippets, c.eval_env);
+                    auto x = phylanx::execution_tree::compile(
+                        xexpr, c.eval_snippets, c.eval_env);
 
                     std::vector<phylanx::execution_tree::primitive_argument_type>
                         fargs;
