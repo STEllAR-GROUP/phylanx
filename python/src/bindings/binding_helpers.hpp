@@ -35,7 +35,6 @@ namespace phylanx { namespace bindings
         // keep module alive until this has been free'd
         pybind11::weakref m;
 
-        // namespace et = phylanx::execution_tree;
         phylanx::execution_tree::compiler::environment eval_env;
         phylanx::execution_tree::compiler::function_list eval_snippets;
 

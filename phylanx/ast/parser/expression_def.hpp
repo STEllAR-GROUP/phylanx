@@ -98,11 +98,18 @@ namespace phylanx { namespace ast { namespace parser
             |   as<ast::unary_expr>()[unary_op > unary_expr]
             ;
 
+        cexpr =
+              expr > ':' > expr > ':' > expr
+            | expr > ':' > expr
+            | expr
+            ;
+
         primary_expr =
                 strict_double
             |   function_call
             |   list
-            |   identifier
+            |   identifier > '[' > cexpr > ']'
+            |   identifier 
             |   bool_
             |   long_long
             |   string

@@ -34,7 +34,7 @@ block(
                   store(i,i+n)
                 )),
             i)),
-    sum10)""",cs)
+    sum10)""", cs)
 
 assert sum10 == 55.0
 
