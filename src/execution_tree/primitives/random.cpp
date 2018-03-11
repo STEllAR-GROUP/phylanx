@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <ctime>
+#include <map>
 #include <memory>
 #include <random>
 #include <string>
@@ -187,10 +188,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             break;
 
+        case 3: // string
+            return distribution_parameters_type{util::get<3>(val), 0, 0.0, 1.0};
+
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
-        case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
@@ -238,14 +241,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         ///////////////////////////////////////////////////////////////////////
-        template <typename Dist>
-        void randomize(Dist& dist, double& d)
+        template <typename Dist, typename T>
+        primitive_argument_type randomize(Dist& dist, T& d)
         {
             d = dist(primitives::random::rng_);
+            return primitive_argument_type{d};
         }
 
-        template <typename Dist>
-        void randomize(Dist& dist, blaze::DynamicVector<double>& v)
+        template <typename Dist, typename T>
+        primitive_argument_type randomize(
+            Dist& dist, blaze::DynamicVector<T>& v)
         {
             std::size_t const size = v.size();
 
@@ -253,10 +258,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 v[i] = dist(primitives::random::rng_);
             }
+
+            return primitive_argument_type{std::move(v)};
         }
 
-        template <typename Dist>
-        void randomize(Dist& dist, blaze::DynamicMatrix<double>& m)
+        template <typename Dist, typename T>
+        primitive_argument_type randomize(
+            Dist& dist, blaze::DynamicMatrix<T>& m)
         {
             std::size_t const rows = m.rows();
             std::size_t const columns = m.columns();
@@ -268,6 +276,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     m(i, j) = dist(primitives::random::rng_);
                 }
             }
+
+            return primitive_argument_type{std::move(m)};
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -275,9 +285,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             virtual ~distribution() = default;
 
-            virtual void call(double& data) = 0;
-            virtual void call(blaze::DynamicVector<double>& data) = 0;
-            virtual void call(blaze::DynamicMatrix<double>& data) = 0;
+            virtual primitive_argument_type call0d() = 0;
+            virtual primitive_argument_type call1d(std::size_t dim) = 0;
+            virtual primitive_argument_type call2d(
+                std::array<std::size_t, 2> const& dims) = 0;
         };
 
         using create_distribution_type = std::unique_ptr<distribution> (*)(
@@ -285,7 +296,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const&);
 
         //////////////////////////////////////////////////////////////////////
-#define PHYLANX_RANDOM_DISTRIBUTION_1(type, stdtype, param)                    \
+#define PHYLANX_RANDOM_DISTRIBUTION_1(type, stdtype, param, T)                 \
     struct type##_distribution : distribution                                  \
     {                                                                          \
         type##_distribution(distribution_parameters_type const& params)        \
@@ -308,16 +319,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }                                                                  \
         }                                                                      \
                                                                                \
-        void call(double& data) override                                       \
+        primitive_argument_type call0d() override                              \
         {                                                                      \
+            T data;                                                            \
             return randomize(dist_, data);                                     \
         }                                                                      \
-        void call(blaze::DynamicVector<double>& data) override                 \
+        primitive_argument_type call1d(std::size_t dim) override               \
         {                                                                      \
+            blaze::DynamicVector<T> data(dim);                                 \
             return randomize(dist_, data);                                     \
         }                                                                      \
-        void call(blaze::DynamicMatrix<double>& data) override                 \
+        primitive_argument_type call2d(                                        \
+            std::array<std::size_t, 2> const& dims) override                   \
         {                                                                      \
+            blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
             return randomize(dist_, data);                                     \
         }                                                                      \
         stdtype dist_;                                                         \
@@ -331,7 +346,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }                                                                          \
     /**/
 
-#define PHYLANX_RANDOM_DISTRIBUTION_2(type, stdtype, param)                    \
+#define PHYLANX_RANDOM_DISTRIBUTION_2(type, stdtype, param, T)                 \
     struct type##_distribution : distribution                                  \
     {                                                                          \
         type##_distribution(distribution_parameters_type const& params)        \
@@ -358,16 +373,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }                                                                  \
         }                                                                      \
                                                                                \
-        void call(double& data) override                                       \
+        primitive_argument_type call0d() override                              \
         {                                                                      \
+            T data;                                                            \
             return randomize(dist_, data);                                     \
         }                                                                      \
-        void call(blaze::DynamicVector<double>& data) override                 \
+        primitive_argument_type call1d(std::size_t dim) override               \
         {                                                                      \
+            blaze::DynamicVector<T> data(dim);                                 \
             return randomize(dist_, data);                                     \
         }                                                                      \
-        void call(blaze::DynamicMatrix<double>& data) override                 \
+        primitive_argument_type call2d(                                        \
+            std::array<std::size_t, 2> const& dims) override                   \
         {                                                                      \
+            blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
             return randomize(dist_, data);                                     \
         }                                                                      \
         stdtype dist_;                                                         \
@@ -382,37 +401,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /**/
 
         PHYLANX_RANDOM_DISTRIBUTION_2(
-            uniform, std::uniform_real_distribution<double>, double);
+            uniform, std::uniform_real_distribution<double>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_1(
-            bernoulli, std::bernoulli_distribution, double);
-        PHYLANX_RANDOM_DISTRIBUTION_1(
-            binomial, std::binomial_distribution<int>, int);
-        PHYLANX_RANDOM_DISTRIBUTION_1(
-            negative_binomial, std::negative_binomial_distribution<int>, int);
-        PHYLANX_RANDOM_DISTRIBUTION_1(
-            geometric, std::geometric_distribution<int>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_1(
-            poisson, std::poisson_distribution<int>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_1(
-            exponential, std::exponential_distribution<double>, double);
+            bernoulli, std::bernoulli_distribution, double, bool);
         PHYLANX_RANDOM_DISTRIBUTION_2(
-            gamma, std::gamma_distribution<double>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_2(
-            weibull, std::weibull_distribution<double>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_2(
-            extreme_value, std::extreme_value_distribution<double>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_2(
-            normal, std::normal_distribution<double>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_2(
-            lognormal, std::lognormal_distribution<double>, double);
+            binomial, std::binomial_distribution<int>, int, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(negative_binomial,
+            std::negative_binomial_distribution<int>, int, double);
         PHYLANX_RANDOM_DISTRIBUTION_1(
-            chi_squared, std::chi_squared_distribution<double>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_2(
-            cauchy, std::cauchy_distribution<double>, double);
-        PHYLANX_RANDOM_DISTRIBUTION_2(
-            fisher_f, std::fisher_f_distribution<double>, double);
+            geometric, std::geometric_distribution<int>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_1(
-            student_t, std::student_t_distribution<double>, double);
+            poisson, std::poisson_distribution<int>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_1(
+            exponential, std::exponential_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
+            gamma, std::gamma_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
+            weibull, std::weibull_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(extreme_value,
+            std::extreme_value_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
+            normal, std::normal_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
+            lognormal, std::lognormal_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_1(
+            chi_squared, std::chi_squared_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
+            cauchy, std::cauchy_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_2(
+            fisher_f, std::fisher_f_distribution<double>, double, double);
+        PHYLANX_RANDOM_DISTRIBUTION_1(
+            student_t, std::student_t_distribution<double>, double, double);
 
 #undef PHYLANX_RANDOM_DISTRIBUTION_1
 #undef PHYLANX_RANDOM_DISTRIBUTION_2
@@ -439,21 +458,56 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
 
         ///////////////////////////////////////////////////////////////////////
-        template <typename Data>
-        void randomize(distribution_parameters_type&& params, Data& data,
-            std::string const& name, std::string const& codename)
+        primitive_argument_type randomize0d(
+            distribution_parameters_type&& params, std::string const& name,
+            std::string const& codename)
         {
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "random::randomize",
+                    "random::randomize0d",
                     execution_tree::generate_error_message(
                         "attempting to use an unknown random number "
                             "distribution: " + std::get<0>(params),
                         name, codename));
             }
-            return (it->second)(params, name, codename)->call(data);
+            return (it->second)(params, name, codename)->call0d();
+        }
+
+        primitive_argument_type randomize1d(std::size_t dim,
+            distribution_parameters_type&& params, std::string const& name,
+            std::string const& codename)
+        {
+            auto it = distributions.find(std::get<0>(params));
+            if (it == distributions.end())
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "random::randomize1d",
+                    execution_tree::generate_error_message(
+                        "attempting to use an unknown random number "
+                            "distribution: " + std::get<0>(params),
+                        name, codename));
+            }
+            return (it->second)(params, name, codename)->call1d(dim);
+        }
+
+        primitive_argument_type randomize2d(
+            std::array<std::size_t, 2> const& dims,
+            distribution_parameters_type&& params, std::string const& name,
+            std::string const& codename)
+        {
+            auto it = distributions.find(std::get<0>(params));
+            if (it == distributions.end())
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "random::randomize2d",
+                    execution_tree::generate_error_message(
+                        "attempting to use an unknown random number "
+                            "distribution: " + std::get<0>(params),
+                        name, codename));
+            }
+            return (it->second)(params, name, codename)->call2d(dims);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -544,26 +598,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type random::random0d(
         distribution_parameters_type&& params) const
     {
-        double d = 0.0;
-        detail::randomize(std::move(params), d, name_, codename_);
-        return primitive_argument_type{d};
+        return detail::randomize0d(std::move(params), name_, codename_);
     }
 
     primitive_argument_type random::random1d(
         std::size_t dim, distribution_parameters_type&& params) const
     {
-        blaze::DynamicVector<double> v(dim);
-        detail::randomize(std::move(params), v, name_, codename_);
-        return primitive_argument_type{std::move(v)};
+        auto result = detail::randomize1d(dim, std::move(params), name_, codename_);
+        return result;
     }
 
     primitive_argument_type random::random2d(
         std::array<std::size_t, 2> const& dims,
         distribution_parameters_type&& params) const
     {
-        blaze::DynamicMatrix<double> m(dims[0], dims[1]);
-        detail::randomize(std::move(params), m, name_, codename_);
-        return primitive_argument_type{std::move(m)};
+        return detail::randomize2d(dims, std::move(params), name_, codename_);
     }
 
     hpx::future<primitive_argument_type> random::eval(

@@ -13,6 +13,7 @@
 #include <hpx/lcos/future.hpp>
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <random>
@@ -46,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         random() = default;
 
         ///
-        /// Create a new data element random of the requested dimensions that
+        /// Create a new random data element of the requested dimensions that
         /// is filled using random numbers distributed based on the given
         /// arguments
         ///
@@ -54,10 +55,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///
         /// dimensions: Specifies the number of dimensions of the newly created
         ///             data element\n
-        ///             This value can either be another data elemen, in which
+        ///             This value can either be another data element, in which
         ///             case the newly created element will have the same
         ///             dimensions. This can also be a list of values to use as
-        ///             the diimensions for the new data element.\n
+        ///             the dimensions for the newly created data element.\n
         /// parameters: (optional) Specifies what distribution to use to generate
         ///             the random numbers. This has to be a list of parameters
         ///             where the first list element is the name of the
