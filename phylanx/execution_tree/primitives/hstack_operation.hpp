@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -45,8 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params) const override;
 
     private:
-        primitive_argument_type hstack0d(args_type&& args) const;
-        primitive_argument_type hstack1d(args_type&& args) const;
+        std::size_t get_vecsize(args_type& args) const;
+        primitive_argument_type hstack0d1d(args_type&& args) const;
         primitive_argument_type hstack2d(args_type&& args) const;
     };
 

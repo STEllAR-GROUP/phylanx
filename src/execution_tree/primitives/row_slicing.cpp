@@ -139,7 +139,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto init_list =
             create_list_row(row_start, row_stop, step, args[0].size());
 
-        auto sv = blaze::elements(args[0].vector(), init_list);
+        auto input_vector = args[0].vector();
+        auto sv = blaze::elements(input_vector, init_list);
 
         if (sv.size() == 1)
         {
@@ -177,7 +178,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto init_list =
             create_list_row(row_start, row_stop, step, num_matrix_rows);
 
-        auto sm = blaze::rows(args[0].matrix(), init_list);
+        auto input_matrix = args[0].matrix();
+        auto sm = blaze::rows(input_matrix, init_list);
 
         if (sm.rows() == 1)
         {

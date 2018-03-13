@@ -150,10 +150,24 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(bool val)
           : argument_value_type{phylanx::ir::node_data<bool>{val}}
         {}
-
+        explicit primitive_argument_type(
+                blaze::DynamicVector<bool> const& val)
+          : argument_value_type{phylanx::ir::node_data<bool>{val}}
+        {}
+        explicit primitive_argument_type(blaze::DynamicVector<bool>&& val)
+          : argument_value_type{phylanx::ir::node_data<bool>{std::move(val)}}
+        {}
+        explicit primitive_argument_type(
+                blaze::DynamicMatrix<bool> const& val)
+          : argument_value_type{phylanx::ir::node_data<bool>{val}}
+        {}
+        explicit primitive_argument_type(blaze::DynamicMatrix<bool>&& val)
+          : argument_value_type{phylanx::ir::node_data<bool>{std::move(val)}}
+        {}
         primitive_argument_type(phylanx::ir::node_data<bool> const& val)
           : argument_value_type{val}
         {}
+
         primitive_argument_type(phylanx::ir::node_data<bool>&& val)
           : argument_value_type{std::move(val)}
         {}
@@ -430,6 +444,52 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
+    template <typename T>
+    ir::node_data<T> extract_node_data(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline ir::node_data<double> extract_node_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_numeric_value(val, name, codename);
+    }
+    template <>
+    inline ir::node_data<bool> extract_node_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_boolean_data(val, name, codename);
+    }
+
+    template <typename T>
+    ir::node_data<T> extract_node_data(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline ir::node_data<double> extract_node_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_numeric_value(std::move(val), name, codename);
+    }
+    template <>
+    inline ir::node_data<bool> extract_node_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_boolean_data(std::move(val), name, codename);
+    }
 
     // Extract a std::int64_t type from a given primitive_argument_type,
     // throw if it doesn't hold one.

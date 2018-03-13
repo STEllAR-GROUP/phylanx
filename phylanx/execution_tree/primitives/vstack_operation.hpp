@@ -46,8 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         primitive_argument_type vstack0d(args_type&& args) const;
-        primitive_argument_type vstack1d(args_type&& args) const;
-        primitive_argument_type vstack2d(args_type&& args) const;
+        primitive_argument_type vstack1d2d(args_type&& args) const;
     };
 
     PHYLANX_EXPORT primitive create_vstack_operation(

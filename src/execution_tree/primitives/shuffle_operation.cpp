@@ -97,7 +97,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto x = args[0].vector();
         std::shuffle(x.begin(), x.end(), rand_machine);
 
-        return primitive_argument_type(std::move(x));
+        return primitive_argument_type{ir::node_data<double>{std::move(x)}};
     }
 
     primitive_argument_type shuffle_operation::shuffle_2d(args_type&& args) const
@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto x_end = util::matrix_row_iterator<decltype(x)>(x, x.rows());
         std::shuffle(x_begin, x_end, rand_machine);
 
-        return primitive_argument_type(std::move(x));
+        return primitive_argument_type{ir::node_data<double>{std::move(x)}};
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -130,8 +130,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "shuffle_operation::eval",
                 execution_tree::generate_error_message(
                     "the shuffle_operation primitive requires that "
-                    "the arguments given by the operands array "
-                    "are valid",
+                        "the arguments given by the operands array "
+                        "are valid",
                     name_, codename_));
         }
 
@@ -153,7 +153,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "shuffle_operation::eval",
                             execution_tree::generate_error_message(
                                 "operand has an unsupported number of "
-                                "dimensions. Only possible values are: 1 or 2.",
+                                    "dimensions. Only possible values are: "
+                                    "1 or 2.",
                                 this_->name_, this_->codename_));
                     }
                 }),
