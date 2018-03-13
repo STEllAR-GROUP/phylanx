@@ -33,7 +33,7 @@ void set_argc_argv(int argc, char* argv[], char* env[])
     __argv = argv;
 }
 
-__attribute__((section(".init_array")))
+__attribute__((section(".preinit_array")))
     void (*set_global_argc_argv)(int, char*[], char*[]) = &set_argc_argv;
 
 struct get_command_line
