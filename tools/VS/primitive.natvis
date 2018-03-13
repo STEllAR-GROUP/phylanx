@@ -14,7 +14,7 @@
 
     <Type Name="phylanx::execution_tree::primitive_argument_type">
         <DisplayString Condition="(var.impl_.index_ == 0)">nil</DisplayString>
-        <DisplayString Condition="(var.impl_.index_ == 1)">bool({var.impl_.data_.tail_.head_.value})</DisplayString>
+        <DisplayString Condition="(var.impl_.index_ == 1)">phylanx::ir::node_data&lt;bool&gt;({var.impl_.data_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 2)">std::int64_t({var.impl_.data_.tail_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 3)">std::string({var.impl_.data_.tail_.tail_.tail_.head_.value})</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 4)">phylanx::ir::node_data&lt;double&gt;({var.impl_.data_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
@@ -23,10 +23,10 @@
         <DisplayString Condition="(var.impl_.index_ == 7)">phylanx::util::recursive_wrapper&lt;std::vector&lt;primitive_argument_type&gt;&gt;({var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value})</DisplayString>
         <Expand>
             <Item Name="[nil]" Condition="(var.impl_.index_ == 0)">"nil"</Item>
-            <Item Name="[bool]" Condition="(var.impl_.index_ == 1)">var.impl_.data_.tail_.head_.value</Item>
+            <Item Name="[node_data(bool)]" Condition="(var.impl_.index_ == 1)">var.impl_.data_.tail_.head_.value</Item>
             <Item Name="[std::int64_t]" Condition="(var.impl_.index_ == 2)">var.impl_.data_.tail_.tail_.head_.value</Item>
             <Item Name="[std::string]" Condition="(var.impl_.index_ == 3)">var.impl_.data_.tail_.tail_.tail_.head_.value</Item>
-            <Item Name="[node_data]" Condition="(var.impl_.index_ == 4)">var.impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
+            <Item Name="[node_data(double)]" Condition="(var.impl_.index_ == 4)">var.impl_.data_.tail_.tail_.tail_.tail_.head_.value</Item>
             <Item Name="[primitive]" Condition="(var.impl_.index_ == 5)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
             <Item Name="[expressionlist]" Condition="(var.impl_.index_ == 6)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>
             <Item Name="[primitive_argument_type]" Condition="(var.impl_.index_ == 7)">var.impl_.data_.tail_.tail_.tail_.tail_.tail_.tail_.tail_.head_.value</Item>

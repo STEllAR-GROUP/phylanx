@@ -87,6 +87,9 @@ namespace phylanx { namespace execution_tree
             // unary operations
             primitives::unary_minus_operation::match_data,
             primitives::unary_not_operation::match_data,
+            // generic functions
+            primitives::get_seed_match_data,
+            primitives::set_seed_match_data,
             //
             // compiler-specific (internal) primitives
             //

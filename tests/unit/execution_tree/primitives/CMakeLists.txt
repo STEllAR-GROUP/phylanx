@@ -44,6 +44,7 @@ set(tests
     parallel_block_operation
     power_operation
     random
+    random_distributions
     row_set
     row_slicing
     set_operation
