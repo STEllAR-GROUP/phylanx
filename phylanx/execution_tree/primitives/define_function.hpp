@@ -29,6 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     public:
         static match_pattern_type const match_data;
+        static match_pattern_type const match_data_lambda;
 
         define_function() = default;
 

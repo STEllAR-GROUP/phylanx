@@ -23,7 +23,6 @@ namespace phylanx { namespace execution_tree
             primitives::column_slicing_operation::match_data,
             primitives::console_output::match_data,
             primitives::debug_output::match_data,
-            primitives::define_variable::match_data_define,
             primitives::hstack_operation::match_data,
             primitives::make_list::match_data,
             primitives::make_vector::match_data,
@@ -96,10 +95,12 @@ namespace phylanx { namespace execution_tree
             primitives::function_reference::match_data,
             primitives::wrapped_function::match_data,
             primitives::define_function::match_data,
+            primitives::define_function::match_data_lambda,
 
             primitives::variable::match_data,
             primitives::wrapped_variable::match_data,
-            primitives::define_variable::match_data
+            primitives::define_variable::match_data,
+            primitives::define_variable::match_data_define
         };
 
         return patterns;

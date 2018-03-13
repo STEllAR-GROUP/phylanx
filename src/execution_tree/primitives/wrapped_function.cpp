@@ -57,18 +57,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> wrapped_function::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p == nullptr)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                " wrapped_function::eval",
-                execution_tree::generate_error_message(
-                    "no target given",
-                    name_, codename_));
-        }
-
         // evaluation of the define-function yields the function body
-        auto body = p->eval_direct(params);
+        primitive_argument_type body;
+
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            body = p->eval_direct(params);
+        }
+        else
+        {
+            body = operands_[0];
+        }
 
         std::vector<primitive_argument_type> fargs;
         if (operands_.size() == 1)
