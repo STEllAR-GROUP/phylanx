@@ -6,7 +6,6 @@
 
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 
 
 @Phylanx("PhySL")
@@ -33,4 +32,4 @@ def lra(file_name, xlo1, xhi1, ylo1, yhi1, xlo2, xhi2, ylo2, yhi2, alpha,
 
 
 res = lra("breast_cancer.csv", 0, 569, 0, 30, 0, 569, 30, 31, 1e-5, 750, 0)
-printout(res)
+print(res)

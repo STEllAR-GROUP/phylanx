@@ -62,54 +62,35 @@ def dump_info(a, depth=0):
             dump_info(n, depth + 1)
 
 
-# based on http://bit.ly/2C58jl8
-def dump_ast(node, level=0):
-    if isinstance(node, ast.AST):
-        if isinstance(node, ast.With):
-            for body in node.body:
-                fields = [(a, dump_ast(b, level))
-                          for a, b in ast.iter_fields(body)]
-        fields = [(a, dump_ast(b, level)) for a, b in ast.iter_fields(node)]
-        if node._attributes:
-            fields.extend([(a, dump_ast(getattr(node, a), level))
-                           for a in node._attributes])
-        return ''.join([
-            node.__class__.__name__, '(', ', '.join(
-                ('%s=%s' % field for field in fields)), ')'
-        ])
-    elif isinstance(node, list):
-        indent = '    '
-        lines = ['[']
-        lines.extend((indent * (level + 2) + dump_ast(x, level + 2) + ','
-                      for x in node))
-        if len(lines) > 1:
-            lines.append(indent * (level + 1) + ']')
-        else:
-            lines[-1] += ']'
-        return '\n'.join(lines)
-    return repr(node)
+# source http://bit.ly/2C58jl8
+def dump_ast(node, annotate_fields=True, include_attributes=False,
+             indent='  '):
+    def _format(node, level=0):
+        if isinstance(node, ast.AST):
+            fields = [(a, _format(b, level)) for a, b in ast.iter_fields(node)]
+            if include_attributes and node._attributes:
+                fields.extend([(a, _format(getattr(node, a), level))
+                               for a in node._attributes])
+            return ''.join([
+                node.__class__.__name__, '(',
+                ', '.join(('%s=%s' % field
+                           for field in fields) if annotate_fields else (
+                               b for a, b in fields)), ')'
+            ])
+        elif isinstance(node, list):
+            lines = ['[']
+            lines.extend((indent * (level + 2) + _format(x, level + 2) + ','
+                          for x in node))
+            if len(lines) > 1:
+                lines.append(indent * (level + 1) + ']')
+            else:
+                lines[-1] += ']'
+            return '\n'.join(lines)
+        return repr(node)
 
-
-def printout(m):
-    ndim = m.num_dimensions()
-    if ndim == 1:
-        for i in range(m.dimension(0)):
-            print(m[i])
-    elif ndim == 2:
-        for i in range(m.dimension(0)):
-            for j in range(m.dimension(1)):
-                print("%10.2f" % m[i, j], end=" ")
-                if j > 5:
-                    print("...", end=" ")
-                    break
-            print()
-            if i > 5:
-                print("%10s" % "...")
-                break
-    elif ndim == 0:
-        print(m[0])
-    else:
-        print("ndim=", ndim)
+    if not isinstance(node, ast.AST):
+        raise TypeError('expected AST, got %r' % node.__class__.__name__)
+    return _format(node)
 
 
 def print_physl(physl_src):

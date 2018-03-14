@@ -7,7 +7,6 @@
 
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
@@ -61,7 +60,7 @@ def pass_str(a):
 
 
 assert pass_str.__physl_src__ == \
-    'block$59$0(define$59$0(pass_str$59$0, a$59$13, a$60$11), pass_str$59$0)\n'
+    'block$58$0(define$58$0(pass_str$58$0, a$58$13, a$59$11), pass_str$58$0)\n'
 
 assert "foo" == str(pass_str("foo"))
 

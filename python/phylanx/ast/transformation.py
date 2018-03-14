@@ -9,7 +9,9 @@ import ast
 import re
 import phylanx
 import inspect
+
 from .utils import *
+from .oscop import OpenSCoP
 
 et = phylanx.execution_tree
 
@@ -420,9 +422,9 @@ def convert_to_phylanx_type(v):
 
 
 # Create the decorator
-def Phylanx(target="PhySL"):
+def Phylanx(target="PhySL", **kwargs):
     class PhyTransformer(object):
-        targets = {"PhySL": PhySL}
+        targets = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
 
         def __init__(self, f):
             self.f = f
@@ -437,19 +439,24 @@ def Phylanx(target="PhySL"):
             # Create the AST
             tree = ast.parse(src)
             ast.increment_lineno(tree, actual_lineno)
-            transformation = self.targets[target]()
+            transformation = self.targets[target]
 
             assert len(tree.body) == 1
 
             if target == "PhySL":
                 self.__physl_src__ = '%s(%s)\n' % (
                     full_node_name(tree.body[0], 'block'),
-                    transformation.recompile(tree))
+                    transformation().recompile(tree))
+            elif target == "OpenSCoP":
+                transformation(tree, kwargs)
             else:
                 raise Exception(
                     "Invalid target to Phylanx transformer: '%s'" % target)
 
         def __call__(self, *args):
+            if target == "OpenSCoP":
+                raise NotImplementedError(
+                    "OpenSCoP kernel blocks are not yet callable.")
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
             return et.eval(self.__physl_src__, *nargs)
 

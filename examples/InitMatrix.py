@@ -6,7 +6,6 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
 from phylanx.util import *
-from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
@@ -14,23 +13,23 @@ et = phylanx.execution_tree
 # Create a vector of zeros
 vz = et.var(np.zeros(10))
 
-printout(vz)
+print(vz)
 
 mz = et.var(np.zeros((3, 4)))
 
-printout(mz)
+print(mz)
 
 v = et.var(np.linspace(2.0, 3.4, 5))
 
-printout(v)
+print(v)
 
 print("Breast Cancer")
 
 m = et.eval("file_read_csv(\"./breast_cancer.csv\")")
 print(m)
 
-printout(m)
-printout(et.eval("slice", m, et.var(0), et.var(3), et.var(0), et.var(3)))
+print(m)
+print(et.eval("slice", m, et.var(0), et.var(3), et.var(0), et.var(3)))
 
 three = et.eval("3")
 four = et.eval("4")
@@ -62,9 +61,8 @@ print(
         ),
         fact
     )""", three))
-printout(et.eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
-printout(
-    et.eval("block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
+print(et.eval("block(define(foo,arg0,slice(arg0,0,3,0,3)),foo)", m))
+print(et.eval("block(define(addme,arg0,arg1,arg0+arg1),addme)", three, four))
 et.eval('cout("Hello ",3," - ",4.1-2.9)')
 et.eval("""
     block(
