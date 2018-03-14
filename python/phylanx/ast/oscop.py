@@ -129,7 +129,7 @@ class OpenSCoP:
             self.function[upper.__class__.__name__](self, upper, expr, 1)
             iters.append(expr)
             for key in expr.keys():
-                if not key in self.domain_set and key != 'literals':
+                if key not in self.domain_set and key != 'literals':
                     self.params_set.add(key)
         else:
             # lower
@@ -147,7 +147,7 @@ class OpenSCoP:
             self.function[upper.__class__.__name__](self, upper, expr, 1)
             iters.append(expr)
             for key in expr.keys():
-                if not key in self.domain_set and key != 'literals':
+                if key not in self.domain_set and key != 'literals':
                     self.params_set.add(key)
         # Body
         self.domain_stack.append(iters)
@@ -180,7 +180,7 @@ class OpenSCoP:
         # If the condition is just a variable.
         elif isinstance(node.test, ast.Name):
             _id = node.test.id
-            if not _id in self.iters:
+            if _id not in self.iters:
                 self.params_set.add(_id)
             subexpr = {}
             subexpr[_id] = 1
@@ -277,7 +277,7 @@ class OpenSCoP:
                                                      coef)
         if isinstance(node.slice.value, ast.Name):
             _idx = node.slice.value.id
-            if not _idx in self.scatter_info.keys():
+            if _idx not in self.scatter_info.keys():
                 raise Exception(
                     "Index %s is not define in this scope.'" % _idx)
             self.scatter_info[_idx] += 1
@@ -308,7 +308,7 @@ class OpenSCoP:
         self.oscop_global['context'] += '## ' + str(expr) + '\n'
         for param in expr.keys():
             if param != 'literals':
-                if not param in self.oscop_global['params_names']:
+                if param not in self.oscop_global['params_names']:
                     self.oscop_global['params_names'] += param + ' '
                     self.oscop_global['nrows'] += 1
                 self.params_set.add(param)
@@ -396,7 +396,7 @@ class OpenSCoP:
 
         row = 1
         for k in expr.keys():
-            if not k in mems:
+            if k not in mems:
                 domain[row][idx_table[k]] = expr[k]
                 row += 1
 

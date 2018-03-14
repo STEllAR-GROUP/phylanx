@@ -17,7 +17,8 @@ $params_names
 
 # Number of statements
 $num_statements
-"""
+"""  # noqa: E122
+
 oscop_statment = \
 """# =============================================== Statement $statement_num
 # Number of relations describing the statement
@@ -33,7 +34,7 @@ $scattering
 # ----------------------------------------------  $statement_num.3 Access
 $access
 
-"""
+"""  # noqa: E122
 
 
 def empty_oscop_statment():
