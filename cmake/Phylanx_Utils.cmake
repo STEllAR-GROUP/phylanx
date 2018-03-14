@@ -10,6 +10,7 @@ phylanx_include(
   Message
   Option
   AddCompileFlag
+  AddDefinitions
   AddExecutable
   AddLibraryHeaders
   AddLibrarySources
@@ -26,6 +27,7 @@ phylanx_include(
   ExportTargets
   ForceOutOfTreeBuild
   GetPythonExtensionLocation
+  HandleComponentDependencies
   HighFive
   IsTarget
   SetCMakePolicy

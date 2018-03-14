@@ -147,11 +147,11 @@ function(phylanx_setup_target target)
 
   # linker instructions
   if(NOT target_NOLIBS)
-    set(phylanx_libs phylanx_component)
+    set(phylanx_libs "general;phylanx_component")
     if(NOT target_STATIC_LINKING)
       set(phylanx_libs ${phylanx_libs})
     endif()
-    hpx_handle_component_dependencies(target_COMPONENT_DEPENDENCIES)
+    phylanx_handle_component_dependencies(target_COMPONENT_DEPENDENCIES)
     set(phylanx_libs ${phylanx_libs} ${target_COMPONENT_DEPENDENCIES})
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
       set(phylanx_libs ${phylanx_libs} imf svml irng intlc)

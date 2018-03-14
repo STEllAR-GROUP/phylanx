@@ -8,6 +8,7 @@
 
 #include <hpx/config.hpp>
 
+#include <phylanx/config/defines.hpp>
 #include <phylanx/config/export_definitions.hpp>
 #include <phylanx/config/version.hpp>
 

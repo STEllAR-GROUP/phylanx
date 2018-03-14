@@ -80,6 +80,7 @@ endif()
 
 ################################################################################
 # create main module
+set(HPX_TLL_PUBLIC "PUBLIC")
 if(phylanx_external_OBJECTS)
   add_hpx_component(phylanx SHARED
     SOURCES ${phylanx_SOURCES}
@@ -94,15 +95,19 @@ else()
 endif()
 
 target_link_libraries(phylanx_component
-  ${HPX_LIBRARIES}
-  blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  PUBLIC
+    ${HPX_LIBRARIES}
+    ${BLAS_LIBRARIES}
+    ${LAPACK_LIBRARIES})
+target_link_libraries(phylanx_component
+  PRIVATE
+    blaze::blaze)
 
 if(PHYLANX_WITH_HIGHFIVE)
   target_link_libraries(phylanx_component
-    HighFive ${PHYLANX_HDF5_LIBRARIES})
-  set_property(TARGET phylanx_component APPEND
-    PROPERTY COMPILE_DEFINITIONS
-    "PHYLANX_HAVE_HIGHFIVE")
+    PRIVATE
+      HighFive
+      ${PHYLANX_HDF5_LIBRARIES})
 endif()
 
 set_target_properties(
@@ -134,3 +139,4 @@ install(
   COMPONENT runtime
   OPTIONAL)
 
+phylanx_export_targets(${phylanx_targets})
