@@ -59,6 +59,7 @@ set(tests
     square_root_operation
     store_operation
     sub_operation
+    sum_operation
     transpose_operation
     unary_minus_operation
     unary_not_operation

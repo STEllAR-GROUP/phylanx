@@ -73,6 +73,7 @@ namespace phylanx { namespace execution_tree
             primitives::random::match_data,
             primitives::shuffle_operation::match_data,
             primitives::square_root_operation::match_data,
+            primitives::sum_operation::match_data,
             primitives::transpose_operation::match_data,
             // variadic operations
             primitives::add_operation::match_data,
