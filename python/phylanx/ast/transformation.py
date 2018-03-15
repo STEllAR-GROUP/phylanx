@@ -52,9 +52,8 @@ class PhySL:
         self.defs = {}
         self.priority = 0
         self.groupAggressively = True
-        self.__src__ = '%s(%s)\n' % (
-            full_node_name(tree.body[0], 'block'),
-            self.recompile(tree))
+        self.__src__ = '%s(%s)\n' % (full_node_name(tree.body[0], 'block'),
+                                     self.recompile(tree))
 
     def _Num(self, a):
         return str(a.n)
@@ -445,7 +444,6 @@ def Phylanx(target="PhySL", **kwargs):
             assert len(tree.body) == 1
             self.transformation = self.targets[target](tree, kwargs)
             self.__src__ = self.transformation.__src__
-
 
         def __call__(self, *args):
             if target == "OpenSCoP":

@@ -23,4 +23,5 @@ def kernel():
                 for k in range(N):
                     C[i][j] = C[i][j] + A[i][k] * B[k][j]
 
+
 print(kernel.__src__)

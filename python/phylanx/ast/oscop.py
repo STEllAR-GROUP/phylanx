@@ -40,7 +40,6 @@ class OpenSCoP:
         self.__src__ = self.template.substitute(
             self.oscop_global) + '\n' + self.__src__
 
-
     def _Add(self, node, expr={}, coef=1):
         left = node.left
         right = node.right
