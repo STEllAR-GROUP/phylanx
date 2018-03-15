@@ -25,7 +25,7 @@ class OpenSCoP:
         self.params_set = set()
         self.memory_set = set()
 
-        self.openscop = ''
+        self.__src__ = ''
         self.access = ''
         self.statements = []
         self.statement_idx = 0
@@ -37,10 +37,9 @@ class OpenSCoP:
 
         self.oscop_global['num_statements'] = self.statement_idx
         self.template = Template(oscop_global)
-        self.openscop = self.template.substitute(
-            self.oscop_global) + '\n' + self.openscop
+        self.__src__ = self.template.substitute(
+            self.oscop_global) + '\n' + self.__src__
 
-        print(self.openscop)
 
     def _Add(self, node, expr={}, coef=1):
         left = node.left
@@ -81,7 +80,7 @@ class OpenSCoP:
         self.fill_access(self.statements[-1], 'WRITE', expr)
         self.fill_scatter(statement)
         self.template = Template(oscop_statment)
-        self.openscop += self.template.substitute(statement)
+        self.__src__ += self.template.substitute(statement)
         self.access = ''
         self.memory_stack = []
 

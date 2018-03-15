@@ -45,7 +45,7 @@ def fib(n):
         return fib(n - 1) + fib(n - 2)
 
 
-# assert fib.__physl_src__ == \
+# assert fib.__src__ == \
 #     'block$1$0(define$1$0(fib$1$0, n$1$8, ' + \
 #     'if(n$2$7 < 2, n$3$15, ' + \
 #     '(fib((n$5$19 - 1)) + fib((n$5$28 - 2))))' + \
@@ -59,7 +59,7 @@ def pass_str(a):
     return a
 
 
-assert pass_str.__physl_src__ == \
+assert pass_str.__src__ == \
     'block$58$0(define$58$0(pass_str$58$0, a$58$13, a$59$11), pass_str$58$0)\n'
 
 assert "foo" == str(pass_str("foo"))

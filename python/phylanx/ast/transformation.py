@@ -48,10 +48,13 @@ def rmline(a):
 
 
 class PhySL:
-    def __init__(self):
+    def __init__(self, tree, kwargs):
         self.defs = {}
         self.priority = 0
         self.groupAggressively = True
+        self.__src__ = '%s(%s)\n' % (
+            full_node_name(tree.body[0], 'block'),
+            self.recompile(tree))
 
     def _Num(self, a):
         return str(a.n)
@@ -439,25 +442,16 @@ def Phylanx(target="PhySL", **kwargs):
             # Create the AST
             tree = ast.parse(src)
             ast.increment_lineno(tree, actual_lineno)
-            transformation = self.targets[target]
-
             assert len(tree.body) == 1
+            self.transformation = self.targets[target](tree, kwargs)
+            self.__src__ = self.transformation.__src__
 
-            if target == "PhySL":
-                self.__physl_src__ = '%s(%s)\n' % (
-                    full_node_name(tree.body[0], 'block'),
-                    transformation().recompile(tree))
-            elif target == "OpenSCoP":
-                transformation(tree, kwargs)
-            else:
-                raise Exception(
-                    "Invalid target to Phylanx transformer: '%s'" % target)
 
         def __call__(self, *args):
             if target == "OpenSCoP":
                 raise NotImplementedError(
                     "OpenSCoP kernel blocks are not yet callable.")
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            return et.eval(self.__physl_src__, *nargs)
+            return et.eval(self.__src__, *nargs)
 
     return PhyTransformer
