@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/util.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -27,6 +28,8 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     namespace primitives
     {
+        class primitive_component;
+
         struct primitive_component_base
         {
             primitive_component_base() = default;
@@ -56,6 +59,19 @@ namespace phylanx { namespace execution_tree
             virtual void set_body(primitive_argument_type&& target);
 
         protected:
+            friend class primitive_component;
+
+            // helper functions to invoke eval functionalities
+            hpx::future<primitive_argument_type> do_eval(
+                std::vector<primitive_argument_type> const& params) const;
+            primitive_argument_type do_eval_direct(
+                std::vector<primitive_argument_type> const& params) const;
+
+            // access data for performance counter
+            std::int64_t get_eval_count(bool reset, bool direct) const;
+            std::int64_t get_eval_duration(bool reset, bool direct) const;
+
+        protected:
             std::string generate_error_message(std::string const& msg) const;
 
         protected:
@@ -64,6 +80,17 @@ namespace phylanx { namespace execution_tree
 
             std::string name_;          // the unique name of this primitive
             std::string codename_;      // the name of the original code source
+
+            // Performance counter data
+            mutable std::int64_t eval_count_;
+            mutable std::int64_t eval_duration_;
+            mutable std::int64_t eval_direct_count_;
+            mutable std::int64_t eval_direct_duration_;
+
+#if defined(HPX_HAVE_APEX)
+            std::string eval_name_;
+            std::string eval_direct_name_;
+#endif
         };
     }
 

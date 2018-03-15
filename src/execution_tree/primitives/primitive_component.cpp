@@ -12,7 +12,6 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/util/scoped_timer.hpp>
 
 #include <cstdint>
 #include <map>
@@ -105,18 +104,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> primitive_component::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        hpx::util::scoped_timer<std::int64_t> timer(eval_duration_);
-        ++eval_count_;
-        return primitive_->eval(params);
+        return primitive_->do_eval(params);
     }
 
     // direct_eval_action
     primitive_argument_type primitive_component::eval_direct(
         std::vector<primitive_argument_type> const& params) const
     {
-        hpx::util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
-        ++eval_direct_count_;
-        return primitive_->eval_direct(params);
+        return primitive_->do_eval_direct(params);
     }
 
     // store_action
@@ -136,6 +131,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void primitive_component::set_body(primitive_argument_type&& target)
     {
         primitive_->set_body(std::move(target));
+    }
+
+    // access data for performance counter
+    std::int64_t primitive_component::get_eval_count(
+        bool reset, bool direct) const
+    {
+        return primitive_->get_eval_count(reset, direct);
+    }
+
+    std::int64_t primitive_component::get_eval_duration(
+        bool reset, bool direct) const
+    {
+        return primitive_->get_eval_duration(reset, direct);
     }
 }}}
 

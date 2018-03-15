@@ -7,13 +7,17 @@
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/util/scoped_timer.hpp>
 
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/traits.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <cstdint>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -28,7 +32,75 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : operands_(std::move(params))
       , name_(name)
       , codename_(codename)
+      , eval_count_(0ll)
+      , eval_duration_(0ll)
+      , eval_direct_count_(0ll)
+      , eval_direct_duration_(0ll)
     {
+#if defined(HPX_HAVE_APEX)
+        eval_name_ = name_ + "::eval";
+        eval_direct_name_ = name_ + "::eval_direct";
+#endif
+    }
+
+    namespace detail
+    {
+        template <typename T>
+        struct keep_alive
+        {
+            template <typename T_>
+            keep_alive(T_ && t)
+              : t_(std::forward<T_>(t))
+            {}
+
+            void operator()() const {}
+
+            T t_;
+        };
+    }
+
+    template <typename T>
+    detail::keep_alive<typename std::decay<T>::type> keep_alive(T && t)
+    {
+        return detail::keep_alive<typename std::decay<T>::type>(
+            std::forward<T>(t));
+    }
+
+    hpx::future<primitive_argument_type> primitive_component_base::do_eval(
+        std::vector<primitive_argument_type> const& params) const
+    {
+#if defined(HPX_HAVE_APEX)
+        hpx::util::annotate_function annotate(eval_name_.c_str());
+#endif
+
+        util::scoped_timer<std::int64_t> timer(eval_duration_);
+        ++eval_count_;
+
+        auto f = this->eval(params);
+        if (!f.is_ready())
+        {
+            using shared_state_ptr =
+                typename hpx::traits::detail::shared_state_ptr_for<
+                    decltype(f)>::type;
+            shared_state_ptr const& state =
+                hpx::traits::future_access<decltype(f)>::get_shared_state(f);
+
+            state->set_on_completed(keep_alive(std::move(timer)));
+        }
+        return f;
+    }
+
+    primitive_argument_type primitive_component_base::do_eval_direct(
+        std::vector<primitive_argument_type> const& params) const
+    {
+#if defined(HPX_HAVE_APEX)
+        hpx::util::annotate_function annotate(eval_direct_name_.c_str());
+#endif
+
+        util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
+        ++eval_direct_count_;
+
+        return this->eval_direct(params);
     }
 
     // eval_action
@@ -97,6 +169,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& msg) const
     {
         return execution_tree::generate_error_message(msg, name_, codename_);
+    }
+
+    std::int64_t primitive_component_base::get_eval_count(
+        bool reset, bool direct) const
+    {
+        if (!direct)
+        {
+            return hpx::util::get_and_reset_value(eval_count_, reset);
+        }
+        return hpx::util::get_and_reset_value(eval_direct_count_, reset);
+    }
+
+    std::int64_t primitive_component_base::get_eval_duration(
+        bool reset, bool direct) const
+    {
+        if (!direct)
+        {
+            return hpx::util::get_and_reset_value(eval_duration_, reset);
+        }
+        return hpx::util::get_and_reset_value(eval_direct_duration_, reset);
     }
 }}}
 

@@ -264,12 +264,13 @@ void print_performance_counter_data_csv()
     std::cout << std::endl << "Primitive Performance Counter Data in CSV:";
 
     // CSV Header
-    std::cout << std::endl
-              << "primitive_instance" << ","
-              << "count" << ","
-              << "time" << ","
-              << "direct_count" << ","
-              << "direct_time" << std::endl;
+    std::cout << "\n"
+              << "primitive_instance,"
+              << "display_name,"
+              << "count,"
+              << "time,"
+              << "direct_count,"
+              << "direct_time\n";
 
     // List of existing primitive instances
     std::vector<std::string> existing_primitive_instances;
@@ -288,7 +289,10 @@ void print_performance_counter_data_csv()
             "count/eval_direct", "time/eval_direct"},
             hpx::find_here()))
     {
-        std::cout << "\"" << entry.first << "\"";
+        std::cout << "\"" << entry.first << "\",\""
+                  << phylanx::execution_tree::compiler::primitive_display_name(
+                         entry.first)
+                  << "\"";
         for (auto const& counter_value : entry.second)
         {
             std::cout << "," << counter_value;
