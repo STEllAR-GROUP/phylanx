@@ -17,9 +17,9 @@
 std::string const code = R"(block(
     define(f, a, block(
         define(b, 6),
-        define(vec1, make_vector(a, b, 42)),
+        define(vec1, hstack(a, b, 42)),
         debug(vec1),
-        define(vec2, make_vector(a, vec1, b)),
+        define(vec2, hstack(a, vec1, b)),
         debug(vec2)
     )),
     f

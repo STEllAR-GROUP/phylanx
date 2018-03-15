@@ -89,8 +89,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             k = args[1].scalar();
         }
 
+        auto input_matrix = args[0].matrix();
         blaze::Band<blaze::CustomMatrix<double, true, true>> diag =
-            blaze::band(args[0].matrix(), k);
+            blaze::band(input_matrix, k);
 
         blaze::DynamicVector<double> result(diag);
 

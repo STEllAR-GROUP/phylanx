@@ -26,6 +26,7 @@ set(tests
     file_primitives
     file_csv_primitives
     for_operation
+    add_dimension
     greater_operation
     greater_equal_operation
     hstack_operation
@@ -44,6 +45,7 @@ set(tests
     parallel_block_operation
     power_operation
     random
+    random_distributions
     row_set
     row_slicing
     set_operation

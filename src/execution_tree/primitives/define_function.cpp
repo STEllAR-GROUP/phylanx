@@ -27,6 +27,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             nullptr, &create_primitive<define_function>)
     };
 
+    match_pattern_type const define_function::match_data_lambda =
+    {
+        hpx::util::make_tuple("lambda",
+            std::vector<std::string>{"lambda(__1)"},
+            nullptr, nullptr)
+    };
+
     ///////////////////////////////////////////////////////////////////////////
     define_function::define_function(
             std::vector<primitive_argument_type>&& operands,

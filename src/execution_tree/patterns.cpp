@@ -23,10 +23,8 @@ namespace phylanx { namespace execution_tree
             primitives::column_slicing_operation::match_data,
             primitives::console_output::match_data,
             primitives::debug_output::match_data,
-            primitives::define_variable::match_data_define,
             primitives::hstack_operation::match_data,
             primitives::make_list::match_data,
-            primitives::make_vector::match_data,
             primitives::parallel_block_operation::match_data,
             primitives::row_set_operation::match_data,
             primitives::row_slicing_operation::match_data,
@@ -75,6 +73,7 @@ namespace phylanx { namespace execution_tree
             primitives::add_operation::match_data,
             primitives::and_operation::match_data,
             primitives::div_operation::match_data,
+            primitives::add_dimension::match_data,
             primitives::mul_operation::match_data,
             primitives::or_operation::match_data,
             primitives::sub_operation::match_data,
@@ -89,6 +88,9 @@ namespace phylanx { namespace execution_tree
             // unary operations
             primitives::unary_minus_operation::match_data,
             primitives::unary_not_operation::match_data,
+            // generic functions
+            primitives::get_seed_match_data,
+            primitives::set_seed_match_data,
             //
             // compiler-specific (internal) primitives
             //
@@ -96,10 +98,12 @@ namespace phylanx { namespace execution_tree
             primitives::function_reference::match_data,
             primitives::wrapped_function::match_data,
             primitives::define_function::match_data,
+            primitives::define_function::match_data_lambda,
 
             primitives::variable::match_data,
             primitives::wrapped_variable::match_data,
-            primitives::define_variable::match_data
+            primitives::define_variable::match_data,
+            primitives::define_variable::match_data_define
         };
 
         return patterns;
