@@ -81,6 +81,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "was not initialized yet",
                     name_, codename_));
         }
+
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            return p->bind(args);
+        }
+
         return operands_[0];
     }
 

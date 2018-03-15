@@ -112,7 +112,7 @@ void test_map_operation_func_arg()
     std::string const code_str = R"(block(
             define(f, a, block(
                 define(fmap, x, x + a),
-                map(fmap, '(1, 2, 3)))
+                map(fmap, '(1, 2, 3))
             )),
             f
         ))";
@@ -146,7 +146,7 @@ void test_map_operation_func_lambda_arg()
     std::string const code_str = R"(block(
             define(f, a, block(
                 define(fmap, x, lambda(x, x + a)),
-                map(fmap, '(1, 2, 3)))
+                map(fmap, '(1, 2, 3))
             )),
             f
         ))";
@@ -254,6 +254,8 @@ int main(int argc, char* argv[])
     test_map_operation_func_lambda();
 
     test_map_operation_lambda_arg();
+    test_map_operation_func_arg();
+    test_map_operation_func_lambda_arg();
 
     test_map_operation_lambda2();
     test_map_operation_builtin2();
