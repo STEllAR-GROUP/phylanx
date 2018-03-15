@@ -25,6 +25,7 @@ set(tests
     extract_shape
     file_primitives
     file_csv_primitives
+    filter_operation
     for_operation
     greater_operation
     greater_equal_operation
