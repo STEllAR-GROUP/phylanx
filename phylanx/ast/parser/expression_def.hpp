@@ -109,7 +109,7 @@ namespace phylanx { namespace ast { namespace parser
             |   function_call
             |   list
             |   identifier > '[' > cexpr > ']'
-            |   identifier 
+            |   identifier
             |   bool_
             |   long_long
             |   string
