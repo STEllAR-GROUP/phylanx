@@ -119,6 +119,11 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
             std::set<std::string>&& functions) const;
 
+        PHYLANX_EXPORT primitive_argument_type bind(
+            std::vector<primitive_argument_type> && args) const;
+        PHYLANX_EXPORT primitive_argument_type bind(
+            std::vector<primitive_argument_type> const& args) const;
+
         PHYLANX_EXPORT void set_body(
             hpx::launch::sync_policy, primitive_argument_type&& target);
 

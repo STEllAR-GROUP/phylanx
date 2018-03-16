@@ -58,7 +58,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "apply::eval_direct",
                 generate_error_message(
-                    "the first argument to apply must be an invocable object"));
+                    "the first argument to apply must be an invocable "
+                    "object"));
         }
 
         return p->eval_direct(

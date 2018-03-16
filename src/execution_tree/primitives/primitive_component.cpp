@@ -38,6 +38,8 @@ HPX_REGISTER_ACTION(primitive_component_type::store_action,
     phylanx_primitive_store_action)
 HPX_REGISTER_ACTION(primitive_component_type::expression_topology_action,
     phylanx_primitive_expression_topology_action)
+HPX_REGISTER_ACTION(primitive_component_type::bind_action,
+    phylanx_primitive_bind_action)
 HPX_REGISTER_ACTION(primitive_component_type::set_body_action,
     phylanx_primitive_set_body_action)
 
@@ -125,6 +127,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::set<std::string>&& functions) const
     {
         return primitive_->expression_topology(std::move(functions));
+    }
+
+    // bind_action
+    primitive_argument_type primitive_component::bind(
+        std::vector<primitive_argument_type> const& params) const
+    {
+        return primitive_->bind(params);
     }
 
     // set_body_action (define_function only)
