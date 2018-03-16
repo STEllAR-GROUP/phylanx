@@ -25,6 +25,7 @@ set(tests
     extract_shape
     file_primitives
     file_csv_primitives
+    filter_operation
     for_operation
     add_dimension
     greater_operation
