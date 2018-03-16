@@ -528,8 +528,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
             // remaining expression could refer to a variable
             if (ast::detail::is_identifier(expr))
             {
-                return handle_variable_reference(
-                    ast::detail::identifier_name(expr), expr);
+                std::string name = ast::detail::identifier_name(expr);
+                if (name == "nil")
+                {
+                    return literal_value(primitive_argument_type{});
+                }
+                return handle_variable_reference(name, expr);
             }
 
             // ... or a function call
