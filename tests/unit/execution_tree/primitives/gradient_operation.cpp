@@ -123,9 +123,8 @@ void test_gradient_operation_2d_no_axis_given()
 
     auto result = phylanx::execution_tree::extract_list_value(f.get());
 
-    HPX_TEST_EQ(phylanx::ir::node_data<double> {expected_0}, result[0]);
-    HPX_TEST_EQ(phylanx::ir::node_data<double> {expected_1}, result[1]);
-
+    HPX_TEST_EQ(phylanx::ir::node_data<double>{expected_0}, result[0]);
+    HPX_TEST_EQ(phylanx::ir::node_data<double>{expected_1}, result[1]);
 }
 
 int main(int argc, char* argv[])
