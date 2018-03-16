@@ -26,6 +26,8 @@ set(tests
     file_primitives
     file_csv_primitives
     filter_operation
+    fold_left_operation
+    fold_right_operation
     for_operation
     greater_operation
     greater_equal_operation
