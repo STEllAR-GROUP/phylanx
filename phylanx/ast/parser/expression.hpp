@@ -41,7 +41,6 @@ namespace phylanx { namespace ast { namespace parser
         expression_base(error_handler<Iterator>& error_handler);
 
         qi::rule<Iterator, ast::expression(), skipper<Iterator>> expr;
-        qi::rule<Iterator, ast::expression(), skipper<Iterator>> cexpr;
 
         qi::rule<Iterator, ast::operand(), skipper<Iterator>> unary_expr;
         qi::rule<Iterator, ast::operand(), skipper<Iterator>> primary_expr;
