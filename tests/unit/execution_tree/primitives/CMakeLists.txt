@@ -27,6 +27,7 @@ set(tests
     file_csv_primitives
     for_operation
     add_dimension
+        generic_operation
     greater_operation
     greater_equal_operation
     hstack_operation
