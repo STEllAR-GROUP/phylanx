@@ -282,4 +282,9 @@ void phylanx::bindings::bind_ast(pybind11::module m)
     ast.def("traverse", &phylanx::bindings::traverse<phylanx::ast::function_call>,
         "traverse the given AST expression and call the provided function "
         "on each part of it");
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Compiler State
+    pybind11::class_<phylanx::bindings::compiler_state>(m,"compiler_state")
+        .def(pybind11::init<>());
 }

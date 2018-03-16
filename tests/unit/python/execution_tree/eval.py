@@ -6,18 +6,19 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx.ast import *
+from phylanx.ast import Phylanx
 from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
+cs = phylanx.compiler_state()
 
 fib10 = et.eval("""
 block(
     define(fib,n,
     if(n<2,n,
         fib(n-1)+fib(n-2))),
-    fib)""", 10)
+    fib)""", cs, 10)
 
 assert fib10 == 55.0
 
@@ -33,7 +34,7 @@ block(
                   store(i,i+n)
                 )),
             i)),
-    sum10)""")
+    sum10)""", cs)
 
 assert sum10 == 55.0
 
@@ -61,7 +62,7 @@ def pass_str(a):
 
 
 assert pass_str.__physl_src__ == \
-    'block$59$0(define$59$0(pass_str$59$0, a$59$13, a$60$11), pass_str$59$0)\n'
+    'define$60$0(pass_str$60$0, a$60$13, a$61$11)', pass_str.__physl_src__
 
 assert "foo" == str(pass_str("foo"))
 
@@ -96,7 +97,7 @@ assert foo() == 3
 
 
 @Phylanx("PhySL")
-def foo(n):
+def foo2(n):
     if n == 1:
         return 2
     elif n == 3:
@@ -105,11 +106,11 @@ def foo(n):
         return 5
 
 
-assert foo(1) == 2 and foo(3) == 4 and foo(5) == 5
+assert foo2(1) == 2 and foo2(3) == 4 and foo2(5) == 5
 
 
 @Phylanx("PhySL")
-def foo():
+def foo3():
     sumn = 0
     i = 0
     while i < 10:
@@ -118,4 +119,12 @@ def foo():
     return sumn
 
 
-assert foo() == 45
+assert foo3() == 45
+
+
+@Phylanx()
+def foo4():
+    return foo()
+
+
+assert foo4() == 3

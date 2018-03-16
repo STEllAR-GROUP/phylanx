@@ -9,7 +9,7 @@ import ast
 import re
 import phylanx
 import inspect
-from .utils import *
+from .utils import full_name, full_node_name
 
 et = phylanx.execution_tree
 
@@ -153,7 +153,7 @@ class PhySL:
                     s += self.recompile(aa, False)
                     s += ", "
             s += ")"
-        s += "), " + full_name(a)
+        s += ")"
         return s
 
     def _BinOp(self, a):
@@ -419,13 +419,17 @@ def convert_to_phylanx_type(v):
     return v
 
 
+cs = phylanx.compiler_state()
+
+
 # Create the decorator
-def Phylanx(target="PhySL"):
+def Phylanx(target="PhySL", compiler_state=cs):
     class PhyTransformer(object):
         targets = {"PhySL": PhySL}
 
         def __init__(self, f):
             self.f = f
+            self.cs = cs
             self.target = target
             # Get the source code
             actual_lineno = inspect.getsourcelines(f)[-1]
@@ -442,15 +446,14 @@ def Phylanx(target="PhySL"):
             assert len(tree.body) == 1
 
             if target == "PhySL":
-                self.__physl_src__ = '%s(%s)\n' % (
-                    full_node_name(tree.body[0], 'block'),
-                    transformation.recompile(tree))
+                self.__physl_src__ = transformation.recompile(tree)
+                et.eval(self.__physl_src__, self.cs)
             else:
                 raise Exception(
                     "Invalid target to Phylanx transformer: '%s'" % target)
 
         def __call__(self, *args):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            return et.eval(self.__physl_src__, *nargs)
+            return et.eval(self.f.__name__, self.cs, *nargs)
 
     return PhyTransformer

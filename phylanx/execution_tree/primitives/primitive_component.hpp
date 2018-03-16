@@ -44,10 +44,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::string const& name, std::string const& codename)
           : primitive_(
                 create_primitive(type, std::move(operands), name, codename))
-          , eval_count_(0ll)
-          , eval_duration_(0ll)
-          , eval_direct_count_(0ll)
-          , eval_direct_duration_(0ll)
         {
         }
 
@@ -94,32 +90,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_component, set_body, set_body_action);
 
         // access data for performance counter
-        std::int64_t get_eval_count(bool reset, bool direct) const
-        {
-            if (!direct)
-            {
-                return hpx::util::get_and_reset_value(eval_count_, reset);
-            }
-            return hpx::util::get_and_reset_value(eval_direct_count_, reset);
-        }
-
-        std::int64_t get_eval_duration(bool reset, bool direct) const
-        {
-            if (!direct)
-            {
-                return hpx::util::get_and_reset_value(eval_duration_, reset);
-            }
-            return hpx::util::get_and_reset_value(eval_direct_duration_, reset);
-        }
+        PHYLANX_EXPORT std::int64_t get_eval_count(
+            bool reset, bool direct) const;
+        PHYLANX_EXPORT std::int64_t get_eval_duration(
+            bool reset, bool direct) const;
 
     private:
         std::shared_ptr<primitive_component_base> primitive_;
-
-        // Performance counter data
-        mutable std::int64_t eval_count_;
-        mutable std::int64_t eval_duration_;
-        mutable std::int64_t eval_direct_count_;
-        mutable std::int64_t eval_direct_duration_;
     };
 }}}
 

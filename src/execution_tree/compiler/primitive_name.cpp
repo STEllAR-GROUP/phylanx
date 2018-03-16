@@ -126,6 +126,45 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         return result;
     }
+
+    // Compose a primitive display name from the given parts
+    std::string compose_primitive_display_name(
+        primitive_name_parts const& parts)
+    {
+        if (parts.primitive.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::compiler::compose_primitive_display_name",
+                "primitive type was not specified");
+        }
+
+        std::string result = parts.primitive;
+        if (!parts.instance.empty())
+        {
+            result += "/" + parts.instance;
+        }
+
+        if (parts.tag1 >= 0 || parts.tag2 != -1)
+        {
+            result += "(" + std::to_string(parts.tag1 < 0 ? 0 : parts.tag1);
+
+            // column is optional
+            if (parts.tag2 != -1)
+            {
+                result += ", " + std::to_string(parts.tag2);
+            }
+
+            result += ")";
+        }
+        return result;
+    }
+
+    // Return display name for a given primitive name
+    std::string primitive_display_name(std::string const& name)
+    {
+        primitive_name_parts parts = parse_primitive_name(name);
+        return compose_primitive_display_name(parts);
+    }
 }}}
 
 

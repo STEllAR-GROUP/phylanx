@@ -74,6 +74,7 @@ namespace phylanx { namespace execution_tree
             primitives::add_operation::match_data,
             primitives::and_operation::match_data,
             primitives::div_operation::match_data,
+            primitives::add_dimension::match_data,
             primitives::mul_operation::match_data,
             primitives::or_operation::match_data,
             primitives::sub_operation::match_data,
