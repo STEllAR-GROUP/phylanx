@@ -26,6 +26,7 @@ set(tests
     file_primitives
     file_csv_primitives
     for_operation
+    gradient_operation
     add_dimension
     greater_operation
     greater_equal_operation
