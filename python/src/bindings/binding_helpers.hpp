@@ -29,6 +29,28 @@ namespace phylanx { namespace bindings
     void bind_util(pybind11::module m);
 
     ///////////////////////////////////////////////////////////////////////////
+    // support for compilers
+    struct compiler_state
+    {
+        // keep module alive until this has been free'd
+        pybind11::weakref m;
+
+        phylanx::execution_tree::compiler::environment eval_env;
+        phylanx::execution_tree::compiler::function_list eval_snippets;
+
+        compiler_state()
+#if defined(_DEBUG)
+          : m(pybind11::module::import("_phylanxd"))
+#else
+          : m(pybind11::module::import("_phylanx"))
+#endif
+          , eval_env(phylanx::execution_tree::compiler::default_environment())
+          , eval_snippets()
+        {
+        }
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     // support for the traverse API
     struct traverse_helper
     {
@@ -116,8 +138,8 @@ namespace phylanx { namespace bindings
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    inline phylanx::execution_tree::primitive_argument_type
-    expression_compiler(std::string xexpr, pybind11::args args)
+    inline phylanx::execution_tree::primitive_argument_type expression_compiler(
+        std::string xexpr_str, compiler_state& c, pybind11::args args)
     {
         namespace et = phylanx::execution_tree;
         return hpx::threads::run_as_hpx_thread(
@@ -125,8 +147,9 @@ namespace phylanx { namespace bindings
             {
                 try
                 {
-                    et::compiler::function_list eval_snippets;
-                    auto x = et::compile(xexpr, eval_snippets);
+                    auto xexpr = phylanx::ast::generate_ast(xexpr_str);
+                    auto x = phylanx::execution_tree::compile(
+                        xexpr, c.eval_snippets, c.eval_env);
 
                     std::vector<phylanx::execution_tree::primitive_argument_type>
                         fargs;
