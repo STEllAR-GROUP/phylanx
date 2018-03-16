@@ -11,6 +11,7 @@ set(tests
     argmin
     argmax
     block_operation
+    car_cdr_operation
     column_set
     column_slicing
     constant

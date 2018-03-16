@@ -32,9 +32,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
     ///////////////////////////////////////////////////////////////////////////
     using expression_pattern = hpx::util::tuple<
-        std::string, std::string,
-        ast::expression, factory_function_type>;
-    using expression_pattern_list = std::vector<expression_pattern>;
+        std::string, ast::expression, factory_function_type>;
+    using expression_pattern_list =
+        std::multimap<std::string, expression_pattern>;
 
     PHYLANX_EXPORT expression_pattern_list generate_patterns(
         pattern_list const& patterns_list);
