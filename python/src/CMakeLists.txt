@@ -51,26 +51,30 @@ add_phylanx_source_group(
 
 ###############################################################################
 if(APPLE) # OSX requires this to be a shared library, not a module (default)
-    pybind11_add_module(phylanx_py SHARED
-        ${phylanx_py_SOURCES}
-        ${phylanx_py_HEADERS})
+  pybind11_add_module(phylanx_py
+    SHARED
+      ${phylanx_py_SOURCES}
+      ${phylanx_py_HEADERS})
 else(APPLE)
-    pybind11_add_module(phylanx_py
-        ${phylanx_py_SOURCES}
-        ${phylanx_py_HEADERS}
-        ${phylanx_python_SOURCES})
+  pybind11_add_module(phylanx_py
+    ${phylanx_py_SOURCES}
+    ${phylanx_py_HEADERS}
+    ${phylanx_python_SOURCES})
 endif(APPLE)
 
 include_directories(${pybind11_INCLUDE_DIR})
 
-target_link_libraries(phylanx_py PRIVATE phylanx_component ${pybind11_LIBRARIES})
-target_compile_definitions(phylanx_py PRIVATE NOMINMAX)
-target_include_directories(phylanx_py PRIVATE
+target_link_libraries(phylanx_py
+  PRIVATE
+    phylanx_component
+    ${pybind11_LIBRARIES})
+target_include_directories(phylanx_py
+  PRIVATE
     ${pybind11_INCLUDE_DIR}
     "${PROJECT_SOURCE_DIR}/python/src")
 
-set_target_properties(
-  phylanx_py PROPERTIES
+set_target_properties(phylanx_py
+  PROPERTIES
     VERSION ${PHYLANX_VERSION}
     SOVERSION ${PHYLANX_SOVERSION}
     CLEAN_DIRECT_OUTPUT 1
@@ -78,15 +82,15 @@ set_target_properties(
     FOLDER "Core")
 
 if(MSVC)
-  set_target_properties(
-    phylanx_py PROPERTIES
+  set_target_properties(phylanx_py
+    PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Release/bin"
       LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/Debug/bin"
       LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/MinSizeRel/bin"
       LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/RelWithDebInfo/bin")
 else()
-  set_target_properties(
-    phylanx_py PROPERTIES
+  set_target_properties(phylanx_py
+    PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 endif()
 

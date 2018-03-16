@@ -54,22 +54,3 @@ function(phylanx_check_boost_compatibility)
   endif()
 endfunction()
 
-function(phylanx_setup_allocator)
-  if(PHYLANX_DISABLE_CUSTOM_ALLOCATOR)
-    return()
-  endif()
-  if(DEFINED PHYLANX_WITH_MALLOC)
-    string(TOUPPER "${PHYLANX_WITH_MALLOC}" PHYLANX_MALLOC_UPPER)
-    string(TOUPPER "${PHYLANX_WITH_MALLOC_DEFAULT}" PHYLANX_MALLOC_DEFAULT_UPPER)
-    if(NOT PHYLANX_MALLOC_UPPER STREQUAL PHYLANX_MALLOC_DEFAULT_UPPER)
-      phylanx_error(
-        "The specified allocators do not match. This Project is configured "
-        "with ${PHYLANX_WITH_MALLOC} and Phylanx was configured with "
-        "${PHYLANX_WITH_MALLOC_DEFAULT}.")
-    endif()
-  endif()
-  set(PHYLANX_WITH_MALLOC ${PHYLANX_WITH_MALLOC_DEFAULT} CACHE STRING
-    "Define which allocator should be linked in. Options are: "
-    "system, tcmalloc, jemalloc, tbbmalloc, and custom (default is: tcmalloc)")
-  include(PHYLANX_SetupAllocator)
-endfunction()

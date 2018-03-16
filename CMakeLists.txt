@@ -130,6 +130,11 @@ phylanx_setup_highfive()
 phylanx_include(GitCommit)
 
 ################################################################################
+# Set basic search paths for the generated Phylanx headers
+################################################################################
+include_directories("${CMAKE_BINARY_DIR}")
+
+################################################################################
 # Target specification
 
 # Recurse into some subdirectories. This does not actually cause another cmake
@@ -194,6 +199,36 @@ if(PHYLANX_WITH_TOOLS)
 endif()
 
 ################################################################################
+# Configure the header to include all compile definitions
+################################################################################
+
+################################################################################
+# PHYLANX_PREFIX
+# The prefix is the default search path for Phylanx plugins
+################################################################################
+if("${PHYLANX_PLATFORM_UC}" STREQUAL "ANDROID")
+  set(PHYLANX_PREFIX "lib")
+  set(PHYLANX_BUILD_PREFIX "lib")
+else()
+  set(PHYLANX_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  set(PHYLANX_BUILD_PREFIX "${CMAKE_BINARY_DIR}")
+endif()
+
+# Generate a defines.hpp to be used in the build directory ...
+set(PHYLANX_DEFINES_PREFIX ${PHYLANX_BUILD_PREFIX})
+phylanx_write_config_defines_file(
+  TEMPLATE "${PROJECT_SOURCE_DIR}/cmake/templates/config_defines.hpp.in"
+  NAMESPACE default
+  FILENAME "${CMAKE_BINARY_DIR}/phylanx/config/defines.hpp")
+
+# Generate a defines.hpp to be used in the install directory ...
+set(PHYLANX_DEFINES_PREFIX ${PHYLANX_PREFIX})
+phylanx_write_config_defines_file(
+  TEMPLATE "${PROJECT_SOURCE_DIR}/cmake/templates/config_defines.hpp.in"
+  NAMESPACE default
+  FILENAME "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/phylanx/config/defines.hpp")
+
+################################################################################
 # installation instructions
 ################################################################################
 install(
@@ -207,6 +242,17 @@ install(
 # Install all Phylanx header files
 install(
   DIRECTORY phylanx/
+  DESTINATION include/phylanx
+  COMPONENT core
+  FILES_MATCHING PATTERN "*.hpp"
+  PATTERN ".git" EXCLUDE
+  PATTERN "CMakeFiles" EXCLUDE
+  PATTERN "CTestFiles" EXCLUDE)
+
+# Install all Phylanx header that have been configured using various
+# cmake options
+install(
+  DIRECTORY "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/phylanx/"
   DESTINATION include/phylanx
   COMPONENT core
   FILES_MATCHING PATTERN "*.hpp"
