@@ -47,6 +47,7 @@ foreach(dir ${_INCLUDE_DIRS})
 endforeach()
 
 # Configure config for the install dir ...
+set(BLAZE_CONF_DIR ${blaze_DIR})
 set(HPX_CONF_DIR ${HPX_DIR})
 
 set(PHYLANX_CONF_PREFIX ${CMAKE_INSTALL_PREFIX})
