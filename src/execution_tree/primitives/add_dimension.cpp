@@ -26,109 +26,105 @@
 #include <blaze/Math.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx {
-    namespace execution_tree {
-        namespace primitives
+namespace phylanx { namespace execution_tree { namespace primitives
+{
+    ///////////////////////////////////////////////////////////////////////////
+    primitive create_add_dimension(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
+    {
+        static std::string type("add_dimension");
+        return create_primitive_component(
+            locality, type, std::move(operands), name, codename);
+    }
+
+    match_pattern_type const add_dimension::match_data =
+    {
+        hpx::util::make_tuple("add_dimension",
+        std::vector<std::string>{"add_dimension(_1, _2)"},
+        &create_add_dimension, &create_primitive<add_dimension>)
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    add_dimension::add_dimension(std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
+        : primitive_component_base(std::move(operands), name, codename)
+    {}
+
+    primitive_argument_type add_dimension::add_dim_0d(args_type && args) const
+    {
+        return primitive_argument_type{
+            blaze::DynamicVector<double>{args[0].scalar()}};
+    }
+
+    primitive_argument_type add_dimension::add_dim_1d(args_type && args) const
+    {
+        auto arg = args[0].vector();
+        return primitive_argument_type{
+            blaze::DynamicMatrix<double>{arg.size(), 1, arg.data()}};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::future<primitive_argument_type> add_dimension::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands.empty() || operands.size() > 2)
         {
-            ///////////////////////////////////////////////////////////////////////////
-            primitive create_add_dimension(hpx::id_type const& locality,
-                std::vector<primitive_argument_type>&& operands,
-                std::string const& name, std::string const& codename)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_dimension::eval",
+                execution_tree::generate_error_message(
+                    "the add_dimension primitive requires exactly one or two "
+                    "operands",
+                    name_, codename_));
+        }
+
+        for (auto const& i : operands)
+        {
+            if (!valid(i))
             {
-                static std::string type("add_dimension");
-                return create_primitive_component(
-                    locality, type, std::move(operands), name, codename);
-            }
-
-            match_pattern_type const add_dimension::match_data =
-            {
-                hpx::util::make_tuple("add_dimension",
-                std::vector<std::string>{"add_dimension(_1, _2)"},
-                &create_add_dimension, &create_primitive<add_dimension>)
-            };
-
-            ///////////////////////////////////////////////////////////////////////////
-            add_dimension::add_dimension(std::vector<primitive_argument_type>&& operands,
-                std::string const& name, std::string const& codename)
-                : primitive_component_base(std::move(operands), name, codename)
-            {}
-
-            primitive_argument_type add_dimension::add_dim_0d(args_type && args) const
-            {
-                return primitive_argument_type{
-                    blaze::DynamicVector<double>{args[0].scalar()}};
-            }
-
-            primitive_argument_type add_dimension::add_dim_1d(args_type && args) const
-            {
-                auto arg = args[0].vector();
-                return primitive_argument_type{
-                    blaze::DynamicMatrix<double>{arg.size(), 1, arg.data()}};
-            }
-
-            ///////////////////////////////////////////////////////////////////////////
-            hpx::future<primitive_argument_type> add_dimension::eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args) const
-            {
-                if (operands.empty() || operands.size() > 2)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_dimension::eval",
-                        execution_tree::generate_error_message(
-                            "the add_dimension primitive requires exactly one or two "
-                            "operands",
-                            name_, codename_));
-                }
-
-                for (auto const& i : operands)
-                {
-                    if (!valid(i))
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "add_dimension::eval",
-                            execution_tree::generate_error_message(
-                                "the add_dimension primitive requires that the "
-                                "arguments given by the operands array are "
-                                "valid",
-                                name_, codename_));
-                    }
-                }
-
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_argument_type
-                {
-                    std::size_t a_dims = args[0].num_dimensions();
-                    switch (a_dims)
-                    {
-                    case 0:
-                        return this_->add_dim_0d(std::move(args));
-                    case 1:
-                        return this_->add_dim_1d(std::move(args));
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "add_dimension::eval",
-                            execution_tree::generate_error_message(
-                                "operand a has an invalid "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
-                    }
-                }),
-                    detail::map_operands(
-                        operands, functional::numeric_operand{}, args,
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "add_dimension::eval",
+                    execution_tree::generate_error_message(
+                        "the add_dimension primitive requires that the "
+                        "arguments given by the operands array are "
+                        "valid",
                         name_, codename_));
             }
-
-            hpx::future<primitive_argument_type> add_dimension::eval(
-                std::vector<primitive_argument_type> const& args) const
-            {
-                if (operands_.empty())
-                {
-                    return eval(args, noargs);
-                }
-                return eval(operands_, args);
-            }
         }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](args_type&& args) -> primitive_argument_type
+        {
+            std::size_t a_dims = args[0].num_dimensions();
+            switch (a_dims)
+            {
+            case 0:
+                return this_->add_dim_0d(std::move(args));
+            case 1:
+                return this_->add_dim_1d(std::move(args));
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "add_dimension::eval",
+                    execution_tree::generate_error_message(
+                        "operand a has an invalid "
+                        "number of dimensions",
+                        this_->name_, this_->codename_));
+            }
+        }),
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
+                name_, codename_));
     }
-}
+
+    hpx::future<primitive_argument_type> add_dimension::eval(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (operands_.empty())
+        {
+            return eval(args, noargs);
+        }
+        return eval(operands_, args);
+    }
+}}}
