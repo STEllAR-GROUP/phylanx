@@ -19,6 +19,7 @@
 #include <hpx/util/tuple.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <type_traits>
 #include <string>
