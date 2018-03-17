@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const sum_operation::match_data =
     {
         hpx::util::make_tuple("sum_operation",
-        std::vector<std::string>{"sum(_1, _2)"},
+        std::vector<std::string>{"sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)"},
         &create_sum_operation, &create_primitive<sum_operation>)
     };
 
@@ -202,58 +202,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     hpx::util::optional<std::int64_t> axis;
                     bool keep_dims = false;
 
-                    if (args.empty() || args.size() > 3)
+                    // axis is argument #2
+                    if (args.size() > 1)
                     {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "sum_operation::eval",
-                            execution_tree::generate_error_message(
-                                "invalid number of arguments specified", this_->name_,
-                                this_->codename_));
-                    }
-                    else if (args.size() > 1)
-                    {
-                        switch (args[1].index())
-                        {
-                        case 0:
-                            break;
-                        case 2:
-                            axis = util::get<2>(args[1]);
-                            if (args.size() == 3)
-                            {
-                                if (args[2].index() == 1)
-                                    keep_dims = util::get<1>(args[2]).scalar();
-                                else
-                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "sum_operation::eval",
-                                        execution_tree::generate_error_message(
-                                            "operand keep_dims must be a boolean",
-                                            this_->name_, this_->codename_));
-                            }
+                        if (valid(args[1]))
+                            axis = execution_tree::extract_integer_value(
+                                args[1], this_->name_, this_->codename_);
 
-                            break;
-                        case 1:
-                            keep_dims = util::get<1>(args[1]).scalar();
-                            break;
-                        default:
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "sum_operation::eval",
-                                execution_tree::generate_error_message(
-                                    "operand axis must be an integer",
-                                    this_->name_, this_->codename_));
+                        // keep_dims is argument #3
+                        if (args.size() == 3)
+                        {
+                            keep_dims = execution_tree::extract_boolean_value(
+                                args[2], this_->name_, this_->codename_);
                         }
                     }
 
                     // Extract the matrix
-                    if (args[0].index() != 4)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "sum_operation::eval",
-                            execution_tree::generate_error_message(
-                                "operand a must be a scalar, vector, or a "
-                                "matrix",
-                                this_->name_, this_->codename_));
-                    }
-                    arg_type a = util::get<4>(args[0]);
+                    arg_type a = execution_tree::extract_numeric_value(
+                        args[0], this_->name_, this_->codename_);
 
                     std::size_t a_dims = a.num_dimensions();
                     switch (a_dims)

@@ -21,13 +21,15 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     /// \brief Sums the values of the elements of a vector or a matrix or
-    ///        returns the value of the scalar that was given to it
-    /// \param a the scalar, vector, or matrix to perform sum over
-    /// \param Optional. If provided, sum is calculated along the provided axis
-    ///        and a vector of results is returned. \p keep_dims is ignored if
-    ///        \p axis is present
-    /// \param Optional. keep_dims whether the sum value has to have the same
-    ///        number of dimensions as \p a
+    ///        returns the value of the scalar that was given to it.
+    /// \param a         The scalar, vector, or matrix to perform sum over
+    /// \param axis      Optional. If provided, sum is calculated along the
+    ///                  provided axis and a vector of results is returned.
+    ///                  \p keep_dims is ignored if \p axis present. Must be
+    ///                  nil if \p keep_dims is set
+    /// \param keep_dims Optional. Whether the sum value has to have the same
+    ///                  number of dimensions as \p a. Ignored if \p axis is
+    ///                  anything except nil.
     class sum_operation
         : public primitive_component_base
         , public std::enable_shared_from_this<sum_operation>
