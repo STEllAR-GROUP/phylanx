@@ -167,6 +167,7 @@ function(phylanx_setup_target target)
     target_compile_options(${target} PUBLIC ${CXX_FLAG})
   endif()
 
+  phylanx_debug("phylanx_setup_target.${target}: phylanx_libs:" ${phylanx_libs})
   target_link_libraries(${target} ${PHYLANX_TLL_PUBLIC} ${phylanx_libs} ${target_DEPENDENCIES})
 
   get_target_property(target_EXCLUDE_FROM_ALL ${target} EXCLUDE_FROM_ALL)

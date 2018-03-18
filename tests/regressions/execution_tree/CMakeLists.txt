@@ -17,7 +17,7 @@ set(tests
    )
 
 set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)
-set(cout_noargs_prints_nothing_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(cout_noargs_prints_nothing_159_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(define_loses_values_177_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(out_of_scope_variable_232_FLAGS COMPONENT_DEPENDENCIES iostreams)
