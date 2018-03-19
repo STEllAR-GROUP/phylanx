@@ -198,6 +198,37 @@ namespace phylanx { namespace execution_tree
         return expression_topology(std::move(functions)).get();
     }
 
+    primitive_argument_type primitive::bind(
+        std::vector<primitive_argument_type> const& params) const
+    {
+        using action_type = primitives::primitive_component::bind_action;
+
+        primitive_argument_type result =
+            action_type()(this->base_type::get_id(), params);
+
+        if (!execution_tree::valid(result))
+        {
+            result = primitive_argument_type{*this};
+        }
+
+        return detail::trace("bind", *this, std::move(result));
+    }
+    primitive_argument_type primitive::bind(
+        std::vector<primitive_argument_type> && params) const
+    {
+        using action_type = primitives::primitive_component::bind_action;
+
+        primitive_argument_type result =
+            action_type()(this->base_type::get_id(), std::move(params));
+
+        if (!execution_tree::valid(result))
+        {
+            result = primitive_argument_type{*this};
+        }
+
+        return detail::trace("bind", *this, std::move(result));
+    }
+
     void primitive::set_body(
         hpx::launch::sync_policy, primitive_argument_type&& target)
     {

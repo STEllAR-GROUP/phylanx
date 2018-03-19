@@ -75,8 +75,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
     PHYLANX_EXPORT primitive_name_parts parse_primitive_name(
         std::string const& name);
 
-    // compose a new primitive name from the given parts
+    // Compose a primitive name from the given parts
     PHYLANX_EXPORT std::string compose_primitive_name(
+        primitive_name_parts const& parts);
+
+    // Return display name for a given primitive name
+    PHYLANX_EXPORT std::string primitive_display_name(std::string const& name);
+
+    // Compose a primitive display name from the given parts
+    PHYLANX_EXPORT std::string compose_primitive_display_name(
         primitive_name_parts const& parts);
 }}}
 

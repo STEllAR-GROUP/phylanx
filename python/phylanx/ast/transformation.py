@@ -9,9 +9,8 @@ import ast
 import re
 import phylanx
 import inspect
-
-from .utils import *
 from .oscop import OpenSCoP
+from .utils import full_name, full_node_name
 
 et = phylanx.execution_tree
 
@@ -52,8 +51,7 @@ class PhySL:
         self.defs = {}
         self.priority = 0
         self.groupAggressively = True
-        self.__src__ = '%s(%s)\n' % (full_node_name(tree.body[0], 'block'),
-                                     self.recompile(tree))
+        self.__src__ = self.recompile(tree)
 
     def _Num(self, a):
         return str(a.n)
@@ -157,7 +155,7 @@ class PhySL:
                     s += self.recompile(aa, False)
                     s += ", "
             s += ")"
-        s += "), " + full_name(a)
+        s += ")"
         return s
 
     def _BinOp(self, a):
@@ -423,13 +421,17 @@ def convert_to_phylanx_type(v):
     return v
 
 
+cs = phylanx.compiler_state()
+
+
 # Create the decorator
-def Phylanx(target="PhySL", **kwargs):
+def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
     class PhyTransformer(object):
         targets = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
 
         def __init__(self, f):
             self.f = f
+            self.cs = cs
             self.target = target
             # Get the source code
             actual_lineno = inspect.getsourcelines(f)[-1]
@@ -445,11 +447,14 @@ def Phylanx(target="PhySL", **kwargs):
             self.transformation = self.targets[target](tree, kwargs)
             self.__src__ = self.transformation.__src__
 
+            if target == "PhySL":
+                et.eval(self.__src__, self.cs)
+
         def __call__(self, *args):
             if target == "OpenSCoP":
                 raise NotImplementedError(
                     "OpenSCoP kernel blocks are not yet callable.")
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
-            return et.eval(self.__src__, *nargs)
+            return et.eval(self.f.__name__, self.cs, *nargs)
 
     return PhyTransformer

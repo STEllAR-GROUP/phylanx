@@ -21,7 +21,7 @@ assert sumn() == 6
 
 
 @Phylanx("PhySL")
-def sumn():
+def sumn2():
     n = 0
     sum = 0
     for n in range(1, 4):
@@ -29,11 +29,11 @@ def sumn():
     return sum
 
 
-assert sumn() == 6
+assert sumn2() == 6
 
 
 @Phylanx("PhySL")
-def sumn():
+def sumn3():
     n = 0
     sum = 0
     c = 0
@@ -43,11 +43,11 @@ def sumn():
     return sum + c
 
 
-assert sumn() == 9
+assert sumn3() == 9
 
 
 @Phylanx("PhySL")
-def sumn():
+def sumn4():
     n = 0
     sum = 0
     c = 0
@@ -58,4 +58,4 @@ def sumn():
     return sum + c
 
 
-assert sumn() == 9
+assert sumn4() == 9

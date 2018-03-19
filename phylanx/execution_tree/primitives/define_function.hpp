@@ -42,6 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type eval_direct(
             std::vector<primitive_argument_type> const& args) const override;
 
+        primitive_argument_type bind(
+            std::vector<primitive_argument_type> const& args) const override;
+
         // return the topology for this function definition
         topology expression_topology(
             std::set<std::string>&& functions) const override;

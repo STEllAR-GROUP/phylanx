@@ -15,10 +15,10 @@ macro(phylanx_setup_blaze)
   endif()
 
   # Make sure HPX is used as the parallelization target for Blaze
-  add_definitions(-DBLAZE_USE_HPX_THREADS)
-  add_definitions(-DBLAZE_USE_SHARED_MEMORY_PARALLELIZATION=1)
+  phylanx_add_config_define(BLAZE_USE_HPX_THREADS 1)
+  phylanx_add_config_define(BLAZE_USE_SHARED_MEMORY_PARALLELIZATION 1)
   if(MSVC)
-    add_definitions(-DNOMINMAX)
+    phylanx_add_config_cond_define(NOMINMAX)
   endif()
 
 endmacro()

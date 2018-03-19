@@ -44,10 +44,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::string const& name, std::string const& codename)
           : primitive_(
                 create_primitive(type, std::move(operands), name, codename))
-          , eval_count_(0ll)
-          , eval_duration_(0ll)
-          , eval_direct_count_(0ll)
-          , eval_direct_duration_(0ll)
         {
         }
 
@@ -64,6 +60,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(
             std::set<std::string>&& functions) const;
+
+        // bind an invocable object
+        PHYLANX_EXPORT primitive_argument_type bind(
+            std::vector<primitive_argument_type> const& params) const;
 
         // set_body_action (define_function only)
         PHYLANX_EXPORT void set_body(primitive_argument_type&& target);
@@ -82,38 +82,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             primitive_component, eval_direct, eval_direct_action);
+        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
+            primitive_component, bind, bind_action);
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, store, store_action);
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, set_body, set_body_action);
 
         // access data for performance counter
-        std::int64_t get_eval_count(bool reset, bool direct) const
-        {
-            if (!direct)
-            {
-                return hpx::util::get_and_reset_value(eval_count_, reset);
-            }
-            return hpx::util::get_and_reset_value(eval_direct_count_, reset);
-        }
-
-        std::int64_t get_eval_duration(bool reset, bool direct) const
-        {
-            if (!direct)
-            {
-                return hpx::util::get_and_reset_value(eval_duration_, reset);
-            }
-            return hpx::util::get_and_reset_value(eval_direct_duration_, reset);
-        }
+        PHYLANX_EXPORT std::int64_t get_eval_count(
+            bool reset, bool direct) const;
+        PHYLANX_EXPORT std::int64_t get_eval_duration(
+            bool reset, bool direct) const;
 
     private:
         std::shared_ptr<primitive_component_base> primitive_;
-
-        // Performance counter data
-        mutable std::int64_t eval_count_;
-        mutable std::int64_t eval_duration_;
-        mutable std::int64_t eval_direct_count_;
-        mutable std::int64_t eval_direct_duration_;
     };
 }}}
 
@@ -131,6 +114,9 @@ HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::
         primitive_component::expression_topology_action,
     phylanx_primitive_expression_topology_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::primitive_component::bind_action,
+    phylanx_primitive_bind_action);
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::set_body_action,
     phylanx_primitive_set_body_action);
