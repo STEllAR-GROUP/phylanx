@@ -150,6 +150,18 @@ void test_fold_left_operation_func_lambda_list()
     HPX_TEST_EQ(result, expected_result);
 }
 
+void test_fold_left_list_length()
+{
+    std::string const code = R"(block(
+            define(list_length, list,
+                fold_left(lambda(sum, element, sum + 1), 0, list)),
+            list_length('(1, 2, 3, 4))
+        ))";
+
+    HPX_TEST_EQ(
+        phylanx::execution_tree::extract_integer_value(compile(code)()), 4);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -163,5 +175,8 @@ int main(int argc, char* argv[])
     test_fold_left_operation_func_list();
     test_fold_left_operation_func_lambda_list();
 
+    test_fold_left_list_length();
+
     return hpx::util::report_errors();
 }
+
