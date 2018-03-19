@@ -18,12 +18,12 @@ macro(add_phylanx_executable name)
   if(NOT ${name}_SOURCE_ROOT)
     set(${name}_SOURCE_ROOT ".")
   endif()
-  phylanx_debug("Add executable ${name}: ${name}_SOURCE_ROOT: ${${name}_SOURCE_ROOT}")
+  phylanx_debug("add_phylanx_executable.${target}: add executable ${name}: ${name}_SOURCE_ROOT: ${${name}_SOURCE_ROOT}")
 
   if(NOT ${name}_HEADER_ROOT)
     set(${name}_HEADER_ROOT ".")
   endif()
-  phylanx_debug("Add executable ${name}: ${name}_HEADER_ROOT: ${${name}_HEADER_ROOT}")
+  phylanx_debug("add_phylanx_executable.${target}: add executable ${name}: ${name}_HEADER_ROOT: ${${name}_HEADER_ROOT}")
 
   # Collect sources and headers from the given (current) directory
   # (recursively), but only if AUTOGLOB flag is specified.
@@ -40,7 +40,7 @@ macro(add_phylanx_executable name)
                               "${${name}_SOURCE_ROOT}/*.f95"
                               "${${name}_SOURCE_ROOT}/*.F95")
     endif()
-    phylanx_debug("Add executable ${name}: ${name}_SOURCE_GLOB: ${${name}_SOURCE_GLOB}")
+    phylanx_debug("add_phylanx_executable.${target}: add executable ${name}: ${name}_SOURCE_GLOB: ${${name}_SOURCE_GLOB}")
 
     add_phylanx_library_sources(${name}_executable
       GLOB_RECURSE GLOBS "${${name}_SOURCE_GLOB}")
@@ -56,7 +56,7 @@ macro(add_phylanx_executable name)
       set(${name}_HEADER_GLOB "${${name}_HEADER_ROOT}/*.hpp"
                               "${${name}_HEADER_ROOT}/*.h")
     endif()
-    phylanx_debug("Add executable ${name}: ${name}_HEADER_GLOB: ${${name}_HEADER_GLOB}")
+    phylanx_debug("add_phylanx_executable.${target}: add executable ${name}: ${name}_HEADER_GLOB: ${${name}_HEADER_GLOB}")
 
     add_phylanx_library_headers(${name}_executable
       GLOB_RECURSE GLOBS "${${name}_HEADER_GLOB}")

@@ -67,6 +67,7 @@ include_directories(${pybind11_INCLUDE_DIR})
 target_link_libraries(phylanx_py
   PRIVATE
     phylanx_component
+    blaze::blaze
     ${pybind11_LIBRARIES})
 target_include_directories(phylanx_py
   PRIVATE

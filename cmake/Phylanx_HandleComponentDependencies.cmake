@@ -9,11 +9,11 @@ macro(phylanx_handle_component_dependencies components)
 
   foreach(component ${${components}})
     if(TARGET ${component}_component)
-      set(tmp ${tmp} ${component}_component)
+      set(tmp ${tmp} "general;${component}_component")
     else()
       set(tmp ${tmp} hpx_${component})
     endif()
-    hpx_debug("phylanx_handle_component_dependencies: ${tmp}")
+    phylanx_debug("phylanx_handle_component_dependencies: ${tmp}")
   endforeach()
 
   set(${components} ${tmp})
