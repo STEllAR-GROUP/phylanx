@@ -30,7 +30,7 @@ set(tests
     fold_right_operation
     for_operation
     add_dimension
-        generic_operation
+    generic_operation
     greater_operation
     greater_equal_operation
     hstack_operation
