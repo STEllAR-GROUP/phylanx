@@ -61,6 +61,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_EXPORT topology expression_topology(
             std::set<std::string>&& functions) const;
 
+        // bind an invocable object
+        PHYLANX_EXPORT primitive_argument_type bind(
+            std::vector<primitive_argument_type> const& params) const;
+
         // set_body_action (define_function only)
         PHYLANX_EXPORT void set_body(primitive_argument_type&& target);
 
@@ -78,6 +82,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             primitive_component, eval_direct, eval_direct_action);
+        HPX_DEFINE_COMPONENT_DIRECT_ACTION(
+            primitive_component, bind, bind_action);
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, store, store_action);
         HPX_DEFINE_COMPONENT_ACTION(
@@ -108,6 +114,9 @@ HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::
         primitive_component::expression_topology_action,
     phylanx_primitive_expression_topology_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::primitive_component::bind_action,
+    phylanx_primitive_bind_action);
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::set_body_action,
     phylanx_primitive_set_body_action);

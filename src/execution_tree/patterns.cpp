@@ -25,6 +25,7 @@ namespace phylanx { namespace execution_tree
             primitives::debug_output::match_data,
             primitives::hstack_operation::match_data,
             primitives::make_list::match_data,
+            primitives::map_operation::match_data,
             primitives::parallel_block_operation::match_data,
             primitives::row_set_operation::match_data,
             primitives::row_slicing_operation::match_data,
@@ -34,6 +35,8 @@ namespace phylanx { namespace execution_tree
             primitives::vstack_operation::match_data,
             // n-nary functions
             primitives::if_conditional::match_data,
+            primitives::fold_left_operation::match_data,
+            primitives::fold_right_operation::match_data,
             primitives::for_operation::match_data,
             primitives::linearmatrix::match_data,
             primitives::linspace::match_data,
@@ -46,6 +49,7 @@ namespace phylanx { namespace execution_tree
             primitives::file_write::match_data,
             primitives::file_read_csv::match_data,
             primitives::file_write_csv::match_data,
+            primitives::filter_operation::match_data,
             primitives::while_operation::match_data,
 #if defined(PHYLANX_HAVE_HIGHFIVE)
             primitives::file_read_hdf5::match_data,
@@ -65,10 +69,12 @@ namespace phylanx { namespace execution_tree
             primitives::generic_operation::match_data,
             primitives::identity::match_data,
             primitives::inverse_operation::match_data,
+            primitives::mean_operation::match_data,
             primitives::power_operation::match_data,
             primitives::random::match_data,
             primitives::shuffle_operation::match_data,
             primitives::square_root_operation::match_data,
+            primitives::sum_operation::match_data,
             primitives::transpose_operation::match_data,
             // variadic operations
             primitives::add_operation::match_data,
