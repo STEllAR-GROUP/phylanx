@@ -25,6 +25,9 @@ set(tests
     extract_shape
     file_primitives
     file_csv_primitives
+    filter_operation
+    fold_left_operation
+    fold_right_operation
     for_operation
     gradient_operation
     add_dimension
@@ -40,7 +43,9 @@ set(tests
     literal_value
     linearmatrix
     linspace
+    map_operation
     mul_operation
+    mean_operation
     not_equal_operation
     or_operation
     parallel_block_operation
@@ -55,6 +60,7 @@ set(tests
     square_root_operation
     store_operation
     sub_operation
+    sum_operation
     transpose_operation
     unary_minus_operation
     unary_not_operation

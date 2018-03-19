@@ -71,6 +71,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return value_operand(operands_[0], params, name_, codename_);
     }
 
+    primitive_argument_type function_reference::bind(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        return operands_[0];
+    }
+
     topology function_reference::expression_topology(
         std::set<std::string>&& functions) const
     {

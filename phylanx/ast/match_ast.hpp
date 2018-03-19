@@ -19,6 +19,7 @@
 #include <hpx/util/tuple.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <type_traits>
 #include <string>
@@ -112,6 +113,12 @@ namespace phylanx { namespace ast
     template <typename F, typename... Ts>
     bool match_ast(identifier const&, identifier const&, F&&, Ts const&...);
 
+    template <typename F, typename... Ts>
+    bool match_ast(bool, identifier const&, F&&, Ts const&...);
+    template <typename F, typename... Ts>
+    bool match_ast(std::string const&, identifier const&, F&&, Ts const&...);
+    template <typename F, typename... Ts>
+    bool match_ast(std::int64_t, identifier const&, F&&, Ts const&...);
     template <typename F, typename... Ts>
     bool match_ast(ir::node_data<double> const&, identifier const&, F&&,
         Ts const&...);
@@ -216,6 +223,39 @@ namespace phylanx { namespace ast
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename F, typename... Ts>
+    bool match_ast(bool b, identifier const& id, F&& f, Ts const&... ts)
+    {
+        // handle placeholder
+        if (detail::is_placeholder(id))
+        {
+            return hpx::util::invoke(std::forward<F>(f), b, id, ts...);
+        }
+        return false;
+    }
+
+    template <typename F, typename... Ts>
+    bool match_ast(std::string const& s, identifier const& id, F&& f, Ts const&... ts)
+    {
+        // handle placeholder
+        if (detail::is_placeholder(id))
+        {
+            return hpx::util::invoke(std::forward<F>(f), s, id, ts...);
+        }
+        return false;
+    }
+
+    template <typename F, typename... Ts>
+    bool match_ast(std::int64_t i, identifier const& id, F&& f, Ts const&... ts)
+    {
+        // handle placeholder
+        if (detail::is_placeholder(id))
+        {
+            return hpx::util::invoke(std::forward<F>(f), i, id, ts...);
+        }
+        return false;
+    }
+
     template <typename F, typename... Ts>
     bool match_ast(ir::node_data<double> const& nd, identifier const& id, F&& f,
         Ts const&... ts)

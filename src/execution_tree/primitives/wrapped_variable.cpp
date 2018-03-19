@@ -51,6 +51,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return value_operand(operands_[0], params, name_, codename_);
     }
 
+    primitive_argument_type wrapped_variable::bind(
+        std::vector<primitive_argument_type> const& params) const
+    {
+        return value_operand_sync(operands_[0], params, name_, codename_);
+    }
+
     void wrapped_variable::store(primitive_argument_type && val)
     {
         primitive* p = util::get_if<primitive>(&operands_[0]);

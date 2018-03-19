@@ -156,6 +156,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return topology{std::move(children)};
     }
 
+    // eval_action
+    primitive_argument_type primitive_component_base::bind(
+        std::vector<primitive_argument_type> const& params) const
+    {
+        return primitive_argument_type{};
+    }
+
     // set_body_action (define_function only)
     void primitive_component_base::set_body(primitive_argument_type&& target)
     {

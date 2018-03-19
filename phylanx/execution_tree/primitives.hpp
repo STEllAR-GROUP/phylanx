@@ -8,6 +8,7 @@
 #define PHYLANX_PRIMITIVES_PRIMITIVES_HPP
 
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
+#include <phylanx/execution_tree/primitives/add_dimension.hpp>
 #include <phylanx/execution_tree/primitives/add_operation.hpp>
 #include <phylanx/execution_tree/primitives/all_operation.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
@@ -38,9 +39,11 @@
 #include <phylanx/execution_tree/primitives/file_write.hpp>
 #include <phylanx/execution_tree/primitives/file_write_csv.hpp>
 #include <phylanx/execution_tree/primitives/file_write_hdf5.hpp>
+#include <phylanx/execution_tree/primitives/filter_operation.hpp>
+#include <phylanx/execution_tree/primitives/fold_left_operation.hpp>
+#include <phylanx/execution_tree/primitives/fold_right_operation.hpp>
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
 #include <phylanx/execution_tree/primitives/function_reference.hpp>
-#include <phylanx/execution_tree/primitives/add_dimension.hpp>
 #include <phylanx/execution_tree/primitives/gradient_operation.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
@@ -53,6 +56,8 @@
 #include <phylanx/execution_tree/primitives/linearmatrix.hpp>
 #include <phylanx/execution_tree/primitives/linspace.hpp>
 #include <phylanx/execution_tree/primitives/make_list.hpp>
+#include <phylanx/execution_tree/primitives/map_operation.hpp>
+#include <phylanx/execution_tree/primitives/mean_operation.hpp>
 #include <phylanx/execution_tree/primitives/mul_operation.hpp>
 #include <phylanx/execution_tree/primitives/not_equal.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
@@ -68,6 +73,7 @@
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>
 #include <phylanx/execution_tree/primitives/sub_operation.hpp>
+#include <phylanx/execution_tree/primitives/sum_operation.hpp>
 #include <phylanx/execution_tree/primitives/transpose_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_minus_operation.hpp>
 #include <phylanx/execution_tree/primitives/unary_not_operation.hpp>
