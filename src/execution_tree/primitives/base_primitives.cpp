@@ -1333,6 +1333,107 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
+        case 0:     // nil
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<0>(val)}};
+
+        case 1:    // phylanx::ir::node_data<bool>
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<1>(val)}};
+
+        case 2:     // std::uint64_t
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<2>(val)}};
+
+        case 3:     // string
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<3>(val)}};
+
+        case 4:     // phylanx::ir::node_data<double>
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<4>(val)}};
+
+        case 5:     // primitive
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<5>(val)}};
+
+        case 6:     // std::vector<ast::expression>
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<6>(val)}};
+
+        case 7:     // std::vector<primitive_argument_type>
+            return util::get<7>(val).get();
+
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_list_value",
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    std::vector<primitive_argument_type> extract_list_value(
+        primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 0:     // nil
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<0>(std::move(val))}};
+
+        case 1:    // phylanx::ir::node_data<bool>
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<1>(std::move(val))}};
+
+        case 2:     // std::uint64_t
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<2>(std::move(val))}};
+
+        case 3:     // string
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<3>(std::move(val))}};
+
+        case 4:     // phylanx::ir::node_data<double>
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<4>(std::move(val))}};
+
+        case 5:     // primitive
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<5>(std::move(val))}};
+
+        case 6:     // std::vector<ast::expression>
+            return std::vector<primitive_argument_type>{
+                primitive_argument_type{util::get<6>(std::move(val))}};
+
+        case 7:     // std::vector<primitive_argument_type>
+            return util::get<7>(std::move(val)).get();
+
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_list_value",
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::vector<primitive_argument_type> extract_list_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
+    {
+        switch (val.index())
+        {
         case 6:     // std::vector<ast::expression>
             {
                 std::vector<primitive_argument_type> result;
@@ -1367,14 +1468,14 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_list_value",
+            "phylanx::execution_tree::extract_list_value_strict",
             generate_error_message(
                 "primitive_argument_type does not hold a list "
                     "value type (type held: '" + type + "')",
                 name, codename));
     }
 
-    std::vector<primitive_argument_type> extract_list_value(
+    std::vector<primitive_argument_type> extract_list_value_strict(
         primitive_argument_type && val,
         std::string const& name, std::string const& codename)
     {
@@ -1414,7 +1515,7 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_list_value",
+            "phylanx::execution_tree::extract_list_value_strict",
             generate_error_message(
                 "primitive_argument_type does not hold a list "
                     "value type (type held: '" + type + "')",

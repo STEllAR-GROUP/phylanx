@@ -102,7 +102,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type&& arg) const
     {
         std::vector<primitive_argument_type> list =
-            extract_list_value(std::move(arg), name_, codename_);
+            extract_list_value_strict(std::move(arg), name_, codename_);
         if (list.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -119,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type&& arg) const
     {
         std::vector<primitive_argument_type> list =
-            extract_list_value(std::move(arg), name_, codename_);
+            extract_list_value_strict(std::move(arg), name_, codename_);
         if (list.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
