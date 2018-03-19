@@ -41,9 +41,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::vector<primitive_argument_type> const& args) const override;
 
             private:
-                primitive_argument_type generic0d(operands_type&& ops,double gen(double temp)) const;
+                primitive_argument_type generic0d(operands_type&& ops) const;
 /*                primitive_argument_type exponential1d(operands_type&& ops) const;
                 primitive_argument_type exponentialxd(operands_type&& ops) const;*/
+                double (*func_)(double);
             };
 
             PHYLANX_EXPORT primitive create_generic_operation(

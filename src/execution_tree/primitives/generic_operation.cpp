@@ -46,13 +46,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::vector<primitive_argument_type>&& operands,
                     std::string const& name, std::string const& codename)
                     : primitive_component_base(std::move(operands), name, codename)
-            {}
+            {
+                if (name == "exp") {
+                    func_ = (double (*)(double)) &std::exp;
+                }
+                if(name == "log"){
+                    func_ = (double(*)(double)) &std::log;
+                }
+            }
 
             ///////////////////////////////////////////////////////////////////////////
             primitive_argument_type generic_operation::generic0d(
-                    operands_type&& ops,double gen(double temp)) const
+                    operands_type&& ops) const
             {
-                ops[0] = double(gen(ops[0].scalar()));
+                ops[0] = double(func_(ops[0].scalar()));
                 return primitive_argument_type{std::move(ops[0])};
             }
 
@@ -109,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             switch (dims)
                             {
                                 case 0:
-                                    return this_->generic0d(std::move(ops),std::exp);
+                                    return this_->generic0d(std::move(ops));
 
 /*                                case 1:
                                     return this_->exponential1d(std::move(ops));
