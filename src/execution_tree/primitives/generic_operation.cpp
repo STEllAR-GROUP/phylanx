@@ -63,6 +63,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             func2d_ = [](const blaze::DynamicMatrix<double>& m)
                 -> blaze::DynamicMatrix<double> { return blaze::log(m); };
         }
+        if(name =="sin")
+        {
+            func0d_ = [](const double& m) -> double { return blaze::sin(m); };
+            func1d_ = [](const blaze::DynamicVector<double>& m)
+                    -> blaze::DynamicVector<double> { return blaze::sin(m); };
+            func2d_ = [](const blaze::DynamicMatrix<double>& m)
+                    -> blaze::DynamicMatrix<double> { return blaze::sin(m); };
+        }
+        if(name =="sinh")
+        {
+            func0d_ = [](const double& m) -> double { return blaze::sinh(m); };
+            func1d_ = [](const blaze::DynamicVector<double>& m)
+                    -> blaze::DynamicVector<double> { return blaze::sinh(m); };
+            func2d_ = [](const blaze::DynamicMatrix<double>& m)
+                    -> blaze::DynamicMatrix<double> { return blaze::sinh(m); };
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////

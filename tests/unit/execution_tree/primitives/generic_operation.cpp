@@ -100,6 +100,24 @@ int main(int argc, char* argv[])
         [](blaze::DynamicMatrix<double> m) -> blaze::DynamicMatrix<double> {
             return blaze::exp(m);
         });
+    test_generic_operation_0d("sin", std::sin);
+    test_generic_operation_1d("sin",
+        [](blaze::DynamicVector<double> m) -> blaze::DynamicVector<double> {
+            return blaze::sin(m);
+        });
+    test_generic_operation_2d("sin",
+        [](blaze::DynamicMatrix<double> m) -> blaze::DynamicMatrix<double> {
+            return blaze::sin(m);
+        });
+    test_generic_operation_0d("sinh", std::sinh);
+    test_generic_operation_1d("sinh",
+        [](blaze::DynamicVector<double> m) -> blaze::DynamicVector<double> {
+            return blaze::sinh(m);
+        });
+    test_generic_operation_2d("sinh",
+        [](blaze::DynamicMatrix<double> m) -> blaze::DynamicMatrix<double> {
+            return blaze::sinh(m);
+        });
 
     return hpx::util::report_errors();
 }
