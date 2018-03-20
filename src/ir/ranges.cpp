@@ -12,10 +12,32 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstdint>
+#include <vector>
 
 namespace phylanx { namespace ir
 {
     //////////////////////////////////////////////////////////////////////////
+    reverse_range_iterator range_iterator::invert()
+    {
+        switch (it_.index())
+        {
+        case 0:    // int_range_type
+        {
+            int_range_type& p = util::get<0>(it_);
+            return reverse_range_iterator{p.first, p.second};
+        }
+        case 1:    // arg_range_type
+        {
+            return reverse_range_iterator(
+                args_reverse_iterator_type(util::get<1>(it_)));
+        }
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range_iterator::invert",
+            "range_iterator object holds unsupported data type");
+    }
+
     execution_tree::primitive_argument_type range_iterator::dereference() const
     {
         switch (it_.index())
@@ -147,11 +169,6 @@ namespace phylanx { namespace ir
             return util::get<1>(data_).begin();
         case 2:    // arg_pair_type
             return util::get<2>(data_).first;
-        case 3:    // reverse_range_iterator
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ir::range::begin",
-                "range object cannot produce range_iterator from a "
-                "reverse_range_iterator");
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::begin",
@@ -182,11 +199,6 @@ namespace phylanx { namespace ir
             return util::get<1>(data_).end();
         case 2:    // arg_pair_type
             return util::get<2>(data_).second;
-        case 3:    // reverse_range_iterator
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ir::range::end",
-                "range object cannot produce range_iterator from a "
-                "reverse_range_iterator");
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::end",
@@ -195,6 +207,9 @@ namespace phylanx { namespace ir
 
     reverse_range_iterator range::rbegin()
     {
+        using args_iterator_type = std::vector<
+            execution_tree::primitive_argument_type>::reverse_iterator;
+
         switch (data_.index())
         {
         case 0:    // int_range_type
@@ -215,13 +230,8 @@ namespace phylanx { namespace ir
         }
         case 1:    // args_type
             return util::get<1>(data_).rbegin();
-        case 2:    // arg_pair_type
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ir::range::rbegin",
-                "range object cannot produce reverse_range_iterator from a "
-                "range_iterator");
-        case 3:    // reverse_range_iterator
-            return util::get<3>(data_).first;
+        case 2:    // range_iterator
+            return util::get<2>(data_).second.invert();
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::rbegin",
@@ -230,6 +240,9 @@ namespace phylanx { namespace ir
 
     reverse_range_iterator range::rend()
     {
+        using args_iterator_type = std::vector<
+            execution_tree::primitive_argument_type>::reverse_iterator;
+
         switch (data_.index())
         {
         case 0:    // int_range_type
@@ -241,13 +254,8 @@ namespace phylanx { namespace ir
         }
         case 1:    // args_type
             return util::get<1>(data_).rend();
-        case 2:    // arg_pair_type
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::ir::range::rend",
-                "range object cannot produce reverse_range_iterator from a "
-                "range_iterator");
-        case 3:    // reverse_range_iterator
-            return util::get<3>(data_).second;
+        case 2:    // range_iterator
+            return util::get<2>(data_).first.invert();
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::rend",

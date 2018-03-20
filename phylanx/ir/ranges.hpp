@@ -22,41 +22,6 @@
 namespace phylanx { namespace ir
 {
     //////////////////////////////////////////////////////////////////////////
-    class PHYLANX_EXPORT range_iterator
-      : public hpx::util::iterator_facade<range_iterator,
-            execution_tree::primitive_argument_type,
-            std::input_iterator_tag,
-            execution_tree::primitive_argument_type>
-    {
-    private:
-        using int_range_type = std::pair<std::int64_t, std::int64_t>;
-        using arg_range_type =
-            std::vector<execution_tree::primitive_argument_type>::iterator;
-        using iterator_type = util::variant<int_range_type, arg_range_type>;
-
-    public:
-        range_iterator(std::int64_t start, std::int64_t step)
-          : it_(std::make_pair(start, step))
-        {
-        }
-
-        range_iterator(arg_range_type it)
-          : it_(it)
-        {
-        }
-
-    private:
-        friend class hpx::util::iterator_core_access;
-
-        execution_tree::primitive_argument_type dereference() const;
-        bool equal(range_iterator const& other) const;
-        void increment();
-
-    private:
-        iterator_type it_;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
     class PHYLANX_EXPORT reverse_range_iterator
         : public hpx::util::iterator_facade<reverse_range_iterator,
         execution_tree::primitive_argument_type,
@@ -65,18 +30,18 @@ namespace phylanx { namespace ir
     {
     private:
         using int_range_type = std::pair<std::int64_t, std::int64_t>;
-        using arg_range_type = std::vector<
+        using args_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::reverse_iterator;
-        using iterator_type = util::variant<int_range_type, arg_range_type>;
+        using iterator_type = util::variant<int_range_type, args_iterator_type>;
 
     public:
         reverse_range_iterator(std::int64_t reverse_start, std::int64_t step)
-            : it_(std::make_pair(reverse_start, step))
+          : it_(std::make_pair(reverse_start, step))
         {
         }
 
-        reverse_range_iterator(arg_range_type it)
-            : it_(it)
+        reverse_range_iterator(args_iterator_type it)
+          : it_(it)
         {
         }
 
@@ -92,6 +57,45 @@ namespace phylanx { namespace ir
     };
 
     //////////////////////////////////////////////////////////////////////////
+    class PHYLANX_EXPORT range_iterator
+      : public hpx::util::iterator_facade<range_iterator,
+            execution_tree::primitive_argument_type,
+            std::input_iterator_tag,
+            execution_tree::primitive_argument_type>
+    {
+    private:
+        using int_range_type = std::pair<std::int64_t, std::int64_t>;
+        using args_iterator_type =
+            std::vector<execution_tree::primitive_argument_type>::iterator;
+        using args_reverse_iterator_type = std::vector<
+            execution_tree::primitive_argument_type>::reverse_iterator;
+        using iterator_type = util::variant<int_range_type, args_iterator_type>;
+
+    public:
+        range_iterator(std::int64_t start, std::int64_t step)
+          : it_(std::make_pair(start, step))
+        {
+        }
+
+        range_iterator(args_iterator_type it)
+          : it_(it)
+        {
+        }
+
+        reverse_range_iterator invert();
+
+    private:
+        friend class hpx::util::iterator_core_access;
+
+        execution_tree::primitive_argument_type dereference() const;
+        bool equal(range_iterator const& other) const;
+        void increment();
+
+    private:
+        iterator_type it_;
+    };
+
+    //////////////////////////////////////////////////////////////////////////
     class PHYLANX_EXPORT range
     {
     public:
@@ -99,13 +103,8 @@ namespace phylanx { namespace ir
             hpx::util::tuple<std::int64_t, std::int64_t, std::int64_t>;
         using args_type = std::vector<execution_tree::primitive_argument_type>;
         using arg_pair_type = std::pair<range_iterator, range_iterator>;
-        using reverse_arg_pair_type =
-            std::pair<reverse_range_iterator, reverse_range_iterator>;
-        using range_type = util::variant<
-            int_range_type,
-            args_type,
-            arg_pair_type,
-            reverse_arg_pair_type>;
+        using range_type =
+            util::variant<int_range_type, args_type, arg_pair_type>;
 
         range_iterator begin();
         range_iterator end();
@@ -129,13 +128,6 @@ namespace phylanx { namespace ir
             std::vector<execution_tree::primitive_argument_type>::iterator x,
             std::vector<execution_tree::primitive_argument_type>::iterator y)
           : data_(std::make_pair(range_iterator{x}, range_iterator{y}))
-        {
-        }
-
-        explicit range(
-            std::vector<execution_tree::primitive_argument_type>::reverse_iterator x,
-            std::vector<execution_tree::primitive_argument_type>::reverse_iterator y)
-          : data_(std::make_pair(reverse_range_iterator{x}, reverse_range_iterator{y}))
         {
         }
 

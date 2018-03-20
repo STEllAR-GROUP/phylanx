@@ -175,7 +175,7 @@ void test_arg_pair_rev_range()
         arg_t{static_cast<std::int64_t>(9)},
         arg_t{static_cast<std::int64_t>(42)}};
 
-    phylanx::ir::range r(v.rbegin(), v.rend());
+    phylanx::ir::range r(v.begin(), v.end());
 
     HPX_TEST_EQ(std::distance(std::next(r.rbegin()), r.rend()), 2);
 }
