@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
-        if (name == "exp")
+        if (name == "")
         {
             func0d_ = [](const double& m) -> double { return blaze::exp(m); };
             func1d_ = [](const blaze::DynamicVector<double>& m)
