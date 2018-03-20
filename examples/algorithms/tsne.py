@@ -13,7 +13,6 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 
 
 @Phylanx("PhySL")
@@ -202,4 +201,4 @@ if __name__ == "__main__":
         grad_fn=tsne_grad,
         learning_rate=LR,
         momentum=M)
-    printout(Y)
+    print(Y)

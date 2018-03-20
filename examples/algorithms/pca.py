@@ -18,7 +18,6 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 
 
 @Phylanx
@@ -36,7 +35,7 @@ if __name__ == "__main__":
                [2.5, 0.5, 2.2, 1.9, 3.1, 2.3, 2, 1, 1.5, 1.1]])
 
     coeff, score, latent = pca(transpose(A))
-    printout(coeff, score, latent)
+    print(coeff, score, latent)
 
     res = princomp(transpose(A))
-    printout(res)
+    print(res)
