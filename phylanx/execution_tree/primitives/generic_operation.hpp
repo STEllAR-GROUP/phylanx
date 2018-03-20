@@ -51,62 +51,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             const blaze::DynamicVector<double>&);
         blaze::DynamicMatrix<double> (*func2d_)(
             const blaze::DynamicMatrix<double>&);
-        //map0d
-        std::map<std::string, double (*)(const double&)> map0d = {
-            {"exp", [](const double& m) -> double { return blaze::exp(m); }},
-            {"log", [](const double& m) -> double { return blaze::log(m); }},
-            {"sin", [](const double& m) -> double { return blaze::sin(m); }},
-            {"sinh", [](const double& m) -> double { return blaze::sinh(m); }}};
-        //map1d
-        std::map<std::string,
-            blaze::DynamicVector<double> (*)(
-                const blaze::DynamicVector<double>&)>
-            map1d = {
-                {"exp",
-                         [](const blaze::DynamicVector<double>& m)
-                             -> blaze::DynamicVector<double> {
-                             return blaze::exp(m);
-                         }},
-                {"log",
-                    [](const blaze::DynamicVector<double>& m)
-                        -> blaze::DynamicVector<double> {
-                        return blaze::log(m);
-                    }},
-                {"sin",
-                    [](const blaze::DynamicVector<double>& m)
-                        -> blaze::DynamicVector<double> {
-                        return blaze::sin(m);
-                    }},
-                {"sinh",
-                    [](const blaze::DynamicVector<double>& m)
-                        -> blaze::DynamicVector<double> {
-                        return blaze::sinh(m);
-                    }}};
-        //map2d
-        std::map<std::string,
-            blaze::DynamicMatrix<double> (*)(
-                const blaze::DynamicMatrix<double>&)>
-            map2d = {
-                {"exp",
-                         [](const blaze::DynamicMatrix<double>& m)
-                             -> blaze::DynamicMatrix<double> {
-                             return blaze::exp(m);
-                         }},
-                {"log",
-                    [](const blaze::DynamicMatrix<double>& m)
-                        -> blaze::DynamicMatrix<double> {
-                        return blaze::log(m);
-                    }},
-                {"sin",
-                    [](const blaze::DynamicMatrix<double>& m)
-                        -> blaze::DynamicMatrix<double> {
-                        return blaze::sin(m);
-                    }},
-                {"sinh",
-                    [](const blaze::DynamicMatrix<double>& m)
-                        -> blaze::DynamicMatrix<double> {
-                        return blaze::sinh(m);
-                    }}};
     };
 
     PHYLANX_EXPORT primitive create_generic_operation(
