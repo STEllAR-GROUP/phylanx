@@ -7,7 +7,6 @@
 
 import phylanx
 from phylanx.ast import Phylanx
-from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
@@ -47,7 +46,7 @@ def fib(n):
         return fib(n - 1) + fib(n - 2)
 
 
-# assert fib.__physl_src__ == \
+# assert fib.__src__ == \
 #     'block$1$0(define$1$0(fib$1$0, n$1$8, ' + \
 #     'if(n$2$7 < 2, n$3$15, ' + \
 #     '(fib((n$5$19 - 1)) + fib((n$5$28 - 2))))' + \
@@ -61,8 +60,9 @@ def pass_str(a):
     return a
 
 
-assert pass_str.__physl_src__ == \
-    'define$60$0(pass_str$60$0, a$60$13, a$61$11)', pass_str.__physl_src__
+assert pass_str.__src__ == \
+    'define$59$0(pass_str$59$0, a$59$13, a$60$11)'
+
 
 assert "foo" == str(pass_str("foo"))
 

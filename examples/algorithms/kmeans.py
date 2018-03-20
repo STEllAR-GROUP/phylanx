@@ -10,7 +10,6 @@
 #
 import phylanx
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 
 
 @Phylanx("PhySL")
@@ -59,4 +58,4 @@ def create_points():
 if __name__ == "__main__":
     points, k = create_points()
     res = kmeans(points, k)
-    printout(res)
+    print(res)
