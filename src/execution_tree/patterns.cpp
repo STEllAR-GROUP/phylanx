@@ -104,9 +104,6 @@ namespace phylanx { namespace execution_tree
                 // unary operations
                 PHYLANX_MATCH_DATA(unary_minus_operation),
                 PHYLANX_MATCH_DATA(unary_not_operation),
-                // generic functions
-                PHYLANX_MATCH_DATA_VERBATIM(get_seed_match_data),
-                PHYLANX_MATCH_DATA_VERBATIM(set_seed_match_data),
                 //
                 // compiler-specific (internal) primitives
                 //
@@ -127,6 +124,12 @@ namespace phylanx { namespace execution_tree
             {
                 patterns.push_back(hpx::util::make_tuple(car_cdr_name, pattern));
             }
+
+            // generic functions
+            patterns.push_back(hpx::util::make_tuple(
+                "get_seed_action", primitives::get_seed_match_data));
+            patterns.push_back(hpx::util::make_tuple(
+                "set_seed_action", primitives::set_seed_match_data));
 
             return patterns;
         }
