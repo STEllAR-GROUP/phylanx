@@ -45,11 +45,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
          *
          * If used inside PhySL:
          *
-         *      gradient (input )
+         *      gradient (input , axis)
          *
          *          input : Vector or a Matrix
-         *
-         *  Note to self: https://stackoverflow.com/questions/24633618/what-does-numpy-gradient-do/24633888
+         *          axis  : Axis to perform gradient along (optional)
          */
 
         gradient_operation(std::vector<primitive_argument_type>&& operands,
