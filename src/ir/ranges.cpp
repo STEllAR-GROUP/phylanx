@@ -34,6 +34,12 @@ namespace phylanx { namespace ir
 
     bool range_iterator::equal(range_iterator const& other) const
     {
+        // Ensure that have comparable iterators
+        if (it_.index() != other.it_.index())
+        {
+            return false;
+        }
+
         switch (it_.index())
         {
         case 0:    // int_range_type

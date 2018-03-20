@@ -47,6 +47,7 @@ void test_arg_type_iterator()
     HPX_TEST_EQ(*it++, 6);
     HPX_TEST_EQ(*it++, 9);
     HPX_TEST_EQ(*it++, 42);
+    HPX_TEST(it == phylanx::ir::range_iterator{v.end()});
 }
 
 void test_int_range_stop_arg()

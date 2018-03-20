@@ -35,11 +35,6 @@ namespace phylanx { namespace ir
         using iterator_type = util::variant<int_range_type, arg_range_type>;
 
     public:
-        range_iterator(int_range_type it)
-          : it_(it)
-        {
-        }
-
         range_iterator(std::int64_t start, std::int64_t step)
           : it_(std::make_pair(start, step))
         {
