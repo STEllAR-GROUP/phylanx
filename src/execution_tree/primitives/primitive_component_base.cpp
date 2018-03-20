@@ -122,7 +122,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base",
-            "store function should only be called for the store_primitive");
+            generate_error_message(
+                "store function should only be called for the primitives that "
+                    "support it (e.g. variables)"));
     }
 
     // extract_topology_action
@@ -168,8 +170,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base",
-            "set_body function should only be called for the "
-                "define_function_primitive");
+            generate_error_message(
+                "set_body function should only be called for primitivces that "
+                    "support it (e.g. the define_function_primitive"));
     }
 
     std::string primitive_component_base::generate_error_message(
