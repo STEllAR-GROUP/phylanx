@@ -84,6 +84,7 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(random),
                 PHYLANX_MATCH_DATA(shuffle_operation),
                 PHYLANX_MATCH_DATA(square_root_operation),
+                PHYLANX_MATCH_DATA(sum_operation),
                 PHYLANX_MATCH_DATA(transpose_operation),
                 // variadic operations
                 PHYLANX_MATCH_DATA(add_operation),

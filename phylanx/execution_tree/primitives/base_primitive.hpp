@@ -579,6 +579,9 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT bool is_list_operand_strict(
+        primitive_argument_type const& val);
+
     ///////////////////////////////////////////////////////////////////////////
     // Extract a primitive from a given primitive_argument_type, throw
     // if it doesn't hold one.

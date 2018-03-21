@@ -1427,6 +1427,26 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
+    bool is_list_operand(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 2: HPX_FALLTHROUGH;    // std::uint64_t
+        case 3: HPX_FALLTHROUGH;    // string
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return true;
+
+        default:
+            break;
+        }
+        return false;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     std::vector<primitive_argument_type> extract_list_value_strict(
         primitive_argument_type const& val,
@@ -1522,20 +1542,20 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    bool is_list_operand(primitive_argument_type const& val)
+    bool is_list_operand_strict(primitive_argument_type const& val)
     {
         switch (val.index())
         {
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return true;
+
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7:     // std::vector<primitive_argument_type>
-            return true;
-
         default:
             break;
         }
