@@ -539,7 +539,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         if (!valid(operands[0]) ||
-            operands.size() == 2 && !valid(operands[1]))
+            (operands.size() == 2 && !valid(operands[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
@@ -681,7 +681,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
 
-        if (!valid(operands[0]) || operands.size() == 2 && !valid(operands[1]))
+        if (!valid(operands[0]) || (operands.size() == 2 && !valid(operands[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::set_seed",
