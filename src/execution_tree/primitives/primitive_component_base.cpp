@@ -209,24 +209,30 @@ namespace phylanx { namespace execution_tree
     {
         if (!name.empty())
         {
-            auto parts = compiler::parse_primitive_name(name);
+            compiler::primitive_name_parts parts;
 
-            std::string line_col;
-            if (parts.tag1 != -1 && parts.tag2 != -1)
+            if (compiler::parse_primitive_name(name, parts))
             {
-                line_col = hpx::util::format("(%1%, %2%)", parts.tag1, parts.tag2);
+                std::string line_col;
+                if (parts.tag1 != -1 && parts.tag2 != -1)
+                {
+                    line_col = hpx::util::format("(%1%, %2%)", parts.tag1, parts.tag2);
+                }
+
+                if (!parts.instance.empty())
+                {
+                    return hpx::util::format("%1%%2%: %3%$%4%:: %5%",
+                        codename.empty() ? "<unknown>" : codename,
+                        line_col, parts.primitive, parts.instance, msg);
+                }
+
+                return hpx::util::format("%1%%2%: %3%:: %4%",
+                    codename.empty() ? "<unknown>" : codename, line_col,
+                    parts.primitive, msg);
             }
 
-            if (!parts.instance.empty())
-            {
-                return hpx::util::format("%1%%2%: %3%$%4%:: %5%",
-                    codename.empty() ? "<unknown>" : codename,
-                    line_col, parts.primitive, parts.instance, msg);
-            }
-
-            return hpx::util::format("%1%%2%: %3%:: %4%",
-                codename.empty() ? "<unknown>" : codename, line_col,
-                parts.primitive, msg);
+            return hpx::util::format("%1%: %2%:: %3%",
+                codename.empty() ? "<unknown>" : codename, name, msg);
         }
 
         return hpx::util::format(

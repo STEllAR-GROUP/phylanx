@@ -556,7 +556,7 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT bool is_ast_operand(primitive_argument_type const& val);
 
     // Extract a list type from a given primitive_argument_type,
-    // throw if it doesn't hold one.
+    // Create a list from argument if it does not hold one.
     PHYLANX_EXPORT std::vector<primitive_argument_type> extract_list_value(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -567,6 +567,20 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>");
 
     PHYLANX_EXPORT bool is_list_operand(primitive_argument_type const& val);
+
+    // Extract a list type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::vector<primitive_argument_type>
+    extract_list_value_strict(primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::vector<primitive_argument_type>
+    extract_list_value_strict(primitive_argument_type&& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT bool is_list_operand_strict(
+        primitive_argument_type const& val);
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a primitive from a given primitive_argument_type, throw

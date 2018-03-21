@@ -113,7 +113,8 @@ namespace phylanx { namespace execution_tree
         std::vector<std::string>, factory_function_type,
         primitive_factory_function_type>;
 
-    using pattern_list = std::vector<match_pattern_type>;
+    using pattern_list =
+        std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive create_primitive_component(

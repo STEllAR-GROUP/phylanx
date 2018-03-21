@@ -42,11 +42,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         for (auto const& patterns : patterns_list)
         {
-            if (!hpx::util::get<1>(patterns).empty())
+            auto const& p = hpx::util::get<1>(patterns);
+            if (!hpx::util::get<1>(p).empty())
             {
-                result.define(hpx::util::get<0>(patterns),
-                    builtin_function(
-                        hpx::util::get<2>(patterns), default_locality));
+                result.define(hpx::util::get<0>(p),
+                    builtin_function(hpx::util::get<2>(p), default_locality));
             }
         }
 
@@ -62,22 +62,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
     expression_pattern_list generate_patterns(pattern_list const& patterns_list)
     {
         expression_pattern_list result;
-        result.reserve(patterns_list.size());
-
         for (auto const& patterns : patterns_list)
         {
-            for (auto const& pattern : hpx::util::get<1>(patterns))
+            auto const& p = hpx::util::get<1>(patterns);
+            for (auto const& pattern : hpx::util::get<1>(p))
             {
                 auto exprs = ast::generate_ast(pattern);
                 HPX_ASSERT(exprs.size() == 1);
 
-                result.push_back(
+                result.insert(expression_pattern_list::value_type(
+                    hpx::util::get<0>(p),
                     hpx::util::make_tuple(
-                        hpx::util::get<0>(patterns), pattern,
-                        exprs[0], hpx::util::get<2>(patterns)));
+                        pattern, exprs[0], hpx::util::get<2>(p))));
             }
         }
-
         return result;
     }
 
@@ -287,7 +285,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function handle_lambda(
             std::multimap<std::string, ast::expression>& placeholders,
-            expression_pattern const& pattern, ast::tagged const& lambda_id)
+            ast::tagged const& lambda_id)
         {
             // we know that 'lambda()' uses '__1' to match arguments
             using iterator =
@@ -327,7 +325,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function handle_define(
             std::multimap<std::string, ast::expression>& placeholders,
-            expression_pattern const& pattern, ast::tagged const& define_id)
+            ast::tagged const& define_id)
         {
             // we know that 'define()' uses '__1' to match arguments
             using iterator =
@@ -459,9 +457,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         function handle_placeholders(
             std::multimap<std::string, ast::expression>& placeholders,
-            std::string const& name, std::string const& global_name,
-            ast::tagged id)
+            std::string const& name, ast::tagged id)
         {
+            // add sequence number for this primitive component
+            std::size_t sequence_number =
+                snippets_.sequence_numbers_[name]++;
+
+            // get global name of the component created
+            std::string global_name =
+                name + "$" + std::to_string(sequence_number);
+            if (id.id >= 0)
+            {
+                global_name += annotation(id);
+            }
+
             if (compiled_function* cf = env_.find(name))
             {
                 std::list<function> args;
@@ -489,40 +498,65 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function operator()(ast::expression const& expr)
         {
             ast::tagged id = ast::detail::tagged_id(expr);
-            for (auto const& pattern : patterns_)
+            if (ast::detail::is_function_call(expr))
             {
-                std::multimap<std::string, ast::expression> placeholders;
-                if (!ast::match_ast(expr, hpx::util::get<2>(pattern),
-                        ast::detail::on_placeholder_match{placeholders}))
+                // handle function calls separately
+                std::string function_name = ast::detail::function_name(expr);
+
+                expression_pattern_list::const_iterator cit =
+                    patterns_.lower_bound(function_name);
+                if (cit != patterns_.end())
                 {
-                    continue;   // no match found for the current pattern
-                }
+                    // Handle define(__1)
+                    if (function_name == "define")
+                    {
+                        std::multimap<std::string, ast::expression> placeholders;
+                        if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
+                                ast::detail::on_placeholder_match{placeholders}))
+                        {
+                            return handle_define(placeholders, id);
+                        }
+                    }
 
-                // Handle define(__1)
-                std::string name = hpx::util::get<0>(pattern);
-                if (name == "define")
+                    // Handle lambda(__1)
+                    if (function_name == "lambda")
+                    {
+                        std::multimap<std::string, ast::expression> placeholders;
+                        if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
+                                ast::detail::on_placeholder_match{placeholders}))
+                        {
+                            return handle_lambda(placeholders, id);
+                        }
+                    }
+
+                    while ((*cit).first == function_name)
+                    {
+                        std::multimap<std::string, ast::expression> placeholders;
+                        if (!ast::match_ast(expr, hpx::util::get<1>((*cit).second),
+                                ast::detail::on_placeholder_match{placeholders}))
+                        {
+                            ++cit;
+                            continue;   // no match found for the current pattern
+                        }
+
+                        return handle_placeholders(placeholders, (*cit).first, id);
+                    }
+                }
+            }
+            else
+            {
+                // this should handle all remaining constructs (non-function calls)
+                for (auto const& pattern : patterns_)
                 {
-                    return handle_define(placeholders, pattern, id);
+                    std::multimap<std::string, ast::expression> placeholders;
+                    if (!ast::match_ast(expr, hpx::util::get<1>(pattern.second),
+                            ast::detail::on_placeholder_match{placeholders}))
+                    {
+                        continue;   // no match found for the current pattern
+                    }
+
+                    return handle_placeholders(placeholders, pattern.first, id);
                 }
-
-                if (name == "lambda")
-                {
-                    return handle_lambda(placeholders, pattern, id);
-                }
-
-                // add sequence number for this primitive component
-                std::size_t sequence_number =
-                    snippets_.sequence_numbers_[name]++;
-                name += "$" + std::to_string(sequence_number);
-
-                // get global name of the component created
-                if (id.id >= 0)
-                {
-                    name += annotation(id);
-                }
-
-                return handle_placeholders(
-                    placeholders, hpx::util::get<0>(pattern), name, id);
             }
 
             // remaining expression could refer to a variable

@@ -1448,6 +1448,121 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    std::vector<primitive_argument_type> extract_list_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 6:     // std::vector<ast::expression>
+            {
+                std::vector<primitive_argument_type> result;
+                result.reserve(util::get<6>(val).size());
+                for (auto const& v : util::get<6>(val))
+                {
+                    if (ast::detail::is_literal_value(v))
+                    {
+                        result.push_back(to_primitive_value_type(
+                            ast::detail::literal_value(v)));
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return result;
+            }
+
+        case 7:     // std::vector<primitive_argument_type>
+            return util::get<7>(val).get();
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 2: HPX_FALLTHROUGH;    // std::uint64_t
+        case 3: HPX_FALLTHROUGH;    // string
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5: HPX_FALLTHROUGH;    // primitive
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_list_value_strict",
+            generate_error_message(
+                "primitive_argument_type does not hold a list "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    std::vector<primitive_argument_type> extract_list_value_strict(
+        primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 6:     // std::vector<ast::expression>
+            {
+                std::vector<primitive_argument_type> result;
+                result.reserve(util::get<6>(val).size());
+                for (auto && v : util::get<6>(std::move(val)))
+                {
+                    if (ast::detail::is_literal_value(v))
+                    {
+                        result.push_back(to_primitive_value_type(
+                            ast::detail::literal_value(v)));
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                return result;
+            }
+
+        case 7:     // std::vector<primitive_argument_type>
+            return util::get<7>(std::move(val)).get();
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 2: HPX_FALLTHROUGH;    // std::uint64_t
+        case 3: HPX_FALLTHROUGH;    // string
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5: HPX_FALLTHROUGH;    // primitive
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_list_value_strict",
+            generate_error_message(
+                "primitive_argument_type does not hold a list "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    bool is_list_operand_strict(primitive_argument_type const& val)
+    {
+        switch (val.index())
+        {
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 7:     // std::vector<primitive_argument_type>
+            return true;
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 2: HPX_FALLTHROUGH;    // std::uint64_t
+        case 3: HPX_FALLTHROUGH;    // string
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5: HPX_FALLTHROUGH;    // primitive
+        default:
+            break;
+        }
+        return false;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     primitive primitive_operand(primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {

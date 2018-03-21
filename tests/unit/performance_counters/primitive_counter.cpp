@@ -105,7 +105,7 @@ int main()
     for (auto const& pattern :
         phylanx::execution_tree::get_all_known_patterns())
     {
-        std::string const& name = hpx::util::get<0>(pattern);
+        std::string const& name = hpx::util::get<0>(hpx::util::get<1>(pattern));
 
         // HACK: There is an access-argument/access-variable primitive
         // registered in AGAS for each argument/variable access. This is a
