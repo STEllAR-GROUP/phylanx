@@ -6,6 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -447,10 +448,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type operator()(
-            util::recursive_wrapper<
-                std::vector<primitive_argument_type>>&&,
-            util::recursive_wrapper<
-                std::vector<primitive_argument_type>>&&) const
+            util::recursive_wrapper<ir::range>&&,
+            util::recursive_wrapper<ir::range>&&) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",

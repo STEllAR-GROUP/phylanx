@@ -1,6 +1,6 @@
 // Copyright (c) 2017-2018 Hartmut Kaiser
 // Copyright (c) 2018 Parsa Amini
-// 
+//
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -10,6 +10,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
@@ -143,7 +144,7 @@ namespace phylanx { namespace execution_tree
           , phylanx::ir::node_data<double>
           , primitive
           , std::vector<ast::expression>
-          , phylanx::util::recursive_wrapper<std::vector<primitive_argument_type>>
+          , phylanx::util::recursive_wrapper<ir::range>
         >;
 
     struct primitive_argument_type : argument_value_type

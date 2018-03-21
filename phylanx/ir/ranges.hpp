@@ -19,6 +19,11 @@
 #include <utility>
 #include <vector>
 
+namespace phylanx { namespace execution_tree
+{
+    struct primitive_argument_type;
+}}
+
 namespace phylanx { namespace ir
 {
     //////////////////////////////////////////////////////////////////////////
@@ -32,7 +37,12 @@ namespace phylanx { namespace ir
         using int_range_type = std::pair<std::int64_t, std::int64_t>;
         using args_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::reverse_iterator;
-        using iterator_type = util::variant<int_range_type, args_iterator_type>;
+        using args_const_iterator_type = std::vector<
+            execution_tree::primitive_argument_type>::const_reverse_iterator;
+        using iterator_type = util::variant<
+            int_range_type,
+            args_iterator_type,
+            args_const_iterator_type>;
 
     public:
         reverse_range_iterator(std::int64_t reverse_start, std::int64_t step)
@@ -41,6 +51,11 @@ namespace phylanx { namespace ir
         }
 
         reverse_range_iterator(args_iterator_type it)
+          : it_(it)
+        {
+        }
+
+        reverse_range_iterator(args_const_iterator_type it)
           : it_(it)
         {
         }
@@ -67,9 +82,16 @@ namespace phylanx { namespace ir
         using int_range_type = std::pair<std::int64_t, std::int64_t>;
         using args_iterator_type =
             std::vector<execution_tree::primitive_argument_type>::iterator;
+        using args_const_iterator_type =
+            std::vector<execution_tree::primitive_argument_type>::const_iterator;
         using args_reverse_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::reverse_iterator;
-        using iterator_type = util::variant<int_range_type, args_iterator_type>;
+        using args_reverse_const_iterator_type = std::vector<
+            execution_tree::primitive_argument_type>::const_reverse_iterator;
+        using iterator_type = util::variant<
+            int_range_type,
+            args_iterator_type,
+            args_const_iterator_type>;
 
     public:
         range_iterator(std::int64_t start, std::int64_t step)
@@ -78,6 +100,11 @@ namespace phylanx { namespace ir
         }
 
         range_iterator(args_iterator_type it)
+          : it_(it)
+        {
+        }
+
+        range_iterator(args_const_iterator_type it)
           : it_(it)
         {
         }
@@ -106,11 +133,23 @@ namespace phylanx { namespace ir
         using range_type =
             util::variant<int_range_type, args_type, arg_pair_type>;
 
+        //////////////////////////////////////////////////////////////////////////
         range_iterator begin();
         range_iterator end();
 
+        const range_iterator begin() const;
+        const range_iterator end() const;
+
         reverse_range_iterator rbegin();
         reverse_range_iterator rend();
+
+        bool empty() const;
+
+        args_type& args();
+        args_type const& args() const;
+
+        //////////////////////////////////////////////////////////////////////////
+        range() = default;
 
         explicit range(
             std::vector<execution_tree::primitive_argument_type> const& data)
@@ -144,6 +183,11 @@ namespace phylanx { namespace ir
               static_cast<std::int64_t>(1)))
         {
         }
+
+        bool operator==(range const& other) const;
+
+        void serialize(hpx::serialization::output_archive& ar, unsigned);
+        void serialize(hpx::serialization::input_archive& ar, unsigned);
 
     private:
         range_type data_;

@@ -6,6 +6,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/and_operation.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -97,10 +98,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_argument_type operator()(
             phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>
+                ir::range>
                 lhs,
             phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>
+                ir::range>
                 rhs) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

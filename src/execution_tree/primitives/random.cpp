@@ -94,14 +94,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 std::array<std::size_t, 2> result{1ull, 1ull};
                 auto const& list = util::get<7>(val).get();
-                switch (list.size())
+                auto const& args = list.args();
+                switch (args.size())
                 {
                 case 2:
-                    result[1] = std::size_t(extract_numeric_value(list[1])[0]);
+                    result[1] = std::size_t(extract_numeric_value(args[1])[0]);
                     HPX_FALLTHROUGH;
 
                 case 1:
-                    result[0] = std::size_t(extract_numeric_value(list[0])[0]);
+                    result[0] = std::size_t(extract_numeric_value(args[0])[0]);
                     HPX_FALLTHROUGH;
 
                 case 0:
@@ -166,20 +167,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 distribution_parameters_type result{"uniform", 0, 0.0, 1.0};
                 auto const& list = util::get<7>(val).get();
-                switch (list.size())
+                auto const& args = list.args();
+                switch (args.size())
                 {
                 case 3:
                     std::get<1>(result)++;
-                    std::get<3>(result) = double(extract_numeric_value(list[2])[0]);
+                    std::get<3>(result) = double(extract_numeric_value(args[2])[0]);
                     HPX_FALLTHROUGH;
 
                 case 2:
                     std::get<1>(result)++;
-                    std::get<2>(result) = double(extract_numeric_value(list[1])[0]);
+                    std::get<2>(result) = double(extract_numeric_value(args[1])[0]);
                     HPX_FALLTHROUGH;
 
                 case 1:
-                    std::get<0>(result) = extract_string_value(list[0]);
+                    std::get<0>(result) = extract_string_value(args[0]);
                     return result;
 
                 default:
