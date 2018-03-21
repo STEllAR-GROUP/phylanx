@@ -11,7 +11,9 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace ir
@@ -26,11 +28,12 @@ namespace phylanx { namespace ir
             int_range_type& p = util::get<0>(it_);
             return reverse_range_iterator{p.first, p.second};
         }
-        case 1:    // arg_range_type
-        {
+        case 1:    // args_iterator_type
             return reverse_range_iterator(
                 args_reverse_iterator_type(util::get<1>(it_)));
-        }
+        case 2:    // args_const_iterator_type
+            return reverse_range_iterator(
+                args_reverse_const_iterator_type(util::get<2>(it_)));
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -45,8 +48,10 @@ namespace phylanx { namespace ir
         case 0:    // int_range_type
             return execution_tree::primitive_argument_type(
                 util::get<0>(it_).first);
-        case 1:    // arg_range_type
+        case 1:    // args_iterator_type
             return *(util::get<1>(it_));
+        case 2:    // args_const_iterator_type
+            return *(util::get<2>(it_));
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -66,8 +71,10 @@ namespace phylanx { namespace ir
         {
         case 0:    // int_range_type
             return util::get<0>(it_).first == util::get<0>(other.it_).first;
-        case 1:    // arg_range_type
+        case 1:    // args_iterator_type
             return util::get<1>(it_) == util::get<1>(other.it_);
+        case 2:    // args_const_iterator_type
+            return util::get<2>(it_) == util::get<2>(other.it_);
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -85,8 +92,11 @@ namespace phylanx { namespace ir
             p.first += p.second;
             break;
         }
-        case 1:    // arg_range_type
+        case 1:    // args_iterator_type
             ++util::get<1>(it_);
+            break;
+        case 2:    // args_iterator_type
+            ++util::get<2>(it_);
             break;
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -96,15 +106,18 @@ namespace phylanx { namespace ir
     }
 
     //////////////////////////////////////////////////////////////////////////
-    execution_tree::primitive_argument_type reverse_range_iterator::dereference() const
+    execution_tree::primitive_argument_type
+    reverse_range_iterator::dereference() const
     {
         switch (it_.index())
         {
         case 0:    // int_range_type
             return execution_tree::primitive_argument_type(
                 util::get<0>(it_).first);
-        case 1:    // arg_range_type
+        case 1:    // args_iterator_type
             return *(util::get<1>(it_));
+        case 2:    // args_const_iterator_type
+            return *(util::get<2>(it_));
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -124,8 +137,10 @@ namespace phylanx { namespace ir
         {
         case 0:    // int_range_type
             return util::get<0>(it_).first == util::get<0>(other.it_).first;
-        case 1:    // arg_range_type
+        case 1:    // args_iterator_type
             return util::get<1>(it_) == util::get<1>(other.it_);
+        case 2:    // args_iterator_type
+            return util::get<2>(it_) == util::get<2>(other.it_);
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -143,8 +158,10 @@ namespace phylanx { namespace ir
             p.first -= p.second;
             break;
         }
-        case 1:    // arg_range_type
+        case 1:    // args_iterator_type
             ++util::get<1>(it_);
+        case 2:    // args_iterator_type
+            ++util::get<2>(it_);
             break;
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -160,7 +177,28 @@ namespace phylanx { namespace ir
         {
         case 0:    // int_range_type
         {
-            int_range_type& int_range = util::get<0>(data_);
+            int_range_type const& int_range = util::get<0>(data_);
+            std::int64_t start = hpx::util::get<0>(int_range);
+            std::int64_t step = hpx::util::get<2>(int_range);
+            return range_iterator{start, step};
+        }
+        case 1:    // args_type
+            return util::get<1>(data_).begin();
+        case 2:    // arg_pair_type
+            return util::get<2>(data_).first;
+        }
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::begin",
+            "range object holds unsupported data type");
+    }
+
+    const range_iterator range::begin() const
+    {
+        switch (data_.index())
+        {
+        case 0:    // int_range_type
+        {
+            int_range_type const& int_range = util::get<0>(data_);
             std::int64_t start = hpx::util::get<0>(int_range);
             std::int64_t step = hpx::util::get<2>(int_range);
             return range_iterator{start, step};
@@ -176,6 +214,36 @@ namespace phylanx { namespace ir
     }
 
     range_iterator range::end()
+    {
+        switch (data_.index())
+        {
+        case 0:    // int_range_type
+        {
+            const int_range_type& int_range = util::get<0>(data_);
+            const std::int64_t start = hpx::util::get<0>(int_range);
+            const std::int64_t stop = hpx::util::get<1>(int_range);
+            const std::int64_t step = hpx::util::get<2>(int_range);
+
+            const std::int64_t distance_to_start = stop - start;
+            const std::int64_t n_steps = distance_to_start / step;
+            const std::int64_t remaining_step =
+                distance_to_start % step != 0 ? step : 0;
+            const std::int64_t actual_stop =
+                start + n_steps * step + remaining_step;
+
+            return range_iterator{actual_stop, step};
+        }
+        case 1:    // args_type
+            return util::get<1>(data_).end();
+        case 2:    // arg_pair_type
+            return util::get<2>(data_).second;
+        }
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::end",
+            "range object holds unsupported data type");
+    }
+
+    const range_iterator range::end() const
     {
         switch (data_.index())
         {
@@ -260,5 +328,120 @@ namespace phylanx { namespace ir
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::rend",
             "range object holds unsupported data type");
+    }
+
+    bool range::empty() const
+    {
+        switch (data_.index())
+        {
+        case 0:
+        {
+            auto const& v = util::get<0>(data_);
+            return hpx::util::get<0>(v) == hpx::util::get<1>(v);
+        }
+        case 1:
+        {
+            auto const& v = util::get<1>(data_);
+            return v.begin() == v.end();
+        }
+        case 2:
+        {
+            auto const& v = util::get<2>(data_);
+            return v.first == v.second;
+        }
+        }
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::empty",
+            "range object holds unsupported data type");
+    }
+
+    range::args_type& range::args()
+    {
+        args_type* cv =
+            util::get_if<args_type>(&data_);
+        if (cv != nullptr)
+            return *cv;
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::args()",
+            "range object holds unsupported data type");
+    }
+
+    range::args_type const& range::args() const
+    {
+        args_type const* cv = util::get_if<args_type>(&data_);
+        if (cv != nullptr)
+            return *cv;
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::args&()",
+            "range object holds unsupported data type");
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    bool range::operator==(range const& other) const
+    {
+        return data_ == other.data_;
+    }
+
+    void range::serialize(hpx::serialization::output_archive& ar, unsigned)
+    {
+        std::size_t index = data_.index();
+        ar << index;
+
+        switch (index)
+        {
+        case 0:
+        {
+            int_range_type& int_range = util::get<0>(data_);
+            ar << hpx::util::get<0>(int_range)
+               << hpx::util::get<1>(int_range)
+               << hpx::util::get<2>(int_range);
+            break;
+        }
+        case 1:
+        {
+            ar << util::get<1>(data_);
+            break;
+        }
+        case 2:
+        {
+            arg_pair_type p = util::get<2>(data_);
+            args_type m;
+            std::copy(p.first, p.second, std::back_inserter(m));
+            break;
+        }
+        default:
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::range::serialize()",
+                "range object holds unsupported data type");
+        }
+    }
+    void range::serialize(hpx::serialization::input_archive& ar, unsigned)
+    {
+        std::size_t index = 0;
+        ar >> index;
+
+        switch (index)
+        {
+        case 0:
+        {
+            std::int64_t start, stop, step;
+            ar >> start >> stop >> step;
+            data_ = int_range_type(start, stop, step);
+            break;
+        }
+        case 1:
+        {
+            args_type m;
+            ar >> m;
+            data_ = std::move(m);
+            break;
+        }
+        default:
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::range::serialize()",
+                "range object holds unsupported data type");
+        }
     }
 }}
