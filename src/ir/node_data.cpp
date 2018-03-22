@@ -1126,7 +1126,8 @@ namespace phylanx { namespace ir
             "node_data object holds unsupported data type");
     }
 
-    bool operator==(node_data<bool> const& lhs, node_data<bool> const& rhs)
+    bool operator==(
+        node_data<std::uint8_t> const& lhs, node_data<std::uint8_t> const& rhs)
     {
         if (lhs.num_dimensions() != rhs.num_dimensions() ||
             lhs.dimensions() != rhs.dimensions())
@@ -1159,7 +1160,7 @@ namespace phylanx { namespace ir
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        template <typename Range>
+        template <typename T, typename Range>
         void print_array(std::ostream& out, Range const& r, std::size_t size)
         {
             out << "[";
@@ -1169,7 +1170,7 @@ namespace phylanx { namespace ir
                 {
                     out << ", ";
                 }
-                out << r[i];
+                out << T(r[i]);
             }
             out << "]";
         }
@@ -1187,7 +1188,7 @@ namespace phylanx { namespace ir
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            detail::print_array(out, nd.vector(), nd.size());
+            detail::print_array<double>(out, nd.vector(), nd.size());
             break;
 
         case 2: HPX_FALLTHROUGH;
@@ -1199,7 +1200,7 @@ namespace phylanx { namespace ir
                 {
                     if (row != 0)
                         out << ", ";
-                    detail::print_array(
+                    detail::print_array<double>(
                         out, blaze::row(data, row), data.columns());
                 }
                 out << "]";
@@ -1320,19 +1321,19 @@ namespace phylanx { namespace ir
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::ostream& operator<<(std::ostream& out, node_data<bool> const& nd)
+    std::ostream& operator<<(std::ostream& out, node_data<std::uint8_t> const& nd)
     {
         std::size_t dims = nd.num_dimensions();
         switch (dims)
         {
         case 0:
-            out << std::boolalpha << std::to_string(nd[0]);
+            out << std::boolalpha << std::to_string(bool{nd[0] != 0});
             break;
 
         case 1: HPX_FALLTHROUGH;
         case 3:
             out << std::boolalpha;
-            detail::print_array(out, nd.vector(), nd.size());
+            detail::print_array<bool>(out, nd.vector(), nd.size());
             break;
 
         case 2: HPX_FALLTHROUGH;
@@ -1344,7 +1345,7 @@ namespace phylanx { namespace ir
                 {
                     if (row != 0)
                         out << ", ";
-                    detail::print_array(
+                    detail::print_array<bool>(
                         out, blaze::row(data, row), data.columns());
                 }
                 out << "]";
@@ -1353,7 +1354,7 @@ namespace phylanx { namespace ir
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "node_data<bool>::operator<<()",
+                "node_data<std::uint8_t>::operator<<()",
                 "invalid dimensionality: " + std::to_string(dims));
         }
         return out;
@@ -1361,4 +1362,4 @@ namespace phylanx { namespace ir
 }}
 
 template class PHYLANX_EXPORT phylanx::ir::node_data<double>;
-template class PHYLANX_EXPORT phylanx::ir::node_data<bool>;
+template class PHYLANX_EXPORT phylanx::ir::node_data<std::uint8_t>;

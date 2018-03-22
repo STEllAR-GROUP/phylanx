@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public std::enable_shared_from_this<unary_not_operation>
     {
     protected:
-        using operand_type = ir::node_data<bool>;
+        using operand_type = ir::node_data<std::uint8_t>;
         using operands_type = std::vector<primitive_argument_type>;
 
         hpx::future<primitive_argument_type> eval(
@@ -45,7 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         struct visit_unary_not;
 
-        primitive_argument_type unary_not_all(operand_type&& ops) const;
+        template <typename T>
+        primitive_argument_type unary_not_all(ir::node_data<T>&& ops) const;
     };
 
     PHYLANX_EXPORT primitive create_unary_not_operation(

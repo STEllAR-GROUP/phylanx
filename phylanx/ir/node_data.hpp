@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+ // Copyright (c) 2017-2018 Hartmut Kaiser
 // Copyright (c) 2017 Parsa Amini
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -330,7 +330,7 @@ namespace phylanx { namespace ir
     PHYLANX_EXPORT bool operator==(
         node_data<double> const& lhs, node_data<double> const& rhs);
     PHYLANX_EXPORT bool operator==(
-        node_data<bool> const& lhs, node_data<bool> const& rhs);
+        node_data<std::uint8_t> const& lhs, node_data<std::uint8_t> const& rhs);
 
     template <typename T>
     bool operator!=(node_data<T> const& lhs, node_data<T> const& rhs)
@@ -341,7 +341,7 @@ namespace phylanx { namespace ir
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, node_data<double> const& nd);
     PHYLANX_EXPORT std::ostream& operator<<(
-        std::ostream& out, node_data<bool> const& nd);
+        std::ostream& out, node_data<std::uint8_t> const& nd);
 }}
 
 #endif

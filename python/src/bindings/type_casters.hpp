@@ -227,26 +227,38 @@ namespace pybind11 { namespace detail
         template <typename U, typename... Us>
         bool load_alternative(handle src, bool convert, type_list<U, Us...>)
         {
+            // deliberately start from the end of the type-list, this allows
+            // to match a list before a matrix
+            if (load_alternative(src, convert, type_list<Us...>{}))
+                return true;
+
             auto caster = make_caster<U>();
             if (caster.load(src, convert))
             {
                 value = cast_op<U>(caster);
                 return true;
             }
-            return load_alternative(src, convert, type_list<Us...>{});
+
+            return false;
         }
 
         template <typename U, typename... Us>
         bool load_alternative(handle src, bool convert,
             type_list<phylanx::util::recursive_wrapper<U>, Us...>)
         {
+            // deliberately start from the end of the type-list, this allows
+            // to match a list before a matrix
+            if (load_alternative(src, convert, type_list<Us...>{}))
+                return true;
+
             auto caster = make_caster<U>();
             if (caster.load(src, convert))
             {
                 value = cast_op<U>(caster);
                 return true;
             }
-            return load_alternative(src, convert, type_list<Us...>{});
+
+            return false;
         }
 
         bool load_alternative(handle, bool, type_list<>) { return false; }

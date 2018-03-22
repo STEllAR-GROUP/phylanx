@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public std::enable_shared_from_this<or_operation>
     {
     protected:
-        using operand_type = ir::node_data<bool>;
+        using operand_type = ir::node_data<std::uint8_t>;
         using operands_type = std::vector<primitive_argument_type>;
 
         hpx::future<primitive_argument_type> eval(

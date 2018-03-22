@@ -65,7 +65,8 @@ void generate_0d(phylanx::execution_tree::compiler::function const& call,
 
     auto result = call(dims);
 
-    HPX_TEST_EQ(dist(gen),
+    HPX_TEST_EQ(
+        static_cast<T>(dist(gen)),
         static_cast<T>(
             phylanx::execution_tree::extract_numeric_value(result)[0]));
 }
@@ -199,15 +200,15 @@ void test_bernoulli_distribution(std::mt19937& gen)
 
     {
         std::bernoulli_distribution dist;
-        generate_0d<bool>(call, gen, dist);
+        generate_0d<std::uint8_t>(call, gen, dist);
     }
     {
         std::bernoulli_distribution dist;
-        generate_1d<bool>(call, gen, dist);
+        generate_1d<std::uint8_t>(call, gen, dist);
     }
     {
         std::bernoulli_distribution dist;
-        generate_2d<bool>(call, gen, dist);
+        generate_2d<std::uint8_t>(call, gen, dist);
     }
 }
 
@@ -222,15 +223,15 @@ void test_bernoulli_distribution_params(std::mt19937& gen)
 
     {
         std::bernoulli_distribution dist{0.8};
-        generate_0d<bool>(call, gen, dist);
+        generate_0d<std::uint8_t>(call, gen, dist);
     }
     {
         std::bernoulli_distribution dist{0.8};
-        generate_1d<bool>(call, gen, dist);
+        generate_1d<std::uint8_t>(call, gen, dist);
     }
     {
         std::bernoulli_distribution dist{0.8};
-        generate_2d<bool>(call, gen, dist);
+        generate_2d<std::uint8_t>(call, gen, dist);
     }
 }
 

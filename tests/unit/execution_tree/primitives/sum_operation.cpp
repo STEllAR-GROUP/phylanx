@@ -47,7 +47,7 @@ void test_0d_keep_dims_true()
             hpx::find_here(), phylanx::ast::nil{});
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
@@ -74,7 +74,7 @@ void test_0d_keep_dims_false()
             hpx::find_here(), phylanx::ast::nil{});
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
@@ -124,7 +124,7 @@ void test_1d_keep_dims_true()
             hpx::find_here(), phylanx::ast::nil{});
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
@@ -152,7 +152,7 @@ void test_1d_keep_dims_false()
             hpx::find_here(), phylanx::ast::nil{});
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
@@ -252,7 +252,7 @@ void test_2d_keep_dims_true()
             hpx::find_here(), phylanx::ast::nil{});
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
@@ -280,7 +280,7 @@ void test_2d_keep_dims_false()
             hpx::find_here(), phylanx::ast::nil{});
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
