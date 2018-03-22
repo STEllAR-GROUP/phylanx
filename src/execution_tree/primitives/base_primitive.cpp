@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2018 Hartmut Kaiser
-// 
+//
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -1045,8 +1045,8 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-        case 7:     // phylanx::ir::range  TODO: MARK
-            return !(util::get<7>(val).get().empty());
+        case 7:     // phylanx::ir::range
+            return !(util::get<7>(val).empty());
 
         case 3: HPX_FALLTHROUGH;    // string
         case 5: HPX_FALLTHROUGH;    // primitive
@@ -1094,8 +1094,8 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-        case 7:     // phylanx::ir::range TODO: MARK
-            return !(util::get<7>(std::move(val)).get().empty());
+        case 7:     // phylanx::ir::range
+            return !(util::get<7>(std::move(val)).empty());
 
         case 3: HPX_FALLTHROUGH;    // string
         case 5: HPX_FALLTHROUGH;    // primitive
@@ -1361,8 +1361,8 @@ namespace phylanx { namespace execution_tree
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<6>(val)}};
 
-        case 7:     // phylanx::ir::range TODO: MARK
-            return util::get<7>(val).get().args();
+        case 7:     // phylanx::ir::range
+            return util::get<7>(val).args();
 
         default:
             break;
@@ -1411,8 +1411,8 @@ namespace phylanx { namespace execution_tree
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<6>(std::move(val))}};
 
-        case 7:     // phylanx::ir::range TODO: MARK
-            return util::get<7>(std::move(val)).get().args();
+        case 7:     // phylanx::ir::range
+            return util::get<7>(std::move(val)).args();
 
         default:
             break;
@@ -1474,7 +1474,7 @@ namespace phylanx { namespace execution_tree
             }
 
         case 7:     // phylanx::ir:range
-            return util::get<7>(val).get().args();
+            return util::get<7>(val).args();
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
@@ -1521,7 +1521,7 @@ namespace phylanx { namespace execution_tree
             }
 
         case 7:     // phylanx::ir::range
-            return util::get<7>(std::move(val)).get().args();
+            return util::get<7>(std::move(val)).args();
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
@@ -2330,11 +2330,11 @@ namespace phylanx { namespace execution_tree
             }
             return os;
 
-        case 7:     // phylanx::ir::range TODO: MARK
+        case 7:     // phylanx::ir::range
             {
                 os << "'(";
                 bool first = true;
-                for (auto const& elem : util::get<7>(val).get())
+                for (auto const& elem : util::get<7>(val))
                 {
                     if (!first)
                     {

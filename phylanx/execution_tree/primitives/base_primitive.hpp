@@ -142,7 +142,7 @@ namespace phylanx { namespace execution_tree
           , phylanx::ir::node_data<double>
           , primitive
           , std::vector<ast::expression>
-          , phylanx::util::recursive_wrapper<ir::range>
+          , ir::range
         >;
 
     struct primitive_argument_type : argument_value_type
@@ -229,12 +229,11 @@ namespace phylanx { namespace execution_tree
         {}
 
         primitive_argument_type(std::vector<primitive_argument_type> const& val)
-          : argument_value_type{phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>{val}}
+          : argument_value_type{
+                ir::range{val}}
         {}
         primitive_argument_type(std::vector<primitive_argument_type>&& val)
-          : argument_value_type{phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>{std::move(val)}}
+          : argument_value_type{ir::range{std::move(val)}}
         {}
 
         primitive_argument_type(argument_value_type const& val)

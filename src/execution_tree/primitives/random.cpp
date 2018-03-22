@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 7:    // std::vector<primitive_argument_type>
             {
                 std::array<std::size_t, 2> result{1ull, 1ull};
-                auto const& list = util::get<7>(val).get();
+                auto const& list = util::get<7>(val);
                 auto const& args = list.args();
                 switch (args.size())
                 {
@@ -166,7 +166,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 7:    // std::vector<primitive_argument_type>
             {
                 distribution_parameters_type result{"uniform", 0, 0.0, 1.0};
-                auto const& list = util::get<7>(val).get();
+                auto const& list = util::get<7>(val);
                 auto const& args = list.args();
                 switch (args.size())
                 {
