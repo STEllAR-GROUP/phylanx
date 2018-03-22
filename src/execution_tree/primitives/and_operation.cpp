@@ -96,13 +96,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     and_.name_, and_.codename_));
         }
 
-        primitive_argument_type operator()(
-            phylanx::util::recursive_wrapper<
-                ir::range>
-                lhs,
-            phylanx::util::recursive_wrapper<
-                ir::range>
-                rhs) const
+        primitive_argument_type operator()(ir::range lhs, ir::range rhs) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "and::eval",

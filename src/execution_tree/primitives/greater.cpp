@@ -447,9 +447,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{lhs > rhs});
         }
 
-        primitive_argument_type operator()(
-            util::recursive_wrapper<ir::range>&&,
-            util::recursive_wrapper<ir::range>&&) const
+        primitive_argument_type operator()(ir::range&&, ir::range&&) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater::eval",

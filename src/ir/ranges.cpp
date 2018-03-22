@@ -95,7 +95,7 @@ namespace phylanx { namespace ir
         case 1:    // args_iterator_type
             ++util::get<1>(it_);
             break;
-        case 2:    // args_iterator_type
+        case 2:    // args_const_iterator_type
             ++util::get<2>(it_);
             break;
         default:
@@ -139,7 +139,7 @@ namespace phylanx { namespace ir
             return util::get<0>(it_).first == util::get<0>(other.it_).first;
         case 1:    // args_iterator_type
             return util::get<1>(it_) == util::get<1>(other.it_);
-        case 2:    // args_iterator_type
+        case 2:    // args_const_iterator_type
             return util::get<2>(it_) == util::get<2>(other.it_);
         }
 
@@ -160,7 +160,8 @@ namespace phylanx { namespace ir
         }
         case 1:    // args_iterator_type
             ++util::get<1>(it_);
-        case 2:    // args_iterator_type
+            break;
+        case 2:    // args_const_iterator_type
             ++util::get<2>(it_);
             break;
         default:
@@ -183,7 +184,7 @@ namespace phylanx { namespace ir
             return range_iterator{start, step};
         }
         case 1:    // args_type
-            return util::get<1>(data_).begin();
+            return util::get<1>(data_).get().begin();
         case 2:    // arg_pair_type
             return util::get<2>(data_).first;
         }
@@ -204,7 +205,7 @@ namespace phylanx { namespace ir
             return range_iterator{start, step};
         }
         case 1:    // args_type
-            return util::get<1>(data_).begin();
+            return util::get<1>(data_).get().begin();
         case 2:    // arg_pair_type
             return util::get<2>(data_).first;
         }
@@ -234,7 +235,7 @@ namespace phylanx { namespace ir
             return range_iterator{actual_stop, step};
         }
         case 1:    // args_type
-            return util::get<1>(data_).end();
+            return util::get<1>(data_).get().end();
         case 2:    // arg_pair_type
             return util::get<2>(data_).second;
         }
@@ -264,7 +265,7 @@ namespace phylanx { namespace ir
             return range_iterator{actual_stop, step};
         }
         case 1:    // args_type
-            return util::get<1>(data_).end();
+            return util::get<1>(data_).get().end();
         case 2:    // arg_pair_type
             return util::get<2>(data_).second;
         }
@@ -297,7 +298,7 @@ namespace phylanx { namespace ir
             return reverse_range_iterator{actual_begin, step};
         }
         case 1:    // args_type
-            return util::get<1>(data_).rbegin();
+            return util::get<1>(data_).get().rbegin();
         case 2:    // range_iterator
             return util::get<2>(data_).second.invert();
         }
@@ -321,7 +322,7 @@ namespace phylanx { namespace ir
             return reverse_range_iterator{start - step, step};
         }
         case 1:    // args_type
-            return util::get<1>(data_).rend();
+            return util::get<1>(data_).get().rend();
         case 2:    // range_iterator
             return util::get<2>(data_).first.invert();
         }
@@ -341,7 +342,7 @@ namespace phylanx { namespace ir
         }
         case 1:
         {
-            auto const& v = util::get<1>(data_);
+            auto const& v = util::get<1>(data_).get();
             return v.begin() == v.end();
         }
         case 2:
@@ -357,10 +358,10 @@ namespace phylanx { namespace ir
 
     range::args_type& range::args()
     {
-        args_type* cv =
-            util::get_if<args_type>(&data_);
+        wrapped_args_type* cv =
+            util::get_if<wrapped_args_type>(&data_);
         if (cv != nullptr)
-            return *cv;
+            return cv->get();
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::args()",
@@ -369,9 +370,9 @@ namespace phylanx { namespace ir
 
     range::args_type const& range::args() const
     {
-        args_type const* cv = util::get_if<args_type>(&data_);
+        wrapped_args_type const* cv = util::get_if<wrapped_args_type>(&data_);
         if (cv != nullptr)
-            return *cv;
+            return cv->get();
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::args&()",
@@ -382,6 +383,11 @@ namespace phylanx { namespace ir
     bool range::operator==(range const& other) const
     {
         return data_ == other.data_;
+    }
+
+    bool range::operator!=(range const& other) const
+    {
+        return data_ != other.data_;
     }
 
     void range::serialize(hpx::serialization::output_archive& ar, unsigned)

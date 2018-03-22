@@ -8,7 +8,6 @@
 #define PHYLANX_IR_RANGES
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/serialization.hpp>
@@ -129,9 +128,10 @@ namespace phylanx { namespace ir
         using int_range_type =
             hpx::util::tuple<std::int64_t, std::int64_t, std::int64_t>;
         using args_type = std::vector<execution_tree::primitive_argument_type>;
+        using wrapped_args_type = phylanx::util::recursive_wrapper<args_type>;
         using arg_pair_type = std::pair<range_iterator, range_iterator>;
         using range_type =
-            util::variant<int_range_type, args_type, arg_pair_type>;
+            util::variant<int_range_type, wrapped_args_type, arg_pair_type>;
 
         //////////////////////////////////////////////////////////////////////////
         range_iterator begin();
@@ -151,32 +151,28 @@ namespace phylanx { namespace ir
         //////////////////////////////////////////////////////////////////////////
         range() = default;
 
-        explicit range(
-            std::vector<execution_tree::primitive_argument_type> const& data)
+        range(args_type const& data)
           : data_(data)
         {
         }
 
-        explicit range(
-            std::vector<execution_tree::primitive_argument_type>&& data)
+        range(args_type&& data)
           : data_(std::move(data))
         {
         }
 
-        explicit range(
-            std::vector<execution_tree::primitive_argument_type>::iterator x,
-            std::vector<execution_tree::primitive_argument_type>::iterator y)
+        range(args_type::iterator x, args_type::iterator y)
           : data_(std::make_pair(range_iterator{x}, range_iterator{y}))
         {
         }
 
-        explicit range(
+        range(
             std::int64_t start, std::int64_t stop, std::int64_t step = 1)
           : data_(hpx::util::make_tuple(start, stop, step))
         {
         }
 
-        explicit range(std::int64_t stop)
+        range(std::int64_t stop)
           : data_(hpx::util::make_tuple(
               static_cast<std::int64_t>(0),
               stop,
@@ -185,6 +181,7 @@ namespace phylanx { namespace ir
         }
 
         bool operator==(range const& other) const;
+        bool operator!=(range const& other) const;
 
         void serialize(hpx::serialization::output_archive& ar, unsigned);
         void serialize(hpx::serialization::input_archive& ar, unsigned);

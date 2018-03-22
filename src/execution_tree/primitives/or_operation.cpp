@@ -380,11 +380,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     or_.name_, or_.codename_));
         }
 
-        primitive_argument_type operator()(
-            phylanx::util::recursive_wrapper<ir::range>&&
-                lhs,
-            phylanx::util::recursive_wrapper<ir::range>&&
-                rhs) const
+        primitive_argument_type operator()(ir::range&& lhs, ir::range&& rhs) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
