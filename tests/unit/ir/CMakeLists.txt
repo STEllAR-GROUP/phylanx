@@ -5,7 +5,7 @@
 
 set(tests
     node_data
-    range
+    ranges
    )
 
 foreach(test ${tests})

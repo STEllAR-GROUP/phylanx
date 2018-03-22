@@ -1,7 +1,7 @@
-//   Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Hartmut Kaiser
 //
-//   Distributed under the Boost Software License, Version 1.0. (See accompanying
-//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 
@@ -78,15 +78,15 @@ void test_fold_right_operation_lambda_list()
             fold_right(lambda(x, y, make_list(x, y)), '(), '(1, 2, 3, 4))
         )";
 
-    auto result =
-        phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(code)())};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
-    auto expected_result =
-        phylanx::execution_tree::extract_list_value(compile(expected_str)());
+    auto expected_result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
 
     HPX_TEST_EQ(result, expected_result);
 }
@@ -97,15 +97,15 @@ void test_fold_right_operation_builtin_list()
             fold_right(make_list, '(), '(1, 2, 3, 4))
         )";
 
-    auto result =
-        phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(code)())};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
-    auto expected_result =
-        phylanx::execution_tree::extract_list_value(compile(expected_str)());
+    auto expected_result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
 
     HPX_TEST_EQ(result, expected_result);
 }
@@ -117,15 +117,15 @@ void test_fold_right_operation_func_list()
             fold_right(f, '(), '(1, 2, 3, 4))
         ))";
 
-    auto result =
-        phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(code)())};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
-    auto expected_result =
-        phylanx::execution_tree::extract_list_value(compile(expected_str)());
+    auto expected_result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
 
     HPX_TEST_EQ(result, expected_result);
 }
@@ -137,15 +137,15 @@ void test_fold_right_operation_func_lambda_list()
             fold_right(f, '(), '(1, 2, 3, 4))
         ))";
 
-    auto result =
-        phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(code)())};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
-    auto expected_result =
-        phylanx::execution_tree::extract_list_value(compile(expected_str)());
+    auto expected_result = phylanx::execution_tree::primitive_argument_type{
+        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
 
     HPX_TEST_EQ(result, expected_result);
 }

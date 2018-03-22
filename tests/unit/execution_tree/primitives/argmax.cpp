@@ -1,8 +1,8 @@
-//   Copyright (c) 2018 Parsa Amini
-//   Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2018 Hartmut Kaiser
 //
-//   Distributed under the Boost Software License, Version 1.0. (See accompanying
-//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 
@@ -44,7 +44,7 @@ void test_argmax_0d()
 
 void test_argmax_1d()
 {
-    blaze::DynamicVector<double> v1{ 1.0, 2.0, 3.0, 1.0 };
+    blaze::DynamicVector<double> v1{1.0, 2.0, 3.0, 1.0};
 
     std::size_t expected = 2;
 
@@ -69,7 +69,7 @@ void test_argmax_1d()
 
 void test_argmax_2d_flat()
 {
-    blaze::DynamicMatrix<double> m1{{ 1.0, 2.0, 3.0 }, { 4.0, 5.0, 6.0 }};
+    blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
 
     std::size_t expected = 5;
 
@@ -96,11 +96,11 @@ void test_argmax_2d_x_axis()
 {
     using arg_type = phylanx::execution_tree::primitive_argument_type;
 
-    blaze::DynamicMatrix<double> m1{ { 1.0, 2.0, 3.0 },{ 4.0, 5.0, 6.0 } };
+    blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
 
-    std::vector<arg_type> expected{
-        arg_type{static_cast<std::int64_t>(2)},
-        arg_type{static_cast<std::int64_t>(2)}};
+    arg_type expected{
+        std::vector<arg_type>{arg_type{static_cast<std::int64_t>(2)},
+            arg_type{static_cast<std::int64_t>(2)}}};
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -111,16 +111,13 @@ void test_argmax_2d_x_axis()
             hpx::find_here(), phylanx::ir::node_data<double>(0));
 
     phylanx::execution_tree::primitive p =
-        phylanx::execution_tree::primitives::create_argmax(
-            hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
-        std::move(lhs), std::move(rhs)
-    });
+        phylanx::execution_tree::primitives::create_argmax(hpx::find_here(),
+            std::vector<arg_type>{std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        p.eval();
+    hpx::future<arg_type> f = p.eval();
 
-    auto actual = phylanx::execution_tree::extract_list_value(f.get());
+    auto actual =
+        arg_type{phylanx::execution_tree::extract_list_value(f.get())};
 
     HPX_TEST_EQ(expected, actual);
 }
@@ -129,12 +126,12 @@ void test_argmax_2d_y_axis()
 {
     using arg_type = phylanx::execution_tree::primitive_argument_type;
 
-    blaze::DynamicMatrix<double> m1{ { 1.0, 2.0, 3.0 },{ 4.0, 5.0, 6.0 } };
+    blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
 
-    std::vector<arg_type> expected{
-        arg_type{static_cast<std::int64_t>(1)},
-        arg_type{static_cast<std::int64_t>(1)},
-        arg_type{static_cast<std::int64_t>(1)}};
+    arg_type expected{
+        std::vector<arg_type>{arg_type{static_cast<std::int64_t>(1)},
+            arg_type{static_cast<std::int64_t>(1)},
+            arg_type{static_cast<std::int64_t>(1)}}};
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -145,16 +142,13 @@ void test_argmax_2d_y_axis()
             hpx::find_here(), phylanx::ir::node_data<double>(1));
 
     phylanx::execution_tree::primitive p =
-        phylanx::execution_tree::primitives::create_argmax(
-            hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
-        std::move(lhs), std::move(rhs)
-    });
+        phylanx::execution_tree::primitives::create_argmax(hpx::find_here(),
+            std::vector<arg_type>{std::move(lhs), std::move(rhs)});
 
-    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        p.eval();
+    hpx::future<arg_type> f = p.eval();
 
-    auto actual = phylanx::execution_tree::extract_list_value(f.get());
+    auto actual =
+        arg_type{phylanx::execution_tree::extract_list_value(f.get())};
 
     HPX_TEST_EQ(expected, actual);
 }
