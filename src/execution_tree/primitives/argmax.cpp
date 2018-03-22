@@ -173,8 +173,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::int64_t index = std::distance(it->begin(), local_max);
             result.emplace_back(primitive_argument_type(index));
         }
-        return primitive_argument_type{result};
+        return primitive_argument_type{std::move(result)};
     }
+
     primitive_argument_type argmax::argmax2d_y_axis(arg_type && arg_a) const
     {
         using phylanx::util::matrix_column_iterator;
@@ -191,7 +192,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::int64_t index = std::distance(it->begin(), local_max);
             result.emplace_back(primitive_argument_type(index));
         }
-        return primitive_argument_type{result};
+        return primitive_argument_type{std::move(result)};
     }
 
     primitive_argument_type argmax::argmax2d(args_type && args) const
@@ -253,8 +254,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "dimensions",
                     name_, codename_));
         }
-
-
     }
 
     hpx::future<primitive_argument_type> argmax::eval(

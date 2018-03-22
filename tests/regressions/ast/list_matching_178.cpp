@@ -30,13 +30,11 @@ int main(int argc, char* argv[])
 
     namespace pe = phylanx::execution_tree;
 
-    std::vector<pe::primitive_argument_type> expected = {
-        pe::primitive_argument_type{std::int64_t(1)},
-        pe::primitive_argument_type{std::int64_t(2)}
-    };
+    pe::primitive_argument_type expected =
+        pe::primitive_argument_type{std::vector<pe::primitive_argument_type>{
+            pe::primitive_argument_type{std::int64_t(1)},
+            pe::primitive_argument_type{std::int64_t(2)}}};
 
     HPX_TEST(expected == result);
     return hpx::util::report_errors();
 }
-
-
