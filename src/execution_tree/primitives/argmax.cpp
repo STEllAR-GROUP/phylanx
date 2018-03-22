@@ -173,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::int64_t index = std::distance(it->begin(), local_max);
             result.emplace_back(primitive_argument_type(index));
         }
-        return result;
+        return primitive_argument_type{result};
     }
     primitive_argument_type argmax::argmax2d_y_axis(arg_type && arg_a) const
     {
@@ -191,7 +191,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::int64_t index = std::distance(it->begin(), local_max);
             result.emplace_back(primitive_argument_type(index));
         }
-        return result;
+        return primitive_argument_type{result};
     }
 
     primitive_argument_type argmax::argmax2d(args_type && args) const

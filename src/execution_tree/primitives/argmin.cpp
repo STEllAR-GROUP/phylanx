@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::int64_t index = std::distance(it->begin(), local_min);
             result.emplace_back(primitive_argument_type(index));
         }
-        return result;
+        return primitive_argument_type{result};
     }
     primitive_argument_type argmin::argmin2d_y_axis(arg_type && arg_a) const
     {
@@ -192,7 +192,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::int64_t index = std::distance(it->begin(), local_min);
             result.emplace_back(primitive_argument_type(index));
         }
-        return result;
+        return primitive_argument_type{result};
     }
 
     primitive_argument_type argmin::argmin2d(args_type && args) const
@@ -254,8 +254,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "dimensions",
                     name_, codename_));
         }
-
-
     }
 
     hpx::future<primitive_argument_type> argmin::eval(

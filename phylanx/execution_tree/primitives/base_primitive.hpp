@@ -228,12 +228,21 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{std::move(val)}
         {}
 
-        primitive_argument_type(std::vector<primitive_argument_type> const& val)
-          : argument_value_type{
-                ir::range{val}}
+        explicit primitive_argument_type(
+            std::vector<primitive_argument_type> const& val)
+          : argument_value_type{ir::range{val}}
         {}
-        primitive_argument_type(std::vector<primitive_argument_type>&& val)
+
+        explicit primitive_argument_type(
+            std::vector<primitive_argument_type>&& val)
           : argument_value_type{ir::range{std::move(val)}}
+        {}
+
+        primitive_argument_type(ir::range const& val)
+          : argument_value_type{val}
+        {}
+        primitive_argument_type(ir::range&& val)
+          : argument_value_type{std::move(val)}
         {}
 
         primitive_argument_type(argument_value_type const& val)
