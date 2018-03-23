@@ -46,11 +46,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
-        std::map<std::string, double (*)(const double&)> map0d = {
-            {"exp", [](const double& m) -> double { return blaze::exp(m); }},
-            {"log", [](const double& m) -> double { return blaze::log(m); }},
-            {"sin", [](const double& m) -> double { return blaze::sin(m); }},
-            {"sinh", [](const double& m) -> double { return blaze::sinh(m); }}};
+        //0d used global reference
+        std::map<std::string, double (*)(const double&&)> map0d = {
+            {"exp", [](const double&& m) -> double { return blaze::exp(m); }},
+            {"log", [](const double&& m) -> double { return blaze::log(m); }},
+            {"sin", [](const double&& m) -> double { return blaze::sin(m); }},
+            {"sinh", [](const double&& m) -> double { return blaze::sinh(m); }}};
         std::map<std::string,
             blaze::DynamicVector<double> (*)(
                 const blaze::DynamicVector<double>&)>
@@ -106,7 +107,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type generic_operation::generic0d(operands_type && ops)
         const
     {
-        ops[0] = func0d_(ops[0].scalar());
+        //0d used move semantics
+        ops[0] = func0d_(std::move(ops[0].scalar()));
         return primitive_argument_type{std::move(ops[0])};
     }
 

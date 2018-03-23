@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type generic0d(operands_type&& ops) const;
         primitive_argument_type generic1d(operands_type&& ops) const;
         primitive_argument_type genericxd(operands_type&& ops) const;
-        double (*func0d_)(const double&);
+        double (*func0d_)(const double&&);
         blaze::DynamicVector<double> (*func1d_)(
             const blaze::DynamicVector<double>&);
         blaze::DynamicMatrix<double> (*func2d_)(
