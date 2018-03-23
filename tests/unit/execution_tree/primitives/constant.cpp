@@ -1,7 +1,7 @@
-//   Copyright (c) 2017 Hartmut Kaiser
+// Copyright (c) 2017 Hartmut Kaiser
 //
-//   Distributed under the Boost Software License, Version 1.0. (See accompanying
-//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 
 #include <phylanx/phylanx.hpp>
@@ -68,14 +68,12 @@ void test_constant_2d()
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
     phylanx::execution_tree::primitive const_ =
-        phylanx::execution_tree::primitives::create_constant(
-            hpx::find_here(),
+        phylanx::execution_tree::primitives::create_constant(hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(val),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    std::int64_t(105), std::int64_t(101)
-                }
-            });
+                phylanx::execution_tree::primitive_argument_type{std::vector<
+                    phylanx::execution_tree::primitive_argument_type>{
+                    std::int64_t(105), std::int64_t(101)}}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         const_.eval();

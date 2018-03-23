@@ -7,6 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/or_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -379,13 +380,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     or_.name_, or_.codename_));
         }
 
-        primitive_argument_type operator()(
-            phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>
-                lhs,
-            phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>
-                rhs) const
+        primitive_argument_type operator()(ir::range&& lhs, ir::range&& rhs) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",

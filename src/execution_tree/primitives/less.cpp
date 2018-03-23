@@ -6,6 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/less.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -434,11 +435,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<bool>{lhs < rhs});
         }
 
-        primitive_argument_type operator()(
-            util::recursive_wrapper<
-                std::vector<primitive_argument_type>>&&,
-            util::recursive_wrapper<
-                std::vector<primitive_argument_type>>&&) const
+        primitive_argument_type operator()(ir::range&&, ir::range&&) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",

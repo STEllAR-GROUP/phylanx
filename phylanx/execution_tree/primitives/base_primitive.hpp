@@ -1,8 +1,8 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
-//  Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2018 Parsa Amini
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_PRIMITIVES_BASE_PRIMITIVE_SEP_05_2017_1102AM)
 #define PHYLANX_PRIMITIVES_BASE_PRIMITIVE_SEP_05_2017_1102AM
@@ -10,6 +10,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/util.hpp>
 #include <hpx/include/serialization.hpp>
@@ -141,7 +142,7 @@ namespace phylanx { namespace execution_tree
           , phylanx::ir::node_data<double>
           , primitive
           , std::vector<ast::expression>
-          , phylanx::util::recursive_wrapper<std::vector<primitive_argument_type>>
+          , ir::range
         >;
 
     struct primitive_argument_type : argument_value_type
@@ -227,13 +228,21 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{std::move(val)}
         {}
 
-        primitive_argument_type(std::vector<primitive_argument_type> const& val)
-          : argument_value_type{phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>{val}}
+        explicit primitive_argument_type(
+            std::vector<primitive_argument_type> const& val)
+          : argument_value_type{ir::range{val}}
         {}
-        primitive_argument_type(std::vector<primitive_argument_type>&& val)
-          : argument_value_type{phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>{std::move(val)}}
+
+        explicit primitive_argument_type(
+            std::vector<primitive_argument_type>&& val)
+          : argument_value_type{ir::range{std::move(val)}}
+        {}
+
+        primitive_argument_type(ir::range const& val)
+          : argument_value_type{val}
+        {}
+        primitive_argument_type(ir::range&& val)
+          : argument_value_type{std::move(val)}
         {}
 
         primitive_argument_type(argument_value_type const& val)
