@@ -125,8 +125,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (lhs.num_dimensions() != 0)
             {
-                return and_.and_all(ir::node_data<bool>{std::move(lhs)},
-                    operand_type{std::move(rhs)});
+                return and_.and_all(std::move(lhs),
+                                    ir::node_data<double>{std::move(rhs)});
             }
             return primitive_argument_type(
                 ir::node_data<bool>{(lhs[0] != 0) & (rhs != 0)});
@@ -137,8 +137,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (rhs.num_dimensions() != 0)
             {
-                return and_.and_all(operand_type{std::move(lhs)},
-                    ir::node_data<bool>{std::move(rhs)});
+                return and_.and_all(ir::node_data<double>{std::move(lhs)},
+                    std::move(rhs));
             }
             return primitive_argument_type(
                 ir::node_data<bool>{(rhs[0] != 0) & (lhs != 0)});
@@ -148,8 +148,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<double>&& lhs,
             ir::node_data<double>&& rhs) const
         {
-            return and_.and_all(ir::node_data<bool>{std::move(lhs)},
-                ir::node_data<bool>{std::move(rhs)});
+            return and_.and_all(std::move(lhs),
+                std::move(rhs));
         }
 
         primitive_argument_type operator()(
@@ -185,8 +185,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type and_operation::and0d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and0d1d(T&& lhs, T&& rhs) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -197,8 +197,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(rhs)});
     }
 
-    primitive_argument_type and_operation::and0d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and0d2d(T&& lhs, T&& rhs) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -209,8 +209,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(rhs)});
     }
 
-    primitive_argument_type and_operation::and0d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and0d(T&& lhs, T&& rhs) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch (rhs_dims)
@@ -234,8 +234,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type and_operation::and1d0d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and1d0d(T&& lhs, T&& rhs) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -246,8 +246,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(lhs)});
     }
 
-    primitive_argument_type and_operation::and1d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and1d1d(T&& lhs, T&& rhs) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -270,8 +270,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(lhs)});
     }
 
-    primitive_argument_type and_operation::and1d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and1d2d(T&& lhs, T&& rhs) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         auto rhs_size = rhs.dimensions();
@@ -297,8 +297,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(rhs)});
     }
 
-    primitive_argument_type and_operation::and1d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and1d(T&& lhs, T&& rhs) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch (rhs_dims)
@@ -322,8 +322,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type and_operation::and2d0d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and2d0d(T&& lhs, T&& rhs) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -337,8 +337,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(lhs)});
     }
 
-    primitive_argument_type and_operation::and2d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and2d1d(T&& lhs, T&& rhs) const
     {
         std::size_t rhs_size = rhs.dimension(0);
         auto lhs_size = lhs.dimensions();
@@ -364,8 +364,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(lhs)});
     }
 
-    primitive_argument_type and_operation::and2d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and2d2d(T&& lhs, T&& rhs) const
     {
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
@@ -388,8 +388,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<bool>{std::move(lhs)});
     }
 
-    primitive_argument_type and_operation::and2d(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and2d(T&& lhs, T&& rhs) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch (rhs_dims)
@@ -413,8 +413,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type and_operation::and_all(
-        operand_type&& lhs, operand_type&& rhs) const
+    template <typename T>
+    primitive_argument_type and_operation::and_all(T&& lhs, T&& rhs) const
     {
         std::size_t lhs_dims = lhs.num_dimensions();
         switch (lhs_dims)

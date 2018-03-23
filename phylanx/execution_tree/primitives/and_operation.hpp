@@ -45,41 +45,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         struct visit_and;
 
-        primitive_argument_type and0d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and0d1d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and0d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and0d2d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and0d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and1d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and1d0d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and1d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and1d1d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and1d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and1d2d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and1d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and2d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and2d0d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and2d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and2d1d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and2d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and2d2d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and2d(T&& lhs, T&& rhs) const;
 
-        primitive_argument_type and_all(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type and_all(T&& lhs, T&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_and_operation(hpx::id_type const& locality,
