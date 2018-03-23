@@ -42,50 +42,51 @@ char const* const fib_code = R"(block(
     fib_test
 ))";
 
-std::map<std::string, std::vector<std::size_t>> expected_counts =
+std::map<std::string, std::size_t> expected_counts =
 {
-    { "access-variable$0", { 9, 0, } },
-    { "access-variable$1", { 0, 0, } },
-    { "access-variable$2", { 8, 0, } },
-    { "access-variable$3", { 8, 0, } },
-    { "access-variable$4", { 0, 0, } },
-    { "access-variable$5", { 8, 0, } },
-    { "access-variable$6", { 0, 0, } },
-    { "access-variable$7", { 8, 0, } },
-    { "access-variable$8", { 0, 0, } },
-    { "access-variable$9", { 8, 0, } },
-    { "access-variable$10", { 0, 0, } },
-    { "access-variable$11", { 8, 0, } },
-    { "access-variable$12", { 1, 0, } },
-    { "access-variable$13", { 1, 0, } },
-    { "__add$0", { 8, 0, } },
-    { "__add$1", { 8, 0, } },
-    { "block$0", { 0, 1, } },
-    { "block$1", { 0, 1, } },
-    { "block$2", { 8, 0, } },
-    { "define-variable$0", { 2, 0, } },
-    { "define-variable$1", { 9, 0, } },
-    { "define-variable$2", { 10, 0, } },
-    { "define-variable$3", { 17, 0, } },
-    { "define-variable$4", { 9, 0, } },
-    { "define-variable$5", { 18, 0, } },
-    { "__lt$0", { 9, 0, } },
-    { "store$0", { 8, 0, } },
-    { "store$1", { 8, 0, } },
-    { "store$2", { 8, 0, } },
-    { "store$3", { 8, 0, } },
-    { "store$4", { 8, 0, } },
-    { "while$0", { 1, 0, } },
-    { "variable$0", { 0, 2, } },
-    { "variable$1", { 0, 9, } },
-    { "variable$2", { 0, 10, } },
-    { "variable$3", { 0, 17, } },
-    { "variable$4", { 0, 9, } },
-    { "variable$5", { 0, 18, } },
+    { "access-variable$0", 9 },
+    { "access-variable$1", 0 },
+    { "access-variable$2", 8 },
+    { "access-variable$3", 8 },
+    { "access-variable$4", 0 },
+    { "access-variable$5", 8 },
+    { "access-variable$6", 0 },
+    { "access-variable$7", 8 },
+    { "access-variable$8", 0 },
+    { "access-variable$9", 8 },
+    { "access-variable$10", 0 },
+    { "access-variable$11", 8 },
+    { "access-variable$12", 1 },
+    { "access-variable$13", 1 },
+    { "__add$0", 8 },
+    { "__add$1", 8 },
+    { "block$0", 1 },
+    { "block$1", 1 },
+    { "block$2", 8 },
+    { "define-variable$0", 2 },
+    { "define-variable$1", 9 },
+    { "define-variable$2", 10 },
+    { "define-variable$3", 17 },
+    { "define-variable$4", 9 },
+    { "define-variable$5", 18 },
+    { "__lt$0", 9 },
+    { "store$0", 8 },
+    { "store$1", 8 },
+    { "store$2", 8 },
+    { "store$3", 8 },
+    { "store$4", 8 },
+    { "while$0", 1 },
+    { "variable$0", 2 },
+    { "variable$1", 9 },
+    { "variable$2", 10 },
+    { "variable$3", 17 },
+    { "variable$4", 9 },
+    { "variable$5", 18 },
 };
 
 const std::vector<std::string> performance_counter_name_last_part{
-    "count/eval", "time/eval", "count/eval_direct", "time/eval_direct"};
+    "count/eval", "time/eval", "eval_direct"
+};
 
 int main()
 {
@@ -119,14 +120,14 @@ int main()
 
         std::string const expected_key(
             tags.primitive + "$" + std::to_string(tags.sequence_number));
-        auto const& expected_values = expected_counts[expected_key];
+        auto expected_value = expected_counts[expected_key];
 
         HPX_TEST_EQ(
             entry.second.size(), performance_counter_name_last_part.size());
-        HPX_TEST_EQ(entry.second[0], expected_values[0]);
-        HPX_TEST_EQ(entry.second[1] != 0, expected_values[0] != 0);
-        HPX_TEST_EQ(entry.second[2], expected_values[1]);
-        HPX_TEST_EQ(entry.second[3] != 0, expected_values[1] != 0);
+        HPX_TEST_EQ(entry.second[0], expected_value);
+        HPX_TEST_EQ(entry.second[1] != 0, expected_value != 0);
+        HPX_TEST(entry.second[2] == -1 || entry.second[2] == 0 ||
+            entry.second[2] == 1);
     }
 
     return hpx::util::report_errors();

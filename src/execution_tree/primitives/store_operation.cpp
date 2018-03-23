@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     store_operation::store_operation(
             std::vector<primitive_argument_type> && operands,
             std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename)
+      : primitive_component_base(std::move(operands), name, codename, true)
     {}
 
     ///////////////////////////////////////////////////////////////////////////

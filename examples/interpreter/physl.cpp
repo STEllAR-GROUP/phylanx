@@ -66,8 +66,7 @@ read_arguments(std::vector<std::string> const& args, std::size_t first_index)
 void print_performance_counter_data_csv()
 {
     // CSV Header
-    std::cout << "primitive_instance,display_name,count,time,direct_count,"
-                 "direct_time\n";
+    std::cout << "primitive_instance,display_name,count,time,eval_direct\n";
 
     // List of existing primitive instances
     std::vector<std::string> existing_primitive_instances;
@@ -81,7 +80,8 @@ void print_performance_counter_data_csv()
 
     // Print performance data
     std::vector<std::string> const counter_names{
-        "count/eval", "time/eval", "count/eval_direct", "time/eval_direct"};
+        "count/eval", "time/eval", "eval_direct"
+    };
 
     for (auto const& entry : phylanx::util::retrieve_counter_data(
              existing_primitive_instances, counter_names))
