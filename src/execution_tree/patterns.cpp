@@ -1,6 +1,6 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  Distributed under the Boost Software License}, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
@@ -13,106 +13,136 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
-    pattern_list const& get_all_known_patterns()
+    namespace detail
     {
-        static pattern_list patterns =
+#define PHYLANX_MATCH_DATA(type)                                               \
+    hpx::util::make_tuple(hpx::util::get<0>(primitives::type::match_data),     \
+        primitives::type::match_data)                                          \
+/**/
+#define PHYLANX_MATCH_DATA_VERBATIM(type)                                      \
+    hpx::util::make_tuple(                                                     \
+        hpx::util::get<0>(primitives::type), primitives::type)                 \
+/**/
+
+        pattern_list get_all_known_patterns()
         {
-            // variadic functions
-            primitives::block_operation::match_data,
-            primitives::column_set_operation::match_data,
-            primitives::column_slicing_operation::match_data,
-            primitives::console_output::match_data,
-            primitives::debug_output::match_data,
-            primitives::hstack_operation::match_data,
-            primitives::make_list::match_data,
-            primitives::map_operation::match_data,
-            primitives::parallel_block_operation::match_data,
-            primitives::row_set_operation::match_data,
-            primitives::row_slicing_operation::match_data,
-            primitives::set_operation::match_data,
-            primitives::slicing_operation::match_data,
-            primitives::string_output::match_data,
-            primitives::vstack_operation::match_data,
-            // n-nary functions
-            primitives::if_conditional::match_data,
-            primitives::fold_left_operation::match_data,
-            primitives::fold_right_operation::match_data,
-            primitives::for_operation::match_data,
-            primitives::linearmatrix::match_data,
-            primitives::linspace::match_data,
-            // binary functions
-            primitives::apply::match_data,
-            primitives::cross_operation::match_data,
-            primitives::diag_operation::match_data,
-            primitives::dot_operation::match_data,
-            primitives::file_read::match_data,
-            primitives::file_write::match_data,
-            primitives::file_read_csv::match_data,
-            primitives::file_write_csv::match_data,
-            primitives::filter_operation::match_data,
-            primitives::while_operation::match_data,
+            pattern_list patterns =
+            {
+                // variadic functions
+                PHYLANX_MATCH_DATA(block_operation),
+                PHYLANX_MATCH_DATA(column_set_operation),
+                PHYLANX_MATCH_DATA(column_slicing_operation),
+                PHYLANX_MATCH_DATA(console_output),
+                PHYLANX_MATCH_DATA(debug_output),
+                PHYLANX_MATCH_DATA(hstack_operation),
+                PHYLANX_MATCH_DATA(make_list),
+                PHYLANX_MATCH_DATA(map_operation),
+                PHYLANX_MATCH_DATA(parallel_block_operation),
+                PHYLANX_MATCH_DATA(row_set_operation),
+                PHYLANX_MATCH_DATA(row_slicing_operation),
+                PHYLANX_MATCH_DATA(set_operation),
+                PHYLANX_MATCH_DATA(slicing_operation),
+                PHYLANX_MATCH_DATA(string_output),
+                PHYLANX_MATCH_DATA(vstack_operation),
+                // n-nary functions
+                PHYLANX_MATCH_DATA(if_conditional),
+                PHYLANX_MATCH_DATA(fold_left_operation),
+                PHYLANX_MATCH_DATA(fold_right_operation),
+                PHYLANX_MATCH_DATA(for_operation),
+                PHYLANX_MATCH_DATA(linearmatrix),
+                PHYLANX_MATCH_DATA(linspace),
+                // binary functions
+                PHYLANX_MATCH_DATA(apply),
+                PHYLANX_MATCH_DATA(cross_operation),
+                PHYLANX_MATCH_DATA(diag_operation),
+                PHYLANX_MATCH_DATA(dot_operation),
+                PHYLANX_MATCH_DATA(file_read),
+                PHYLANX_MATCH_DATA(file_write),
+                PHYLANX_MATCH_DATA(file_read_csv),
+                PHYLANX_MATCH_DATA(file_write_csv),
+                PHYLANX_MATCH_DATA(filter_operation),
+                PHYLANX_MATCH_DATA(while_operation),
 #if defined(PHYLANX_HAVE_HIGHFIVE)
-            primitives::file_read_hdf5::match_data,
-            primitives::file_write_hdf5::match_data,
+                PHYLANX_MATCH_DATA(file_read_hdf5),
+                PHYLANX_MATCH_DATA(file_write_hdf5),
 #endif
 
-            // unary functions
-            primitives::all_operation::match_data,
-            primitives::any_operation::match_data,
-            primitives::argmin::match_data,
-            primitives::argmax::match_data,
-            primitives::constant::match_data,
-            primitives::determinant::match_data,
-            primitives::enable_tracing::match_data,
-            primitives::exponential_operation::match_data,
-            primitives::extract_shape::match_data,
-            primitives::identity::match_data,
-            primitives::inverse_operation::match_data,
-            primitives::mean_operation::match_data,
-            primitives::gradient_operation::match_data,
-            primitives::power_operation::match_data,
-            primitives::random::match_data,
-            primitives::shuffle_operation::match_data,
-            primitives::square_root_operation::match_data,
-            primitives::sum_operation::match_data,
-            primitives::transpose_operation::match_data,
-            // variadic operations
-            primitives::add_operation::match_data,
-            primitives::and_operation::match_data,
-            primitives::div_operation::match_data,
-            primitives::add_dimension::match_data,
-            primitives::mul_operation::match_data,
-            primitives::or_operation::match_data,
-            primitives::sub_operation::match_data,
-            // binary operations
-            primitives::equal::match_data,
-            primitives::greater::match_data,
-            primitives::greater_equal::match_data,
-            primitives::less::match_data,
-            primitives::less_equal::match_data,
-            primitives::not_equal::match_data,
-            primitives::store_operation::match_data,
-            // unary operations
-            primitives::unary_minus_operation::match_data,
-            primitives::unary_not_operation::match_data,
+                // unary functions
+                PHYLANX_MATCH_DATA(all_operation),
+                PHYLANX_MATCH_DATA(any_operation),
+                PHYLANX_MATCH_DATA(argmin),
+                PHYLANX_MATCH_DATA(argmax),
+                PHYLANX_MATCH_DATA(constant),
+                PHYLANX_MATCH_DATA(determinant),
+                PHYLANX_MATCH_DATA(enable_tracing),
+                PHYLANX_MATCH_DATA(exponential_operation),
+                PHYLANX_MATCH_DATA(extract_shape),
+                PHYLANX_MATCH_DATA(gradient_operation),
+                PHYLANX_MATCH_DATA(identity),
+                PHYLANX_MATCH_DATA(inverse_operation),
+                PHYLANX_MATCH_DATA(mean_operation),
+                PHYLANX_MATCH_DATA(power_operation),
+                PHYLANX_MATCH_DATA(random),
+                PHYLANX_MATCH_DATA(shuffle_operation),
+                PHYLANX_MATCH_DATA(square_root_operation),
+                PHYLANX_MATCH_DATA(sum_operation),
+                PHYLANX_MATCH_DATA(transpose_operation),
+                // variadic operations
+                PHYLANX_MATCH_DATA(add_operation),
+                PHYLANX_MATCH_DATA(and_operation),
+                PHYLANX_MATCH_DATA(div_operation),
+                PHYLANX_MATCH_DATA(add_dimension),
+                PHYLANX_MATCH_DATA(mul_operation),
+                PHYLANX_MATCH_DATA(or_operation),
+                PHYLANX_MATCH_DATA(sub_operation),
+                // binary operations
+                PHYLANX_MATCH_DATA(equal),
+                PHYLANX_MATCH_DATA(greater),
+                PHYLANX_MATCH_DATA(greater_equal),
+                PHYLANX_MATCH_DATA(less),
+                PHYLANX_MATCH_DATA(less_equal),
+                PHYLANX_MATCH_DATA(not_equal),
+                PHYLANX_MATCH_DATA(store_operation),
+                // unary operations
+                PHYLANX_MATCH_DATA(unary_minus_operation),
+                PHYLANX_MATCH_DATA(unary_not_operation),
+                //
+                // compiler-specific (internal) primitives
+                //
+                PHYLANX_MATCH_DATA(access_argument),
+                PHYLANX_MATCH_DATA(function_reference),
+                PHYLANX_MATCH_DATA(wrapped_function),
+                PHYLANX_MATCH_DATA(define_function),
+                PHYLANX_MATCH_DATA_VERBATIM(define_function::match_data_lambda),
+
+                PHYLANX_MATCH_DATA(variable),
+                PHYLANX_MATCH_DATA(wrapped_variable),
+                PHYLANX_MATCH_DATA(define_variable),
+                PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data_define)
+            };
+
+            std::string car_cdr_name("car_cdr");
+            for (auto const& pattern : primitives::car_cdr_operation::match_data)
+            {
+                patterns.push_back(hpx::util::make_tuple(car_cdr_name, pattern));
+            }
+
             // generic functions
-            primitives::get_seed_match_data,
-            primitives::set_seed_match_data,
-            //
-            // compiler-specific (internal) primitives
-            //
-            primitives::access_argument::match_data,
-            primitives::function_reference::match_data,
-            primitives::wrapped_function::match_data,
-            primitives::define_function::match_data,
-            primitives::define_function::match_data_lambda,
+            patterns.push_back(hpx::util::make_tuple(
+                "get_seed_action", primitives::get_seed_match_data));
+            patterns.push_back(hpx::util::make_tuple(
+                "set_seed_action", primitives::set_seed_match_data));
 
-            primitives::variable::match_data,
-            primitives::wrapped_variable::match_data,
-            primitives::define_variable::match_data,
-            primitives::define_variable::match_data_define
-        };
+            return patterns;
+        }
 
+#undef PHYLANX_MATCH_DATA_VERBATIM
+#undef PHYLANX_MATCH_DATA
+    }
+
+    pattern_list const& get_all_known_patterns()
+    {
+        static pattern_list patterns = detail::get_all_known_patterns();
         return patterns;
     }
 }}
