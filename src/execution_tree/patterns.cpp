@@ -77,7 +77,6 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(enable_tracing),
                 PHYLANX_MATCH_DATA(exponential_operation),
                 PHYLANX_MATCH_DATA(extract_shape),
-                PHYLANX_MATCH_DATA(gradient_operation),
                 PHYLANX_MATCH_DATA(identity),
                 PHYLANX_MATCH_DATA(inverse_operation),
                 PHYLANX_MATCH_DATA(mean_operation),

@@ -274,7 +274,8 @@ namespace phylanx { namespace performance_counters
         for (auto const& pattern : et::get_all_known_patterns())
         {
             // The name of the primitive
-            std::string const& name = hpx::util::get<0>(pattern);
+            std::string const& name =
+                hpx::util::get<0>(hpx::util::get<1>(pattern));
 
             // Register a primitive time performance counters
             hpx::performance_counters::install_counter_type(

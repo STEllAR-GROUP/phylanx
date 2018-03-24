@@ -37,9 +37,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& operands,
             std::vector<primitive_argument_type> const& args) const;
-
-    private:
-        struct iteration_for;
     };
 
     PHYLANX_EXPORT primitive create_filter_operation(hpx::id_type const& locality,

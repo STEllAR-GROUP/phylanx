@@ -122,7 +122,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base",
-            "store function should only be called for the store_primitive");
+            generate_error_message(
+                "store function should only be called for the primitives that "
+                    "support it (e.g. variables)"));
     }
 
     // extract_topology_action
@@ -168,8 +170,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base",
-            "set_body function should only be called for the "
-                "define_function_primitive");
+            generate_error_message(
+                "set_body function should only be called for primitivces that "
+                    "support it (e.g. the define_function_primitive"));
     }
 
     std::string primitive_component_base::generate_error_message(
@@ -206,24 +209,30 @@ namespace phylanx { namespace execution_tree
     {
         if (!name.empty())
         {
-            auto parts = compiler::parse_primitive_name(name);
+            compiler::primitive_name_parts parts;
 
-            std::string line_col;
-            if (parts.tag1 != -1 && parts.tag2 != -1)
+            if (compiler::parse_primitive_name(name, parts))
             {
-                line_col = hpx::util::format("(%1%, %2%)", parts.tag1, parts.tag2);
+                std::string line_col;
+                if (parts.tag1 != -1 && parts.tag2 != -1)
+                {
+                    line_col = hpx::util::format("(%1%, %2%)", parts.tag1, parts.tag2);
+                }
+
+                if (!parts.instance.empty())
+                {
+                    return hpx::util::format("%1%%2%: %3%$%4%:: %5%",
+                        codename.empty() ? "<unknown>" : codename,
+                        line_col, parts.primitive, parts.instance, msg);
+                }
+
+                return hpx::util::format("%1%%2%: %3%:: %4%",
+                    codename.empty() ? "<unknown>" : codename, line_col,
+                    parts.primitive, msg);
             }
 
-            if (!parts.instance.empty())
-            {
-                return hpx::util::format("%1%%2%: %3%$%4%:: %5%",
-                    codename.empty() ? "<unknown>" : codename,
-                    line_col, parts.primitive, parts.instance, msg);
-            }
-
-            return hpx::util::format("%1%%2%: %3%:: %4%",
-                codename.empty() ? "<unknown>" : codename, line_col,
-                parts.primitive, msg);
+            return hpx::util::format("%1%: %2%:: %3%",
+                codename.empty() ? "<unknown>" : codename, name, msg);
         }
 
         return hpx::util::format(

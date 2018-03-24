@@ -428,6 +428,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT bool is_literal_operand(primitive_argument_type const& val);
+
     // Extract a ir::node_data<double> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<double> extract_numeric_value(
@@ -439,6 +441,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT bool is_numeric_value(primitive_argument_type const& val);
+
     // Extract a ir::node_data<bool> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<bool> extract_boolean_data(
@@ -449,6 +453,9 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT bool is_boolean_data_operand(
+        primitive_argument_type const& val);
 
     template <typename T>
     ir::node_data<T> extract_node_data(
@@ -507,6 +514,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
+
     // Extract a boolean type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::uint8_t extract_boolean_value(
@@ -517,6 +526,8 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT bool is_boolean_operand(primitive_argument_type const& val);
 
     // Extract a std::string type from a given primitive_argument_type,
     // throw if it doesn't hold one.
@@ -529,6 +540,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT bool is_string_operand(primitive_argument_type const& val);
+
     // Extract an AST type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::vector<ast::expression> extract_ast_value(
@@ -540,8 +553,10 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT bool is_ast_operand(primitive_argument_type const& val);
+
     // Extract a list type from a given primitive_argument_type,
-    // throw if it doesn't hold one.
+    // Create a list from argument if it does not hold one.
     PHYLANX_EXPORT std::vector<primitive_argument_type> extract_list_value(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -550,6 +565,22 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT bool is_list_operand(primitive_argument_type const& val);
+
+    // Extract a list type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::vector<primitive_argument_type>
+    extract_list_value_strict(primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::vector<primitive_argument_type>
+    extract_list_value_strict(primitive_argument_type&& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT bool is_list_operand_strict(
+        primitive_argument_type const& val);
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a primitive from a given primitive_argument_type, throw

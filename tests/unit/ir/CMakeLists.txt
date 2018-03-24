@@ -5,6 +5,7 @@
 
 set(tests
     node_data
+    range_iterator
    )
 
 foreach(test ${tests})

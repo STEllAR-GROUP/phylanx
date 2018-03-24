@@ -63,11 +63,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 for (auto const& pattern : get_all_known_patterns())
                 {
-                    if (hpx::util::get<3>(pattern) != nullptr)
+                    auto const& p = hpx::util::get<1>(pattern);
+                    if (hpx::util::get<3>(p) != nullptr)
                     {
                         instance_.insert(factories_map_type::value_type(
                             hpx::util::get<0>(pattern),
-                            hpx::util::get<3>(pattern)));
+                            hpx::util::get<3>(p)));
                     }
                 }
             }

@@ -93,6 +93,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
         return data;
     }
 
+    bool parse_primitive_name(std::string const& name, primitive_name_parts& parts)
+    {
+        auto begin = name.begin();
+        bool result = boost::spirit::qi::parse(begin, name.end(),
+            detail::primitive_name_parser<std::string::const_iterator>(), parts);
+
+        return result && begin != name.end();
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // compose a new primitive name from the given parts
     std::string compose_primitive_name(primitive_name_parts const& parts)
