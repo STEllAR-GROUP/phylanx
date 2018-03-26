@@ -744,6 +744,13 @@ namespace phylanx { namespace ir
     template <typename T>
     typename node_data<T>::custom_storage2d_type node_data<T>::matrix() &&
     {
+        custom_storage2d_type* cm =
+            util::get_if<custom_storage2d_type>(&data_);
+        if (cm != nullptr)
+        {
+            return *cm;
+        }
+
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::matrix()",
             "node_data::matrix() shouldn't be called on an rvalue");
@@ -803,7 +810,9 @@ namespace phylanx { namespace ir
         custom_storage1d_type* cv =
             util::get_if<custom_storage1d_type>(&data_);
         if (cv != nullptr)
+        {
             return *cv;
+        }
 
         storage1d_type* v = util::get_if<storage1d_type>(&data_);
         if (v != nullptr)
@@ -842,6 +851,13 @@ namespace phylanx { namespace ir
     template <typename T>
     typename node_data<T>::custom_storage1d_type node_data<T>::vector() &&
     {
+        custom_storage1d_type* cv =
+            util::get_if<custom_storage1d_type>(&data_);
+        if (cv != nullptr)
+        {
+            return *cv;
+        }
+
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::vector()",
             "node_data::vector shouldn't be called on an rvalue");

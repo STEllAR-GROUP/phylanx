@@ -14,7 +14,7 @@ dx = 1.0
 et = phylanx.execution_tree
 var = et.var(np.linspace(x0, (nx - 1) * dx, nx))
 r = var.eval()
-assert isinstance(r, list)
+assert isinstance(r, np.ndarray)
 assert len(r) == nx
 sum2 = 0
 for i in range(11):
@@ -29,7 +29,7 @@ for i in range(len(va)):
 
 # Create a vector that's all zeros
 r = et.var(np.zeros(nx)).eval()
-assert isinstance(r, list)
+assert isinstance(r, np.ndarray)
 assert len(r) == nx
 for i in range(11):
     assert 0 == r[i]
@@ -38,7 +38,7 @@ for i in range(11):
 nx = 5
 ny = 4
 m = et.var(np.zeros((nx, ny))).eval()
-assert isinstance(m, type([[]]))
+assert isinstance(m, np.ndarray)
 assert len(m) == nx
 assert len(m[1]) == ny
 for i in range(nx):
