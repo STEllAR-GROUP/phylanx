@@ -11,6 +11,7 @@
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
 
+#include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/include/serialization.hpp>
 
@@ -104,10 +105,11 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const;
 
-        PHYLANX_EXPORT primitive_argument_type eval_direct() const;
-        PHYLANX_EXPORT primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval(
+            hpx::launch::sync_policy) const;
+        PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
             std::vector<primitive_argument_type> && args) const;
-        PHYLANX_EXPORT primitive_argument_type eval_direct(
+        PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
             std::vector<primitive_argument_type> const& args) const;
 
         PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type);

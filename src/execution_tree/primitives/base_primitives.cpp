@@ -14,6 +14,7 @@
 
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 #include <hpx/util/logging.hpp>
 
 #include <cstdint>
@@ -129,25 +130,20 @@ namespace phylanx { namespace execution_tree
         return eval(params);
     }
 
-    primitive_argument_type primitive::eval_direct(
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         std::vector<primitive_argument_type> const& params) const
     {
-        using action_type = primitives::primitive_component::eval_direct_action;
-        return detail::trace("eval_direct", *this,
-            action_type()(this->base_type::get_id(), params));
+        return eval(params).get();
     }
-    primitive_argument_type primitive::eval_direct(
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         std::vector<primitive_argument_type> && params) const
     {
-        using action_type = primitives::primitive_component::eval_direct_action;
-        return detail::trace("eval_direct", *this,
-            action_type()(this->base_type::get_id(), std::move(params)));
+        return eval(std::move(params)).get();
     }
 
-    primitive_argument_type primitive::eval_direct() const
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy) const
     {
-        static std::vector<primitive_argument_type> params;
-        return eval_direct(params);
+        return eval().get();
     }
 
     hpx::future<void> primitive::store(primitive_argument_type data)
@@ -1598,8 +1594,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(val, name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(val, name, codename));
+        }
+        return hpx::make_ready_future(val);
     }
 
     hpx::future<primitive_argument_type> value_operand(
@@ -1617,8 +1617,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(val, name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(val, name, codename));
+        }
+        return hpx::make_ready_future(val);
     }
 
     hpx::future<primitive_argument_type> value_operand(
@@ -1636,9 +1640,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(
-            extract_ref_value(std::move(val), name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(std::move(val), name, codename));
+        }
+        return hpx::make_ready_future(std::move(val));
     }
 
     hpx::future<primitive_argument_type> value_operand(
@@ -1656,9 +1663,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(
-            extract_ref_value(std::move(val), name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(std::move(val), name, codename));
+        }
+        return hpx::make_ready_future(std::move(val));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1670,11 +1680,15 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args), name, codename);
+            return extract_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(val, name, codename);
+        if (valid(val))
+        {
+            return extract_value(val, name, codename);
+        }
+        return val;
     }
 
     primitive_argument_type value_operand_sync(
@@ -1686,11 +1700,14 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             return extract_value(
-                p->eval_direct(std::move(args)), name, codename);
+                p->eval(hpx::launch::sync, std::move(args)), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(val, name, codename);
+        if (valid(val))
+        {
+            return extract_value(val, name, codename);
+        }
+        return val;
     }
 
     primitive_argument_type value_operand_sync(
@@ -1701,11 +1718,15 @@ namespace phylanx { namespace execution_tree
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args), name, codename);
+            return extract_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(std::move(val), name, codename);
+        if (valid(val))
+        {
+            return extract_value(std::move(val), name, codename);
+        }
+        return std::move(val);
     }
 
     primitive_argument_type value_operand_sync(
@@ -1717,11 +1738,14 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             return extract_value(
-                p->eval_direct(std::move(args)), name, codename);
+                p->eval(hpx::launch::sync, std::move(args)), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(std::move(val), name, codename);
+        if (valid(val))
+        {
+            return extract_value(std::move(val), name, codename);
+        }
+        return std::move(val);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1733,11 +1757,15 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args), name, codename);
+            return extract_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_ref_value(val, name, codename);
+        if (valid(val))
+        {
+            return extract_ref_value(val, name, codename);
+        }
+        return val;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1830,7 +1858,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_literal_value(p->eval_direct(args), name, codename);
+            return extract_literal_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -1927,7 +1956,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_numeric_value(p->eval_direct(args), name, codename);
+            return extract_numeric_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -1962,7 +1992,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_boolean_value(p->eval_direct(args), name, codename);
+            return extract_boolean_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -1997,7 +2028,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_string_value(p->eval_direct(args), name, codename);
+            return extract_string_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -2032,7 +2064,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_ast_value(p->eval_direct(args), name, codename);
+            return extract_ast_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -2126,7 +2159,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_list_value(p->eval_direct(args), name, codename);
+            return extract_list_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));

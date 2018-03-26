@@ -11,6 +11,8 @@
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/runtime/launch_policy.hpp>
+#include <hpx/runtime/naming_fwd.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -36,16 +38,13 @@ namespace phylanx { namespace execution_tree
 
             primitive_component_base(
                 std::vector<primitive_argument_type>&& params,
-                std::string const& name, std::string const& codename);
+                std::string const& name, std::string const& codename,
+                bool eval_direct = false);
 
             virtual ~primitive_component_base() = default;
 
             // eval_action
             virtual hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& params) const;
-
-            // direct_eval_action
-            virtual primitive_argument_type eval_direct(
                 std::vector<primitive_argument_type> const& params) const;
 
             // store_action
@@ -68,12 +67,14 @@ namespace phylanx { namespace execution_tree
             // helper functions to invoke eval functionalities
             hpx::future<primitive_argument_type> do_eval(
                 std::vector<primitive_argument_type> const& params) const;
-            primitive_argument_type do_eval_direct(
-                std::vector<primitive_argument_type> const& params) const;
 
             // access data for performance counter
-            std::int64_t get_eval_count(bool reset, bool direct) const;
-            std::int64_t get_eval_duration(bool reset, bool direct) const;
+            std::int64_t get_eval_count(bool reset) const;
+            std::int64_t get_eval_duration(bool reset) const;
+            std::int64_t get_direct_execution(bool reset) const;
+
+            // decide whether to execute eval directly
+            hpx::launch select_direct_eval_execution(hpx::launch policy) const;
 
         protected:
             std::string generate_error_message(std::string const& msg) const;
@@ -88,12 +89,10 @@ namespace phylanx { namespace execution_tree
             // Performance counter data
             mutable std::int64_t eval_count_;
             mutable std::int64_t eval_duration_;
-            mutable std::int64_t eval_direct_count_;
-            mutable std::int64_t eval_direct_duration_;
+            mutable std::int64_t execute_directly_;
 
 #if defined(HPX_HAVE_APEX)
             std::string eval_name_;
-            std::string eval_direct_name_;
 #endif
         };
     }

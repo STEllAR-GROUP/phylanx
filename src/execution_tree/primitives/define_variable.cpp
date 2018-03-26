@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return name;
     }
 
-    primitive_argument_type define_variable::eval_direct(
+    hpx::future<primitive_argument_type> define_variable::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         // this proxy was created where the variable should be created on.
@@ -85,20 +85,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive* p = util::get_if<primitive>(&operands_[1]);
             if (p != nullptr)
             {
-                p->eval_direct(args);
+                p->eval(hpx::launch::sync, args);
             }
 
-            return extract_ref_value(operands_[1]);
+            return hpx::make_ready_future(extract_ref_value(operands_[1]));
         }
 
         // just evaluate the expression bound to this name
-        primitive const* p = util::get_if<primitive>(&operands_[1]);
-        if (p != nullptr)
-        {
-            return extract_value(p->eval_direct(args));
-        }
-
-        return extract_ref_value(operands_[1]);
+        return value_operand(operands_[1], args, name_, codename_);
     }
 
     void define_variable::store(primitive_argument_type && val)
