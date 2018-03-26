@@ -757,6 +757,21 @@ namespace phylanx { namespace ir
     }
 
     template <typename T>
+    typename node_data<T>::custom_storage2d_type node_data<T>::matrix() const&&
+    {
+        custom_storage2d_type const* cm =
+            util::get_if<custom_storage2d_type>(&data_);
+        if (cm != nullptr)
+        {
+            return *cm;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::matrix()",
+            "node_data::matrix() shouldn't be called on an rvalue");
+    }
+
+    template <typename T>
     typename node_data<T>::storage1d_type& node_data<T>::vector_non_ref()
     {
         storage1d_type* v = util::get_if<storage1d_type>(&data_);
@@ -852,6 +867,21 @@ namespace phylanx { namespace ir
     typename node_data<T>::custom_storage1d_type node_data<T>::vector() &&
     {
         custom_storage1d_type* cv =
+            util::get_if<custom_storage1d_type>(&data_);
+        if (cv != nullptr)
+        {
+            return *cv;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::vector()",
+            "node_data::vector shouldn't be called on an rvalue");
+    }
+
+    template <typename T>
+    typename node_data<T>::custom_storage1d_type node_data<T>::vector() const&&
+    {
+        custom_storage1d_type const* cv =
             util::get_if<custom_storage1d_type>(&data_);
         if (cv != nullptr)
         {
@@ -974,6 +1004,31 @@ namespace phylanx { namespace ir
 
     /// Return a new instance of node_data referring to this instance.
     template <typename T>
+    node_data<T> node_data<T>::ref() &
+    {
+        switch(data_.index())
+        {
+        case 1:
+            return node_data<T>{vector()};
+
+        case 2:
+            return node_data<T>{matrix()};
+
+        case 0: HPX_FALLTHROUGH;
+        case 3: HPX_FALLTHROUGH;
+        case 4:
+            return *this;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::ref()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
     node_data<T> node_data<T>::ref() const&
     {
         switch(data_.index())
@@ -1000,6 +1055,14 @@ namespace phylanx { namespace ir
 
     template <typename T>
     node_data<T> node_data<T>::ref() &&
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::ref()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    node_data<T> node_data<T>::ref() const&&
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::ref()",
