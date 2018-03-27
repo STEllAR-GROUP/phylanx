@@ -68,7 +68,10 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         },
         "create a new variable from a matrix floating point values");
 
-    execution_tree.def("eval", phylanx::bindings::expression_compiler,
+    execution_tree.def("compile", phylanx::bindings::expression_compiler,
+        "compile a numerical expression in PhySL");
+
+    execution_tree.def("eval", phylanx::bindings::expression_evaluator,
         "compile and evaluate a numerical expression in PhySL");
 
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,

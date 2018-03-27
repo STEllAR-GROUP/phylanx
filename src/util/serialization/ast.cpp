@@ -10,6 +10,7 @@
 #include <hpx/include/serialization.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <sstream>
 #include <vector>
 
@@ -35,7 +36,7 @@ namespace phylanx { namespace util
         }
     }
 
-    std::vector<char> serialize(ir::node_data<bool> const& ast)
+    std::vector<char> serialize(ir::node_data<std::uint8_t> const& ast)
     {
         return detail::serialize(ast);
     }
@@ -117,7 +118,7 @@ namespace phylanx { namespace util
         }
 
         void unserialize(
-            std::vector<char> const& input, ir::node_data<bool>& ast)
+            std::vector<char> const& input, ir::node_data<std::uint8_t>& ast)
         {
             detail::unserialize_helper(input, ast);
         }

@@ -137,7 +137,7 @@ namespace phylanx { namespace execution_tree
     using argument_value_type =
         phylanx::util::variant<
             ast::nil
-          , phylanx::ir::node_data<bool>
+          , phylanx::ir::node_data<std::uint8_t>
           , std::int64_t
           , std::string
           , phylanx::ir::node_data<double>
@@ -155,27 +155,30 @@ namespace phylanx { namespace execution_tree
         {}
 
         explicit primitive_argument_type(bool val)
-          : argument_value_type{phylanx::ir::node_data<bool>{val}}
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+        {}
+        explicit primitive_argument_type(std::uint8_t val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
         {}
         explicit primitive_argument_type(
-                blaze::DynamicVector<bool> const& val)
-          : argument_value_type{phylanx::ir::node_data<bool>{val}}
+                blaze::DynamicVector<std::uint8_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
         {}
-        explicit primitive_argument_type(blaze::DynamicVector<bool>&& val)
-          : argument_value_type{phylanx::ir::node_data<bool>{std::move(val)}}
+        explicit primitive_argument_type(blaze::DynamicVector<std::uint8_t>&& val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
         {}
         explicit primitive_argument_type(
-                blaze::DynamicMatrix<bool> const& val)
-          : argument_value_type{phylanx::ir::node_data<bool>{val}}
+                blaze::DynamicMatrix<std::uint8_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
         {}
-        explicit primitive_argument_type(blaze::DynamicMatrix<bool>&& val)
-          : argument_value_type{phylanx::ir::node_data<bool>{std::move(val)}}
+        explicit primitive_argument_type(blaze::DynamicMatrix<std::uint8_t>&& val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
         {}
-        primitive_argument_type(phylanx::ir::node_data<bool> const& val)
+        primitive_argument_type(phylanx::ir::node_data<std::uint8_t> const& val)
           : argument_value_type{val}
         {}
 
-        primitive_argument_type(phylanx::ir::node_data<bool>&& val)
+        primitive_argument_type(phylanx::ir::node_data<std::uint8_t>&& val)
           : argument_value_type{std::move(val)}
         {}
 
@@ -445,13 +448,13 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_numeric_value(primitive_argument_type const& val);
 
-    // Extract a ir::node_data<bool> type from a given primitive_argument_type,
+    // Extract a ir::node_data<std::uint8_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
-    PHYLANX_EXPORT ir::node_data<bool> extract_boolean_data(
+    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_data(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT ir::node_data<bool> extract_boolean_data(
+    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_data(
         primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
@@ -474,7 +477,7 @@ namespace phylanx { namespace execution_tree
         return extract_numeric_value(val, name, codename);
     }
     template <>
-    inline ir::node_data<bool> extract_node_data(
+    inline ir::node_data<std::uint8_t> extract_node_data(
         primitive_argument_type const& val,
         std::string const& name,
         std::string const& codename)
@@ -497,7 +500,7 @@ namespace phylanx { namespace execution_tree
         return extract_numeric_value(std::move(val), name, codename);
     }
     template <>
-    inline ir::node_data<bool> extract_node_data(
+    inline ir::node_data<std::uint8_t> extract_node_data(
         primitive_argument_type && val,
         std::string const& name,
         std::string const& codename)
