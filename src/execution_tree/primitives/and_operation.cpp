@@ -129,7 +129,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     ir::node_data<double>{std::move(rhs)});
             }
             return primitive_argument_type(
-                ir::node_data<bool>{(lhs[0] != 0) & (rhs != 0)});
+                ir::node_data<std::uint8_t>{(lhs[0] != 0) & (rhs != 0)});
         }
 
         primitive_argument_type operator()(std::int64_t&& lhs,
@@ -141,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(rhs));
             }
             return primitive_argument_type(
-                ir::node_data<bool>{(rhs[0] != 0) & (lhs != 0)});
+                ir::node_data<std::uint8_t>{(rhs[0] != 0) & (lhs != 0)});
         }
 
         primitive_argument_type operator()(
@@ -316,7 +316,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                    blaze::trans(cv),
                                    [](bool x, bool y) { return x && y; });
             return primitive_argument_type(
-                    ir::node_data<bool>{std::move(m)});
+                    ir::node_data<std::uint8_t>{std::move(m)});
         }
         for (size_t i = 0UL; i < rhs.matrix().rows(); i++)
             blaze::row(cm, i) =
@@ -397,7 +397,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::row(m, i) = blaze::map(blaze::row(cm, i),
                     blaze::trans(cv),
                     [](bool x, bool y) { return x && y; });
-            return primitive_argument_type(ir::node_data<bool>{std::move(m)});
+            return primitive_argument_type(ir::node_data<std::uint8_t>{std::move(m)});
         }
         for (size_t i = 0UL; i < cm.rows(); i++)
             blaze::row(cm, i) = blaze::map(blaze::row(cm, i),

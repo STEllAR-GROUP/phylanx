@@ -411,11 +411,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (lhs.num_dimensions() != 0)
             {
-                return or_.or_all(ir::node_data<bool>{std::move(lhs)},
+                return or_.or_all(ir::node_data<std::uint8_t>{std::move(lhs)},
                     operand_type{std::move(rhs)});
             }
             return primitive_argument_type(
-                ir::node_data<bool>{(lhs[0] != 0) | (rhs != 0)});
+                ir::node_data<std::uint8_t>{(lhs[0] != 0) | (rhs != 0)});
         }
 
         primitive_argument_type operator()(std::int64_t&& lhs,
@@ -424,10 +424,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (rhs.num_dimensions() != 0)
             {
                 return or_.or_all(operand_type{std::move(lhs)},
-                    ir::node_data<bool>{std::move(rhs)});
+                    ir::node_data<std::uint8_t>{std::move(rhs)});
             }
             return primitive_argument_type(
-                ir::node_data<bool>{(rhs[0] != 0) | (lhs != 0)});
+                ir::node_data<std::uint8_t>{(rhs[0] != 0) | (lhs != 0)});
         }
 
         primitive_argument_type operator()(ir::node_data<double>&& lhs,
