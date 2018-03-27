@@ -12,6 +12,8 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 
 #include <cstdint>
 #include <map>
@@ -32,8 +34,6 @@ typedef phylanx::execution_tree::primitives::primitive_component
 
 HPX_REGISTER_ACTION(primitive_component_type::eval_action,
     phylanx_primitive_eval_action)
-HPX_REGISTER_ACTION(primitive_component_type::eval_direct_action,
-    phylanx_primitive_eval_direct_action)
 HPX_REGISTER_ACTION(primitive_component_type::store_action,
     phylanx_primitive_store_action)
 HPX_REGISTER_ACTION(primitive_component_type::expression_topology_action,
@@ -110,13 +110,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_->do_eval(params);
     }
 
-    // direct_eval_action
-    primitive_argument_type primitive_component::eval_direct(
-        std::vector<primitive_argument_type> const& params) const
-    {
-        return primitive_->do_eval_direct(params);
-    }
-
     // store_action
     void primitive_component::store(primitive_argument_type && arg)
     {
@@ -144,16 +137,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // access data for performance counter
-    std::int64_t primitive_component::get_eval_count(
-        bool reset, bool direct) const
+    std::int64_t primitive_component::get_eval_count(bool reset) const
     {
-        return primitive_->get_eval_count(reset, direct);
+        return primitive_->get_eval_count(reset);
     }
 
-    std::int64_t primitive_component::get_eval_duration(
-        bool reset, bool direct) const
+    std::int64_t primitive_component::get_eval_duration(bool reset) const
     {
-        return primitive_->get_eval_duration(reset, direct);
+        return primitive_->get_eval_duration(reset);
+    }
+
+    std::int64_t primitive_component::get_direct_execution(bool reset) const
+    {
+        return primitive_->get_direct_execution(reset);
+    }
+
+    hpx::launch primitive_component::select_direct_execution(
+        primitive_component::eval_action, hpx::launch policy,
+        hpx::naming::address_type lva)
+    {
+        auto this_ = hpx::get_lva<primitive_component>::call(lva);
+        return this_->primitive_->select_direct_eval_execution(policy);
     }
 }}}
 

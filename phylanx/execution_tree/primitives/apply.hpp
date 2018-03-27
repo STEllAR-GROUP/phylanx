@@ -10,22 +10,25 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class apply : public primitive_component_base
+    class apply
+      : public primitive_component_base
+      , public std::enable_shared_from_this<apply>
     {
     public:
         static match_pattern_type const match_data;
 
         apply() = default;
 
-        PHYLANX_EXPORT apply(std::vector<primitive_argument_type>&& operands,
+        apply(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
-        PHYLANX_EXPORT primitive_argument_type eval_direct(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
     };
 

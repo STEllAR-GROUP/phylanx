@@ -14,6 +14,7 @@
 
 #include <hpx/runtime/threads/run_as_hpx_thread.hpp>
 
+#include <cstdint>
 #include <exception>
 #include <sstream>
 #include <string>
@@ -138,7 +139,32 @@ namespace phylanx { namespace bindings
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    inline phylanx::execution_tree::primitive_argument_type expression_compiler(
+    inline void expression_compiler(std::string xexpr_str, compiler_state& c)
+    {
+        namespace et = phylanx::execution_tree;
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> void
+            {
+                try
+                {
+                    phylanx::execution_tree::compile(
+                        phylanx::ast::generate_ast(xexpr_str), c.eval_snippets,
+                        c.eval_env);
+                }
+                catch (std::exception const& ex)
+                {
+                    PyErr_SetString(PyExc_RuntimeError, ex.what());
+                }
+                catch (...)
+                {
+                    PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
+                }
+        });
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline phylanx::execution_tree::primitive_argument_type
+    expression_evaluator(
         std::string xexpr_str, compiler_state& c, pybind11::args args)
     {
         namespace et = phylanx::execution_tree;

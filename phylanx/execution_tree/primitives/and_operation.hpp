@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -39,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
 
-        using operand_type = ir::node_data<bool>;
+        using operand_type = ir::node_data<std::uint8_t>;
         using operands_type = std::vector<primitive_argument_type>;
 
     private:

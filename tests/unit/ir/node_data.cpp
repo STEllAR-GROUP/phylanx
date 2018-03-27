@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
@@ -35,11 +36,11 @@ int main(int argc, char* argv[])
     }
 
     {
-        phylanx::ir::node_data<bool> single_value(false);
+        phylanx::ir::node_data<std::uint8_t> single_value(false);
         HPX_TEST_EQ(single_value[0], false);
         HPX_TEST_EQ(single_value.num_dimensions(), std::size_t(0UL));
         HPX_TEST(single_value.dimensions() ==
-            phylanx::ir::node_data<bool>::dimensions_type({1, 1}));
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type({1, 1}));
     }
 
     {
@@ -58,11 +59,11 @@ int main(int argc, char* argv[])
     {
         blaze::Rand<blaze::DynamicVector<double>> gen{};
         blaze::DynamicVector<double> v = gen.generate(1007UL);
-        phylanx::ir::node_data<bool> array_value(v);
+        phylanx::ir::node_data<std::uint8_t> array_value(v);
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<bool>::dimensions_type({v.size(), 1UL}));
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type({v.size(), 1UL}));
     }
 
     {
@@ -96,11 +97,11 @@ int main(int argc, char* argv[])
         blaze::Rand<blaze::DynamicMatrix<double>> gen{};
         blaze::DynamicMatrix<double> m = gen.generate(42UL, 101UL);
 
-        phylanx::ir::node_data<bool> array_value(m);
+        phylanx::ir::node_data<std::uint8_t> array_value(m);
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<bool>::dimensions_type(
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type(
                 {m.rows(), m.columns()}));
     }
 

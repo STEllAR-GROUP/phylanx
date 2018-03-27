@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     variable::variable(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename)
+      : primitive_component_base(std::move(operands), name, codename, true)
       , evaluated_(false)
     {
         if (operands_.size() != 1)
@@ -58,7 +58,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type variable::eval_direct(
+    hpx::future<primitive_argument_type> variable::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         using lock_type = std::unique_lock<mutex_type>;
@@ -66,20 +66,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!evaluated_)
         {
-            primitive const* p = util::get_if<primitive>(&operands_[0]);
-            if (p != nullptr)
+            primitive_argument_type result;
             {
-                primitive_argument_type result;
-                {
-                    hpx::util::unlock_guard<lock_type> ul(l);
-                    result = extract_copy_value(p->eval_direct(args));
-                }
-                operands_[0] = std::move(result);
+                hpx::util::unlock_guard<lock_type> ul(l);
+                result =
+                    value_operand_sync(operands_[0], args, name_, codename_);
             }
+            operands_[0] = std::move(result);
             evaluated_ = true;
         }
 
-        return extract_ref_value(operands_[0]);
+        return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
     void variable::store(primitive_argument_type && data)

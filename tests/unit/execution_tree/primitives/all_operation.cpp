@@ -9,6 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -16,7 +17,7 @@ void test_all_operation_0d_true()
 {
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
@@ -33,7 +34,7 @@ void test_all_operation_0d_false()
 {
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
@@ -104,11 +105,11 @@ void test_all_operation_1d_double()
 void test_all_operation_1d()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 0, 1);
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(v));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
@@ -145,11 +146,11 @@ void test_all_operation_1d_true()
 void test_all_operation_1d_double_true()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 1, 2);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 1, 2);
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(v));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
@@ -164,7 +165,7 @@ void test_all_operation_1d_double_true()
 
 void test_all_operation_1d_numpy_false()
 {
-    blaze::DynamicVector<bool> v{true, false, true};
+    blaze::DynamicVector<std::uint8_t> v{true, false, true};
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
@@ -241,11 +242,11 @@ void test_all_operation_1d_double_numpy_true()
 void test_all_operation_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(101UL, 101UL, 0, 1);
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
@@ -262,11 +263,11 @@ void test_all_operation_2d()
 void test_all_operation_2d_true()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 1, 2);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(101UL, 101UL, 1, 2);
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
@@ -360,11 +361,11 @@ void test_all_operation_2d_double_numpy_true()
 
 void test_all_operation_2d_numpy_true()
 {
-    blaze::DynamicMatrix<bool> m{{true, true, true}, {true, true, true}};
+    blaze::DynamicMatrix<std::uint8_t> m{{true, true, true}, {true, true, true}};
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
@@ -379,11 +380,11 @@ void test_all_operation_2d_numpy_true()
 
 void test_all_operation_2d_numpy_false()
 {
-    blaze::DynamicMatrix<bool> m{{true, true, true}, {false, true, false}};
+    blaze::DynamicMatrix<std::uint8_t> m{{true, true, true}, {false, true, false}};
 
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(

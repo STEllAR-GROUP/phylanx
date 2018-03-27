@@ -148,6 +148,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         std::string result = parts.primitive;
+        if (result.size() > 2 && result[0] == '_' && result[1] == '_')
+        {
+            // strip leading "__"
+            result.erase(0, 2);
+        }
+
         if (!parts.instance.empty())
         {
             result += "/" + parts.instance;

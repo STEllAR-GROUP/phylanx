@@ -82,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operator()(
             T&& lhs, T&& rhs) const
         {
-            return primitive_argument_type(ir::node_data<bool>{lhs && rhs});
+            return primitive_argument_type(ir::node_data<std::uint8_t>{lhs && rhs});
         }
 
         primitive_argument_type operator()(
@@ -199,7 +199,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 rhs.vector(), [&](bool x) { return (x && lhs.scalar()); });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(rhs)});
+            ir::node_data<std::uint8_t>{std::move(rhs)});
     }
 
     template <typename T>
@@ -216,7 +216,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             rhs.matrix(), [&](bool x) { return (x && lhs.scalar()); });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(rhs)});
+            ir::node_data<std::uint8_t>{std::move(rhs)});
     }
 
     template <typename T>
@@ -227,7 +227,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 0:
             return primitive_argument_type(
-                ir::node_data<bool>{lhs.scalar() && rhs.scalar()});
+                ir::node_data<std::uint8_t>{lhs.scalar() && rhs.scalar()});
 
         case 1:
             return and0d1d(std::move(lhs), std::move(rhs));
@@ -258,7 +258,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             lhs.vector(), [&](bool x) { return (x && rhs.scalar()); });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(lhs)});
+            ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
@@ -287,7 +287,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [&](bool x, bool y) { return (x && y); });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(lhs)});
+            ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
@@ -325,7 +325,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](bool x, bool y) { return x && y; });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(rhs)});
+            ir::node_data<std::uint8_t>{std::move(rhs)});
     }
 
     template <typename T>
@@ -370,7 +370,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [&](bool x) { return (x && rhs.scalar()); });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(lhs)});
+            ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
@@ -405,7 +405,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [](bool x, bool y) { return x && y; });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(lhs)});
+            ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
@@ -435,7 +435,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [&](bool x, bool y) { return (x && y); });
 
         return primitive_argument_type(
-            ir::node_data<bool>{std::move(lhs)});
+            ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
