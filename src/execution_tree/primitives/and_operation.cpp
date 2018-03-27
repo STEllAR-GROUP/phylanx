@@ -125,8 +125,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (lhs.num_dimensions() != 0)
             {
-                return and_.and_all(std::move(lhs),
-                                    ir::node_data<double>{std::move(rhs)});
+                return and_.and_all(
+                    std::move(lhs), ir::node_data<double>{rhs > 0 ? 1.0 : 0.0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{(lhs[0] != 0) & (rhs != 0)});
@@ -137,8 +137,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (rhs.num_dimensions() != 0)
             {
-                return and_.and_all(ir::node_data<double>{std::move(lhs)},
-                    std::move(rhs));
+                return and_.and_all(
+                    ir::node_data<double>{lhs > 0 ? 1.0 : 0.0}, std::move(rhs));
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{(rhs[0] != 0) & (lhs != 0)});
