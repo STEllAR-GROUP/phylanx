@@ -12,6 +12,7 @@ set(tests
     expression_topology_213
     list_of_variables_244
     negative_integral_value_131
+    nested_define_333
     no_integers_313
     out_of_scope_variable_232
     support_nil_314
