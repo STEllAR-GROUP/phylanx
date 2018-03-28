@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     namespace detail
     {
-        primitive_argument_type eval_direct(
+        hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& operands,
             std::vector<primitive_argument_type> const& args,
             std::string const& name, std::string const& codename)
@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (operands.size() != 1)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "enable_tracing::eval_direct",
+                    "enable_tracing::eval",
                     generate_error_message(
                         "expected one (boolean) argument",
                         name, codename));
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (!valid(operands[0]))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "enable_tracing::eval_direct",
+                    "enable_tracing::eval",
                     generate_error_message(
                         "the enable_tracing primitive requires that the "
                             "argument given by the operand is valid",
@@ -72,17 +72,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive::enable_tracing =
                 boolean_operand_sync(operands[0], args, name, codename) != 0;
 
-            return primitive_argument_type{};
+            return hpx::make_ready_future(primitive_argument_type{});
         }
     }
 
-    primitive_argument_type enable_tracing::eval_direct(
+    hpx::future<primitive_argument_type> enable_tracing::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
         {
-            return detail::eval_direct(args, noargs, name_, codename_);
+            return detail::eval(args, noargs, name_, codename_);
         }
-        return detail::eval_direct(operands_, args, name_, codename_);
+        return detail::eval(operands_, args, name_, codename_);
     }
 }}}

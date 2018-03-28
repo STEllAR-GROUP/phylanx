@@ -9,6 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -33,7 +34,7 @@ void test_not_equal_operation_0d_true()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(1.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(true),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -41,11 +42,11 @@ void test_not_equal_operation_0d_bool_true()
 {
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive not_equal;
     not_equal = phylanx::execution_tree::primitives::create_not_equal(
@@ -55,7 +56,7 @@ void test_not_equal_operation_0d_bool_true()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(true),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -79,7 +80,7 @@ void test_not_equal_operation_0d_false()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(0.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(false),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -101,7 +102,7 @@ void test_not_equal_operation_0d_lit_true()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(1.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(true),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -123,7 +124,7 @@ void test_not_equal_operation_0d_lit_false()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(0.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(false)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(false)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -153,7 +154,7 @@ void test_not_equal_operation_0d1d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -181,22 +182,22 @@ void test_not_equal_operation_0d1d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_0d1d_bool()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 0, 1);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(v));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -206,17 +207,17 @@ void test_not_equal_operation_0d1d_bool()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicVector<bool> expected =
+    blaze::DynamicVector<std::uint8_t> expected =
         blaze::map(v, [](bool x) { return (x != false); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_0d1d_bool_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 0, 1);
 
     phylanx::ir::node_data<double> lhs(false);
 
@@ -232,10 +233,10 @@ void test_not_equal_operation_0d1d_bool_lit()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicVector<bool> expected =
+    blaze::DynamicVector<std::uint8_t> expected =
         blaze::map(v, [](bool x) { return (x != false); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -265,7 +266,7 @@ void test_not_equal_operation_0d2d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -293,22 +294,22 @@ void test_not_equal_operation_0d2d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_0d2d_bool()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(101UL, 101UL, 0, 1);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -318,23 +319,23 @@ void test_not_equal_operation_0d2d_bool()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m, [](bool x) { return (x != true); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_0d2d_bool_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(101UL, 101UL, 0, 1);
 
-    phylanx::ir::node_data<bool> lhs(true);
+    phylanx::ir::node_data<std::uint8_t> lhs(true);
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -344,10 +345,10 @@ void test_not_equal_operation_0d2d_bool_lit()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m, [](bool x) { return (x != true); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -378,7 +379,7 @@ void test_not_equal_operation_1d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>((expected)),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -407,7 +408,7 @@ void test_not_equal_operation_1d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -437,7 +438,7 @@ void test_not_equal_operation_1d0d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -465,22 +466,22 @@ void test_not_equal_operation_1d0d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_1d0d_bool()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 0, 1);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(v));
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -490,25 +491,25 @@ void test_not_equal_operation_1d0d_bool()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicVector<bool> expected =
+    blaze::DynamicVector<std::uint8_t> expected =
         blaze::map(v, [](bool x) { return (x != false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_1d0d_bool_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 0, 1);
 
-    phylanx::ir::node_data<bool> lhs(v);
+    phylanx::ir::node_data<std::uint8_t> lhs(v);
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(false));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -518,12 +519,12 @@ void test_not_equal_operation_1d0d_bool_lit()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicVector<bool> expected =
+    blaze::DynamicVector<std::uint8_t> expected =
         blaze::map(v, [](bool x) { return (x != false); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -560,7 +561,7 @@ void test_not_equal_operation_1d2d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -595,7 +596,7 @@ void test_not_equal_operation_1d2d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -626,7 +627,7 @@ void test_not_equal_operation_2d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -655,23 +656,23 @@ void test_not_equal_operation_2d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_2d_bool()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m1 = gen.generate(1007UL, 1007UL, 0, 1);
-    blaze::DynamicMatrix<bool> m2 = gen.generate(1007UL, 1007UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m1 = gen.generate(1007UL, 1007UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m2 = gen.generate(1007UL, 1007UL, 0, 1);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m1));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m1));
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m2));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m2));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -681,26 +682,26 @@ void test_not_equal_operation_2d_bool()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m1, m2, [](bool x, bool y) { return x != y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_2d_bool_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m1 = gen.generate(1007UL, 1007UL, 0, 1);
-    blaze::DynamicMatrix<bool> m2 = gen.generate(1007UL, 1007UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m1 = gen.generate(1007UL, 1007UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m2 = gen.generate(1007UL, 1007UL, 0, 1);
 
-    phylanx::ir::node_data<bool> lhs(m1);
+    phylanx::ir::node_data<std::uint8_t> lhs(m1);
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m2));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m2));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -710,12 +711,12 @@ void test_not_equal_operation_2d_bool_lit()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m1, m2, [](bool x, bool y) { return x != y; });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -745,7 +746,7 @@ void test_not_equal_operation_2d0d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -773,22 +774,22 @@ void test_not_equal_operation_2d0d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_2d0d_bool()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(101UL, 101UL, 0, 1);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -798,25 +799,25 @@ void test_not_equal_operation_2d0d_bool()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m, [](bool x) { return (x != true); });
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_2d0d_bool_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<int>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(101UL, 101UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(101UL, 101UL, 0, 1);
 
-    phylanx::ir::node_data<bool> lhs(m);
+    phylanx::ir::node_data<std::uint8_t> lhs(m);
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(true));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -826,10 +827,10 @@ void test_not_equal_operation_2d0d_bool_lit()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m, [](bool x) { return (x != true); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -865,7 +866,7 @@ void test_not_equal_operation_2d1d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -899,25 +900,25 @@ void test_not_equal_operation_2d1d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_2d1d_bool()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(104UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(104UL, 0, 1);
 
     blaze::Rand<blaze::DynamicMatrix<int>> mat_gen{};
-    blaze::DynamicMatrix<bool> m = mat_gen.generate(101UL, 104UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m = mat_gen.generate(101UL, 104UL, 0, 1);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(v));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -927,29 +928,29 @@ void test_not_equal_operation_2d1d_bool()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected{m.rows(), m.columns()};
+    blaze::DynamicMatrix<std::uint8_t> expected{m.rows(), m.columns()};
     for (size_t i = 0UL; i < m.rows(); i++)
         blaze::row(expected, i) = blaze::map(blaze::row(m, i),
             blaze::trans(v),
             [](bool x, bool y) { return x != y; });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
 void test_not_equal_operation_2d1d_bool_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(104UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(104UL, 0, 1);
 
     blaze::Rand<blaze::DynamicMatrix<int>> mat_gen{};
-    blaze::DynamicMatrix<bool> m = mat_gen.generate(101UL, 104UL, 0, 1);
+    blaze::DynamicMatrix<std::uint8_t> m = mat_gen.generate(101UL, 104UL, 0, 1);
 
-    phylanx::ir::node_data<bool> lhs(m);
+    phylanx::ir::node_data<std::uint8_t> lhs(m);
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(v));
 
     phylanx::execution_tree::primitive not_equal =
         phylanx::execution_tree::primitives::create_not_equal(
@@ -959,13 +960,13 @@ void test_not_equal_operation_2d1d_bool_lit()
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
-    blaze::DynamicMatrix<bool> expected{m.rows(), m.columns()};
+    blaze::DynamicMatrix<std::uint8_t> expected{m.rows(), m.columns()};
     for (size_t i = 0UL; i < m.rows(); i++)
         blaze::row(expected, i) = blaze::map(blaze::row(m, i),
             blaze::trans(v),
             [](bool x, bool y) { return x != y; });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 

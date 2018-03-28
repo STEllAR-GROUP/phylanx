@@ -14,6 +14,7 @@
 
 #include <hpx/include/actions.hpp>
 #include <hpx/include/components.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 #include <hpx/util/logging.hpp>
 
 #include <cstdint>
@@ -38,7 +39,7 @@ namespace phylanx { namespace execution_tree
         ///////////////////////////////////////////////////////////////////////
         char const* const primitive_argument_type_names[] = {
             "phylanx::ast::nil",
-            "phylanx::ir::node_data<bool>",
+            "phylanx::ir::node_data<std::uint8_t>",
             "std::int64_t",
             "std::string",
             "phylanx::ir::node_data<double>",
@@ -129,25 +130,20 @@ namespace phylanx { namespace execution_tree
         return eval(params);
     }
 
-    primitive_argument_type primitive::eval_direct(
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         std::vector<primitive_argument_type> const& params) const
     {
-        using action_type = primitives::primitive_component::eval_direct_action;
-        return detail::trace("eval_direct", *this,
-            action_type()(this->base_type::get_id(), params));
+        return eval(params).get();
     }
-    primitive_argument_type primitive::eval_direct(
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         std::vector<primitive_argument_type> && params) const
     {
-        using action_type = primitives::primitive_component::eval_direct_action;
-        return detail::trace("eval_direct", *this,
-            action_type()(this->base_type::get_id(), std::move(params)));
+        return eval(std::move(params)).get();
     }
 
-    primitive_argument_type primitive::eval_direct() const
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy) const
     {
-        static std::vector<primitive_argument_type> params;
-        return eval_direct(params);
+        return eval().get();
     }
 
     hpx::future<void> primitive::store(primitive_argument_type data)
@@ -333,7 +329,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -368,7 +364,7 @@ namespace phylanx { namespace execution_tree
         case 7:                     // std::vector<primitive_argument_type>
             return val;
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             {
                 auto const& v = util::get<1>(val);
                 if (v.is_ref())
@@ -416,7 +412,7 @@ namespace phylanx { namespace execution_tree
         case 7:                     // std::vector<primitive_argument_type>
             return val;
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             {
                 auto const& v = util::get<1>(val);
                 if (v.is_ref())
@@ -457,7 +453,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -492,7 +488,7 @@ namespace phylanx { namespace execution_tree
         case 7:                     // std::vector<primitive_argument_type>
             return std::move(val);
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             {
                 auto && v = util::get<1>(std::move(val));
                 if (v.is_ref())
@@ -533,7 +529,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -563,7 +559,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
         case 4:                     // phylanx::ir::node_data<double>
@@ -605,7 +601,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1:                     // phylanx::ir::node_data<bool>
+        case 1:                     // phylanx::ir::node_data<std::uint8_t>
             return primitive_argument_type{util::get<1>(val).ref()};
 
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
@@ -658,7 +654,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
         case 4:                     // phylanx::ir::node_data<double>
@@ -698,7 +694,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -720,7 +716,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return ir::node_data<double>{util::get<1>(val).ref()};
 
         case 2:     // std::uint64_t
@@ -765,7 +761,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return ir::node_data<double>{util::get<1>(std::move(val))};
 
         case 2:     // std::uint64_t
@@ -809,7 +805,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 6:     // std::vector<ast::expression>
@@ -826,12 +822,12 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<bool> extract_boolean_data(primitive_argument_type const& val,
+    ir::node_data<std::uint8_t> extract_boolean_data(primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
-        case 1:                     // phylanx::ir::node_data<bool>
+        case 1:                     // phylanx::ir::node_data<std::uint8_t>
             return util::get<1>(val).ref();
 
         case 0: HPX_FALLTHROUGH;    // nil
@@ -854,12 +850,12 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    ir::node_data<bool> extract_boolean_data(primitive_argument_type&& val,
+    ir::node_data<std::uint8_t> extract_boolean_data(primitive_argument_type&& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
-        case 1:                     // phylanx::ir::node_data<bool>
+        case 1:                     // phylanx::ir::node_data<std::uint8_t>
             return util::get<1>(std::move(val));
 
         case 0: HPX_FALLTHROUGH;    // nil
@@ -886,7 +882,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:                     // phylanx::ir::node_data<bool>
+        case 1:                     // phylanx::ir::node_data<std::uint8_t>
             return true;
 
         case 0: HPX_FALLTHROUGH;    // nil
@@ -908,7 +904,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return std::int64_t(util::get<1>(val)[0]);
 
         case 2:     // std::uint64_t
@@ -953,7 +949,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return std::int64_t(util::get<1>(std::move(val))[0]);
 
         case 2:     // std::uint64_t
@@ -997,7 +993,7 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 6:     // std::vector<ast::expression>
@@ -1022,7 +1018,7 @@ namespace phylanx { namespace execution_tree
         case 0:     // nil
             return false;
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return bool(util::get<1>(val));
 
         case 2:     // std::uint64_t
@@ -1071,7 +1067,7 @@ namespace phylanx { namespace execution_tree
         case 0:     // nil
             return false;
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return bool(util::get<1>(std::move(val)));
 
         case 2:     // std::uint64_t
@@ -1117,7 +1113,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
@@ -1156,7 +1152,7 @@ namespace phylanx { namespace execution_tree
             break;
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
@@ -1197,7 +1193,7 @@ namespace phylanx { namespace execution_tree
             break;
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
@@ -1224,7 +1220,7 @@ namespace phylanx { namespace execution_tree
             return true;
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
@@ -1255,7 +1251,7 @@ namespace phylanx { namespace execution_tree
             return util::get<6>(val);
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 5: HPX_FALLTHROUGH;    // primitive
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
@@ -1290,7 +1286,7 @@ namespace phylanx { namespace execution_tree
             return util::get<6>(std::move(val));
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 5: HPX_FALLTHROUGH;    // primitive
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
@@ -1317,7 +1313,7 @@ namespace phylanx { namespace execution_tree
             return true;
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;        // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;        // phylanx::ir::node_data<std::uint8_t>
         case 5: HPX_FALLTHROUGH;    // primitive
         case 7: HPX_FALLTHROUGH;    // std::vector<primitive_argument_type>
         default:
@@ -1337,7 +1333,7 @@ namespace phylanx { namespace execution_tree
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<0>(val)}};
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<1>(val)}};
 
@@ -1387,7 +1383,7 @@ namespace phylanx { namespace execution_tree
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<0>(std::move(val))}};
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return std::vector<primitive_argument_type>{
                 primitive_argument_type{util::get<1>(std::move(val))}};
 
@@ -1432,7 +1428,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -1477,7 +1473,7 @@ namespace phylanx { namespace execution_tree
             return util::get<7>(val).get();
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -1524,7 +1520,7 @@ namespace phylanx { namespace execution_tree
             return util::get<7>(std::move(val)).get();
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -1551,7 +1547,7 @@ namespace phylanx { namespace execution_tree
             return true;
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
@@ -1598,8 +1594,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(val, name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(val, name, codename));
+        }
+        return hpx::make_ready_future(val);
     }
 
     hpx::future<primitive_argument_type> value_operand(
@@ -1617,8 +1617,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(extract_ref_value(val, name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(val, name, codename));
+        }
+        return hpx::make_ready_future(val);
     }
 
     hpx::future<primitive_argument_type> value_operand(
@@ -1636,9 +1640,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(
-            extract_ref_value(std::move(val), name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(std::move(val), name, codename));
+        }
+        return hpx::make_ready_future(std::move(val));
     }
 
     hpx::future<primitive_argument_type> value_operand(
@@ -1656,9 +1663,12 @@ namespace phylanx { namespace execution_tree
                 });
         }
 
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(
-            extract_ref_value(std::move(val), name, codename));
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(std::move(val), name, codename));
+        }
+        return hpx::make_ready_future(std::move(val));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1670,11 +1680,15 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args), name, codename);
+            return extract_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(val, name, codename);
+        if (valid(val))
+        {
+            return extract_value(val, name, codename);
+        }
+        return val;
     }
 
     primitive_argument_type value_operand_sync(
@@ -1686,11 +1700,14 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             return extract_value(
-                p->eval_direct(std::move(args)), name, codename);
+                p->eval(hpx::launch::sync, std::move(args)), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(val, name, codename);
+        if (valid(val))
+        {
+            return extract_value(val, name, codename);
+        }
+        return val;
     }
 
     primitive_argument_type value_operand_sync(
@@ -1701,11 +1718,15 @@ namespace phylanx { namespace execution_tree
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args), name, codename);
+            return extract_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(std::move(val), name, codename);
+        if (valid(val))
+        {
+            return extract_value(std::move(val), name, codename);
+        }
+        return std::move(val);
     }
 
     primitive_argument_type value_operand_sync(
@@ -1717,11 +1738,14 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             return extract_value(
-                p->eval_direct(std::move(args)), name, codename);
+                p->eval(hpx::launch::sync, std::move(args)), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_value(std::move(val), name, codename);
+        if (valid(val))
+        {
+            return extract_value(std::move(val), name, codename);
+        }
+        return std::move(val);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1733,11 +1757,15 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_value(p->eval_direct(args), name, codename);
+            return extract_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
-        HPX_ASSERT(valid(val));
-        return extract_ref_value(val, name, codename);
+        if (valid(val))
+        {
+            return extract_ref_value(val, name, codename);
+        }
+        return val;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1830,7 +1858,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_literal_value(p->eval_direct(args), name, codename);
+            return extract_literal_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -1927,7 +1956,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_numeric_value(p->eval_direct(args), name, codename);
+            return extract_numeric_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -1962,7 +1992,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_boolean_value(p->eval_direct(args), name, codename);
+            return extract_boolean_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -1997,7 +2028,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_string_value(p->eval_direct(args), name, codename);
+            return extract_string_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -2032,7 +2064,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_ast_value(p->eval_direct(args), name, codename);
+            return extract_ast_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -2126,7 +2159,8 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_list_value(p->eval_direct(args), name, codename);
+            return extract_list_value(
+                p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -2296,7 +2330,7 @@ namespace phylanx { namespace execution_tree
             os << util::get<0>(val);
             return os;
 
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             os << util::get<1>(val);
             return os;
 

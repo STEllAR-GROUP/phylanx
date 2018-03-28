@@ -196,7 +196,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::dataflow(
             hpx::util::unwrapping(
                 [this_](std::vector<primitive_argument_type>&& args)
-                    -> primitive_argument_type {
+                    -> primitive_argument_type
+                {
                     // Extract axis and keep_dims
                     // Presence of axis changes behavior for >2d cases
                     hpx::util::optional<std::int64_t> axis;
