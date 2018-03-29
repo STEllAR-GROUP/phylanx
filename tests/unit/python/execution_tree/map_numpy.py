@@ -176,6 +176,7 @@ def np_transpose(x):
     transx = np.transpose(x)
     return transx
 
+
 assert (np_transpose(np_array) == np.transpose(np_array)).all
 assert np_transpose.__src__ == \
     'define$175$0(np_transpose$175$0, x$175$17, block$175$0(define$176$4(transx$176$4,transpose$176$13(x$176$26)),  transx$177$11))' # noqa E501
@@ -185,4 +186,3 @@ assert np_transpose.__src__ == \
 #     return np.vstack((np_x, np_y))
 #
 # assert (np_vstack(np_x, np_y) == np.vstack((np_x, np_y))).all
-
