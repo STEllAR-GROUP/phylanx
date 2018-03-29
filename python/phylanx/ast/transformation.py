@@ -243,17 +243,17 @@ class PhySL:
     def _Attribute(self, a):
         s = ""
         if isinstance(a.value, ast.Attribute):
-            if a.attr in self.numpys:
+            if a.attr in self.np_to_phylanx:
                 symbol_info = full_node_name(a)
-                s += self.numpys[a.attr] + symbol_info + '('
+                s += self.np_to_phylanx[a.attr] + symbol_info + '('
                 return s
             else:
                 raise NotImplementedError
 
         if isinstance(a.value, ast.Name):
-            if a.attr in self.numpys:
+            if a.attr in self.np_to_phylanx:
                 symbol_info = full_node_name(a)
-                s += self.numpys[a.attr] + symbol_info + '('
+                s += self.np_to_phylanx[a.attr] + symbol_info + '('
 
             if a.value.id in self.defs:
                 s += a.value.id + full_node_name(a.value)
@@ -448,7 +448,7 @@ class PhySL:
         "For": _For
     }
 
-    numpys = {
+    np_to_phylanx = {
         "argmax": "argmax",
         "argmin": "argmin",
         "cross": "cross",
