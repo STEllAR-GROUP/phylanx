@@ -20,12 +20,9 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Action, bool direct = Action::direct_execution::value>
-    class generic_function;
-
-    // wrapping non-direct actions
+    // wrapping generic functions as actions
     template <typename Action>
-    class generic_function<Action, false>
+    class generic_function
       : public primitive_component_base
     {
     public:
@@ -45,34 +42,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return hpx::async(
                 Action(), hpx::find_here(), operands_, args, name_, codename_);
-        }
-
-    private:
-        std::string name_;
-    };
-
-    // wrapping direct actions
-    template <typename Action>
-    class generic_function<Action, true>
-      : public primitive_component_base
-    {
-    public:
-        static match_pattern_type const match_data;
-
-        generic_function() = default;
-
-        generic_function(std::vector<primitive_argument_type>&& operands,
-                std::string const& name, std::string const& codename)
-          : primitive_component_base(std::move(operands), name, codename)
-        {}
-
-        // Create a new instance of the variable and initialize it with the
-        // value as returned by evaluating the given body.
-        primitive_argument_type eval_direct(
-            std::vector<primitive_argument_type> const& args) const override
-        {
-            return hpx::async(hpx::launch::sync, Action(), hpx::find_here(),
-                operands_, args, name_, codename_).get();
         }
 
     private:

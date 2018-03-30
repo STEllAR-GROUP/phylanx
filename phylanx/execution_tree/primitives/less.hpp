@@ -20,8 +20,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class less
-        : public primitive_component_base
-        , public std::enable_shared_from_this<less>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<less>
     {
     protected:
         using operand_type = ir::node_data<double>;
@@ -43,30 +43,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
+        template <typename T>
         primitive_argument_type less0d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less0d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less1d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less1d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less1d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less2d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less2d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less2d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type less_all(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
     private:
         struct visit_less;

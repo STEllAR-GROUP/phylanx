@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         switch (val.index())
         {
-        case 1:    // phylanx::ir::node_data<bool>
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
             return util::get<1>(val).dimensions();
 
         case 2:    // std::uint64_t
@@ -192,7 +192,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return distribution_parameters_type{util::get<3>(val), 0, 0.0, 1.0};
 
         case 0: HPX_FALLTHROUGH;    // nil
-        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<bool>
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
@@ -403,7 +403,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_RANDOM_DISTRIBUTION_2(
             uniform, std::uniform_real_distribution<double>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_1(
-            bernoulli, std::bernoulli_distribution, double, bool);
+            bernoulli, std::bernoulli_distribution, double, std::uint8_t);
         PHYLANX_RANDOM_DISTRIBUTION_2(
             binomial, std::binomial_distribution<int>, int, double);
         PHYLANX_RANDOM_DISTRIBUTION_2(negative_binomial,
@@ -539,7 +539,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         if (!valid(operands[0]) ||
-            operands.size() == 2 && !valid(operands[1]))
+            (operands.size() == 2 && !valid(operands[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
@@ -651,8 +651,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const set_seed_match_data =
     {
         hpx::util::make_tuple(
-            hpx::actions::detail::get_action_name<set_seed_action>(),
-            std::vector<std::string>{"set_seed(_1)"},
+            "set_seed", std::vector<std::string>{"set_seed(_1)"},
             &create_generic_function<set_seed_action>,
             &create_primitive<generic_function<set_seed_action>>)
     };
@@ -660,8 +659,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const get_seed_match_data =
     {
         hpx::util::make_tuple(
-            hpx::actions::detail::get_action_name<get_seed_action>(),
-            std::vector<std::string>{"get_seed()"},
+            "get_seed", std::vector<std::string>{"get_seed()"},
             &create_generic_function<get_seed_action>,
             &create_primitive<generic_function<get_seed_action>>)
     };
@@ -681,7 +679,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
 
-        if (!valid(operands[0]) || operands.size() == 2 && !valid(operands[1]))
+        if (!valid(operands[0]) || (operands.size() == 2 && !valid(operands[1])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::set_seed",

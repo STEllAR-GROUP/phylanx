@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     rhs.vector(), [&](bool x) { return (x || lhs.scalar()); });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(rhs)});
+                    ir::node_data<std::uint8_t>{std::move(rhs)});
             }
 
     primitive_argument_type or_operation::or_operation0d2d(
@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     rhs.matrix(), [&](bool x) { return (x || lhs.scalar()); });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(rhs)});
+                    ir::node_data<std::uint8_t>{std::move(rhs)});
             }
 
     primitive_argument_type or_operation::or_operation0d(
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return primitive_argument_type(
-                        ir::node_data<bool>{lhs.scalar() || rhs.scalar()});
+                        ir::node_data<std::uint8_t>{lhs.scalar() || rhs.scalar()});
 
                 case 1:
                     return or_operation0d1d(std::move(lhs), std::move(rhs));
@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     lhs.vector(), [&](bool x) { return (x || rhs.scalar()); });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(lhs)});
+                    ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
     primitive_argument_type or_operation::or_operation1d1d(
@@ -131,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [&](bool x, bool y) { return (x || y); });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(lhs)});
+                    ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
     primitive_argument_type or_operation::or_operation1d2d(
@@ -158,7 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             [](bool x, bool y) { return x || y; });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(rhs)});
+                    ir::node_data<std::uint8_t>{std::move(rhs)});
             }
 
     primitive_argument_type or_operation::or_operation1d(
@@ -198,7 +198,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [&](double x) { return (x || rhs.scalar()); });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(lhs)});
+                    ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
     primitive_argument_type or_operation::or_operation2d1d(
@@ -225,7 +225,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             [](bool x, bool y) { return x || y; });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(lhs)});
+                    ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
     primitive_argument_type or_operation::or_operation2d2d(
@@ -249,7 +249,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [&](bool x, bool y) { return (x || y); });
 
                 return primitive_argument_type(
-                    ir::node_data<bool>{std::move(lhs)});
+                    ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
     primitive_argument_type or_operation::or_operation2d(
@@ -365,7 +365,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operator()(T&& lhs, T&& rhs) const
         {
             return primitive_argument_type(
-                ir::node_data<bool>{lhs && rhs});
+                ir::node_data<std::uint8_t>{lhs && rhs});
         }
 
         primitive_argument_type operator()(
@@ -409,8 +409,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operator()(ir::node_data<double>&& lhs,
             ir::node_data<double>&& rhs) const
         {
-            return or_.or_all(ir::node_data<bool>{std::move(lhs)},
-                ir::node_data<bool>{std::move(rhs)});
+            return or_.or_all(ir::node_data<std::uint8_t>{std::move(lhs)},
+                ir::node_data<std::uint8_t>{std::move(rhs)});
         }
 
         primitive_argument_type operator()(

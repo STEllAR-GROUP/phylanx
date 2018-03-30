@@ -9,6 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 

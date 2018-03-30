@@ -10,9 +10,10 @@
 #include <phylanx/util/scoped_timer.hpp>
 
 #include <hpx/include/lcos.hpp>
-#include <hpx/include/traits.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 
 #include <cstdint>
 #include <set>
@@ -28,18 +29,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     primitive_component_base::primitive_component_base(
             std::vector<primitive_argument_type>&& params,
-            std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename,
+            bool eval_direct)
       : operands_(std::move(params))
       , name_(name)
       , codename_(codename)
+      , execute_directly_(eval_direct ? 1 : -1)
       , eval_count_(0ll)
       , eval_duration_(0ll)
-      , eval_direct_count_(0ll)
-      , eval_direct_duration_(0ll)
     {
 #if defined(HPX_HAVE_APEX)
         eval_name_ = name_ + "::eval";
-        eval_direct_name_ = name_ + "::eval_direct";
 #endif
     }
 
@@ -90,39 +90,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return f;
     }
 
-    primitive_argument_type primitive_component_base::do_eval_direct(
-        std::vector<primitive_argument_type> const& params) const
-    {
-#if defined(HPX_HAVE_APEX)
-        hpx::util::annotate_function annotate(eval_direct_name_.c_str());
-#endif
-
-        util::scoped_timer<std::int64_t> timer(eval_direct_duration_);
-        ++eval_direct_count_;
-
-        return this->eval_direct(params);
-    }
-
     // eval_action
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        return hpx::make_ready_future(eval_direct(params));
-    }
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::primitive_component_base::eval",
+            generate_error_message(
+                "attempting to invoke an undefined evalaluation"));
 
-    // direct_eval_action
-    primitive_argument_type primitive_component_base::eval_direct(
-        std::vector<primitive_argument_type> const& params) const
-    {
-        return eval(params).get();
+        return hpx::make_ready_future(primitive_argument_type{});
     }
 
     // store_action
     void primitive_component_base::store(primitive_argument_type &&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base",
-            "store function should only be called for the store_primitive");
+            "phylanx::execution_tree::primitives::primitive_component_base::store",
+            generate_error_message(
+                "store function should only be called for the primitives that "
+                    "support it (e.g. variables)"));
     }
 
     // extract_topology_action
@@ -168,8 +155,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base",
-            "set_body function should only be called for the "
-                "define_function_primitive");
+            generate_error_message(
+                "set_body function should only be called for primitivces that "
+                    "support it (e.g. the define_function_primitive"));
     }
 
     std::string primitive_component_base::generate_error_message(
@@ -178,24 +166,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return execution_tree::generate_error_message(msg, name_, codename_);
     }
 
-    std::int64_t primitive_component_base::get_eval_count(
-        bool reset, bool direct) const
+    std::int64_t primitive_component_base::get_eval_count(bool reset) const
     {
-        if (!direct)
-        {
-            return hpx::util::get_and_reset_value(eval_count_, reset);
-        }
-        return hpx::util::get_and_reset_value(eval_direct_count_, reset);
+        return hpx::util::get_and_reset_value(eval_count_, reset);
     }
 
-    std::int64_t primitive_component_base::get_eval_duration(
-        bool reset, bool direct) const
+    std::int64_t primitive_component_base::get_eval_duration(bool reset) const
     {
-        if (!direct)
+        return hpx::util::get_and_reset_value(eval_duration_, reset);
+    }
+
+    std::int64_t primitive_component_base::get_direct_execution(bool reset) const
+    {
+        return hpx::util::get_and_reset_value(execute_directly_, reset);
+    }
+
+    // decide whether to execute eval directly
+    hpx::launch primitive_component_base::select_direct_eval_execution(
+        hpx::launch policy) const
+    {
+        if (eval_count_ != 0)
         {
-            return hpx::util::get_and_reset_value(eval_duration_, reset);
+            // check whether execution status needs to be changed (with some
+            // hysteresis)
+            std::int64_t exec_time = (eval_duration_ / eval_count_);
+            if (exec_time > 300000)
+            {
+                execute_directly_ = 0;
+            }
+            else if (exec_time < 150000)
+            {
+                execute_directly_ = 1;
+            }
         }
-        return hpx::util::get_and_reset_value(eval_direct_duration_, reset);
+
+        if (execute_directly_ == 1)
+        {
+            return hpx::launch::sync;
+        }
+        else if (execute_directly_ == 0)
+        {
+            return hpx::launch::async;
+        }
+
+        return policy;
     }
 }}}
 
@@ -206,24 +220,31 @@ namespace phylanx { namespace execution_tree
     {
         if (!name.empty())
         {
-            auto parts = compiler::parse_primitive_name(name);
+            compiler::primitive_name_parts parts;
 
-            std::string line_col;
-            if (parts.tag1 != -1 && parts.tag2 != -1)
+            if (compiler::parse_primitive_name(name, parts))
             {
-                line_col = hpx::util::format("(%1%, %2%)", parts.tag1, parts.tag2);
+                std::string line_col;
+                if (parts.tag1 != -1 && parts.tag2 != -1)
+                {
+                    line_col =
+                        hpx::util::format("(%1%, %2%)", parts.tag1, parts.tag2);
+                }
+
+                if (!parts.instance.empty())
+                {
+                    return hpx::util::format("%1%%2%: %3%$%4%:: %5%",
+                        codename.empty() ? "<unknown>" : codename,
+                        line_col, parts.primitive, parts.instance, msg);
+                }
+
+                return hpx::util::format("%1%%2%: %3%:: %4%",
+                    codename.empty() ? "<unknown>" : codename, line_col,
+                    parts.primitive, msg);
             }
 
-            if (!parts.instance.empty())
-            {
-                return hpx::util::format("%1%%2%: %3%$%4%:: %5%",
-                    codename.empty() ? "<unknown>" : codename,
-                    line_col, parts.primitive, parts.instance, msg);
-            }
-
-            return hpx::util::format("%1%%2%: %3%:: %4%",
-                codename.empty() ? "<unknown>" : codename, line_col,
-                parts.primitive, msg);
+            return hpx::util::format("%1%: %2%:: %3%",
+                codename.empty() ? "<unknown>" : codename, name, msg);
         }
 
         return hpx::util::format(

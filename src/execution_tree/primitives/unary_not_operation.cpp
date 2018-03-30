@@ -48,28 +48,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type unary_not_operation::unary_not_all(operand_type&& ops) const
+    template <typename T>
+    primitive_argument_type unary_not_operation::unary_not_all(
+        ir::node_data<T> && ops) const
     {
         std::size_t dims = ops.num_dimensions();
         switch (dims)
         {
         case 0:
-            return primitive_argument_type(
-                ir::node_data<bool>{ops.scalar() == false});
+            return primitive_argument_type{
+                ir::node_data<std::uint8_t>{ops.scalar() == T(0)}};
 
         case 1:
             // TODO: SIMD functionality should be added, blaze implementation
             // is not currently available
-            return primitive_argument_type(
-                ir::node_data<bool>{blaze::map(
-                    ops.vector(), [](bool x) { return x == false; })});
+            return primitive_argument_type{
+                ir::node_data<std::uint8_t>{blaze::map(
+                    ops.vector(), [](T x) { return x == T(0); })}};
 
         case 2:
             // TODO: SIMD functionality should be added, blaze implementation
             // is not currently available
-            return primitive_argument_type(
-                ir::node_data<bool>{blaze::map(
-                    ops.matrix(), [](bool x) { return x == false; })});
+            return primitive_argument_type{
+                ir::node_data<std::uint8_t>{blaze::map(
+                    ops.matrix(), [](T x) { return x == T(0); })}};
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -95,12 +97,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operator()(
             ir::node_data<double>&& ops) const
         {
-            return that_.unary_not_all(
-                ir::node_data<bool>{std::move(ops)});
+            return that_.unary_not_all(std::move(ops));
         }
 
         primitive_argument_type operator()(
-            ir::node_data<bool>&& ops) const
+            ir::node_data<std::uint8_t>&& ops) const
         {
             return that_.unary_not_all(std::move(ops));
         }

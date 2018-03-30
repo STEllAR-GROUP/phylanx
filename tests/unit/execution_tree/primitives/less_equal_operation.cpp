@@ -9,21 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
-#include <iostream>
-#include <utility>
-#include <vector>
-
-//   Copyright (c) 2017 Hartmut Kaiser
-//
-//   Distributed under the Boost Software License, Version 1.0. (See accompanying
-//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-#include <phylanx/phylanx.hpp>
-
-#include <hpx/hpx_main.hpp>
-#include <hpx/include/lcos.hpp>
-#include <hpx/util/lightweight_test.hpp>
-
+#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -49,7 +35,7 @@ void test_less_equal_operation_0d_true()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(1.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(true),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -74,7 +60,7 @@ void test_less_equal_operation_0d_false()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(0.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(false),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -97,7 +83,7 @@ void test_less_equal_operation_0d_lit_true()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(1.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(true),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -120,7 +106,7 @@ void test_less_equal_operation_0d_lit_false()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(0.0),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(false)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(false)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -151,7 +137,7 @@ void test_less_equal_operation_0d1d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -180,7 +166,7 @@ void test_less_equal_operation_0d1d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -211,7 +197,7 @@ void test_less_equal_operation_0d2d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -240,7 +226,7 @@ void test_less_equal_operation_0d2d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -272,7 +258,7 @@ void test_less_equal_operation_1d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>((expected)),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -302,7 +288,7 @@ void test_less_equal_operation_1d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -333,7 +319,7 @@ void test_less_equal_operation_1d0d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -362,7 +348,7 @@ void test_less_equal_operation_1d0d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -400,7 +386,7 @@ void test_less_equal_operation_1d2d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -436,7 +422,7 @@ void test_less_equal_operation_1d2d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -468,7 +454,7 @@ void test_less_equal_operation_2d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -498,7 +484,7 @@ void test_less_equal_operation_2d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -529,7 +515,7 @@ void test_less_equal_operation_2d0d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -558,7 +544,7 @@ void test_less_equal_operation_2d0d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -595,7 +581,7 @@ void test_less_equal_operation_2d1d()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -630,7 +616,7 @@ void test_less_equal_operation_2d1d_lit()
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
         phylanx::execution_tree::extract_numeric_value(f));
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 

@@ -20,8 +20,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class greater_equal
-        : public primitive_component_base
-        , public std::enable_shared_from_this<greater_equal>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<greater_equal>
     {
     protected:
         using operand_type = ir::node_data<double>;
@@ -45,30 +45,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         struct visit_greater_equal;
 
+        template <typename T>
         primitive_argument_type greater_equal0d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal0d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal1d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal1d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal1d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal2d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal2d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal2d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
         primitive_argument_type greater_equal_all(
-            operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_greater_equal(hpx::id_type const& locality,

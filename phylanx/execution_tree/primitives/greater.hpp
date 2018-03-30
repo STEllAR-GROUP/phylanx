@@ -20,8 +20,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class greater
-        : public primitive_component_base
-        , public std::enable_shared_from_this<greater>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<greater>
     {
     protected:
         using operand_type = ir::node_data<double>;
@@ -45,30 +45,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         struct visit_greater;
 
+        template <typename T>
         primitive_argument_type greater0d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater0d2d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater0d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater1d0d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater1d1d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater1d2d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater1d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater2d0d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater2d1d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater2d2d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater2d(
-                operand_type&& lhs, operand_type&& rhs) const;
-            primitive_argument_type greater_all(
-                operand_type&& lhs, operand_type&& rhs) const;
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater0d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater1d0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater1d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater1d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater2d0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater2d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater2d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type greater_all(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_greater(hpx::id_type const& locality,

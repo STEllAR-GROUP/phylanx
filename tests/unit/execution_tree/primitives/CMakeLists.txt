@@ -11,6 +11,7 @@ set(tests
     argmin
     argmax
     block_operation
+    car_cdr_operation
     column_set
     column_slicing
     constant
@@ -29,6 +30,7 @@ set(tests
     fold_left_operation
     fold_right_operation
     for_operation
+    gradient_operation
     add_dimension
     greater_operation
     greater_equal_operation
@@ -71,7 +73,6 @@ if(PHYLANX_WITH_HIGHFIVE)
   set(tests ${tests}
         file_hdf5_primitives
      )
-  set(file_hdf5_primitives_FLAGS COMPILE_FLAGS -DPHYLANX_HAVE_HIGHFIVE)
 endif()
 
 foreach(test ${tests})

@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     wrapped_variable::wrapped_variable(
             std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename)
+      : primitive_component_base(std::move(operands), name, codename, true)
     {
         if (operands_.size() != 1)
         {

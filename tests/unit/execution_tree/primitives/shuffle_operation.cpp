@@ -9,6 +9,7 @@
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
 #include <algorithm>
@@ -28,7 +29,8 @@ void test_shuffle_operation_1d()
             hpx::find_here(), phylanx::ir::node_data<double>(v1));
 
     phylanx::ir::node_data<double> v2_node =
-        phylanx::execution_tree::extract_numeric_value(lhs.eval_direct());
+        phylanx::execution_tree::extract_numeric_value(
+            lhs.eval(hpx::launch::sync));
     auto v2 = v2_node.vector();
 
     phylanx::execution_tree::primitive p =
@@ -71,7 +73,8 @@ void test_shuffle_operation_2d()
             hpx::find_here(), phylanx::ir::node_data<double>(m1));
 
     phylanx::ir::node_data<double> m2_node =
-        phylanx::execution_tree::extract_numeric_value(lhs.eval_direct());
+        phylanx::execution_tree::extract_numeric_value(
+            lhs.eval(hpx::launch::sync));
     auto m2 = m2_node.matrix(); // auto is CustomMatrix of with a lot of template args
 
     phylanx::execution_tree::primitive p =
