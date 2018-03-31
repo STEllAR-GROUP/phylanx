@@ -53,8 +53,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "access_argument::eval",
                 generate_error_message(hpx::util::format(
                     "argument count out of bounds, expected at least "
-                        "%1% argument(s) while only %2% argument(s) "
-                        "were supplied", argnum_ + 1, params.size())));
+                        PHYLANX_FORMAT_SPEC(1) "argument(s) while only "
+                        PHYLANX_FORMAT_SPEC(2) "argument(s) were supplied",
+                        argnum_ + 1, params.size())));
         }
         return value_operand(params[argnum_], params, name_, codename_);
     }
