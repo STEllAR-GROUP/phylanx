@@ -45,31 +45,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         struct visit_or_operation;
-
-        primitive_argument_type or_operation0d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation0d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation0d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation1d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation1d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation1d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation1d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation2d0d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation2d1d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation2d2d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_operation2d(
-            operand_type&& lhs, operand_type&& rhs) const;
-        primitive_argument_type or_all(
-            operand_type&& lhs, operand_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation0d1d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation0d2d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation0d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation1d0d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation1d1d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation1d2d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation1d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation2d0d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation2d1d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation2d2d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_operation2d(T&& lhs, T&& rhs) const;
+        template <typename T>
+        primitive_argument_type or_all(T&& lhs, T&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_or_operation(hpx::id_type const& locality,
