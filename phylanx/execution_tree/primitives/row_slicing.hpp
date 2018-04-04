@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
+        // using args_type = std::vector<arg_type>;
         using storage0d_type = typename arg_type::storage0d_type;
         using storage1d_type = typename arg_type::storage1d_type;
         using storage2d_type = typename arg_type::storage2d_type;
@@ -65,9 +65,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         std::vector<int> create_list_row(
             int start, int stop, int step, int array_length) const;
-        primitive_argument_type row_slicing0d(args_type&& args) const;
-        primitive_argument_type row_slicing1d(args_type&& args) const;
-        primitive_argument_type row_slicing2d(args_type&& args) const;
+        primitive_argument_type row_slicing0d(
+            arg_type&& arg, std::vector<double> extracted) const;
+        primitive_argument_type row_slicing1d(
+            arg_type&& arg, std::vector<double> extracted) const;
+        primitive_argument_type row_slicing2d(
+            arg_type&& arg, std::vector<double> extracted) const;
     };
 
     PHYLANX_EXPORT primitive create_row_slicing_operation(
