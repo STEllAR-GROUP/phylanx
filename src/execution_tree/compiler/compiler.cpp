@@ -113,7 +113,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::string const& name, ast::tagged const& id)
         {
             return hpx::util::format(
-                "%1%(%2%, %3%): %4%", name, id.id, id.col, msg);
+                PHYLANX_FORMAT_SPEC(1)
+                    "(" PHYLANX_FORMAT_SPEC(2) ", " PHYLANX_FORMAT_SPEC(3) "):"
+                    PHYLANX_FORMAT_SPEC(4), name, id.id, id.col, msg);
         }
 
         ///////////////////////////////////////////////////////////////////////
