@@ -114,7 +114,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             return hpx::util::format(
                 PHYLANX_FORMAT_SPEC(1)
-                    "(" PHYLANX_FORMAT_SPEC(2) ", " PHYLANX_FORMAT_SPEC(3) "):"
+                    "(" PHYLANX_FORMAT_SPEC(2) ", " PHYLANX_FORMAT_SPEC(3) "): "
                     PHYLANX_FORMAT_SPEC(4), name, id.id, id.col, msg);
         }
 

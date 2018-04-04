@@ -239,7 +239,7 @@ namespace phylanx { namespace execution_tree
                         PHYLANX_FORMAT_SPEC(1) PHYLANX_FORMAT_SPEC(2)
                             ": " PHYLANX_FORMAT_SPEC(3)
                             "$"  PHYLANX_FORMAT_SPEC(4)
-                            "::" PHYLANX_FORMAT_SPEC(5),
+                            ":: " PHYLANX_FORMAT_SPEC(5),
                         codename.empty() ? "<unknown>" : codename, line_col,
                         parts.primitive, parts.instance, msg);
                 }
@@ -247,7 +247,7 @@ namespace phylanx { namespace execution_tree
                 return hpx::util::format(
                     PHYLANX_FORMAT_SPEC(1) PHYLANX_FORMAT_SPEC(2)
                         ": " PHYLANX_FORMAT_SPEC(3)
-                        "::" PHYLANX_FORMAT_SPEC(4),
+                        ":: " PHYLANX_FORMAT_SPEC(4),
                     codename.empty() ? "<unknown>" : codename, line_col,
                     parts.primitive, msg);
             }
