@@ -39,12 +39,17 @@ namespace phylanx { namespace bindings
         phylanx::execution_tree::compiler::environment eval_env;
         phylanx::execution_tree::compiler::function_list eval_snippets;
 
-        compiler_state()
+        static pybind11::object import_phylanx()
+        {
 #if defined(_DEBUG)
-          : m(pybind11::module::import("_phylanxd"))
+            return pybind11::module::import("_phylanxd");
 #else
-          : m(pybind11::module::import("_phylanx"))
+            return pybind11::module::import("_phylanx");
 #endif
+        }
+
+        compiler_state()
+          : m(import_phylanx())
           , eval_env(phylanx::execution_tree::compiler::default_environment())
           , eval_snippets()
         {
@@ -141,6 +146,8 @@ namespace phylanx { namespace bindings
     ///////////////////////////////////////////////////////////////////////////
     inline void expression_compiler(std::string xexpr_str, compiler_state& c)
     {
+        pybind11::gil_scoped_release release;       // release GIL
+
         namespace et = phylanx::execution_tree;
         return hpx::threads::run_as_hpx_thread(
             [&]() -> void
@@ -167,10 +174,13 @@ namespace phylanx { namespace bindings
     expression_evaluator(
         std::string xexpr_str, compiler_state& c, pybind11::args args)
     {
+        pybind11::gil_scoped_release release;       // release GIL
+
         namespace et = phylanx::execution_tree;
         return hpx::threads::run_as_hpx_thread(
             [&]() -> et::primitive_argument_type
             {
+                pybind11::gil_scoped_acquire acquire;
                 try
                 {
                     auto xexpr = phylanx::ast::generate_ast(xexpr_str);

@@ -1,12 +1,15 @@
-//  Copyright (c) 2016-2018 Hartmut Kaiser
+//  Copyright (c) 2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#include <phylanx/config.hpp>
 
 #include <hpx/hpx.hpp>
 #include <hpx/hpx_start.hpp>
 
 #include "init_hpx.hpp"
+#include "bindings/ostream.hpp"
 
 #include <mutex>
 #include <string>
@@ -148,7 +151,8 @@ struct manage_global_runtime
         hpx::detail::init_winsocket();
         init_command_line();
 #elif defined(linux) || defined(__linux) || defined(__linux__)
-        if (__argv == nullptr && __argc == 0) {
+        if (__argv == nullptr && __argc == 0)
+        {
             // when python forked this process, .init_array didn't work. Bummer.
             init_command_line();
         }
@@ -225,13 +229,16 @@ protected:
 
         startup_cond_.notify_one();
 
-        // Here other HPX specific functionality could be invoked...
-
-        // Now, wait for destructor to be called.
         {
-            std::unique_lock<hpx::lcos::local::spinlock> lk(mtx_);
-            if (rts_ != nullptr)
-                cond_.wait(lk);
+            // redirect all console output to Python's stdout
+            phylanx::bindings::scoped_ostream_redirect stream;
+
+            // Now, wait for destructor to be called.
+            {
+                std::unique_lock<hpx::lcos::local::spinlock> lk(mtx_);
+                if (rts_ != nullptr)
+                    cond_.wait(lk);
+            }
         }
 
         // tell the runtime it's ok to exit
