@@ -145,10 +145,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (step == 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "phylanx::execution_tree::primitives::"
-                                    "column_slicing_operation::column_slicing1d",
-                                    execution_tree::generate_error_message(
-                                        "step can not be zero", name_, codename_));
+                    "phylanx::execution_tree::primitives::"
+                    "column_slicing_operation::column_slicing1d",
+                    execution_tree::generate_error_message(
+                        "step can not be zero", name_, codename_));
             }
         }
 
@@ -191,11 +191,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (step == 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "phylanx::execution_tree::primitives::"
-                                    "column_slicing_operation::column_slicing2d",
-                                    execution_tree::generate_error_message(
-                                        "step can not be zero",
-                                        name_, codename_));
+                    "phylanx::execution_tree::primitives::"
+                    "column_slicing_operation::column_slicing2d",
+                    execution_tree::generate_error_message(
+                        "step can not be zero", name_, codename_));
             }
         }
 
@@ -206,9 +205,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         storage2d_type m{sm};
 
-        return primitive_argument_type{
-            ir::node_data<double>(std::move(m))};
-
+        return primitive_argument_type{ir::node_data<double>(std::move(m))};
     }
 
     hpx::future<primitive_argument_type> column_slicing_operation::eval(
@@ -231,67 +228,70 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (!valid(operands[i]))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "column_slicing_operation::eval",
-                                    execution_tree::generate_error_message(
-                                        "the column_slicing_operation primitive requires "
-                                        "that the arguments given by the operands "
-                                        "array are valid",
-                                        name_, codename_));
+                    "column_slicing_operation::eval",
+                    execution_tree::generate_error_message(
+                        "the column_slicing_operation primitive requires "
+                        "that the arguments given by the operands "
+                        "array are valid",
+                        name_, codename_));
             }
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type>&& args) -> primitive_argument_type
-            {
-              //Extract the matrix i.e the first argument
-              arg_type matrix_input = execution_tree::extract_numeric_value(
-                  args[0], this_->name_, this_->codename_
-              );
+        return hpx::dataflow(
+            hpx::util::unwrapping([this_](std::vector<primitive_argument_type>&&
+                                          args) -> primitive_argument_type {
+                //Extract the matrix i.e the first argument
+                arg_type matrix_input = execution_tree::extract_numeric_value(
+                    args[0], this_->name_, this_->codename_);
 
-              std::vector<double > extracted;
+                std::vector<double> extracted;
 
-              //Extract the list or the single double
-              if (execution_tree::is_list_operand_strict(args[1]))
-              {
-                  auto result = execution_tree::extract_list_value(
-                      args[1], this_->name_, this_->codename_);
-                  for(auto a:result) {
-                      extracted.push_back(execution_tree::extract_numeric_value(a)[0]);
-                  }
-              }
-              else
-              {
-                  double result = execution_tree::extract_numeric_value(
-                      args[1], this_->name_, this_->codename_)[0];
-                  extracted.push_back(result);
-              }
+                //Extract the list or the single double
+                if (execution_tree::is_list_operand_strict(args[1]))
+                {
+                    auto result = execution_tree::extract_list_value(
+                        args[1], this_->name_, this_->codename_);
+                    for (auto a : result)
+                    {
+                        extracted.push_back(
+                            execution_tree::extract_numeric_value(a)[0]);
+                    }
+                }
+                else
+                {
+                    double result = execution_tree::extract_numeric_value(
+                        args[1], this_->name_, this_->codename_)[0];
+                    extracted.push_back(result);
+                }
 
-              std::size_t matrix_dims = matrix_input.num_dimensions();
+                std::size_t matrix_dims = matrix_input.num_dimensions();
 
-              switch (matrix_dims)
-              {
-                  case 0:
-                      return this_->column_slicing0d(std::move(matrix_input), extracted);
+                switch (matrix_dims)
+                {
+                case 0:
+                    return this_->column_slicing0d(
+                        std::move(matrix_input), extracted);
 
-                  case 1:
-                      return this_->column_slicing1d(std::move(matrix_input), extracted);
+                case 1:
+                    return this_->column_slicing1d(
+                        std::move(matrix_input), extracted);
 
-                  case 2:
-                      return this_->column_slicing2d(std::move(matrix_input), extracted);
+                case 2:
+                    return this_->column_slicing2d(
+                        std::move(matrix_input), extracted);
 
-            default:
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "column_slicing_operation::eval",
-                    execution_tree::generate_error_message(
-                        "left hand side operand has unsupported "
-                        "number of dimensions",
-                        this_->name_, this_->codename_));
-            }
-        }),
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "column_slicing_operation::eval",
+                        execution_tree::generate_error_message(
+                            "left hand side operand has unsupported "
+                            "number of dimensions",
+                            this_->name_, this_->codename_));
+                }
+            }),
             detail::map_operands(
-                operands, functional::value_operand{}, args,
-                name_, codename_));
+                operands, functional::value_operand{}, args, name_, codename_));
     }
 
     hpx::future<primitive_argument_type> column_slicing_operation::eval(
