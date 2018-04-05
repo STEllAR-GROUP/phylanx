@@ -51,6 +51,8 @@ class PhySL:
         self.defs = {}
         self.priority = 0
         self.groupAggressively = True
+        for arg in tree.body[0].args.args:
+            self.defs[arg.arg] = 1
         self.__src__ = self.recompile(tree)
 
     def _Num(self, a):
@@ -193,15 +195,25 @@ class PhySL:
 
     def _Call(self, a):
         symbol_info = full_node_name(a)
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        if args[0].id == "print":
-            args[0].id = "cout"
-        s = args[0].id + symbol_info + '('
-        for n in range(1, len(args)):
-            if n > 1:
+        s = ''
+        if isinstance(a.func, ast.Attribute):
+            s += self._Attribute(a.func)
+            for i in range(len(a.args) - 1):
+                s += self.recompile(a.args[i])
                 s += ', '
-            s += self.recompile(args[n])
-        s += ')'
+            s += self.recompile(a.args[-1])
+            s += ')'
+
+        else:
+            args = [arg for arg in ast.iter_child_nodes(a)]
+            if args[0].id == "print":
+                args[0].id = "cout"
+            s = args[0].id + symbol_info + '('
+            for n in range(1, len(args)):
+                if n > 1:
+                    s += ', '
+                s += self.recompile(args[n])
+            s += ')'
         return s
 
     def _Module(self, a):
@@ -227,6 +239,32 @@ class PhySL:
         a = '%s' % full_node_name(args[0], args[0].id)
         s += "(" + a + "," + self.recompile(args[1]) + ")"
         return s
+
+    def _Attribute(self, a):
+        s = ""
+        if isinstance(a.value, ast.Attribute):
+            if a.attr in self.np_to_phylanx:
+                symbol_info = full_node_name(a)
+                s += self.np_to_phylanx[a.attr] + symbol_info + '('
+                return s
+            else:
+                raise NotImplementedError
+
+        if isinstance(a.value, ast.Name):
+            if a.attr in self.np_to_phylanx:
+                symbol_info = full_node_name(a)
+                s += self.np_to_phylanx[a.attr] + symbol_info + '('
+
+            if a.value.id in self.defs:
+                s += a.value.id + full_node_name(a.value)
+                return s
+            elif a.value.id == "np" or a.value.id == "numpy":
+                return s
+            else:
+                raise NotImplementedError
+        else:
+            s += self.recompile(a.value)
+            return s
 
     def _AugAssign(self, a):
         symbol_info = full_node_name(a)
@@ -401,12 +439,35 @@ class PhySL:
         "Module": _Module,
         "Return": _Return,
         "Assign": _Assign,
+        "Attribute": _Attribute,
         "AugAssign": _AugAssign,
         "While": _While,
         "If": _If,
         "Compare": _Compare,
         "UnaryOp": _UnaryOp,
         "For": _For
+    }
+
+    np_to_phylanx = {
+        "argmax": "argmax",
+        "argmin": "argmin",
+        "cross": "cross",
+        "det": "determinant",
+        "diagonal": "diag",
+        "dot": "dot",
+        "exp": "exp",
+        "hstack": "hstack",
+        "identity": "identity",
+        "inverse": "inverse",
+        # "linearmatrix": "linearmatrix",
+        "linspace": "linspace",
+        "power": "power",
+        "random": "random",
+        "shape": "shape",
+        "sqrt": "square_root",
+        "transpose": "transpose",
+        "vstack": "vstack"
+        # slicing operations
     }
 
 

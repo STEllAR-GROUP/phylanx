@@ -8,6 +8,7 @@ set(tests
     eval
     for
     make_array
+    map_numpy
    )
 
 foreach(test ${tests})
