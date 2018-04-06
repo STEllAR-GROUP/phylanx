@@ -46,12 +46,12 @@ def fib(n):
         return fib(n - 1) + fib(n - 2)
 
 
-# assert fib.__src__ == \
-#     'block$1$0(define$1$0(fib$1$0, n$1$8, ' + \
-#     'if(n$2$7 < 2, n$3$15, ' + \
-#     '(fib((n$5$19 - 1)) + fib((n$5$28 - 2))))' + \
-#     '), fib$1$0)\n'
-
+assert fib.__src__ == \
+    'block$1$0(define$1$0(fib$1$0, n$1$8, ' + \
+        'if(n$2$7 < 2, n$3$15, ' + \
+            '(fib((n$5$19 - 1)) + fib((n$5$28 - 2))))' + \
+        '), fib$1$0)\n'
+assert "[" + fib.__src__ + "]" == str(fib.generate_ast())
 assert fib(10) == 55.0
 
 
@@ -62,8 +62,7 @@ def pass_str(a):
 
 assert pass_str.__src__ == \
     'define$59$0(pass_str$59$0, a$59$13, a$60$11)'
-
-
+assert "[" + pass_str.__src__ + "]" == str(pass_str.generate_ast())
 assert "foo" == str(pass_str("foo"))
 
 

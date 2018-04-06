@@ -524,4 +524,7 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
             return et.eval(self.f.__name__, self.cs, *nargs)
 
+        def generate_ast(self):
+            return phylanx.ast.generate_ast(self.__src__)
+
     return PhyTransformer
