@@ -492,7 +492,7 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
 
         def __init__(self, f):
 
-            if not target in self.targets:
+            if target not in self.targets:
                 raise NotImplementedError(
                     "unknown target passed to '@Phylanx()' decorator: %s." % target)
 
