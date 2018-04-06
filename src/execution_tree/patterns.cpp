@@ -13,8 +13,17 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
+    std::vector<match_pattern_type> registered_patterns;
+
+    void register_pattern(match_pattern_type const& pattern)
+    {
+        registered_patterns.push_back(pattern);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        ///////////////////////////////////////////////////////////////////////
 #define PHYLANX_MATCH_DATA(type)                                               \
     hpx::util::make_tuple(hpx::util::get<0>(primitives::type::match_data),     \
         primitives::type::match_data)                                          \
@@ -89,13 +98,9 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(sum_operation),
                 PHYLANX_MATCH_DATA(transpose_operation),
                 // variadic operations
-                PHYLANX_MATCH_DATA(add_operation),
                 PHYLANX_MATCH_DATA(and_operation),
-                PHYLANX_MATCH_DATA(div_operation),
                 PHYLANX_MATCH_DATA(add_dimension),
-                PHYLANX_MATCH_DATA(mul_operation),
                 PHYLANX_MATCH_DATA(or_operation),
-                PHYLANX_MATCH_DATA(sub_operation),
                 // binary operations
                 PHYLANX_MATCH_DATA(equal),
                 PHYLANX_MATCH_DATA(greater),
@@ -133,6 +138,13 @@ namespace phylanx { namespace execution_tree
                 "get_seed_action", primitives::get_seed_match_data));
             patterns.push_back(hpx::util::make_tuple(
                 "set_seed_action", primitives::set_seed_match_data));
+
+            // patterns registered from external primitive plugins
+            for (auto const& pattern : registered_patterns)
+            {
+                patterns.push_back(
+                    hpx::util::make_tuple(hpx::util::get<0>(pattern), pattern));
+            }
 
             return patterns;
         }

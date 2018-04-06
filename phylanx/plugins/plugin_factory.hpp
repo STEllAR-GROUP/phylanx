@@ -8,10 +8,15 @@
 
 #include <phylanx/config.hpp>
 
-#include <hpx/plugins/unique_plugin_name.hpp>
+#include <hpx/plugins/plugin_factory_base.hpp>
 #include <hpx/plugins/plugin_registry.hpp>
+#include <hpx/plugins/unique_plugin_name.hpp>
 
+#include <phylanx/plugins/plugin_base.hpp>
 #include <phylanx/plugins/plugin_factory_base.hpp>
+
+#include <map>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace plugin
@@ -26,9 +31,13 @@ namespace phylanx { namespace plugin
         {
             // store the configuration settings
             if (nullptr != global_cfg)
+            {
                 global_settings_ = *global_cfg;
+            }
             if (nullptr != plugin_cfg)
+            {
                 local_settings_ = *plugin_cfg;
+            }
         }
 
         // Create a new instance of a Phylanx primitives plugin
@@ -49,18 +58,47 @@ namespace phylanx { namespace plugin
         hpx::util::section local_settings_;
         bool is_enabled_;
     };
+
+    struct plugin_factory_data
+    {
+        plugin_factory_data(
+                std::shared_ptr<hpx::plugins::plugin_factory_base> const& f,
+                hpx::util::plugin::dll const& d)
+          : first(f)
+          , second(d)
+        {}
+
+        std::shared_ptr<hpx::plugins::plugin_factory_base> first;
+        hpx::util::plugin::dll second;
+    };
+
+    using plugin_map_type = std::map<std::string, plugin_factory_data>;
+
+    // traverse the configuration database and load all primitive plugins
+    bool load_plugins(plugin_map_type& plugins);
 }}
 
 ////////////////////////////////////////////////////////////////////////////////
 // This macro is used create and to register a primitive factory with
 // Hpx.Plugin.
-#define PHYLANX_REGISTER_PLUGIN_FACTORY(Plugin, pluginname)                    \
+#define PHYLANX_REGISTER_PLUGIN_FACTORY(pluginname, match_data)                \
+    namespace phylanx { namespace plugin {                                     \
+        struct pluginname : plugin_base                                        \
+        {                                                                      \
+            void register_known_primitives() override                          \
+            {                                                                  \
+                phylanx::execution_tree::register_pattern(match_data);         \
+            }                                                                  \
+        };                                                                     \
+    }}                                                                         \
     PHYLANX_REGISTER_PLUGIN_FACTORY_BASE(                                      \
-        phylanx::plugin::plugin_factory< Plugin>, pluginname)                  \
+        phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>,          \
+        pluginname)                                                            \
     HPX_DEF_UNIQUE_PLUGIN_NAME(                                                \
-        phylanx::plugin::plugin_factory< Plugin>, pluginname)                  \
-    template struct phylanx::plugin::plugin_factory< Plugin>;                  \
-    HPX_REGISTER_PLUGIN_REGISTRY_2(Plugin, pluginname)                         \
+        phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>,          \
+        pluginname)                                                            \
+    template struct phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>; \
+    HPX_REGISTER_PLUGIN_REGISTRY_2(phylanx::plugin::pluginname, pluginname)    \
     /**/
 
 #endif

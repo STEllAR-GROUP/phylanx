@@ -8,7 +8,7 @@
 // create a corresponding plugin instance.
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/plugin_factory_base.hpp>
+#include <phylanx/plugins/plugin_factory.hpp>
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
@@ -24,14 +24,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace plugin
 {
-    bool load_plugins()
+    ///////////////////////////////////////////////////////////////////////////
+    bool load_plugins(plugin_map_type& plugins)
     {
         hpx::util::section ini = hpx::get_runtime().get_config();
 
         // load all components as described in the configuration information
-        if (!ini.has_section("hpx.plugins"))
+        if (!ini.has_section("phylanx.plugins"))
         {
-            std::cout << "No plugins found/loaded." << std::endl;
+            LRT_(info) << "No plugins found/loaded." << std::endl;
             return true;     // no plugins to load
         }
 
@@ -47,7 +48,7 @@ namespace phylanx { namespace plugin
         // [hpx.plugins.instance_name.settings]
         //  key = value
         //
-        hpx::util::section* sec = ini.get_section("hpx.plugins");
+        hpx::util::section* sec = ini.get_section("phylanx.plugins");
         if (nullptr == sec)
         {
             return false;     // something bad happened
@@ -79,6 +80,7 @@ namespace phylanx { namespace plugin
                 boost::algorithm::to_lower(tmp);
                 if (tmp == "no" || tmp == "false" || tmp == "0")
                 {
+                    LRT_(info) << "plugin factory disabled: " << instance;
                     continue;     // this plugin has been disabled
                 }
             }
@@ -92,7 +94,7 @@ namespace phylanx { namespace plugin
             }
 
             hpx::util::section const* plugin_ini = nullptr;
-            std::string plugin_section("hpx.plugins." + instance);
+            std::string plugin_section("phylanx.plugins." + instance);
             if (ini.has_section(plugin_section))
             {
                 plugin_ini = ini.get_section(plugin_section);
@@ -132,14 +134,33 @@ namespace phylanx { namespace plugin
 
             try {
                 // create the plugin factory object, if not disabled
+                hpx::error_code ec(hpx::lightweight);
                 std::shared_ptr<phylanx::plugin::plugin_factory_base> factory (
-                    pf.create(instance, glob_ini, plugin_ini, true));
+                    pf.create(instance, ec, glob_ini, plugin_ini, true));
+                if (!ec)
+                {
+                    // store component factory and module for later use
+                    phylanx::plugin::plugin_factory_data data(factory, module);
+                    std::pair<plugin_map_type::iterator, bool> p =
+                        plugins.insert(
+                            plugin_map_type::value_type(instance, data));
 
-                // use factory to create an instance of the plugin
-                std::shared_ptr<phylanx::plugin::plugin_base> plugin(
-                    factory->create());
+                    if (!p.second)
+                    {
+                        LRT_(fatal) << "duplicate plugin type: " << instance;
+                        return false;
+                    }
 
-                plugin->register_known_primitives();
+                    LRT_(info)
+                        << "dynamic loading succeeded: " << lib_path.string()
+                        << ": " << instance;
+
+                    // use factory to create an instance of the plugin
+                    std::shared_ptr<phylanx::plugin::plugin_base> plugin(
+                        factory->create());
+
+                    plugin->register_known_primitives();
+                }
             }
             catch (...) {
                 // different type of factory (not "example_factory"), ignore here

@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/div_operation.hpp>
+#include <phylanx/plugins/arithmetics/div_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -25,15 +25,6 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_div_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-        std::string const& name, std::string const& codename)
-    {
-        static std::string type("__div");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
     match_pattern_type const div_operation::match_data =
     {
         hpx::util::make_tuple("__div",

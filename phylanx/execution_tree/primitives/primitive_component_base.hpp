@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree
     {
         class primitive_component;
 
-        struct primitive_component_base
+        struct PHYLANX_EXPORT primitive_component_base
         {
             primitive_component_base() = default;
 
@@ -114,6 +114,9 @@ namespace phylanx { namespace execution_tree
 
     using pattern_list =
         std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
+
+    ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT void register_pattern(match_pattern_type const& pattern);
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive create_primitive_component(

@@ -20,8 +20,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class sub_operation
-        : public primitive_component_base
-        , public std::enable_shared_from_this<sub_operation>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<sub_operation>
     {
     protected:
         using operand_type = ir::node_data<double>;
@@ -77,9 +77,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type sub2d(operands_type && ops) const;
     };
 
-    PHYLANX_EXPORT primitive create_sub_operation(hpx::id_type const& locality,
+    inline primitive create_sub_operation(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        static std::string type("__sub");
+        return create_primitive_component(
+            locality, type, std::move(operands), name, codename);
+    }
 }}}
 
 #endif

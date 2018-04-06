@@ -4,7 +4,6 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    add_operation
     all_operation
     and_operation
     any_operation
@@ -18,7 +17,6 @@ set(tests
     define_operation
     determinant
     diag_operation
-    div_operation
     dot_operation
     cross_operation
     equal_operation
@@ -45,7 +43,6 @@ set(tests
     linearmatrix
     linspace
     map_operation
-    mul_operation
     mean_operation
     not_equal_operation
     or_operation
@@ -61,7 +58,6 @@ set(tests
     slicing_operation
     square_root_operation
     store_operation
-    sub_operation
     sum_operation
     transpose_operation
     unary_minus_operation

@@ -68,7 +68,7 @@ namespace hpx { namespace util { namespace plugin
         phylanx_primitive_factory)                                             \
     /**/
 
-#define PHYLANX_REGISTER_PLUGIN_MODULE_DYNAMIC()                               \
+#define PHYLANX_REGISTER_PLUGIN_MODULE()                                       \
     HPX_PLUGIN_EXPORT_LIST(                                                    \
         HPX_PLUGIN_PLUGIN_PREFIX, phylanx_primitive_factory);                  \
     HPX_REGISTER_PLUGIN_REGISTRY_MODULE_DYNAMIC()                              \

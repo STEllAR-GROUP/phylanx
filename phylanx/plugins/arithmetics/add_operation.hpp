@@ -20,8 +20,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class add_operation
-        : public primitive_component_base
-        , public std::enable_shared_from_this<add_operation>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<add_operation>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
@@ -65,10 +65,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type add2d(args_type && args) const;
     };
 
-    PHYLANX_EXPORT primitive create_add_operation(
-        hpx::id_type const& locality,
+    inline primitive create_add_operation(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        static std::string type("__add");
+        return create_primitive_component(
+            locality, type, std::move(operands), name, codename);
+    }
 }}}
 
 #endif

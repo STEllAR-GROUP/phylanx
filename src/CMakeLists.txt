@@ -136,6 +136,10 @@ foreach(_flag ${PHYLANX_TARGET_COMPILE_OPTIONS_VAR})
   target_compile_options(phylanx_component PUBLIC ${_flag})
 endforeach()
 
+# add all known plugins
+add_phylanx_pseudo_target(plugins_)
+add_subdirectory(plugins)
+
 install(
   TARGETS ${phylanx_targets}
   EXPORT PhylanxTargets

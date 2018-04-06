@@ -4,6 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/plugins/plugin_factory.hpp>
 
 #include <hpx/include/components.hpp>
 #include <hpx/runtime/startup_function.hpp>
@@ -15,23 +16,26 @@ namespace phylanx
     {
         void startup_counters();
     }
-    namespace plugin
-    {
-        bool load_plugins();
-    }
 }
 
 namespace phylanx { namespace util
 {
+    phylanx::plugin::plugin_map_type plugin_map;
+
     ///////////////////////////////////////////////////////////////////////////
     void startup()
     {
+        // plugins must be loaded first to register all external primitives
+        plugin::load_plugins(plugin_map);
+
+        // register performance counters for all discovered primitives
         performance_counters::startup_counters();
-        plugin::load_plugins();
     }
 
     void shutdown()
     {
+        // unload all plugin modules
+        plugin_map.clear();
     }
 
     ///////////////////////////////////////////////////////////////////////////
