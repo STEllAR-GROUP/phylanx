@@ -55,16 +55,16 @@ class PhySL:
             self.defs[arg.arg] = 1
         self.__src__ = self.recompile(tree)
 
-    def _Num(self, a):
+    def _Num(self, a, allowreturn=False):
         return str(a.n)
 
-    def _Str(self, a):
+    def _Str(self, a, allowreturn=False):
         return '"' + a.s + '"'
 
-    def _Name(self, a):
+    def _Name(self, a, allowreturn=False):
         return full_node_name(a, a.id)
 
-    def _Expr(self, a):
+    def _Expr(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
         if len(args) == 1:
@@ -74,7 +74,7 @@ class PhySL:
                 'unexpected: expression has more than one sub-expression')
         return s
 
-    def _Subscript(self, a):
+    def _Subscript(self, a, allowreturn=False):
         e = get_node(a, name="ExtSlice")
         s0 = get_node(e, name="Slice", num=0)
         s1 = get_node(e, name="Slice", num=1)
@@ -135,7 +135,7 @@ class PhySL:
         else:
             raise Exception("Unsupported slicing: line=%d" % a.lineno)
 
-    def _FunctionDef(self, a):
+    def _FunctionDef(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
         s += '%s(' % full_node_name(a, 'define')
@@ -160,7 +160,7 @@ class PhySL:
         s += ")"
         return s
 
-    def _BinOp(self, a):
+    def _BinOp(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
         save = self.priority
@@ -193,7 +193,7 @@ class PhySL:
             s += term1 + op + term2
         return s
 
-    def _Call(self, a):
+    def _Call(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         s = ''
         if isinstance(a.func, ast.Attribute):
@@ -216,7 +216,7 @@ class PhySL:
             s += ')'
         return s
 
-    def _Module(self, a):
+    def _Module(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         return self.recompile(args[0])
 
@@ -227,7 +227,7 @@ class PhySL:
         args = [arg for arg in ast.iter_child_nodes(a)]
         return " " + self.recompile(args[0])
 
-    def _Assign(self, a):
+    def _Assign(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
@@ -240,7 +240,7 @@ class PhySL:
         s += "(" + a + "," + self.recompile(args[1]) + ")"
         return s
 
-    def _Attribute(self, a):
+    def _Attribute(self, a, allowreturn=False):
         s = ""
         if isinstance(a.value, ast.Attribute):
             if a.attr in self.np_to_phylanx:
@@ -266,7 +266,7 @@ class PhySL:
             s += self.recompile(a.value)
             return s
 
-    def _AugAssign(self, a):
+    def _AugAssign(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         sym = "?"
@@ -277,7 +277,7 @@ class PhySL:
         return "store%s(" % symbol_info + arg0 + "," + arg0 + sym + self.recompile(
             args[2]) + ")"
 
-    def _While(self, a):
+    def _While(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = "while(" + self.recompile(args[0]) + ","
@@ -328,7 +328,7 @@ class PhySL:
         s += ")"
         return s
 
-    def _Compare(self, a):
+    def _Compare(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         sym = "?"
         nn = args[1].__class__.__name__
@@ -348,7 +348,7 @@ class PhySL:
             raise Exception('boolean operation not supported: %s' % nn)
         return self.recompile(args[0]) + sym + self.recompile(args[2])
 
-    def _UnaryOp(self, a):
+    def _UnaryOp(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         nm2 = args[0].__class__.__name__
         nm3 = args[1].__class__.__name__
@@ -360,7 +360,7 @@ class PhySL:
         else:
             raise Exception(nm2)
 
-    def _For(self, a):
+    def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         n = get_node(a, name="Name", num=0)
         c = get_node(a, name="Call", num=1)
@@ -421,7 +421,7 @@ class PhySL:
         nm = a.__class__.__name__
         try:
             if allowreturn:
-                return self.nodes[nm](self, a) #, allowreturn)
+                return self.nodes[nm](self, a, allowreturn)
             else:
                 return self.nodes[nm](self, a)
         except NotImplementedError:
