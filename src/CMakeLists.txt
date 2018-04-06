@@ -28,6 +28,9 @@ add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/performance_counters/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
+  GLOB GLOBS "${PROJECT_SOURCE_DIR}/src/plugins/*.cpp"
+  APPEND)
+add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/util/*.cpp"
   APPEND)
 
@@ -48,10 +51,13 @@ if(MSVC)
     GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ast/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
+    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/*.hpp"
+    APPEND)
+  add_phylanx_library_headers(phylanx
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ir/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
-    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/*.hpp"
+    GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/plugins/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
     GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/util/*.hpp"
