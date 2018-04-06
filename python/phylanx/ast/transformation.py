@@ -280,7 +280,7 @@ class PhySL:
     def _While(self, a):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = "while(" + self.recompile(args[0]) + ","
+        s = "while" + symbol_info + "(" + self.recompile(args[0]) + ","
         if len(args) == 2:
             s += self.recompile(args[1])
         else:
@@ -295,7 +295,7 @@ class PhySL:
 
     def _If(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        s = "if(" + self.recompile(a.test) + ","
+        s = "if" + symbol_info + "(" + self.recompile(a.test) + ","
         if len(a.body) > 1:
             s += "block" + symbol_info + "("
             for j in range(len(a.body)):
@@ -421,7 +421,7 @@ class PhySL:
         nm = a.__class__.__name__
         try:
             if allowreturn:
-                return self.nodes[nm](self, a) #, allowreturn)
+                return self.nodes[nm](self, a, allowreturn)
             else:
                 return self.nodes[nm](self, a)
         except NotImplementedError:
@@ -492,7 +492,7 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
 
         def __init__(self, f):
 
-            if not target in self.targets:
+            if target not in self.targets:
                 raise NotImplementedError(
                     "unknown target passed to '@Phylanx()' decorator: %s." % target)
 
