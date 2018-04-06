@@ -421,7 +421,7 @@ class PhySL:
         nm = a.__class__.__name__
         try:
             if allowreturn:
-                return self.nodes[nm](self, a, allowreturn)
+                return self.nodes[nm](self, a) #, allowreturn)
             else:
                 return self.nodes[nm](self, a)
         except NotImplementedError:
@@ -491,9 +491,15 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
         targets = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
 
         def __init__(self, f):
+
+            if not target in self.targets:
+                raise NotImplementedError(
+                    "unknown target passed to '@Phylanx()' decorator: %s." % target)
+
             self.f = f
             self.cs = cs
             self.target = target
+
             # Get the source code
             actual_lineno = inspect.getsourcelines(f)[-1]
             src = inspect.getsource(f)
@@ -509,7 +515,7 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
             self.__src__ = self.transformation.__src__
 
             if target == "PhySL":
-                et.eval(self.__src__, self.cs)
+                et.compile(self.__src__, self.cs)
 
         def __call__(self, *args):
             if target == "OpenSCoP":
