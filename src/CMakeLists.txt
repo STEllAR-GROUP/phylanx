@@ -127,8 +127,6 @@ set_property(TARGET phylanx_component APPEND
   PROPERTY COMPILE_DEFINITIONS
   "PHYLANX_EXPORTS")
 
-set(phylanx_targets ${phylanx_targets} phylanx_component)
-
 get_property(PHYLANX_TARGET_COMPILE_OPTIONS_VAR
   GLOBAL PROPERTY PHYLANX_TARGET_COMPILE_OPTIONS)
 foreach(_flag ${PHYLANX_TARGET_COMPILE_OPTIONS_VAR})
@@ -140,8 +138,10 @@ endforeach()
 add_phylanx_pseudo_target(plugins_)
 add_subdirectory(plugins)
 
+set(phylanx_targets ${phylanx_targets} phylanx_component PARENT_SCOPE)
+
 install(
-  TARGETS ${phylanx_targets}
+  TARGETS phylanx_component
   EXPORT PhylanxTargets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
@@ -149,4 +149,3 @@ install(
   COMPONENT runtime
   OPTIONAL)
 
-phylanx_export_targets(${phylanx_targets})

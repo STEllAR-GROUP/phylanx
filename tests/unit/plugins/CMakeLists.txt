@@ -4,7 +4,9 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(subdirs
-    arithmetics)
+    arithmetics
+    booleans
+    controls)
 
 foreach(subdir ${subdirs})
   add_phylanx_pseudo_target(tests.unit.plugins.${subdir})

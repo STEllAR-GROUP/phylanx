@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -82,9 +83,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type>&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
-        static std::string type("__mul");
         return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
+            locality, "__mul", std::move(operands), name, codename);
     }
 }}}
 

@@ -5,6 +5,8 @@
 
 set(subdirs
     arithmetics
+    booleans
+    controls
    )
 
 foreach(subdir ${subdirs})
@@ -13,3 +15,4 @@ foreach(subdir ${subdirs})
   add_phylanx_pseudo_dependencies(plugins_ plugins_.${subdir}_)
 endforeach()
 
+set(phylanx_targets ${phylanx_targets} PARENT_SCOPE)

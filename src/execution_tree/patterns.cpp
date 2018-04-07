@@ -38,15 +38,12 @@ namespace phylanx { namespace execution_tree
             pattern_list patterns =
             {
                 // variadic functions
-                PHYLANX_MATCH_DATA(block_operation),
                 PHYLANX_MATCH_DATA(column_set_operation),
                 PHYLANX_MATCH_DATA(column_slicing_operation),
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
                 PHYLANX_MATCH_DATA(hstack_operation),
                 PHYLANX_MATCH_DATA(make_list),
-                PHYLANX_MATCH_DATA(map_operation),
-                PHYLANX_MATCH_DATA(parallel_block_operation),
                 PHYLANX_MATCH_DATA(row_set_operation),
                 PHYLANX_MATCH_DATA(row_slicing_operation),
                 PHYLANX_MATCH_DATA(set_operation),
@@ -54,15 +51,10 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(string_output),
                 PHYLANX_MATCH_DATA(vstack_operation),
                 // n-nary functions
-                PHYLANX_MATCH_DATA(if_conditional),
-                PHYLANX_MATCH_DATA(fold_left_operation),
-                PHYLANX_MATCH_DATA(fold_right_operation),
-                PHYLANX_MATCH_DATA(for_operation),
                 PHYLANX_MATCH_DATA(linearmatrix),
                 PHYLANX_MATCH_DATA(linspace),
                 PHYLANX_MATCH_DATA(range_operation),
                 // binary functions
-                PHYLANX_MATCH_DATA(apply),
                 PHYLANX_MATCH_DATA(cross_operation),
                 PHYLANX_MATCH_DATA(diag_operation),
                 PHYLANX_MATCH_DATA(dot_operation),
@@ -70,8 +62,6 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(file_write),
                 PHYLANX_MATCH_DATA(file_read_csv),
                 PHYLANX_MATCH_DATA(file_write_csv),
-                PHYLANX_MATCH_DATA(filter_operation),
-                PHYLANX_MATCH_DATA(while_operation),
 #if defined(PHYLANX_HAVE_HIGHFIVE)
                 PHYLANX_MATCH_DATA(file_read_hdf5),
                 PHYLANX_MATCH_DATA(file_write_hdf5),
@@ -98,20 +88,9 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(sum_operation),
                 PHYLANX_MATCH_DATA(transpose_operation),
                 // variadic operations
-                PHYLANX_MATCH_DATA(and_operation),
                 PHYLANX_MATCH_DATA(add_dimension),
-                PHYLANX_MATCH_DATA(or_operation),
                 // binary operations
-                PHYLANX_MATCH_DATA(equal),
-                PHYLANX_MATCH_DATA(greater),
-                PHYLANX_MATCH_DATA(greater_equal),
-                PHYLANX_MATCH_DATA(less),
-                PHYLANX_MATCH_DATA(less_equal),
-                PHYLANX_MATCH_DATA(not_equal),
                 PHYLANX_MATCH_DATA(store_operation),
-                // unary operations
-                PHYLANX_MATCH_DATA(unary_minus_operation),
-                PHYLANX_MATCH_DATA(unary_not_operation),
                 //
                 // compiler-specific (internal) primitives
                 //

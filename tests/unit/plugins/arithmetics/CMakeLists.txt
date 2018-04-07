@@ -8,6 +8,7 @@ set(tests
     div_operation
     mul_operation
     sub_operation
+    unary_minus_operation
    )
 
 foreach(test ${tests})

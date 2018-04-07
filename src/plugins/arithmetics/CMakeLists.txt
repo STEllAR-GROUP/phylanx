@@ -10,4 +10,3 @@ add_phylanx_primitive_plugin(phylanx_arithmetics
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
-add_phylanx_pseudo_dependencies(plugins_.arithmetics_ phylanx_arithmetics)

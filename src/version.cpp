@@ -65,11 +65,11 @@ namespace phylanx
             std::vector<std::string> cfg(config);
 
             // add additional search suffix for plugins to configuration
-            cfg.emplace_back("hpx.component_path_suffixes="
-                "/lib/hpx" HPX_INI_PATH_DELIMITER
-                "/bin/hpx" HPX_INI_PATH_DELIMITER
-                "/lib/phylanx" HPX_INI_PATH_DELIMITER
-                "/bin/phylanx");
+            cfg.emplace_back(
+                "hpx.component_path_suffixes="
+                    "$[hpx.component_path_suffixes]"
+                        HPX_INI_PATH_DELIMITER "/lib/phylanx"
+                        HPX_INI_PATH_DELIMITER "/bin/phylanx");
 
             // If there was another config function registered, call it
             if (prev_user_main_config_function)

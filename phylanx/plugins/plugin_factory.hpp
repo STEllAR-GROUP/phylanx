@@ -16,6 +16,7 @@
 #include <phylanx/plugins/plugin_factory_base.hpp>
 
 #include <map>
+#include <memory>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
