@@ -88,7 +88,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 });
         }
 
-        fargs.reserve(operands_.size() - 1);
+        fargs.reserve(operands_.size() + params.size() - 1);
+        std::copy(params.begin(), params.end(), std::back_inserter(fargs));
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
             fargs.push_back(value_operand_sync(*it, params, name_, codename_));
