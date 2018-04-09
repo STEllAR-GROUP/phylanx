@@ -1,4 +1,5 @@
 // Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2018 Shahrzad Shirzad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -46,41 +47,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct visit_not_equal;
 
         template <typename T>
-        primitive_argument_type not_equal0d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal0d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal0d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal0d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal0d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal1d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal1d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal1d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal1d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal1d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal1d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal2d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal2d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal2d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal2d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal2d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal2d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type not_equal_all(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type not_equal2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
+        template <typename T>
+        primitive_argument_type not_equal_all(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
     };
 
     PHYLANX_EXPORT primitive create_not_equal(hpx::id_type const& locality,

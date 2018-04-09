@@ -1,4 +1,5 @@
 // Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2018 Shahrzad Shirzad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -36,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const not_equal::match_data =
     {
         hpx::util::make_tuple("__ne",
-            std::vector<std::string>{"_1 != _2"},
+            std::vector<std::string>{"__ne(_1, _2, _3)","_1 != _2"},
             &create_not_equal, &create_primitive<not_equal>)
     };
 
@@ -48,8 +49,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
+    primitive_argument_type not_equal::not_equal0d0d(
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+    {
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{lhs.scalar() != rhs.scalar()});
+        }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{lhs.scalar() != rhs.scalar()});
+    }
+
+    template <typename T>
     primitive_argument_type not_equal::not_equal0d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -64,13 +78,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](double x) { return (x != lhs.scalar()); });
         }
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(rhs)});
+        }
+
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(rhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal0d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -85,26 +105,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](double x) { return (x != lhs.scalar()); });
         }
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(rhs)});
+        }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(rhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 0:
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{lhs.scalar() != rhs.scalar()});
+            return not_equal0d0d(std::move(lhs), std::move(rhs), type_double);
 
         case 1:
-            return not_equal0d1d(std::move(lhs), std::move(rhs));
+            return not_equal0d1d(std::move(lhs), std::move(rhs), type_double);
 
         case 2:
-            return not_equal0d2d(std::move(lhs), std::move(rhs));
+            return not_equal0d2d(std::move(lhs), std::move(rhs), type_double);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -117,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type not_equal::not_equal1d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -132,13 +156,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](double x) { return (x != rhs.scalar()); });
         }
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(lhs)});
+        }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal1d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -165,13 +194,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](double x, double y) { return (x != y); });
         }
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(lhs)});
+        }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal1d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         auto cv = lhs.vector();
         auto cm = rhs.matrix();
@@ -195,6 +229,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::row(m, i) = blaze::map(blaze::row(cm, i),
                     blaze::trans(cv),
                     [](double x, double y) { return x != y; });
+            if (type_double)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{std::move(m)});
+            }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{std::move(m)});
         }
@@ -204,25 +243,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::trans(cv),
                 [](double x, double y) { return x != y; });
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(rhs)});
+        }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(rhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 0:
-            return not_equal1d0d(std::move(lhs), std::move(rhs));
+            return not_equal1d0d(std::move(lhs), std::move(rhs), type_double);
 
         case 1:
-            return not_equal1d1d(std::move(lhs), std::move(rhs));
+            return not_equal1d1d(std::move(lhs), std::move(rhs), type_double);
 
         case 2:
-            return not_equal1d2d(std::move(lhs), std::move(rhs));
+            return not_equal1d2d(std::move(lhs), std::move(rhs), type_double);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -236,7 +280,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type not_equal::not_equal2d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -254,13 +298,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](double x) { return (x != rhs.scalar()); });
         }
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(lhs)});
+        }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal2d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         auto cv = rhs.vector();
         auto cm = lhs.matrix();
@@ -284,6 +333,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::row(m, i) = blaze::map(blaze::row(cm, i),
                     blaze::trans(cv),
                     [](double x, double y) { return x != y; });
+            if (type_double)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{std::move(m)});
+            }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{std::move(m)});
         }
@@ -293,13 +347,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::trans(cv),
                 [](double x, double y) { return x != y; });
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(lhs)});
+        }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal2d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
@@ -326,25 +385,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](double x, double y) { return (x != y); });
         }
 
+        if (type_double)
+        {
+            return primitive_argument_type(
+                ir::node_data<double>{std::move(lhs)});
+        }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
     }
 
     template <typename T>
     primitive_argument_type not_equal::not_equal2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 0:
-            return not_equal2d0d(std::move(lhs), std::move(rhs));
+            return not_equal2d0d(std::move(lhs), std::move(rhs), type_double);
 
         case 1:
-            return not_equal2d1d(std::move(lhs), std::move(rhs));
+            return not_equal2d1d(std::move(lhs), std::move(rhs), type_double);
 
         case 2:
-            return not_equal2d2d(std::move(lhs), std::move(rhs));
+            return not_equal2d2d(std::move(lhs), std::move(rhs), type_double);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -358,19 +422,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type not_equal::not_equal_all(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
     {
         std::size_t lhs_dims = lhs.num_dimensions();
         switch (lhs_dims)
         {
         case 0:
-            return not_equal0d(std::move(lhs), std::move(rhs));
+            return not_equal0d(std::move(lhs), std::move(rhs), type_double);
 
         case 1:
-            return not_equal1d(std::move(lhs), std::move(rhs));
+            return not_equal1d(std::move(lhs), std::move(rhs), type_double);
 
         case 2:
-            return not_equal2d(std::move(lhs), std::move(rhs));
+            return not_equal2d(std::move(lhs), std::move(rhs), type_double);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -398,6 +462,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type operator()(T && lhs, T && rhs) const
         {
+            if (type_double_)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{lhs != rhs});
+            }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs != rhs});
         }
@@ -408,7 +477,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (lhs.num_dimensions() != 0)
             {
                 return not_equal_.not_equal_all(
-                    std::move(lhs), operand_type(std::move(rhs)));
+                    std::move(lhs), operand_type(std::move(rhs)), type_double_);
+            }
+            if (type_double_)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{lhs[0] != rhs});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs[0] != rhs});
@@ -420,7 +494,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (rhs.num_dimensions() != 0)
             {
                 return not_equal_.not_equal_all(
-                    operand_type(std::move(lhs)), std::move(rhs));
+                    operand_type(std::move(lhs)), std::move(rhs), type_double_);
+            }
+            if (type_double_)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{lhs != rhs[0]});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs != rhs[0]});
@@ -431,8 +510,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (lhs.num_dimensions() != 0)
             {
-                return not_equal_.not_equal_all(
-                    std::move(lhs), ir::node_data<std::uint8_t>{rhs != 0});
+                return not_equal_.not_equal_all(std::move(lhs),
+                    ir::node_data<std::uint8_t>{rhs != 0}, type_double_);
+            }
+            if (type_double_)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{lhs[0] != rhs});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs[0] != rhs});
@@ -444,7 +528,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (rhs.num_dimensions() != 0)
             {
                 return not_equal_.not_equal_all(
-                    ir::node_data<std::uint8_t>{lhs != 0}, std::move(rhs));
+                    ir::node_data<std::uint8_t>{lhs != 0}, std::move(rhs),
+                    type_double_);
+            }
+            if (type_double_)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{lhs != rhs[0]});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs != rhs[0]});
@@ -455,24 +545,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<std::uint8_t>&& rhs) const
         {
             return not_equal_.not_equal_all(
-                ir::node_data<double>(std::move(lhs)),
-                ir::node_data<double>(std::move(rhs)));
+                std::move(lhs), std::move(rhs), type_double_);
         }
 
         primitive_argument_type operator()(
             operand_type&& lhs, operand_type&& rhs) const
         {
-            return not_equal_.not_equal_all(std::move(lhs), std::move(rhs));
+            return not_equal_.not_equal_all(
+                std::move(lhs), std::move(rhs), type_double_);
         }
 
         not_equal const& not_equal_;
+        bool type_double_;
     };
 
     hpx::future<primitive_argument_type> not_equal::eval(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() != 2)
+        if (operands.size() < 2 || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "not_equal::eval",
@@ -481,7 +572,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        if (!valid(operands[0]) || !valid(operands[1]))
+        if (!valid(operands[0]) || !valid(operands[1]) ||
+            (operands.size() == 3 && !valid(operands[2])))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "not_equal::eval",
@@ -492,6 +584,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
+        if (operands.size() == 3 &&
+            phylanx::execution_tree::extract_boolean_value(operands[2]))
+        {
+            return hpx::dataflow(
+                hpx::util::unwrapping(
+                    [this_](operands_type&& ops) -> primitive_argument_type {
+                        return primitive_argument_type(
+                            util::visit(visit_not_equal{*this_, true},
+                                std::move(ops[0].variant()),
+                                std::move(ops[1].variant())));
+                    }),
+                detail::map_operands(operands, functional::literal_operand{},
+                    args, name_, codename_));
+        }
+
         return hpx::dataflow(hpx::util::unwrapping(
             [this_](operands_type && ops) -> primitive_argument_type
             {
