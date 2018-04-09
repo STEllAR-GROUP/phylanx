@@ -79,12 +79,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         std::vector<int> create_list_slice(
             int start, int stop, int step, int array_length) const;
-        primitive_argument_type slicing0d(arg_type&& arg,
-            std::vector<double> extracted_row,
-            std::vector<double> extracted_column) const;
+        primitive_argument_type slicing0d(arg_type&& arg) const;
         primitive_argument_type slicing1d(arg_type&& arg,
-            std::vector<double> extracted_row,
-            std::vector<double> extracted_column) const;
+            std::vector<double> extracted_row) const;
         primitive_argument_type slicing2d(arg_type&& arg,
             std::vector<double> extracted_row,
             std::vector<double> extracted_column) const;

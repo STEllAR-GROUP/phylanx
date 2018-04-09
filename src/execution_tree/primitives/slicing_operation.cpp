@@ -39,7 +39,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     match_pattern_type const slicing_operation::match_data = {
         hpx::util::make_tuple("slice",
             std::vector<std::string>{
-                "slice(_1, _2, _3, _4, _5)", "slice(_1,_2,_3,_4,_5,_6,_7)"},
+                "slice(_1)", "slice(_1, _2)", "slice(_1,_2,_3)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>)};
 
@@ -109,11 +109,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         return result;
     }
 
-    primitive_argument_type slicing_operation::slicing0d(arg_type&& arg,
-        std::vector<double>
-            extracted_row,
-        std::vector<double>
-            extracted_column) const
+    primitive_argument_type slicing_operation::slicing0d(arg_type&& arg) const
     {
         auto scalar_data = arg.scalar();
         return primitive_argument_type{ir::node_data<double>{scalar_data}};
@@ -121,13 +117,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     primitive_argument_type slicing_operation::slicing1d(arg_type&& arg,
         std::vector<double>
-            extracted_row,
-        std::vector<double>
-            extracted_column) const
+            extracted_row) const
     {
         // return elements starting from row_start to row_stop.
-        // the values passed to col_stat and col_stop does not have an
-        // effect on the result.
 
         auto input_vector = arg.vector();
         if (extracted_row.size() == 1)
@@ -173,6 +165,15 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<double>
             extracted_column) const
     {
+        if (extracted_column.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                "slicing_operation::slicing2d",
+                execution_tree::generate_error_message(
+                    "columns can not be empty", name_, codename_));
+        }
+
         auto input_matrix = arg.matrix();
         auto num_matrix_rows = input_matrix.rows();
         auto num_matrix_cols = input_matrix.columns();
@@ -281,14 +282,14 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() != 3)
+        if (operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "slicing_operation::slicing_operation",
                 execution_tree::generate_error_message(
                     "the slicing_operation primitive requires "
-                    "exactly three arguments",
+                    "either one(0d), two(1d) or three arguments(2d)",
                     name_, codename_));
         }
 
@@ -339,33 +340,31 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
                 //Extract the list or the single double
                 // from third argument (column-> start, stop, step)
-                if (execution_tree::is_list_operand_strict(args[2]))
+                if (args.size() == 3)
                 {
+                  if (execution_tree::is_list_operand_strict(args[2])) {
                     auto result = execution_tree::extract_list_value(
                         args[2], this_->name_, this_->codename_);
-                    for (auto a : result)
-                    {
-                        extracted_column.push_back(
-                            execution_tree::extract_numeric_value(a)[0]);
+                    for (auto a : result) {
+                      extracted_column.push_back(
+                          execution_tree::extract_numeric_value(a)[0]);
                     }
-                }
-                else
-                {
+                  } else {
                     double result = execution_tree::extract_numeric_value(
                         args[2], this_->name_, this_->codename_)[0];
                     extracted_column.push_back(result);
+                  }
                 }
                 std::size_t matrix_dims = matrix_input.num_dimensions();
 
                 switch (matrix_dims)
                 {
                 case 0:
-                    return this_->slicing0d(std::move(matrix_input),
-                        extracted_row, extracted_column);
+                    return this_->slicing0d(std::move(matrix_input));
 
                 case 1:
                     return this_->slicing1d(std::move(matrix_input),
-                        extracted_row, extracted_column);
+                        extracted_row);
 
                 case 2:
                     return this_->slicing2d(std::move(matrix_input),

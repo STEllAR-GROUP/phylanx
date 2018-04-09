@@ -86,12 +86,12 @@ class PhySL:
             return s + ')'
 
     def _Slice(self, a, allowreturn=False):
-        s = ', [%s, %s' % \
+        s = ', \'(%s, %s' % \
             (self.recompile(a.lower), self.recompile(a.upper))
         if a.step:
-            s += ', %s]' % self.recompile(a.step)
+            s += ', %s)' % self.recompile(a.step)
         else:
-            s += ']'
+            s += ')'
         return s
 
     def _ExtSlice(self, a, allowreturn=False):
