@@ -6,7 +6,9 @@
 set(subdirs
     arithmetics
     booleans
-    controls)
+    controls
+    matrixops
+   )
 
 foreach(subdir ${subdirs})
   add_phylanx_pseudo_target(tests.unit.plugins.${subdir})

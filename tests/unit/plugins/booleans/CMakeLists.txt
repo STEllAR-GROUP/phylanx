@@ -5,6 +5,8 @@
 
 set(tests
     and_operation
+    all_operation
+    any_operation
     equal_operation
     greater_equal_operation
     greater_operation

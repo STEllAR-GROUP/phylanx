@@ -9,8 +9,12 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(all_operation_plugin,
+    phylanx::execution_tree::primitives::all_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(and_operation_plugin,
     phylanx::execution_tree::primitives::and_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(any_operation_plugin,
+    phylanx::execution_tree::primitives::any_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(equal_plugin,
     phylanx::execution_tree::primitives::equal::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(greater_plugin,

@@ -116,7 +116,8 @@ namespace phylanx { namespace execution_tree
         std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
 
     ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_EXPORT void register_pattern(match_pattern_type const& pattern);
+    PHYLANX_EXPORT void register_pattern(
+        std::string const&, match_pattern_type const& pattern);
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive create_primitive_component(

@@ -5,7 +5,6 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/controls/for_operation.hpp>
-#include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

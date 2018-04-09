@@ -5,6 +5,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/booleans/and_operation.hpp>
 #include <phylanx/ir/ranges.hpp>
 

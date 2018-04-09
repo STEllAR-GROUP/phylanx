@@ -13,11 +13,12 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> registered_patterns;
+    std::vector<std::pair<std::string, match_pattern_type>> registered_patterns;
 
-    void register_pattern(match_pattern_type const& pattern)
+    void register_pattern(
+        std::string const& name, match_pattern_type const& pattern)
     {
-        registered_patterns.push_back(pattern);
+        registered_patterns.push_back(std::make_pair(name, pattern));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -38,26 +39,12 @@ namespace phylanx { namespace execution_tree
             pattern_list patterns =
             {
                 // variadic functions
-                PHYLANX_MATCH_DATA(column_set_operation),
-                PHYLANX_MATCH_DATA(column_slicing_operation),
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
-                PHYLANX_MATCH_DATA(hstack_operation),
-                PHYLANX_MATCH_DATA(make_list),
-                PHYLANX_MATCH_DATA(row_set_operation),
-                PHYLANX_MATCH_DATA(row_slicing_operation),
-                PHYLANX_MATCH_DATA(set_operation),
-                PHYLANX_MATCH_DATA(slicing_operation),
                 PHYLANX_MATCH_DATA(string_output),
-                PHYLANX_MATCH_DATA(vstack_operation),
-                // n-nary functions
-                PHYLANX_MATCH_DATA(linearmatrix),
-                PHYLANX_MATCH_DATA(linspace),
+                PHYLANX_MATCH_DATA(make_list),
                 PHYLANX_MATCH_DATA(range_operation),
                 // binary functions
-                PHYLANX_MATCH_DATA(cross_operation),
-                PHYLANX_MATCH_DATA(diag_operation),
-                PHYLANX_MATCH_DATA(dot_operation),
                 PHYLANX_MATCH_DATA(file_read),
                 PHYLANX_MATCH_DATA(file_write),
                 PHYLANX_MATCH_DATA(file_read_csv),
@@ -66,29 +53,8 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(file_read_hdf5),
                 PHYLANX_MATCH_DATA(file_write_hdf5),
 #endif
-
                 // unary functions
-                PHYLANX_MATCH_DATA(all_operation),
-                PHYLANX_MATCH_DATA(any_operation),
-                PHYLANX_MATCH_DATA(argmin),
-                PHYLANX_MATCH_DATA(argmax),
-                PHYLANX_MATCH_DATA(constant),
-                PHYLANX_MATCH_DATA(determinant),
                 PHYLANX_MATCH_DATA(enable_tracing),
-                PHYLANX_MATCH_DATA(exponential_operation),
-                PHYLANX_MATCH_DATA(extract_shape),
-                PHYLANX_MATCH_DATA(gradient_operation),
-                PHYLANX_MATCH_DATA(identity),
-                PHYLANX_MATCH_DATA(inverse_operation),
-                PHYLANX_MATCH_DATA(mean_operation),
-                PHYLANX_MATCH_DATA(power_operation),
-                PHYLANX_MATCH_DATA(random),
-                PHYLANX_MATCH_DATA(shuffle_operation),
-                PHYLANX_MATCH_DATA(square_root_operation),
-                PHYLANX_MATCH_DATA(sum_operation),
-                PHYLANX_MATCH_DATA(transpose_operation),
-                // variadic operations
-                PHYLANX_MATCH_DATA(add_dimension),
                 // binary operations
                 PHYLANX_MATCH_DATA(store_operation),
                 //
@@ -112,17 +78,17 @@ namespace phylanx { namespace execution_tree
                 patterns.push_back(hpx::util::make_tuple(car_cdr_name, pattern));
             }
 
-            // generic functions
-            patterns.push_back(hpx::util::make_tuple(
-                "get_seed_action", primitives::get_seed_match_data));
-            patterns.push_back(hpx::util::make_tuple(
-                "set_seed_action", primitives::set_seed_match_data));
+//            // generic functions
+//            patterns.push_back(hpx::util::make_tuple(
+//                "get_seed_action", primitives::get_seed_match_data));
+//            patterns.push_back(hpx::util::make_tuple(
+//                "set_seed_action", primitives::set_seed_match_data));
 
             // patterns registered from external primitive plugins
             for (auto const& pattern : registered_patterns)
             {
                 patterns.push_back(
-                    hpx::util::make_tuple(hpx::util::get<0>(pattern), pattern));
+                    hpx::util::make_tuple(pattern.first, pattern.second));
             }
 
             return patterns;

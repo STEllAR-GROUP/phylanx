@@ -10,5 +10,6 @@
 #include <phylanx/plugins/arithmetics/arithmetics.hpp>
 #include <phylanx/plugins/booleans/booleans.hpp>
 #include <phylanx/plugins/controls/controls.hpp>
+#include <phylanx/plugins/matrixops/matrixops.hpp>
 
 #endif

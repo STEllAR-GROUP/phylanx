@@ -51,9 +51,7 @@ macro(add_phylanx_primitive_plugin name)
     APPEND PROPERTY
       COMPILE_DEFINITIONS
         "PHYLANX_PLUGIN_EXPORTS"
-        "HPX_PLUGIN_NAME=hpx_${name}"
-        "HPX_PLUGIN_CONFIG_SECTION=\"phylanx\""
-        "HPX_PLUGIN_PATH_SUFFIX=\"phylanx\"")
+        "HPX_PLUGIN_NAME=hpx_${name}")
 
 endmacro()
 

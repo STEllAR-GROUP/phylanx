@@ -7,6 +7,7 @@ set(subdirs
     arithmetics
     booleans
     controls
+    matrixops
    )
 
 foreach(subdir ${subdirs})

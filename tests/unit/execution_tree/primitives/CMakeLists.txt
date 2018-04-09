@@ -4,47 +4,13 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    all_operation
-    any_operation
-    argmin
-    argmax
     car_cdr_operation
-    column_set
-    column_slicing
-    constant
     define_operation
-    determinant
-    diag_operation
-    dot_operation
-    cross_operation
-    exponential_operation
-    extract_shape
     file_primitives
     file_csv_primitives
-    gradient_operation
-    add_dimension
-    hstack_operation
-    identity
-    inverse_operation
     invoke_operation
     literal_value
-    linearmatrix
-    linspace
-    mean_operation
-    power_operation
-    random
-    random_distributions
-    range_operation
-    row_set
-    row_slicing
-    set_operation
-    shuffle_operation
-    slicing_operation
-    square_root_operation
     store_operation
-    sum_operation
-    transpose_operation
-    vstack_operation
    )
 
 if(PHYLANX_WITH_HIGHFIVE)

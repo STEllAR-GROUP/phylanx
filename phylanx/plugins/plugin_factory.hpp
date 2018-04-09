@@ -7,13 +7,16 @@
 #define PHYLANX_PLUGIN_FACTORY_APR_06_2018_1233PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/plugins/plugin_base.hpp>
+#include <phylanx/plugins/plugin_factory_base.hpp>
 
 #include <hpx/plugins/plugin_factory_base.hpp>
 #include <hpx/plugins/plugin_registry.hpp>
 #include <hpx/plugins/unique_plugin_name.hpp>
 
-#include <phylanx/plugins/plugin_base.hpp>
-#include <phylanx/plugins/plugin_factory_base.hpp>
+#include <hpx/util/detail/pp/cat.hpp>
+#include <hpx/util/detail/pp/expand.hpp>
+#include <hpx/util/detail/pp/nargs.hpp>
 
 #include <map>
 #include <memory>
@@ -82,24 +85,44 @@ namespace phylanx { namespace plugin
 ////////////////////////////////////////////////////////////////////////////////
 // This macro is used create and to register a primitive factory with
 // Hpx.Plugin.
-#define PHYLANX_REGISTER_PLUGIN_FACTORY(pluginname, match_data)                \
-    namespace phylanx { namespace plugin {                                     \
-        struct pluginname : plugin_base                                        \
-        {                                                                      \
-            void register_known_primitives() override                          \
+#define PHYLANX_REGISTER_PLUGIN_FACTORY(...)                                   \
+    PHYLANX_REGISTER_PLUGIN_FACTORY_(__VA_ARGS__)                              \
+    /**/
+
+#define PHYLANX_REGISTER_PLUGIN_FACTORY_(...)                                  \
+    HPX_PP_EXPAND(HPX_PP_CAT(                                                  \
+        PHYLANX_REGISTER_PLUGIN_FACTORY_, HPX_PP_NARGS(__VA_ARGS__)            \
+    )(__VA_ARGS__))                                                            \
+/**/
+
+#define PHYLANX_REGISTER_PLUGIN_FACTORY_2(pluginname, match_data)              \
+    PHYLANX_REGISTER_PLUGIN_FACTORY_3(                                         \
+        pluginname, match_data, hpx::util::get<0>(match_data))                 \
+    /**/
+
+#define PHYLANX_REGISTER_PLUGIN_FACTORY_3(pluginname, match_data, name)        \
+    namespace phylanx {                                                        \
+        namespace plugin {                                                     \
+            struct pluginname : plugin_base                                    \
             {                                                                  \
-                phylanx::execution_tree::register_pattern(match_data);         \
-            }                                                                  \
-        };                                                                     \
-    }}                                                                         \
+                void register_known_primitives() override                      \
+                {                                                              \
+                    phylanx::execution_tree::register_pattern(                 \
+                        name, match_data);                                     \
+                }                                                              \
+            };                                                                 \
+        }                                                                      \
+    }                                                                          \
     PHYLANX_REGISTER_PLUGIN_FACTORY_BASE(                                      \
         phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>,          \
         pluginname)                                                            \
     HPX_DEF_UNIQUE_PLUGIN_NAME(                                                \
         phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>,          \
         pluginname)                                                            \
-    template struct phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>; \
-    HPX_REGISTER_PLUGIN_REGISTRY_2(phylanx::plugin::pluginname, pluginname)    \
+    template struct phylanx::plugin::plugin_factory<                           \
+        phylanx::plugin::pluginname>;                                          \
+    HPX_REGISTER_PLUGIN_REGISTRY_4(                                            \
+        phylanx::plugin::pluginname, pluginname, "phylanx", "phylanx")         \
     /**/
 
 #endif

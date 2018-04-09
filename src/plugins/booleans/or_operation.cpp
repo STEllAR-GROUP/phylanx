@@ -5,8 +5,8 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/booleans/or_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/booleans/or_operation.hpp>
 #include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -473,7 +473,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 return or_.or_all(
                     ir::node_data<double>{lhs != 0 ? 1.0 : 0.0}, std::move(rhs));
-            }
+        }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{(rhs[0] != 0) || (lhs != 0)});
         }
