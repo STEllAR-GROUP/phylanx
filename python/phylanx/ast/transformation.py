@@ -42,7 +42,7 @@ def get_node(node, **kwargs):
     return None
 
 
-def rmline(a):
+def remove_line(a):
     return re.sub(r'\$.*', '', a)
 
 
@@ -72,66 +72,109 @@ class PhySL:
                 'unexpected: expression has more than one sub-expression')
         return s
 
-    def _Subscript(self, a):
-        e = get_node(a, name="ExtSlice")
-        s0 = get_node(e, name="Slice", num=0)
-        s1 = get_node(e, name="Slice", num=1)
-        s0alt = get_node(a, name="Slice", num=1)
-        if s0 is not None and s1 is not None:
-            xlo = s0.lower
-            xlo_info = full_node_name(xlo)
-            xhi = s0.upper
-            xhi_info = full_node_name(xhi)
-            ylo = s1.lower
-            yhi = s1.upper
-            yhi_info = full_node_name(yhi)
-            sname = self.recompile(get_node(a, num=0))
-            s = "slice%s(" % xlo_info
-            s += sname
-            s += ","
-            if xlo is None:
-                s += "0"
-            else:
-                s += self.recompile(xlo)
-            s += ","
-            if xhi is None:
-                s += "shape%s(" % xhi_info + sname + ",0)"
-            else:
-                s += self.recompile(xhi)
-            s += ","
-            if ylo is None:
-                s += "0"
-            else:
-                s += self.recompile(ylo)
-            s += ","
-            if yhi is None:
-                s += "shape%s(" % yhi_info + sname + ",1)"
-            else:
-                s += self.recompile(yhi)
-            s += ")"
+    def _Subscript(self, a, allowreturn=False):
+        symbol_info = full_node_name(a)
+        s = 'slice%s(%s' % (symbol_info, self.recompile(a.value))
+        if isinstance(a.slice, ast.Index):
+            s += ', %s)' % self.recompile(a.slice.value)
             return s
-        elif s0alt is not None:
-            sname = self.recompile(get_node(a, num=0))
-            xlo = s0alt.lower
-            xlo_info = full_node_name(xlo)
-            xhi = s0alt.upper
-            xhi_info = full_node_name(xhi)
-            s = 'slice_column%s(' % xlo_info
-            s += sname
-            s += ','
-            if xlo is None:
-                s += "0"
-            else:
-                s += self.recompile(xlo)
-            s += ','
-            if xhi is None:
-                s += "shape%s(" % xhi_info + sname + ",0)"
-            else:
-                s += self.recompile(xhi)
-            s += ")"
-            return s
+        elif isinstance(a.slice, ast.Slice):
+            s += self.recompile(a.slice)
+            return s + ')'
         else:
-            raise Exception("Unsupported slicing: line=%d" % a.lineno)
+            s += self.recompile(a.slice)
+            return s + ')'
+
+    def _Slice(self, a, allowreturn=False):
+        s = ', [%s, %s' % \
+            (self.recompile(a.lower), self.recompile(a.upper))
+        if a.step:
+            s += ', %s]' % self.recompile(a.step)
+        else:
+            s += ']'
+        return s
+
+    def _ExtSlice(self, a, allowreturn=False):
+        if isinstance(a.dims[0], ast.Index):
+            s = self.recompile(a.dims[0].value)
+        else:
+            s = self.recompile(a.dims[0])
+        if isinstance(a.dims[1], ast.Index):
+            s = self.recompile(a.dims[1].value)
+        else:
+            s += self.recompile(a.dims[1])
+        return s
+
+# NOTE
+# this function returns comma separated entries of the tuple without the parentheses.
+
+    def _Tuple(self, a, allowreturn=False):
+        s = ''
+        for i in range(len(a.elts) - 1):
+            s += self.recompile(a.elts[i]) + ', '
+        s += self.recompile(a.elts[-1])
+        return s
+
+
+#        e = get_node(a, name="ExtSlice")
+#        s0 = get_node(e, name="Slice", num=0)
+#        s1 = get_node(e, name="Slice", num=1)
+#        s0alt = get_node(a, name="Slice", num=1)
+#        if s0 is not None and s1 is not None:
+#            xlo = s0.lower
+#            xlo_info = full_node_name(xlo)
+#            xhi = s0.upper
+#            xhi_info = full_node_name(xhi)
+#            ylo = s1.lower
+#            yhi = s1.upper
+#            yhi_info = full_node_name(yhi)
+#            sname = self.recompile(get_node(a, num=0))
+#            s = "slice%s(" % xlo_info
+#            s += sname
+#            s += ","
+#            if xlo is None:
+#                s += "0"
+#            else:
+#                s += self.recompile(xlo)
+#            s += ","
+#            if xhi is None:
+#                s += "shape%s(" % xhi_info + sname + ",0)"
+#            else:
+#                s += self.recompile(xhi)
+#            s += ","
+#            if ylo is None:
+#                s += "0"
+#            else:
+#                s += self.recompile(ylo)
+#            s += ","
+#            if yhi is None:
+#                s += "shape%s(" % yhi_info + sname + ",1)"
+#            else:
+#                s += self.recompile(yhi)
+#            s += ")"
+#            return s
+#        elif s0alt is not None:
+#            sname = self.recompile(get_node(a, num=0))
+#            xlo = s0alt.lower
+#            xlo_info = full_node_name(xlo)
+#            xhi = s0alt.upper
+#            xhi_info = full_node_name(xhi)
+#            s = 'slice_column%s(' % xlo_info
+#            s += sname
+#            s += ','
+#            if xlo is None:
+#                s += "0"
+#            else:
+#                s += self.recompile(xlo)
+#            s += ','
+#            if xhi is None:
+#                s += "shape%s(" % xhi_info + sname + ",0)"
+#            else:
+#                s += self.recompile(xhi)
+#            s += ")"
+#            return s
+#        else:
+#            raise Exception("Unsupported slicing: line=%d" % a.lineno)
 
     def _FunctionDef(self, a):
         args = [arg for arg in ast.iter_child_nodes(a)]
@@ -357,7 +400,7 @@ class PhySL:
             # a define() or a store(), depending on whether
             # the variable has already been defined.
             sd = "store" + symbol_info
-            if rmline(ns) not in self.defs:
+            if remove_line(ns) not in self.defs:
                 sd = "define" + symbol_info
             lg = "<"
             # Determine the direction of iteration, if possible
@@ -390,23 +433,26 @@ class PhySL:
             raise Exception('unsupported AST node type: %s' % nm)
 
     nodes = {
-        "Num": _Num,
-        "Str": _Str,
-        "Name": _Name,
-        "Expr": _Expr,
-        "Subscript": _Subscript,
-        "FunctionDef": _FunctionDef,
-        "BinOp": _BinOp,
-        "Call": _Call,
-        "Module": _Module,
-        "Return": _Return,
         "Assign": _Assign,
         "AugAssign": _AugAssign,
-        "While": _While,
-        "If": _If,
+        "BinOp": _BinOp,
+        "Call": _Call,
         "Compare": _Compare,
+        "Expr": _Expr,
+        "For": _For,
+        "FunctionDef": _FunctionDef,
+        "If": _If,
+        "Module": _Module,
+        "Name": _Name,
+        "Num": _Num,
+        "Return": _Return,
+        "Slice": _Slice,
+        "ExtSlice": _ExtSlice,
+        "Str": _Str,
+        "Subscript": _Subscript,
+        "Tuple": _Tuple,
         "UnaryOp": _UnaryOp,
-        "For": _For
+        "While": _While
     }
 
 
