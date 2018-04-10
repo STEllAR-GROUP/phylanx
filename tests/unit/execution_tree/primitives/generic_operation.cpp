@@ -28,7 +28,6 @@ void test_generic_operation_0d(
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         generic.eval();
-
     HPX_TEST_EQ(
         func(5.0), phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
