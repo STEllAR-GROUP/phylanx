@@ -26,7 +26,7 @@ phylanx::execution_tree::compiler::function compile(std::string const& code)
 //////////////////////////////////////////////////////////////////////////
 void test_range_stop()
 {
-    char const* const code = "map(lambda(x, x), range_operation(2))";
+    char const* const code = "map(lambda(x, x), range(2))";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
 

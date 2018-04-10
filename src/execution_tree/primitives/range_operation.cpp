@@ -34,15 +34,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type>&& operands,
         std::string const& name, std::string const& codename)
     {
-        static std::string type("range_operation");
+        static std::string type("range");
         return create_primitive_component(
             locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const range_operation::match_data =
     {
-        hpx::util::make_tuple("range_operation",
-        std::vector<std::string>{"range_operation(_1)", "range_operation(_1, _2)", "range_operation(_1, _2, _3)"},
+        hpx::util::make_tuple("range",
+        std::vector<std::string>{"range(_1)", "range(_1, _2)", "range(_1, _2, _3)"},
         &create_range_operation, &create_primitive<range_operation>)
     };
 

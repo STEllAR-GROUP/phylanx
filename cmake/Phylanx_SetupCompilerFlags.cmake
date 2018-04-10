@@ -50,6 +50,9 @@ macro(phylanx_setup_compiler_flags)
         # qualification conformance
         phylanx_add_target_compile_option(/Zc:rvalueCast)
         phylanx_add_target_compile_option(/Zc:strictStrings)
+
+		# Disable Boost warnings that happen because MSVC is updated ahead of Boost
+        phylanx_add_target_compile_option(/DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE)
       endif()
 
       # Suppress Blaze warnings

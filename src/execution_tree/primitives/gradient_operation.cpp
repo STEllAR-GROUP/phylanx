@@ -181,11 +181,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
             }
-            return std::vector<primitive_argument_type>{
+            return primitive_argument_type{std::vector<primitive_argument_type>{
+                primitive_argument_type{
+                    ir::node_data<double>{storage2d_type{std::move(gradient)}}},
                 primitive_argument_type{ir::node_data<double>{
-                    storage2d_type{std::move(gradient)}}},
-                primitive_argument_type{ir::node_data<double>{
-                    storage2d_type{std::move(gradient_1)}}}};
+                    storage2d_type{std::move(gradient_1)}}}}};
         }
     }
 
