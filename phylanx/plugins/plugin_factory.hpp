@@ -113,16 +113,21 @@ namespace phylanx { namespace plugin
             };                                                                 \
         }                                                                      \
     }                                                                          \
+    PHYLANX_REGISTER_PLUGIN_FACTORY_4(                                         \
+        phylanx::plugin::pluginname, pluginname, match_data, name)             \
+    /**/
+
+/**/
+
+#define PHYLANX_REGISTER_PLUGIN_FACTORY_4(                                     \
+        plugintype, pluginname, match_data, name)                              \
     PHYLANX_REGISTER_PLUGIN_FACTORY_BASE(                                      \
-        phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>,          \
-        pluginname)                                                            \
+        phylanx::plugin::plugin_factory< plugintype>, pluginname)              \
     HPX_DEF_UNIQUE_PLUGIN_NAME(                                                \
-        phylanx::plugin::plugin_factory<phylanx::plugin::pluginname>,          \
-        pluginname)                                                            \
-    template struct phylanx::plugin::plugin_factory<                           \
-        phylanx::plugin::pluginname>;                                          \
+        phylanx::plugin::plugin_factory< plugintype>, pluginname)              \
+    template struct phylanx::plugin::plugin_factory< plugintype>;              \
     HPX_REGISTER_PLUGIN_REGISTRY_4(                                            \
-        phylanx::plugin::pluginname, pluginname, "phylanx", "phylanx")         \
+        plugintype, pluginname, "phylanx", "phylanx")                          \
     /**/
 
 #endif

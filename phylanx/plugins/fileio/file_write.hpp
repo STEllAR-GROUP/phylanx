@@ -19,8 +19,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class file_write
-        : public primitive_component_base
-        , public std::enable_shared_from_this<file_write>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<file_write>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
@@ -46,9 +46,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operand_;
     };
 
-    PHYLANX_EXPORT primitive create_file_write(hpx::id_type const& locality,
+    inline primitive create_file_write(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "file_write", std::move(operands), name, codename);
+    }
 }}}
 
 #endif

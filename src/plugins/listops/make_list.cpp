@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/make_list.hpp>
+#include <phylanx/plugins/listops/make_list.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -24,15 +24,6 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_make_list(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-        std::string const& name, std::string const& codename)
-    {
-        static std::string type("make_list");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
     match_pattern_type const make_list::match_data =
     {
         hpx::util::make_tuple("make_list",

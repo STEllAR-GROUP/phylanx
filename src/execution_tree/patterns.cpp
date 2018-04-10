@@ -38,28 +38,16 @@ namespace phylanx { namespace execution_tree
         {
             pattern_list patterns =
             {
-                // variadic functions
+                // debugging support
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
-                PHYLANX_MATCH_DATA(string_output),
-                PHYLANX_MATCH_DATA(make_list),
-                PHYLANX_MATCH_DATA(range_operation),
-                // binary functions
-                PHYLANX_MATCH_DATA(file_read),
-                PHYLANX_MATCH_DATA(file_write),
-                PHYLANX_MATCH_DATA(file_read_csv),
-                PHYLANX_MATCH_DATA(file_write_csv),
-#if defined(PHYLANX_HAVE_HIGHFIVE)
-                PHYLANX_MATCH_DATA(file_read_hdf5),
-                PHYLANX_MATCH_DATA(file_write_hdf5),
-#endif
-                // unary functions
                 PHYLANX_MATCH_DATA(enable_tracing),
-                // binary operations
+                PHYLANX_MATCH_DATA(string_output),
+
+                // special purpose primitives
                 PHYLANX_MATCH_DATA(store_operation),
-                //
+
                 // compiler-specific (internal) primitives
-                //
                 PHYLANX_MATCH_DATA(access_argument),
                 PHYLANX_MATCH_DATA(function_reference),
                 PHYLANX_MATCH_DATA(wrapped_function),
@@ -71,18 +59,6 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(define_variable),
                 PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data_define)
             };
-
-            std::string car_cdr_name("car_cdr");
-            for (auto const& pattern : primitives::car_cdr_operation::match_data)
-            {
-                patterns.push_back(hpx::util::make_tuple(car_cdr_name, pattern));
-            }
-
-//            // generic functions
-//            patterns.push_back(hpx::util::make_tuple(
-//                "get_seed_action", primitives::get_seed_match_data));
-//            patterns.push_back(hpx::util::make_tuple(
-//                "set_seed_action", primitives::set_seed_match_data));
 
             // patterns registered from external primitive plugins
             for (auto const& pattern : registered_patterns)

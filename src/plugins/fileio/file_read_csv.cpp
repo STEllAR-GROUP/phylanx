@@ -4,8 +4,8 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/file_read_csv.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/fileio/file_read_csv.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -28,15 +28,6 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_file_read_csv(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-            std::string const& name, std::string const& codename)
-    {
-        static std::string type("file_read_csv");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
     match_pattern_type const file_read_csv::match_data =
     {
         hpx::util::make_tuple("file_read_csv",

@@ -13,6 +13,7 @@
 #include <hpx/lcos/future.hpp>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -31,9 +32,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
     };
 
-    PHYLANX_EXPORT primitive create_file_read(hpx::id_type const& locality,
+    inline primitive create_file_read(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "file_read", std::move(operands), name, codename);
+    }
 }}}
 
 #endif

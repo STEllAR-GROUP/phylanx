@@ -7,6 +7,8 @@ set(subdirs
     arithmetics
     booleans
     controls
+    fileio
+    listops
     matrixops
    )
 

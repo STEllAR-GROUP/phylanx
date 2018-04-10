@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_FILE_WRITE_CSV_OCT_26_2017_0129PM)
-#define PHYLANX_PRIMITIVES_FILE_WRITE_CSV_OCT_26_2017_0129PM
+#if !defined(PHYLANX_PRIMITIVES_FILE_READ_CSV_OCT_26_2017_0129PM)
+#define PHYLANX_PRIMITIVES_FILE_READ_CSV_OCT_26_2017_0129PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -13,36 +13,32 @@
 #include <hpx/lcos/future.hpp>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class file_write_csv
-        : public primitive_component_base
-        , public std::enable_shared_from_this<file_write_csv>
+    class file_read_csv : public primitive_component_base
     {
-    protected:
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
     public:
         static match_pattern_type const match_data;
 
-        file_write_csv() = default;
+        file_read_csv() = default;
 
-        file_write_csv(std::vector<primitive_argument_type>&& operands,
+        file_read_csv(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
-    private:
-        void write_to_file_csv(ir::node_data<double> const& val,
-            std::string const& filename) const;
     };
 
-    PHYLANX_EXPORT primitive create_file_write_csv(hpx::id_type const& locality,
+    inline primitive create_file_read_csv(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "file_read_csv", std::move(operands), name, codename);
+    }
 }}}
 
 #endif

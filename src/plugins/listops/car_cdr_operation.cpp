@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/car_cdr_operation.hpp>
+#include <phylanx/plugins/listops/car_cdr_operation.hpp>
 
 #include <phylanx/ir/ranges.hpp>
 
@@ -25,15 +25,6 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_car_cdr_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-            std::string const& name, std::string const& codename)
-    {
-        static std::string type("car_cdr");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
 #define PHYLANX_CAR_CDR_MATCH_DATA(name)                                       \
     hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
         &create_car_cdr_operation, &create_primitive<car_cdr_operation>)       \

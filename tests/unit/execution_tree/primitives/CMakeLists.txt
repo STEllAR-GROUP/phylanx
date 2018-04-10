@@ -4,20 +4,11 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    car_cdr_operation
     define_operation
-    file_primitives
-    file_csv_primitives
     invoke_operation
     literal_value
     store_operation
    )
-
-if(PHYLANX_WITH_HIGHFIVE)
-  set(tests ${tests}
-        file_hdf5_primitives
-     )
-endif()
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

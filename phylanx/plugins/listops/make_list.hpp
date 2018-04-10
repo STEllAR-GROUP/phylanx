@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -45,10 +46,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params) const override;
     };
 
-    PHYLANX_EXPORT primitive create_make_list(
-        hpx::id_type const& locality,
+    inline primitive create_make_list(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "make_list", std::move(operands), name, codename);
+    }
 }}}
 
 #endif

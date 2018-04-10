@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -45,10 +46,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string operation_;
     };
 
-    PHYLANX_EXPORT primitive create_car_cdr_operation(
-        hpx::id_type const& locality,
+    inline primitive create_car_cdr_operation(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "car_cdr", std::move(operands), name, codename);
+    }
 }}}
 
 #endif

@@ -6,8 +6,8 @@
 #include <phylanx/config.hpp>
 
 #if defined(PHYLANX_HAVE_HIGHFIVE)
-#include <phylanx/execution_tree/primitives/file_read_hdf5.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/fileio/file_read_hdf5.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -29,19 +29,12 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_file_read_hdf5(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-            std::string const& name, std::string const& codename)
+    match_pattern_type const file_read_hdf5::match_data =
     {
-        static std::string type("file_read_hdf5");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
-    match_pattern_type const file_read_hdf5::match_data = {
         hpx::util::make_tuple("file_read_hdf5",
             std::vector<std::string>{"file_read_hdf5(_1, _2)"},
-            &create_file_read_hdf5, &create_primitive<file_read_hdf5>)};
+            &create_file_read_hdf5, &create_primitive<file_read_hdf5>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     file_read_hdf5::file_read_hdf5(
