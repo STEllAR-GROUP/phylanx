@@ -21,7 +21,7 @@ def lra(x, y, alpha, iterations, enable_output):
             print("step: ", step, ", ", weights)
         pred = 1.0 / (1.0 + np.exp(-np.dot(x, weights)))
         error = pred - y
-        gradient = dot(transx, error)
+        gradient = np.dot(transx, error)
         weights = weights - (alpha * gradient)
         step += 1
     return weights
@@ -32,6 +32,6 @@ file_name = "breast_cancer.csv"
 data = np.genfromtxt(file_name, skip_header=1, delimiter=",")
 x = data[:, :-1]
 y = data[:, -1:]
-y = y.reshape((y.shape[0], ))
+y = np.reshape(y, (y.shape[0], ))
 res = lra(x, y, 1e-5, 750, 0)
 print(res)
