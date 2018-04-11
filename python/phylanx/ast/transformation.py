@@ -66,13 +66,13 @@ class PhySL:
 
     def _Expr(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = ""
+        s = "("
         if len(args) == 1:
             s += self.recompile(args[0])
         else:
             raise Exception(
                 'unexpected: expression has more than one sub-expression')
-        return s
+        return s + ")"
 
     def _Subscript(self, a, allowreturn=False):
         e = get_node(a, name="ExtSlice")
@@ -90,22 +90,22 @@ class PhySL:
             sname = self.recompile(get_node(a, num=0))
             s = "slice%s(" % xlo_info
             s += sname
-            s += ","
+            s += ", "
             if xlo is None:
                 s += "0"
             else:
                 s += self.recompile(xlo)
-            s += ","
+            s += ", "
             if xhi is None:
                 s += "shape%s(" % xhi_info + sname + ",0)"
             else:
                 s += self.recompile(xhi)
-            s += ","
+            s += ", "
             if ylo is None:
                 s += "0"
             else:
                 s += self.recompile(ylo)
-            s += ","
+            s += ", "
             if yhi is None:
                 s += "shape%s(" % yhi_info + sname + ",1)"
             else:
@@ -225,7 +225,7 @@ class PhySL:
             raise Exception(
                 "Return only allowed at end of function: line=%d\n" % a.lineno)
         args = [arg for arg in ast.iter_child_nodes(a)]
-        return " " + self.recompile(args[0])
+        return self.recompile(args[0])
 
     def _Assign(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
@@ -237,7 +237,7 @@ class PhySL:
             s += "define" + symbol_info
             self.defs[args[0].id] = 1
         a = '%s' % full_node_name(args[0], args[0].id)
-        s += "(" + a + "," + self.recompile(args[1]) + ")"
+        s += "(" + a + ", " + self.recompile(args[1]) + ")"
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -274,13 +274,13 @@ class PhySL:
         if nn == "Add":
             sym = "+"
         arg0 = '%s' % full_node_name(args[0], args[0].id)
-        return "store%s(" % symbol_info + arg0 + "," + arg0 + sym + self.recompile(
+        return "store%s(" % symbol_info + arg0 + ", " + arg0 + sym + self.recompile(
             args[2]) + ")"
 
     def _While(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = "while(" + self.recompile(args[0]) + ","
+        s = "while" + symbol_info + "(" + self.recompile(args[0]) + ", "
         if len(args) == 2:
             s += self.recompile(args[1])
         else:
@@ -295,7 +295,7 @@ class PhySL:
 
     def _If(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        s = "if(" + self.recompile(a.test) + ","
+        s = "if" + symbol_info + "(" + self.recompile(a.test) + ", "
         if len(a.body) > 1:
             s += "block" + symbol_info + "("
             for j in range(len(a.body)):
@@ -309,7 +309,7 @@ class PhySL:
             s += ")"
         else:
             s += self.recompile(a.body[0], allowreturn)
-        s += ","
+        s += ", "
         if len(a.orelse) > 1:
             s += "block" + symbol_info + "("
             for j in range(len(a.orelse)):
@@ -346,7 +346,8 @@ class PhySL:
             sym = " == "
         else:
             raise Exception('boolean operation not supported: %s' % nn)
-        return self.recompile(args[0]) + sym + self.recompile(args[2])
+        return '(' + self.recompile(args[0]) + sym + self.recompile(
+            args[2]) + ')'
 
     def _UnaryOp(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
@@ -387,7 +388,7 @@ class PhySL:
                 if blockn is None:
                     break
                 if blocki > 2:
-                    bs += ","
+                    bs += ", "
                 bs += self.recompile(blockn)
                 blocki += 1
             bs += ")"
@@ -402,17 +403,17 @@ class PhySL:
             if not re.search(r'[a-zA-Z_]', ss):
                 if eval(ss) < 0:
                     lg = ">"
-                return "for(" + sd + "(" + ns + "," + ls + ")," + ns + " " + lg + " " \
-                       + us + ",store%s(" % symbol_info + ns + "," + ns + \
-                    "+" + ss + ")," + bs + ")"
+                return "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " " + lg + " " \
+                       + us + ",store%s(" % symbol_info + ns + ", " + ns + \
+                    "+" + ss + "), " + bs + ")"
             else:
                 # if we can't determine the direction of iteration, make two for loops
-                ret = "if(" + ss + " > 0,"
-                ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " < " + us + \
-                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
-                    + "),"
-                ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " > " + us + \
-                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
+                ret = "if(" + ss + " > 0, "
+                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " < " + us + \
+                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
+                    + "), "
+                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " > " + us + \
+                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
                     + "))"
                 return ret
             raise Exception("unsupported For loop structure")
@@ -494,7 +495,8 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
 
             if target not in self.targets:
                 raise NotImplementedError(
-                    "unknown target passed to '@Phylanx()' decorator: %s." % target)
+                    "unknown target passed to '@Phylanx()' decorator: %s." %
+                    target)
 
             self.f = f
             self.cs = cs
@@ -523,5 +525,8 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
                     "OpenSCoP kernel blocks are not yet callable.")
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
             return et.eval(self.f.__name__, self.cs, *nargs)
+
+        def generate_ast(self):
+            return phylanx.ast.generate_ast(self.__src__)
 
     return PhyTransformer
