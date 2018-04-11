@@ -1324,7 +1324,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<primitive_argument_type> extract_list_value(
+    ir::range extract_list_value(
         primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {
@@ -1359,7 +1359,7 @@ namespace phylanx { namespace execution_tree
                 primitive_argument_type{util::get<6>(val)}};
 
         case 7:     // phylanx::ir::range
-            return util::get<7>(val).args();
+            return util::get<7>(val);
 
         default:
             break;
@@ -1374,7 +1374,7 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    std::vector<primitive_argument_type> extract_list_value(
+    ir::range extract_list_value(
         primitive_argument_type && val,
         std::string const& name, std::string const& codename)
     {
@@ -1409,7 +1409,7 @@ namespace phylanx { namespace execution_tree
                 primitive_argument_type{util::get<6>(std::move(val))}};
 
         case 7:     // phylanx::ir::range
-            return util::get<7>(std::move(val)).args();
+            return util::get<7>(std::move(val));
 
         default:
             break;
@@ -1445,7 +1445,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<primitive_argument_type> extract_list_value_strict(
+    ir::range extract_list_value_strict(
         primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {
@@ -1471,7 +1471,7 @@ namespace phylanx { namespace execution_tree
             }
 
         case 7:     // phylanx::ir:range
-            return util::get<7>(val).args();
+            return util::get<7>(val);
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
@@ -1492,7 +1492,7 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    std::vector<primitive_argument_type> extract_list_value_strict(
+    ir::range extract_list_value_strict(
         primitive_argument_type && val,
         std::string const& name, std::string const& codename)
     {
@@ -1518,7 +1518,7 @@ namespace phylanx { namespace execution_tree
             }
 
         case 7:     // phylanx::ir::range
-            return util::get<7>(std::move(val)).args();
+            return util::get<7>(std::move(val));
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
@@ -2175,7 +2175,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<std::vector<primitive_argument_type>> list_operand(
+    hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name, std::string const& codename)
@@ -2201,7 +2201,7 @@ namespace phylanx { namespace execution_tree
         return hpx::make_ready_future(extract_list_value(val, name, codename));
     }
 
-    hpx::future<std::vector<primitive_argument_type>> list_operand(
+    hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> && args,
         std::string const& name, std::string const& codename)
@@ -2227,7 +2227,7 @@ namespace phylanx { namespace execution_tree
         return hpx::make_ready_future(extract_list_value(val, name, codename));
     }
 
-    hpx::future<std::vector<primitive_argument_type>> list_operand(
+    hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name, std::string && codename)
@@ -2254,7 +2254,7 @@ namespace phylanx { namespace execution_tree
             extract_list_value(std::move(val), name, codename));
     }
 
-    hpx::future<std::vector<primitive_argument_type>> list_operand(
+    hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> && args,
         std::string const& name, std::string && codename)
@@ -2281,7 +2281,7 @@ namespace phylanx { namespace execution_tree
             extract_list_value(std::move(val), name, codename));
     }
 
-    std::vector<primitive_argument_type> list_operand_sync(
+    ir::range list_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name, std::string const& codename)

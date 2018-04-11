@@ -6,6 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/constant.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -29,19 +30,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         std::size_t extract_num_dimensions(
-            std::vector<primitive_argument_type> const& shape)
+            ir::range const& shape)
         {
             return shape.size();
         }
 
         std::array<std::size_t, 2> extract_dimensions(
-            std::vector<primitive_argument_type> const& shape)
+            ir::range const& shape)
         {
             std::array<std::size_t, 2> result = {0, 0};
-            result[0] = extract_integer_value(shape[0]);
+            result[0] = extract_integer_value(*shape.begin());
             if (shape.size() > 1)
             {
-                result[1] = extract_integer_value(shape[1]);
+                auto elem_1 = shape.begin();
+                result[1] = extract_integer_value(*++elem_1);
             }
             return result;
         }
@@ -121,7 +123,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
                 [this_](operand_type&& op0,
-                        std::vector<primitive_argument_type>&& op1)
+                        ir::range&& op1)
                 ->  primitive_argument_type
                 {
                     if (op0.num_dimensions() != 0)

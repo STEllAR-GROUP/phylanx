@@ -94,15 +94,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 std::array<std::size_t, 2> result{1ull, 1ull};
                 auto const& list = util::get<7>(val);
-                auto const& args = list.args();
+                auto const& args = list;
                 switch (args.size())
                 {
                 case 2:
-                    result[1] = std::size_t(extract_numeric_value(args[1])[0]);
+                {
+                    auto elem_0 = args.begin();
+                    result[1] = std::size_t(extract_numeric_value(*(++elem_0))[0]);
                     HPX_FALLTHROUGH;
+                }
 
                 case 1:
-                    result[0] = std::size_t(extract_numeric_value(args[0])[0]);
+                    result[0] = std::size_t(extract_numeric_value(*args.begin())[0]);
                     HPX_FALLTHROUGH;
 
                 case 0:

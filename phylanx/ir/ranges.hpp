@@ -143,6 +143,8 @@ namespace phylanx { namespace ir
         reverse_range_iterator rbegin();
         reverse_range_iterator rend();
 
+        std::ptrdiff_t size() const;
+
         bool empty() const;
 
         args_type& args();
@@ -163,6 +165,11 @@ namespace phylanx { namespace ir
 
         range(args_type::iterator x, args_type::iterator y)
           : data_(std::make_pair(range_iterator{x}, range_iterator{y}))
+        {
+        }
+
+        range(range_iterator x, range_iterator y)
+          : data_(std::make_pair(x, y))
         {
         }
 

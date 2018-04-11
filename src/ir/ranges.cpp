@@ -183,7 +183,7 @@ namespace phylanx { namespace ir
             std::int64_t step = hpx::util::get<2>(int_range);
             return range_iterator{start, step};
         }
-        case 1:    // args_type
+        case 1:    // wrapped_args_type
             return util::get<1>(data_).get().begin();
         case 2:    // arg_pair_type
             return util::get<2>(data_).first;
@@ -204,7 +204,7 @@ namespace phylanx { namespace ir
             std::int64_t step = hpx::util::get<2>(int_range);
             return range_iterator{start, step};
         }
-        case 1:    // args_type
+        case 1:    // wrapped_args_type
             return util::get<1>(data_).get().begin();
         case 2:    // arg_pair_type
             return util::get<2>(data_).first;
@@ -234,7 +234,7 @@ namespace phylanx { namespace ir
 
             return range_iterator{actual_stop, step};
         }
-        case 1:    // args_type
+        case 1:    // wrapped_args_type
             return util::get<1>(data_).get().end();
         case 2:    // arg_pair_type
             return util::get<2>(data_).second;
@@ -264,7 +264,7 @@ namespace phylanx { namespace ir
 
             return range_iterator{actual_stop, step};
         }
-        case 1:    // args_type
+        case 1:    // wrapped_args_type
             return util::get<1>(data_).get().end();
         case 2:    // arg_pair_type
             return util::get<2>(data_).second;
@@ -297,9 +297,9 @@ namespace phylanx { namespace ir
 
             return reverse_range_iterator{actual_begin, step};
         }
-        case 1:    // args_type
+        case 1:    // wrapped_args_type
             return util::get<1>(data_).get().rbegin();
-        case 2:    // range_iterator
+        case 2:    // arg_pair_type
             return util::get<2>(data_).second.invert();
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -321,10 +321,42 @@ namespace phylanx { namespace ir
             std::int64_t step = hpx::util::get<2>(int_range);
             return reverse_range_iterator{start - step, step};
         }
-        case 1:    // args_type
+        case 1:    // wrapped_args_type
             return util::get<1>(data_).get().rend();
-        case 2:    // range_iterator
+        case 2:    // arg_pair_type
             return util::get<2>(data_).first.invert();
+        }
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::rend",
+            "range object holds unsupported data type");
+    }
+
+    std::ptrdiff_t range::size() const
+    {
+        switch (data_.index())
+        {
+        case 0:    // int_range_type
+        {
+            const int_range_type& int_range = util::get<0>(data_);
+            const std::int64_t start = hpx::util::get<0>(int_range);
+            const std::int64_t stop = hpx::util::get<1>(int_range);
+            const std::int64_t step = hpx::util::get<2>(int_range);
+
+            const std::int64_t distance_to_start = stop - start;
+            const std::int64_t n_steps = distance_to_start / step;
+            const std::int64_t remaining_step =
+                distance_to_start % step > 0 ? 1 : 0;
+
+            return n_steps + remaining_step;
+        }
+        case 1:    // wrapped_args_type
+            return util::get<1>(data_).get().size();
+        case 2:    // arg_pair_type
+            {
+                auto const& first = util::get<2>(data_).first;
+                auto const& second = util::get<2>(data_).second;
+                return std::distance(second, first);
+            }
         }
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::rend",
@@ -335,17 +367,17 @@ namespace phylanx { namespace ir
     {
         switch (data_.index())
         {
-        case 0:
+        case 0:    // int_range_type
         {
             auto const& v = util::get<0>(data_);
             return hpx::util::get<0>(v) == hpx::util::get<1>(v);
         }
-        case 1:
+        case 1:    // wrapped_args_type
         {
             auto const& v = util::get<1>(data_).get();
             return v.begin() == v.end();
         }
-        case 2:
+        case 2:    // arg_pair_type
         {
             auto const& v = util::get<2>(data_);
             return v.first == v.second;
@@ -397,7 +429,7 @@ namespace phylanx { namespace ir
 
         switch (index)
         {
-        case 0:
+        case 0:    // int_range_type
         {
             int_range_type& int_range = util::get<0>(data_);
             ar << hpx::util::get<0>(int_range)
@@ -405,12 +437,12 @@ namespace phylanx { namespace ir
                << hpx::util::get<2>(int_range);
             break;
         }
-        case 1:
+        case 1:    // wrapped_args_type
         {
             ar << util::get<1>(data_);
             break;
         }
-        case 2:
+        case 2:    // arg_pair_type
         {
             arg_pair_type p = util::get<2>(data_);
             args_type m;
@@ -430,14 +462,14 @@ namespace phylanx { namespace ir
 
         switch (index)
         {
-        case 0:
+        case 0:    // int_range_type
         {
             std::int64_t start, stop, step;
             ar >> start >> stop >> step;
             data_ = int_range_type(start, stop, step);
             break;
         }
-        case 1:
+        case 1:    // wrapped_args_type
         {
             args_type m;
             ar >> m;
