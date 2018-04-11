@@ -63,6 +63,8 @@ namespace phylanx { namespace bindings
         template <typename Ast>
         bool on_enter(Ast const& ast) const
         {
+            pybind11::gil_scoped_acquire acquire;       // acquire GIL
+
             auto d =
                 func_.attr("__class__").attr("__dict__").cast<pybind11::dict>();
             if (d.contains("on_enter"))
@@ -78,6 +80,8 @@ namespace phylanx { namespace bindings
         template <typename Ast>
         bool on_exit(Ast const& ast) const
         {
+            pybind11::gil_scoped_acquire acquire;       // acquire GIL
+
             auto d =
                 func_.attr("__class__").attr("__dict__").cast<pybind11::dict>();
             if (d.contains("on_exit"))
@@ -98,6 +102,7 @@ namespace phylanx { namespace bindings
     bool traverse(Ast const& ast, pybind11::object func, pybind11::args args,
         pybind11::kwargs kwargs)
     {
+        pybind11::gil_scoped_release release;       // release GIL
         return phylanx::ast::traverse(ast, traverse_helper{func, args, kwargs});
     }
 
@@ -105,6 +110,7 @@ namespace phylanx { namespace bindings
     template <typename Ast>
     std::vector<char> serialize(Ast const& ast)
     {
+        pybind11::gil_scoped_release release;       // release GIL
         return phylanx::util::serialize(ast);
     }
 
@@ -132,12 +138,15 @@ namespace phylanx { namespace bindings
     template <typename Ast>
     std::vector<char> pickle_helper(Ast const& ast)
     {
+        pybind11::gil_scoped_release release;       // release GIL
         return phylanx::util::serialize(ast);
     }
 
     template <typename Ast>
     Ast unpickle_helper(std::vector<char> data)
     {
+        pybind11::gil_scoped_release release;       // release GIL
+
         Ast ast;
         phylanx::util::detail::unserialize(data, ast);
         return ast;
