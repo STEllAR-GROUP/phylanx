@@ -48,12 +48,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type generic2d(operands_type&& ops) const;
         double (*get_0d_map(std::string const& name))(double) const; //name is already a reference in outer function, does & needed?
         blaze::DynamicVector<double> (*get_1d_map(std::string const& name))(
-            const blaze::DynamicVector<double>&) const;
+            const blaze::CustomVector<double,blaze::aligned,blaze::padded>&) const;
         blaze::DynamicMatrix<double> (*get_2d_map(std::string const& name))(
             const blaze::DynamicMatrix<double>&) const;
         double (*func0d_)(double);
         blaze::DynamicVector<double> (*func1d_)(
-            const blaze::DynamicVector<double>&);
+            const blaze::CustomVector<double,blaze::aligned,blaze::padded>&);
         blaze::DynamicMatrix<double> (*func2d_)(
             const blaze::DynamicMatrix<double>&);
     };

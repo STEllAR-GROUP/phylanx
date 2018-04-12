@@ -52,28 +52,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     blaze::DynamicVector<double> (*generic_operation::get_1d_map(
-        std::string const& name))(const blaze::DynamicVector<double>&) const
+        std::string const& name))(const blaze::CustomVector<double,blaze::aligned,blaze::padded>&) const
     {
         static std::map<std::string,
             blaze::DynamicVector<double> (*)(
-                const blaze::DynamicVector<double>&)>
+                const blaze::CustomVector<double,blaze::aligned,blaze::padded>&)>
             map1d = {{"exp",
-                         [](const blaze::DynamicVector<double>& m)
+                         [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
                              -> blaze::DynamicVector<double> {
                              return blaze::exp(m);
                          }},
                 {"log",
-                    [](const blaze::DynamicVector<double>& m)
+                    [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
                         -> blaze::DynamicVector<double> {
                         return blaze::log(m);
                     }},
                 {"sin",
-                    [](const blaze::DynamicVector<double>& m)
+                    [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
                         -> blaze::DynamicVector<double> {
                         return blaze::sin(m);
                     }},
                 {"sinh",
-                    [](const blaze::DynamicVector<double>& m)
+                    [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
                         -> blaze::DynamicVector<double> {
                         return blaze::sinh(m);
                     }}};

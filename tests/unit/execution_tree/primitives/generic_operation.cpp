@@ -8,7 +8,7 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
-
+#include <blaze/Blaze.h>
 #include <utility>
 #include <vector>
 
@@ -33,10 +33,12 @@ void test_generic_operation_0d(
 }
 
 void test_generic_operation_1d(std::string const& func_name,
-    blaze::DynamicVector<double> func(blaze::DynamicVector<double>))
+    blaze::DynamicVector<double> func(blaze::CustomVector<double,blaze::aligned,blaze::padded>))
 {
     blaze::Rand<blaze::DynamicVector<double>> gen{};
-    blaze::DynamicVector<double> m = gen.generate(42UL);
+    blaze::DynamicVector<double> n = gen.generate(42UL);
+    std::unique_ptr<double[],blaze::Deallocate> memory(&n[0]);
+    blaze::CustomVector<double,blaze::aligned,blaze::padded> m(memory.get(), 3UL, 43UL); // check the meaning of 3UL padded vector of size 3 and capacity of 43?
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -84,7 +86,7 @@ int main(int argc, char* argv[])
 {
     test_generic_operation_0d("log", std::log);
     test_generic_operation_1d("log",
-        [](blaze::DynamicVector<double> m) -> blaze::DynamicVector<double> {
+        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
             return blaze::log(m);
         });
     test_generic_operation_2d("log",
@@ -93,7 +95,7 @@ int main(int argc, char* argv[])
         });
     test_generic_operation_0d("exp", std::exp);
     test_generic_operation_1d("exp",
-        [](blaze::DynamicVector<double> m) -> blaze::DynamicVector<double> {
+        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
             return blaze::exp(m);
         });
     test_generic_operation_2d("exp",
@@ -102,7 +104,7 @@ int main(int argc, char* argv[])
         });
     test_generic_operation_0d("sin", std::sin);
     test_generic_operation_1d("sin",
-        [](blaze::DynamicVector<double> m) -> blaze::DynamicVector<double> {
+        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
             return blaze::sin(m);
         });
     test_generic_operation_2d("sin",
@@ -111,7 +113,7 @@ int main(int argc, char* argv[])
         });
     test_generic_operation_0d("sinh", std::sinh);
     test_generic_operation_1d("sinh",
-        [](blaze::DynamicVector<double> m) -> blaze::DynamicVector<double> {
+        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
             return blaze::sinh(m);
         });
     test_generic_operation_2d("sinh",
