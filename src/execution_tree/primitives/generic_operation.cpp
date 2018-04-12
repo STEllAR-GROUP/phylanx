@@ -40,12 +40,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_generic_operation,
             &create_primitive<generic_operation>)};
 
-    double (*generic_operation::get_0d_map(std::string const& name))(double) {
+    double (*generic_operation::get_0d_map(std::string const& name))(double)
+    {
         static std::map<std::string, double (*)(double)> map0d = {
-                {"exp", [](double m) -> double { return blaze::exp(m); }},
-                {"log", [](double m) -> double { return blaze::log(m); }},
-                {"sin", [](double m) -> double { return blaze::sin(m); }},
-                {"sinh", [](double m) -> double { return blaze::sinh(m); }}};
+            {"exp", [](double m) -> double { return blaze::exp(m); }},
+            {"log", [](double m) -> double { return blaze::log(m); }},
+            {"sin", [](double m) -> double { return blaze::sin(m); }},
+            {"sinh", [](double m) -> double { return blaze::sinh(m); }}};
         return map0d[name];
     }
 
