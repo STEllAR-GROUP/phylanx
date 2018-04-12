@@ -52,11 +52,11 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<int> slicing_operation::create_list_slice(
-        int start, int stop, int step, int array_length) const
+    std::vector<std::int64_t> slicing_operation::create_list_slice(
+        std::int64_t start, std::int64_t stop, std::int64_t step, std::size_t array_length) const
     {
-        auto actual_start = 0;
-        auto actual_stop = 0;
+        std::int64_t actual_start = 0;
+        std::int64_t actual_stop = 0;
 
         if (start >= 0)
         {
@@ -78,11 +78,11 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             actual_stop = array_length + stop;
         }
 
-        std::vector<int> result;
+        std::vector<std::int64_t> result;
 
         if (step > 0)
         {
-            for (int i = actual_start; i < actual_stop; i += step)
+            for (std::int64_t i = actual_start; i < actual_stop; i += step)
             {
                 result.push_back(i);
             }
@@ -90,7 +90,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
         if (step < 0)
         {
-            for (int i = actual_start; i > actual_stop; i += step)
+            for (std::int64_t i = actual_start; i > actual_stop; i += step)
             {
                 result.push_back(i);
             }
@@ -111,7 +111,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     primitive_argument_type slicing_operation::slicing0d(arg_type&& arg) const
     {
-        auto scalar_data = arg.scalar();
+        double scalar_data = arg.scalar();
         return primitive_argument_type{ir::node_data<double>{scalar_data}};
     }
 
@@ -131,7 +131,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         auto input_vector = arg.vector();
         if (extracted_row.size() == 1)
         {
-            double index = extracted_row[0];
+            std::int64_t index = extracted_row[0];
             if (index < 0)
             {
                 index = input_vector.size() + index;
@@ -139,9 +139,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             return primitive_argument_type{input_vector[index]};
         }
 
-        auto row_start = extracted_row[0];
-        auto row_stop = extracted_row[1];
-        int step = 1;
+        std::int64_t row_start = extracted_row[0];
+        std::int64_t row_stop = extracted_row[1];
+        std::int64_t step = 1;
 
         if (extracted_row.size() == 3)
         {
@@ -166,11 +166,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         return primitive_argument_type{ir::node_data<double>(std::move(v))};
     }
 
-    primitive_argument_type slicing_operation::slicing2d(arg_type&& arg,
-        std::vector<double>
-            extracted_row,
-        std::vector<double>
-            extracted_column) const
+    primitive_argument_type slicing_operation::slicing2d(
+        arg_type&& arg, std::vector<double> extracted_row,
+        std::vector<double> extracted_column) const
     {
         if (extracted_column.empty() || extracted_row.empty())
         {
@@ -181,14 +179,14 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                     "columns/rows can not be empty", name_, codename_));
         }
 
-        auto input_matrix = arg.matrix();
-        auto num_matrix_rows = input_matrix.rows();
-        auto num_matrix_cols = input_matrix.columns();
+        blaze::DynamicMatrix<double> input_matrix = arg.matrix();
+        std::size_t num_matrix_rows = input_matrix.rows();
+        std::size_t num_matrix_cols = input_matrix.columns();
 
         //return a value and not a vector if you are not given a list
         if (extracted_row.size() == 1)
         {
-            double index = extracted_row[0];
+            std::int64_t index = extracted_row[0];
             if (index < 0)
             {
                 index = num_matrix_rows + index;
@@ -196,19 +194,19 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             auto sv = blaze::trans(blaze::row(input_matrix, index));
             if (extracted_column.size() == 1)
             {
-                double index_col = extracted_column[0];
+                std::int64_t index_col = extracted_column[0];
                 if (index_col < 0)
                 {
                     index_col = num_matrix_cols + index_col;
                 }
-                auto value = sv[index_col];
+                double value = sv[index_col];
                 storage0d_type v{value};
                 return primitive_argument_type{
                     ir::node_data<double>{std::move(v)}};
             }
-            auto col_start = extracted_column[0];
-            auto col_stop = extracted_column[1];
-            int step_col = 1;
+            std::int64_t col_start = extracted_column[0];
+            std::int64_t col_stop = extracted_column[1];
+            std::int64_t step_col = 1;
 
             if (extracted_column.size() == 3)
             {
@@ -229,9 +227,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             storage1d_type v{final_vec};
             return primitive_argument_type{ir::node_data<double>{std::move(v)}};
         }
-        auto row_start = extracted_row[0];
-        auto row_stop = extracted_row[1];
-        int step = 1;
+        std::int64_t row_start = extracted_row[0];
+        std::int64_t row_stop = extracted_row[1];
+        std::int64_t step = 1;
 
         if (extracted_row.size() == 3)
         {
@@ -252,7 +250,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         auto sm = blaze::rows(input_matrix, init_list);
         if (extracted_column.size() == 1)
         {
-            double index_col = extracted_column[0];
+            std::int64_t index_col = extracted_column[0];
             if (index_col < 0)
             {
                 index_col = num_matrix_cols + index_col;
@@ -261,9 +259,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             storage1d_type v{vec};
             return primitive_argument_type{ir::node_data<double>{std::move(v)}};
         }
-        auto col_start = extracted_column[0];
-        auto col_stop = extracted_column[1];
-        int step_col = 1;
+        std::int64_t col_start = extracted_column[0];
+        std::int64_t col_stop = extracted_column[1];
+        std::int64_t step_col = 1;
 
         if (extracted_column.size() == 3)
         {
@@ -377,8 +375,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                     return this_->slicing0d(std::move(matrix_input));
 
                 case 1:
-                    return this_->slicing1d(std::move(matrix_input),
-                        extracted_row);
+                    return this_->slicing1d(
+                        std::move(matrix_input), extracted_row);
 
                 case 2:
                     return this_->slicing2d(std::move(matrix_input),

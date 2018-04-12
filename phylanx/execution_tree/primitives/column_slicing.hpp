@@ -70,12 +70,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         std::vector<int> create_list(
             int start, int stop, int step, int array_length) const;
-      primitive_argument_type column_slicing0d(
-          arg_type&& arg) const;
-      primitive_argument_type column_slicing1d(
-          arg_type&& arg, std::vector<double> extracted) const;
-      primitive_argument_type column_slicing2d(
-          arg_type&& arg, std::vector<double> extracted) const;
+        primitive_argument_type column_slicing0d(arg_type&& arg) const;
+        primitive_argument_type column_slicing1d(
+            arg_type&& arg, std::vector<double> extracted) const;
+        primitive_argument_type column_slicing2d(
+            arg_type&& arg, std::vector<double> extracted) const;
     };
 
     PHYLANX_EXPORT primitive create_column_slicing_operation(

@@ -52,11 +52,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<int> row_slicing_operation::create_list_row(
-        int start, int stop, int step, int array_length) const
+    std::vector<std::int64_t> row_slicing_operation::create_list_row(
+        std::int64_t start, std::int64_t stop, std::int64_t step,
+        std::size_t array_length) const
     {
-        auto actual_start = 0;
-        auto actual_stop = 0;
+        std::int64_t actual_start = 0;
+        std::int64_t actual_stop = 0;
 
         if (start >= 0)
         {
@@ -78,11 +79,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             actual_stop = array_length + stop;
         }
 
-        std::vector<int> result;
+        std::vector<std::int64_t> result;
 
         if (step > 0)
         {
-            for (int i = actual_start; i < actual_stop; i += step)
+            for (std::int64_t i = actual_start; i < actual_stop; i += step)
             {
                 result.push_back(i);
             }
@@ -90,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (step < 0)
         {
-            for (int i = actual_start; i > actual_stop; i += step)
+            for (std::int64_t i = actual_start; i > actual_stop; i += step)
             {
                 result.push_back(i);
             }
@@ -100,10 +101,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                    "row_slicing_operation::create_list_row",
+                "row_slicing_operation::create_list_row",
                 execution_tree::generate_error_message(
                     "slicing will produce empty result, please "
-                        "check your parameters",
+                    "check your parameters",
                     name_, codename_));
         }
         return result;
@@ -112,7 +113,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type row_slicing_operation::row_slicing0d(
         arg_type&& arg) const
     {
-        auto scalar_data = arg.scalar();
+        double scalar_data = arg.scalar();
         return primitive_argument_type{ir::node_data<double>{scalar_data}};
     }
 
@@ -122,10 +123,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (extracted.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "phylanx::execution_tree::primitives::"
-                                "row_slicing_operation::row_slicing1d",
-                                execution_tree::generate_error_message(
-                                    "rows can not be empty", name_, codename_));
+                "phylanx::execution_tree::primitives::"
+                "row_slicing_operation::row_slicing1d",
+                execution_tree::generate_error_message(
+                    "rows can not be empty", name_, codename_));
         }
 
         auto input_vector = arg.vector();
@@ -133,7 +134,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         //return a value and not a vector if you are not given a list
         if (extracted.size() == 1)
         {
-            double index = extracted[0];
+            std::int64_t index = extracted[0];
             if (index < 0)
             {
                 index = input_vector.size() + index;
@@ -141,9 +142,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{input_vector[index]};
         }
 
-        auto row_start = extracted[0];
-        auto row_stop = extracted[1];
-        int step = 1;
+        std::int64_t row_start = extracted[0];
+        std::int64_t row_stop = extracted[1];
+        std::int64_t step = 1;
 
         if (extracted.size() == 3)
         {
@@ -170,24 +171,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type row_slicing_operation::row_slicing2d(
         arg_type&& arg, std::vector<double> extracted) const
     {
-
         if (extracted.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "phylanx::execution_tree::primitives::"
-                                "row_slicing_operation::row_slicing2d",
-                                execution_tree::generate_error_message(
-                                    "rows can not be empty", name_, codename_));
+                "phylanx::execution_tree::primitives::"
+                "row_slicing_operation::row_slicing2d",
+                execution_tree::generate_error_message(
+                    "rows can not be empty", name_, codename_));
         }
 
         auto input_matrix = arg.matrix();
-        auto num_matrix_rows = input_matrix.rows();
-        auto num_matrix_cols = input_matrix.columns();
+        std::size_t num_matrix_rows = input_matrix.rows();
+        std::size_t num_matrix_cols = input_matrix.columns();
 
         //return a value and not a vector if you are not given a list
         if (extracted.size() == 1)
         {
-            double index = extracted[0];
+            std::int64_t index = extracted[0];
             if (index < 0)
             {
                 index = num_matrix_rows + index;
@@ -197,8 +197,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{ir::node_data<double>{std::move(v)}};
         }
 
-        auto row_start = extracted[0];
-        auto row_stop = extracted[1];
+        std::int64_t row_start = extracted[0];
+        std::int64_t row_stop = extracted[1];
 
         int step = 1;
 
@@ -290,8 +290,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (matrix_dims)
                 {
                 case 0:
-                    return this_->row_slicing0d(
-                        std::move(matrix_input));
+                    return this_->row_slicing0d(std::move(matrix_input));
 
                 case 1:
                     return this_->row_slicing1d(
