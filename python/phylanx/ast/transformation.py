@@ -51,26 +51,28 @@ class PhySL:
         self.defs = {}
         self.priority = 0
         self.groupAggressively = True
+        for arg in tree.body[0].args.args:
+            self.defs[arg.arg] = 1
         self.__src__ = self.recompile(tree)
 
-    def _Num(self, a):
+    def _Num(self, a, allowreturn=False):
         return str(a.n)
 
-    def _Str(self, a):
+    def _Str(self, a, allowreturn=False):
         return '"' + a.s + '"'
 
-    def _Name(self, a):
+    def _Name(self, a, allowreturn=False):
         return full_node_name(a, a.id)
 
-    def _Expr(self, a):
+    def _Expr(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = ""
+        s = "("
         if len(args) == 1:
             s += self.recompile(args[0])
         else:
             raise Exception(
                 'unexpected: expression has more than one sub-expression')
-        return s
+        return s + ")"
 
     def _Subscript(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
@@ -176,7 +178,7 @@ class PhySL:
 #        else:
 #            raise Exception("Unsupported slicing: line=%d" % a.lineno)
 
-    def _FunctionDef(self, a):
+    def _FunctionDef(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
         s += '%s(' % full_node_name(a, 'define')
@@ -201,7 +203,7 @@ class PhySL:
         s += ")"
         return s
 
-    def _BinOp(self, a):
+    def _BinOp(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
         save = self.priority
@@ -234,20 +236,30 @@ class PhySL:
             s += term1 + op + term2
         return s
 
-    def _Call(self, a):
+    def _Call(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        args = [arg for arg in ast.iter_child_nodes(a)]
-        if args[0].id == "print":
-            args[0].id = "cout"
-        s = args[0].id + symbol_info + '('
-        for n in range(1, len(args)):
-            if n > 1:
+        s = ''
+        if isinstance(a.func, ast.Attribute):
+            s += self._Attribute(a.func)
+            for i in range(len(a.args) - 1):
+                s += self.recompile(a.args[i])
                 s += ', '
-            s += self.recompile(args[n])
-        s += ')'
+            s += self.recompile(a.args[-1])
+            s += ')'
+
+        else:
+            args = [arg for arg in ast.iter_child_nodes(a)]
+            if args[0].id == "print":
+                args[0].id = "cout"
+            s = args[0].id + symbol_info + '('
+            for n in range(1, len(args)):
+                if n > 1:
+                    s += ', '
+                s += self.recompile(args[n])
+            s += ')'
         return s
 
-    def _Module(self, a):
+    def _Module(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         return self.recompile(args[0])
 
@@ -256,9 +268,9 @@ class PhySL:
             raise Exception(
                 "Return only allowed at end of function: line=%d\n" % a.lineno)
         args = [arg for arg in ast.iter_child_nodes(a)]
-        return " " + self.recompile(args[0])
+        return self.recompile(args[0])
 
-    def _Assign(self, a):
+    def _Assign(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
@@ -268,10 +280,36 @@ class PhySL:
             s += "define" + symbol_info
             self.defs[args[0].id] = 1
         a = '%s' % full_node_name(args[0], args[0].id)
-        s += "(" + a + "," + self.recompile(args[1]) + ")"
+        s += "(" + a + ", " + self.recompile(args[1]) + ")"
         return s
 
-    def _AugAssign(self, a):
+    def _Attribute(self, a, allowreturn=False):
+        s = ""
+        if isinstance(a.value, ast.Attribute):
+            if a.attr in self.np_to_phylanx:
+                symbol_info = full_node_name(a)
+                s += self.np_to_phylanx[a.attr] + symbol_info + '('
+                return s
+            else:
+                raise NotImplementedError
+
+        if isinstance(a.value, ast.Name):
+            if a.attr in self.np_to_phylanx:
+                symbol_info = full_node_name(a)
+                s += self.np_to_phylanx[a.attr] + symbol_info + '('
+
+            if a.value.id in self.defs:
+                s += a.value.id + full_node_name(a.value)
+                return s
+            elif a.value.id == "np" or a.value.id == "numpy":
+                return s
+            else:
+                raise NotImplementedError
+        else:
+            s += self.recompile(a.value)
+            return s
+
+    def _AugAssign(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         sym = "?"
@@ -279,13 +317,13 @@ class PhySL:
         if nn == "Add":
             sym = "+"
         arg0 = '%s' % full_node_name(args[0], args[0].id)
-        return "store%s(" % symbol_info + arg0 + "," + arg0 + sym + self.recompile(
+        return "store%s(" % symbol_info + arg0 + ", " + arg0 + sym + self.recompile(
             args[2]) + ")"
 
-    def _While(self, a):
+    def _While(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = "while(" + self.recompile(args[0]) + ","
+        s = "while" + symbol_info + "(" + self.recompile(args[0]) + ", "
         if len(args) == 2:
             s += self.recompile(args[1])
         else:
@@ -300,7 +338,7 @@ class PhySL:
 
     def _If(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        s = "if(" + self.recompile(a.test) + ","
+        s = "if" + symbol_info + "(" + self.recompile(a.test) + ", "
         if len(a.body) > 1:
             s += "block" + symbol_info + "("
             for j in range(len(a.body)):
@@ -314,7 +352,7 @@ class PhySL:
             s += ")"
         else:
             s += self.recompile(a.body[0], allowreturn)
-        s += ","
+        s += ", "
         if len(a.orelse) > 1:
             s += "block" + symbol_info + "("
             for j in range(len(a.orelse)):
@@ -333,7 +371,7 @@ class PhySL:
         s += ")"
         return s
 
-    def _Compare(self, a):
+    def _Compare(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         sym = "?"
         nn = args[1].__class__.__name__
@@ -351,9 +389,10 @@ class PhySL:
             sym = " == "
         else:
             raise Exception('boolean operation not supported: %s' % nn)
-        return self.recompile(args[0]) + sym + self.recompile(args[2])
+        return '(' + self.recompile(args[0]) + sym + self.recompile(
+            args[2]) + ')'
 
-    def _UnaryOp(self, a):
+    def _UnaryOp(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         nm2 = args[0].__class__.__name__
         nm3 = args[1].__class__.__name__
@@ -365,7 +404,7 @@ class PhySL:
         else:
             raise Exception(nm2)
 
-    def _For(self, a):
+    def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         n = get_node(a, name="Name", num=0)
         c = get_node(a, name="Call", num=1)
@@ -392,7 +431,7 @@ class PhySL:
                 if blockn is None:
                     break
                 if blocki > 2:
-                    bs += ","
+                    bs += ", "
                 bs += self.recompile(blockn)
                 blocki += 1
             bs += ")"
@@ -407,17 +446,17 @@ class PhySL:
             if not re.search(r'[a-zA-Z_]', ss):
                 if eval(ss) < 0:
                     lg = ">"
-                return "for(" + sd + "(" + ns + "," + ls + ")," + ns + " " + lg + " " \
-                       + us + ",store%s(" % symbol_info + ns + "," + ns + \
-                    "+" + ss + ")," + bs + ")"
+                return "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " " + lg + " " \
+                       + us + ",store%s(" % symbol_info + ns + ", " + ns + \
+                    "+" + ss + "), " + bs + ")"
             else:
                 # if we can't determine the direction of iteration, make two for loops
-                ret = "if(" + ss + " > 0,"
-                ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " < " + us + \
-                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
-                    + "),"
-                ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " > " + us + \
-                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
+                ret = "if(" + ss + " > 0, "
+                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " < " + us + \
+                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
+                    + "), "
+                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " > " + us + \
+                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
                     + "))"
                 return ret
             raise Exception("unsupported For loop structure")
@@ -434,6 +473,7 @@ class PhySL:
 
     nodes = {
         "Assign": _Assign,
+        "Attribute": _Attribute,
         "AugAssign": _AugAssign,
         "BinOp": _BinOp,
         "Call": _Call,
@@ -453,6 +493,28 @@ class PhySL:
         "Tuple": _Tuple,
         "UnaryOp": _UnaryOp,
         "While": _While
+    }
+
+    np_to_phylanx = {
+        "argmax": "argmax",
+        "argmin": "argmin",
+        "cross": "cross",
+        "det": "determinant",
+        "diagonal": "diag",
+        "dot": "dot",
+        "exp": "exp",
+        "hstack": "hstack",
+        "identity": "identity",
+        "inverse": "inverse",
+        # "linearmatrix": "linearmatrix",
+        "linspace": "linspace",
+        "power": "power",
+        "random": "random",
+        "shape": "shape",
+        "sqrt": "square_root",
+        "transpose": "transpose",
+        "vstack": "vstack"
+        # slicing operations
     }
 
 
@@ -476,9 +538,16 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
         targets = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
 
         def __init__(self, f):
+
+            if target not in self.targets:
+                raise NotImplementedError(
+                    "unknown target passed to '@Phylanx()' decorator: %s." %
+                    target)
+
             self.f = f
             self.cs = cs
             self.target = target
+
             # Get the source code
             actual_lineno = inspect.getsourcelines(f)[-1]
             src = inspect.getsource(f)
@@ -494,7 +563,7 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
             self.__src__ = self.transformation.__src__
 
             if target == "PhySL":
-                et.eval(self.__src__, self.cs)
+                et.compile(self.__src__, self.cs)
 
         def __call__(self, *args):
             if target == "OpenSCoP":
@@ -502,5 +571,8 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
                     "OpenSCoP kernel blocks are not yet callable.")
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
             return et.eval(self.f.__name__, self.cs, *nargs)
+
+        def generate_ast(self):
+            return phylanx.ast.generate_ast(self.__src__)
 
     return PhyTransformer

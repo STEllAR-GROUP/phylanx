@@ -29,29 +29,40 @@ namespace phylanx { namespace ir
     static std::atomic<std::int64_t> count_move_constructions_;
     static std::atomic<std::int64_t> count_copy_assignments_;
     static std::atomic<std::int64_t> count_move_assignments_;
+    static std::atomic<bool> enable_counts_;
 
     template <typename T>
     void node_data<T>::increment_copy_construction_count()
     {
-        ++count_copy_constructions_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_copy_constructions_;
     }
 
     template <typename T>
     void node_data<T>::increment_move_construction_count()
     {
-        ++count_move_constructions_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_move_constructions_;
     }
 
     template <typename T>
     void node_data<T>::increment_copy_assignment_count()
     {
-        ++count_copy_assignments_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_copy_assignments_;
     }
 
     template <typename T>
     void node_data<T>::increment_move_assignment_count()
     {
-        ++count_move_assignments_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_move_assignments_;
+    }
+
+    template <typename T>
+    bool node_data<T>::enable_counts(bool enable)
+    {
+        return enable_counts_.exchange(enable, std::memory_order_relaxed);
     }
 
     template <typename T>

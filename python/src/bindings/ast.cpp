@@ -285,6 +285,6 @@ void phylanx::bindings::bind_ast(pybind11::module m)
 
     ///////////////////////////////////////////////////////////////////////////
     // Compiler State
-    pybind11::class_<phylanx::bindings::compiler_state>(m,"compiler_state")
+    pybind11::class_<phylanx::bindings::compiler_state>(m, "compiler_state")
         .def(pybind11::init<>());
 }
