@@ -119,7 +119,14 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<double>
             extracted_row) const
     {
-        // return elements starting from row_start to row_stop.
+        if (extracted_row.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                "slicing_operation::slicing1d",
+                execution_tree::generate_error_message(
+                    "rows can not be empty", name_, codename_));
+        }
 
         auto input_vector = arg.vector();
         if (extracted_row.size() == 1)
@@ -165,13 +172,13 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<double>
             extracted_column) const
     {
-        if (extracted_column.empty())
+        if (extracted_column.empty() || extracted_row.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "slicing_operation::slicing2d",
                 execution_tree::generate_error_message(
-                    "columns can not be empty", name_, codename_));
+                    "columns/rows can not be empty", name_, codename_));
         }
 
         auto input_matrix = arg.matrix();
@@ -321,40 +328,47 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
                 //Extract the list or the single double
                 // from second argument (row-> start, stop, step)
-                if (execution_tree::is_list_operand_strict(args[1]))
+                if (args.size() > 1)
                 {
-                    auto result = execution_tree::extract_list_value(
-                        args[1], this_->name_, this_->codename_);
-                    for (auto a : result)
+                    if (execution_tree::is_list_operand_strict(args[1]))
                     {
-                        extracted_row.push_back(
-                            execution_tree::extract_numeric_value(a)[0]);
+                        auto result = execution_tree::extract_list_value(
+                            args[1], this_->name_, this_->codename_);
+                        for (auto a : result)
+                        {
+                            extracted_row.push_back(
+                                execution_tree::extract_numeric_value(a)[0]);
+                        }
+                    }
+                    else
+                    {
+                        double result = execution_tree::extract_numeric_value(
+                            args[1], this_->name_, this_->codename_)[0];
+                        extracted_row.push_back(result);
                     }
                 }
-                else
-                {
-                    double result = execution_tree::extract_numeric_value(
-                        args[1], this_->name_, this_->codename_)[0];
-                    extracted_row.push_back(result);
-                }
-
                 //Extract the list or the single double
                 // from third argument (column-> start, stop, step)
                 if (args.size() == 3)
                 {
-                  if (execution_tree::is_list_operand_strict(args[2])) {
-                    auto result = execution_tree::extract_list_value(
-                        args[2], this_->name_, this_->codename_);
-                    for (auto a : result) {
-                      extracted_column.push_back(
-                          execution_tree::extract_numeric_value(a)[0]);
+                    if (execution_tree::is_list_operand_strict(args[2]))
+                    {
+                        auto result = execution_tree::extract_list_value(
+                            args[2], this_->name_, this_->codename_);
+                        for (auto a : result)
+                        {
+                            extracted_column.push_back(
+                                execution_tree::extract_numeric_value(a)[0]);
+                        }
                     }
-                  } else {
-                    double result = execution_tree::extract_numeric_value(
-                        args[2], this_->name_, this_->codename_)[0];
-                    extracted_column.push_back(result);
-                  }
+                    else
+                    {
+                        double result = execution_tree::extract_numeric_value(
+                            args[2], this_->name_, this_->codename_)[0];
+                        extracted_column.push_back(result);
+                    }
                 }
+
                 std::size_t matrix_dims = matrix_input.num_dimensions();
 
                 switch (matrix_dims)

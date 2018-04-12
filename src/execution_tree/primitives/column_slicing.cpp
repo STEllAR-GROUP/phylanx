@@ -112,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type column_slicing_operation::column_slicing0d(
-        arg_type&& arg, std::vector<double> extracted) const
+        arg_type&& arg) const
     {
         auto scalar_data = arg.scalar();
         return primitive_argument_type{ir::node_data<double>{scalar_data}};
@@ -121,7 +121,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type column_slicing_operation::column_slicing1d(
         arg_type&& arg, std::vector<double> extracted) const
     {
-        auto input_vector = arg.vector();
+
+      if (extracted.empty())
+      {
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::primitives::"
+                            "column_slicing_operation::column_slicing1d",
+                            execution_tree::generate_error_message(
+                                "column can not be empty", name_, codename_));
+      }
+
+
+      auto input_vector = arg.vector();
 
         //return a value and not a vector if you are not given a list
         if (extracted.size() == 1)
@@ -163,6 +174,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type column_slicing_operation::column_slicing2d(
         arg_type&& arg , std::vector<double> extracted) const
     {
+
+      if (extracted.empty())
+      {
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "phylanx::execution_tree::primitives::"
+                            "column_slicing_operation::column_slicing2d",
+                            execution_tree::generate_error_message(
+                                "column can not be empty", name_, codename_));
+      }
+
         auto input_matrix = arg.matrix();
         auto num_matrix_rows = input_matrix.rows();
         auto num_matrix_cols = input_matrix.columns();
@@ -248,30 +269,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<double> extracted;
 
                 //Extract the list or the single double
-                if (execution_tree::is_list_operand_strict(args[1]))
+                if (args.size() == 2)
                 {
-                    auto result = execution_tree::extract_list_value(
-                        args[1], this_->name_, this_->codename_);
-                    for (auto a : result)
+                    if (execution_tree::is_list_operand_strict(args[1]))
                     {
-                        extracted.push_back(
-                            execution_tree::extract_numeric_value(a)[0]);
+                        auto result = execution_tree::extract_list_value(
+                            args[1], this_->name_, this_->codename_);
+                        for (auto a : result)
+                        {
+                            extracted.push_back(
+                                execution_tree::extract_numeric_value(a)[0]);
+                        }
+                    }
+                    else
+                    {
+                        double result = execution_tree::extract_numeric_value(
+                            args[1], this_->name_, this_->codename_)[0];
+                        extracted.push_back(result);
                     }
                 }
-                else
-                {
-                    double result = execution_tree::extract_numeric_value(
-                        args[1], this_->name_, this_->codename_)[0];
-                    extracted.push_back(result);
-                }
-
                 std::size_t matrix_dims = matrix_input.num_dimensions();
 
                 switch (matrix_dims)
                 {
                 case 0:
                     return this_->column_slicing0d(
-                        std::move(matrix_input), extracted);
+                        std::move(matrix_input));
 
                 case 1:
                     return this_->column_slicing1d(
