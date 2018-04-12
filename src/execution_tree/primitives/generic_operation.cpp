@@ -40,17 +40,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_generic_operation,
             &create_primitive<generic_operation>)};
 
+    double (*generic_operation::get_0d_map(std::string const& name))(double) {
+        static std::map<std::string, double (*)(double)> map0d = {
+                {"exp", [](double m) -> double { return blaze::exp(m); }},
+                {"log", [](double m) -> double { return blaze::log(m); }},
+                {"sin", [](double m) -> double { return blaze::sin(m); }},
+                {"sinh", [](double m) -> double { return blaze::sinh(m); }}};
+        return map0d[name];
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     generic_operation::generic_operation(
         std::vector<primitive_argument_type> && operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
-        std::map<std::string, double (*)(double)> map0d = {
-            {"exp", [](double m) -> double { return blaze::exp(m); }},
-            {"log", [](double m) -> double { return blaze::log(m); }},
-            {"sin", [](double m) -> double { return blaze::sin(m); }},
-            {"sinh", [](double m) -> double { return blaze::sinh(m); }}};
         std::map<std::string,
             blaze::DynamicVector<double> (*)(
                 const blaze::DynamicVector<double>&)>
@@ -97,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         -> blaze::DynamicMatrix<double> {
                         return blaze::sinh(m);
                     }}};
-        func0d_ = map0d[name];
+        func0d_ = get_0d_map(name);
         func1d_ = map1d[name];
         func2d_ = map2d[name];
     }
