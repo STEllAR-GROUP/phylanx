@@ -40,7 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_generic_operation,
             &create_primitive<generic_operation>)};
 
-    double (*generic_operation::get_0d_map(std::string const& name))(double)
+    double (*generic_operation::get_0d_map(std::string const& name))(
+        double) const
     {
         static std::map<std::string, double (*)(double)> map0d = {
             {"exp", [](double m) -> double { return blaze::exp(m); }},
@@ -50,13 +51,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return map0d[name];
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    generic_operation::generic_operation(
-        std::vector<primitive_argument_type> && operands,
-        std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename)
+    blaze::DynamicVector<double> (*generic_operation::get_1d_map(
+        std::string const& name))(const blaze::DynamicVector<double>&) const
     {
-        std::map<std::string,
+        static std::map<std::string,
             blaze::DynamicVector<double> (*)(
                 const blaze::DynamicVector<double>&)>
             map1d = {{"exp",
@@ -79,7 +77,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         -> blaze::DynamicVector<double> {
                         return blaze::sinh(m);
                     }}};
-        std::map<std::string,
+        return map1d[name];
+    }
+
+    blaze::DynamicMatrix<double> (*generic_operation::get_2d_map(
+        std::string const& name))(const blaze::DynamicMatrix<double>&) const
+    {
+        static std::map<std::string,
             blaze::DynamicMatrix<double> (*)(
                 const blaze::DynamicMatrix<double>&)>
             map2d = {{"exp",
@@ -102,9 +106,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         -> blaze::DynamicMatrix<double> {
                         return blaze::sinh(m);
                     }}};
+        return map2d[name];
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    generic_operation::generic_operation(
+        std::vector<primitive_argument_type> && operands,
+        std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
+    {
         func0d_ = get_0d_map(name);
-        func1d_ = map1d[name];
-        func2d_ = map2d[name];
+        func1d_ = get_1d_map(name);
+        func2d_ = get_2d_map(name);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -125,7 +138,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<double>(std::move(result))};
     }
 
-    primitive_argument_type generic_operation::genericxd(operands_type && ops)
+    primitive_argument_type generic_operation::generic2d(operands_type && ops)
         const
     {
         using matrix_type = blaze::DynamicMatrix<double>;
@@ -174,7 +187,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return this_->generic1d(std::move(ops));
 
                     case 2:
-                        return this_->genericxd(std::move(ops));
+                        return this_->generic2d(std::move(ops));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
