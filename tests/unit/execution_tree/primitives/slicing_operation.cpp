@@ -28,7 +28,7 @@ phylanx::execution_tree::compiler::function compile(std::string const& code)
 void test_slicing_operation_0d()
 {
     std::string const code = R"(
-        slice(42.0, 4.0, 5.0)
+        slice(42.0)
     )";
 
     auto result =
@@ -37,23 +37,12 @@ void test_slicing_operation_0d()
     HPX_TEST_EQ(result[0], 42.0);
 }
 
-void test_slicing_operation_0d_list()
-{
-    std::string const code = R"(
-        slice(42.0, '(14.0, 51.0), '(14.0, 51.0))
-    )";
-
-    auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
-
-    HPX_TEST_EQ(result[0], 42.0);
-}
 
 void test_slicing_operation_1d()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, '(2,4), '(2,4))
+        slice(a, '(2,4))
     ))";
 
     auto result =
@@ -67,7 +56,7 @@ void test_slicing_operation_1d_step()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, '(2,6,2), '(2,4))
+        slice(a, '(2,6,2))
     ))";
 
     auto result =
@@ -81,7 +70,7 @@ void test_slicing_operation_1d_neg_step()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, '(6,2,-2), '(2,4))
+        slice(a, '(6,2,-2))
     ))";
 
     auto result =
@@ -95,7 +84,7 @@ void test_slicing_operation_1d_negative_index()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, '(-6,-2), '(2,4))
+        slice(a, '(-6,-2))
     ))";
 
     auto result =
@@ -111,7 +100,7 @@ void test_slicing_operation_1d_single_slice_negative_index()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, '(-6,-5), '(2,4))
+        slice(a, '(-6,-5))
     ))";
 
     auto result =
@@ -124,7 +113,7 @@ void test_slicing_operation_1d_negative_index_zero_start()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, '(0,-1), '(2,4))
+        slice(a, '(0,-1))
     ))";
 
     auto result =
@@ -143,7 +132,7 @@ void test_slicing_operation_1d_negative_index_neg_step()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, '(-2,-6,-2), '(2,4))
+        slice(a, '(-2,-6,-2))
     ))";
 
     auto result =
@@ -157,7 +146,7 @@ void test_slicing_operation_1d_single()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, 2, 2)
+        slice(a, 2)
     ))";
 
     auto result =
@@ -170,7 +159,7 @@ void test_slicing_operation_1d_single_negetive()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
-        slice(a, -2, 2)
+        slice(a, -2)
     ))";
 
     auto result =
@@ -433,7 +422,6 @@ void test_slicing_operation_2d_negative_index_neg_step()
 int main(int argc, char* argv[])
 {
     test_slicing_operation_0d();
-    test_slicing_operation_0d_list();
 
     test_slicing_operation_1d();
     test_slicing_operation_1d_step();

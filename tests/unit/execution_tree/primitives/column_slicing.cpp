@@ -28,19 +28,7 @@ phylanx::execution_tree::compiler::function compile(std::string const& code)
 void test_column_slicing_operation_0d()
 {
     std::string const code = R"(
-        slice_column(42.0, 4.0)
-    )";
-
-    auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
-
-    HPX_TEST_EQ(result[0], 42.0);
-}
-
-void test_column_slicing_operation_0d_list()
-{
-    std::string const code = R"(
-        slice_column(42.0, '(14.0, 51.0))
+        slice_column(42.0)
     )";
 
     auto result =
@@ -353,7 +341,6 @@ void test_column_slicing_operation_2d_negative_index_neg_step()
 int main(int argc, char* argv[])
 {
     test_column_slicing_operation_0d();
-    test_column_slicing_operation_0d_list();
 
     test_column_slicing_operation_1d();
     test_column_slicing_operation_1d_step();

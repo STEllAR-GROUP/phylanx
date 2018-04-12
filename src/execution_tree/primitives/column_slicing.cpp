@@ -233,14 +233,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() != 2)
+        if (operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "column_slicing_operation::column_slicing_operation",
                 execution_tree::generate_error_message(
                     "the column_slicing_operation primitive requires "
-                    "either three or four arguments",
+                    "either one or two arguments",
                     name_, codename_));
         }
 
