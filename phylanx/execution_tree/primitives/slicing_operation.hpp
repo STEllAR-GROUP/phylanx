@@ -48,8 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         *
         * If used inside PhySL:
         *
-        *      slice (input, row_start, row_stop, row_steps(optional)
-        *                , col_start, col_stop, col_steps(optional)
+        *      slice (input, '(row_start, row_stop, row_steps(optional))
+        *                , '(col_start, col_stop, col_steps(optional))
         *          )
         *
         *          input : Scalar, Vector or a Matrix
@@ -77,8 +77,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params) const override;
 
     private:
-        std::vector<int> create_list_slice(
-            int start, int stop, int step, int array_length) const;
+        std::vector<std::int64_t> create_list_slice(std::int64_t start,
+            std::int64_t stop, std::int64_t step,
+            std::size_t array_length) const;
         primitive_argument_type slicing0d(
             arg_type&& arg) const;
         primitive_argument_type slicing1d(
