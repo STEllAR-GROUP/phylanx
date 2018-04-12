@@ -12,6 +12,8 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

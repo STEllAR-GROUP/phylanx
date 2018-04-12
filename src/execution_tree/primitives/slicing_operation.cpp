@@ -14,6 +14,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -53,7 +54,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     std::vector<std::int64_t> slicing_operation::create_list_slice(
-        std::int64_t start, std::int64_t stop, std::int64_t step, std::size_t array_length) const
+        std::int64_t start, std::int64_t stop, std::int64_t step,
+        std::size_t array_length) const
     {
         std::int64_t actual_start = 0;
         std::int64_t actual_stop = 0;

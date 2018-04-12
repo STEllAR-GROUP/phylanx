@@ -10,6 +10,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
 
