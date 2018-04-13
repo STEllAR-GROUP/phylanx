@@ -38,7 +38,7 @@ void test_generic_operation_1d(std::string const& func_name,
     blaze::Rand<blaze::DynamicVector<double>> gen{};
     blaze::DynamicVector<double> n = gen.generate(42UL);
     std::unique_ptr<double[],blaze::Deallocate> memory(&n[0]);
-    blaze::CustomVector<double,blaze::aligned,blaze::padded> m(memory.get(), 42UL, 43UL); // check the meaning of 3UL padded vector of size 3 and capacity of 43?
+    blaze::CustomVector<double,blaze::aligned,blaze::padded> m(memory.get(), 42UL, 43UL);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -64,7 +64,7 @@ void test_generic_operation_2d(std::string const& func_name,
     blaze::Rand<blaze::DynamicVector<double>> gen{};
     blaze::DynamicVector<double> n = gen.generate(192UL);
     std::unique_ptr<double[],blaze::Deallocate> memory(&n[0]);
-    blaze::CustomMatrix<double,blaze::aligned,blaze::padded> m(memory.get(), 12UL, 13UL,16UL); //not understand but works
+    blaze::CustomMatrix<double,blaze::aligned,blaze::padded> m(memory.get(), 12UL, 13UL,16UL);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(

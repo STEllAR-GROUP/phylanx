@@ -20,8 +20,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     class exponential_operation
-        : public primitive_component_base
-        , public std::enable_shared_from_this<exponential_operation>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<exponential_operation>
     {
     protected:
         hpx::future<primitive_argument_type> eval(

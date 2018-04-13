@@ -40,8 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_generic_operation,
             &create_primitive<generic_operation>)};
 
-    double (*generic_operation::get_0d_map(std::string const& name))(
-        double) const
+    double (*generic_operation::get_0d_map(std::string const& name))(double)
+        const
     {
         static std::map<std::string, double (*)(double)> map0d = {
             {"exp", [](double m) -> double { return blaze::exp(m); }},
@@ -51,59 +51,63 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return map0d[name];
     }
 
-    blaze::DynamicVector<double> (*generic_operation::get_1d_map(
-        std::string const& name))(const blaze::CustomVector<double,blaze::aligned,blaze::padded>&) const
+    blaze::DynamicVector<double> (
+        *generic_operation::get_1d_map(std::string const& name))(
+        const blaze::CustomVector<double, blaze::aligned, blaze::padded>&) const
     {
         static std::map<std::string,
-            blaze::DynamicVector<double> (*)(
-                const blaze::CustomVector<double,blaze::aligned,blaze::padded>&)>
-            map1d = {{"exp",
-                         [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
-                             -> blaze::DynamicVector<double> {
-                             return blaze::exp(m);
-                         }},
+            blaze::DynamicVector<double> (*)(const blaze::CustomVector<double,
+                blaze::aligned, blaze::padded>&)>
+            map1d = {
+                {"exp",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::exp(m);
+                    }},
                 {"log",
-                    [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
-                        -> blaze::DynamicVector<double> {
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::log(m);
                     }},
                 {"sin",
-                    [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
-                        -> blaze::DynamicVector<double> {
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::sin(m);
                     }},
                 {"sinh",
-                    [](const blaze::CustomVector<double,blaze::aligned,blaze::padded>& m)
-                        -> blaze::DynamicVector<double> {
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::sinh(m);
                     }}};
         return map1d[name];
     }
 
-    blaze::DynamicMatrix<double> (*generic_operation::get_2d_map(
-        std::string const& name))(const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>&) const
+    blaze::DynamicMatrix<double> (
+        *generic_operation::get_2d_map(std::string const& name))(
+        const blaze::CustomMatrix<double, blaze::aligned, blaze::padded>&) const
     {
         static std::map<std::string,
-            blaze::DynamicMatrix<double> (*)(
-                const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>&)>
-            map2d = {{"exp",
-                         [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
-                             -> blaze::DynamicMatrix<double> {
-                             return blaze::exp(m);
-                         }},
+            blaze::DynamicMatrix<double> (*)(const blaze::CustomMatrix<double,
+                blaze::aligned, blaze::padded>&)>
+            map2d = {
+                {"exp",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::exp(m);
+                    }},
                 {"log",
-                    [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
-                        -> blaze::DynamicMatrix<double> {
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::log(m);
                     }},
                 {"sin",
-                    [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
-                        -> blaze::DynamicMatrix<double> {
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::sin(m);
                     }},
                 {"sinh",
-                    [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
-                        -> blaze::DynamicMatrix<double> {
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::sinh(m);
                     }}};
         return map2d[name];
