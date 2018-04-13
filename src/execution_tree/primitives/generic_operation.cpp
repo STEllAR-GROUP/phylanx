@@ -81,28 +81,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     blaze::DynamicMatrix<double> (*generic_operation::get_2d_map(
-        std::string const& name))(const blaze::DynamicMatrix<double>&) const
+        std::string const& name))(const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>&) const
     {
         static std::map<std::string,
             blaze::DynamicMatrix<double> (*)(
-                const blaze::DynamicMatrix<double>&)>
+                const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>&)>
             map2d = {{"exp",
-                         [](const blaze::DynamicMatrix<double>& m)
+                         [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
                              -> blaze::DynamicMatrix<double> {
                              return blaze::exp(m);
                          }},
                 {"log",
-                    [](const blaze::DynamicMatrix<double>& m)
+                    [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
                         -> blaze::DynamicMatrix<double> {
                         return blaze::log(m);
                     }},
                 {"sin",
-                    [](const blaze::DynamicMatrix<double>& m)
+                    [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
                         -> blaze::DynamicMatrix<double> {
                         return blaze::sin(m);
                     }},
                 {"sinh",
-                    [](const blaze::DynamicMatrix<double>& m)
+                    [](const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>& m)
                         -> blaze::DynamicMatrix<double> {
                         return blaze::sinh(m);
                     }}};

@@ -50,12 +50,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<double> (*get_1d_map(std::string const& name))(
             const blaze::CustomVector<double,blaze::aligned,blaze::padded>&) const;
         blaze::DynamicMatrix<double> (*get_2d_map(std::string const& name))(
-            const blaze::DynamicMatrix<double>&) const;
+            const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>&) const;
         double (*func0d_)(double);
         blaze::DynamicVector<double> (*func1d_)(
             const blaze::CustomVector<double,blaze::aligned,blaze::padded>&);
         blaze::DynamicMatrix<double> (*func2d_)(
-            const blaze::DynamicMatrix<double>&);
+            const blaze::CustomMatrix<double,blaze::aligned,blaze::padded>&);
     };
 
     PHYLANX_EXPORT primitive create_generic_operation(
