@@ -193,7 +193,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() > 2)
+        if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
@@ -225,7 +225,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_](args_type&& args) -> primitive_argument_type {
                     std::size_t matrix_dims = args[0].num_dimensions();
@@ -245,11 +245,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "gradient_operation::eval",
                             execution_tree::generate_error_message(
                                 "left hand side operand has unsupported "
-                                "number of dimensions",
+                                    "number of dimensions",
                                 this_->name_, this_->codename_));
                     }
                 }),
-            detail::map_operands(operands, functional::numeric_operand{}, args,
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
                 name_, codename_));
     }
 

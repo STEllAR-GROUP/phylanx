@@ -76,17 +76,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this_](operands_type&& ops) -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](operand_type&& op) -> primitive_argument_type
             {
-                std::size_t dims = ops[0].num_dimensions();
+                std::size_t dims = op.num_dimensions();
                 switch (dims)
                 {
                 case 0:
-                    return this_->determinant0d(std::move(ops));
+                    return this_->determinant0d(std::move(op));
 
                 case 2:
-                    return this_->determinant2d(std::move(ops));
+                    return this_->determinant2d(std::move(op));
 
                 case 1: HPX_FALLTHROUGH;
                 default:
@@ -98,21 +98,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_));
                 }
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_));
+            numeric_operand(operands[0], args, name_, codename_));
     }
 
-    primitive_argument_type determinant::determinant0d(
-        operands_type&& ops) const
+    primitive_argument_type determinant::determinant0d(operand_type&& op) const
     {
-        return primitive_argument_type{std::move(ops[0])};       // no-op
+        return primitive_argument_type{std::move(op)};       // no-op
     }
 
-    primitive_argument_type determinant::determinant2d(
-        operands_type&& ops) const
+    primitive_argument_type determinant::determinant2d(operand_type&& op) const
     {
-        double d = blaze::det(ops[0].matrix());
+        double d = blaze::det(op.matrix());
         return primitive_argument_type{operand_type(d)};
     }
 

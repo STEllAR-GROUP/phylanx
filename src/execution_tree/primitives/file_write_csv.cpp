@@ -134,7 +134,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return numeric_operand(operands[1], args, name_, codename_)
-            .then(hpx::util::unwrapping(
+            .then(hpx::launch::sync, hpx::util::unwrapping(
                 [this_, filename = std::move(filename)](
                     ir::node_data<double> && val) ->  primitive_argument_type
                 {

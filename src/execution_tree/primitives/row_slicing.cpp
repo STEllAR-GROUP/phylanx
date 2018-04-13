@@ -102,10 +102,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                "row_slicing_operation::create_list_row",
+                    "row_slicing_operation::create_list_row",
                 execution_tree::generate_error_message(
                     "slicing will produce empty result, please "
-                    "check your parameters",
+                        "check your parameters",
                     name_, codename_));
         }
         return result;
@@ -155,7 +155,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                    "row_slicing_operation::row_slicing_operation",
+                        "row_slicing_operation::row_slicing_operation",
                     execution_tree::generate_error_message(
                         "step can not be zero", name_, codename_));
             }
@@ -171,7 +171,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     primitive_argument_type row_slicing_operation::row_slicing2d(
         arg_type&& arg, std::vector<double> extracted) const
-    {
+        {
         if (extracted.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -194,9 +194,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 index = num_matrix_rows + index;
             }
             auto sv = blaze::trans(blaze::row(input_matrix, index));
-            storage1d_type v{sv};
+        storage1d_type v{sv};
             return primitive_argument_type{ir::node_data<double>{std::move(v)}};
-        }
+    }
 
         std::int64_t row_start = extracted[0];
         std::int64_t row_stop = extracted[1];
@@ -210,7 +210,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                    "row_slicing_operation::row_slicing_operation",
+                        "row_slicing_operation::row_slicing_operation",
                     execution_tree::generate_error_message(
                         "step can not be zero", name_, codename_));
             }
@@ -234,7 +234,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                "row_slicing_operation::row_slicing_operation",
+                    "row_slicing_operation::row_slicing_operation",
                 execution_tree::generate_error_message(
                     "the row_slicing_operation primitive requires "
                     "either one or two arguments",
@@ -245,18 +245,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (!valid(operands[i]))
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "row_slicing_operation::eval",
-                    execution_tree::generate_error_message(
-                        "the row_slicing_operation primitive requires "
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "row_slicing_operation::eval",
+                execution_tree::generate_error_message(
+                    "the row_slicing_operation primitive requires "
                         "that the arguments given by the operands "
                         "array are valid",
-                        name_, codename_));
-            }
+                    name_, codename_));
+        }
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping([this_](std::vector<primitive_argument_type>&&
                                           args) -> primitive_argument_type {
                 //Extract the matrix i.e the first argument
@@ -267,7 +267,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 //Extract the list or the single double
                 if (args.size() == 2)
-                {
+            {
                     if (execution_tree::is_list_operand_strict(args[1]))
                     {
                         auto result = execution_tree::extract_list_value(
@@ -306,7 +306,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "row_slicing_operation::eval",
                         execution_tree::generate_error_message(
                             "left hand side operand has unsupported "
-                            "number of dimensions",
+                                "number of dimensions",
                             this_->name_, this_->codename_));
                 }
             }),

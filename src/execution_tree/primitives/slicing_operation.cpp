@@ -30,7 +30,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_slicing_operation(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name, std::string const& codename)
+            std::string const& name, std::string const& codename)
     {
         static std::string type("slice");
         return create_primitive_component(
@@ -46,8 +46,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
-        std::vector<primitive_argument_type>&& operands,
-        std::string const& name, std::string const& codename)
+            std::vector<primitive_argument_type>&& operands,
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
     }
@@ -102,10 +102,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                "slicing_operation::create_list_slice",
+                    "slicing_operation::create_list_slice",
                 execution_tree::generate_error_message(
                     "slicing will produce empty result, please "
-                    "check your parameters",
+                        "check your parameters",
                     name_, codename_));
         }
         return result;
@@ -215,16 +215,16 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                 step_col = extracted_column[2];
                 if (step_col == 0)
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
                         "slicing_operation::slicing2d",
-                        execution_tree::generate_error_message(
+                    execution_tree::generate_error_message(
                             "step can not be zero", name_, codename_));
-                }
             }
+        }
 
-            auto init_list_col = create_list_slice(
-                col_start, col_stop, step_col, num_matrix_cols);
+        auto init_list_col = create_list_slice(
+            col_start, col_stop, step_col, num_matrix_cols);
             auto final_vec = blaze::elements(sv, init_list_col);
             storage1d_type v{final_vec};
             return primitive_argument_type{ir::node_data<double>{std::move(v)}};
@@ -275,7 +275,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                     "slicing_operation::slicing2d",
                     execution_tree::generate_error_message(
                         "step can not be zero", name_, codename_));
-            }
+        }
         }
 
         auto init_list_col =
@@ -293,7 +293,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                "slicing_operation::slicing_operation",
+                    "slicing_operation::slicing_operation",
                 execution_tree::generate_error_message(
                     "the slicing_operation primitive requires "
                     "either one(0d), two(1d) or three arguments(2d)",
@@ -305,18 +305,18 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         {
             if (!valid(operands[i]))
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "slicing_operation::eval",
-                    execution_tree::generate_error_message(
-                        "the slicing_operation primitive requires "
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "slicing_operation::eval",
+                execution_tree::generate_error_message(
+                    "the slicing_operation primitive requires "
                         "that the arguments given by the operands "
                         "array are valid",
-                        name_, codename_));
-            }
+                    name_, codename_));
+        }
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping([this_](std::vector<primitive_argument_type>&&
                                           args) -> primitive_argument_type {
                 //Extract the matrix i.e the first argument
@@ -329,7 +329,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                 //Extract the list or the single double
                 // from second argument (row-> start, stop, step)
                 if (args.size() > 1)
-                {
+                    {
                     if (execution_tree::is_list_operand_strict(args[1]))
                     {
                         auto result = execution_tree::extract_list_value(
@@ -373,26 +373,26 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
                 switch (matrix_dims)
                 {
-                case 0:
+                    case 0:
                     return this_->slicing0d(std::move(matrix_input));
 
-                case 1:
+                    case 1:
                     return this_->slicing1d(
                         std::move(matrix_input), extracted_row);
 
-                case 2:
+                    case 2:
                     return this_->slicing2d(std::move(matrix_input),
                         extracted_row, extracted_column);
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "row_slicing_operation::eval",
-                        execution_tree::generate_error_message(
-                            "left hand side operand has unsupported "
-                            "number of dimensions",
-                            this_->name_, this_->codename_));
-                }
-            }),
+                            execution_tree::generate_error_message(
+                                "left hand side operand has unsupported "
+                                    "number of dimensions",
+                                this_->name_, this_->codename_));
+                    }
+                }),
             detail::map_operands(
                 operands, functional::value_operand{}, args, name_, codename_));
     }

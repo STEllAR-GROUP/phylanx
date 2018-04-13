@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const unary_minus_operation::match_data =
     {
         hpx::util::make_tuple("__minus",
-            std::vector<std::string>{"-_1"},
+            std::vector<std::string>{"-_1", "__minus(_1)"},
             &create_unary_minus_operation,
             &create_primitive<unary_minus_operation>)
     };
@@ -95,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_, name, codename](operands_type && ops)
             -> primitive_argument_type
             {

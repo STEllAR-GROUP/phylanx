@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        primitive_argument_type identity_nd(operands_type&& ops) const;
+        primitive_argument_type identity_nd(operand_type&& op) const;
     };
 
     PHYLANX_EXPORT primitive create_identity(hpx::id_type const& locality,

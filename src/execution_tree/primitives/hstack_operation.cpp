@@ -166,7 +166,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() < 1)
+        if (operands.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
@@ -198,7 +198,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
             {
                 std::size_t matrix_dims = args[0].num_dimensions();

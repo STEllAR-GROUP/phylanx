@@ -48,29 +48,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type power_operation::power0d(operands_type && ops) const
+    primitive_argument_type power_operation::power0d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        ops[0] = double(std::pow(ops[0].scalar(), ops[1][0]));
-        return primitive_argument_type{std::move(ops[0])};
-    }
-
-    primitive_argument_type power_operation::power1d(operands_type && ops) const
-    {
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
-        lhs = blaze::pow(lhs.vector(), rhs[0]);
-
+        lhs = double(std::pow(lhs.scalar(), rhs[0]));
         return primitive_argument_type{std::move(lhs)};
     }
 
-    primitive_argument_type power_operation::power2d(operands_type && ops) const
+    primitive_argument_type power_operation::power1d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
+        if (lhs.is_ref())
+        {
+            lhs = blaze::pow(lhs.vector(), rhs[0]);
+        }
+        else
+        {
+            lhs.vector() = blaze::pow(lhs.vector(), rhs[0]);
+        }
+        return primitive_argument_type{std::move(lhs)};
+    }
 
-        lhs = blaze::pow(lhs.matrix(), rhs[0]);
-
+    primitive_argument_type power_operation::power2d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        if (lhs.is_ref())
+        {
+            lhs = blaze::pow(lhs.matrix(), rhs[0]);
+        }
+        else
+        {
+            lhs.matrix() = blaze::pow(lhs.matrix(), rhs[0]);
+        }
         return primitive_argument_type{std::move(lhs)};
     }
 
@@ -100,10 +109,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this_](operands_type&& ops) -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](operand_type&& op1, operand_type&& op2)
+            ->  primitive_argument_type
             {
-                if (ops[1].num_dimensions() != 0)
+                if (op2.num_dimensions() != 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "power_operation::eval",
@@ -113,16 +123,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_));
                 }
 
-                switch (ops[0].num_dimensions())
+                switch (op1.num_dimensions())
                 {
                 case 0:
-                    return this_->power0d(std::move(ops));
+                    return this_->power0d(std::move(op1), std::move(op2));
 
                 case 1:
-                    return this_->power1d(std::move(ops));
+                    return this_->power1d(std::move(op1), std::move(op2));
 
                 case 2:
-                    return this_->power2d(std::move(ops));
+                    return this_->power2d(std::move(op1), std::move(op2));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -133,9 +143,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_));
                 }
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_));
+            numeric_operand(operands[0], args, name_, codename_),
+            numeric_operand(operands[1], args, name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////

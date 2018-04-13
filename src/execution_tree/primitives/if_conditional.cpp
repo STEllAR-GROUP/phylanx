@@ -83,20 +83,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // Keep data alive with a shared pointer
+        auto f = boolean_operand(operands_[0], args, name_, codename_);
         auto this_ = this->shared_from_this();
-        return boolean_operand(operands_[0], args, name_, codename_)
-            .then([this_, args = std::move(args)](
-                      hpx::future<std::uint8_t>&& cond_eval)
-                      -> hpx::future<primitive_argument_type> {
+        return f.then(hpx::launch::sync,
+            [this_, args = std::move(args)](
+                hpx::future<std::uint8_t>&& cond_eval) mutable
+            -> hpx::future<primitive_argument_type>
+            {
                 if (cond_eval.get() != 0)
                 {
                     return literal_operand(this_->operands_[1],
-                        args, this_->name_, this_->codename_);
+                        std::move(args), this_->name_, this_->codename_);
                 }
                 if (this_->operands_.size() > 2)
                 {
                     return literal_operand(this_->operands_[2],
-                        args, this_->name_, this_->codename_);
+                        std::move(args), this_->name_, this_->codename_);
                 }
                 return hpx::make_ready_future(primitive_argument_type{});
             });

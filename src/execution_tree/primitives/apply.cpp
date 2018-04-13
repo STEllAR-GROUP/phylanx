@@ -65,6 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return list_operand(operands_[1], params, name_, codename_).then(
+            hpx::launch::sync,
             [this_](hpx::future<std::vector<primitive_argument_type>>&& f)
             {
                 primitive const* p =

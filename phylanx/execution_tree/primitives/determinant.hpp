@@ -44,8 +44,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        primitive_argument_type determinant0d(operands_type && ops) const;
-        primitive_argument_type determinant2d(operands_type && ops) const;
+        primitive_argument_type determinant0d(operand_type&& op) const;
+        primitive_argument_type determinant2d(operand_type&& op) const;
     };
 
     PHYLANX_EXPORT primitive create_determinant(hpx::id_type const& locality,
