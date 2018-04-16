@@ -6,13 +6,12 @@
 import phylanx
 import numpy as np
 from phylanx.ast import *
-from phylanx.ast.utils import printout
 
 
 @Phylanx("PhySL")
 def lra(x, y, alpha, iterations, enable_output):
     weights = constant(0.0, shape(x, 1))
-    transx = transpose(x)
+    transx = np.transpose(x)
     pred = constant(0.0, shape(x, 0))
     error = constant(0.0, shape(x, 0))
     gradient = constant(0.0, shape(x, 1))
@@ -20,9 +19,9 @@ def lra(x, y, alpha, iterations, enable_output):
     while step < iterations:
         if (enable_output):
             print("step: ", step, ", ", weights)
-        pred = 1.0 / (1.0 + exp(-dot(x, weights)))
+        pred = 1.0 / (1.0 + np.exp(-np.dot(x, weights)))
         error = pred - y
-        gradient = dot(transx, error)
+        gradient = np.dot(transx, error)
         weights = weights - (alpha * gradient)
         step += 1
     return weights
@@ -33,6 +32,6 @@ file_name = "breast_cancer.csv"
 data = np.genfromtxt(file_name, skip_header=1, delimiter=",")
 x = data[:, :-1]
 y = data[:, -1:]
-y = y.reshape((y.shape[0], ))
+y = np.reshape(y, (y.shape[0], ))
 res = lra(x, y, 1e-5, 750, 0)
-printout(res)
+print(res)

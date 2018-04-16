@@ -48,15 +48,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type cross_operation::cross1d(
-        operand_type& lhs, operand_type& rhs) const
+        operand_type&& lhs, operand_type&& rhs) const
     {
         switch (rhs.num_dimensions())
         {
         case 1:
-            return cross1d1d(lhs, rhs);
+            return cross1d1d(std::move(lhs), std::move(rhs));
 
         case 2:
-            return cross1d2d(lhs, rhs);
+            return cross1d2d(std::move(lhs), std::move(rhs));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type cross_operation::cross1d1d(
-        operand_type& lhs, operand_type& rhs) const
+        operand_type&& lhs, operand_type&& rhs) const
     {
         std::size_t lhs_vector_dims = lhs.size();
         std::size_t rhs_vector_dims = rhs.size();
@@ -124,7 +124,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type cross_operation::cross1d2d(
-        operand_type& lhs, operand_type& rhs) const
+        operand_type&& lhs, operand_type&& rhs) const
     {
         if (lhs.size() == 2ul)
         {
@@ -186,15 +186,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type cross_operation::cross2d(
-        operand_type& lhs, operand_type& rhs) const
+        operand_type&& lhs, operand_type&& rhs) const
     {
         switch (rhs.num_dimensions())
         {
         case 1:
-            return cross2d1d(lhs, rhs);
+            return cross2d1d(std::move(lhs), std::move(rhs));
 
         case 2:
-            return cross2d2d(lhs, rhs);
+            return cross2d2d(std::move(lhs), std::move(rhs));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -207,7 +207,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type cross_operation::cross2d1d(
-        operand_type& lhs, operand_type& rhs) const
+        operand_type&& lhs, operand_type&& rhs) const
     {
         if (rhs.size() == 2ul)
         {
@@ -269,7 +269,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type cross_operation::cross2d2d(
-        operand_type& lhs, operand_type& rhs) const
+        operand_type&& lhs, operand_type&& rhs) const
     {
         // Both matrices have to have the same number of rows
         if (lhs.dimension(0) != rhs.dimension(0))
@@ -391,16 +391,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this_](operands_type&& ops) -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](operand_type&& op1, operand_type&& op2)
+            ->  primitive_argument_type
             {
-                switch (ops[0].num_dimensions())
+                switch (op1.num_dimensions())
                 {
                 case 1:
-                    return this_->cross1d(ops[0], ops[1]);
+                    return this_->cross1d(std::move(op1), std::move(op2));
 
                 case 2:
-                    return this_->cross2d(ops[0], ops[1]);
+                    return this_->cross2d(std::move(op1), std::move(op2));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -411,9 +412,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_));
                 }
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_));
+            numeric_operand(operands[0], args, name_, codename_),
+            numeric_operand(operands[1], args, name_, codename_));
     }
 
     hpx::future<primitive_argument_type> cross_operation::eval(

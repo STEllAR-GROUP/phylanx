@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+ // Copyright (c) 2017-2018 Hartmut Kaiser
 // Copyright (c) 2017 Parsa Amini
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -112,6 +112,8 @@ namespace phylanx { namespace ir
         static std::int64_t move_construction_count(bool reset);
         static std::int64_t copy_assignment_count(bool reset);
         static std::int64_t move_assignment_count(bool reset);
+
+        static bool enable_counts(bool enable);
 
     public:
         constexpr static std::size_t const max_dimensions = 2;
@@ -265,6 +267,7 @@ namespace phylanx { namespace ir
         custom_storage2d_type matrix() &;
         custom_storage2d_type matrix() const&;
         custom_storage2d_type matrix() &&;
+        custom_storage2d_type matrix() const&&;
 
         storage1d_type& vector_non_ref();
         storage1d_type const& vector_non_ref() const;
@@ -273,6 +276,7 @@ namespace phylanx { namespace ir
         custom_storage1d_type vector() &;
         custom_storage1d_type vector() const&;
         custom_storage1d_type vector() &&;
+        custom_storage1d_type vector() const&&;
 
         storage0d_type& scalar();
         storage0d_type const& scalar() const;
@@ -285,8 +289,10 @@ namespace phylanx { namespace ir
         std::size_t dimension(int dim) const;
 
         /// Return a new instance of node_data referring to this instance.
+        node_data<T> ref() &;
         node_data<T> ref() const&;
         node_data<T> ref() &&;
+        node_data<T> ref() const&&;
 
         /// Return a new instance of node_data holding a copy of this instance.
         node_data<T> copy() const;
@@ -327,10 +333,25 @@ namespace phylanx { namespace ir
     };
 
     ///////////////////////////////////////////////////////////////////////////
+    struct reset_enable_counts_on_exit
+    {
+        reset_enable_counts_on_exit(bool enabled = false)
+          : enabled_(node_data<double>::enable_counts(enabled))
+        {}
+
+        ~reset_enable_counts_on_exit()
+        {
+            node_data<double>::enable_counts(enabled_);
+        }
+
+        bool enabled_;
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT bool operator==(
         node_data<double> const& lhs, node_data<double> const& rhs);
     PHYLANX_EXPORT bool operator==(
-        node_data<bool> const& lhs, node_data<bool> const& rhs);
+        node_data<std::uint8_t> const& lhs, node_data<std::uint8_t> const& rhs);
 
     template <typename T>
     bool operator!=(node_data<T> const& lhs, node_data<T> const& rhs)
@@ -341,7 +362,7 @@ namespace phylanx { namespace ir
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, node_data<double> const& nd);
     PHYLANX_EXPORT std::ostream& operator<<(
-        std::ostream& out, node_data<bool> const& nd);
+        std::ostream& out, node_data<std::uint8_t> const& nd);
 }}
 
 #endif

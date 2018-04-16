@@ -43,67 +43,57 @@ namespace phylanx { namespace execution_tree { namespace primitives
     store_operation::store_operation(
             std::vector<primitive_argument_type> && operands,
             std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename)
+      : primitive_component_base(std::move(operands), name, codename, true)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    struct store_operation::store : std::enable_shared_from_this<store>
+    hpx::future<primitive_argument_type> store_operation::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
     {
-        store(std::vector<primitive_argument_type> const& args,
-            std::shared_ptr<store_operation const> that)
-            : args_(args)
-            , that_(that)
+        if (operands_.size() != 2)
         {
-            if (that_->operands_.size() != 2)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "store_operation::eval",
-                    execution_tree::generate_error_message(
-                        "the store_operation primitive requires exactly "
-                            "two operands",
-                        that_->name_, that_->codename_));
-
-                if (!valid(that_->operands_[0]) || !valid(that_->operands_[1]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "store_operation::store_operation",
-                        execution_tree::generate_error_message(
-                            "the store_operation primitive requires that "
-                                "the arguments given by the operands array "
-                                "is valid",
-                            that_->name_, that_->codename_));
-                }
-
-                if (!is_primitive_operand(that_->operands_[0]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "store_operation::store_operation",
-                        execution_tree::generate_error_message(
-                            "the first argument of the store primitive must "
-                                "refer to a another primitive and can't be a "
-                                "literal value",
-                            that_->name_, that_->codename_));
-                }
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "store_operation::eval",
+                execution_tree::generate_error_message(
+                    "the store_operation primitive requires exactly "
+                        "two operands",
+                    name_, codename_));
         }
 
-        hpx::future<primitive_argument_type> eval()
+        if (!valid(operands_[0]) || !valid(operands_[1]))
         {
-            auto this_ = this->shared_from_this();
-            return literal_operand(
-                that_->operands_[1], args_, that_->name_, that_->codename_)
-                .then(hpx::util::unwrapping(
-                    [this_](primitive_argument_type&& val) {
-                        primitive_operand(this_->that_->operands_[0],
-                            this_->that_->name_, this_->that_->codename_)
-                            .store(hpx::launch::sync, std::move(val));
-                        return primitive_argument_type{};
-                    }));
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "store_operation::store_operation",
+                execution_tree::generate_error_message(
+                    "the store_operation primitive requires that "
+                        "the arguments given by the operands array "
+                        "is valid",
+                    name_, codename_));
         }
 
-        std::vector<primitive_argument_type> args_;
-        std::shared_ptr<store_operation const> that_;
-    };
+        if (!is_primitive_operand(operands_[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "store_operation::store_operation",
+                execution_tree::generate_error_message(
+                    "the first argument of the store primitive must "
+                        "refer to a another primitive and can't be a "
+                        "literal value",
+                    name_, codename_));
+        }
+
+        auto this_ = this->shared_from_this();
+        return literal_operand(operands[1], args, name_, codename_)
+            .then(hpx::launch::sync, hpx::util::unwrapping(
+                [this_, lhs = operands[0]](primitive_argument_type&& val)
+                ->  primitive_argument_type
+                {
+                    primitive_operand(lhs, this_->name_, this_->codename_)
+                        .store(hpx::launch::sync, std::move(val));
+                    return primitive_argument_type{};
+                }));
+    }
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> store_operation::eval(
@@ -111,10 +101,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return std::make_shared<store>(noargs, shared_from_this())->eval();
+            return eval(args, noargs);
         }
-
-        return std::make_shared<store>(args, shared_from_this())->eval();
+        return eval(operands_, args);
     }
 }}}
 

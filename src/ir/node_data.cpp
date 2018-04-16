@@ -29,29 +29,40 @@ namespace phylanx { namespace ir
     static std::atomic<std::int64_t> count_move_constructions_;
     static std::atomic<std::int64_t> count_copy_assignments_;
     static std::atomic<std::int64_t> count_move_assignments_;
+    static std::atomic<bool> enable_counts_;
 
     template <typename T>
     void node_data<T>::increment_copy_construction_count()
     {
-        ++count_copy_constructions_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_copy_constructions_;
     }
 
     template <typename T>
     void node_data<T>::increment_move_construction_count()
     {
-        ++count_move_constructions_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_move_constructions_;
     }
 
     template <typename T>
     void node_data<T>::increment_copy_assignment_count()
     {
-        ++count_copy_assignments_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_copy_assignments_;
     }
 
     template <typename T>
     void node_data<T>::increment_move_assignment_count()
     {
-        ++count_move_assignments_;
+        if (enable_counts_.load(std::memory_order_relaxed))
+            ++count_move_assignments_;
+    }
+
+    template <typename T>
+    bool node_data<T>::enable_counts(bool enable)
+    {
+        return enable_counts_.exchange(enable, std::memory_order_relaxed);
     }
 
     template <typename T>
@@ -744,6 +755,28 @@ namespace phylanx { namespace ir
     template <typename T>
     typename node_data<T>::custom_storage2d_type node_data<T>::matrix() &&
     {
+        custom_storage2d_type* cm =
+            util::get_if<custom_storage2d_type>(&data_);
+        if (cm != nullptr)
+        {
+            return *cm;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::matrix()",
+            "node_data::matrix() shouldn't be called on an rvalue");
+    }
+
+    template <typename T>
+    typename node_data<T>::custom_storage2d_type node_data<T>::matrix() const&&
+    {
+        custom_storage2d_type const* cm =
+            util::get_if<custom_storage2d_type>(&data_);
+        if (cm != nullptr)
+        {
+            return *cm;
+        }
+
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::matrix()",
             "node_data::matrix() shouldn't be called on an rvalue");
@@ -803,7 +836,9 @@ namespace phylanx { namespace ir
         custom_storage1d_type* cv =
             util::get_if<custom_storage1d_type>(&data_);
         if (cv != nullptr)
+        {
             return *cv;
+        }
 
         storage1d_type* v = util::get_if<storage1d_type>(&data_);
         if (v != nullptr)
@@ -842,6 +877,28 @@ namespace phylanx { namespace ir
     template <typename T>
     typename node_data<T>::custom_storage1d_type node_data<T>::vector() &&
     {
+        custom_storage1d_type* cv =
+            util::get_if<custom_storage1d_type>(&data_);
+        if (cv != nullptr)
+        {
+            return *cv;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::vector()",
+            "node_data::vector shouldn't be called on an rvalue");
+    }
+
+    template <typename T>
+    typename node_data<T>::custom_storage1d_type node_data<T>::vector() const&&
+    {
+        custom_storage1d_type const* cv =
+            util::get_if<custom_storage1d_type>(&data_);
+        if (cv != nullptr)
+        {
+            return *cv;
+        }
+
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::vector()",
             "node_data::vector shouldn't be called on an rvalue");
@@ -958,6 +1015,31 @@ namespace phylanx { namespace ir
 
     /// Return a new instance of node_data referring to this instance.
     template <typename T>
+    node_data<T> node_data<T>::ref() &
+    {
+        switch(data_.index())
+        {
+        case 1:
+            return node_data<T>{vector()};
+
+        case 2:
+            return node_data<T>{matrix()};
+
+        case 0: HPX_FALLTHROUGH;
+        case 3: HPX_FALLTHROUGH;
+        case 4:
+            return *this;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::ref()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
     node_data<T> node_data<T>::ref() const&
     {
         switch(data_.index())
@@ -984,6 +1066,14 @@ namespace phylanx { namespace ir
 
     template <typename T>
     node_data<T> node_data<T>::ref() &&
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::ref()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    node_data<T> node_data<T>::ref() const&&
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::node_data<T>::ref()",
@@ -1126,7 +1216,8 @@ namespace phylanx { namespace ir
             "node_data object holds unsupported data type");
     }
 
-    bool operator==(node_data<bool> const& lhs, node_data<bool> const& rhs)
+    bool operator==(
+        node_data<std::uint8_t> const& lhs, node_data<std::uint8_t> const& rhs)
     {
         if (lhs.num_dimensions() != rhs.num_dimensions() ||
             lhs.dimensions() != rhs.dimensions())
@@ -1159,7 +1250,7 @@ namespace phylanx { namespace ir
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        template <typename Range>
+        template <typename T, typename Range>
         void print_array(std::ostream& out, Range const& r, std::size_t size)
         {
             out << "[";
@@ -1169,7 +1260,7 @@ namespace phylanx { namespace ir
                 {
                     out << ", ";
                 }
-                out << r[i];
+                out << T(r[i]);
             }
             out << "]";
         }
@@ -1187,7 +1278,7 @@ namespace phylanx { namespace ir
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            detail::print_array(out, nd.vector(), nd.size());
+            detail::print_array<double>(out, nd.vector(), nd.size());
             break;
 
         case 2: HPX_FALLTHROUGH;
@@ -1199,7 +1290,7 @@ namespace phylanx { namespace ir
                 {
                     if (row != 0)
                         out << ", ";
-                    detail::print_array(
+                    detail::print_array<double>(
                         out, blaze::row(data, row), data.columns());
                 }
                 out << "]";
@@ -1320,19 +1411,19 @@ namespace phylanx { namespace ir
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::ostream& operator<<(std::ostream& out, node_data<bool> const& nd)
+    std::ostream& operator<<(std::ostream& out, node_data<std::uint8_t> const& nd)
     {
         std::size_t dims = nd.num_dimensions();
         switch (dims)
         {
         case 0:
-            out << std::boolalpha << std::to_string(nd[0]);
+            out << std::boolalpha << std::to_string(bool{nd[0] != 0});
             break;
 
         case 1: HPX_FALLTHROUGH;
         case 3:
             out << std::boolalpha;
-            detail::print_array(out, nd.vector(), nd.size());
+            detail::print_array<bool>(out, nd.vector(), nd.size());
             break;
 
         case 2: HPX_FALLTHROUGH;
@@ -1344,7 +1435,7 @@ namespace phylanx { namespace ir
                 {
                     if (row != 0)
                         out << ", ";
-                    detail::print_array(
+                    detail::print_array<bool>(
                         out, blaze::row(data, row), data.columns());
                 }
                 out << "]";
@@ -1353,7 +1444,7 @@ namespace phylanx { namespace ir
 
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "node_data<bool>::operator<<()",
+                "node_data<std::uint8_t>::operator<<()",
                 "invalid dimensionality: " + std::to_string(dims));
         }
         return out;
@@ -1361,4 +1452,4 @@ namespace phylanx { namespace ir
 }}
 
 template class PHYLANX_EXPORT phylanx::ir::node_data<double>;
-template class PHYLANX_EXPORT phylanx::ir::node_data<bool>;
+template class PHYLANX_EXPORT phylanx::ir::node_data<std::uint8_t>;

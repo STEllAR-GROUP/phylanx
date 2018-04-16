@@ -10,6 +10,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -17,7 +18,7 @@ void test_unary_not_operation_0d_false()
 {
     phylanx::execution_tree::primitive val =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>{false});
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>{false});
 
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
@@ -28,7 +29,7 @@ void test_unary_not_operation_0d_false()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(true),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
@@ -36,7 +37,7 @@ void test_unary_not_operation_0d_true()
 {
     phylanx::execution_tree::primitive val =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>{true});
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>{true});
 
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
@@ -47,7 +48,7 @@ void test_unary_not_operation_0d_true()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(false),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
@@ -57,12 +58,12 @@ void test_unary_not_operation_0d_false_lit()
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                phylanx::ir::node_data<bool>{false}});
+                phylanx::ir::node_data<std::uint8_t>{false}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(true),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(true),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
@@ -72,23 +73,23 @@ void test_unary_not_operation_0d_true_lit()
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                phylanx::ir::node_data<bool>{true}});
+                phylanx::ir::node_data<std::uint8_t>{true}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(false),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(false),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
 void test_unary_not_operation_1d()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 0, 1);
 
     phylanx::execution_tree::primitive val =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(v));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(v));
 
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
@@ -99,19 +100,19 @@ void test_unary_not_operation_1d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicVector<bool> expected =
+    blaze::DynamicVector<std::uint8_t> expected =
         blaze::map(v, [](bool x) { return (x == false); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
 void test_unary_not_operation_1d_lit()
 {
     blaze::Rand<blaze::DynamicVector<int>> gen{};
-    blaze::DynamicVector<bool> v = gen.generate(1007UL, 0, 1);
+    blaze::DynamicVector<std::uint8_t> v = gen.generate(1007UL, 0, 1);
 
-    phylanx::ir::node_data<bool> val(v);
+    phylanx::ir::node_data<std::uint8_t> val(v);
 
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
@@ -122,10 +123,10 @@ void test_unary_not_operation_1d_lit()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicVector<bool> expected =
+    blaze::DynamicVector<std::uint8_t> expected =
         blaze::map(v, [](bool x) { return (x == false); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
@@ -147,10 +148,10 @@ void test_unary_not_operation_1d_double()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x == false); });
+    blaze::DynamicVector<std::uint8_t> expected =
+        blaze::map(v, [](double x) { return (x == 0.0); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
@@ -170,21 +171,21 @@ void test_unary_not_operation_1d_double_lit()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicVector<bool> expected =
-        blaze::map(v, [](double x) { return (x == false); });
+    blaze::DynamicVector<std::uint8_t> expected =
+        blaze::map(v, [](double x) { return (x == 0.0); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
 void test_unary_not_operation_2d()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(42UL, 42UL);
 
     phylanx::execution_tree::primitive val =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<bool>(m));
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(m));
 
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
@@ -195,19 +196,19 @@ void test_unary_not_operation_2d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m, [](bool x) { return (x == false); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
 void test_unary_not_operation_2d_lit()
 {
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
-    blaze::DynamicMatrix<bool> m = gen.generate(42UL, 42UL);
+    blaze::DynamicMatrix<std::uint8_t> m = gen.generate(42UL, 42UL);
 
-    phylanx::ir::node_data<bool> val(m);
+    phylanx::ir::node_data<std::uint8_t> val(m);
 
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
@@ -218,10 +219,10 @@ void test_unary_not_operation_2d_lit()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicMatrix<bool> expected =
+    blaze::DynamicMatrix<std::uint8_t> expected =
         blaze::map(m, [](bool x) { return (x == false); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
@@ -243,10 +244,10 @@ void test_unary_not_operation_2d_double()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x == false); });
+    blaze::DynamicMatrix<std::uint8_t> expected =
+        blaze::map(m, [](double x) { return (x == 0.0); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 
@@ -266,10 +267,10 @@ void test_unary_not_operation_2d_double_lit()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         unary_not.eval();
 
-    blaze::DynamicMatrix<bool> expected =
-        blaze::map(m, [](double x) { return (x == false); });
+    blaze::DynamicMatrix<std::uint8_t> expected =
+        blaze::map(m, [](double x) { return (x == 0.0); });
 
-    HPX_TEST_EQ(phylanx::ir::node_data<bool>(std::move(expected)),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(std::move(expected)),
         phylanx::execution_tree::extract_boolean_data(f.get()));
 }
 

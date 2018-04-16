@@ -255,7 +255,9 @@ void phylanx::bindings::bind_ast(pybind11::module m)
     ///////////////////////////////////////////////////////////////////////////
     // phylanx::ast::generate_ast()
     ast.def("generate_ast",
-        [](std::string const& code) {
+        [](std::string const& code)
+        {
+            pybind11::gil_scoped_release release;       // release GIL
             return phylanx::ast::generate_ast(code);
         },
         "generate an AST from the given expression string");
@@ -285,6 +287,6 @@ void phylanx::bindings::bind_ast(pybind11::module m)
 
     ///////////////////////////////////////////////////////////////////////////
     // Compiler State
-    pybind11::class_<phylanx::bindings::compiler_state>(m,"compiler_state")
+    pybind11::class_<phylanx::bindings::compiler_state>(m, "compiler_state")
         .def(pybind11::init<>());
 }

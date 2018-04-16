@@ -119,7 +119,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 {
                     params.emplace_back(extract_ref_value(arg));
                 }
-                return extract_copy_value(p->eval_direct(std::move(params)));
+                return extract_copy_value(
+                    p->eval(hpx::launch::sync, std::move(params)));
             }
             return arg_;
         }
@@ -136,7 +137,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 {
                     params.emplace_back(extract_ref_value(std::move(arg)));
                 }
-                return extract_copy_value(p->eval_direct(std::move(params)));
+                return extract_copy_value(
+                    p->eval(hpx::launch::sync, std::move(params)));
             }
             return arg_;
         }
@@ -167,7 +169,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     params.emplace_back(extract_ref_value(arg));
                 }
 
-                return extract_copy_value(p->eval_direct(std::move(params)));
+                return extract_copy_value(
+                    p->eval(hpx::launch::sync, std::move(params)));
             }
 
             return arg_;

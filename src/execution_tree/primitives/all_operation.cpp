@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename T>
     primitive_argument_type all_operation::all0d(T&& arg) const
     {
-        return primitive_argument_type{ir::node_data<bool>{arg.scalar() != 0}};
+        return primitive_argument_type{ir::node_data<std::uint8_t>{arg.scalar() != 0}};
     }
 
     template <typename T>
@@ -55,14 +55,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto value = arg.vector();
         return primitive_argument_type{
-            ir::node_data<bool>{value.nonZeros() == value.size()}};
+            ir::node_data<std::uint8_t>{value.nonZeros() == value.size()}};
     }
 
     template <typename T>
     primitive_argument_type all_operation::all2d(T&& arg) const
     {
         auto value = arg.matrix();
-        return primitive_argument_type{ir::node_data<bool>{
+        return primitive_argument_type{ir::node_data<std::uint8_t>{
             value.nonZeros() == value.rows() * value.columns()}};
     }
 
@@ -117,8 +117,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> f =
             value_operand(operands[0], args, name_, codename_);
 
-        return f.then(hpx::util::unwrapping(
-            [this_](primitive_argument_type&& op) -> primitive_argument_type {
+        return f.then(hpx::launch::sync,
+            hpx::util::unwrapping(
+            [this_](primitive_argument_type&& op) -> primitive_argument_type
+            {
                 switch (op.index())
                 {
                 case 1:

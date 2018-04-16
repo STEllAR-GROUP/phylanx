@@ -87,7 +87,8 @@ int main()
         {11.26, 19.83}, {13.71, 18.68}, {9.847, 15.68}, {8.571, 13.1 },
         {13.46, 18.75}, {12.34, 12.27}, {13.94, 13.17}, {12.07, 13.44}};
 
-    blaze::DynamicVector<double> const v2{1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0,
+    blaze::DynamicVector<double> const v2{
+        1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0,
         1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1};
 
     // Compile the given code
@@ -105,7 +106,7 @@ int main()
     for (auto const& pattern :
         phylanx::execution_tree::get_all_known_patterns())
     {
-        std::string const& name = hpx::util::get<0>(pattern);
+        std::string const& name = hpx::util::get<0>(hpx::util::get<1>(pattern));
 
         // HACK: There is an access-argument/access-variable primitive
         // registered in AGAS for each argument/variable access. This is a
@@ -123,15 +124,9 @@ int main()
             "/phylanx{locality#0/total}/primitives/" + name + "/time/eval");
         hpx::performance_counters::performance_counter time_pc(time_pc_name);
 
-        std::string const direct_counter_pc_name(
-            "/phylanx{locality#0/total}/primitives/" + name + "/count/eval_direct");
-        hpx::performance_counters::performance_counter direct_counter_pc(
-            direct_counter_pc_name);
-
-        std::string const direct_time_pc_name(
-            "/phylanx{locality#0/total}/primitives/" + name + "/time/eval_direct");
-        hpx::performance_counters::performance_counter direct_time_pc(
-            direct_time_pc_name);
+        std::string const eval_pc_name(
+            "/phylanx{locality#0/total}/primitives/" + name + "/eval_direct");
+        hpx::performance_counters::performance_counter eval_pc(eval_pc_name);
 
         // Verify the number of primitive instances in lra
         auto entries = hpx::agas::find_symbols(
@@ -151,22 +146,10 @@ int main()
             HPX_TEST_EQ(values.count_, 1ll);
             HPX_TEST_EQ(values.values_.size(), entries.size());
 
-            auto const direct_info = direct_time_pc.get_info(hpx::launch::sync);
-            HPX_TEST_EQ(direct_info.fullname_, direct_time_pc_name);
-            HPX_TEST_EQ(direct_info.type_,
-                hpx::performance_counters::counter_raw_values);
-
-            auto const direct_values = direct_time_pc.get_counter_values_array(
-                hpx::launch::sync, false);
-
-            HPX_TEST_EQ(direct_values.count_, 1ll);
-            HPX_TEST_EQ(direct_values.values_.size(), entries.size());
-
             // At least one of the values for each primitive should be non-zero
             for (std::size_t i = 0; i != values.values_.size(); ++i)
             {
-                HPX_TEST(values.values_[i] != 0ll ||
-                    direct_values.values_[i] != 0ll);
+                HPX_TEST(values.values_[i] != 0ll);
             }
         }
 
@@ -183,22 +166,31 @@ int main()
             HPX_TEST_EQ(values.count_, 1ll);
             HPX_TEST_EQ(values.values_.size(), entries.size());
 
-            auto const direct_info = direct_counter_pc.get_info(hpx::launch::sync);
-            HPX_TEST_EQ(direct_info.fullname_, direct_counter_pc_name);
-            HPX_TEST_EQ(direct_info.type_,
-                hpx::performance_counters::counter_raw_values);
-
-            auto const direct_values = direct_counter_pc.get_counter_values_array(
-                hpx::launch::sync, false);
-
-            HPX_TEST_EQ(direct_values.count_, 1ll);
-            HPX_TEST_EQ(direct_values.values_.size(), entries.size());
-
             // At least one of the values for each primitive should be non-zero
             for (std::size_t i = 0; i != values.values_.size(); ++i)
             {
-                HPX_TEST(values.values_[i] != 0ll ||
-                    direct_values.values_[i] != 0ll);
+                HPX_TEST(values.values_[i] != 0ll);
+            }
+        }
+
+        // Eval-direct performance counters
+        {
+            auto const info = eval_pc.get_info(hpx::launch::sync);
+            HPX_TEST_EQ(info.fullname_, eval_pc_name);
+            HPX_TEST_EQ(
+                info.type_, hpx::performance_counters::counter_raw_values);
+
+            auto const values =
+                eval_pc.get_counter_values_array(hpx::launch::sync, false);
+
+            HPX_TEST_EQ(values.count_, 1ll);
+            HPX_TEST_EQ(values.values_.size(), entries.size());
+
+            // all values should be '0' or '1'
+            for (std::size_t i = 0; i != values.values_.size(); ++i)
+            {
+                HPX_TEST(values.values_[i] == -1 || values.values_[i] == 0 ||
+                    values.values_[i] == 1);
             }
         }
     }

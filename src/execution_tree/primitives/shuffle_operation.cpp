@@ -78,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const shuffle_operation::match_data =
     {
         hpx::util::make_tuple("shuffle_operation",
-            std::vector<std::string>{"shuffle_operation(__1)", "'(__1)"},
+            std::vector<std::string>{"shuffle_operation(_1)"},
             &create_shuffle_operation, &create_primitive<shuffle_operation>)
     };
 
@@ -92,17 +92,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type shuffle_operation::shuffle_1d(args_type && args) const
+    primitive_argument_type shuffle_operation::shuffle_1d(arg_type && arg) const
     {
-        auto x = args[0].vector();
+        auto x = arg.vector();
         std::shuffle(x.begin(), x.end(), rand_machine);
 
         return primitive_argument_type{ir::node_data<double>{std::move(x)}};
     }
 
-    primitive_argument_type shuffle_operation::shuffle_2d(args_type&& args) const
+    primitive_argument_type shuffle_operation::shuffle_2d(arg_type&& arg) const
     {
-        auto x = args[0].matrix();
+        auto x = arg.matrix();
         auto x_begin = util::matrix_row_iterator<decltype(x)>(x);
         auto x_end = util::matrix_row_iterator<decltype(x)>(x, x.rows());
         std::shuffle(x_begin, x_end, rand_machine);
@@ -115,38 +115,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands.size(); ++i)
+        if (operands.size() != 1)
         {
-            if (!valid(operands[i]))
-            {
-                arguments_valid = false;
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "shuffle_operation::eval",
+                execution_tree::generate_error_message(
+                    "the shuffle_operation primitive requires "
+                        "exactly one operand",
+                    name_, codename_));
         }
 
-        if (!arguments_valid)
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "shuffle_operation::eval",
                 execution_tree::generate_error_message(
                     "the shuffle_operation primitive requires that "
-                        "the arguments given by the operands array "
-                        "are valid",
+                        "the argument is valid",
                     name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](args_type&& args) -> primitive_argument_type {
-                    std::size_t lhs_dims = args[0].num_dimensions();
+                [this_](arg_type&& arg) -> primitive_argument_type
+                {
+                    std::size_t lhs_dims = arg.num_dimensions();
                     switch (lhs_dims)
                     {
                     case 1:
-                        return this_->shuffle_1d(std::move(args));
+                        return this_->shuffle_1d(std::move(arg));
 
                     case 2:
-                        return this_->shuffle_2d(std::move(args));
+                        return this_->shuffle_2d(std::move(arg));
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -158,8 +159,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 this_->name_, this_->codename_));
                     }
                 }),
-            detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_));
+            numeric_operand(operands[0], args, name_, codename_));
     }
 
     hpx::future<primitive_argument_type> shuffle_operation::eval(

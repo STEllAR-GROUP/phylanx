@@ -7,7 +7,6 @@
 
 import phylanx
 from phylanx.ast import Phylanx
-from phylanx.ast.utils import printout
 import numpy as np
 
 et = phylanx.execution_tree
@@ -47,12 +46,9 @@ def fib(n):
         return fib(n - 1) + fib(n - 2)
 
 
-# assert fib.__physl_src__ == \
-#     'block$1$0(define$1$0(fib$1$0, n$1$8, ' + \
-#     'if(n$2$7 < 2, n$3$15, ' + \
-#     '(fib((n$5$19 - 1)) + fib((n$5$28 - 2))))' + \
-#     '), fib$1$0)\n'
-
+assert fib.__src__ == \
+    'define$42$0(fib$42$0, n$42$8, if$43$4((n$43$7 < 2), n$44$15, (fib$46$15((n$46$19 - 1)) + fib$46$28((n$46$32 - 2)))))' # noqa E501
+assert "[" + fib.__src__ + "]" == str(fib.generate_ast())
 assert fib(10) == 55.0
 
 
@@ -61,9 +57,9 @@ def pass_str(a):
     return a
 
 
-assert pass_str.__physl_src__ == \
-    'define$60$0(pass_str$60$0, a$60$13, a$61$11)', pass_str.__physl_src__
-
+assert pass_str.__src__ == \
+    'define$56$0(pass_str$56$0, a$56$13, a$57$11)'
+assert "[" + pass_str.__src__ + "]" == str(pass_str.generate_ast())
 assert "foo" == str(pass_str("foo"))
 
 

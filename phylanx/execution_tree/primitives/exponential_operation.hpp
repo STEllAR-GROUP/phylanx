@@ -43,9 +43,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        primitive_argument_type exponential0d(operands_type&& ops) const;
-        primitive_argument_type exponential1d(operands_type&& ops) const;
-        primitive_argument_type exponentialxd(operands_type&& ops) const;
+        primitive_argument_type exponential0d(operand_type&& ops) const;
+        primitive_argument_type exponential1d(operand_type&& ops) const;
+        primitive_argument_type exponentialxd(operand_type&& ops) const;
     };
 
     PHYLANX_EXPORT primitive create_exponential_operation(

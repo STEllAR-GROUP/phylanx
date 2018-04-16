@@ -14,6 +14,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -24,8 +25,8 @@
 #include <blaze/math/Elements.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx {namespace execution_tree {    namespace primitives {
+
     ///////////////////////////////////////////////////////////////////////////
     primitive create_slicing_operation(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
@@ -36,27 +37,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
             locality, type, std::move(operands), name, codename);
     }
 
-    match_pattern_type const slicing_operation::match_data =
-    {
+    match_pattern_type const slicing_operation::match_data = {
         hpx::util::make_tuple("slice",
-            std::vector<std::string>{"slice(_1, _2, _3, _4, _5)",
-        "slice(_1,_2,_3,_4,_5,_6,_7)"},
-            &create_slicing_operation, &create_primitive<slicing_operation>)
-    };
+            std::vector<std::string>{
+                "slice(_1)", "slice(_1, _2)", "slice(_1,_2,_3)"},
+            &create_slicing_operation,
+            &create_primitive<slicing_operation>)};
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
             std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-    {}
+    {
+    }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<int> slicing_operation::create_list_slice(
-        int start, int stop, int step, int array_length) const
+    std::vector<std::int64_t> slicing_operation::create_list_slice(
+        std::int64_t start, std::int64_t stop, std::int64_t step,
+        std::size_t array_length) const
     {
-        auto actual_start = 0;
-        auto actual_stop = 0;
+        std::int64_t actual_start = 0;
+        std::int64_t actual_stop = 0;
 
         if (start >= 0)
         {
@@ -78,11 +80,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             actual_stop = array_length + stop;
         }
 
-        std::vector<int> result;
+        std::vector<std::int64_t> result;
 
         if (step > 0)
         {
-            for (int i = actual_start; i < actual_stop; i += step)
+            for (std::int64_t i = actual_start; i < actual_stop; i += step)
             {
                 result.push_back(i);
             }
@@ -90,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (step < 0)
         {
-            for (int i = actual_start; i > actual_stop; i += step)
+            for (std::int64_t i = actual_start; i > actual_stop; i += step)
             {
                 result.push_back(i);
             }
@@ -109,136 +111,192 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return result;
     }
 
-    primitive_argument_type slicing_operation::slicing0d(args_type&& args) const
+    primitive_argument_type slicing_operation::slicing0d(arg_type&& arg) const
     {
-        return primitive_argument_type(std::move(args[0]));
+        double scalar_data = arg.scalar();
+        return primitive_argument_type{ir::node_data<double>{scalar_data}};
     }
 
-    primitive_argument_type slicing_operation::slicing1d(args_type&& args) const
+    primitive_argument_type slicing_operation::slicing1d(arg_type&& arg,
+        std::vector<double>
+            extracted_row) const
     {
-        // return elements starting from row_start to row_stop.
-        // the values passed to col_stat and col_stop does not have an
-        // effect on the result.
-
-        auto row_start = args[1].scalar();
-        auto row_stop = args[2].scalar();
-        int step = 1;
-
-        if (args.size() == 7)
+        if (extracted_row.empty())
         {
-            step = args[3].scalar();
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                "slicing_operation::slicing1d",
+                execution_tree::generate_error_message(
+                    "rows can not be empty", name_, codename_));
+        }
+
+        auto input_vector = arg.vector();
+        if (extracted_row.size() == 1)
+        {
+            std::int64_t index = extracted_row[0];
+            if (index < 0)
+            {
+                index = input_vector.size() + index;
+            }
+            return primitive_argument_type{input_vector[index]};
+        }
+
+        std::int64_t row_start = extracted_row[0];
+        std::int64_t row_stop = extracted_row[1];
+        std::int64_t step = 1;
+
+        if (extracted_row.size() == 3)
+        {
+            step = extracted_row[2];
 
             if (step == 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                        "slicing_operation::slicing_operation",
+                    "slicing_operation::slicing1d",
                     execution_tree::generate_error_message(
-                        "step can not be zero",
-                        name_, codename_));
+                        "step can not be zero", name_, codename_));
             }
         }
 
-        auto init_list = create_list_slice(
-            row_start, row_stop, step, args[0].size());
+        auto init_list =
+            create_list_slice(row_start, row_stop, step, arg.size());
 
-        auto input_vector = args[0].vector();
         auto sv = blaze::elements(input_vector, init_list);
 
-        if (sv.size() == 1)
-        {
-            return primitive_argument_type{sv[0]};
-        }
-
         storage1d_type v{sv};
-        return primitive_argument_type{
-            ir::node_data<double>(std::move(v))};
+        return primitive_argument_type{ir::node_data<double>(std::move(v))};
     }
 
-    primitive_argument_type slicing_operation::slicing2d(args_type&& args) const
+    primitive_argument_type slicing_operation::slicing2d(
+        arg_type&& arg, std::vector<double> extracted_row,
+        std::vector<double> extracted_column) const
     {
-        auto row_start = args[1].scalar();
-        auto row_stop = args[2].scalar();
-        auto col_start = args[3].scalar();
-        auto col_stop = args[4].scalar();
-        auto num_matrix_rows = args[0].dimensions()[0];
-        auto num_matrix_cols = args[0].dimensions()[1];
-
-        int step_row = 1;
-        int step_col = 1;
-
-        if (args.size() == 7)
+        if (extracted_column.empty() || extracted_row.empty())
         {
-            step_row = args[3].scalar();
-            step_col = args[6].scalar();
-            col_start = args[4].scalar();
-            col_stop = args[5].scalar();
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                "slicing_operation::slicing2d",
+                execution_tree::generate_error_message(
+                    "columns/rows can not be empty", name_, codename_));
+        }
 
-            if (step_row == 0 || step_col == 0)
+        blaze::DynamicMatrix<double> input_matrix = arg.matrix();
+        std::size_t num_matrix_rows = input_matrix.rows();
+        std::size_t num_matrix_cols = input_matrix.columns();
+
+        //return a value and not a vector if you are not given a list
+        if (extracted_row.size() == 1)
+        {
+            std::int64_t index = extracted_row[0];
+            if (index < 0)
+            {
+                index = num_matrix_rows + index;
+            }
+            auto sv = blaze::trans(blaze::row(input_matrix, index));
+            if (extracted_column.size() == 1)
+            {
+                std::int64_t index_col = extracted_column[0];
+                if (index_col < 0)
+                {
+                    index_col = num_matrix_cols + index_col;
+                }
+                double value = sv[index_col];
+                storage0d_type v{value};
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(v)}};
+            }
+            std::int64_t col_start = extracted_column[0];
+            std::int64_t col_stop = extracted_column[1];
+            std::int64_t step_col = 1;
+
+            if (extracted_column.size() == 3)
+            {
+                step_col = extracted_column[2];
+                if (step_col == 0)
+                {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                        "slicing_operation::slicing2d",
+                    execution_tree::generate_error_message(
+                            "step can not be zero", name_, codename_));
+            }
+        }
+
+        auto init_list_col = create_list_slice(
+            col_start, col_stop, step_col, num_matrix_cols);
+            auto final_vec = blaze::elements(sv, init_list_col);
+            storage1d_type v{final_vec};
+            return primitive_argument_type{ir::node_data<double>{std::move(v)}};
+        }
+        std::int64_t row_start = extracted_row[0];
+        std::int64_t row_stop = extracted_row[1];
+        std::int64_t step = 1;
+
+        if (extracted_row.size() == 3)
+        {
+            step = extracted_row[2];
+            if (step == 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                        "row_slicing_operation::row_slicing_operation",
+                    "row_slicing_operation::row_slicing_operation",
                     execution_tree::generate_error_message(
-                        "step can not be zero",
-                        name_, codename_));
+                        "step can not be zero", name_, codename_));
             }
         }
 
-        auto init_list_row = create_list_slice(
-            row_start, row_stop, step_row, num_matrix_rows);
-        auto init_list_col = create_list_slice(
-            col_start, col_stop, step_col, num_matrix_cols);
+        auto init_list =
+            create_list_slice(row_start, row_stop, step, num_matrix_rows);
 
-        auto input_matrix = args[0].matrix();
-        blaze::DynamicMatrix<double> sm_row =
-            blaze::rows(input_matrix, init_list_row);
-        auto sm = blaze::columns(sm_row, init_list_col);
-
-        if (sm.rows() == 1)
+        auto sm = blaze::rows(input_matrix, init_list);
+        if (extracted_column.size() == 1)
         {
-            auto sv = blaze::trans(blaze::row(sm, 0));
-            if (sv.size() == 1)
+            std::int64_t index_col = extracted_column[0];
+            if (index_col < 0)
             {
-                return primitive_argument_type{sv[0]};
+                index_col = num_matrix_cols + index_col;
             }
-
-            storage1d_type v{sv};
-            return primitive_argument_type{
-                ir::node_data<double>{std::move(v)}};
+            auto vec = blaze::column(sm, index_col);
+            storage1d_type v{vec};
+            return primitive_argument_type{ir::node_data<double>{std::move(v)}};
         }
+        std::int64_t col_start = extracted_column[0];
+        std::int64_t col_stop = extracted_column[1];
+        std::int64_t step_col = 1;
 
-        if (sm.columns() == 1)
+        if (extracted_column.size() == 3)
         {
-            auto sv = blaze::column(sm, 0);
-            if (sv.size() == 1)
+            step_col = extracted_column[2];
+            if (step_col == 0)
             {
-                return primitive_argument_type{sv[0]};
-            }
-
-            storage1d_type v{sv};
-            return primitive_argument_type{
-                ir::node_data<double>{std::move(v)}};
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                    "slicing_operation::slicing2d",
+                    execution_tree::generate_error_message(
+                        "step can not be zero", name_, codename_));
+        }
         }
 
-        storage2d_type m{sm};
-
-        return primitive_argument_type{
-            ir::node_data<double>(std::move(m))};
+        auto init_list_col =
+            create_list_slice(col_start, col_stop, step_col, num_matrix_cols);
+        auto final_mat = blaze::columns(sm, init_list_col);
+        storage2d_type m{final_mat};
+        return primitive_argument_type{ir::node_data<double>{std::move(m)}};
     }
 
     hpx::future<primitive_argument_type> slicing_operation::eval(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() != 5 && operands.size() != 7)
+        if (operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "slicing_operation::slicing_operation",
                 execution_tree::generate_error_message(
                     "the slicing_operation primitive requires "
-                        "either five or seven arguments",
+                    "either one(0d), two(1d) or three arguments(2d)",
                     name_, codename_));
         }
 
@@ -247,12 +305,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (!valid(operands[i]))
             {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "slicing_operation::eval",
                 execution_tree::generate_error_message(
@@ -261,26 +313,80 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "array are valid",
                     name_, codename_));
         }
+        }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
-            hpx::util::unwrapping(
-                [this_](args_type&& args) -> primitive_argument_type {
-                    std::size_t lhs_dims = args[0].num_dimensions();
-                    switch (lhs_dims)
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping([this_](std::vector<primitive_argument_type>&&
+                                          args) -> primitive_argument_type {
+                //Extract the matrix i.e the first argument
+                arg_type matrix_input = execution_tree::extract_numeric_value(
+                    args[0], this_->name_, this_->codename_);
+
+                std::vector<double> extracted_row;
+                std::vector<double> extracted_column;
+
+                //Extract the list or the single double
+                // from second argument (row-> start, stop, step)
+                if (args.size() > 1)
                     {
+                    if (execution_tree::is_list_operand_strict(args[1]))
+                    {
+                        auto result = execution_tree::extract_list_value(
+                            args[1], this_->name_, this_->codename_);
+                        for (auto a : result)
+                        {
+                            extracted_row.push_back(
+                                execution_tree::extract_numeric_value(a)[0]);
+                        }
+                    }
+                    else
+                    {
+                        double result = execution_tree::extract_numeric_value(
+                            args[1], this_->name_, this_->codename_)[0];
+                        extracted_row.push_back(result);
+                    }
+                }
+                //Extract the list or the single double
+                // from third argument (column-> start, stop, step)
+                if (args.size() == 3)
+                {
+                    if (execution_tree::is_list_operand_strict(args[2]))
+                    {
+                        auto result = execution_tree::extract_list_value(
+                            args[2], this_->name_, this_->codename_);
+                        for (auto a : result)
+                        {
+                            extracted_column.push_back(
+                                execution_tree::extract_numeric_value(a)[0]);
+                        }
+                    }
+                    else
+                    {
+                        double result = execution_tree::extract_numeric_value(
+                            args[2], this_->name_, this_->codename_)[0];
+                        extracted_column.push_back(result);
+                    }
+                }
+
+                std::size_t matrix_dims = matrix_input.num_dimensions();
+
+                switch (matrix_dims)
+                {
                     case 0:
-                        return this_->slicing0d(std::move(args));
+                    return this_->slicing0d(std::move(matrix_input));
 
                     case 1:
-                        return this_->slicing1d(std::move(args));
+                    return this_->slicing1d(
+                        std::move(matrix_input), extracted_row);
 
                     case 2:
-                        return this_->slicing2d(std::move(args));
+                    return this_->slicing2d(std::move(matrix_input),
+                        extracted_row, extracted_column);
 
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "slicing_operation::eval",
+                        "row_slicing_operation::eval",
                             execution_tree::generate_error_message(
                                 "left hand side operand has unsupported "
                                     "number of dimensions",
@@ -288,8 +394,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }),
             detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_));
+                operands, functional::value_operand{}, args, name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////

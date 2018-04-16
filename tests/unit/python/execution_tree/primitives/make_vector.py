@@ -5,6 +5,7 @@
 
 import phylanx
 from phylanx.ast import *
+import numpy as np
 
 
 @Phylanx("PhySL")
@@ -33,7 +34,18 @@ def test_make_vector2():
     return hstack(a, hstack(a, b, c), c)
 
 
-assert test_make_vector_one() == [42]
-assert test_make_vector_literals() == [1, 2, 3, 4]
-assert test_make_vector() == [1, 2, 3]
-assert test_make_vector2() == [1, 1, 2, 3, 3]
+a = test_make_vector_one()
+assert (isinstance(a, np.ndarray))
+assert (a == np.array(42)).all()
+
+a = test_make_vector_literals()
+assert (isinstance(a, np.ndarray))
+assert (a == np.array([1, 2, 3, 4])).all()
+
+a = test_make_vector()
+assert (isinstance(a, np.ndarray))
+assert (a == np.array([1, 2, 3])).all()
+
+a = test_make_vector2()
+assert (isinstance(a, np.ndarray))
+assert (a == np.array([1, 1, 2, 3, 3])).all()

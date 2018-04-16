@@ -43,8 +43,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        primitive_argument_type inverse0d(operands_type && ops) const;
-        primitive_argument_type inverse2d(operands_type && ops) const;
+        primitive_argument_type inverse0d(operand_type&& ops) const;
+        primitive_argument_type inverse2d(operand_type&& ops) const;
     };
 
     PHYLANX_EXPORT primitive create_inverse_operation(

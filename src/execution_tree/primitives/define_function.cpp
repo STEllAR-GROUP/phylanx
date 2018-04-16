@@ -52,20 +52,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         operands_.resize(1);
     }
 
-    primitive_argument_type define_function::eval_direct(
+    hpx::future<primitive_argument_type> define_function::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         // body is assumed to be operands_[0]
         if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "define_function::eval_direct",
+                "define_function::eval",
                 execution_tree::generate_error_message(
                     "the expression representing the function body "
                         "was not initialized yet",
                     name_, codename_));
         }
-        return operands_[0];
+        return hpx::make_ready_future(operands_[0]);
     }
 
     primitive_argument_type define_function::bind(

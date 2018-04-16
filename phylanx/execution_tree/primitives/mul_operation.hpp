@@ -44,18 +44,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        primitive_argument_type mul0d(operands_type && ops) const;
-        primitive_argument_type mul0d0d(operands_type && ops) const;
-        primitive_argument_type mul0d1d(operands_type && ops) const;
-        primitive_argument_type mul0d2d(operands_type && ops) const;
-        primitive_argument_type mul1d(operands_type && ops) const;
-        primitive_argument_type mul1d0d(operands_type && ops) const;
-        primitive_argument_type mul1d1d(operands_type && ops) const;
-        primitive_argument_type mul1d2d(operands_type && ops) const;
-        primitive_argument_type mul2d(operands_type && ops) const;
-        primitive_argument_type mul2d0d(operands_type && ops) const;
-        primitive_argument_type mul2d1d(operands_type && ops) const;
-        primitive_argument_type mul2d2d(operands_type && ops) const;
+        primitive_argument_type mul0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul0d(operands_type&& ops) const;
+        primitive_argument_type mul0d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul0d0d(operands_type&& ops) const;
+        primitive_argument_type mul0d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul0d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+
+        primitive_argument_type mul1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul1d(operands_type&& ops) const;
+        primitive_argument_type mul1d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul1d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul1d1d(operands_type&& ops) const;
+        primitive_argument_type mul1d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+
+        primitive_argument_type mul2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d(operands_type&& ops) const;
+        primitive_argument_type mul2d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d(operands_type&& ops) const;
     };
 
     PHYLANX_EXPORT primitive create_mul_operation(hpx::id_type const& locality,

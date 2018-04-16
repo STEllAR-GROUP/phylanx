@@ -9,6 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/runtime/launch_policy.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <string>
@@ -41,13 +42,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    primitive_argument_type apply::eval_direct(
+    hpx::future<primitive_argument_type> apply::eval(
         std::vector<primitive_argument_type> const& params) const
     {
         if (operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "apply::eval_direct",
+                "apply::eval",
                 generate_error_message(
                     "the apply primitive requires exactly two operands"));
         }
@@ -56,13 +57,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (p == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "apply::eval_direct",
+                "apply::eval",
                 generate_error_message(
                     "the first argument to apply must be an invocable "
                     "object"));
         }
 
-        return p->eval_direct(
-            list_operand_sync(operands_[1], params, name_, codename_));
+        auto this_ = this->shared_from_this();
+        return list_operand(operands_[1], params, name_, codename_).then(
+            hpx::launch::sync,
+            [this_](hpx::future<std::vector<primitive_argument_type>>&& f)
+            {
+                primitive const* p =
+                    util::get_if<primitive>(&this_->operands_[0]);
+
+                if (p == nullptr)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "apply::eval",
+                        this_->generate_error_message(
+                            "the first argument to apply must be an invocable "
+                            "object"));
+                }
+
+                return p->eval(hpx::launch::sync, f.get());
+            });
     }
 }}}
