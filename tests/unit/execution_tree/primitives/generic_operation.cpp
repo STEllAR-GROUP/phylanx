@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-void test_generic_operation_0d(
-    std::string const& func_name, double func(double))
+void test_generic_operation_0d(std::string const& func_name,
+    double func(double))
 {
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -33,12 +33,14 @@ void test_generic_operation_0d(
 }
 
 void test_generic_operation_1d(std::string const& func_name,
-    blaze::DynamicVector<double> func(blaze::CustomVector<double,blaze::aligned,blaze::padded>))
+    blaze::DynamicVector<double>
+        func(blaze::CustomVector<double, blaze::aligned, blaze::padded>))
 {
     blaze::Rand<blaze::DynamicVector<double>> gen{};
     blaze::DynamicVector<double> n = gen.generate(42UL);
-    std::unique_ptr<double[],blaze::Deallocate> memory(&n[0]);
-    blaze::CustomVector<double,blaze::aligned,blaze::padded> m(memory.get(), 42UL, 43UL);
+    std::unique_ptr<double[], blaze::Deallocate> memory(&n[0]);
+    blaze::CustomVector<double, blaze::aligned, blaze::padded> m(
+        memory.get(), 42UL, 43UL);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -59,12 +61,14 @@ void test_generic_operation_1d(std::string const& func_name,
 }
 
 void test_generic_operation_2d(std::string const& func_name,
-    blaze::DynamicMatrix<double> func(blaze::CustomMatrix<double,blaze::aligned,blaze::padded>))
+    blaze::DynamicMatrix<double>
+        func(blaze::CustomMatrix<double, blaze::aligned, blaze::padded>))
 {
     blaze::Rand<blaze::DynamicVector<double>> gen{};
     blaze::DynamicVector<double> n = gen.generate(192UL);
-    std::unique_ptr<double[],blaze::Deallocate> memory(&n[0]);
-    blaze::CustomMatrix<double,blaze::aligned,blaze::padded> m(memory.get(), 12UL, 13UL,16UL);
+    std::unique_ptr<double[], blaze::Deallocate> memory(&n[0]);
+    blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m(
+        memory.get(), 12UL, 13UL, 16UL);
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -88,40 +92,32 @@ int main(int argc, char* argv[])
 {
     test_generic_operation_0d("log", std::log);
     test_generic_operation_1d("log",
-        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
-            return blaze::log(m);
-        });
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::log(m); });
     test_generic_operation_2d("log",
-        [](blaze::CustomMatrix<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicMatrix<double> {
-            return blaze::log(m);
-        });
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::log(m); });
     test_generic_operation_0d("exp", std::exp);
     test_generic_operation_1d("exp",
-        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
-            return blaze::exp(m);
-        });
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::exp(m); });
     test_generic_operation_2d("exp",
-        [](blaze::CustomMatrix<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicMatrix<double> {
-            return blaze::exp(m);
-        });
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::exp(m); });
     test_generic_operation_0d("sin", std::sin);
     test_generic_operation_1d("sin",
-        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
-            return blaze::sin(m);
-        });
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::sin(m); });
     test_generic_operation_2d("sin",
-        [](blaze::CustomMatrix<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicMatrix<double> {
-            return blaze::sin(m);
-        });
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::sin(m); });
     test_generic_operation_0d("sinh", std::sinh);
     test_generic_operation_1d("sinh",
-        [](blaze::CustomVector<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicVector<double> {
-            return blaze::sinh(m);
-        });
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::sinh(m); });
     test_generic_operation_2d("sinh",
-        [](blaze::CustomMatrix<double,blaze::aligned,blaze::padded> m) -> blaze::DynamicMatrix<double> {
-            return blaze::sinh(m);
-        });
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::sinh(m); });
 
     return hpx::util::report_errors();
 }
