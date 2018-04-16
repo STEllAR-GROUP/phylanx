@@ -48,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     void block_operation::next(std::size_t i,
         std::vector<primitive_argument_type> && args,
-        hpx::promise<primitive_argument_type> && result) const
+        hpx::lcos::local::promise<primitive_argument_type> && result) const
     {
         // skip statements that don't return anything
         while (i != operands_.size() && !valid(operands_[i]))
@@ -60,6 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         auto f = value_operand(operands_[i], args, name_, codename_);
         f.then(
+            hpx::launch::sync,
             [this_, i, args = std::move(args), result = std::move(result)](
                 hpx::future<primitive_argument_type>&& step) mutable -> void
             {
@@ -93,7 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return hpx::make_ready_future(primitive_argument_type{ast::nil{}});
         }
-        hpx::promise<primitive_argument_type> result;
+        hpx::lcos::local::promise<primitive_argument_type> result;
         auto f = result.get_future();
         next(0, std::move(args), std::move(result));    // trigger first step
         return f;

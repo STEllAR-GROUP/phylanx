@@ -44,7 +44,9 @@ std::string const read_x_code = R"(block(
     // Read X-data from given CSV file
     //
     define(read_x, filepath, row_start, row_stop, col_start, col_stop,
-        slice(file_read_csv(filepath), row_start, row_stop, col_start, col_stop)
+        slice(file_read_csv(filepath),
+              make_list(row_start, row_stop),
+              make_list(col_start, col_stop))
     ),
     read_x
 ))";
@@ -54,7 +56,7 @@ std::string const read_y_code = R"(block(
     // Read Y-data from given CSV file
     //
     define(read_y, filepath, row_start, row_stop, col_stop,
-        slice(file_read_csv(filepath), row_start, row_stop, col_stop, col_stop+1)
+        slice(file_read_csv(filepath), make_list(row_start, row_stop), col_stop)
     ),
     read_y
 ))";

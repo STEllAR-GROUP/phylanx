@@ -92,8 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> extract_shape::eval(
         std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string const& codename) const
+        std::vector<primitive_argument_type> const& args) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -102,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 execution_tree::generate_error_message(
                     "the extract_shape primitive requires one or two "
                         "operands",
-                    name, codename));
+                    name_, codename_));
         }
 
         if (!valid(operands[0]) ||
@@ -114,11 +113,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the extract_shape primitive requires that the "
                         "arguments given by the operands array are "
                         "valid",
-                    name, codename));
+                    name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type && args) -> primitive_argument_type
             {
                 auto dims = args[0].num_dimensions();
@@ -133,13 +132,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
-                        "first operand has unsupported "
-                        "number of dimensions");
+                        execution_tree::generate_error_message(
+                            "first operand has unsupported "
+                                "number of dimensions",
+                            this_->name_, this_->codename_));
                 }
             }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
-                name, codename));
+                name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -148,10 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return eval(
-                args, noargs, name_, codename_);
+            return eval(args, noargs);
         }
-        return eval(
-            operands_, args, name_, codename_);
+        return eval(operands_, args);
     }
 }}}

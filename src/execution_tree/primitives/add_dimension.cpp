@@ -75,7 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "add_dimension::eval",
                 execution_tree::generate_error_message(
                     "the add_dimension primitive requires exactly one or two "
-                    "operands",
+                        "operands",
                     name_, codename_));
         }
 
@@ -87,32 +87,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "add_dimension::eval",
                     execution_tree::generate_error_message(
                         "the add_dimension primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
+                            "arguments given by the operands array are "
+                            "valid",
                         name_, codename_));
             }
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
-        {
-            std::size_t a_dims = args[0].num_dimensions();
-            switch (a_dims)
             {
-            case 0:
-                return this_->add_dim_0d(std::move(args));
-            case 1:
-                return this_->add_dim_1d(std::move(args));
-            default:
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "add_dimension::eval",
-                    execution_tree::generate_error_message(
-                        "operand a has an invalid "
-                        "number of dimensions",
-                        this_->name_, this_->codename_));
-            }
-        }),
+                std::size_t a_dims = args[0].num_dimensions();
+                switch (a_dims)
+                {
+                case 0:
+                    return this_->add_dim_0d(std::move(args));
+                case 1:
+                    return this_->add_dim_1d(std::move(args));
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "add_dimension::eval",
+                        execution_tree::generate_error_message(
+                            "operand a has an invalid "
+                            "number of dimensions",
+                            this_->name_, this_->codename_));
+                }
+            }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
                 name_, codename_));

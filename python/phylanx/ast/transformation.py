@@ -42,7 +42,7 @@ def get_node(node, **kwargs):
     return None
 
 
-def rmline(a):
+def remove_line(a):
     return re.sub(r'\$.*', '', a)
 
 
@@ -66,74 +66,117 @@ class PhySL:
 
     def _Expr(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = ""
+        s = "("
         if len(args) == 1:
             s += self.recompile(args[0])
         else:
             raise Exception(
                 'unexpected: expression has more than one sub-expression')
-        return s
+        return s + ")"
 
     def _Subscript(self, a, allowreturn=False):
-        e = get_node(a, name="ExtSlice")
-        s0 = get_node(e, name="Slice", num=0)
-        s1 = get_node(e, name="Slice", num=1)
-        s0alt = get_node(a, name="Slice", num=1)
-        if s0 is not None and s1 is not None:
-            xlo = s0.lower
-            xlo_info = full_node_name(xlo)
-            xhi = s0.upper
-            xhi_info = full_node_name(xhi)
-            ylo = s1.lower
-            yhi = s1.upper
-            yhi_info = full_node_name(yhi)
-            sname = self.recompile(get_node(a, num=0))
-            s = "slice%s(" % xlo_info
-            s += sname
-            s += ","
-            if xlo is None:
-                s += "0"
-            else:
-                s += self.recompile(xlo)
-            s += ","
-            if xhi is None:
-                s += "shape%s(" % xhi_info + sname + ",0)"
-            else:
-                s += self.recompile(xhi)
-            s += ","
-            if ylo is None:
-                s += "0"
-            else:
-                s += self.recompile(ylo)
-            s += ","
-            if yhi is None:
-                s += "shape%s(" % yhi_info + sname + ",1)"
-            else:
-                s += self.recompile(yhi)
-            s += ")"
+        symbol_info = full_node_name(a)
+        s = 'slice%s(%s' % (symbol_info, self.recompile(a.value))
+        if isinstance(a.slice, ast.Index):
+            s += ', %s)' % self.recompile(a.slice.value)
             return s
-        elif s0alt is not None:
-            sname = self.recompile(get_node(a, num=0))
-            xlo = s0alt.lower
-            xlo_info = full_node_name(xlo)
-            xhi = s0alt.upper
-            xhi_info = full_node_name(xhi)
-            s = 'slice_column%s(' % xlo_info
-            s += sname
-            s += ','
-            if xlo is None:
-                s += "0"
-            else:
-                s += self.recompile(xlo)
-            s += ','
-            if xhi is None:
-                s += "shape%s(" % xhi_info + sname + ",0)"
-            else:
-                s += self.recompile(xhi)
-            s += ")"
-            return s
+        elif isinstance(a.slice, ast.Slice):
+            s += self.recompile(a.slice)
+            return s + ')'
         else:
-            raise Exception("Unsupported slicing: line=%d" % a.lineno)
+            s += self.recompile(a.slice)
+            return s + ')'
+
+    def _Slice(self, a, allowreturn=False):
+        s = ', \'(%s, %s' % \
+            (self.recompile(a.lower), self.recompile(a.upper))
+        if a.step:
+            s += ', %s)' % self.recompile(a.step)
+        else:
+            s += ')'
+        return s
+
+    def _ExtSlice(self, a, allowreturn=False):
+        if isinstance(a.dims[0], ast.Index):
+            s = self.recompile(a.dims[0].value)
+        else:
+            s = self.recompile(a.dims[0])
+        if isinstance(a.dims[1], ast.Index):
+            s = self.recompile(a.dims[1].value)
+        else:
+            s += self.recompile(a.dims[1])
+        return s
+
+# NOTE
+# this function returns comma separated entries of the tuple without the parentheses.
+
+    def _Tuple(self, a, allowreturn=False):
+        s = ''
+        for i in range(len(a.elts) - 1):
+            s += self.recompile(a.elts[i]) + ', '
+        s += self.recompile(a.elts[-1])
+        return s
+
+
+#        e = get_node(a, name="ExtSlice")
+#        s0 = get_node(e, name="Slice", num=0)
+#        s1 = get_node(e, name="Slice", num=1)
+#        s0alt = get_node(a, name="Slice", num=1)
+#        if s0 is not None and s1 is not None:
+#            xlo = s0.lower
+#            xlo_info = full_node_name(xlo)
+#            xhi = s0.upper
+#            xhi_info = full_node_name(xhi)
+#            ylo = s1.lower
+#            yhi = s1.upper
+#            yhi_info = full_node_name(yhi)
+#            sname = self.recompile(get_node(a, num=0))
+#            s = "slice%s(" % xlo_info
+#            s += sname
+#            s += ","
+#            if xlo is None:
+#                s += "0"
+#            else:
+#                s += self.recompile(xlo)
+#            s += ","
+#            if xhi is None:
+#                s += "shape%s(" % xhi_info + sname + ",0)"
+#            else:
+#                s += self.recompile(xhi)
+#            s += ","
+#            if ylo is None:
+#                s += "0"
+#            else:
+#                s += self.recompile(ylo)
+#            s += ","
+#            if yhi is None:
+#                s += "shape%s(" % yhi_info + sname + ",1)"
+#            else:
+#                s += self.recompile(yhi)
+#            s += ")"
+#            return s
+#        elif s0alt is not None:
+#            sname = self.recompile(get_node(a, num=0))
+#            xlo = s0alt.lower
+#            xlo_info = full_node_name(xlo)
+#            xhi = s0alt.upper
+#            xhi_info = full_node_name(xhi)
+#            s = 'slice_column%s(' % xlo_info
+#            s += sname
+#            s += ','
+#            if xlo is None:
+#                s += "0"
+#            else:
+#                s += self.recompile(xlo)
+#            s += ','
+#            if xhi is None:
+#                s += "shape%s(" % xhi_info + sname + ",0)"
+#            else:
+#                s += self.recompile(xhi)
+#            s += ")"
+#            return s
+#        else:
+#            raise Exception("Unsupported slicing: line=%d" % a.lineno)
 
     def _FunctionDef(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
@@ -225,7 +268,7 @@ class PhySL:
             raise Exception(
                 "Return only allowed at end of function: line=%d\n" % a.lineno)
         args = [arg for arg in ast.iter_child_nodes(a)]
-        return " " + self.recompile(args[0])
+        return self.recompile(args[0])
 
     def _Assign(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
@@ -237,7 +280,7 @@ class PhySL:
             s += "define" + symbol_info
             self.defs[args[0].id] = 1
         a = '%s' % full_node_name(args[0], args[0].id)
-        s += "(" + a + "," + self.recompile(args[1]) + ")"
+        s += "(" + a + ", " + self.recompile(args[1]) + ")"
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -274,13 +317,13 @@ class PhySL:
         if nn == "Add":
             sym = "+"
         arg0 = '%s' % full_node_name(args[0], args[0].id)
-        return "store%s(" % symbol_info + arg0 + "," + arg0 + sym + self.recompile(
+        return "store%s(" % symbol_info + arg0 + ", " + arg0 + sym + self.recompile(
             args[2]) + ")"
 
     def _While(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
-        s = "while(" + self.recompile(args[0]) + ","
+        s = "while" + symbol_info + "(" + self.recompile(args[0]) + ", "
         if len(args) == 2:
             s += self.recompile(args[1])
         else:
@@ -295,7 +338,7 @@ class PhySL:
 
     def _If(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        s = "if(" + self.recompile(a.test) + ","
+        s = "if" + symbol_info + "(" + self.recompile(a.test) + ", "
         if len(a.body) > 1:
             s += "block" + symbol_info + "("
             for j in range(len(a.body)):
@@ -309,7 +352,7 @@ class PhySL:
             s += ")"
         else:
             s += self.recompile(a.body[0], allowreturn)
-        s += ","
+        s += ", "
         if len(a.orelse) > 1:
             s += "block" + symbol_info + "("
             for j in range(len(a.orelse)):
@@ -346,7 +389,8 @@ class PhySL:
             sym = " == "
         else:
             raise Exception('boolean operation not supported: %s' % nn)
-        return self.recompile(args[0]) + sym + self.recompile(args[2])
+        return '(' + self.recompile(args[0]) + sym + self.recompile(
+            args[2]) + ')'
 
     def _UnaryOp(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
@@ -387,7 +431,7 @@ class PhySL:
                 if blockn is None:
                     break
                 if blocki > 2:
-                    bs += ","
+                    bs += ", "
                 bs += self.recompile(blockn)
                 blocki += 1
             bs += ")"
@@ -395,24 +439,24 @@ class PhySL:
             # a define() or a store(), depending on whether
             # the variable has already been defined.
             sd = "store" + symbol_info
-            if rmline(ns) not in self.defs:
+            if remove_line(ns) not in self.defs:
                 sd = "define" + symbol_info
             lg = "<"
             # Determine the direction of iteration, if possible
             if not re.search(r'[a-zA-Z_]', ss):
                 if eval(ss) < 0:
                     lg = ">"
-                return "for(" + sd + "(" + ns + "," + ls + ")," + ns + " " + lg + " " \
-                       + us + ",store%s(" % symbol_info + ns + "," + ns + \
-                    "+" + ss + ")," + bs + ")"
+                return "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " " + lg + " " \
+                       + us + ",store%s(" % symbol_info + ns + ", " + ns + \
+                    "+" + ss + "), " + bs + ")"
             else:
                 # if we can't determine the direction of iteration, make two for loops
-                ret = "if(" + ss + " > 0,"
-                ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " < " + us + \
-                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
-                    + "),"
-                ret += "for(" + sd + "(" + ns + "," + ls + ")," + ns + " > " + us + \
-                    ",store%s(" % symbol_info + ns + "," + ns + "+" + ss + ")," + bs \
+                ret = "if(" + ss + " > 0, "
+                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " < " + us + \
+                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
+                    + "), "
+                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " > " + us + \
+                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
                     + "))"
                 return ret
             raise Exception("unsupported For loop structure")
@@ -428,24 +472,27 @@ class PhySL:
             raise Exception('unsupported AST node type: %s' % nm)
 
     nodes = {
-        "Num": _Num,
-        "Str": _Str,
-        "Name": _Name,
-        "Expr": _Expr,
-        "Subscript": _Subscript,
-        "FunctionDef": _FunctionDef,
-        "BinOp": _BinOp,
-        "Call": _Call,
-        "Module": _Module,
-        "Return": _Return,
         "Assign": _Assign,
         "Attribute": _Attribute,
         "AugAssign": _AugAssign,
-        "While": _While,
-        "If": _If,
+        "BinOp": _BinOp,
+        "Call": _Call,
         "Compare": _Compare,
+        "Expr": _Expr,
+        "For": _For,
+        "FunctionDef": _FunctionDef,
+        "If": _If,
+        "Module": _Module,
+        "Name": _Name,
+        "Num": _Num,
+        "Return": _Return,
+        "Slice": _Slice,
+        "ExtSlice": _ExtSlice,
+        "Str": _Str,
+        "Subscript": _Subscript,
+        "Tuple": _Tuple,
         "UnaryOp": _UnaryOp,
-        "For": _For
+        "While": _While
     }
 
     np_to_phylanx = {
@@ -494,7 +541,8 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
 
             if target not in self.targets:
                 raise NotImplementedError(
-                    "unknown target passed to '@Phylanx()' decorator: %s." % target)
+                    "unknown target passed to '@Phylanx()' decorator: %s." %
+                    target)
 
             self.f = f
             self.cs = cs
@@ -523,5 +571,8 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
                     "OpenSCoP kernel blocks are not yet callable.")
             nargs = tuple(convert_to_phylanx_type(a) for a in args)
             return et.eval(self.f.__name__, self.cs, *nargs)
+
+        def generate_ast(self):
+            return phylanx.ast.generate_ast(self.__src__)
 
     return PhyTransformer

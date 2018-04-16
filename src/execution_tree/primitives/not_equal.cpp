@@ -34,10 +34,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             locality, type, std::move(operands), name, codename);
     }
 
-    match_pattern_type const not_equal::match_data =
-    {
+    match_pattern_type const not_equal::match_data = {
         hpx::util::make_tuple("__ne",
-            std::vector<std::string>{"__ne(_1, _2, _3)","_1 != _2"},
+            std::vector<std::string>{"_1 != _2", "__ne(_1, _2, _3)"},
             &create_not_equal, &create_primitive<not_equal>)
     };
 
@@ -465,7 +464,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{lhs != rhs});
+                    ir::node_data<double>{(lhs != rhs) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs != rhs});
@@ -482,7 +481,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{lhs[0] != rhs});
+                    ir::node_data<double>{(lhs[0] != rhs) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs[0] != rhs});
@@ -499,7 +498,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{lhs != rhs[0]});
+                    ir::node_data<double>{(lhs != rhs[0]) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs != rhs[0]});
@@ -516,7 +515,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{lhs[0] != rhs});
+                    ir::node_data<double>{(lhs[0] != rhs) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs[0] != rhs});
@@ -534,7 +533,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{lhs != rhs[0]});
+                    ir::node_data<double>{(lhs != rhs[0]) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs != rhs[0]});
@@ -588,28 +587,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
             phylanx::execution_tree::extract_boolean_value(operands[2]))
         {
             return hpx::dataflow(
-                hpx::util::unwrapping(
-                    [this_](operands_type&& ops) -> primitive_argument_type {
-                        return primitive_argument_type(
-                            util::visit(visit_not_equal{*this_, true},
-                                std::move(ops[0].variant()),
-                                std::move(ops[1].variant())));
-                    }),
-                detail::map_operands(operands, functional::literal_operand{},
-                    args, name_, codename_));
+                hpx::util::unwrapping([this_](primitive_argument_type&& op1,
+                                          primitive_argument_type&& op2)
+                                          -> primitive_argument_type {
+                    return primitive_argument_type(
+                        util::visit(visit_not_equal{*this_, true},
+                            std::move(op1.variant()),
+                            std::move(op2.variant())));
+                }),
+                literal_operand(operands[0], args, name_, codename_),
+                literal_operand(operands[1], args, name_, codename_));
         }
 
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this_](operands_type && ops) -> primitive_argument_type
-            {
-                return primitive_argument_type(
-                    util::visit(visit_not_equal{*this_},
-                        std::move(ops[0].variant()),
-                        std::move(ops[1].variant())));
-            }),
-            detail::map_operands(
-                operands, functional::literal_operand{}, args,
-                name_, codename_));
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping(
+                [this_](primitive_argument_type&& op1,
+                    primitive_argument_type&& op2) -> primitive_argument_type {
+                    return primitive_argument_type(
+                        util::visit(visit_not_equal{*this_},
+                            std::move(op1.variant()),
+                            std::move(op2.variant())));
+                }),
+            literal_operand(operands[0], args, name_, codename_),
+            literal_operand(operands[1], args, name_, codename_));
     }
 
     // implement '!=' for all possible combinations of lhs and rhs

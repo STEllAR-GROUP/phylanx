@@ -43,17 +43,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
+        primitive_argument_type add0d0d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add0d0d(args_type && args) const;
-        primitive_argument_type add0d1d(args_type && args) const;
-        primitive_argument_type add0d2d(args_type && args) const;
+        primitive_argument_type add0d1d(arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add0d2d(arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add0d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add0d(args_type && args) const;
-        primitive_argument_type add1d0d(args_type && args) const;
+
+        primitive_argument_type add1d0d(arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add1d1d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add1d1d(args_type && args) const;
-        primitive_argument_type add1d2d(args_type&& args) const;
+        primitive_argument_type add1d2d(arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add1d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add1d(args_type && args) const;
-        primitive_argument_type add2d0d(args_type && args) const;
-        primitive_argument_type add2d1d(args_type&& args) const;
+
+        primitive_argument_type add2d0d(arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d1d(arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d2d(args_type && args) const;
+        primitive_argument_type add2d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d(args_type && args) const;
     };
 

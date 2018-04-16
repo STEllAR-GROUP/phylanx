@@ -107,11 +107,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
-        {
-            return this_->linspace1d(std::move(args));
-        }),
+            {
+                return this_->linspace1d(std::move(args));
+            }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
                 name_, codename_));

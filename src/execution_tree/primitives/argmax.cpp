@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const argmax::match_data =
     {
         hpx::util::make_tuple("argmax",
-            std::vector<std::string>{"argmax(_1, _2)"},
+            std::vector<std::string>{"argmax(_1, _2)", "argmax(_1)"},
             &create_argmax, &create_primitive<argmax>)
     };
 
@@ -222,8 +222,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 execution_tree::generate_error_message(
                     "operand axis must be a scalar", name_, codename_));
         }
-        const int axis = args[1].scalar();
+
         // `axis` can only be -2, -1, 0, or 1
+        const int axis = args[1].scalar();
         if (axis < -2 || axis > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -233,6 +234,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "operand that is 2d",
                     name_, codename_));
         }
+
         switch (axis)
         {
         // Option 2: Find max among rows
@@ -253,8 +255,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "dimensions",
                     name_, codename_));
         }
-
-
     }
 
     hpx::future<primitive_argument_type> argmax::eval(
@@ -287,7 +287,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
             {
                 std::size_t a_dims = args[0].num_dimensions();
