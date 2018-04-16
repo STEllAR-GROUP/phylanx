@@ -137,7 +137,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return p->eval(args).then(
+            return p->eval(args).then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type>&& f)
                 {
                     return extract_dimensions(f.get(), name, codename);
@@ -218,7 +218,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return p->eval(args).then(
+            return p->eval(args).then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type>&& f)
                 {
                     return extract_distribution_parameters(
@@ -568,7 +568,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](std::array<std::size_t, 2> && dims,
                     distribution_parameters_type && params)
             ->  primitive_argument_type
@@ -690,7 +690,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return numeric_operand(operands[0], args, name, codename)
-            .then(hpx::util::unwrapping(
+            .then(hpx::launch::sync, hpx::util::unwrapping(
                 [](ir::node_data<double>&& data) -> primitive_argument_type
                 {
                     random::set_seed(static_cast<std::uint32_t>(data[0]));

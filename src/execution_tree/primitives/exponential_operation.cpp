@@ -52,30 +52,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type exponential_operation::exponential0d(
-        operands_type&& ops) const
+        operand_type&& op) const
     {
-        ops[0] = double(std::exp(ops[0].scalar()));
-        return primitive_argument_type{std::move(ops[0])};
+        return primitive_argument_type{
+            ir::node_data<double>{std::exp(op.scalar())}};
     }
 
     primitive_argument_type exponential_operation::exponential1d(
-        operands_type&& ops) const
+        operand_type&& op) const
     {
         using vector_type = blaze::DynamicVector<double>;
 
-        vector_type result = blaze::exp(ops[0].vector());
+        if (op.is_ref())
+        {
+            vector_type result = blaze::map(op.vector(), blaze::Exp{});
+            return primitive_argument_type{
+                ir::node_data<double>(std::move(result))};
+        }
+
+        op.vector() = blaze::map(op.vector(), blaze::Exp{});
         return primitive_argument_type{
-            ir::node_data<double>(std::move(result))};
+            ir::node_data<double>(std::move(op))};
     }
 
     primitive_argument_type exponential_operation::exponentialxd(
-        operands_type&& ops) const
+        operand_type&& op) const
     {
         using matrix_type = blaze::DynamicMatrix<double>;
 
-        matrix_type result = blaze::exp(ops[0].matrix());
+        if (op.is_ref())
+        {
+            matrix_type result = blaze::exp(op.matrix());
+            return primitive_argument_type{
+                ir::node_data<double>(std::move(result))};
+        }
+
+        op.matrix() = blaze::exp(op.matrix());
         return primitive_argument_type{
-            ir::node_data<double>(std::move(result))};
+            ir::node_data<double>(std::move(op))};
     }
 
     hpx::future<primitive_argument_type> exponential_operation::eval(
@@ -104,20 +118,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this_](operands_type&& ops) -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](operand_type&& op) -> primitive_argument_type
             {
-                std::size_t dims = ops[0].num_dimensions();
+                std::size_t dims = op.num_dimensions();
                 switch (dims)
                 {
                 case 0:
-                    return this_->exponential0d(std::move(ops));
+                    return this_->exponential0d(std::move(op));
 
                 case 1:
-                    return this_->exponential1d(std::move(ops));
+                    return this_->exponential1d(std::move(op));
 
                 case 2:
-                    return this_->exponentialxd(std::move(ops));
+                    return this_->exponentialxd(std::move(op));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -128,9 +142,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_));
                 }
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_));
+            numeric_operand(operands[0], args, name_, codename_));
     }
 
     // Implement 'exp' for all possible combinations of lhs and rhs

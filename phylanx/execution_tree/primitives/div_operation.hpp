@@ -43,22 +43,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        struct divndnd_simd;
-        struct divnd0d_simd;
-        struct div0dnd_simd;
+        primitive_argument_type div0d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div0d0d(operands_type&& ops) const;
+        primitive_argument_type div0d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div0d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div0d(operands_type&& ops) const;
 
-        primitive_argument_type div0d0d(operands_type && ops) const;
-        primitive_argument_type div0d1d(operands_type && ops) const;
-        primitive_argument_type div0d2d(operands_type && ops) const;
-        primitive_argument_type div0d(operands_type && ops) const;
-        primitive_argument_type div1d0d(operands_type && ops) const;
-        primitive_argument_type div1d1d(operands_type && ops) const;
-        primitive_argument_type div1d2d(operands_type&& ops) const;
-        primitive_argument_type div1d(operands_type && ops) const;
-        primitive_argument_type div2d0d(operands_type && ops) const;
-        primitive_argument_type div2d1d(operands_type&& ops) const;
-        primitive_argument_type div2d2d(operands_type && ops) const;
-        primitive_argument_type div2d(operands_type && ops) const;
+        primitive_argument_type div1d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div1d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div1d1d(operands_type&& ops) const;
+        primitive_argument_type div1d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div1d(operands_type&& ops) const;
+
+        primitive_argument_type div2d0d(
+            operand_type&& lhs, operand_type&& rhss) const;
+        primitive_argument_type div2d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div2d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div2d2d(operands_type&& ops) const;
+        primitive_argument_type div2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type div2d(operands_type&& ops) const;
     };
 
     PHYLANX_EXPORT primitive create_div_operation(hpx::id_type const& locality,

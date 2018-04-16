@@ -169,7 +169,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         storage1d_type v{sv};
         return primitive_argument_type{ir::node_data<double>(std::move(v))};
-    }
+        }
 
     primitive_argument_type column_slicing_operation::column_slicing2d(
         arg_type&& arg , std::vector<double> extracted) const
@@ -181,7 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "column_slicing_operation::column_slicing2d",
                 execution_tree::generate_error_message(
                     "column can not be empty", name_, codename_));
-        }
+    }
 
         auto input_matrix = arg.matrix();
         std::size_t num_matrix_rows = input_matrix.rows();
@@ -189,7 +189,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         //return a value and not a vector if you are not given a list
         if (extracted.size() == 1)
-        {
+    {
             std::int64_t index = extracted[0];
             if (index < 0)
             {
@@ -226,7 +226,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         storage2d_type m{sm};
 
         return primitive_argument_type{ir::node_data<double>(std::move(m))};
-    }
+        }
 
     hpx::future<primitive_argument_type> column_slicing_operation::eval(
         std::vector<primitive_argument_type> const& operands,
@@ -247,18 +247,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (!valid(operands[i]))
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "column_slicing_operation::eval",
-                    execution_tree::generate_error_message(
-                        "the column_slicing_operation primitive requires "
-                        "that the arguments given by the operands "
-                        "array are valid",
-                        name_, codename_));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "column_slicing_operation::eval",
+                execution_tree::generate_error_message(
+                    "the column_slicing_operation primitive requires "
+                    "that the arguments given by the operands "
+                    "array are valid",
+                    name_, codename_));
+        }
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping([this_](std::vector<primitive_argument_type>&&
                                           args) -> primitive_argument_type {
                 //Extract the matrix i.e the first argument

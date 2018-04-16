@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const unary_not_operation::match_data =
     {
         hpx::util::make_tuple("__not",
-            std::vector<std::string>{"!_1"},
+            std::vector<std::string>{"!_1", "__not(_1)"},
             &create_unary_not_operation, &create_primitive<unary_not_operation>)
     };
 
@@ -136,7 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_](
                     operands_type&& ops) -> primitive_argument_type {

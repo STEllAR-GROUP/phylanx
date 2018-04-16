@@ -44,18 +44,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        primitive_argument_type dot0d(operands_type && ops) const;
-        primitive_argument_type dot0d0d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot0d1d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot0d2d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot1d(operands_type && ops) const;
-        primitive_argument_type dot1d0d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot1d1d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot1d2d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot2d(operands_type && ops) const;
-        primitive_argument_type dot2d0d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot2d1d(operand_type& lhs, operand_type& rhs) const;
-        primitive_argument_type dot2d2d(operand_type& lhs, operand_type& rhs) const;
+        primitive_argument_type dot0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot0d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot0d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot0d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot1d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot1d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot1d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot2d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot2d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type dot2d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_dot_operation(hpx::id_type const& locality,
