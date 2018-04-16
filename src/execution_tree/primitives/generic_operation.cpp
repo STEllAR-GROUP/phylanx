@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_primitive<generic_operation>)};
 
     double (*generic_operation::get_0d_map(std::string const& name))(double)
-        const
+
     {
         static std::map<std::string, double (*)(double)> map0d = {
             {"exp", [](double m) -> double { return blaze::exp(m); }},
@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     blaze::DynamicVector<double> (
         *generic_operation::get_1d_map(std::string const& name))(
-        const blaze::CustomVector<double, blaze::aligned, blaze::padded>&) const
+        const blaze::CustomVector<double, blaze::aligned, blaze::padded>&)
     {
         static std::map<std::string,
             blaze::DynamicVector<double> (*)(const blaze::CustomVector<double,
@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     blaze::DynamicMatrix<double> (
         *generic_operation::get_2d_map(std::string const& name))(
-        const blaze::CustomMatrix<double, blaze::aligned, blaze::padded>&) const
+        const blaze::CustomMatrix<double, blaze::aligned, blaze::padded>&)
     {
         static std::map<std::string,
             blaze::DynamicMatrix<double> (*)(const blaze::CustomMatrix<double,
