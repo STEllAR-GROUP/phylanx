@@ -53,8 +53,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (type_double)
         {
-            return primitive_argument_type(
-                ir::node_data<double>{lhs.scalar() != rhs.scalar()});
+            return primitive_argument_type(ir::node_data<double>{
+                (lhs.scalar() != rhs.scalar()) ? 1.0 : 0.0});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{lhs.scalar() != rhs.scalar()});
