@@ -99,14 +99,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // sequentially evaluate all operations
-                // HACK: The ugly hack is to loop from rbegin() to rend() - 1.
-                auto i = list.rbegin();
-                for (std::ptrdiff_t j = 0; j < list.size() - 1; ++i, ++j)
+                for (auto i = list.rbegin(); i != list.rend() ; ++i)
                 {
                     std::vector<primitive_argument_type> args(2);
-                    auto elem_1 = i++;
 
-                    args[0] = std::move(*elem_1);
+                    args[0] = std::move(*i);
                     args[1] = std::move(initial);
 
                     initial = value_operand_sync(bound_func, std::move(args),

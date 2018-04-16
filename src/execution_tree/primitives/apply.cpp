@@ -12,7 +12,9 @@
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
@@ -392,12 +394,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-<<<<<<< HEAD
-        return list_operand(operands_[1], params, name_, codename_).then(
-            hpx::launch::sync,
-=======
         return apply_detail::list_operand(operands_[1], params, name_, codename_).then(
->>>>>>> Make range code compile
+            hpx::launch::sync,
             [this_](hpx::future<std::vector<primitive_argument_type>>&& f)
             {
                 primitive const* p =

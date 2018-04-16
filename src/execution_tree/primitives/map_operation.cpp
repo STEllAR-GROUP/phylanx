@@ -139,12 +139,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     // Each invocation has its own argument set
                     for (auto const& j : lists)
                     {
-                        // HACK: This mess is just trying to get j[i]
+                        // NOTE: This used to be j[i]
                         auto k = j.begin();
-                        for (auto l = 1; l != i; ++l)
-                        {
-                            ++k;
-                        }
+                        std::advance(k, i);
                         args.push_back(*k);
                     }
 

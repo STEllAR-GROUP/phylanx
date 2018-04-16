@@ -13,6 +13,7 @@
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -149,6 +150,14 @@ namespace phylanx { namespace ir
 
         args_type& args();
         args_type const& args() const;
+
+        range copy();
+        range copy() const;
+
+        range ref();
+        range const ref() const;
+
+        bool is_ref() const;
 
         //////////////////////////////////////////////////////////////////////////
         range() = default;

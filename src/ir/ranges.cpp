@@ -11,6 +11,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <utility>
@@ -408,6 +409,115 @@ namespace phylanx { namespace ir
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::ir::range::args&()",
+            "range object holds unsupported data type");
+    }
+
+    range range::copy()
+    {
+        switch (data_.index())
+        {
+        case 0:    // int_range_type
+        {
+            args_type result;
+            std::copy(begin(), end(), std::back_inserter(result));
+            return range{std::move(result)};
+        }
+        case 1:    // wrapped_args_type
+        {
+            args_type result = util::get<1>(data_).get();
+            return range{std::move(result)};
+        }
+        case 2:    // arg_pair_type
+        {
+            args_type result;
+            auto const& v = util::get<2>(data_);
+            std::copy(v.first, v.second, std::back_inserter(result));
+            return range{std::move(result)};
+        }
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::args()",
+            "range object holds unsupported data type");
+    }
+
+    range range::copy() const
+    {
+        switch (data_.index())
+        {
+        case 0:    // int_range_type
+        {
+            args_type result;
+            std::copy(begin(), end(), std::back_inserter(result));
+            return result;
+        }
+        case 1:    // wrapped_args_type
+        {
+            return phylanx::util::get<1>(data_).get();
+        }
+        case 2:    // arg_pair_type
+        {
+            args_type result;
+            auto const& v = util::get<2>(data_);
+            std::copy(v.first, v.second, std::back_inserter(result));
+            return result;
+        }
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::args()",
+            "range object holds unsupported data type");
+    }
+
+    range range::ref()
+    {
+        switch (data_.index())
+        {
+        case 0: HPX_FALLTHROUGH;  // int_range_type
+        case 1: HPX_FALLTHROUGH;  // wrapped_args_type
+        case 2:                  // arg_pair_type
+            return range{begin(), end()};
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::ref()",
+            "range object holds unsupported data type");
+    }
+
+    range const range::ref() const
+    {
+        switch (data_.index())
+        {
+        case 0: HPX_FALLTHROUGH;  // int_range_type
+        case 1: HPX_FALLTHROUGH;  // wrapped_args_type
+        case 2:                  // arg_pair_type
+            return range{begin(), end()};
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::ref() const",
+            "range object holds unsupported data type");
+    }
+
+    bool range::is_ref() const
+    {
+        switch (data_.index())
+        {
+        case 2:                  // arg_pair_type
+            return true;
+        case 0: HPX_FALLTHROUGH;  // int_range_type
+        case 1:                  // wrapped_args_type
+            return false;
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::is_ref()",
             "range object holds unsupported data type");
     }
 

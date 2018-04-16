@@ -131,9 +131,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "one non-empty list-operand",
                     name_, codename_));
         }
+
+        // HACK: This mess creates a copy of the vector excluding index 0
+        std::vector<primitive_argument_type> list_copy;
+        list_copy.reserve(list.size() - 1);
         auto elem_1 = list.begin();
-        // TODO: Keep list alive
-        return primitive_argument_type{ir::range{++elem_1, list.end()}};
+        std::copy(++elem_1, list.end(), std::back_inserter(list_copy));
+
+        return primitive_argument_type{ir::range{list_copy}};
     }
 
     hpx::future<primitive_argument_type> car_cdr_operation::eval(

@@ -29,12 +29,13 @@ void test_filter_operation_lambda()
         )";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
-
     HPX_TEST_EQ(result.size(), 2ul);
+
+    auto it = result.begin();
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[0])[0], 2.0);
+        phylanx::execution_tree::extract_numeric_value(*it++)[0], 2.0);
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[1])[0], 3.0);
+        phylanx::execution_tree::extract_numeric_value(*it)[0], 3.0);
 }
 
 void test_filter_operation_func()
@@ -47,10 +48,12 @@ void test_filter_operation_func()
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
 
     HPX_TEST_EQ(result.size(), 2ul);
+
+    auto it = result.begin();
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[0])[0], 2.0);
+        phylanx::execution_tree::extract_numeric_value(*it++)[0], 2.0);
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[1])[0], 3.0);
+        phylanx::execution_tree::extract_numeric_value(*it)[0], 3.0);
 }
 
 void test_filter_operation_func_lambda()
@@ -63,10 +66,12 @@ void test_filter_operation_func_lambda()
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
 
     HPX_TEST_EQ(result.size(), 2ul);
+
+    auto it = result.begin();
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[0])[0], 2.0);
+        phylanx::execution_tree::extract_numeric_value(*it++)[0], 2.0);
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[1])[0], 3.0);
+        phylanx::execution_tree::extract_numeric_value(*it)[0], 3.0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,8 +92,9 @@ void test_filter_operation_lambda_arg()
         code(std::int64_t{2}));
 
     HPX_TEST_EQ(result.size(), 1ul);
+
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[0])[0], 3.0);
+        phylanx::execution_tree::extract_numeric_value(*result.begin())[0], 3.0);
 }
 
 void test_filter_operation_func_arg()
@@ -112,7 +118,7 @@ void test_filter_operation_func_arg()
 
     HPX_TEST_EQ(result.size(), 1ul);
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[0])[0], 3.0);
+        phylanx::execution_tree::extract_numeric_value(*result.begin())[0], 3.0);
 }
 
 void test_filter_operation_func_lambda_arg()
@@ -136,7 +142,7 @@ void test_filter_operation_func_lambda_arg()
 
     HPX_TEST_EQ(result.size(), 1ul);
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(result[0])[0], 3.0);
+        phylanx::execution_tree::extract_numeric_value(*result.begin())[0], 3.0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -66,6 +66,8 @@ macro(phylanx_setup_compiler_flags)
       phylanx_add_compile_flag(/wd4267)
 	  # warning C4552: '*': operator has no effect; expected operator with side-effect
 	  phylanx_add_compile_flag(/wd4552)
+	  # warning C4805: '==': unsafe mix of type 'const bool' and type 'const uint8_t' in operation
+	  phylanx_add_compile_flag(/wd4805)
 
       # Runtime type information
       phylanx_add_target_compile_option(-GR)
