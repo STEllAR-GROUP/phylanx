@@ -99,8 +99,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // sequentially evaluate all operations
-                // TODO: rend() - 1
-                for (auto i = list.rbegin(); i != list.rend(); )
+                // HACK: The ugly hack is to loop from rbegin() to rend() - 1.
+                auto i = list.rbegin();
+                for (std::ptrdiff_t j = 0; j < list.size() - 1; ++i, ++j)
                 {
                     std::vector<primitive_argument_type> args(2);
                     auto elem_1 = i++;

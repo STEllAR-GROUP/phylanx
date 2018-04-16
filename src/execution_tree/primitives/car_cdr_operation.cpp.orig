@@ -132,7 +132,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
         auto elem_1 = list.begin();
-        // TODO: Keep list alive
         return primitive_argument_type{ir::range{++elem_1, list.end()}};
     }
 
@@ -162,8 +161,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
+<<<<<<< HEAD
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](std::vector<primitive_argument_type>&& list)
+=======
+        return hpx::dataflow(hpx::util::unwrapping(
             [this_](ir::range&& list)
+>>>>>>> Add .size() to range
             -> primitive_argument_type
             {
                 primitive_argument_type result{std::move(list)};
