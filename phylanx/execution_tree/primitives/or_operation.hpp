@@ -46,29 +46,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         struct visit_or_operation;
         template <typename T>
-        primitive_argument_type or_operation0d1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation0d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation0d2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation0d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation0d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation1d0d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation1d0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation1d1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation1d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation1d2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation1d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation2d0d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation2d0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation2d1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation2d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation2d2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation2d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_operation2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_operation2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
         template <typename T>
-        primitive_argument_type or_all(T&& lhs, T&& rhs) const;
+        primitive_argument_type or_all(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_or_operation(hpx::id_type const& locality,

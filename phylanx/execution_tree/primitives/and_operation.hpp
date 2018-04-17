@@ -47,40 +47,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct visit_and;
 
         template <typename T>
-        primitive_argument_type and0d1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and0d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and0d2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and0d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and0d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and1d0d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and1d0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and1d1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and1d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and1d2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and1d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and2d0d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and2d0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and2d1d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and2d1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and2d2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and2d2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and2d(T&& lhs, T&& rhs) const;
+        primitive_argument_type and2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
 
         template <typename T>
-        primitive_argument_type and_all(T&& lhs, T&& rhs) const;
+        primitive_argument_type and_all(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_and_operation(hpx::id_type const& locality,
