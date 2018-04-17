@@ -12,6 +12,7 @@ if (PHYLANX_WITH_DOCUMENTATION)
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_set.hpp"
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_slicing.hpp"
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/diag_operation.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/gradient_operation.hpp"
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linearmatrix.hpp"
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linspace.hpp"
             "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/set_operation.hpp"

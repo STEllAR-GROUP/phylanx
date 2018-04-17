@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const mul_operation::match_data =
     {
         hpx::util::make_tuple("__mul",
-            std::vector<std::string>{"_1 * __2"},
+            std::vector<std::string>{"_1 * __2", "__mul(_1, __2)"},
             &create_mul_operation, &create_primitive<mul_operation>)
     };
 
@@ -50,6 +50,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type mul_operation::mul0d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        switch (rhs.num_dimensions())
+        {
+        case 0:
+            return mul0d0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return mul0d1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return mul0d2d(std::move(lhs), std::move(rhs));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "mul_operation::mul0d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of dimensions",
+                    name_, codename_));
+        }
+    }
+
     primitive_argument_type mul_operation::mul0d(operands_type && ops) const
     {
         switch (ops[1].num_dimensions())
@@ -57,32 +80,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 0:
             return mul0d0d(std::move(ops));
 
-        case 1:
-            return mul0d1d(std::move(ops));
-
-        case 2:
-            return mul0d2d(std::move(ops));
-
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mul_operation::mul0d",
                 execution_tree::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
+                    "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
+    }
+
+    primitive_argument_type mul_operation::mul0d0d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        lhs.scalar() *= rhs.scalar();
+        return primitive_argument_type{ std::move(lhs) };
     }
 
     primitive_argument_type mul_operation::mul0d0d(operands_type && ops) const
     {
         operand_type& lhs = ops[0];
         operand_type& rhs = ops[1];
-
-        if (ops.size() == 2)
-        {
-            lhs.scalar() *= rhs.scalar();
-            return primitive_argument_type{ std::move(lhs) };
-        }
 
         return primitive_argument_type{
             std::accumulate(
@@ -103,21 +120,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             };
     }
 
-    primitive_argument_type mul_operation::mul0d1d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul0d1d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul0d1d",
-                execution_tree::generate_error_message(
-                    "can't handle more than two operands",
-                    name_, codename_));
-        }
-
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
-        if (ops[1].is_ref())
+        if (rhs.is_ref())
         {
             rhs = rhs.vector() * lhs.scalar();
         }
@@ -125,25 +131,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             rhs.vector() *= lhs.scalar();
         }
-        return primitive_argument_type{ std::move(rhs) };
+        return primitive_argument_type{std::move(rhs)};
     }
 
-    primitive_argument_type mul_operation::mul0d2d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul0d2d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-
-        if (ops.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul0d2d",
-                execution_tree::generate_error_message(
-                    "can't handle more than two operands",
-                    name_, codename_));
-        }
-
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
-        if (ops[1].is_ref())
+        if (rhs.is_ref())
         {
             rhs = rhs.matrix() * lhs.scalar();
         }
@@ -151,22 +145,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             rhs.matrix() *= lhs.scalar();
         }
-        return primitive_argument_type{ std::move(rhs) };
+        return primitive_argument_type{std::move(rhs)};
     }
 
-    ///////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type mul_operation::mul1d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        switch (rhs.num_dimensions())
+        {
+        case 0:
+            return mul1d0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return mul1d1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return mul1d2d(std::move(lhs), std::move(rhs));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "mul_operation::mul1d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of dimensions",
+                    name_, codename_));
+        }
+    }
+
     primitive_argument_type mul_operation::mul1d(operands_type && ops) const
     {
         switch (ops[1].num_dimensions())
         {
-        case 0:
-            return mul1d0d(std::move(ops));
-
         case 1:
             return mul1d1d(std::move(ops));
-
-        case 2:
-            return mul1d2d(std::move(ops));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -178,21 +189,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type mul_operation::mul1d0d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul1d0d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul1d0d",
-                execution_tree::generate_error_message(
-                    "can't handle more than two operands",
-                    name_, codename_));
-        }
-
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
-        if (ops[0].is_ref())
+        if (lhs.is_ref())
         {
             lhs = lhs.vector() * rhs.scalar();
         }
@@ -203,21 +203,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(lhs)};
     }
 
-    primitive_argument_type mul_operation::mul1d1d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul1d1d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() == 2)
+        if (lhs.is_ref())
         {
-            if (ops[0].is_ref())
-            {
-                ops[0] = ops[0].vector() * ops[1].vector();
-            }
-            else
-            {
-                ops[0].vector() *= ops[1].vector();
-            }
-            return primitive_argument_type{ std::move(ops[0]) };
+            lhs = lhs.vector() * rhs.vector();
+        }
+        else
+        {
+            lhs.vector() *= rhs.vector();
         }
 
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    primitive_argument_type mul_operation::mul1d1d(operands_type && ops) const
+    {
         return primitive_argument_type{
             std::accumulate(
                 ops.begin() + 1, ops.end(), std::move(ops[0]),
@@ -246,20 +248,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             };
     }
 
-    primitive_argument_type mul_operation::mul1d2d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul1d2d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul1d2d",
-                execution_tree::generate_error_message(
-                    "can't handle more than two operands",
-                    name_, codename_));
-        }
-
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
         auto cv = lhs.vector();
         auto cm = rhs.matrix();
 
@@ -288,16 +279,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(rhs)};
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type mul_operation::mul2d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        switch (rhs.num_dimensions())
+        {
+        case 0:
+            return mul2d0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return mul2d1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return mul2d2d(std::move(lhs), std::move(rhs));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "mul_operation::mul2d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of dimensions",
+                    name_, codename_));
+        }
+    }
+
     primitive_argument_type mul_operation::mul2d(operands_type && ops) const
     {
         switch (ops[1].num_dimensions())
         {
-        case 0:
-            return mul2d0d(std::move(ops));
-
-        case 1:
-            return mul2d1d(std::move(ops));
-
         case 2:
             return mul2d2d(std::move(ops));
 
@@ -311,20 +320,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type mul_operation::mul2d0d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul2d0d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul2d0d",
-                execution_tree::generate_error_message(
-                    "can't handle more than two operands",
-                    name_, codename_));
-        }
-
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
         if (lhs.is_ref())
         {
             lhs = lhs.matrix() * rhs.scalar();
@@ -336,20 +334,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(lhs)};
     }
 
-    primitive_argument_type mul_operation::mul2d1d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul2d1d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() > 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "mul_operation::mul2d1d",
-                execution_tree::generate_error_message(
-                    "can't handle more than two operands",
-                    name_, codename_));
-        }
-
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
         auto cv = rhs.vector();
         auto cm = lhs.matrix();
 
@@ -378,21 +365,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(lhs)};
     }
 
-    primitive_argument_type mul_operation::mul2d2d(operands_type && ops) const
+    primitive_argument_type mul_operation::mul2d2d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() == 2)
+        if (lhs.is_ref())
         {
-            if (ops[0].is_ref())
-            {
-                ops[0] = ops[0].matrix() % ops[1].matrix();
-            }
-            else
-            {
-                ops[0].matrix() %= ops[1].matrix();
-            }
-            return primitive_argument_type{std::move(ops[0])};
+            lhs = lhs.matrix() % rhs.matrix();
+        }
+        else
+        {
+            lhs.matrix() %= rhs.matrix();
         }
 
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    primitive_argument_type mul_operation::mul2d2d(operands_type && ops) const
+    {
         return primitive_argument_type{
             std::accumulate(
                 ops.begin() + 1, ops.end(), std::move(ops[0]),
@@ -421,6 +410,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             };
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> mul_operation::eval(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
@@ -456,7 +446,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        if (operands.size() == 2)
+        {
+            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                [this_](operand_type&& lhs, operand_type&& rhs)
+                ->  primitive_argument_type
+                {
+                    std::size_t lhs_dims = lhs.num_dimensions();
+                    switch (lhs_dims)
+                    {
+                    case 0:
+                        return this_->mul0d(std::move(lhs), std::move(rhs));
+
+                    case 1:
+                        return this_->mul1d(std::move(lhs), std::move(rhs));
+
+                    case 2:
+                        return this_->mul2d(std::move(lhs), std::move(rhs));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "mul_operation::eval",
+                            execution_tree::generate_error_message(
+                                "left hand side operand has unsupported "
+                                    "number of dimensions",
+                                this_->name_, this_->codename_));
+                    }
+                }),
+                numeric_operand(operands[0], args, name_, codename_),
+                numeric_operand(operands[1], args, name_, codename_));
+        }
+
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](operands_type&& ops) -> primitive_argument_type
             {
                 std::size_t lhs_dims = ops[0].num_dimensions();

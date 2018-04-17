@@ -113,6 +113,8 @@ namespace phylanx { namespace ir
         static std::int64_t copy_assignment_count(bool reset);
         static std::int64_t move_assignment_count(bool reset);
 
+        static bool enable_counts(bool enable);
+
     public:
         constexpr static std::size_t const max_dimensions = 2;
 
@@ -328,6 +330,21 @@ namespace phylanx { namespace ir
 
         storage_type data_;
         /// \endcond
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    struct reset_enable_counts_on_exit
+    {
+        reset_enable_counts_on_exit(bool enabled = false)
+          : enabled_(node_data<double>::enable_counts(enabled))
+        {}
+
+        ~reset_enable_counts_on_exit()
+        {
+            node_data<double>::enable_counts(enabled_);
+        }
+
+        bool enabled_;
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@
 
 #include <phylanx/config/defines.hpp>
 #include <phylanx/config/export_definitions.hpp>
+#include <phylanx/config/format.hpp>
 #include <phylanx/config/version.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////

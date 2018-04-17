@@ -50,8 +50,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> parallel_block_operation::eval(
         std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string const& codename) const
+        std::vector<primitive_argument_type> const& args) const
     {
         if (operands.empty())
         {
@@ -61,12 +60,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 execution_tree::generate_error_message(
                     "the parallel_block_operation primitive "
                         "requires at least one argument",
-                    name, codename));
+                    name_, codename_));
         }
 
         // Evaluate condition of while statement
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](std::vector<primitive_argument_type> && ops)
             ->  primitive_argument_type
             {
@@ -74,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name, codename));
+                name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -84,11 +83,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return eval(
-                args, noargs, name_, codename_);
+            return eval(args, noargs);
         }
 
-        return eval(
-            operands_, args, name_, codename_);
+        return eval(operands_, args);
     }
 }}}

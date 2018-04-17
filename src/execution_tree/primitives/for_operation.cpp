@@ -84,8 +84,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto this_ = this->shared_from_this();
             return value_operand(
                 that_->operands_[0], args_, that_->name_, that_->codename_)
-                .then([this_](hpx::future<primitive_argument_type>&& val)
-                          -> hpx::future<primitive_argument_type> {
+                    .then(hpx::launch::sync,
+                        [this_](hpx::future<primitive_argument_type>&& val)
+                          -> hpx::future<primitive_argument_type>
+                {
                     val.get();
                     return this_->loop();
                 });
@@ -97,7 +99,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto this_ = this->shared_from_this();
             return value_operand(
                 that_->operands_[1], args_, that_->name_, that_->codename_)
-                .then([this_](hpx::future<primitive_argument_type>&& cond)
+                    .then(hpx::launch::sync,
+                        [this_](hpx::future<primitive_argument_type>&& cond)
                           -> hpx::future<primitive_argument_type>
                 {
                     return this_->body(std::move(cond));
@@ -113,12 +116,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return value_operand(
                     that_->operands_[3], args_, that_->name_, that_->codename_)
-                    .then([this_](hpx::future<primitive_argument_type>&&
-                                  result) mutable
-                        -> hpx::future<primitive_argument_type> {
-                        this_->result_ = result.get();
-                        return this_->reinit();    // Do the reinit statement
-                    });
+                        .then(hpx::launch::sync,
+                            [this_](
+                                hpx::future<primitive_argument_type>&& result) mutable
+                            -> hpx::future<primitive_argument_type>
+                        {
+                            this_->result_ = result.get();
+                            return this_->reinit();    // Do the reinit statement
+                        });
             }
 
             return hpx::make_ready_future(result_);
@@ -129,8 +134,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto this_ = this->shared_from_this();
             return value_operand(
                 that_->operands_[2], args_, that_->name_, that_->codename_)
-                .then([this_](hpx::future<primitive_argument_type>&& val)
-                          -> hpx::future<primitive_argument_type> {
+                    .then(hpx::launch::sync,
+                        [this_](hpx::future<primitive_argument_type>&& val)
+                          -> hpx::future<primitive_argument_type>
+                {
                     val.get();
                     return this_->loop();   // Call the loop again
                 });

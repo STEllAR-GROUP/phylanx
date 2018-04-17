@@ -45,6 +45,7 @@
 #include <phylanx/execution_tree/primitives/fold_right_operation.hpp>
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
 #include <phylanx/execution_tree/primitives/function_reference.hpp>
+#include <phylanx/execution_tree/primitives/gradient_operation.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>
 #include <phylanx/execution_tree/primitives/hstack_operation.hpp>

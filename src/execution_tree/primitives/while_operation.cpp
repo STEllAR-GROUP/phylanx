@@ -81,7 +81,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto this_ = this->shared_from_this();
             return literal_operand(
                 that_->operands_[0], args_, that_->name_, that_->codename_)
-                .then([this_](hpx::future<primitive_argument_type>&& cond)
+                .then(hpx::launch::sync,
+                    [this_](hpx::future<primitive_argument_type>&& cond)
                             -> hpx::future<primitive_argument_type> {
                     return this_->body(std::move(cond));
                 });
@@ -97,7 +98,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return literal_operand(
                     that_->operands_[1], args_, that_->name_, that_->codename_)
-                    .then([this_](hpx::future<primitive_argument_type>&&
+                    .then(hpx::launch::sync,
+                        [this_](hpx::future<primitive_argument_type>&&
                                     result) mutable
                         -> hpx::future<primitive_argument_type> {
                         this_->result_ = result.get();

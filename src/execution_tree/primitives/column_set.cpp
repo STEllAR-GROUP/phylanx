@@ -354,7 +354,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_](args_type&& args) -> primitive_argument_type {
                     std::size_t matrix_dims = args[0].num_dimensions();

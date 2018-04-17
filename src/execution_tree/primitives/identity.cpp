@@ -49,16 +49,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type identity::identity_nd(operands_type&& ops) const
+    primitive_argument_type identity::identity_nd(operand_type&& op) const
     {
-        if (ops[0].num_dimensions() != 0)
+        if (op.num_dimensions() != 0)
+        {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::identity_nd",
                 execution_tree::generate_error_message(
                     "input should be a scalar",
                     name_, codename_));
+        }
 
-        std::size_t dim = static_cast<std::size_t>(ops[0].scalar());
+        std::size_t dim = static_cast<std::size_t>(op.scalar());
         return primitive_argument_type{
             operand_type{blaze::IdentityMatrix<double>(dim)}};
     }
@@ -67,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() > 1)
+        if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
@@ -87,15 +89,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "are valid",
                     name_, codename_));
         }
+
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
-            [this_](operands_type&& op0) -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](operand_type&& op0) -> primitive_argument_type
             {
                 return this_->identity_nd(std::move(op0));
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_));
+            numeric_operand(operands[0], args, name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////

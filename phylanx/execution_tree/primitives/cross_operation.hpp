@@ -45,17 +45,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         primitive_argument_type cross1d(
-            operand_type& lhs, operand_type& rhs) const;
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type cross1d1d(
-            operand_type& lhs, operand_type& rhs) const;
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type cross1d2d(
-            operand_type& lhs, operand_type& rhs) const;
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type cross2d(
-            operand_type& lhs, operand_type& rhs) const;
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type cross2d1d(
-            operand_type& lhs, operand_type& rhs) const;
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type cross2d2d(
-            operand_type& lhs, operand_type& rhs) const;
+            operand_type&& lhs, operand_type&& rhs) const;
     };
 
     PHYLANX_EXPORT primitive create_cross_operation(

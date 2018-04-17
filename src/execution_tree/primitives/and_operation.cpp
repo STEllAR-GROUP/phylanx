@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const and_operation::match_data =
     {
         hpx::util::make_tuple("__and",
-            std::vector<std::string>{"_1 && __2"},
+            std::vector<std::string>{"_1 && __2", "__and(_1, __2)"},
             &create_and_operation, &create_primitive<and_operation>)
     };
 
@@ -515,18 +515,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](
-                    operands_type&& ops) -> primitive_argument_type {
+                [this_](primitive_argument_type&& op1,
+                        primitive_argument_type&& op2)
+                ->  primitive_argument_type
+                {
                     return primitive_argument_type(
                         util::visit(visit_and{*this_},
-                            std::move(ops[0].variant()),
-                            std::move(ops[1].variant())));
+                            std::move(op1.variant()),
+                            std::move(op2.variant())));
                 }),
-            detail::map_operands(
-                operands, functional::literal_operand{}, args,
-                name_, codename_));
+            literal_operand(operands[0], args, name_, codename_),
+            literal_operand(operands[1], args, name_, codename_));
     }
 
     // implement '&&' for all possible combinations of lhs and rhs

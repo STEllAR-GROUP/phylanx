@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         void next(std::size_t i,
             std::vector<primitive_argument_type>&& args,
-            hpx::promise<primitive_argument_type>&& result) const;
+            hpx::lcos::local::promise<primitive_argument_type>&& result) const;
     };
 
     PHYLANX_EXPORT primitive create_block_operation(

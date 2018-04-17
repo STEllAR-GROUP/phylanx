@@ -28,6 +28,8 @@ namespace phylanx { namespace ast
     std::vector<ast::transform_rule> generate_transform_rules(
         std::string const& input)
     {
+        ir::reset_enable_counts_on_exit on_exit;
+
         using iterator = std::string::const_iterator;
 
         iterator first = input.begin();

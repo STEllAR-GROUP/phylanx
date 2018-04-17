@@ -30,6 +30,7 @@ set(tests
     fold_left_operation
     fold_right_operation
     for_operation
+    gradient_operation
     add_dimension
     greater_operation
     greater_equal_operation

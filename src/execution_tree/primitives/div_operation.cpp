@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const div_operation::match_data =
     {
         hpx::util::make_tuple("__div",
-            std::vector<std::string>{"_1 / __2"},
+            std::vector<std::string>{"_1 / __2", "__div(_1, __2)"},
             &create_div_operation, &create_primitive<div_operation>)
     };
 
@@ -48,108 +48,111 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    struct div_operation::divndnd_simd
+    namespace detail
     {
-        divndnd_simd() = default;
-
-        template <typename T>
-        BLAZE_ALWAYS_INLINE auto operator()(T const& a, T const& b) const
-        ->  decltype(a / b)
+        struct divndnd_simd
         {
-            return a / b;
-        }
+            divndnd_simd() = default;
 
-        template <typename T1, typename T2>
-        static constexpr bool simdEnabled()
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a, T const& b) const
+            ->  decltype(a / b)
+            {
+                return a / b;
+            }
+
+            template <typename T1, typename T2>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDDiv<T1, T2>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(
+                T const& a, T const& b) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return a / b;
+            }
+        };
+
+        struct divnd0d_simd
         {
-            return blaze::HasSIMDDiv<T1, T2>::value;
-        }
+        public:
+            explicit divnd0d_simd(double scalar)
+                : scalar_(scalar)
+            {
+            }
 
-        template <typename T>
-        BLAZE_ALWAYS_INLINE decltype(auto) load(
-            T const& a, T const& b) const
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(a / std::declval<double>())
+            {
+                return a / scalar_;
+            }
+
+            template <typename T>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDDiv<T, double>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return a / blaze::set(scalar_);
+            }
+
+        private:
+            double scalar_;
+        };
+
+        struct div0dnd_simd
         {
-            BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-            return a / b;
-        }
-    };
+        public:
+            explicit div0dnd_simd(double scalar)
+                : scalar_(scalar)
+            {
+            }
 
-    struct div_operation::divnd0d_simd
+            template <typename T>
+            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
+            ->  decltype(std::declval<double>() / a)
+            {
+                return scalar_ / a;
+            }
+
+            template <typename T>
+            static constexpr bool simdEnabled()
+            {
+                return blaze::HasSIMDDiv<T, double>::value;
+            }
+
+            template <typename T>
+            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
+            {
+                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+                return blaze::set(scalar_) / a;
+            }
+
+        private:
+            double scalar_;
+        };
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type div_operation::div0d0d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-    public:
-        explicit divnd0d_simd(double scalar)
-            : scalar_(scalar)
-        {
-        }
-
-        template <typename T>
-        BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-        ->  decltype(a / std::declval<double>())
-        {
-            return a / scalar_;
-        }
-
-        template <typename T>
-        static constexpr bool simdEnabled()
-        {
-            return blaze::HasSIMDDiv<T, double>::value;
-        }
-
-        template <typename T>
-        BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-        {
-            BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-            return a / blaze::set(scalar_);
-        }
-
-    private:
-        double scalar_;
-    };
-
-    struct div_operation::div0dnd_simd
-    {
-    public:
-        explicit div0dnd_simd(double scalar)
-            : scalar_(scalar)
-        {
-        }
-
-        template <typename T>
-        BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-        ->  decltype(std::declval<double>() / a)
-        {
-            return scalar_ / a;
-        }
-
-        template <typename T>
-        static constexpr bool simdEnabled()
-        {
-            return blaze::HasSIMDDiv<T, double>::value;
-        }
-
-        template <typename T>
-        BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-        {
-            BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-            return blaze::set(scalar_) / a;
-        }
-
-    private:
-        double scalar_;
-    };
-
-    ///////////////////////////////////////////////////////////////////////
+        lhs.scalar() /= rhs.scalar();
+        return primitive_argument_type(std::move(lhs));
+    }
 
     primitive_argument_type div_operation::div0d0d(operands_type && ops) const
     {
         operand_type& lhs = ops[0];
         operand_type& rhs = ops[1];
-
-        if (ops.size() == 2)
-        {
-            lhs.scalar() /= rhs.scalar();
-            return primitive_argument_type(std::move(lhs));
-        }
 
         return primitive_argument_type(std::accumulate(
             ops.begin() + 1, ops.end(), std::move(lhs),
@@ -161,40 +164,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }));
     }
 
-    primitive_argument_type div_operation::div0d1d(operands_type && ops) const
+    primitive_argument_type div_operation::div0d1d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() != 2)
+        if (rhs.is_ref())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div0d1d",
-                execution_tree::generate_error_message(
-                    "the div_operation primitive can div a single "
-                        "value to a vector only if there are exactly "
-                        "two operands",
-                    name_, codename_));
+            rhs = blaze::map(rhs.vector(), detail::div0dnd_simd(lhs.scalar()));
         }
-
-        ops[1] =
-            blaze::map(ops[1].vector(), div0dnd_simd(ops[0].scalar()));
-        return primitive_argument_type(std::move(ops[1]));
+        else
+        {
+            rhs.vector() =
+                blaze::map(rhs.vector(), detail::div0dnd_simd(lhs.scalar()));
+        }
+        return primitive_argument_type(std::move(rhs));
     }
 
-    primitive_argument_type div_operation::div0d2d(operands_type && ops) const
+    primitive_argument_type div_operation::div0d2d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() != 2)
+        if (rhs.is_ref())
         {
+            rhs = blaze::map(rhs.matrix(), detail::div0dnd_simd(lhs.scalar()));
+        }
+        else
+        {
+            rhs.matrix() =
+                blaze::map(rhs.matrix(), detail::div0dnd_simd(lhs.scalar()));
+        }
+        return primitive_argument_type(std::move(rhs));
+    }
+
+    primitive_argument_type div_operation::div0d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        std::size_t rhs_dims = rhs.num_dimensions();
+        switch(rhs_dims)
+        {
+        case 0:
+            return div0d0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return div0d1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return div0d2d(std::move(lhs), std::move(rhs));
+
+        default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div0d2d",
+                "div_operation::div0d",
                 execution_tree::generate_error_message(
-                    "the div_operation primitive can div a single "
-                        "value to a matrix only if there are exactly "
-                        "two operands",
+                    "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
-
-        ops[1] =
-            blaze::map(ops[1].matrix(), div0dnd_simd(ops[0].scalar()));
-        return primitive_argument_type(std::move(ops[1]));
     }
 
     primitive_argument_type div_operation::div0d(operands_type && ops) const
@@ -205,38 +226,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 0:
             return div0d0d(std::move(ops));
 
-        case 1:
-            return div0d1d(std::move(ops));
-
-        case 2:
-            return div0d2d(std::move(ops));
-
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "div_operation::div0d",
                 execution_tree::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
+                    "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
     }
 
-    primitive_argument_type div_operation::div1d0d(operands_type && ops) const
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type div_operation::div1d0d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() != 2)
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.vector(), detail::divnd0d_simd(rhs.scalar()));
+        }
+        else
+        {
+            lhs.vector() =
+                blaze::map(lhs.vector(), detail::divnd0d_simd(rhs.scalar()));
+        }
+
+        return primitive_argument_type(std::move(lhs));
+    }
+
+    primitive_argument_type div_operation::div1d1d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        std::size_t lhs_size = lhs.dimension(0);
+        std::size_t rhs_size = rhs.dimension(0);
+
+        if (lhs_size  != rhs_size)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div1d0d",
+                "div_operation::div1d1d",
                 execution_tree::generate_error_message(
-                    "the div_operation primitive can div a single "
-                        "value to a vector only if there are exactly "
-                        "two operands",
+                    "the dimensions of the operands do not match",
                     name_, codename_));
         }
 
-        ops[0] =
-            blaze::map(ops[0].vector(), divnd0d_simd(ops[1].scalar()));
-        return primitive_argument_type(std::move(ops[0]));
+        if (lhs.is_ref())
+        {
+            lhs =
+                blaze::map(lhs.vector(), rhs.vector(), detail::divndnd_simd());
+        }
+        else
+        {
+            lhs.vector() =
+                blaze::map(lhs.vector(), rhs.vector(), detail::divndnd_simd());
+        }
+
+        return primitive_argument_type(std::move(lhs));
     }
 
     primitive_argument_type div_operation::div1d1d(operands_type && ops) const
@@ -256,21 +298,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        if (ops.size() == 2)
-        {
-            if (lhs.is_ref())
-            {
-                lhs = blaze::map(lhs.vector(), rhs.vector(), divndnd_simd());
-            }
-            else
-            {
-                lhs.vector() = blaze::map(
-                    lhs.vector(), rhs.vector(), divndnd_simd());
-            }
-
-            return primitive_argument_type(std::move(lhs));
-        }
-
         operand_type& first_term = *ops.begin();
         return primitive_argument_type(std::accumulate(ops.begin() + 1,
             ops.end(), std::move(first_term),
@@ -280,33 +307,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (result.is_ref())
                 {
                     result = blaze::map(
-                        result.vector(), curr.vector(), divndnd_simd());
+                        result.vector(), curr.vector(), detail::divndnd_simd());
                 }
                 else
                 {
                     result.vector() = blaze::map(
-                        result.vector(), curr.vector(), divndnd_simd());
+                        result.vector(), curr.vector(), detail::divndnd_simd());
                 }
                 return std::move(result);
             }));
     }
 
-    primitive_argument_type div_operation::div1d2d(operands_type&& ops) const
+    primitive_argument_type div_operation::div1d2d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div1d2d",
-                execution_tree::generate_error_message(
-                    "the div_operation primitive can divide a vector "
-                        "to a matrix only if there are exactly "
-                        "two operands",
-                    name_, codename_));
-        }
-
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
-
         auto cv = lhs.vector();
         auto cm = rhs.matrix();
 
@@ -315,8 +329,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "div_operation::div1d2d",
                 execution_tree::generate_error_message(
-                    "vector size does not match number of matrix "
-                        "columns",
+                    "vector size does not match number of matrix columns",
                     name_, codename_));
         }
 
@@ -338,65 +351,67 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(rhs)};
     }
 
-    primitive_argument_type div_operation::div1d(operands_type && ops) const
+    primitive_argument_type div_operation::div1d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        std::size_t rhs_dims = ops[1].num_dimensions();
-
+        std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 0:
-            return div1d0d(std::move(ops));
+            return div1d0d(std::move(lhs), std::move(rhs));
 
         case 1:
-            return div1d1d(std::move(ops));
+            return div1d1d(std::move(lhs), std::move(rhs));
 
         case 2:
-            return div1d2d(std::move(ops));
+            return div1d2d(std::move(lhs), std::move(rhs));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "div_operation::div1d",
                 execution_tree::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
+                    "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
     }
 
-    primitive_argument_type div_operation::div2d0d(operands_type && ops) const
+    primitive_argument_type div_operation::div1d(operands_type && ops) const
     {
-        if (ops.size() != 2)
+        std::size_t rhs_dims = ops[1].num_dimensions();
+        switch(rhs_dims)
         {
+        case 1:
+            return div1d1d(std::move(ops));
+
+        default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div2d0d",
+                "div_operation::div1d",
                 execution_tree::generate_error_message(
-                    "the div_operation primitive can div a single "
-                        "value to a matrix only if there are exactly "
-                        "two operands",
+                    "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
-
-        ops[0] =
-            blaze::map(ops[0].matrix(), divnd0d_simd(ops[1].scalar()));
-        return primitive_argument_type(std::move(ops[0]));
     }
 
-    primitive_argument_type div_operation::div2d1d(operands_type&& ops) const
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type div_operation::div2d0d(
+        operand_type&& lhs, operand_type&& rhs) const
     {
-        if (ops.size() != 2)
+        if (lhs.is_ref())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "div_operation::div2d1d",
-                execution_tree::generate_error_message(
-                    "the div_operation primitive can divide a matrix "
-                        "to a vector only if there are exactly "
-                        "two operands",
-                    name_, codename_));
+            lhs = blaze::map(lhs.matrix(), detail::divnd0d_simd(rhs.scalar()));
+        }
+        else
+        {
+            lhs.matrix() =
+                blaze::map(lhs.matrix(), detail::divnd0d_simd(rhs.scalar()));
         }
 
-        operand_type& lhs = ops[0];
-        operand_type& rhs = ops[1];
+        return primitive_argument_type(std::move(lhs));
+    }
 
+    primitive_argument_type div_operation::div2d1d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
         auto cv = rhs.vector();
         auto cm = lhs.matrix();
 
@@ -428,6 +443,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(lhs)};
     }
 
+    primitive_argument_type div_operation::div2d2d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        auto lhs_size = lhs.dimensions();
+        auto rhs_size = rhs.dimensions();
+
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "div_operation::div2d2d",
+                execution_tree::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
+
+        lhs.matrix() =
+            blaze::map(lhs.matrix(), rhs.matrix(), detail::divndnd_simd());
+        return primitive_argument_type(std::move(lhs));
+    }
+
     primitive_argument_type div_operation::div2d2d(operands_type && ops) const
     {
         operand_type& lhs = ops[0];
@@ -445,21 +480,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        if (ops.size() == 2)
-        {
-            if (lhs.is_ref())
-            {
-                lhs = blaze::map(lhs.matrix(), rhs.matrix(), divndnd_simd());
-            }
-            else
-            {
-                lhs.matrix() =
-                        blaze::map(lhs.matrix(), rhs.matrix(), divndnd_simd());
-            }
-
-            return primitive_argument_type(std::move(lhs));
-        }
-
         operand_type& first_term = *ops.begin();
         return primitive_argument_type(std::accumulate(ops.begin() + 1,
             ops.end(), std::move(first_term),
@@ -467,9 +487,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operand_type const& curr) -> operand_type
             {
                 result.matrix() = blaze::map(
-                    result.matrix(), curr.matrix(), divndnd_simd());
+                    result.matrix(), curr.matrix(), detail::divndnd_simd());
                 return std::move(result);
             }));
+    }
+
+    primitive_argument_type div_operation::div2d(
+        operand_type&& lhs, operand_type&& rhs) const
+    {
+        std::size_t rhs_dims = rhs.num_dimensions();
+        switch(rhs_dims)
+        {
+        case 0:
+            return div2d0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return div2d1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return div2d2d(std::move(lhs), std::move(rhs));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "div_operation::div2d",
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of dimensions",
+                    name_, codename_));
+        }
     }
 
     primitive_argument_type div_operation::div2d(operands_type && ops) const
@@ -477,24 +521,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t rhs_dims = ops[1].num_dimensions();
         switch(rhs_dims)
         {
-        case 0:
-            return div2d0d(std::move(ops));
-
         case 2:
             return div2d2d(std::move(ops));
 
-        case 1:
-            return div2d1d(std::move(ops));
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "div_operation::div2d",
                 execution_tree::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
+                    "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> div_operation::eval(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
@@ -530,7 +569,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        if (operands.size() == 2)
+        {
+            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                [this_](operand_type&& lhs, operand_type&& rhs)
+                ->  primitive_argument_type
+                {
+                    std::size_t lhs_dims = lhs.num_dimensions();
+                    switch (lhs_dims)
+                    {
+                    case 0:
+                        return this_->div0d(std::move(lhs), std::move(rhs));
+
+                    case 1:
+                        return this_->div1d(std::move(lhs), std::move(rhs));
+
+                    case 2:
+                        return this_->div2d(std::move(lhs), std::move(rhs));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "div_operation::eval",
+                            execution_tree::generate_error_message(
+                                "left hand side operand has unsupported "
+                                    "number of dimensions",
+                                this_->name_, this_->codename_));
+                    }
+                }),
+                numeric_operand(operands[0], args, name_, codename_),
+                numeric_operand(operands[1], args, name_, codename_));
+        }
+
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](operands_type&& ops) -> primitive_argument_type
             {
                 std::size_t lhs_dims = ops[0].num_dimensions();

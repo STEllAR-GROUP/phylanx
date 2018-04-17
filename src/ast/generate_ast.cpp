@@ -211,6 +211,8 @@ namespace phylanx { namespace ast
     ///////////////////////////////////////////////////////////////////////////
     std::vector<ast::expression> generate_ast(std::string const& input)
     {
+        ir::reset_enable_counts_on_exit on_exit;
+
         using iterator = std::string::const_iterator;
 
         iterator first = input.begin();

@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     match_pattern_type const mean_operation::match_data = {
         hpx::util::make_tuple("mean",
-            std::vector<std::string>{"mean(_1, _2)"},
+            std::vector<std::string>{"mean(_1, _2)", "mean(_1)"},
             &create_mean_operation,
             &create_primitive<mean_operation>)};
 
@@ -297,9 +297,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](args_type&& args) -> primitive_argument_type {
+                [this_](args_type&& args) -> primitive_argument_type
+                {
                     std::size_t matrix_dims = args[0].num_dimensions();
                     switch (matrix_dims)
                     {

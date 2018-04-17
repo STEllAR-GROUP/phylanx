@@ -43,22 +43,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
-        struct sub0dnd_simd;
-        struct subnd0d_simd;
-
         primitive_argument_type sub0d0d(operands_type && ops) const;
-        primitive_argument_type sub0d1d(operands_type && ops) const;
-        primitive_argument_type sub0d2d(operands_type && ops) const;
+        primitive_argument_type sub0d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub0d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub0d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub0d(
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type sub0d(operands_type && ops) const;
-        ///////////////////////////////////////////////////////////
-        primitive_argument_type sub1d0d(operands_type && ops) const;
-        primitive_argument_type sub1d1d(operands_type && ops) const;
-        primitive_argument_type sub1d2d(operands_type&& ops) const;
+
+        primitive_argument_type sub1d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub1d1d(operands_type&& ops) const;
+        primitive_argument_type sub1d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub1d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub1d(
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type sub1d(operands_type && ops) const;
-        ///////////////////////////////////////////////////////////
-        primitive_argument_type sub2d0d(operands_type && ops) const;
-        primitive_argument_type sub2d1d(operands_type&& ops) const;
-        primitive_argument_type sub2d2d(operands_type && ops) const;
+
+        primitive_argument_type sub2d0d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub2d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub2d2d(operands_type&& ops) const;
+        primitive_argument_type sub2d2d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type sub2d(
+            operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type sub2d(operands_type && ops) const;
     };
 

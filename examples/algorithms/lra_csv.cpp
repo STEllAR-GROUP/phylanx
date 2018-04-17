@@ -11,8 +11,8 @@
 #include <string>
 #include <utility>
 
-#include <boost/program_options.hpp>
 #include <blaze/Math.h>
+#include <boost/program_options.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////
 // This example uses part of the breast cancer dataset from UCI Machine Learning
@@ -33,7 +33,9 @@ char const* const read_x_code = R"(block(
     // Read X-data from given CSV file
     //
     define(read_x, filepath, row_start, row_stop, col_start, col_stop,
-        slice(file_read_csv(filepath), row_start, row_stop, col_start, col_stop)
+        slice(file_read_csv(filepath),
+              make_list(row_start , row_stop),
+              make_list(col_start , col_stop))
     ),
     read_x
 ))";
@@ -43,7 +45,7 @@ char const* const read_y_code = R"(block(
     // Read Y-data from given CSV file
     //
     define(read_y, filepath, row_start, row_stop, col_stop,
-        slice(file_read_csv(filepath), row_start, row_stop, col_stop , col_stop+1)
+        slice(file_read_csv(filepath), make_list(row_start , row_stop), col_stop)
     ),
     read_y
 ))";
@@ -105,13 +107,14 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto col_stop = vm["col_stop"].as<std::int64_t>();
 
     // read the data from the files
-    auto x = read_x(vm["data_csv"].as<std::string>(),
-        row_start, row_stop, col_start, col_stop);
+    auto x = read_x(vm["data_csv"].as<std::string>(), row_start, row_stop,
+        col_start, col_stop);
 
     // col_start and col_stop omitted in this case as we know the last column
     // in our csv file
     // has the y values.
-    auto y = read_y(vm["data_csv"].as<std::string>(), row_start, row_stop, col_stop);
+    auto y =
+        read_y(vm["data_csv"].as<std::string>(), row_start, row_stop, col_stop);
 
     auto alpha = vm["alpha"].as<double>();
 
@@ -141,31 +144,22 @@ int main(int argc, char* argv[])
 {
     // command line handling
     boost::program_options::options_description desc("usage: lra [options]");
-    desc.add_options()
-        ("enable_output,e",
-        "enable progress output (default: false)")
-        ("num_iterations,n",
-            boost::program_options::value<std::int64_t>()->default_value(750),
-            "number of iterations (default: 750)")
-        ("alpha,a",
-            boost::program_options::value<double>()->default_value(1e-5),
-            "alpha (default: 1e-5)")
-        ("data_csv",
-            boost::program_options::value<std::string>(),
-            "file name for reading data")
-        ("row_start",
-            boost::program_options::value<std::int64_t>()->default_value(0),
-            "row_start (default: 0)")
-        ("col_start",
-            boost::program_options::value<std::int64_t>()->default_value(0),
-            "col_start (default: 0)")
-        ("row_stop",
-            boost::program_options::value<std::int64_t>()->default_value(569),
-            "row_stop (default: 569)")
-        ("col_stop",
-            boost::program_options::value<std::int64_t>()->default_value(30),
-            "col_stop (default: 30)")
-        ;
+    desc.add_options()("enable_output,e",
+        "enable progress output (default: false)")("num_iterations,n",
+        boost::program_options::value<std::int64_t>()->default_value(750),
+        "number of iterations (default: 750)")("alpha,a",
+        boost::program_options::value<double>()->default_value(1e-5),
+        "alpha (default: 1e-5)")("data_csv",
+        boost::program_options::value<std::string>(),
+        "file name for reading data")("row_start",
+        boost::program_options::value<std::int64_t>()->default_value(0),
+        "row_start (default: 0)")("col_start",
+        boost::program_options::value<std::int64_t>()->default_value(0),
+        "col_start (default: 0)")("row_stop",
+        boost::program_options::value<std::int64_t>()->default_value(569),
+        "row_stop (default: 569)")("col_stop",
+        boost::program_options::value<std::int64_t>()->default_value(30),
+        "col_stop (default: 30)");
 
     return hpx::init(desc, argc, argv);
 }

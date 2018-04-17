@@ -56,8 +56,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         static std::mt19937 rand_machine;
 
-        primitive_argument_type shuffle_1d(args_type && args) const;
-        primitive_argument_type shuffle_2d(args_type && args) const;
+        primitive_argument_type shuffle_1d(arg_type&& arg) const;
+        primitive_argument_type shuffle_2d(arg_type&& arg) const;
     };
 
     PHYLANX_EXPORT primitive create_shuffle_operation(

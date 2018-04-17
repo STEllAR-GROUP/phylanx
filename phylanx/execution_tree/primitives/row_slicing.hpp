@@ -12,6 +12,8 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///
     /// If used inside PhySL:
     ///
-    ///      slice_row (input, row_start, row_stop, steps(optional) )
+    ///      slice_row (input, '(row_start, row_stop, steps(optional)) )
     ///
     ///          input : Scalar, Vector or a Matrix
     ///          row_start     : Starting index of the slice
@@ -42,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
+        // using args_type = std::vector<arg_type>;
         using storage0d_type = typename arg_type::storage0d_type;
         using storage1d_type = typename arg_type::storage1d_type;
         using storage2d_type = typename arg_type::storage2d_type;
@@ -63,11 +65,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params) const override;
 
     private:
-        std::vector<int> create_list_row(
-            int start, int stop, int step, int array_length) const;
-        primitive_argument_type row_slicing0d(args_type&& args) const;
-        primitive_argument_type row_slicing1d(args_type&& args) const;
-        primitive_argument_type row_slicing2d(args_type&& args) const;
+        std::vector<std::int64_t> create_list_row(std::int64_t start,
+            std::int64_t stop, std::int64_t step,
+            std::size_t array_length) const;
+        primitive_argument_type row_slicing0d(
+            arg_type&& arg) const;
+        primitive_argument_type row_slicing1d(
+            arg_type&& arg, std::vector<double> extracted) const;
+        primitive_argument_type row_slicing2d(
+            arg_type&& arg, std::vector<double> extracted) const;
     };
 
     PHYLANX_EXPORT primitive create_row_slicing_operation(

@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const argmin::match_data =
     {
         hpx::util::make_tuple("argmin",
-            std::vector<std::string>{"argmin(_1, _2)"},
+            std::vector<std::string>{"argmin(_1, _2)", "argmin(_1)"},
             &create_argmin, &create_primitive<argmin>)
     };
 
@@ -288,7 +288,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
             {
                 std::size_t a_dims = args[0].num_dimensions();
