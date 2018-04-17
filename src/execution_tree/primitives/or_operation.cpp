@@ -477,7 +477,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(lhs), ir::node_data<double>{rhs > 0 ? 1.0 : 0.0});
             }
             return primitive_argument_type(
-                ir::node_data<std::uint8_t>{(lhs[0] != 0) | (rhs != 0)});
+                ir::node_data<std::uint8_t>{(lhs[0] != 0) || (rhs != 0)});
         }
 
         primitive_argument_type operator()(std::int64_t&& lhs,
@@ -489,7 +489,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<double>{lhs > 0 ? 1.0 : 0.0}, std::move(rhs));
             }
             return primitive_argument_type(
-                ir::node_data<std::uint8_t>{(rhs[0] != 0) | (lhs != 0)});
+                ir::node_data<std::uint8_t>{(rhs[0] != 0) || (lhs != 0)});
         }
 
         primitive_argument_type operator()(ir::node_data<double>&& lhs,
