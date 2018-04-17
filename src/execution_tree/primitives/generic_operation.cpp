@@ -45,12 +45,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     {
         static std::map<std::string, double (*)(double)> map0d = {
-                {"cos", [](double m) -> double { return blaze::cos(m); }},
-                {"exp", [](double m) -> double { return blaze::exp(m); }},
-                {"log", [](double m) -> double { return blaze::log(m); }},
-                {"sin", [](double m) -> double { return blaze::sin(m); }},
-                {"sinh", [](double m) -> double { return blaze::sinh(m); }},
-                {"tan", [](double m) -> double { return blaze::tan(m); }}};
+            {"sin", [](double m) -> double { return blaze::sin(m); }},
+            {"cos", [](double m) -> double { return blaze::cos(m); }},
+            {"tan", [](double m) -> double { return blaze::tan(m); }},
+            {"sinh", [](double m) -> double { return blaze::sinh(m); }},
+            {"cosh", [](double m) -> double { return blaze::cosh(m); }},
+            {"tanh", [](double m) -> double { return blaze::tanh(m); }},
+            {"floor", [](double m) -> double { return blaze::floor(m); }},
+            {"ceil", [](double m) -> double { return blaze::ceil(m); }},
+            {"trunc", [](double m) -> double { return blaze::trunc(m); }},
+            {"exp", [](double m) -> double { return blaze::exp(m); }},
+            {"exp2", [](double m) -> double { return blaze::exp2(m); }},
+            {"log", [](double m) -> double { return blaze::log(m); }},
+            {"log10", [](double m) -> double { return blaze::log10(m); }},
+            {"log2", [](double m) -> double { return blaze::log2(m); }},
+            {"sqrt", [](double m) -> double { return blaze::sqrt(m); }},
+            {"cbrt", [](double m) -> double { return blaze::cbrt(m); }}};
         return map0d[name];
     }
 
@@ -62,14 +72,86 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::DynamicVector<double> (*)(const blaze::CustomVector<double,
                 blaze::aligned, blaze::padded>&)>
             map1d = {
-                {"cos", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::cos(m); }},
-                {"exp", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::exp(m); }},
-                {"log", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::log(m); }},
-                {"sin", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::sin(m); }},
-                {"sinh", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::sinh(m); }},
-                {"tan", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::tan(m); }}
-
-        };
+                {"sin",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::sin(m);
+                    }},
+                {"cos",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::cos(m);
+                    }},
+                {"tan",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::tan(m);
+                    }},
+                {"sinh",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::sinh(m);
+                    }},
+                {"cosh",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::cosh(m);
+                    }},
+                {"tanh",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::tanh(m);
+                    }},
+                {"floor",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::floor(m);
+                    }},
+                {"ceil",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::ceil(m);
+                    }},
+                {"trunc",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::trunc(m);
+                    }},
+                {"exp",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::exp(m);
+                    }},
+                {"exp2",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::exp2(m);
+                    }},
+                {"log",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::log(m);
+                    }},
+                {"log10",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::log10(m);
+                    }},
+                {"log2",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::log2(m);
+                    }},
+                {"sqrt",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::sqrt(m);
+                    }},
+                {"cbrt",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::cbrt(m);
+                    }}};
         return map1d[name];
     }
 
@@ -81,13 +163,86 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::DynamicMatrix<double> (*)(const blaze::CustomMatrix<double,
                 blaze::aligned, blaze::padded>&)>
             map2d = {
-                {"cos", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::cos(m); }},
-                {"exp", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::exp(m); }},
-                {"log", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::log(m); }},
-                {"sin", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::sin(m); }},
-                {"sinh", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::sinh(m); }},
-                {"tan", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::tan(m); }}
-        };
+                {"sin",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::sin(m);
+                    }},
+                {"cos",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::cos(m);
+                    }},
+                {"tan",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::tan(m);
+                    }},
+                {"sinh",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::sinh(m);
+                    }},
+                {"cosh",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::cosh(m);
+                    }},
+                {"tanh",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::tanh(m);
+                    }},
+                {"floor",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::floor(m);
+                    }},
+                {"ceil",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::ceil(m);
+                    }},
+                {"trunc",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::trunc(m);
+                    }},
+                {"exp",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::exp(m);
+                    }},
+                {"exp2",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::exp2(m);
+                    }},
+                {"log",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::log(m);
+                    }},
+                {"log10",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::log10(m);
+                    }},
+                {"log2",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::log2(m);
+                    }},
+                {"sqrt",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::sqrt(m);
+                    }},
+                {"cbrt",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::cbrt(m);
+                    }}};
         return map2d[name];
     }
 
