@@ -458,8 +458,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        lhs.matrix() =
-            blaze::map(lhs.matrix(), rhs.matrix(), detail::divndnd_simd());
+        if (lhs.is_ref())
+        {
+            lhs =
+                blaze::map(lhs.matrix(), rhs.matrix(), detail::divndnd_simd());
+        }
+        else
+        {
+            lhs.matrix() =
+                blaze::map(lhs.matrix(), rhs.matrix(), detail::divndnd_simd());
+        }
         return primitive_argument_type(std::move(lhs));
     }
 
@@ -483,11 +491,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         operand_type& first_term = *ops.begin();
         return primitive_argument_type(std::accumulate(ops.begin() + 1,
             ops.end(), std::move(first_term),
-            [](operand_type& result,
-                operand_type const& curr) -> operand_type
-            {
-                result.matrix() = blaze::map(
-                    result.matrix(), curr.matrix(), detail::divndnd_simd());
+            [](operand_type& result, operand_type const& curr) -> operand_type {
+                if (result.is_ref())
+                {
+                    result = blaze::map(
+                        result.matrix(), curr.matrix(), detail::divndnd_simd());
+                }
+                else
+                {
+                    result.matrix() = blaze::map(
+                        result.matrix(), curr.matrix(), detail::divndnd_simd());
+                }
                 return std::move(result);
             }));
     }
