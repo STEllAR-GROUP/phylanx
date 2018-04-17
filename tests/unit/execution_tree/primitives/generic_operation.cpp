@@ -90,48 +90,38 @@ void test_generic_operation_2d(std::string const& func_name,
 
 int main(int argc, char* argv[])
 {
-    test_generic_operation_0d("log", std::log);
-    test_generic_operation_1d("log",
-        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicVector<double> { return blaze::log(m); });
-    test_generic_operation_2d("log",
-        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicMatrix<double> { return blaze::log(m); });
-    test_generic_operation_0d("exp", std::exp);
-    test_generic_operation_1d("exp",
-        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicVector<double> { return blaze::exp(m); });
-    test_generic_operation_2d("exp",
-        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicMatrix<double> { return blaze::exp(m); });
-    test_generic_operation_0d("sin", std::sin);
-    test_generic_operation_1d("sin",
-        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicVector<double> { return blaze::sin(m); });
-    test_generic_operation_2d("sin",
-        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicMatrix<double> { return blaze::sin(m); });
-    test_generic_operation_0d("sinh", std::sinh);
-    test_generic_operation_1d("sinh",
-        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicVector<double> { return blaze::sinh(m); });
-    test_generic_operation_2d("sinh",
-        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
-            -> blaze::DynamicMatrix<double> { return blaze::sinh(m); });
     test_generic_operation_0d("cos", std::cos);
-    test_generic_operation_1d("cos",
-                              [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
-                                      -> blaze::DynamicVector<double> { return blaze::cos(m); });
-    test_generic_operation_2d("cos",
-                              [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
-                                      -> blaze::DynamicMatrix<double> { return blaze::cos(m); });
-    test_generic_operation_0d("tan", blaze::tan);
-    test_generic_operation_1d("tan",
-                              [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
-                                      -> blaze::DynamicVector<double> { return blaze::tan(m); });
-    test_generic_operation_2d("tan",
-                              [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
-                                      -> blaze::DynamicMatrix<double> { return blaze::tan(m); });
+    test_generic_operation_0d("exp", std::exp);
+    test_generic_operation_0d("log", std::log);
+    test_generic_operation_0d("sin", std::sin);
+    test_generic_operation_0d("sinh", std::sinh);
+    test_generic_operation_0d("tan", std::tan);
+
+    test_generic_operation_1d("cos", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::cos(m); });
+    test_generic_operation_1d("exp", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::exp(m); });
+    test_generic_operation_1d("log", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::log(m); });
+    test_generic_operation_1d("sin", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::sin(m); });
+    test_generic_operation_1d("sinh", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::sinh(m); });
+    test_generic_operation_1d("tan", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::tan(m); });
+
+    test_generic_operation_2d("cos", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::cos(m); });
+    test_generic_operation_2d("exp", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::exp(m); });
+    test_generic_operation_2d("log", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::log(m); });
+    test_generic_operation_2d("sin", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::sin(m); });
+    test_generic_operation_2d("sinh", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::sinh(m); });
+    test_generic_operation_2d("tan", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::tan(m); });
 
     return hpx::util::report_errors();
 }
