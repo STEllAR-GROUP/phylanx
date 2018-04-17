@@ -118,6 +118,20 @@ int main(int argc, char* argv[])
     test_generic_operation_2d("sinh",
         [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicMatrix<double> { return blaze::sinh(m); });
+    test_generic_operation_0d("cos", std::cos);
+    test_generic_operation_1d("cos",
+                              [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+                                      -> blaze::DynamicVector<double> { return blaze::cos(m); });
+    test_generic_operation_2d("cos",
+                              [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+                                      -> blaze::DynamicMatrix<double> { return blaze::cos(m); });
+    test_generic_operation_0d("tan", blaze::tan);
+    test_generic_operation_1d("tan",
+                              [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+                                      -> blaze::DynamicVector<double> { return blaze::tan(m); });
+    test_generic_operation_2d("tan",
+                              [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+                                      -> blaze::DynamicMatrix<double> { return blaze::tan(m); });
 
     return hpx::util::report_errors();
 }

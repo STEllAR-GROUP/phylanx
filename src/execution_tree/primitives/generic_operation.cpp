@@ -45,10 +45,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     {
         static std::map<std::string, double (*)(double)> map0d = {
-            {"exp", [](double m) -> double { return blaze::exp(m); }},
-            {"log", [](double m) -> double { return blaze::log(m); }},
-            {"sin", [](double m) -> double { return blaze::sin(m); }},
-            {"sinh", [](double m) -> double { return blaze::sinh(m); }}};
+                {"cos", [](double m) -> double { return blaze::cos(m); }},
+                {"exp", [](double m) -> double { return blaze::exp(m); }},
+                {"log", [](double m) -> double { return blaze::log(m); }},
+                {"sin", [](double m) -> double { return blaze::sin(m); }},
+                {"sinh", [](double m) -> double { return blaze::sinh(m); }},
+                {"tan", [](double m) -> double { return blaze::tan(m); }}};
         return map0d[name];
     }
 
@@ -60,6 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::DynamicVector<double> (*)(const blaze::CustomVector<double,
                 blaze::aligned, blaze::padded>&)>
             map1d = {
+                {"cos", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::cos(m); }},
                 {"exp",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
@@ -76,9 +79,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return blaze::sin(m);
                     }},
                 {"sinh",
+                        [](const blaze::CustomVector<double, blaze::aligned,
+                                blaze::padded>& m) -> blaze::DynamicVector<double> {
+                            return blaze::sinh(m);
+                        }},
+                {"tan",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::sinh(m);
+                        return blaze::tan(m);
                     }}};
         return map1d[name];
     }
@@ -91,6 +99,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::DynamicMatrix<double> (*)(const blaze::CustomMatrix<double,
                 blaze::aligned, blaze::padded>&)>
             map2d = {
+                {"cos",
+                        [](const blaze::CustomMatrix<double, blaze::aligned,
+                                blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                            return blaze::cos(m);
+                        }},
                 {"exp",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
@@ -107,9 +120,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return blaze::sin(m);
                     }},
                 {"sinh",
+                        [](const blaze::CustomMatrix<double, blaze::aligned,
+                                blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                            return blaze::sinh(m);
+                        }},
+                {"tan",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::sinh(m);
+                        return blaze::tan(m);
                     }}};
         return map2d[name];
     }
