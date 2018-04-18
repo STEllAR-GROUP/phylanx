@@ -88,7 +88,7 @@ class PhySL:
             return s + ')'
 
     def _Slice(self, a, allowreturn=False):
-        s = ', \'(%s, %s' % \
+        s = ', make_list(%s, %s' % \
             (self.recompile(a.lower), self.recompile(a.upper))
         if a.step:
             s += ', %s)' % self.recompile(a.step)
