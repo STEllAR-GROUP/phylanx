@@ -48,11 +48,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
     primitive_argument_type or_operation::or_operation0d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
+                if (rhs.is_ref())
+                {
+                    rhs = blaze::map(rhs.vector(),
+                        [&](bool x) { return (x || lhs.scalar()); });
+                }
                 rhs.vector() = blaze::map(
                     rhs.vector(), [&](bool x) { return (x || lhs.scalar()); });
 
@@ -60,11 +66,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<std::uint8_t>{std::move(rhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation0d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
+                if (rhs.is_ref())
+                {
+                    rhs = blaze::map(rhs.matrix(),
+                        [&](bool x) { return (x || lhs.scalar()); });
+                }
                 rhs.matrix() = blaze::map(
                     rhs.matrix(), [&](bool x) { return (x || lhs.scalar()); });
 
@@ -72,8 +84,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<std::uint8_t>{std::move(rhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation0d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch (rhs_dims)
@@ -98,11 +111,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation1d0d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.vector(),
+                        [&](bool x) { return (x || rhs.scalar()); });
+                }
                 lhs.vector() = blaze::map(
                     lhs.vector(), [&](bool x) { return (x || rhs.scalar()); });
 
@@ -110,8 +129,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation1d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
@@ -127,6 +147,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.vector(), rhs.vector(),
+                        [&](bool x, bool y) { return (x || y); });
+                }
                 lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
                     [&](bool x, bool y) { return (x || y); });
 
@@ -134,13 +159,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation1d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
-                std::size_t lhs_size = lhs.dimension(0);
-                auto rhs_size = rhs.dimensions();
+                auto cv = lhs.vector();
+                auto cm = rhs.matrix();
 
-                if (lhs_size != rhs_size[1])
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation1d2d",
@@ -151,18 +177,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                for (size_t i = 0UL; i < rhs.matrix().rows(); i++)
-                    blaze::row(rhs.matrix(), i) =
-                        blaze::map(blaze::row(rhs.matrix(), i),
-                            blaze::trans(lhs.vector()),
+                if (rhs.is_ref())
+                {
+                    blaze::DynamicMatrix<bool> m{cm.rows(), cm.columns()};
+                    for (size_t i = 0UL; i < cm.rows(); i++)
+                        blaze::row(m, i) = blaze::map(blaze::row(cm, i),
+                            blaze::trans(cv),
                             [](bool x, bool y) { return x || y; });
+                    return primitive_argument_type(
+                        ir::node_data<std::uint8_t>{std::move(m)});
+                }
+
+                for (size_t i = 0UL; i < cm.rows(); i++)
+                    blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
+                        blaze::trans(cv),
+                        [](bool x, bool y) { return x || y; });
 
                 return primitive_argument_type(
                     ir::node_data<std::uint8_t>{std::move(rhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation1d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch (rhs_dims)
@@ -186,14 +223,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation2d0d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 std::size_t lhs_size = lhs.dimension(0);
                 std::size_t rhs_size = rhs.dimension(0);
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.matrix(),
+                        [&](double x) { return (x || rhs.scalar()); });
+                }
                 lhs.matrix() = blaze::map(lhs.matrix(),
                     [&](double x) { return (x || rhs.scalar()); });
 
@@ -201,13 +244,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation2d1d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
-                std::size_t rhs_size = rhs.dimension(0);
-                auto lhs_size = lhs.dimensions();
+                auto cv = rhs.vector();
+                auto cm = lhs.matrix();
 
-                if (rhs_size != lhs_size[1])
+                if (cv.size() != cm.columns())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation2d1d",
@@ -218,18 +262,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
-                for (size_t i = 0UL; i < lhs.matrix().rows(); i++)
-                    blaze::row(lhs.matrix(), i) =
-                        blaze::map(blaze::row(lhs.matrix(), i),
-                            blaze::trans(rhs.vector()),
+                if (lhs.is_ref())
+                {
+                    blaze::DynamicMatrix<bool> m{cm.rows(), cm.columns()};
+                    for (size_t i = 0UL; i < cm.rows(); i++)
+                        blaze::row(m, i) = blaze::map(blaze::row(cm, i),
+                            blaze::trans(cv),
                             [](bool x, bool y) { return x || y; });
+                    return primitive_argument_type(
+                        ir::node_data<std::uint8_t>{std::move(m)});
+                }
+
+                for (size_t i = 0UL; i < cm.rows(); i++)
+                    blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
+                        blaze::trans(cv),
+                        [](bool x, bool y) { return x || y; });
 
                 return primitive_argument_type(
                     ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation2d2d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 auto lhs_size = lhs.dimensions();
                 auto rhs_size = rhs.dimensions();
@@ -245,6 +300,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 // TODO: SIMD functionality should be added, blaze implementation
                 // is not currently available
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(lhs.matrix(), rhs.matrix(),
+                        [&](bool x, bool y) { return (x || y); });
+                }
                 lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
                     [&](bool x, bool y) { return (x || y); });
 
@@ -252,8 +312,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::node_data<std::uint8_t>{std::move(lhs)});
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_operation2d(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 std::size_t rhs_dims = rhs.num_dimensions();
                 switch (rhs_dims)
@@ -277,8 +338,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
+    template <typename T>
     primitive_argument_type or_operation::or_all(
-        operand_type&& lhs, operand_type&& rhs) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
             {
                 std::size_t lhs_dims = lhs.num_dimensions();
                 switch (lhs_dims)
@@ -365,7 +427,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operator()(T&& lhs, T&& rhs) const
         {
             return primitive_argument_type(
-                ir::node_data<std::uint8_t>{lhs && rhs});
+                ir::node_data<std::uint8_t>{lhs || rhs});
         }
 
         primitive_argument_type operator()(
@@ -407,10 +469,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type operator()(ir::node_data<double>&& lhs,
+            std::int64_t&& rhs) const
+        {
+            if (lhs.num_dimensions() != 0)
+            {
+                return or_.or_all(
+                    std::move(lhs), ir::node_data<double>{rhs != 0 ? 1.0 : 0.0});
+            }
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{(lhs[0] != 0) || (rhs != 0)});
+        }
+
+        primitive_argument_type operator()(std::int64_t&& lhs,
             ir::node_data<double>&& rhs) const
         {
-            return or_.or_all(ir::node_data<std::uint8_t>{std::move(lhs)},
-                ir::node_data<std::uint8_t>{std::move(rhs)});
+            if (rhs.num_dimensions() != 0)
+            {
+                return or_.or_all(
+                    ir::node_data<double>{lhs != 0 ? 1.0 : 0.0}, std::move(rhs));
+            }
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{(rhs[0] != 0) || (lhs != 0)});
+        }
+
+        primitive_argument_type operator()(ir::node_data<double>&& lhs,
+            ir::node_data<double>&& rhs) const
+        {
+            return or_.or_all(std::move(lhs), std::move(rhs));
         }
 
         primitive_argument_type operator()(
