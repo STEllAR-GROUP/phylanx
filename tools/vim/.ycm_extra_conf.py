@@ -10,17 +10,18 @@ import re
 
 compilation_database_dir = "@CMAKE_BINARY_DIR@"
 
+
 def FlagsForFile(filename, **kwargs):
 
     a = ''
-    #Ignore lines not containing CXX command
-    with open('{0}/compile_commands.json'.format(compilation_database_dir), 'r') as f:
+    # Ignore lines not containing CXX command
+    with open('{0}/compile_commands.json'.format(compilation_database_dir),
+              'r') as f:
         a = ''.join([l.rstrip('\n') for l in f.readlines() if 'command' in l])
 
-    final_flags = list(set(re.findall('-(?:std|W|w)\S+|-(?:I|include|isystem)(?:\S+| \S+)', a)))
- 
-    return {
-        'flags': final_flags,
-        'do_cache': True
-    }
+    final_flags = list(
+        set(
+            re.findall('-(?:std|W|w)\S+|-(?:I|include|isystem)(?:\S+| \S+)',
+                       a)))
 
+    return {'flags': final_flags, 'do_cache': True}
