@@ -78,7 +78,6 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(enable_tracing),
                 PHYLANX_MATCH_DATA(exponential_operation),
                 PHYLANX_MATCH_DATA(extract_shape),
-                PHYLANX_MATCH_DATA(generic_operation),
                 PHYLANX_MATCH_DATA(gradient_operation),
                 PHYLANX_MATCH_DATA(identity),
                 PHYLANX_MATCH_DATA(inverse_operation),
@@ -127,6 +126,12 @@ namespace phylanx { namespace execution_tree
             for (auto const& pattern : primitives::car_cdr_operation::match_data)
             {
                 patterns.push_back(hpx::util::make_tuple(car_cdr_name, pattern));
+            }
+
+            std::string gen_name("__gen");
+            for (auto const& pattern : primitives::generic_operation::match_data)
+            {
+                patterns.push_back(hpx::util::make_tuple(gen_name, pattern));
             }
 
             // generic functions

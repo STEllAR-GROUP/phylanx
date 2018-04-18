@@ -30,19 +30,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type>&& operands,
         std::string const& name, std::string const& codename)
     {
-        static std::string type("gen");
+        static std::string type("__gen");
         return create_primitive_component(
             locality, type, std::move(operands), name, codename);
     }
 
-    match_pattern_type const generic_operation::match_data = {
-        hpx::util::make_tuple("gen",
-            std::vector<std::string>{"gen(_1)"},
-            &create_generic_operation,
-            &create_primitive<generic_operation>)};
+#define PHYLANX_GEN_MATCH_DATA(name)                                           \
+    hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
+        &create_generic_operation, &create_primitive<generic_operation>) /**/
+
+    std::vector<match_pattern_type> const generic_operation::match_data =
+    {
+        PHYLANX_GEN_MATCH_DATA("sin"),
+        PHYLANX_GEN_MATCH_DATA("cos"),
+        PHYLANX_GEN_MATCH_DATA("tan"),
+        PHYLANX_GEN_MATCH_DATA("sinh"),
+        PHYLANX_GEN_MATCH_DATA("cosh"),
+        PHYLANX_GEN_MATCH_DATA("tanh"),
+        PHYLANX_GEN_MATCH_DATA("floor"),
+        PHYLANX_GEN_MATCH_DATA("ceil"),
+        PHYLANX_GEN_MATCH_DATA("trunc"),
+//         PHYLANX_GEN_MATCH_DATA("exp"),
+        PHYLANX_GEN_MATCH_DATA("exp2"),
+        PHYLANX_GEN_MATCH_DATA("log"),
+        PHYLANX_GEN_MATCH_DATA("log10"),
+        PHYLANX_GEN_MATCH_DATA("log2"),
+        PHYLANX_GEN_MATCH_DATA("sqrt"),
+        PHYLANX_GEN_MATCH_DATA("cbrt")
+    };
+
+#undef PHYLANX_GEN_MATCH_DATA
 
     double (*generic_operation::get_0d_map(std::string const& name))(double)
-
     {
         static std::map<std::string, double (*)(double)> map0d = {
             {"sin", [](double m) -> double { return blaze::sin(m); }},
@@ -247,14 +266,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        std::string extract_function_name(std::string const& name)
+        {
+            std::string::size_type p = name.find_first_of("$");
+            if (p != std::string::npos)
+            {
+                return name.substr(0, p);
+            }
+            return name;
+        }
+    }
+
     generic_operation::generic_operation(
         std::vector<primitive_argument_type> && operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
-        func0d_ = get_0d_map(name);
-        func1d_ = get_1d_map(name);
-        func2d_ = get_2d_map(name);
+        std::string func_name = detail::extract_function_name(name);
+        func0d_ = get_0d_map(func_name);
+        func1d_ = get_1d_map(func_name);
+        func2d_ = get_2d_map(func_name);
     }
 
     ///////////////////////////////////////////////////////////////////////////
