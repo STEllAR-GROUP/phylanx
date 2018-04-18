@@ -88,15 +88,15 @@ class PhySL:
             return s + ')'
 
     def _Slice(self, a, allowreturn=False):
-        if a.lower == None:
+        if a.lower is None:
             alow = "0"
         else:
             alow = self.recompile(a.lower)
-        if a.upper == None:
+        if a.upper is None:
             aupp = "nil"
         else:
             aupp = self.recompile(a.upper)
-        s = 'make_list(%s, %s' % (alow,aupp)
+        s = 'make_list(%s, %s' % (alow, aupp)
         if a.step:
             s += ', %s)' % self.recompile(a.step)
         else:
@@ -379,7 +379,7 @@ class PhySL:
         s += ")"
         return s
 
-    def _List(self,a,allowreturn=False):
+    def _List(self, a, allowreturn=False):
         ret = "["
         for arg in ast.iter_child_nodes(a):
             if arg.__class__.__name__ == "Load":

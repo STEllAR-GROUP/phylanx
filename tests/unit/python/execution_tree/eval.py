@@ -47,7 +47,7 @@ def fib(n):
 
 
 assert fib.__src__ == \
-    'define$42$0(fib$42$0, n$42$8, if$43$4((n$43$7 < 2), n$44$15, (fib$46$15((n$46$19 - 1)) + fib$46$28((n$46$32 - 2)))))' # noqa E501
+    'define$42$0(fib$42$0, n$42$8, if$43$4((n$43$7 < 2), n$44$15, (fib$46$15((n$46$19 - 1)) + fib$46$28((n$46$32 - 2)))))'  # noqa E501
 assert "[" + fib.__src__ + "]" == str(fib.generate_ast())
 assert fib(10) == 55.0
 
@@ -125,46 +125,61 @@ def foo4():
 
 assert foo4() == 3
 
+
 @Phylanx()
 def f1():
-    a = [1,2,3,4]
+    a = [1, 2, 3, 4]
     return a[1]
 
 assert f1() == 2
 
+
 @Phylanx()
 def f2():
-    a = [1,2,3,4]
+    a = [1, 2, 3, 4]
     return a[1:3]
 
-assert np.all(f2() == np.array([2,3]))
+assert np.all(f2() == np.array([2, 3]))
+
 
 @Phylanx()
 def f3():
-    a = [1,2,3,4]
+    a = [1, 2, 3, 4]
     return a[:-1]
 
-assert np.all(f3() == np.array([1,2,3]))
+assert np.all(f3() == np.array([1, 2, 3]))
+
 
 @Phylanx()
 def f4():
-    a = [[1,2],[3,4]]
-    return a[1,1]
+    a = [[1, 2], [3, 4]]
+    return a[1, 1]
 
 assert f4() == 4.0
 
 
 @Phylanx()
 def f5():
-    a = [[1,2,3],[4,5,6],[7,8,9]]
-    return a[:2,1:3]
+    a = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    return a[:2, 1:3]
 
-assert np.all(f5() == np.array([[2,3],[5,6]]))
+assert np.all(f5() == np.array([[2, 3], [5, 6]]))
 
-b = np.array([[1,2,3],[4,5,6],[7,8,9]])
+b = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+
 @Phylanx()
 def f6():
-    b = [[1,2,3],[4,5,6],[7,8,9]]
-    return b[0:1,0]
+    b = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    return b[0:1, 0]
 
-assert np.all(f6() == np.array(b[0:1,0]))
+assert np.all(f6() == np.array(b[0:1, 0]))
+
+
+@Phylanx()
+def f7():
+    b = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    c = b[0, 0:2]
+    return c
+
+assert np.all(f7() == np.array(b[0, 0:2]))
