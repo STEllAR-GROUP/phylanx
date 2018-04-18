@@ -50,28 +50,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type unary_minus_operation::neg0d(operands_type&& ops) const
+    primitive_argument_type unary_minus_operation::neg0d(
+        operand_type&& op) const
     {
-        ops[0].scalar() = -ops[0].scalar();
-        return primitive_argument_type(std::move(ops[0]));
+        op.scalar() = -op.scalar();
+        return primitive_argument_type(std::move(op));
     }
 
-    primitive_argument_type unary_minus_operation::neg1d(operands_type&& ops) const
+    primitive_argument_type unary_minus_operation::neg1d(
+        operand_type&& op) const
     {
-        ops[0] = -ops[0].vector();
-        return primitive_argument_type(std::move(ops[0]));
+        if (op.is_ref())
+        {
+            op = -op.vector();
+        }
+        else
+        {
+            op.vector() = -op.vector();
+        }
+        return primitive_argument_type(std::move(op));
     }
 
-    primitive_argument_type unary_minus_operation::neg2d(operands_type&& ops) const
+    primitive_argument_type unary_minus_operation::neg2d(
+        operand_type&& op) const
     {
-        ops[0] = -ops[0].matrix();
-        return primitive_argument_type(std::move(ops[0]));
+        if (op.is_ref())
+        {
+            op = -op.matrix();
+        }
+        else
+        {
+            op.matrix() = -op.matrix();
+        }
+        return primitive_argument_type(std::move(op));
     }
 
     hpx::future<primitive_argument_type> unary_minus_operation::eval(
         std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string const& codename) const
+        std::vector<primitive_argument_type> const& args) const
     {
         if (operands.size() != 1)
         {
@@ -80,7 +96,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 execution_tree::generate_error_message(
                     "the unary_minus_operation primitive requires "
                         "exactly one operand",
-                    name, codename));
+                    name_, codename_));
         }
 
         if (!valid(operands[0]))
@@ -91,25 +107,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the unary_minus_operation primitive requires "
                         "that the argument given by the operands "
                         "array is valid",
-                    name, codename));
+                    name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_, name, codename](operands_type && ops)
-            -> primitive_argument_type
+            [this_](operand_type && op) -> primitive_argument_type
             {
-                std::size_t lhs_dims = ops[0].num_dimensions();
+                std::size_t lhs_dims = op.num_dimensions();
                 switch (lhs_dims)
                 {
                 case 0:
-                    return this_->neg0d(std::move(ops));
+                    return this_->neg0d(std::move(op));
 
                 case 1:
-                    return this_->neg1d(std::move(ops));
+                    return this_->neg1d(std::move(op));
 
                 case 2:
-                    return this_->neg2d(std::move(ops));
+                    return this_->neg2d(std::move(op));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -117,12 +132,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         execution_tree::generate_error_message(
                             "operand has unsupported number of "
                                 "dimensions",
-                            name, codename));
+                            this_->name_, this_->codename_));
                 }
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name, codename));
+            numeric_operand(operands[0], args, name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -132,8 +145,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands_.empty())
         {
-            return eval(args, noargs, name_, codename_);
+            return eval(args, noargs);
         }
-        return eval(operands_, args, name_, codename_);
+        return eval(operands_, args);
     }
 }}}

@@ -56,7 +56,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            "index out of range");
+            execution_tree::generate_error_message(
+                "index out of range", name_, codename_));
     }
 
     primitive_argument_type extract_shape::shape1d(args_type&& args) const
@@ -67,10 +68,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive_argument_type{std::int64_t(args[0].size())}};
             return primitive_argument_type{std::move(result)};
         }
+        else if (args[1][0] == 0)
+        {
+            return primitive_argument_type{std::int64_t(args[0].size())};
+        }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            "index out of range");
+            execution_tree::generate_error_message(
+                "index out of range", name_, codename_));
     }
 
     primitive_argument_type extract_shape::shape2d(args_type&& args) const
@@ -99,8 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::eval",
                 execution_tree::generate_error_message(
-                    "the extract_shape primitive requires one or two "
-                        "operands",
+                    "the extract_shape primitive requires one or two operands",
                     name_, codename_));
         }
 
@@ -125,10 +130,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->shape0d(std::move(args));
+
                 case 1:
                     return this_->shape1d(std::move(args));
+
                 case 2:
                     return this_->shape2d(std::move(args));
+
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
