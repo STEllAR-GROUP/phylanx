@@ -124,3 +124,47 @@ def foo4():
 
 
 assert foo4() == 3
+
+@Phylanx()
+def f1():
+    a = [1,2,3,4]
+    return a[1]
+
+assert f1() == 2
+
+@Phylanx()
+def f2():
+    a = [1,2,3,4]
+    return a[1:3]
+
+assert np.all(f2() == np.array([2,3]))
+
+@Phylanx()
+def f3():
+    a = [1,2,3,4]
+    return a[:-1]
+
+assert np.all(f3() == np.array([1,2,3]))
+
+@Phylanx()
+def f4():
+    a = [[1,2],[3,4]]
+    return a[1,1]
+
+assert f4() == 4.0
+
+
+@Phylanx()
+def f5():
+    a = [[1,2,3],[4,5,6],[7,8,9]]
+    return a[:2,1:3]
+
+assert np.all(f5() == np.array([[2,3],[5,6]]))
+
+b = np.array([[1,2,3],[4,5,6],[7,8,9]])
+@Phylanx()
+def f6():
+    b = [[1,2,3],[4,5,6],[7,8,9]]
+    return b[0:1,0]
+
+assert np.all(f6() == np.array(b[0:1,0]))
