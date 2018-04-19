@@ -20,7 +20,7 @@ void test_generic_operation_0d(std::string const& func_name,
 {
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(5.0));
+            hpx::find_here(), phylanx::ir::node_data<double>(0.5));
 
     phylanx::execution_tree::primitive generic =
         phylanx::execution_tree::primitives::create_generic_operation(
@@ -32,7 +32,7 @@ void test_generic_operation_0d(std::string const& func_name,
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         generic.eval();
     HPX_TEST_EQ(
-        func(5.0), phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+        func(0.5), phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
 void test_generic_operation_1d(std::string const& func_name,
@@ -213,6 +213,42 @@ int main(int argc, char* argv[])
     test_generic_operation_2d("cbrt",
         [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicMatrix<double> { return blaze::cbrt(m); });
+
+    test_generic_operation_0d("arcsin", std::asin);
+    test_generic_operation_0d("arccos", std::acos);
+    test_generic_operation_0d("arctan", std::atan);
+
+    test_generic_operation_1d("arcsin", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::asin(m); });
+    test_generic_operation_1d("arccos", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::acos(m); });
+    test_generic_operation_1d("arctan", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::atan(m); });
+
+    test_generic_operation_2d("arcsin", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::asin(m); });
+    test_generic_operation_2d("arccos", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::acos(m); });
+    test_generic_operation_2d("arctan", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::atan(m); });
+
+    test_generic_operation_0d("arcsinh", std::asinh);
+    test_generic_operation_0d("arccosh", std::acosh);
+    test_generic_operation_0d("arctanh", std::atanh);
+
+    test_generic_operation_1d("arcsinh", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::asinh(m); });
+    test_generic_operation_1d("arccosh", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::acosh(m); });
+    test_generic_operation_1d("arctanh", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::atanh(m); });
+
+    test_generic_operation_2d("arcsinh", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::asinh(m); });
+    test_generic_operation_2d("arccosh", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::acosh(m); });
+    test_generic_operation_2d("arctanh", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::atanh(m); });
 
     return hpx::util::report_errors();
 }

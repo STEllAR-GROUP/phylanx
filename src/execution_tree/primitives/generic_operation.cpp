@@ -44,6 +44,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("sin"),
         PHYLANX_GEN_MATCH_DATA("cos"),
         PHYLANX_GEN_MATCH_DATA("tan"),
+        PHYLANX_GEN_MATCH_DATA("arcsin"),
+        PHYLANX_GEN_MATCH_DATA("arccos"),
+        PHYLANX_GEN_MATCH_DATA("arctan"),
         PHYLANX_GEN_MATCH_DATA("sinh"),
         PHYLANX_GEN_MATCH_DATA("cosh"),
         PHYLANX_GEN_MATCH_DATA("tanh"),
@@ -67,9 +70,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"sin", [](double m) -> double { return blaze::sin(m); }},
             {"cos", [](double m) -> double { return blaze::cos(m); }},
             {"tan", [](double m) -> double { return blaze::tan(m); }},
+            {"arcsin", [](double m) -> double { return blaze::asin(m); }},
+            {"arccos", [](double m) -> double { return blaze::acos(m); }},
+            {"arctan", [](double m) -> double { return blaze::atan(m); }},
             {"sinh", [](double m) -> double { return blaze::sinh(m); }},
             {"cosh", [](double m) -> double { return blaze::cosh(m); }},
             {"tanh", [](double m) -> double { return blaze::tanh(m); }},
+            {"arcsinh", [](double m) -> double { return blaze::asinh(m); }},
+            {"arccosh", [](double m) -> double { return blaze::acosh(m); }},
+            {"arctanh", [](double m) -> double { return blaze::atanh(m); }},
             {"floor", [](double m) -> double { return blaze::floor(m); }},
             {"ceil", [](double m) -> double { return blaze::ceil(m); }},
             {"trunc", [](double m) -> double { return blaze::trunc(m); }},
@@ -106,6 +115,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::tan(m);
                     }},
+                {"arcsin", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::asin(m); }},
+                {"arccos", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::acos(m); }},
+                {"arctan", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::atan(m); }},
                 {"sinh",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
@@ -121,6 +133,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::tanh(m);
                     }},
+                {"arcsinh", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::asinh(m); }},
+                {"arccosh", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::acosh(m); }},
+                {"arctanh", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::atanh(m); }},
                 {"floor",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
@@ -197,6 +212,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::tan(m);
                     }},
+                {"arcsin", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::asin(m); }},
+                {"arccos", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::acos(m); }},
+                {"arctan", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::atan(m); }},
                 {"sinh",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
@@ -212,6 +230,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::tanh(m);
                     }},
+                {"arcsinh", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::asinh(m); }},
+                {"arccosh", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::acosh(m); }},
+                {"arctanh", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {return blaze::atanh(m); }},
                 {"floor",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
