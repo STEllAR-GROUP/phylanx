@@ -22,7 +22,6 @@ set(tests
     dot_operation
     cross_operation
     equal_operation
-    exponential_operation
     extract_shape
     file_primitives
     file_csv_primitives

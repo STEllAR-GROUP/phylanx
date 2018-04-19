@@ -9,7 +9,7 @@
 
 #include <string>
 #include <vector>
-#include <phylanx/execution_tree/primitives/car_cdr_operation.hpp>
+
 
 namespace phylanx { namespace execution_tree
 {
@@ -76,7 +76,6 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(constant),
                 PHYLANX_MATCH_DATA(determinant),
                 PHYLANX_MATCH_DATA(enable_tracing),
-                PHYLANX_MATCH_DATA(exponential_operation),
                 PHYLANX_MATCH_DATA(extract_shape),
                 PHYLANX_MATCH_DATA(gradient_operation),
                 PHYLANX_MATCH_DATA(identity),
