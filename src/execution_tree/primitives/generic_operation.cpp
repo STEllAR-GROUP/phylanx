@@ -73,8 +73,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     double (*generic_operation::get_0d_map(std::string const& name))(double)
     {
         static std::map<std::string, double (*)(double)> map0d = {
-            //{"amin", [](double m) -> double { return blaze::min(m); }},
-            //{"amax", [](double m) -> double { return blaze::max(m); }},
             {"absolute", [](double m) -> double { return blaze::abs(m); }},
             {"floor", [](double m) -> double { return blaze::floor(m); }},
             {"ceil", [](double m) -> double { return blaze::ceil(m); }},
