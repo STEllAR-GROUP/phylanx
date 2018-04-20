@@ -33,15 +33,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type>&& operands,
         std::string const& name, std::string const& codename)
     {
-        static std::string type("add_dimension");
+        static std::string type("add_dim");
         return create_primitive_component(
             locality, type, std::move(operands), name, codename);
     }
 
     match_pattern_type const add_dimension::match_data =
     {
-        hpx::util::make_tuple("add_dimension",
-        std::vector<std::string>{"add_dimension(_1, _2)"},
+        hpx::util::make_tuple("add_dim",
+        std::vector<std::string>{"add_dim(_1)"},
         &create_add_dimension, &create_primitive<add_dimension>)
     };
 
@@ -69,28 +69,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.empty() || operands.size() > 2)
+        if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_dimension::eval",
                 execution_tree::generate_error_message(
-                    "the add_dimension primitive requires exactly one or two "
-                        "operands",
+                    "the add_dimension primitive requires exactly one operand",
                     name_, codename_));
         }
 
-        for (auto const& i : operands)
+        if (!valid(operands[0]))
         {
-            if (!valid(i))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "add_dimension::eval",
-                    execution_tree::generate_error_message(
-                        "the add_dimension primitive requires that the "
-                            "arguments given by the operands array are "
-                            "valid",
-                        name_, codename_));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "add_dimension::eval",
+                execution_tree::generate_error_message(
+                    "the add_dimension primitive requires that the "
+                        "arguments given by the operands array are "
+                        "valid",
+                    name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
