@@ -111,7 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {"amin",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::DynamicVector<double>(blaze::min(m));
+                        return blaze::DynamicVector<double>((blaze::min)(m));
                     }},
                 {"amax",
                     [](const blaze::CustomVector<double, blaze::aligned,
