@@ -13,13 +13,16 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
+    namespace detail
+    {
 #define PHYLANX_MATCH_DATA(type)                                               \
     hpx::util::make_tuple(hpx::util::get<0>(primitives::type::match_data),     \
-        primitives::type::match_data) /**/
+        primitives::type::match_data)
+/**/
 #define PHYLANX_MATCH_DATA_VERBATIM(type)                                      \
     hpx::util::make_tuple(                                                     \
-        hpx::util::get<0>(primitives::type), primitives::type) /**/
+        hpx::util::get<0>(primitives::type), primitives::type)
+/**/
 
         pattern_list get_all_known_patterns()
         {
