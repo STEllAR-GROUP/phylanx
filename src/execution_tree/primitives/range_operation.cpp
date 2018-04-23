@@ -42,7 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const range_operation::match_data =
     {
         hpx::util::make_tuple("range",
-        std::vector<std::string>{"range(_1)", "range(_1, _2)", "range(_1, _2, _3)"},
+        std::vector<std::string>{
+            "range(_1)", "range(_1, _2)", "range(_1, _2, _3)"
+        },
         &create_range_operation, &create_primitive<range_operation>)
     };
 
@@ -60,23 +62,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (args.size())
         {
         case 1:
-        {
-            const std::int64_t stop = args[0].scalar();
-            return ir::range(stop);
-        }
+            return ir::range(args[0]);
+
         case 2:
-        {
-            const std::int64_t start = args[0].scalar();
-            const std::int64_t stop = args[1].scalar();
-            return ir::range(start, stop);
-        }
+            return ir::range(args[0], args[0]);
+
         case 3:
-        {
-            const std::int64_t start = args[0].scalar();
-            const std::int64_t stop = args[1].scalar();
-            const std::int64_t step = args[2].scalar();
-            return ir::range(start, stop, step);
-        }
+            return ir::range(args[0], args[1], args[2]);
+
+        default:
+            break;
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -97,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "range_operation::eval",
                 execution_tree::generate_error_message(
                     "the range_operation primitive requires exactly one, two, "
-                    "or three operands",
+                        "or three operands",
                     name_, codename_));
         }
 
@@ -109,32 +104,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "range_operation::eval",
                     execution_tree::generate_error_message(
                         "the range_operation primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
+                            "arguments given by the operands array are valid",
                         name_, codename_));
             }
         }
-
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
             {
-                for (auto const& i : args)
-                {
-                    if (i.num_dimensions() != 0)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "range_operation::eval",
-                            execution_tree::generate_error_message(
-                                "all range_operation operands must be scalars",
-                                this_->name_, this_->codename_));
-                    }
-                }
                 return this_->generate_range(std::move(args));
             }),
             detail::map_operands(
-                operands, functional::numeric_operand{}, args,
+                operands, functional::integer_operand{}, args,
                 name_, codename_));
     }
 

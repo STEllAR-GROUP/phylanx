@@ -1919,6 +1919,113 @@ namespace phylanx { namespace execution_tree
         return extract_literal_ref_value(val, name, codename);
     }
 
+    // Extract an integer value from a primitive_argument_type
+    hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(args);
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_integer_value(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_integer_value(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_integer_value(val, name, codename));
+    }
+
+    hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type>&& args, std::string const& name,
+        std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_integer_value(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_integer_value(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_integer_value(val, name, codename));
+    }
+
+    hpx::future<std::int64_t> integer_operand(primitive_argument_type&& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(args);
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_integer_value(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_integer_value(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_integer_value(std::move(val), name, codename));
+    }
+
+    hpx::future<std::int64_t> integer_operand(primitive_argument_type&& val,
+        std::vector<primitive_argument_type>&& args, std::string const& name,
+        std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_integer_value(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_integer_value(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_integer_value(std::move(val), name, codename));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,

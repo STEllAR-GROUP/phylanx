@@ -125,7 +125,7 @@ namespace phylanx { namespace ir
     //////////////////////////////////////////////////////////////////////////
     class PHYLANX_EXPORT range
     {
-    public:
+    private:
         using int_range_type =
             hpx::util::tuple<std::int64_t, std::int64_t, std::int64_t>;
         using args_type = std::vector<execution_tree::primitive_argument_type>;
@@ -134,7 +134,8 @@ namespace phylanx { namespace ir
         using range_type =
             util::variant<int_range_type, wrapped_args_type, arg_pair_type>;
 
-        //////////////////////////////////////////////////////////////////////////
+    public:
+        ///////////////////////////////////////////////////////////////////////
         range_iterator begin();
         range_iterator end();
 
@@ -159,8 +160,13 @@ namespace phylanx { namespace ir
 
         bool is_ref() const;
 
+        std::size_t index() const { return data_.index(); }
+
         //////////////////////////////////////////////////////////////////////////
-        range() = default;
+        range()
+          : data_(args_type{})
+        {
+        }
 
         range(args_type const& data)
           : data_(data)
@@ -182,17 +188,14 @@ namespace phylanx { namespace ir
         {
         }
 
-        range(
-            std::int64_t start, std::int64_t stop, std::int64_t step = 1)
+        range(std::int64_t start, std::int64_t stop, std::int64_t step = 1)
           : data_(hpx::util::make_tuple(start, stop, step))
         {
         }
 
         range(std::int64_t stop)
-          : data_(hpx::util::make_tuple(
-              static_cast<std::int64_t>(0),
-              stop,
-              static_cast<std::int64_t>(1)))
+          : data_(hpx::util::make_tuple(static_cast<std::int64_t>(0),
+                stop, static_cast<std::int64_t>(1)))
         {
         }
 

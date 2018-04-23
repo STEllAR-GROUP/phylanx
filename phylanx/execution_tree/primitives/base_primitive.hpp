@@ -528,6 +528,40 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    // Extract an integer value from a primitive_argument_type
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    namespace functional
+    {
+        struct integer_operand
+        {
+            template <typename... Ts>
+            hpx::future<std::int64_t> operator()(Ts&&... ts) const
+            {
+                return execution_tree::integer_operand(std::forward<Ts>(ts)...);
+            }
+        };
+    }
+
     PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
 
     // Extract a boolean type from a given primitive_argument_type,
