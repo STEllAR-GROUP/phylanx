@@ -94,6 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"invcbrt", [](double m) -> double { return blaze::invcbrt(m); }},
             {"exp", [](double m) -> double { return blaze::exp(m); }},
             {"exp2", [](double m) -> double { return blaze::exp2(m); }},
+            {"exp10", [](double m) -> double { return blaze::pow(10,m); }},
             {"log", [](double m) -> double { return blaze::log(m); }},
             {"log2", [](double m) -> double { return blaze::log2(m); }},
             {"log10", [](double m) -> double { return blaze::log10(m); }},
@@ -107,7 +108,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"arccosh", [](double m) -> double { return blaze::acosh(m); }},
             {"arctanh", [](double m) -> double { return blaze::atanh(m); }},
             {"erf", [](double m) -> double { return blaze::erf(m); }},
-            {"erfc", [](double m) -> double { return blaze::erfc(m); }}};
+            {"erfc", [](double m) -> double { return blaze::erfc(m); }},
+            {"normalize", [](double m)->double {HPX_THROW_EXCEPTION(hpx::bad_parameter,"generic_operation::normalize","normalize does not support double");}}};
         return map0d[name];
     }
 
@@ -273,7 +275,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::erfc(m);
-                    }}};
+                    }},
+                {"normalize", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::normalize(m); }}};
         return map1d[name];
     }
 
@@ -441,7 +444,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::erfc(m);
-                    }}};
+                    }},
+                {"normalize", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {HPX_THROW_EXCEPTION(hpx::bad_parameter,"generic_operation::normalize","normalize does not support Matrix Operation");}}};
         return map2d[name];
     }
 

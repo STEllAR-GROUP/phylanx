@@ -177,6 +177,7 @@ int main(int argc, char* argv[])
     test_generic_operation_0d("cbrt", std::cbrt);
     test_generic_operation_0d("exp", std::exp);
     test_generic_operation_0d("exp2", std::exp2);
+    test_generic_operation_0d("exp10", [](double m)->double{return std::pow(10,m);});
     test_generic_operation_0d("log", std::log);
     test_generic_operation_0d("log2", std::log2);
     test_generic_operation_0d("log10", std::log10);
@@ -392,6 +393,13 @@ int main(int argc, char* argv[])
     test_generic_operation_2d("erfc",
         [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicMatrix<double> { return blaze::erfc(m); });
+
+
+//    test_generic_operation_0d("normalize", std::abs);
+    test_generic_operation_1d("normalize", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::normalize(m); });
+//    test_generic_operation_2d("normalize", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+//            -> blaze::DynamicMatrix<double> { return blaze::abs(m); });
 
     return hpx::util::report_errors();
 }
