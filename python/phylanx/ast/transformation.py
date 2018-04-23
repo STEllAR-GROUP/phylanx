@@ -10,7 +10,7 @@ import re
 import phylanx
 import inspect
 from .oscop import OpenSCoP
-from .utils import full_name, full_node_name
+from .utils import full_name, full_node_name, physl_fmt
 
 et = phylanx.execution_tree
 
@@ -76,9 +76,9 @@ class PhySL:
 
     def _Subscript(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        s = 'slice%s(%s' % (symbol_info, self.recompile(a.value))
+        s = 'slice%s(%s,' % (symbol_info, self.recompile(a.value))
         if isinstance(a.slice, ast.Index):
-            s += ', %s)' % self.recompile(a.slice.value)
+            s += '%s)' % self.recompile(a.slice.value)
             return s
         elif isinstance(a.slice, ast.Slice):
             s += self.recompile(a.slice)
@@ -88,8 +88,15 @@ class PhySL:
             return s + ')'
 
     def _Slice(self, a, allowreturn=False):
-        s = ', \'(%s, %s' % \
-            (self.recompile(a.lower), self.recompile(a.upper))
+        if a.lower is None:
+            alow = "0"
+        else:
+            alow = self.recompile(a.lower)
+        if a.upper is None:
+            aupp = "nil"
+        else:
+            aupp = self.recompile(a.upper)
+        s = 'make_list(%s, %s' % (alow, aupp)
         if a.step:
             s += ', %s)' % self.recompile(a.step)
         else:
@@ -101,8 +108,9 @@ class PhySL:
             s = self.recompile(a.dims[0].value)
         else:
             s = self.recompile(a.dims[0])
+        s += ","
         if isinstance(a.dims[1], ast.Index):
-            s = self.recompile(a.dims[1].value)
+            s += self.recompile(a.dims[1].value)
         else:
             s += self.recompile(a.dims[1])
         return s
@@ -371,6 +379,17 @@ class PhySL:
         s += ")"
         return s
 
+    def _List(self, a, allowreturn=False):
+        ret = "["
+        for arg in ast.iter_child_nodes(a):
+            if arg.__class__.__name__ == "Load":
+                break
+            if ret != "[":
+                ret += ","
+            ret += self.recompile(arg)
+        ret += "]"
+        return ret
+
     def _Compare(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         sym = "?"
@@ -482,6 +501,7 @@ class PhySL:
         "For": _For,
         "FunctionDef": _FunctionDef,
         "If": _If,
+        "List": _List,
         "Module": _Module,
         "Name": _Name,
         "Num": _Num,
@@ -539,6 +559,11 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
 
         def __init__(self, f):
 
+            if "debug" in kwargs:
+                self.debug = kwargs['debug']
+            else:
+                self.debug = False
+
             if target not in self.targets:
                 raise NotImplementedError(
                     "unknown target passed to '@Phylanx()' decorator: %s." %
@@ -561,6 +586,8 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
             assert len(tree.body) == 1
             self.transformation = self.targets[target](tree, kwargs)
             self.__src__ = self.transformation.__src__
+            if self.debug:
+                physl_fmt(self.__src__)
 
             if target == "PhySL":
                 et.compile(self.__src__, self.cs)

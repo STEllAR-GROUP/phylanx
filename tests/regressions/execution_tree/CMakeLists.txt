@@ -14,6 +14,7 @@ set(tests
     negative_integral_value_131
     no_integers_313
     out_of_scope_variable_232
+    shape1d_357
     support_nil_314
     vector_of_variables_244
    )
