@@ -121,10 +121,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }},
             {"erf", [](double m) -> double { return blaze::erf(m); }},
             {"erfc", [](double m) -> double { return blaze::erfc(m); }},
-            {"normalize", [](double m) -> double {
-                 HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
-                     "normalize does not support double");
-             }},
+            {"normalize",
+                [](double m) -> double {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
+                        "normalize does not support double");
+                }},
             {"trace", [](double m) -> double { return m; }}};
         return map0d[name];
     }
@@ -307,11 +308,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return blaze::normalize(m);
                     }},
                 {"trace",
-                        [](const blaze::CustomVector<double, blaze::aligned,
-                                blaze::padded>& m) -> blaze::DynamicVector<double> {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter, "trace",
-                                                "trace does not support vector Operation");
-                        }}};
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "trace",
+                            "not support vector operation");
+                    }}};
         return map1d[name];
     }
 
@@ -502,14 +503,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
-                            "normalize does not support Matrix Operation");
+                            "not support Matrix operation");
                     }},
                 {"trace",
-                        [](const blaze::CustomMatrix<double, blaze::aligned,
-                                blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                            return blaze::DynamicMatrix<double>(
-                                    1, 1, blaze::trace(m));
-                        }}};
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::DynamicMatrix<double>(
+                            1, 1, blaze::trace(m));
+                    }}};
 
         return map2d[name];
     }
