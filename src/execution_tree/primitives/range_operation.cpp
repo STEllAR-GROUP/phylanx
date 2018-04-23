@@ -65,7 +65,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return ir::range(args[0]);
 
         case 2:
-            return ir::range(args[0], args[0]);
+            return ir::range(args[0], args[1]);
 
         case 3:
             return ir::range(args[0], args[1], args[2]);

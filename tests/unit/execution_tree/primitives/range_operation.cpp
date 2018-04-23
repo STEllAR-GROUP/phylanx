@@ -30,13 +30,52 @@ void test_range_stop()
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
 
-    HPX_TEST_EQ(true, true);
+    HPX_TEST_EQ(result.size(), 2);
+
+    int c = 0;
+    for (auto const& i : result)
+    {
+        HPX_TEST_EQ(i, c++);
+    }
+}
+
+void test_range_start_stop()
+{
+    char const* const code = "map(lambda(x, x), range(-1, 2))";
+
+    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+
+    HPX_TEST_EQ(result.size(), 3);
+
+    int c = -1;
+    for (auto const& i : result)
+    {
+        HPX_TEST_EQ(i, c++);
+    }
+}
+
+void test_range_start_stop_step()
+{
+    char const* const code = "map(lambda(x, x), range(-3, 2, 4))";
+
+    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+
+    HPX_TEST_EQ(result.size(), 2);
+
+    int c = -3;
+    for (auto const& i : result)
+    {
+        HPX_TEST_EQ(i, c);
+        c += 4;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     test_range_stop();
+    test_range_start_stop();
+    test_range_start_stop_step();
 
     return hpx::util::report_errors();
 }
