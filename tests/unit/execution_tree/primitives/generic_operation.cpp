@@ -163,6 +163,8 @@ void test_generic_operation_2d_greater1(std::string const& func_name,
 
 int main(int argc, char* argv[])
 {
+    test_generic_operation_0d("amin", [](double m) ->double {return m;});
+    test_generic_operation_0d("amax", [](double m) ->double {return m;});
     test_generic_operation_0d("absolute", std::abs);
     test_generic_operation_0d("floor", std::floor);
     test_generic_operation_0d("ceil", std::ceil);
