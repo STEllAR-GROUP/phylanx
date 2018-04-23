@@ -94,7 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"invcbrt", [](double m) -> double { return blaze::invcbrt(m); }},
             {"exp", [](double m) -> double { return blaze::exp(m); }},
             {"exp2", [](double m) -> double { return blaze::exp2(m); }},
-            {"exp10", [](double m) -> double { return blaze::pow(10,m); }},
+            {"exp10", [](double m) -> double { return blaze::pow(10, m); }},
             {"log", [](double m) -> double { return blaze::log(m); }},
             {"log2", [](double m) -> double { return blaze::log2(m); }},
             {"log10", [](double m) -> double { return blaze::log10(m); }},
@@ -105,11 +105,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"arccos", [](double m) -> double { return blaze::acos(m); }},
             {"arctan", [](double m) -> double { return blaze::atan(m); }},
             {"arcsinh", [](double m) -> double { return blaze::asinh(m); }},
-            {"arccosh", [](double m) -> double { if(m<1) HPX_THROW_EXCEPTION(hpx::bad_parameter,"arccosh","Range for arccosh [1, +∞)"); return blaze::acosh(m); }},
-            {"arctanh", [](double m) -> double { if(m<=-1 || m>=1) HPX_THROW_EXCEPTION(hpx::bad_parameter,"arctanh","Range for arctanh (−1, 1)"); return blaze::atanh(m); }},
+            {"arccosh",
+                [](double m) -> double {
+                    if (m < 1)
+                        HPX_THROW_EXCEPTION(
+                            hpx::bad_parameter, "arccosh", "Domain error");
+                    return blaze::acosh(m);
+                }},
+            {"arctanh",
+                [](double m) -> double {
+                    if (m <= -1 || m >= 1)
+                        HPX_THROW_EXCEPTION(
+                            hpx::bad_parameter, "arctanh", "Domain error");
+                    return blaze::atanh(m);
+                }},
             {"erf", [](double m) -> double { return blaze::erf(m); }},
             {"erfc", [](double m) -> double { return blaze::erfc(m); }},
-            {"normalize", [](double m)->double {HPX_THROW_EXCEPTION(hpx::bad_parameter,"normalize","normalize does not support double");}}};
+            {"normalize", [](double m) -> double {
+                 HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
+                     "normalize does not support double");
+             }}};
         return map0d[name];
     }
 
@@ -259,21 +274,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {"arccosh",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
-                    for(auto a:m){
-                        if(a<1){
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,"arccosh","element range in vector for arccosh [1, +∞)");
-                        }
-                    }
+                        for (auto a : m)
+                            if (a < 1)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "arccosh",
+                                    "Domain error");
                         return blaze::acosh(m);
                     }},
                 {"arctanh",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        for(auto a:m){
-                            if(a>1 || a<-1){
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,"arctanh","element range in vector for arctanh (−1, 1)");
-                            }
-                        }
+                        for (auto a : m)
+                            if (a >= 1 || a <= -1)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "arctanh", "Domain error");
                         return blaze::atanh(m);
                     }},
                 {"erf",
@@ -286,7 +300,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::erfc(m);
                     }},
-                {"normalize", [](const blaze::CustomVector<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicVector<double> {return blaze::normalize(m); }}};
+                {"normalize",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::normalize(m);
+                    }}};
         return map1d[name];
     }
 
@@ -438,9 +456,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {"arccosh",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        for( size_t i=0UL; i<m.rows(); ++i ) {
-                            for( size_t j=0UL; j<m.columns(); ++j ){
-                                if(m(i,j)<1) HPX_THROW_EXCEPTION(hpx::bad_parameter,"arccosh","elemnt range in matrix for arccosh [1, +∞)");
+                        for (size_t i = 0UL; i < m.rows(); ++i)
+                        {
+                            for (size_t j = 0UL; j < m.columns(); ++j)
+                            {
+                                if (m(i, j) < 1)
+                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "arccosh", "Domain error");
                             }
                         }
                         return blaze::acosh(m);
@@ -448,9 +470,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {"arctanh",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        for( size_t i=0UL; i<m.rows(); ++i ) {
-                            for( size_t j=0UL; j<m.columns(); ++j ){
-                                if(m(i,j)<=-1 || m(i,j)>=1) HPX_THROW_EXCEPTION(hpx::bad_parameter,"arctanh","elemnt range in matrix for arctanh (−1, 1)");
+                        for (size_t i = 0UL; i < m.rows(); ++i)
+                        {
+                            for (size_t j = 0UL; j < m.columns(); ++j)
+                            {
+                                if (m(i, j) <= -1 || m(i, j) >= 1)
+                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "arctanh", "Domain error");
                             }
                         }
                         return blaze::atanh(m);
@@ -465,7 +491,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::erfc(m);
                     }},
-                {"normalize", [](const blaze::CustomMatrix<double, blaze::aligned,blaze::padded>& m) -> blaze::DynamicMatrix<double> {HPX_THROW_EXCEPTION(hpx::bad_parameter,"normalize","normalize does not support Matrix Operation");}}};
+                {"normalize",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
+                            "normalize does not support Matrix Operation");
+                    }}};
         return map2d[name];
     }
 
