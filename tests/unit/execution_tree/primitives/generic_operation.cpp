@@ -402,5 +402,16 @@ int main(int argc, char* argv[])
     //    test_generic_operation_2d("normalize", [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
     //            -> blaze::DynamicMatrix<double> { return blaze::abs(m); });
 
+    test_generic_operation_0d("trace", std::abs);
+
+//    test_generic_operation_1d("trace", [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+//            -> blaze::DynamicVector<double> { return blaze::trace(m); });
+
+    test_generic_operation_2d("trace",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> {
+            return blaze::DynamicMatrix<double>(1, 1, blaze::trace(m));
+        });
+
     return hpx::util::report_errors();
 }

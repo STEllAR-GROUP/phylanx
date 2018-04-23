@@ -124,7 +124,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"normalize", [](double m) -> double {
                  HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
                      "normalize does not support double");
-             }}};
+             }},
+            {"trace", [](double m) -> double { return m; }}};
         return map0d[name];
     }
 
@@ -304,7 +305,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::normalize(m);
-                    }}};
+                    }},
+                {"trace",
+                        [](const blaze::CustomVector<double, blaze::aligned,
+                                blaze::padded>& m) -> blaze::DynamicVector<double> {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter, "trace",
+                                                "trace does not support vector Operation");
+                        }}};
         return map1d[name];
     }
 
@@ -496,7 +503,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
                             "normalize does not support Matrix Operation");
-                    }}};
+                    }},
+                {"trace",
+                        [](const blaze::CustomMatrix<double, blaze::aligned,
+                                blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                            return blaze::DynamicMatrix<double>(
+                                    1, 1, blaze::trace(m));
+                        }}};
+
         return map2d[name];
     }
 
