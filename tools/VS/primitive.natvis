@@ -8,10 +8,6 @@
 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
-    <Type Name="phylanx::ast::nil">
-        <DisplayString>nil</DisplayString>
-    </Type>
-
     <Type Name="phylanx::execution_tree::primitive_argument_type">
         <DisplayString Condition="(var.impl_.index_ == 0)">nil</DisplayString>
         <DisplayString Condition="(var.impl_.index_ == 1)">phylanx::ir::node_data&lt;bool&gt;({var.impl_.data_.tail_.head_.value})</DisplayString>
