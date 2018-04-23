@@ -98,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                    std::vector<std::vector<primitive_argument_type>>&& lists)
+                    std::vector<ir::range>&& lists)
             -> hpx::future<primitive_argument_type>
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -111,7 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "object", this_->name_, this_->codename_));
                 }
 
-                // make sure all lists have the same size
+                // Make sure all lists have the same size
                 std::size_t size = lists[0].size();
                 for (auto const& list : lists)
                 {
@@ -125,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
 
-                // concurrently evaluate all operations
+                // Concurrently evaluate all operations
                 std::size_t numlists = lists.size();
 
                 std::vector<hpx::future<primitive_argument_type>> result;
@@ -134,15 +134,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (std::size_t i = 0; i != size; ++i)
                 {
                     std::vector<primitive_argument_type> args;
-                    args.resize(numlists);
+                    args.reserve(numlists);
 
-                    // each invocation has its own argument set
-                    for (std::size_t j = 0; j != numlists; ++j)
+                    // Each invocation has its own argument set
+                    for (auto const& j : lists)
                     {
-                        args[j] = lists[j][i];
+                        // NOTE: This used to be j[i]
+                        auto k = j.begin();
+                        std::advance(k, i);
+                        args.push_back(*k);
                     }
 
-                    // evaluate function for each of the argument sets
+                    // Evaluate function for each of the argument sets
                     result.push_back(p->eval(std::move(args)));
                 }
 

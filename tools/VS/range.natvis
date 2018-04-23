@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (c) 2018 Parsa Amini                                         -->
+<!-- Copyright (c) 2018 Hartmut Kaiser                                      -->
+
+<!-- Use, modification and distribution are subject to the Boost Software   -->
+<!-- License, Version 1.0. (See accompanying file LICENSE_1_0.txt           -->
+<!-- or copy at http://www.boost.org/LICENSE_1_0.txt)                       -->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="phylanx::ir::range_iterator">
+        <DisplayString Condition="it_.impl_.index_ == 0">{{value={it_.impl_.data_.head_.value}}}</DisplayString>
+        <DisplayString Condition="it_.impl_.index_ == 1">{{value={it_.impl_.data_.tail_.head_.value}}}</DisplayString>
+        <DisplayString Condition="it_.impl_.index_ == 2">{{value={it_.impl_.data_.tail_.tail_.head_.value}}}</DisplayString>
+        <Expand>
+            <Item Name="[value]" Condition="(it_.impl_.index_ == 0)">it_.impl_.data_.head_.value.first</Item>
+            <Item Name="[step]" Condition="(it_.impl_.index_ == 0)">it_.impl_.data_.head_.value.second</Item>
+            <Item Name="[value]" Condition="(it_.impl_.index_ == 1)">it_.impl_.data_.tail_.head_.value</Item>
+            <Item Name="[value]" Condition="(it_.impl_.index_ == 2)">it_.impl_.data_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="phylanx::ir::reverse_range_iterator">
+        <DisplayString Condition="it_.impl_.index_ == 0">{{value={it_.impl_.data_.head_.value}}}</DisplayString>
+        <DisplayString Condition="it_.impl_.index_ == 1">{{value={it_.impl_.data_.tail_.head_.value}}}</DisplayString>
+        <DisplayString Condition="it_.impl_.index_ == 2">{{value={it_.impl_.data_.tail_.tail_.head_.value}}}</DisplayString>
+        <Expand>
+            <Item Name="[value]" Condition="(it_.impl_.index_ == 0)">it_.impl_.data_.head_.value.first</Item>
+            <Item Name="[step]" Condition="(it_.impl_.index_ == 0)">it_.impl_.data_.head_.value.second</Item>
+            <Item Name="[value]" Condition="(it_.impl_.index_ == 1)">it_.impl_.data_.tail_.head_.value</Item>
+            <Item Name="[value]" Condition="(it_.impl_.index_ == 2)">it_.impl_.data_.tail_.tail_.head_.value</Item>
+        </Expand>
+    </Type>
+    
+    <Type Name="phylanx::ir::range">
+        <DisplayString Condition="(data_.impl_.index_ == 0)">{{start={((hpx::util::detail::tuple_member&lt;0,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value}, stop={((hpx::util::detail::tuple_member&lt;1,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value}, step={((hpx::util::detail::tuple_member&lt;2,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value}}}</DisplayString>
+        <DisplayString Condition="(data_.impl_.index_ == 1)">{data_.impl_.data_.tail_.head_.value}</DisplayString>
+        <DisplayString Condition="(data_.impl_.index_ == 2)">{{first={data_.impl_.data_.tail_.tail_.head_.value.first}, second={data_.impl_.data_.tail_.tail_.head_.value.second}}}</DisplayString>
+        <Expand>
+            <Item Name="[start]" Condition="(data_.impl_.index_ == 0)">((hpx::util::detail::tuple_member&lt;0,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value</Item>
+            <Item Name="[stop]" Condition="(data_.impl_.index_ == 0)">((hpx::util::detail::tuple_member&lt;1,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value</Item>
+            <Item Name="[step]" Condition="(data_.impl_.index_ == 0)">((hpx::util::detail::tuple_member&lt;2,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value</Item>
+            <Item Name="[data]" Condition="(data_.impl_.index_ == 1)">data_.impl_.data_.tail_.head_.value</Item>
+            <Item Name="[first]" Condition="(data_.impl_.index_ == 2)">data_.impl_.data_.tail_.tail_.head_.value.first</Item>
+            <Item Name="[second]" Condition="(data_.impl_.index_ == 2)">data_.impl_.data_.tail_.tail_.head_.value.second</Item>
+        </Expand>
+    </Type>
+    
+</AutoVisualizer>

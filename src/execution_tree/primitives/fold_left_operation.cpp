@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
                     primitive_argument_type&& initial,
-                    std::vector<primitive_argument_type>&& list)
+                    ir::range&& list)
             -> primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);

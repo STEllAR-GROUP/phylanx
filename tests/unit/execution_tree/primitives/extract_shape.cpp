@@ -47,7 +47,8 @@ void test_extract_shape_1d()
 
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
 
-    HPX_TEST_EQ(1007, phylanx::execution_tree::extract_list_value(f)[0]);
+    auto result = phylanx::execution_tree::extract_list_value(f);
+    HPX_TEST_EQ(1007, *result.begin());
 }
 
 void test_extract_shape_2d_1()
@@ -71,8 +72,10 @@ void test_extract_shape_2d_1()
 
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
 
-    HPX_TEST_EQ(101, phylanx::execution_tree::extract_list_value(f)[0]);
-    HPX_TEST_EQ(101, phylanx::execution_tree::extract_list_value(f)[1]);
+    auto result = phylanx::execution_tree::extract_list_value(f);
+    auto it = result.begin();
+    HPX_TEST_EQ(101, *it++);
+    HPX_TEST_EQ(101, *it);
 }
 
 void test_extract_shape_2d_2()
@@ -96,8 +99,10 @@ void test_extract_shape_2d_2()
 
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
 
-    HPX_TEST_EQ(101, phylanx::execution_tree::extract_numeric_value(f)[0]);
-    HPX_TEST_EQ(101, phylanx::execution_tree::extract_numeric_value(f)[1]);
+    auto result = phylanx::execution_tree::extract_numeric_value(f);
+    auto it = result.begin();
+    HPX_TEST_EQ(101, *it++);
+    HPX_TEST_EQ(101, *it);
 }
 
 int main(int argc, char* argv[])

@@ -51,6 +51,7 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(for_operation),
                 PHYLANX_MATCH_DATA(linearmatrix),
                 PHYLANX_MATCH_DATA(linspace),
+                PHYLANX_MATCH_DATA(range_operation),
                 // binary functions
                 PHYLANX_MATCH_DATA(apply),
                 PHYLANX_MATCH_DATA(cross_operation),

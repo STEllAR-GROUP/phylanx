@@ -173,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             result.emplace_back(
                 primitive_argument_type(local_sum / local_size));
         }
-        return result;
+        return primitive_argument_type{std::move(result)};
     }
 
     primitive_argument_type mean_operation::mean2d_y_axis(
@@ -196,7 +196,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             result.emplace_back(
                 primitive_argument_type(local_sum / local_size));
         }
-        return result;
+        return primitive_argument_type{std::move(result)};
     }
 
     primitive_argument_type mean_operation::mean2d(args_type&& args) const

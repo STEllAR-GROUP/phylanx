@@ -6,6 +6,8 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/car_cdr_operation.hpp>
 
+#include <phylanx/ir/ranges.hpp>
+
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
@@ -101,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type car_cdr_operation::car(
         primitive_argument_type&& arg) const
     {
-        std::vector<primitive_argument_type> list =
+        ir::range list =
             extract_list_value_strict(std::move(arg), name_, codename_);
         if (list.empty())
         {
@@ -112,13 +114,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "one non-empty list-operand",
                     name_, codename_));
         }
-        return list[0];
+        return *list.begin();
     }
 
     primitive_argument_type car_cdr_operation::cdr(
         primitive_argument_type&& arg) const
     {
-        std::vector<primitive_argument_type> list =
+        ir::range list =
             extract_list_value_strict(std::move(arg), name_, codename_);
         if (list.empty())
         {
@@ -129,8 +131,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "one non-empty list-operand",
                     name_, codename_));
         }
-        list.erase(list.begin());
-        return primitive_argument_type{std::move(list)};
+
+        // HACK: This mess creates a copy of the vector excluding index 0
+        std::vector<primitive_argument_type> list_copy;
+        list_copy.reserve(list.size() - 1);
+        auto elem_1 = list.begin();
+        std::copy(++elem_1, list.end(), std::back_inserter(list_copy));
+
+        return primitive_argument_type{ir::range{list_copy}};
     }
 
     hpx::future<primitive_argument_type> car_cdr_operation::eval(
@@ -160,7 +168,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type>&& list)
+            [this_](ir::range&& list)
             -> primitive_argument_type
             {
                 primitive_argument_type result{std::move(list)};

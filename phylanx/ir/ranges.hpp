@@ -8,16 +8,21 @@
 #define PHYLANX_IR_RANGES
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+namespace phylanx { namespace execution_tree
+{
+    struct primitive_argument_type;
+}}
 
 namespace phylanx { namespace ir
 {
@@ -32,7 +37,12 @@ namespace phylanx { namespace ir
         using int_range_type = std::pair<std::int64_t, std::int64_t>;
         using args_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::reverse_iterator;
-        using iterator_type = util::variant<int_range_type, args_iterator_type>;
+        using args_const_iterator_type = std::vector<
+            execution_tree::primitive_argument_type>::const_reverse_iterator;
+        using iterator_type = util::variant<
+            int_range_type,
+            args_iterator_type,
+            args_const_iterator_type>;
 
     public:
         reverse_range_iterator(std::int64_t reverse_start, std::int64_t step)
@@ -41,6 +51,11 @@ namespace phylanx { namespace ir
         }
 
         reverse_range_iterator(args_iterator_type it)
+          : it_(it)
+        {
+        }
+
+        reverse_range_iterator(args_const_iterator_type it)
           : it_(it)
         {
         }
@@ -67,9 +82,16 @@ namespace phylanx { namespace ir
         using int_range_type = std::pair<std::int64_t, std::int64_t>;
         using args_iterator_type =
             std::vector<execution_tree::primitive_argument_type>::iterator;
+        using args_const_iterator_type =
+            std::vector<execution_tree::primitive_argument_type>::const_iterator;
         using args_reverse_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::reverse_iterator;
-        using iterator_type = util::variant<int_range_type, args_iterator_type>;
+        using args_reverse_const_iterator_type = std::vector<
+            execution_tree::primitive_argument_type>::const_reverse_iterator;
+        using iterator_type = util::variant<
+            int_range_type,
+            args_iterator_type,
+            args_const_iterator_type>;
 
     public:
         range_iterator(std::int64_t start, std::int64_t step)
@@ -78,6 +100,11 @@ namespace phylanx { namespace ir
         }
 
         range_iterator(args_iterator_type it)
+          : it_(it)
+        {
+        }
+
+        range_iterator(args_const_iterator_type it)
           : it_(it)
         {
         }
@@ -98,52 +125,85 @@ namespace phylanx { namespace ir
     //////////////////////////////////////////////////////////////////////////
     class PHYLANX_EXPORT range
     {
-    public:
+    private:
         using int_range_type =
             hpx::util::tuple<std::int64_t, std::int64_t, std::int64_t>;
         using args_type = std::vector<execution_tree::primitive_argument_type>;
+        using wrapped_args_type = phylanx::util::recursive_wrapper<args_type>;
         using arg_pair_type = std::pair<range_iterator, range_iterator>;
         using range_type =
-            util::variant<int_range_type, args_type, arg_pair_type>;
+            util::variant<int_range_type, wrapped_args_type, arg_pair_type>;
 
+    public:
+        ///////////////////////////////////////////////////////////////////////
         range_iterator begin();
         range_iterator end();
+
+        const range_iterator begin() const;
+        const range_iterator end() const;
 
         reverse_range_iterator rbegin();
         reverse_range_iterator rend();
 
-        explicit range(
-            std::vector<execution_tree::primitive_argument_type> const& data)
+        std::ptrdiff_t size() const;
+
+        bool empty() const;
+
+        args_type& args();
+        args_type const& args() const;
+
+        range copy();
+        range copy() const;
+
+        range ref();
+        range const ref() const;
+
+        bool is_ref() const;
+
+        std::size_t index() const { return data_.index(); }
+
+        //////////////////////////////////////////////////////////////////////////
+        range()
+          : data_(args_type{})
+        {
+        }
+
+        range(args_type const& data)
           : data_(data)
         {
         }
 
-        explicit range(
-            std::vector<execution_tree::primitive_argument_type>&& data)
+        range(args_type&& data)
           : data_(std::move(data))
         {
         }
 
-        explicit range(
-            std::vector<execution_tree::primitive_argument_type>::iterator x,
-            std::vector<execution_tree::primitive_argument_type>::iterator y)
+        range(args_type::iterator x, args_type::iterator y)
           : data_(std::make_pair(range_iterator{x}, range_iterator{y}))
         {
         }
 
-        explicit range(
-            std::int64_t start, std::int64_t stop, std::int64_t step = 1)
+        range(range_iterator x, range_iterator y)
+          : data_(std::make_pair(x, y))
+        {
+        }
+
+        range(std::int64_t start, std::int64_t stop, std::int64_t step = 1)
           : data_(hpx::util::make_tuple(start, stop, step))
         {
         }
 
-        explicit range(std::int64_t stop)
-          : data_(hpx::util::make_tuple(
-              static_cast<std::int64_t>(0),
-              stop,
-              static_cast<std::int64_t>(1)))
+        range(std::int64_t stop)
+          : data_(hpx::util::make_tuple(static_cast<std::int64_t>(0),
+                stop, static_cast<std::int64_t>(1)))
         {
         }
+
+        bool operator==(range const& other) const;
+        bool operator!=(range const& other) const;
+
+        void serialize(hpx::serialization::output_archive& ar, unsigned);
+        void serialize(hpx::serialization::input_archive& ar, unsigned);
 
     private:
         range_type data_;

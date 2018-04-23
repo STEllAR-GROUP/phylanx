@@ -53,6 +53,7 @@ set(tests
     power_operation
     random
     random_distributions
+    range_operation
     row_set
     row_slicing
     set_operation

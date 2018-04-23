@@ -65,6 +65,7 @@
 #include <phylanx/execution_tree/primitives/parallel_block_operation.hpp>
 #include <phylanx/execution_tree/primitives/power_operation.hpp>
 #include <phylanx/execution_tree/primitives/random.hpp>
+#include <phylanx/execution_tree/primitives/range_operation.hpp>
 #include <phylanx/execution_tree/primitives/row_set.hpp>
 #include <phylanx/execution_tree/primitives/row_slicing.hpp>
 #include <phylanx/execution_tree/primitives/set_operation.hpp>
