@@ -354,5 +354,42 @@ int main(int argc, char* argv[])
         [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicMatrix<double> { return blaze::atanh(m); });
 
+    test_generic_operation_0d("invsqrt", blaze::invsqrt);
+    test_generic_operation_0d("invcbrt", blaze::invcbrt);
+    test_generic_operation_0d("erf", blaze::erf);
+    test_generic_operation_0d("erfc", blaze::erfc);
+
+    test_generic_operation_1d("invsqrt",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::invsqrt(m); });
+    test_generic_operation_1d("invcbrt",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::invcbrt(m); });
+    test_generic_operation_1d("exp10",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::exp10(m); });
+    test_generic_operation_1d("erf",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::erf(m); });
+    test_generic_operation_1d("erfc",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicVector<double> { return blaze::erfc(m); });
+
+    test_generic_operation_2d("invsqrt",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::invsqrt(m); });
+    test_generic_operation_2d("invcbrt",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::invcbrt(m); });
+    test_generic_operation_2d("exp10",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::exp10(m); });
+    test_generic_operation_2d("erf",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::erf(m); });
+    test_generic_operation_2d("erfc",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+            -> blaze::DynamicMatrix<double> { return blaze::erfc(m); });
+
     return hpx::util::report_errors();
 }

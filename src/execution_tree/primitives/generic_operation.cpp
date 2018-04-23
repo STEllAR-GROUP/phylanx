@@ -51,9 +51,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("real"),
         PHYLANX_GEN_MATCH_DATA("imag"),
         PHYLANX_GEN_MATCH_DATA("sqrt"),
+        PHYLANX_GEN_MATCH_DATA("invsqrt"),
         PHYLANX_GEN_MATCH_DATA("cbrt"),
+        PHYLANX_GEN_MATCH_DATA("invcbrt"),
         PHYLANX_GEN_MATCH_DATA("exp"),
         PHYLANX_GEN_MATCH_DATA("exp2"),
+        PHYLANX_GEN_MATCH_DATA("exp10"),
         PHYLANX_GEN_MATCH_DATA("log"),
         PHYLANX_GEN_MATCH_DATA("log2"),
         PHYLANX_GEN_MATCH_DATA("log10"),
@@ -66,6 +69,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("arcsinh"),
         PHYLANX_GEN_MATCH_DATA("arccosh"),
         PHYLANX_GEN_MATCH_DATA("arctanh"),
+        PHYLANX_GEN_MATCH_DATA("erf"),
+        PHYLANX_GEN_MATCH_DATA("erfc"),
     };
 
 #undef PHYLANX_GEN_MATCH_DATA
@@ -82,7 +87,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"real", [](double m) -> double { return blaze::real(m); }},
             {"imag", [](double m) -> double { return blaze::imag(m); }},
             {"sqrt", [](double m) -> double { return blaze::sqrt(m); }},
+            {"invsqrt", [](double m) -> double { return blaze::invsqrt(m); }},
             {"cbrt", [](double m) -> double { return blaze::cbrt(m); }},
+            {"invcbrt", [](double m) -> double { return blaze::invcbrt(m); }},
             {"exp", [](double m) -> double { return blaze::exp(m); }},
             {"exp2", [](double m) -> double { return blaze::exp2(m); }},
             {"log", [](double m) -> double { return blaze::log(m); }},
@@ -96,7 +103,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"arctan", [](double m) -> double { return blaze::atan(m); }},
             {"arcsinh", [](double m) -> double { return blaze::asinh(m); }},
             {"arccosh", [](double m) -> double { return blaze::acosh(m); }},
-            {"arctanh", [](double m) -> double { return blaze::atanh(m); }}};
+            {"arctanh", [](double m) -> double { return blaze::atanh(m); }},
+            {"erf", [](double m) -> double { return blaze::erf(m); }},
+            {"erfc", [](double m) -> double { return blaze::erfc(m); }}};
         return map0d[name];
     }
 
@@ -163,10 +172,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::sqrt(m);
                     }},
+                {"invsqrt",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::invsqrt(m);
+                    }},
                 {"cbrt",
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::cbrt(m);
+                    }},
+                {"invcbrt",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::invcbrt(m);
                     }},
                 {"exp",
                     [](const blaze::CustomVector<double, blaze::aligned,
@@ -177,6 +196,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::exp2(m);
+                    }},
+                {"exp10",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::exp10(m);
                     }},
                 {"log",
                     [](const blaze::CustomVector<double, blaze::aligned,
@@ -237,6 +261,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomVector<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicVector<double> {
                         return blaze::atanh(m);
+                    }},
+                {"erf",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::erf(m);
+                    }},
+                {"erfc",
+                    [](const blaze::CustomVector<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicVector<double> {
+                        return blaze::erfc(m);
                     }}};
         return map1d[name];
     }
@@ -306,10 +340,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::sqrt(m);
                     }},
+                {"invsqrt",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::invsqrt(m);
+                    }},
                 {"cbrt",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::cbrt(m);
+                    }},
+                {"invcbrt",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::invcbrt(m);
                     }},
                 {"exp",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
@@ -320,6 +364,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::exp2(m);
+                    }},
+                {"exp10",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::exp10(m);
                     }},
                 {"log",
                     [](const blaze::CustomMatrix<double, blaze::aligned,
@@ -380,6 +429,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](const blaze::CustomMatrix<double, blaze::aligned,
                         blaze::padded>& m) -> blaze::DynamicMatrix<double> {
                         return blaze::atanh(m);
+                    }},
+                {"erf",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::erf(m);
+                    }},
+                {"erfc",
+                    [](const blaze::CustomMatrix<double, blaze::aligned,
+                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
+                        return blaze::erfc(m);
                     }}};
         return map2d[name];
     }
