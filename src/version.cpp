@@ -64,6 +64,11 @@ namespace phylanx
         {
             std::vector<std::string> cfg(config);
 
+            // add directory for this shared library to the component_path
+            cfg.emplace_back("hpx.component_path=$[hpx.component_path]"
+                    HPX_INI_PATH_DELIMITER +
+                        hpx::util::find_prefix(HPX_COMPONENT_STRING));
+
             // add additional search suffix for plugins to configuration
             cfg.emplace_back(
                 "hpx.component_path_suffixes="
