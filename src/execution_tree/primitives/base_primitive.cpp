@@ -2113,7 +2113,7 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> && args,
         std::string const& name, std::string const& codename)
     {
-        primitive const* p = util::get_if<primitive>(&val);
+        primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f = p->eval(std::move(args));

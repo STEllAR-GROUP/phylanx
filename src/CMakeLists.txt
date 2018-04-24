@@ -28,6 +28,9 @@ add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/performance_counters/*.cpp"
   APPEND)
 add_phylanx_library_sources(phylanx
+  GLOB GLOBS "${PROJECT_SOURCE_DIR}/src/plugins/*.cpp"
+  APPEND)
+add_phylanx_library_sources(phylanx
   GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/src/util/*.cpp"
   APPEND)
 
@@ -48,10 +51,13 @@ if(MSVC)
     GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ast/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
+    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/*.hpp"
+    APPEND)
+  add_phylanx_library_headers(phylanx
     GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/ir/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
-    GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/*.hpp"
+    GLOB GLOBS "${PROJECT_SOURCE_DIR}/phylanx/plugins/*.hpp"
     APPEND)
   add_phylanx_library_headers(phylanx
     GLOB_RECURSE GLOBS "${PROJECT_SOURCE_DIR}/phylanx/util/*.hpp"
@@ -103,13 +109,6 @@ target_link_libraries(phylanx_component
   PRIVATE
     blaze::blaze)
 
-if(PHYLANX_WITH_HIGHFIVE)
-  target_link_libraries(phylanx_component
-    PRIVATE
-      HighFive
-      ${PHYLANX_HDF5_LIBRARIES})
-endif()
-
 set_target_properties(
   phylanx_component PROPERTIES
     VERSION ${PHYLANX_VERSION}
@@ -121,8 +120,6 @@ set_property(TARGET phylanx_component APPEND
   PROPERTY COMPILE_DEFINITIONS
   "PHYLANX_EXPORTS")
 
-set(phylanx_targets ${phylanx_targets} phylanx_component)
-
 get_property(PHYLANX_TARGET_COMPILE_OPTIONS_VAR
   GLOBAL PROPERTY PHYLANX_TARGET_COMPILE_OPTIONS)
 foreach(_flag ${PHYLANX_TARGET_COMPILE_OPTIONS_VAR})
@@ -130,8 +127,14 @@ foreach(_flag ${PHYLANX_TARGET_COMPILE_OPTIONS_VAR})
   target_compile_options(phylanx_component PUBLIC ${_flag})
 endforeach()
 
+# add all known plugins
+add_phylanx_pseudo_target(plugins_)
+add_subdirectory(plugins)
+
+set(phylanx_targets ${phylanx_targets} phylanx_component PARENT_SCOPE)
+
 install(
-  TARGETS ${phylanx_targets}
+  TARGETS phylanx_component
   EXPORT PhylanxTargets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
@@ -139,4 +142,3 @@ install(
   COMPONENT runtime
   OPTIONAL)
 
-phylanx_export_targets(${phylanx_targets})
