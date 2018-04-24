@@ -54,7 +54,7 @@ void test_not_equal_operation_0d_true_return_double()
         phylanx::execution_tree::primitives::create_not_equal(hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs),
-                phylanx::ir::node_data<uint8_t>(true)});
+                phylanx::ir::node_data<std::uint8_t>(true)});
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 
@@ -343,7 +343,7 @@ void test_not_equal_operation_0d1d_return_bool()
         blaze::map(v, [](double x) { return (x != 2.0); });
 
     HPX_TEST_EQ(f.index(), 1);
-    HPX_TEST_EQ(phylanx::ir::node_data<uint8_t>(expected),
+    HPX_TEST_EQ(phylanx::ir::node_data<std::uint8_t>(expected),
         phylanx::execution_tree::extract_boolean_data(f));
 }
 
@@ -815,7 +815,7 @@ void test_not_equal_operation_1d2d_return_double()
         phylanx::execution_tree::primitives::create_not_equal(hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
                 std::move(lhs), std::move(rhs),
-                phylanx::ir::node_data<uint8_t>(true)});
+                phylanx::ir::node_data<std::uint8_t>(true)});
 
     phylanx::execution_tree::primitive_argument_type f = not_equal.eval().get();
 

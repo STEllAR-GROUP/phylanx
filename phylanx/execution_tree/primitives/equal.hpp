@@ -44,41 +44,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct visit_equal;
 
         template <typename T>
-        primitive_argument_type equal0d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal0d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal0d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal0d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal0d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal1d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal1d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal1d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal1d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal1d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal1d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal2d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal2d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal2d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal2d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal2d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal2d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type equal_all(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type equal2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
+        template <typename T>
+        primitive_argument_type equal_all(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
     };
 
     PHYLANX_EXPORT primitive create_equal(hpx::id_type const& locality,
