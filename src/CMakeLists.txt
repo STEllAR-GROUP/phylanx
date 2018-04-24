@@ -109,13 +109,6 @@ target_link_libraries(phylanx_component
   PRIVATE
     blaze::blaze)
 
-if(PHYLANX_WITH_HIGHFIVE)
-  target_link_libraries(phylanx_component
-    PRIVATE
-      HighFive
-      ${PHYLANX_HDF5_LIBRARIES})
-endif()
-
 set_target_properties(
   phylanx_component PROPERTIES
     VERSION ${PHYLANX_VERSION}

@@ -33,3 +33,9 @@ add_phylanx_primitive_plugin(phylanx_fileio
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
+if(PHYLANX_WITH_HIGHFIVE)
+  target_link_libraries(phylanx_fileio_component
+    PRIVATE
+      HighFive
+      ${PHYLANX_HDF5_LIBRARIES})
+endif()

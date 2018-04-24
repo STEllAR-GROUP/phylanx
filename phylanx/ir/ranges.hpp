@@ -28,10 +28,10 @@ namespace phylanx { namespace ir
 {
     //////////////////////////////////////////////////////////////////////////
     class PHYLANX_EXPORT reverse_range_iterator
-        : public hpx::util::iterator_facade<reverse_range_iterator,
-        execution_tree::primitive_argument_type,
-        std::input_iterator_tag,
-        execution_tree::primitive_argument_type>
+      : public hpx::util::iterator_facade<reverse_range_iterator,
+            execution_tree::primitive_argument_type,
+            std::input_iterator_tag,
+            execution_tree::primitive_argument_type>
     {
     private:
         using int_range_type = std::pair<std::int64_t, std::int64_t>;
@@ -152,8 +152,8 @@ namespace phylanx { namespace ir
         args_type& args();
         args_type const& args() const;
 
-        range copy();
-        range copy() const;
+        args_type copy();
+        args_type copy() const;
 
         range ref();
         range const ref() const;

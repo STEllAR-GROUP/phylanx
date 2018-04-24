@@ -391,8 +391,7 @@ namespace phylanx { namespace ir
 
     range::args_type& range::args()
     {
-        wrapped_args_type* cv =
-            util::get_if<wrapped_args_type>(&data_);
+        wrapped_args_type* cv = util::get_if<wrapped_args_type>(&data_);
         if (cv != nullptr)
             return cv->get();
 
@@ -412,28 +411,30 @@ namespace phylanx { namespace ir
             "range object holds unsupported data type");
     }
 
-    range range::copy()
+    range::args_type range::copy()
     {
         switch (data_.index())
         {
         case 0:    // int_range_type
-        {
-            args_type result;
-            std::copy(begin(), end(), std::back_inserter(result));
-            return range{std::move(result)};
-        }
+            {
+                args_type result;
+                std::copy(begin(), end(), std::back_inserter(result));
+                return result;
+            }
+
         case 1:    // wrapped_args_type
-        {
-            args_type result = util::get<1>(data_).get();
-            return range{std::move(result)};
-        }
+            return util::get<1>(data_).get();
+
         case 2:    // arg_pair_type
-        {
-            args_type result;
-            auto const& v = util::get<2>(data_);
-            std::copy(v.first, v.second, std::back_inserter(result));
-            return range{std::move(result)};
-        }
+            {
+                args_type result;
+                auto const& v = util::get<2>(data_);
+                std::copy(v.first, v.second, std::back_inserter(result));
+                return result;
+            }
+
+        default:
+            break;
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -441,27 +442,30 @@ namespace phylanx { namespace ir
             "range object holds unsupported data type");
     }
 
-    range range::copy() const
+    range::args_type range::copy() const
     {
         switch (data_.index())
         {
         case 0:    // int_range_type
-        {
-            args_type result;
-            std::copy(begin(), end(), std::back_inserter(result));
-            return result;
-        }
+            {
+                args_type result;
+                std::copy(begin(), end(), std::back_inserter(result));
+                return result;
+            }
+
         case 1:    // wrapped_args_type
-        {
             return phylanx::util::get<1>(data_).get();
-        }
+
         case 2:    // arg_pair_type
-        {
-            args_type result;
-            auto const& v = util::get<2>(data_);
-            std::copy(v.first, v.second, std::back_inserter(result));
-            return result;
-        }
+            {
+                args_type result;
+                auto const& v = util::get<2>(data_);
+                std::copy(v.first, v.second, std::back_inserter(result));
+                return result;
+            }
+
+        default:
+            break;
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -477,6 +481,7 @@ namespace phylanx { namespace ir
         case 1: HPX_FALLTHROUGH;  // wrapped_args_type
         case 2:                  // arg_pair_type
             return range{begin(), end()};
+
         default:
             break;
         }
@@ -494,6 +499,7 @@ namespace phylanx { namespace ir
         case 1: HPX_FALLTHROUGH;  // wrapped_args_type
         case 2:                  // arg_pair_type
             return range{begin(), end()};
+
         default:
             break;
         }
@@ -507,11 +513,13 @@ namespace phylanx { namespace ir
     {
         switch (data_.index())
         {
-        case 2:                  // arg_pair_type
-            return true;
-        case 0: HPX_FALLTHROUGH;  // int_range_type
-        case 1:                  // wrapped_args_type
+        case 1:                     // wrapped_args_type
             return false;
+
+        case 0: HPX_FALLTHROUGH;    // int_range_type
+        case 2:                     // arg_pair_type
+            return true;
+
         default:
             break;
         }

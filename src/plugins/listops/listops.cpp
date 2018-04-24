@@ -7,6 +7,8 @@
 #include <phylanx/plugins/listops/listops.hpp>
 #include <phylanx/plugins/plugin_factory.hpp>
 
+#include <string>
+
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(make_list_plugin,

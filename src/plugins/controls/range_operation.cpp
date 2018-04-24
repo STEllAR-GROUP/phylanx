@@ -5,16 +5,13 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/range_operation.hpp>
-#include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/controls/range_operation.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
 #include <hpx/include/lcos.hpp>
-#include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
-#include <hpx/util/iterator_facade.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -30,22 +27,13 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_range_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-        std::string const& name, std::string const& codename)
-    {
-        static std::string type("range");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
     match_pattern_type const range_operation::match_data =
     {
         hpx::util::make_tuple("range",
-        std::vector<std::string>{
-            "range(_1)", "range(_1, _2)", "range(_1, _2, _3)"
-        },
-        &create_range_operation, &create_primitive<range_operation>)
+            std::vector<std::string>{
+                "range(_1)", "range(_1, _2)", "range(_1, _2, _3)"
+            },
+            &create_range_operation, &create_primitive<range_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////

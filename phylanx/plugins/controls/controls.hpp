@@ -15,6 +15,7 @@
 #include <phylanx/plugins/controls/if_conditional.hpp>
 #include <phylanx/plugins/controls/map_operation.hpp>
 #include <phylanx/plugins/controls/parallel_block_operation.hpp>
+#include <phylanx/plugins/controls/range_operation.hpp>
 #include <phylanx/plugins/controls/while_operation.hpp>
 
 #endif

@@ -123,13 +123,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        // HACK: This mess creates a copy of the vector excluding index 0
+        if (list.is_ref())
+        {
+            // this list represents a pair of iterators or an integer range
+            auto it = list.begin();
+            return primitive_argument_type{ir::range{++it, list.end()}};
+        }
+
+        // create a copy of the vector excluding index 0
         std::vector<primitive_argument_type> list_copy;
         list_copy.reserve(list.size() - 1);
-        auto elem_1 = list.begin();
-        std::copy(++elem_1, list.end(), std::back_inserter(list_copy));
+        auto it = list.begin();
+        std::move(++it, list.end(), std::back_inserter(list_copy));
 
-        return primitive_argument_type{ir::range{list_copy}};
+        return primitive_argument_type{ir::range{std::move(list_copy)}};
     }
 
     hpx::future<primitive_argument_type> car_cdr_operation::eval(

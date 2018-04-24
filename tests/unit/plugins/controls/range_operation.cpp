@@ -32,10 +32,10 @@ void test_range_stop()
 
     HPX_TEST_EQ(result.size(), 2);
 
-    int c = 0;
+    std::int64_t c = 0;
     for (auto const& i : result)
     {
-        HPX_TEST_EQ(i, c++);
+        HPX_TEST_EQ(i, phylanx::execution_tree::primitive_argument_type{c++});
     }
 }
 
@@ -47,10 +47,10 @@ void test_range_start_stop()
 
     HPX_TEST_EQ(result.size(), 3);
 
-    int c = -1;
+    std::int64_t c = -1;
     for (auto const& i : result)
     {
-        HPX_TEST_EQ(i, c++);
+        HPX_TEST_EQ(i, phylanx::execution_tree::primitive_argument_type{c++});
     }
 }
 
@@ -62,10 +62,10 @@ void test_range_start_stop_step()
 
     HPX_TEST_EQ(result.size(), 2);
 
-    int c = -3;
+    std::int64_t c = -3;
     for (auto const& i : result)
     {
-        HPX_TEST_EQ(i, c);
+        HPX_TEST_EQ(i, phylanx::execution_tree::primitive_argument_type{c});
         c += 4;
     }
 }

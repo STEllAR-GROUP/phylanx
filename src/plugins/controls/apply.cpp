@@ -58,7 +58,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return list_operand(operands_[1], params, name_, codename_)
             .then(hpx::launch::sync,
-                [this_](hpx::future<std::vector<primitive_argument_type>>&& f)
+                [this_](hpx::future<ir::range>&& f)
                 {
                     primitive const* p =
                         util::get_if<primitive>(&this_->operands_[0]);
@@ -68,11 +68,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "apply::eval",
                             this_->generate_error_message(
-                                "the first argument to apply must be an invocable "
-                                "object"));
+                                "the first argument to apply must be an "
+                                    "invocable object"));
                     }
 
-                    return p->eval(hpx::launch::sync, f.get());
+                    auto && list = f.get();
+                    if (list.is_ref())
+                    {
+                        return p->eval(
+                            hpx::launch::sync, std::move(list.args()));
+                    }
+
+                    return p->eval(hpx::launch::sync, list.copy());
                 });
     }
 }}}

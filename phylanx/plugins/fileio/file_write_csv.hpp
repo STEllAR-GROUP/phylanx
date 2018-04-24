@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>

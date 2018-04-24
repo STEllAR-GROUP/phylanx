@@ -119,6 +119,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Concurrently evaluate all operations
                 std::size_t numlists = lists.size();
 
+                std::vector<ir::range_iterator> iters;
+                iters.reserve(numlists);
+
+                for (auto const& j : lists)
+                {
+                    iters.push_back(j.begin());
+                }
+
                 std::vector<hpx::future<primitive_argument_type>> result;
                 result.reserve(numlists);
 
@@ -128,12 +136,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     args.reserve(numlists);
 
                     // Each invocation has its own argument set
-                    for (auto const& j : lists)
+                    for (ir::range_iterator& j : iters)
                     {
-                        // NOTE: This used to be j[i]
-                        auto k = j.begin();
-                        std::advance(k, i);
-                        args.push_back(*k);
+                        args.push_back(*j++);
                     }
 
                     // Evaluate function for each of the argument sets

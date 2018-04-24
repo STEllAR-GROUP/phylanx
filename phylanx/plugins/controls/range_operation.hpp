@@ -14,7 +14,9 @@
 #include <hpx/lcos/future.hpp>
 
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -22,8 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /// \brief
     /// \param
     class range_operation
-        : public primitive_component_base
-        , public std::enable_shared_from_this<range_operation>
+      : public primitive_component_base
+      , public std::enable_shared_from_this<range_operation>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
@@ -48,10 +50,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type generate_range(args_type && args) const;
     };
 
-    PHYLANX_EXPORT primitive create_range_operation(
+    inline primitive create_range_operation(
         hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "range", std::move(operands), name, codename);
+    }
 }}}
 
 #endif

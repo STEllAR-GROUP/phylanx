@@ -7,6 +7,7 @@
 #include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/execution_tree/compile.hpp>
 
+#include <utility>
 #include <string>
 #include <vector>
 
