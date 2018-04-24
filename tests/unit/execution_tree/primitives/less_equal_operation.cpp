@@ -964,6 +964,5 @@ int main(int argc, char* argv[])
     test_less_equal_operation_2d_return_double();
     test_less_equal_operation_2d0d_return_double();
     test_less_equal_operation_2d1d_return_double();
-    
     return hpx::util::report_errors();
 }
