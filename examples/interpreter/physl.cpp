@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,29 +22,26 @@
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
-std::string read_user_code(std::string const& arg)
+std::string read_user_code(std::string const& path)
 {
-    std::ifstream code_stream(arg);
+    std::ifstream code_stream(path);
     if (!code_stream.good())
     {
         HPX_THROW_EXCEPTION(hpx::filesystem_error,
             "read_user_code",
-            "Failed to open the specified file: " + arg);
+            "Failed to open the specified file: " + path);
     }
 
-    std::string code;
-    // Find out how much memory we need to allocate
-    code_stream.seekg(0, std::ios::end);
-    // Allocate all the needed memory upfront
-    code.reserve(code_stream.tellg());
-    // Back to the beginning of the file
-    code_stream.seekg(0, std::ios::beg);
-
     // Read the file
-    code.assign(std::istreambuf_iterator<char>(code_stream),
-        std::istreambuf_iterator<char>());
+    std::ostringstream str_stream;
+    if (!(str_stream << code_stream.rdbuf()))
+    {
+        HPX_THROW_EXCEPTION(hpx::filesystem_error,
+            "read_user_code",
+            "Failed to read code from the specified file: " + path);
+    }
 
-    return code;
+    return str_stream.str();
 }
 
 void dump_ast(std::vector<phylanx::ast::expression> ast, std::string path)
