@@ -61,11 +61,58 @@ void dump_ast(std::vector<phylanx::ast::expression> ast, std::string path)
     ast_stream.write(bytes.data(), bytes.size());
 }
 
+std::vector<phylanx::ast::expression> load_ast(std::string path)
+{
+    std::ifstream str_stream(path, std::ios::binary);
+    auto const start_pos = str_stream.tellg();
+    if (std::streamsize(-1) == start_pos)
+    {
+        HPX_THROW_EXCEPTION(hpx::filesystem_error,
+            "load_ast",
+            "Failed to open the specified file: " + path);
+    }
+
+    if (!str_stream.ignore((std::numeric_limits<std::streamsize>::max)()))
+    {
+        HPX_THROW_EXCEPTION(hpx::filesystem_error,
+            "load_ast",
+            "Failed to open the specified file: " + path);
+    }
+
+    auto const char_count = str_stream.gcount();
+
+    if (!str_stream.seekg(start_pos))
+    {
+        HPX_THROW_EXCEPTION(hpx::filesystem_error,
+            "load_ast",
+            "Failed to find the end of the specified file: " + path);
+    }
+
+    std::vector<char> bytes(char_count);
+
+    if (0 != bytes.size())
+    {
+        if (!str_stream.read(bytes.data(), bytes.size()))
+        {
+            HPX_THROW_EXCEPTION(hpx::filesystem_error,
+                "load_ast",
+                "Failed to read from the specified file: " + path);
+        }
+    }
+
+    return phylanx::util::unserialize<std::vector<phylanx::ast::expression>>(
+        bytes);
+}
+
 std::vector<phylanx::execution_tree::primitive_argument_type>
 read_arguments(std::vector<std::string> const& args, std::size_t first_index)
 {
     std::vector<phylanx::execution_tree::primitive_argument_type> result;
-    result.reserve(args.size() - 1);
+
+    if (args.size() > 1)
+    {
+        result.reserve(args.size() - 1);
+    }
 
     for (std::size_t i = first_index; i != args.size(); ++i)
     {
@@ -134,6 +181,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "file to read transformation rules from")
             ("dump-ast,d", po::value<std::string>(),
                 "file to dump AST to")
+            ("load-ast,l", po::value<std::string>(),
+                "file to dump AST to")
         ;
 
         po::positional_options_description pd;
@@ -163,12 +212,6 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             std::cout << cmdline_options << std::endl;
             return 1;
         }
-
-        if (vm.count("positional") == 0)
-        {
-            std::cout << cmdline_options << std::endl;
-            return -1;
-        }
     }
     catch  (std::exception const& e)
     {
@@ -190,23 +233,71 @@ int main(int argc, char* argv[])
     }
 
     // Read the file containing the source code
-    auto positional_args = vm["positional"].as<std::vector<std::string>>();
+    std::vector<std::string> positional_args;
+    if (vm.count("positional") != 0)
+    {
+        positional_args = vm["positional"].as<std::vector<std::string>>();
+    }
 
     std::string code_source_name;
     std::string user_code;
     std::size_t first_index = 0;
-    if (vm.count("code") != 0)
+    std::vector<phylanx::ast::expression> ast;
+
+    if (vm.count("load-ast") != 0)
     {
-        // Execute code as given directly on the command line
-        user_code = vm["code"].as<std::string>();
-        code_source_name = "<command_line>";
+        auto path = vm["load-ast"].as<std::string>();
+        ast = load_ast(path);
+        code_source_name = "<ast_dump>";
     }
     else
     {
-        // Interpret first argument as the file name for the PhySL code
-        user_code = read_user_code(positional_args[0]);
-        code_source_name = fs::path(positional_args[0]).filename().string();
-        first_index = 1;
+        if (vm.count("code") != 0)
+        {
+            // Execute code as given directly on the command line
+            user_code = vm["code"].as<std::string>();
+            code_source_name = "<command_line>";
+        }
+        else if (positional_args.size() > 0)
+        {
+            // Interpret first argument as the file name for the PhySL code
+            user_code = read_user_code(positional_args[0]);
+            code_source_name = fs::path(positional_args[0]).filename().string();
+            first_index = 1;
+        }
+        else
+        {
+            std::cout << "No code was provided.\n";
+
+            return -1;
+        }
+
+        try
+        {
+            // Compile the given code into AST
+            ast = phylanx::ast::generate_ast(user_code);
+
+            // Apply transformation rules to AST, if requested
+            if (vm.count("transform") != 0)
+            {
+                std::string const transform_rules =
+                    read_user_code(vm["transform"].as<std::string>());
+
+                ast = phylanx::ast::transform_ast(
+                    ast, phylanx::ast::generate_transform_rules(transform_rules));
+            }
+
+            // Dump the AST to a file, if requested
+            if (vm.count("dump-ast") != 0)
+            {
+                dump_ast(ast, vm["dump-ast"].as<std::string>());
+            }
+        }
+        catch (std::exception const& e)
+        {
+            std::cout << "physl: exception caught:\n" << e.what() << "\n";
+            return -1;
+        }
     }
 
     // Collect the arguments for running the code
@@ -214,25 +305,6 @@ int main(int argc, char* argv[])
 
     try
     {
-        // Compile the given code into AST
-        auto ast = phylanx::ast::generate_ast(user_code);
-
-        // Apply transformation rules to AST, if requested
-        if (vm.count("transform") != 0)
-        {
-            std::string const transform_rules =
-                read_user_code(vm["transform"].as<std::string>());
-
-            ast = phylanx::ast::transform_ast(
-                ast, phylanx::ast::generate_transform_rules(transform_rules));
-        }
-
-        // Dump the AST to a file, if requested
-        if (vm.count("dump-ast") != 0)
-        {
-            dump_ast(ast, vm["dump-ast"].as<std::string>());
-        }
-
         // Now compile AST into expression tree (into actual executable code)
         phylanx::execution_tree::compiler::function_list snippets;
         phylanx::execution_tree::compiler::environment env =
