@@ -4,8 +4,8 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/execution_tree/compile.hpp>
+#include <phylanx/execution_tree/primitives.hpp>
 
 #include <string>
 #include <vector>
@@ -17,17 +17,16 @@ namespace phylanx { namespace execution_tree
     {
 #define PHYLANX_MATCH_DATA(type)                                               \
     hpx::util::make_tuple(hpx::util::get<0>(primitives::type::match_data),     \
-        primitives::type::match_data)                                          \
+        primitives::type::match_data)
 /**/
 #define PHYLANX_MATCH_DATA_VERBATIM(type)                                      \
     hpx::util::make_tuple(                                                     \
-        hpx::util::get<0>(primitives::type), primitives::type)                 \
+        hpx::util::get<0>(primitives::type), primitives::type)
 /**/
 
         pattern_list get_all_known_patterns()
         {
-            pattern_list patterns =
-            {
+            pattern_list patterns = {
                 // variadic functions
                 PHYLANX_MATCH_DATA(block_operation),
                 PHYLANX_MATCH_DATA(column_set_operation),
@@ -76,7 +75,6 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(constant),
                 PHYLANX_MATCH_DATA(determinant),
                 PHYLANX_MATCH_DATA(enable_tracing),
-                PHYLANX_MATCH_DATA(exponential_operation),
                 PHYLANX_MATCH_DATA(extract_shape),
                 PHYLANX_MATCH_DATA(gradient_operation),
                 PHYLANX_MATCH_DATA(identity),
@@ -123,9 +121,18 @@ namespace phylanx { namespace execution_tree
             };
 
             std::string car_cdr_name("car_cdr");
-            for (auto const& pattern : primitives::car_cdr_operation::match_data)
+            for (auto const& pattern :
+                primitives::car_cdr_operation::match_data)
             {
-                patterns.push_back(hpx::util::make_tuple(car_cdr_name, pattern));
+                patterns.push_back(
+                    hpx::util::make_tuple(car_cdr_name, pattern));
+            }
+
+            std::string gen_name("__gen");
+            for (auto const& pattern :
+                primitives::generic_operation::match_data)
+            {
+                patterns.push_back(hpx::util::make_tuple(gen_name, pattern));
             }
 
             // generic functions

@@ -32,7 +32,6 @@
 #include <phylanx/execution_tree/primitives/dot_operation.hpp>
 #include <phylanx/execution_tree/primitives/enable_tracing.hpp>
 #include <phylanx/execution_tree/primitives/equal.hpp>
-#include <phylanx/execution_tree/primitives/exponential_operation.hpp>
 #include <phylanx/execution_tree/primitives/extract_shape.hpp>
 #include <phylanx/execution_tree/primitives/file_read.hpp>
 #include <phylanx/execution_tree/primitives/file_read_csv.hpp>
@@ -45,6 +44,7 @@
 #include <phylanx/execution_tree/primitives/fold_right_operation.hpp>
 #include <phylanx/execution_tree/primitives/for_operation.hpp>
 #include <phylanx/execution_tree/primitives/function_reference.hpp>
+#include <phylanx/execution_tree/primitives/generic_operation.hpp>
 #include <phylanx/execution_tree/primitives/gradient_operation.hpp>
 #include <phylanx/execution_tree/primitives/greater.hpp>
 #include <phylanx/execution_tree/primitives/greater_equal.hpp>

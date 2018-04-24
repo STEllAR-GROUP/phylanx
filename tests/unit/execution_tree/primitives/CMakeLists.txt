@@ -22,7 +22,6 @@ set(tests
     dot_operation
     cross_operation
     equal_operation
-    exponential_operation
     extract_shape
     file_primitives
     file_csv_primitives
@@ -32,6 +31,7 @@ set(tests
     for_operation
     gradient_operation
     add_dimension
+    generic_operation
     greater_operation
     greater_equal_operation
     hstack_operation
