@@ -1,8 +1,8 @@
-//  Copyright (c) 2018 Parsa Amini
-//  Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 
@@ -44,6 +44,23 @@ std::string read_user_code(std::string const& arg)
         std::istreambuf_iterator<char>());
 
     return code;
+}
+
+void dump_ast(std::vector<phylanx::ast::expression> ast, std::string path)
+{
+    std::ofstream ast_stream(path, std::ios::binary);
+    if (!ast_stream.good())
+    {
+        HPX_THROW_EXCEPTION(hpx::filesystem_error,
+            "dump_ast",
+            "Failed to open the specified file: " + path);
+    }
+
+    // Serialize the AST into a byte array
+    std::vector<char> bytes = phylanx::util::serialize(ast);
+
+    // char is 1 byte
+    ast_stream.write(bytes.data(), bytes.size());
 }
 
 std::vector<phylanx::execution_tree::primitive_argument_type>
@@ -117,6 +134,8 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "tree and the corresponding performance counter results")
             ("transform,t", po::value<std::string>(),
                 "file to read transformation rules from")
+            ("dump-ast,d", po::value<std::string>(),
+                "file to dump AST to")
         ;
 
         po::positional_options_description pd;
@@ -208,6 +227,12 @@ int main(int argc, char* argv[])
 
             ast = phylanx::ast::transform_ast(
                 ast, phylanx::ast::generate_transform_rules(transform_rules));
+        }
+
+        // Dump the AST to a file, if requested
+        if (vm.count("dump-ast") != 0)
+        {
+            dump_ast(ast, vm["dump-ast"].as<std::string>());
         }
 
         // Now compile AST into expression tree (into actual executable code)
