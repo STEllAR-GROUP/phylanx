@@ -264,8 +264,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::size_t sequence_number = std::size_t(-1),
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<external_function>(locality)
-          , sequence_number_(sequence_number)
           , f_(f)
+          , sequence_number_(sequence_number)
         {}
 
         function compose(std::list<function> && elements,

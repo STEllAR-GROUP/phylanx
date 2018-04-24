@@ -9,6 +9,7 @@ set(subdirs
     config
     execution_tree
     ir
+    plugins
     python
     util
     performance_counters

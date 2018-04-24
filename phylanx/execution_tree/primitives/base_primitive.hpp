@@ -1,8 +1,8 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
-//  Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2018 Parsa Amini
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if !defined(PHYLANX_PRIMITIVES_BASE_PRIMITIVE_SEP_05_2017_1102AM)
 #define PHYLANX_PRIMITIVES_BASE_PRIMITIVE_SEP_05_2017_1102AM
@@ -10,6 +10,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
@@ -143,7 +144,7 @@ namespace phylanx { namespace execution_tree
           , phylanx::ir::node_data<double>
           , primitive
           , std::vector<ast::expression>
-          , phylanx::util::recursive_wrapper<std::vector<primitive_argument_type>>
+          , ir::range
         >;
 
     struct primitive_argument_type : argument_value_type
@@ -232,13 +233,21 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{std::move(val)}
         {}
 
-        primitive_argument_type(std::vector<primitive_argument_type> const& val)
-          : argument_value_type{phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>{val}}
+        explicit primitive_argument_type(
+            std::vector<primitive_argument_type> const& val)
+          : argument_value_type{ir::range{val}}
         {}
-        primitive_argument_type(std::vector<primitive_argument_type>&& val)
-          : argument_value_type{phylanx::util::recursive_wrapper<
-                std::vector<primitive_argument_type>>{std::move(val)}}
+
+        explicit primitive_argument_type(
+            std::vector<primitive_argument_type>&& val)
+          : argument_value_type{ir::range{std::move(val)}}
+        {}
+
+        primitive_argument_type(ir::range const& val)
+          : argument_value_type{val}
+        {}
+        primitive_argument_type(ir::range&& val)
+          : argument_value_type{std::move(val)}
         {}
 
         primitive_argument_type(argument_value_type const& val)
@@ -519,6 +528,40 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    // Extract an integer value from a primitive_argument_type
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    namespace functional
+    {
+        struct integer_operand
+        {
+            template <typename... Ts>
+            hpx::future<std::int64_t> operator()(Ts&&... ts) const
+            {
+                return execution_tree::integer_operand(std::forward<Ts>(ts)...);
+            }
+        };
+    }
+
     PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
 
     // Extract a boolean type from a given primitive_argument_type,
@@ -562,11 +605,11 @@ namespace phylanx { namespace execution_tree
 
     // Extract a list type from a given primitive_argument_type,
     // Create a list from argument if it does not hold one.
-    PHYLANX_EXPORT std::vector<primitive_argument_type> extract_list_value(
+    PHYLANX_EXPORT ir::range extract_list_value(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::vector<primitive_argument_type> extract_list_value(
+    PHYLANX_EXPORT ir::range extract_list_value(
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
@@ -575,11 +618,11 @@ namespace phylanx { namespace execution_tree
 
     // Extract a list type from a given primitive_argument_type,
     // throw if it doesn't hold one.
-    PHYLANX_EXPORT std::vector<primitive_argument_type>
+    PHYLANX_EXPORT ir::range
     extract_list_value_strict(primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::vector<primitive_argument_type>
+    PHYLANX_EXPORT ir::range
     extract_list_value_strict(primitive_argument_type&& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
@@ -760,22 +803,22 @@ namespace phylanx { namespace execution_tree
 
     // Extract a list from a primitive_argument_type (that
     // could be a primitive or a literal value).
-    PHYLANX_EXPORT hpx::future<std::vector<primitive_argument_type>> list_operand(
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::vector<primitive_argument_type>> list_operand(
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand(
         primitive_argument_type && val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::vector<primitive_argument_type>> list_operand(
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> && args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::vector<primitive_argument_type>> list_operand(
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand(
         primitive_argument_type && val,
         std::vector<primitive_argument_type> && args,
         std::string const& name = "",
@@ -786,7 +829,7 @@ namespace phylanx { namespace execution_tree
         struct list_operand
         {
             template <typename... Ts>
-            hpx::future<std::vector<primitive_argument_type>> operator()(
+            hpx::future<ir::range> operator()(
                 Ts&&... ts) const
             {
                 return execution_tree::list_operand(std::forward<Ts>(ts)...);
@@ -794,7 +837,7 @@ namespace phylanx { namespace execution_tree
         };
     }
 
-    PHYLANX_EXPORT std::vector<primitive_argument_type> list_operand_sync(
+    PHYLANX_EXPORT ir::range list_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",

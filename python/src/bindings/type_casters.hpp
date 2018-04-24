@@ -10,6 +10,7 @@
 
 #include <phylanx/phylanx.hpp>
 
+#include <hpx/util/assert.hpp>
 #include <hpx/util/tuple.hpp>
 
 #include <pybind11/numpy.h>
@@ -652,56 +653,26 @@ namespace pybind11 { namespace detail
     struct variant_caster_helper<Derived, V<Ts...>>
     {
         PYBIND11_TYPE_CASTER(Derived,
-            _("Union[") + detail::concat(make_caster<Ts>::name...) + _("]"));
+            _("phylanx::execution_tree::primitive_argument_type::variant"));
 
         static_assert(sizeof...(Ts) > 0,
             "Variant must consist of at least one alternative.");
 
         template <typename U, typename... Us>
-        bool load_alternative(handle src, bool convert, type_list<U, Us...>)
-        {
-            auto caster = make_caster<U>();
-            if (caster.load(src, convert))
-            {
-                value = cast_op<U>(caster);
-                return true;
-            }
-            return load_alternative(src, convert, type_list<Us...>{});
-        }
+        inline bool load_alternative(
+            handle src, bool convert, type_list<U, Us...>);
 
         template <typename U, typename... Us>
-        bool load_alternative(handle src, bool convert,
-            type_list<phylanx::util::recursive_wrapper<U>, Us...>)
-        {
-            auto caster = make_caster<U>();
-            if (caster.load(src, convert))
-            {
-                value = cast_op<U>(caster);
-                return true;
-            }
-            return load_alternative(src, convert, type_list<Us...>{});
-        }
+        inline bool load_alternative(handle src, bool convert,
+            type_list<phylanx::util::recursive_wrapper<U>, Us...>);
 
         bool load_alternative(handle, bool, type_list<>) { return false; }
 
-        bool load(handle src, bool convert)
-        {
-            // Do a first pass without conversions to improve constructor resolution.
-            // E.g. `py::int_(1).cast<variant<double, int>>()` needs to fill the `int`
-            // slot of the variant. Without two-pass loading `double` would be filled
-            // because it appears first and a conversion is possible.
-            if (convert && load_alternative(src, false, type_list<Ts...>{}))
-                return true;
-            return load_alternative(src, convert, type_list<Ts...>{});
-        }
+        inline bool load(handle src, bool convert);
 
         template <typename Derived_>
-        static handle cast(
-            Derived_&& src, return_value_policy policy, handle parent)
-        {
-            return visit_helper<V>::call(variant_caster_visitor{policy, parent},
-                                         std::forward<Derived_>(src));
-        }
+        inline static handle cast(
+            Derived_&& src, return_value_policy policy, handle parent);
     };
 
     template <>
@@ -749,6 +720,162 @@ namespace pybind11 { namespace detail
     private:
         caster_t subcaster;
     };
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <>
+    class type_caster<phylanx::ir::range>
+    {
+    private:
+        using list_type =
+            std::vector<phylanx::execution_tree::primitive_argument_type>;
+
+        using list_caster_type = make_caster<list_type>;
+        list_caster_type subcaster;
+
+        ///////////////////////////////////////////////////////////////////////
+        bool load_list(handle src, bool convert)
+        {
+            if (subcaster.load(src, convert))
+            {
+                value = std::move(std::move(subcaster).operator list_type &&());
+                return true;
+            }
+            return false;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        template <typename Type>
+        static handle cast_impl(
+            Type* src, return_value_policy policy, handle parent)
+        {
+            switch(src->index())
+            {
+            case 1:                     // wrapped_args_type
+                return list_caster_type::cast(src->args(), policy, parent);
+
+            case 2:                     // arg_pair_type
+                return list_caster_type::cast(src->copy(), policy, parent);
+
+            case 0: HPX_FALLTHROUGH;    // int_range_type
+            default:
+                throw cast_error(
+                    "cast_impl: unexpected range type: should not happen!");
+            }
+            return handle();
+        }
+
+    public:
+        bool load(handle src, bool convert)
+        {
+            return load_list(src, convert);
+        }
+
+        // Normal returned non-reference, non-const value:
+        static handle cast(phylanx::ir::range&& src,
+            return_value_policy /* policy */, handle parent)
+        {
+            return cast_impl(&src, return_value_policy::move, parent);
+        }
+
+        // If you return a non-reference const, we mark the list as read only
+        static handle cast(phylanx::ir::range const&& src,
+            return_value_policy /* policy */, handle parent)
+        {
+            return cast_impl(&src, return_value_policy::move, parent);
+        }
+
+        // lvalue reference return; default (automatic) becomes copy
+        static handle cast(phylanx::ir::range& src,
+            return_value_policy policy, handle parent)
+        {
+            if (policy == return_value_policy::automatic ||
+                policy == return_value_policy::automatic_reference)
+            {
+                policy = return_value_policy::copy;
+            }
+            return cast_impl(&src, policy, parent);
+        }
+
+        // const lvalue reference return; default (automatic) becomes copy
+        static handle cast(phylanx::ir::range const& src,
+            return_value_policy policy, handle parent)
+        {
+            if (policy == return_value_policy::automatic ||
+                policy == return_value_policy::automatic_reference)
+            {
+                policy = return_value_policy::copy;
+            }
+            return cast(&src, policy, parent);
+        }
+
+        // non-const pointer return
+        static handle cast(phylanx::ir::range* src,
+            return_value_policy policy, handle parent)
+        {
+            return cast_impl(src, policy, parent);
+        }
+
+        // const pointer return
+        static handle cast(phylanx::ir::range const* src,
+            return_value_policy policy, handle parent)
+        {
+            return cast_impl(src, policy, parent);
+        }
+
+        using Type = phylanx::ir::range;
+        PYBIND11_TYPE_CASTER(Type, _("range"));
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Derived, template <typename...> class V, typename... Ts>
+    template <typename U, typename... Us>
+    bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(
+        handle src, bool convert, type_list<U, Us...>)
+    {
+        auto caster = make_caster<U>();
+        if (caster.load(src, convert))
+        {
+            value = cast_op<U>(caster);
+            return true;
+        }
+        return load_alternative(src, convert, type_list<Us...>{});
+    }
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
+    template <typename U, typename... Us>
+    bool variant_caster_helper<Derived, V<Ts...>>::load_alternative(handle src,
+        bool convert, type_list<phylanx::util::recursive_wrapper<U>, Us...>)
+    {
+        auto caster = make_caster<U>();
+        if (caster.load(src, convert))
+        {
+            value = cast_op<U>(caster);
+            return true;
+        }
+        return load_alternative(src, convert, type_list<Us...>{});
+    }
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
+    template <typename Derived_>
+    handle variant_caster_helper<Derived, V<Ts...>>::cast(
+        Derived_&& src, return_value_policy policy, handle parent)
+    {
+        return visit_helper<V>::call(variant_caster_visitor{policy, parent},
+                                        std::forward<Derived_>(src));
+    }
+
+    template <typename Derived, template <typename...> class V, typename... Ts>
+    bool variant_caster_helper<Derived, V<Ts...>>::load(
+        handle src, bool convert)
+    {
+        // Do a first pass without conversions to improve constructor resolution.
+        // E.g. `py::int_(1).cast<variant<double, int>>()` needs to fill the `int`
+        // slot of the variant. Without two-pass loading `double` would be filled
+        // because it appears first and a conversion is possible.
+        if (convert && load_alternative(src, false, type_list<Ts...>{}))
+            return true;
+        return load_alternative(src, convert, type_list<Ts...>{});
+    }
 }}
 
 #endif
