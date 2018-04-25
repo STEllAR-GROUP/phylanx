@@ -71,23 +71,24 @@ std::vector<phylanx::ast::expression> load_ast(std::string path)
             "load_ast",
             "Failed to open the specified file: " + path);
     }
-
-    if (!str_stream.ignore((std::numeric_limits<std::streamsize>::max)()))
-    {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "load_ast",
-            "Failed to open the specified file: " + path);
-    }
-
-    auto const char_count = str_stream.gcount();
-
-    if (!str_stream.seekg(start_pos))
+    // Find out where the end of the file is
+    if (!str_stream.seekg(0, std::ios::end))
     {
         HPX_THROW_EXCEPTION(hpx::filesystem_error,
             "load_ast",
             "Failed to find the end of the specified file: " + path);
     }
 
+    auto const char_count = str_stream.tellg();
+
+    if (!str_stream.seekg(start_pos))
+    {
+        HPX_THROW_EXCEPTION(hpx::filesystem_error,
+            "load_ast",
+            "Failed to perform seek() on the specified file: " + path);
+    }
+
+    // Allocate all the memory needed to load the AST upfront
     std::vector<char> bytes(char_count);
 
     if (0 != bytes.size())
