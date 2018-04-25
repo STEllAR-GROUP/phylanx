@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const less::match_data =
     {
         hpx::util::make_tuple("__lt",
-            std::vector<std::string>{"_1 < _2", "__lt(_1, _2, _3)"},
+            std::vector<std::string>{
+                "_1 < _2", "__lt(_1, _2)", "__lt(_1, _2, _3)"},
             &create_less, &create_primitive<less>)
     };
 

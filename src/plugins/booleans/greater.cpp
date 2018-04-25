@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const greater::match_data =
     {
         hpx::util::make_tuple("__gt",
-            std::vector<std::string>{"_1 > _2", "__gt(_1, _2, _3)"},
+            std::vector<std::string>{
+                "_1 > _2", "__gt(_1, _2)", "__gt(_1, _2, _3)"},
             &create_greater, &create_primitive<greater>)
     };
 
