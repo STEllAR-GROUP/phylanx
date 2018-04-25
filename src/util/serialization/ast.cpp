@@ -180,13 +180,6 @@ namespace phylanx { namespace util
             detail::unserialize_helper(input, ast);
         }
     }
-
-    ast::expression unserialize(std::vector<char> const& input)
-    {
-        ast::expression expr;
-        detail::unserialize_helper(input, expr);
-        return expr;
-    }
 }}
 
 

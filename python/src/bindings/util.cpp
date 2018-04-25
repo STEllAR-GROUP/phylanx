@@ -49,6 +49,6 @@ void phylanx::bindings::bind_util(pybind11::module m)
         "serialize a node_data<std::uint8_t> expression object into a "
         "byte-stream");
 
-    util.def("unserialize", &phylanx::util::unserialize,
+    util.def("unserialize", &phylanx::util::unserialize<phylanx::ast::expression>,
         "un-serialize a byte-stream into a Phylanx object");
 }
