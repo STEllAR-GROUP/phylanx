@@ -45,41 +45,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         template <typename T>
-        primitive_argument_type less0d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less0d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less0d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less0d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less0d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less1d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less1d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less1d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less1d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less1d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less1d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less2d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less2d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less2d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less2d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less2d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less2d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_all(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
+        template <typename T>
+        primitive_argument_type less_all(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
 
     private:
         struct visit_less;

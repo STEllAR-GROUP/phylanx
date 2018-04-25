@@ -27,7 +27,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const not_equal::match_data = {
         hpx::util::make_tuple("__ne",
-            std::vector<std::string>{"_1 != _2", "__ne(_1, _2, _3)"},
+            std::vector<std::string>{
+                "_1 != _2", "__ne(_1, _2)", "__ne(_1, _2, _3)"},
             &create_not_equal, &create_primitive<not_equal>)
     };
 
@@ -546,7 +547,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         not_equal const& not_equal_;
-        bool type_double_;
+        bool type_double_ = false;
     };
 
     hpx::future<primitive_argument_type> not_equal::eval(
@@ -558,7 +559,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "not_equal::eval",
                 execution_tree::generate_error_message(
-                    "the not_equal primitive requires exactly two operands",
+                    "the not_equal primitive requires two or three operands",
                     name_, codename_));
         }
 

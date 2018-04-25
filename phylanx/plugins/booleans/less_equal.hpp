@@ -47,41 +47,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct visit_less_equal;
 
         template <typename T>
-        primitive_argument_type less_equal0d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal0d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal0d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal0d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal0d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal1d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal1d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal1d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal1d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal1d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal1d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal2d0d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal2d1d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal2d0d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal2d2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal2d1d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal2d(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal2d2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
         template <typename T>
-        primitive_argument_type less_equal_all(
-            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        primitive_argument_type less_equal2d(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
+        template <typename T>
+        primitive_argument_type less_equal_all(ir::node_data<T>&& lhs,
+            ir::node_data<T>&& rhs, bool type_double) const;
     };
 
     inline primitive create_less_equal(hpx::id_type const& locality,
