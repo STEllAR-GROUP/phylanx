@@ -13,7 +13,7 @@ def lra(file_name, xlo1, xhi1, ylo1, yhi1, xlo2, xhi2, ylo2, yhi2, alpha,
         iterations, enable_output):
     data = file_read_csv(file_name)
     x = data[xlo1:xhi1, ylo1:yhi1]
-    y = data[xlo2:xhi2, ylo2:yhi2]
+    y = data[xlo2:xhi2, ylo2]
     weights = constant(0.0, shape(x, 1))
     transx = transpose(x)
     pred = constant(0.0, shape(x, 0))
