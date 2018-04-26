@@ -69,7 +69,13 @@ namespace phylanx { namespace util
             std::vector<char> const&, ast::literal_value_type&);
     }
 
-    PHYLANX_EXPORT ast::expression unserialize(std::vector<char> const&);
+    template <typename T>
+    T unserialize(std::vector<char> const& input)
+    {
+        T expr;
+        detail::unserialize(input, expr);
+        return expr;
+    }
 }}
 
 #endif
