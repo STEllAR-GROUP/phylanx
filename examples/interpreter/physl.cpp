@@ -63,46 +63,30 @@ void dump_ast(std::vector<phylanx::ast::expression> ast, std::string path)
 
 std::vector<phylanx::ast::expression> load_ast(std::string path)
 {
-    std::ifstream str_stream(path, std::ios::binary);
-    auto const start_pos = str_stream.tellg();
-    if (std::streamsize(-1) == start_pos)
+    std::ifstream ast_stream(path, std::ios::binary | std::ios::ate);
+    if (!ast_stream.good())
     {
         HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "load_ast",
+            "dump_ast",
             "Failed to open the specified file: " + path);
     }
-    // Find out where the end of the file is
-    if (!str_stream.seekg(0, std::ios::end))
+
+    // Size of the data
+    auto const data_size = ast_stream.tellg();
+
+    if (!ast_stream.seekg(0, std::ios::beg))
     {
         HPX_THROW_EXCEPTION(hpx::filesystem_error,
             "load_ast",
-            "Failed to find the end of the specified file: " + path);
-    }
-
-    auto const char_count = str_stream.tellg();
-
-    if (!str_stream.seekg(start_pos))
-    {
-        HPX_THROW_EXCEPTION(hpx::filesystem_error,
-            "load_ast",
-            "Failed to perform seek() on the specified file: " + path);
+            "Failed to read the specified file: " + path);
     }
 
     // Allocate all the memory needed to load the AST upfront
-    std::vector<char> bytes(char_count);
-
-    if (0 != bytes.size())
-    {
-        if (!str_stream.read(bytes.data(), bytes.size()))
-        {
-            HPX_THROW_EXCEPTION(hpx::filesystem_error,
-                "load_ast",
-                "Failed to read from the specified file: " + path);
-        }
-    }
+    std::vector<char> bytes;
+    bytes.reserve(data_size);
 
     return phylanx::util::unserialize<std::vector<phylanx::ast::expression>>(
-        bytes);
+        std::move(bytes));
 }
 
 std::vector<phylanx::execution_tree::primitive_argument_type>
@@ -180,10 +164,11 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
                 "tree and the corresponding performance counter results")
             ("transform,t", po::value<std::string>(),
                 "file to read transformation rules from")
-            ("dump-ast,d", po::value<std::string>(),
+            ("dump-ast,d", po::value<std::string>()->implicit_value("<none>"),
                 "file to dump AST to")
             ("load-ast,l", po::value<std::string>(),
-                "file to dump AST to")
+                "file to dump AST to. If none path is provided, use the base "
+                "file name of the input file replacing the extension to .ast")
         ;
 
         po::positional_options_description pd;
@@ -208,7 +193,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
 
         po::store(opts, vm);
 
-        if (vm.count("help"))
+        if (vm.count("help") != 0)
         {
             std::cout << cmdline_options << std::endl;
             return 1;
@@ -240,17 +225,33 @@ int main(int argc, char* argv[])
         positional_args = vm["positional"].as<std::vector<std::string>>();
     }
 
+    // Origin of PhySL code. It is either file name or <command_line>
     std::string code_source_name;
+    // PhySL source code
     std::string user_code;
+    // The index of the first positional argument that is passed to the PhySL program.
+    // 0 when vm["code"] exists, is 1 otherwise
     std::size_t first_index = 0;
+    // The AST that is either generated from PhySL code or loaded from an AST dump
     std::vector<phylanx::ast::expression> ast;
+    // Set to true if PhySL code was read from a file
+    bool code_is_file = false;
 
+    // Determine if an AST dump is to be loaded
     if (vm.count("load-ast") != 0)
     {
-        auto path = vm["load-ast"].as<std::string>();
-        ast = load_ast(path);
-        code_source_name = "<ast_dump>";
+        if (vm.count("code"))
+        {
+            std::cerr << "physl: command line handling: '--dump-ast' and "
+                "'--code' options cannot be used simultaneously\n";
+            return -1;
+        }
+
+        std::string ast_dump_file = vm["load-ast"].as<std::string>();
+        ast = load_ast(ast_dump_file);
+        code_source_name = fs::path(ast_dump_file).filename().string();
     }
+    // Read PhySL source code from a file or the provided argument
     else
     {
         if (vm.count("code") != 0)
@@ -264,7 +265,9 @@ int main(int argc, char* argv[])
             // Interpret first argument as the file name for the PhySL code
             user_code = read_user_code(positional_args[0]);
             code_source_name = fs::path(positional_args[0]).filename().string();
+            // The rest of the positional arguments are arguments for the script
             first_index = 1;
+            code_is_file = true;
         }
         else
         {
@@ -291,7 +294,23 @@ int main(int argc, char* argv[])
             // Dump the AST to a file, if requested
             if (vm.count("dump-ast") != 0)
             {
-                dump_ast(ast, vm["dump-ast"].as<std::string>());
+                std::string dump_file = vm["dump-ast"].as<std::string>();
+                // If no dump file is specified but PhySL code is read from a
+                // file then use the file name with .ast extension
+                if (dump_file == "<none>")
+                {
+                    if (!code_is_file)
+                    {
+                        std::cerr << "physl: command line handling: exception "
+                                     "caught: the required path argument for "
+                                     "option '--dump-ast' is missing\n";
+                        return -1;
+                    }
+                    dump_file = fs::path(positional_args[0])
+                                    .replace_extension("ast")
+                                    .string();
+                }
+                dump_ast(ast, dump_file);
             }
         }
         catch (std::exception const& e)
