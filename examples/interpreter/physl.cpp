@@ -44,7 +44,7 @@ std::string read_user_code(std::string const& path)
     return str_stream.str();
 }
 
-void dump_ast(std::vector<phylanx::ast::expression> ast, std::string path)
+void dump_ast(std::vector<phylanx::ast::expression> const& ast, std::string path)
 {
     std::ofstream ast_stream(path, std::ios::binary);
     if (!ast_stream.good())
@@ -61,7 +61,7 @@ void dump_ast(std::vector<phylanx::ast::expression> ast, std::string path)
     ast_stream.write(bytes.data(), bytes.size());
 }
 
-std::vector<phylanx::ast::expression> load_ast(std::string path)
+std::vector<phylanx::ast::expression> load_ast_dump(std::string const& path)
 {
     std::ifstream ast_stream(path, std::ios::binary | std::ios::ate);
     if (!ast_stream.good())
@@ -74,7 +74,7 @@ std::vector<phylanx::ast::expression> load_ast(std::string path)
     // Size of the data
     auto const data_size = ast_stream.tellg();
 
-    if (!ast_stream.seekg(0, std::ios::beg))
+    if (data_size == decltype(data_size)(0) || !ast_stream.seekg(0, std::ios::beg))
     {
         HPX_THROW_EXCEPTION(hpx::filesystem_error,
             "load_ast",
@@ -90,21 +90,13 @@ std::vector<phylanx::ast::expression> load_ast(std::string path)
 }
 
 std::vector<phylanx::execution_tree::primitive_argument_type>
-read_arguments(std::vector<std::string> const& args, std::size_t first_index)
+read_arguments(std::vector<std::string> const& args)
 {
-    std::vector<phylanx::execution_tree::primitive_argument_type> result;
+    std::vector<phylanx::execution_tree::primitive_argument_type> result(
+        args.size());
 
-    if (args.size() > 1)
-    {
-        result.reserve(args.size() - 1);
-    }
-
-    for (std::size_t i = first_index; i != args.size(); ++i)
-    {
-        auto arg = phylanx::ast::generate_ast(args[i]);
-        result.emplace_back(
-            phylanx::execution_tree::primitive_argument_type(std::move(arg)));
-    }
+    std::transform(args.begin(), args.end(), result.begin(),
+        [](std::string const& s) { return phylanx::ast::generate_ast(s); });
 
     return result;
 }
@@ -199,7 +191,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             return 1;
         }
     }
-    catch  (std::exception const& e)
+    catch (std::exception const& e)
     {
         std::cerr << "physl: command line handling: exception caught: "
                   << e.what() << "\n";
@@ -208,7 +200,180 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
     return 0;
 }
 
+std::string get_dump_file(po::variables_map const& vm,
+    fs::path code_source_path, bool code_is_file)
+{
+    std::string dump_file = vm["dump-ast"].as<std::string>();
+    // If no dump file is specified but PhySL code is read from a
+    // file then use the file name with .ast extension
+    if (dump_file == "<none>")
+    {
+        if (!code_is_file)
+        {
+            HPX_THROW_EXCEPTION(hpx::commandline_option_error, "get_ast()",
+                "the required path argument for option '--dump-ast' is "
+                "missing");
+        }
+        return code_source_path.replace_extension("ast").string();
+    }
+    return dump_file;
+}
+
+std::vector<phylanx::ast::expression> ast_from_code_or_dump(po::variables_map const& vm,
+    std::vector<std::string>& positional_args, std::string& code_source_name)
+{
+    // Return value
+    std::vector<phylanx::ast::expression> ast;
+    // Set to true if PhySL code was read from a file, used to generate a file
+    // name for the AST dump file, if requested and a name is not provided
+    bool code_is_file = false;
+    fs::path code_source_path;
+
+    // Determine if an AST dump is to be loaded
+    if (vm.count("load-ast") != 0)
+    {
+        if (vm.count("code"))
+        {
+            HPX_THROW_EXCEPTION(hpx::commandline_option_error,
+                "get_ast()",
+                "'--dump-ast' and '--code' options cannot be used "
+                "simultaneously");
+        }
+
+        std::string ast_dump_file = vm["load-ast"].as<std::string>();
+        ast = load_ast_dump(ast_dump_file);
+        code_source_name = fs::path(ast_dump_file).filename().string();
+    }
+    // Read PhySL source code from a file or the provided argument
+    else
+    {
+        // PhySL source code
+        std::string user_code;
+
+        if (vm.count("code") != 0)
+        {
+            // Execute code as given directly on the command line
+            user_code = vm["code"].as<std::string>();
+            code_source_name = "<command_line>";
+        }
+        else if (!positional_args.empty() && !positional_args[0].empty())
+        {
+            // Interpret first argument as the file name for the PhySL code
+            user_code = read_user_code(positional_args[0]);
+            code_source_path = fs::path(positional_args[0]);
+            code_source_name = code_source_path.filename().string();
+            // The rest of the positional arguments are arguments for the script
+            positional_args.erase(positional_args.begin());
+            code_is_file = true;
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::commandline_option_error, "get_ast()",
+                "No code was provided.");
+        }
+
+        // Compile the given code into AST
+        ast = phylanx::ast::generate_ast(user_code);
+    }
+
+    // Apply transformation rules to AST, if requested
+    if (vm.count("transform") != 0)
+    {
+        std::string const transform_rules =
+            read_user_code(vm["transform"].as<std::string>());
+
+        ast = phylanx::ast::transform_ast(
+            ast, phylanx::ast::generate_transform_rules(transform_rules));
+    }
+
+    // Dump the AST to a file, if requested
+    if (vm.count("dump-ast") != 0)
+    {
+        std::string dump_file =
+            get_dump_file(vm, std::move(code_source_path), code_is_file);
+        dump_ast(ast, std::move(dump_file));
+    }
+    return ast;
+}
+
+phylanx::execution_tree::compiler::result_type compile_and_run(
+    std::vector<phylanx::ast::expression> const ast,
+    std::vector<std::string> const positional_args,
+    phylanx::execution_tree::compiler::function_list& snippets,
+    std::string const& code_source_name)
+{
+    // Collect the arguments for running the code
+    auto const args = read_arguments(positional_args);
+    // Now compile AST into expression tree (into actual executable code);
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    phylanx::execution_tree::define_variable(code_source_name,
+        "sys_argv/0$0", snippets, env,
+        phylanx::execution_tree::primitive_argument_type{std::move(args)});
+    auto const code = phylanx::execution_tree::compile(
+        code_source_name, ast, snippets, env);
+
+    // Re-init all performance counters to guarantee correct measurement
+    // results if those are requested on the command line.
+    hpx::reinit_active_counters();
+
+    // Evaluate user code using the read data
+    return code();
+}
+
+void print_performance_profile(
+    phylanx::execution_tree::compiler::function_list& snippets,
+    std::string const code_source_name)
+{
+    auto topology = snippets.snippets_.back().get_expression_topology();
+
+    std::cout << "\n"
+        << phylanx::execution_tree::dot_tree(code_source_name, topology)
+        << "\n";
+
+    std::cout << "\n"
+        << phylanx::execution_tree::newick_tree(code_source_name, topology)
+        << "\n\n";
+
+    print_performance_counter_data_csv();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
+
+void interpreter(po::variables_map vm)
+{
+    // Collect positional arguments
+    std::vector<std::string> positional_args;
+    if (vm.count("positional") != 0)
+    {
+        positional_args = vm["positional"].as<std::vector<std::string>>();
+    }
+
+    // Origin of PhySL code. It is either file name or <command_line>
+    std::string code_source_name;
+    // The AST that is either generated from PhySL code or loaded from an AST dump
+    std::vector<phylanx::ast::expression> ast =
+        ast_from_code_or_dump(vm, positional_args, code_source_name);
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    auto const result = compile_and_run(
+        std::move(ast), std::move(positional_args), snippets, code_source_name);
+
+    // Print the result of the last PhySL expression, if requested
+    if (vm.count("print") != 0)
+    {
+        std::cout << result << "\n";
+    }
+
+    // Print auxiliary information at exit: topology of the execution tree
+    // and the associate performance counter data
+    if (vm.count("performance") != 0)
+    {
+        print_performance_profile(snippets, std::move(code_source_name));
+    }
+}
+
 int main(int argc, char* argv[])
 {
     po::variables_map vm;
@@ -218,153 +383,9 @@ int main(int argc, char* argv[])
         return cmdline_result > 0 ? 0 : cmdline_result;
     }
 
-    // Read the file containing the source code
-    std::vector<std::string> positional_args;
-    if (vm.count("positional") != 0)
-    {
-        positional_args = vm["positional"].as<std::vector<std::string>>();
-    }
-
-    // Origin of PhySL code. It is either file name or <command_line>
-    std::string code_source_name;
-    // PhySL source code
-    std::string user_code;
-    // The index of the first positional argument that is passed to the PhySL program.
-    // 0 when vm["code"] exists, is 1 otherwise
-    std::size_t first_index = 0;
-    // The AST that is either generated from PhySL code or loaded from an AST dump
-    std::vector<phylanx::ast::expression> ast;
-    // Set to true if PhySL code was read from a file
-    bool code_is_file = false;
-
-    // Determine if an AST dump is to be loaded
-    if (vm.count("load-ast") != 0)
-    {
-        if (vm.count("code"))
-        {
-            std::cerr << "physl: command line handling: '--dump-ast' and "
-                "'--code' options cannot be used simultaneously\n";
-            return -1;
-        }
-
-        std::string ast_dump_file = vm["load-ast"].as<std::string>();
-        ast = load_ast(ast_dump_file);
-        code_source_name = fs::path(ast_dump_file).filename().string();
-    }
-    // Read PhySL source code from a file or the provided argument
-    else
-    {
-        if (vm.count("code") != 0)
-        {
-            // Execute code as given directly on the command line
-            user_code = vm["code"].as<std::string>();
-            code_source_name = "<command_line>";
-        }
-        else if (positional_args.size() > 0)
-        {
-            // Interpret first argument as the file name for the PhySL code
-            user_code = read_user_code(positional_args[0]);
-            code_source_name = fs::path(positional_args[0]).filename().string();
-            // The rest of the positional arguments are arguments for the script
-            first_index = 1;
-            code_is_file = true;
-        }
-        else
-        {
-            std::cout << "No code was provided.\n";
-
-            return -1;
-        }
-
-        try
-        {
-            // Compile the given code into AST
-            ast = phylanx::ast::generate_ast(user_code);
-
-            // Apply transformation rules to AST, if requested
-            if (vm.count("transform") != 0)
-            {
-                std::string const transform_rules =
-                    read_user_code(vm["transform"].as<std::string>());
-
-                ast = phylanx::ast::transform_ast(
-                    ast, phylanx::ast::generate_transform_rules(transform_rules));
-            }
-
-            // Dump the AST to a file, if requested
-            if (vm.count("dump-ast") != 0)
-            {
-                std::string dump_file = vm["dump-ast"].as<std::string>();
-                // If no dump file is specified but PhySL code is read from a
-                // file then use the file name with .ast extension
-                if (dump_file == "<none>")
-                {
-                    if (!code_is_file)
-                    {
-                        std::cerr << "physl: command line handling: exception "
-                                     "caught: the required path argument for "
-                                     "option '--dump-ast' is missing\n";
-                        return -1;
-                    }
-                    dump_file = fs::path(positional_args[0])
-                                    .replace_extension("ast")
-                                    .string();
-                }
-                dump_ast(ast, dump_file);
-            }
-        }
-        catch (std::exception const& e)
-        {
-            std::cout << "physl: exception caught:\n" << e.what() << "\n";
-            return -1;
-        }
-    }
-
-    // Collect the arguments for running the code
-    auto const args = read_arguments(positional_args, first_index);
-
     try
     {
-        // Now compile AST into expression tree (into actual executable code)
-        phylanx::execution_tree::compiler::function_list snippets;
-        phylanx::execution_tree::compiler::environment env =
-            phylanx::execution_tree::compiler::default_environment();
-
-        phylanx::execution_tree::define_variable(code_source_name,
-            "sys_argv/0$0", snippets, env,
-            phylanx::execution_tree::primitive_argument_type{args});
-        auto const code = phylanx::execution_tree::compile(
-            code_source_name, ast, snippets, env);
-
-        // Re-init all performance counters to guarantee correct measurement
-        // results if those are requested on the command line.
-        hpx::reinit_active_counters();
-
-        // Evaluate user code using the read data
-        auto const result = code();
-
-        // Print the result of the last PhySL expression, if requested
-        if (vm.count("print") != 0)
-        {
-            std::cout << result << "\n";
-        }
-
-        // Print auxiliary information at exit: topology of the execution tree
-        // and the associate performance counter data
-        if (vm.count("performance") != 0)
-        {
-            auto topology = snippets.snippets_.back().get_expression_topology();
-
-            std::cout << "\n"
-                << phylanx::execution_tree::dot_tree(code_source_name, topology)
-                << "\n";
-
-            std::cout << "\n"
-                << phylanx::execution_tree::newick_tree(code_source_name, topology)
-                << "\n\n";
-
-            print_performance_counter_data_csv();
-        }
+        interpreter(std::move(vm));
     }
     catch (std::exception const& e)
     {
@@ -374,4 +395,3 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-
