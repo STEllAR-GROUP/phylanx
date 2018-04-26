@@ -11,6 +11,7 @@
 #include "init_hpx.hpp"
 #include "bindings/ostream.hpp"
 
+#include <cstddef>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -168,7 +169,9 @@ struct manage_global_runtime
             // run one thread only (for now)
             "hpx.os_threads!=1",
             // don't print diagnostics during forced terminate
-            "hpx.diagnostics_on_terminate!=0"
+            "hpx.diagnostics_on_terminate!=0",
+            // disable the TCP parcelport
+            "hpx.parcel.tcp.enable!=0"
         };
 
         using hpx::util::placeholders::_1;
