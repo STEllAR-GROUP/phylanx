@@ -27,6 +27,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(map_operation_plugin,
     phylanx::execution_tree::primitives::map_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(parallel_block_operation_plugin,
     phylanx::execution_tree::primitives::parallel_block_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(parallel_map_operation_plugin,
+    phylanx::execution_tree::primitives::parallel_map_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(range_operation_plugin,
     phylanx::execution_tree::primitives::range_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(while_operation_plugin,
