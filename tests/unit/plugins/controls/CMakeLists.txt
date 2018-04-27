@@ -12,6 +12,7 @@ set(tests
     if_conditional
     map_operation
     parallel_block_operation
+    parallel_map_operation
     range_operation
     while_operation
    )

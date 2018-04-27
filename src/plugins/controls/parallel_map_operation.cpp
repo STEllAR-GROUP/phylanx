@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/controls/map_operation.hpp>
+#include <phylanx/plugins/controls/parallel_map_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -22,21 +22,22 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const map_operation::match_data =
+    match_pattern_type const parallel_map_operation::match_data =
     {
-        hpx::util::make_tuple("map",
-            std::vector<std::string>{"map(_1, __2)"},
-            &create_map_operation, &create_primitive<map_operation>)
+        hpx::util::make_tuple("parallel_map",
+            std::vector<std::string>{"parallel_map(_1, __2)"},
+            &create_parallel_map_operation,
+            &create_primitive<parallel_map_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    map_operation::map_operation(
+    parallel_map_operation::parallel_map_operation(
             std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    hpx::future<primitive_argument_type> map_operation::map_1(
+    hpx::future<primitive_argument_type> parallel_map_operation::map_1(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args,
         primitive const* p) const
@@ -44,20 +45,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func, ir::range&& list)
-            -> primitive_argument_type
+            -> hpx::future<primitive_argument_type>
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "map_operation::eval",
+                        "parallel_map_operation::map_1",
                         this_->generate_error_message(
                             "the first argument to map must be an invocable "
                                 "object"));
                 }
 
-                // Sequentially evaluate all operations
-                std::vector<primitive_argument_type> result;
+                // Concurrently evaluate all operations
+                std::vector<hpx::future<primitive_argument_type>> result;
                 result.reserve(list.size());
 
                 for (auto && elem : list)
@@ -65,17 +66,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     // Evaluate function for each of the argument sets
                     std::vector<primitive_argument_type> args;
                     args.emplace_back(std::move(elem));
-                    result.push_back(
-                        p->eval(hpx::launch::sync, std::move(args)));
+                    result.push_back(p->eval(std::move(args)));
                 }
 
-                return primitive_argument_type{std::move(result)};
+                return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                    [](std::vector<primitive_argument_type>&& result)
+                    -> primitive_argument_type
+                    {
+                        return primitive_argument_type{std::move(result)};
+                    }),
+                    std::move(result));
             }),
             p->bind(args),
             list_operand(operands[1], args, name_, codename_));
     }
 
-    hpx::future<primitive_argument_type> map_operation::map_n(
+    hpx::future<primitive_argument_type> parallel_map_operation::map_n(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args,
         primitive const* p) const
@@ -88,14 +94,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                    std::vector<ir::range>&& lists)
-            -> primitive_argument_type
+                        std::vector<ir::range>&& lists)
+            -> hpx::future<primitive_argument_type>
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "map_operation::eval",
+                        "parallel_map_operation::map_n",
                         this_->generate_error_message(
                             "the first argument to map must be an invocable "
                                 "object"));
@@ -108,13 +114,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (list.size() != size)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "map_operation::eval",
+                            "parallel_map_operation::map_n",
                             this_->generate_error_message(
                                 "all list arguments must have the same length"));
                     }
                 }
 
-                // Sequentially evaluate all operations
+                // Concurrently evaluate all operations
                 std::size_t numlists = lists.size();
 
                 std::vector<ir::range_iterator> iters;
@@ -125,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     iters.push_back(j.begin());
                 }
 
-                std::vector<primitive_argument_type> result;
+                std::vector<hpx::future<primitive_argument_type>> result;
                 result.reserve(size);
 
                 for (std::size_t i = 0; i != size; ++i)
@@ -140,27 +146,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
 
                     // Evaluate function for each of the argument sets
-                    result.push_back(p->eval(hpx::launch::sync, std::move(args)));
+                    result.push_back(p->eval(std::move(args)));
                 }
 
-                return primitive_argument_type{std::move(result)};
+                return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                    [](std::vector<primitive_argument_type>&& result)
+                    -> primitive_argument_type
+                    {
+                        return primitive_argument_type{std::move(result)};
+                    }),
+                    std::move(result));
             }),
             p->bind(args),
             detail::map_operands(
                 lists, functional::list_operand{}, args, name_, codename_));
     }
 
-    hpx::future<primitive_argument_type> map_operation::eval(
+    hpx::future<primitive_argument_type> parallel_map_operation::eval(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands.size() < 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "map_operation::eval",
+                "parallel_map_operation::eval",
                 generate_error_message(
-                    "the map_operation primitive requires "
-                        "at least two operands"));
+                    "the parallel_map_operation primitive requires at "
+                        "least two operands"));
         }
 
         bool arguments_valid = true;
@@ -175,9 +187,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (!arguments_valid)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "map_operation::eval",
+                "parallel_map_operation::eval",
                 generate_error_message(
-                    "the map_operation primitive requires that the "
+                    "the parallel_map_operation primitive requires that the "
                         "arguments given by the operands array are valid"));
         }
 
@@ -186,7 +198,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (p == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "map_operation::eval",
+                "parallel_map_operation::eval",
                 generate_error_message(
                     "the first argument to map must be an invocable object"));
         }
@@ -201,7 +213,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // Start iteration over given for statement
-    hpx::future<primitive_argument_type> map_operation::eval(
+    hpx::future<primitive_argument_type> parallel_map_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands_.empty())
