@@ -7,6 +7,8 @@
 #include <phylanx/plugins/matrixops/matrixops.hpp>
 #include <phylanx/plugins/plugin_factory.hpp>
 
+#include <string>
+
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(add_dimension_plugin,
@@ -29,8 +31,6 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(diag_operation_plugin,
     phylanx::execution_tree::primitives::diag_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dot_operation_plugin,
     phylanx::execution_tree::primitives::dot_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(exponential_operation_plugin,
-    phylanx::execution_tree::primitives::exponential_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(extract_shape_plugin,
     phylanx::execution_tree::primitives::extract_shape::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(gradient_operation_plugin,
@@ -76,3 +76,26 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(get_seed,
 PHYLANX_REGISTER_PLUGIN_FACTORY(set_seed,
     phylanx::execution_tree::primitives::set_seed_match_data,
     "set_seed_action");
+
+namespace phylanx {
+namespace plugin {
+    struct generic_operation_plugin : plugin_base
+    {
+        void register_known_primitives() override
+        {
+            namespace pet = phylanx::execution_tree;
+
+            std::string generic_operation_name("__gen");
+            for (auto const& pattern :
+                pet::primitives::generic_operation::match_data)
+            {
+                pet::register_pattern(generic_operation_name, pattern);
+            }
+        }
+    };
+}
+}
+
+PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::generic_operation_plugin,
+    generic_operation_plugin,
+    phylanx::execution_tree::primitives::make_list::match_data, "__gen");
