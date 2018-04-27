@@ -6,6 +6,7 @@
 set(subdirs
     ast
     execution_tree
+    python
    )
 
 foreach(subdir ${subdirs})

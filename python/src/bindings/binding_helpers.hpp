@@ -156,25 +156,14 @@ namespace phylanx { namespace bindings
     inline void expression_compiler(std::string xexpr_str, compiler_state& c)
     {
         pybind11::gil_scoped_release release;       // release GIL
-        try
-        {
-            namespace et = phylanx::execution_tree;
-            return hpx::threads::run_as_hpx_thread(
-                [&]() -> void
-                {
-                    phylanx::execution_tree::compile(
-                        phylanx::ast::generate_ast(xexpr_str), c.eval_snippets,
-                        c.eval_env);
-                });
-        }
-        catch (std::exception const& ex)
-        {
-            PyErr_SetString(PyExc_RuntimeError, ex.what());
-        }
-        catch (...)
-        {
-            PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-        }
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> void
+            {
+                phylanx::execution_tree::compile(
+                    phylanx::ast::generate_ast(xexpr_str), c.eval_snippets,
+                    c.eval_env);
+            });
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -183,42 +172,30 @@ namespace phylanx { namespace bindings
         std::string xexpr_str, compiler_state& c, pybind11::args args)
     {
         pybind11::gil_scoped_release release;       // release GIL
-        try
-        {
-            namespace et = phylanx::execution_tree;
-            return hpx::threads::run_as_hpx_thread(
-                [&]() -> et::primitive_argument_type
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> phylanx::execution_tree::primitive_argument_type
+            {
+                pybind11::gil_scoped_acquire acquire;
+                auto xexpr = phylanx::ast::generate_ast(xexpr_str);
+                auto x = phylanx::execution_tree::compile(
+                    xexpr, c.eval_snippets, c.eval_env);
+
+                std::vector<phylanx::execution_tree::primitive_argument_type>
+                    fargs;
+                fargs.reserve(args.size());
+
+                for (auto const& item : args)
                 {
-                    pybind11::gil_scoped_acquire acquire;
-                    auto xexpr = phylanx::ast::generate_ast(xexpr_str);
-                    auto x = phylanx::execution_tree::compile(
-                        xexpr, c.eval_snippets, c.eval_env);
+                    phylanx::execution_tree::primitive_argument_type value =
+                        item.cast<
+                            phylanx::execution_tree::primitive_argument_type>();
+                    fargs.emplace_back(std::move(value));
+                }
 
-                    std::vector<phylanx::execution_tree::primitive_argument_type>
-                        fargs;
-                    fargs.reserve(args.size());
-
-                    for (auto const& item : args)
-                    {
-                        phylanx::execution_tree::primitive_argument_type value =
-                            item.cast<
-                                phylanx::execution_tree::primitive_argument_type>();
-                        fargs.emplace_back(std::move(value));
-                    }
-
-                    pybind11::gil_scoped_release release;       // release GIL
-                    return x(std::move(fargs));
-                });
-        }
-        catch (std::exception const& ex)
-        {
-            PyErr_SetString(PyExc_RuntimeError, ex.what());
-        }
-        catch (...)
-        {
-            PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
-        }
-        return {};
+                pybind11::gil_scoped_release release;       // release GIL
+                return x(std::move(fargs));
+            });
     };
 }}
 

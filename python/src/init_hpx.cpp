@@ -267,14 +267,21 @@ manage_global_runtime* rts = nullptr;
 void init_hpx_runtime()
 {
     if (rts == nullptr)
+    {
+        pybind11::gil_scoped_release release;
         rts = new manage_global_runtime;
+    }
 }
 
 void stop_hpx_runtime()
 {
     manage_global_runtime* r = rts;
     rts = nullptr;
-    delete r;
+    if (r != nullptr)
+    {
+        pybind11::gil_scoped_release release;
+        delete r;
+    }
 }
 
 }}
