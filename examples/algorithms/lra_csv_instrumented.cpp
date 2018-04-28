@@ -74,8 +74,6 @@ std::string const lra_code = R"(block(
             define(weights, constant(0.0, shape(x, 1))),            // weights: [M]
             define(transx, transpose(x)),                           // transx:  [M, N]
             define(pred, constant(0.0, shape(x, 0))),
-            define(error, constant(0.0, shape(x, 0))),
-            define(gradient, constant(0.0, shape(x, 1))),
             define(step, 0),
             while(
                 step < iterations,
@@ -83,12 +81,8 @@ std::string const lra_code = R"(block(
                     if(enable_output, cout("step: ", step, ", ", weights)),
                     // exp(-dot(x, weights)): [N], pred: [N]
                     store(pred, 1.0 / (1.0 + exp(-dot(x, weights)))),
-                    store(error, pred - y),                         // error: [N]
-                    store(gradient, dot(transx, error)),            // gradient: [M]
-                    parallel_block(
-                        store(weights, weights - (alpha * gradient)),
-                        store(step, step + 1)
-                    )
+                    store(weights, weights - (alpha * dot(transx, pred - y))),
+                    store(step, step + 1)
                 )
             ),
             weights
