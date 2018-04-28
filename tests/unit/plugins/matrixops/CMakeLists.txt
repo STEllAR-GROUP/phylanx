@@ -14,8 +14,8 @@ set(tests
     diag_operation
     dot_operation
     cross_operation
-    exponential_operation
     extract_shape
+    generic_operation
     gradient_operation
     hstack_operation
     identity
