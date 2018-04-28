@@ -22,6 +22,7 @@ set(tests
     inverse_operation
     linearmatrix
     linspace
+    list_slicing_operation
     mean_operation
     power_operation
     random
