@@ -193,12 +193,12 @@ int main(int argc, char* argv[])
     test_generic_operation_1d("amin",
         [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicVector<double> {
-            return blaze::DynamicVector<double>((blaze::min)(m));
+            return blaze::DynamicVector<double>(1, (blaze::min)(m));
         });
     test_generic_operation_1d("amax",
         [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicVector<double> {
-            return blaze::DynamicVector<double>((blaze::max)(m));
+            return blaze::DynamicVector<double>(1, (blaze::max)(m));
         });
     test_generic_operation_1d("absolute",
         [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)

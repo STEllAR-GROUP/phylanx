@@ -11,6 +11,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -25,12 +26,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 #define PHYLANX_GEN_MATCH_DATA(name)                                           \
     hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
-        &create_generic_operation, &create_primitive<generic_operation>) /**/
+        &create_generic_operation, &create_primitive<generic_operation>)
+/**/
 
-    std::vector<match_pattern_type> const generic_operation::match_data = {
+    std::vector<match_pattern_type> const generic_operation::match_data =
+    {
         PHYLANX_GEN_MATCH_DATA("amin"),
         PHYLANX_GEN_MATCH_DATA("amax"),
         PHYLANX_GEN_MATCH_DATA("absolute"),
@@ -66,9 +69,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 #undef PHYLANX_GEN_MATCH_DATA
 
-    double (*generic_operation::get_0d_map(std::string const& name))(double)
+    ///////////////////////////////////////////////////////////////////////////
+    generic_operation::scalar_function_ptr
+        generic_operation::get_0d_map(std::string const& name) const
     {
-        static std::map<std::string, double (*)(double)> map0d = {
+        static std::map<std::string, scalar_function_ptr> map0d = {
             {"amin", [](double m) -> double { return m; }},
             {"amax", [](double m) -> double { return m; }},
             {"absolute", [](double m) -> double { return blaze::abs(m); }},
@@ -97,417 +102,507 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"arctan", [](double m) -> double { return blaze::atan(m); }},
             {"arcsinh", [](double m) -> double { return blaze::asinh(m); }},
             {"arccosh",
-                [](double m) -> double {
+                [](double m) -> double
+                {
+#if defined(PHYLANX_DEBUG)
                     if (m < 1)
-                        HPX_THROW_EXCEPTION(
-                            hpx::bad_parameter, "arccosh", "Domain error");
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "arccosh",
+                            "scalar arccosh: domain error");
+                    }
+#endif
                     return blaze::acosh(m);
                 }},
             {"arctanh",
-                [](double m) -> double {
+                [](double m) -> double
+                {
+#if defined(PHYLANX_DEBUG)
                     if (m <= -1 || m >= 1)
-                        HPX_THROW_EXCEPTION(
-                            hpx::bad_parameter, "arctanh", "Domain error");
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "arctanh",
+                            "scalar arctanh: domain error");
+                    }
+#endif
                     return blaze::atanh(m);
                 }},
             {"erf", [](double m) -> double { return blaze::erf(m); }},
             {"erfc", [](double m) -> double { return blaze::erfc(m); }},
             {"normalize",
-                [](double m) -> double {
+                [](double m) -> double
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
-                        "normalize does not support double");
+                        "normalize does not support scalars");
                 }},
             {"trace", [](double m) -> double { return m; }}};
         return map0d[name];
     }
 
-    blaze::DynamicVector<double> (
-        *generic_operation::get_1d_map(std::string const& name))(
-        const blaze::CustomVector<double, blaze::aligned, blaze::padded>&)
+    ///////////////////////////////////////////////////////////////////////////
+    generic_operation::vector_function_ptr
+        generic_operation::get_1d_map(std::string const& name) const
     {
-        static std::map<std::string,
-            blaze::DynamicVector<double> (*)(const blaze::CustomVector<double,
-                blaze::aligned, blaze::padded>&)>
-            map1d = {
-                {"amin",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::DynamicVector<double>((blaze::min)(m));
-                    }},
-                {"amax",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::DynamicVector<double>((blaze::max)(m));
-                    }},
-                {"absolute",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::abs(m);
-                    }},
-                {"floor",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::floor(m);
-                    }},
-                {"ceil",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::ceil(m);
-                    }},
-                {"trunc",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::trunc(m);
-                    }},
-                {"rint",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::round(m);
-                    }},
-                {"conj",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::conj(m);
-                    }},
-                {"real",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::real(m);
-                    }},
-                {"imag",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::imag(m);
-                    }},
-                {"sqrt",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::sqrt(m);
-                    }},
-                {"invsqrt",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::invsqrt(m);
-                    }},
-                {"cbrt",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::cbrt(m);
-                    }},
-                {"invcbrt",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::invcbrt(m);
-                    }},
-                {"exp",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::exp(m);
-                    }},
-                {"exp2",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::exp2(m);
-                    }},
-                {"exp10",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::exp10(m);
-                    }},
-                {"log",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::log(m);
-                    }},
-                {"log2",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::log2(m);
-                    }},
-                {"log10",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::log10(m);
-                    }},
-                {"sin",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::sin(m);
-                    }},
-                {"cos",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::cos(m);
-                    }},
-                {"tan",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::tan(m);
-                    }},
-                {"arcsin",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::asin(m);
-                    }},
-                {"arccos",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::acos(m);
-                    }},
-                {"arctan",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::atan(m);
-                    }},
-                {"arcsinh",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::asinh(m);
-                    }},
-                {"arccosh",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        for (auto a : m)
-                            if (a < 1)
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "arccosh",
-                                    "Domain error");
-                        return blaze::acosh(m);
-                    }},
-                {"arctanh",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        for (auto a : m)
-                            if (a >= 1 || a <= -1)
-                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "arctanh", "Domain error");
-                        return blaze::atanh(m);
-                    }},
-                {"erf",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::erf(m);
-                    }},
-                {"erfc",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::erfc(m);
-                    }},
-                {"normalize",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        return blaze::normalize(m);
-                    }},
-                {"trace",
-                    [](const blaze::CustomVector<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicVector<double> {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "trace",
-                            "not support vector operation");
-                    }}};
+        static std::map<std::string, vector_function_ptr> map1d =
+        {
+            { "amin",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return dynamic_vector_type(1, (blaze::min)(m));
+                }
+            },
+            { "amax",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return dynamic_vector_type(1, (blaze::max)(m));
+                }
+            },
+            { "absolute",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::abs(m);
+                }
+            },
+            { "floor",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::floor(m);
+                }
+            },
+            { "ceil",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::ceil(m);
+                }
+            },
+            { "trunc",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::trunc(m);
+                }
+            },
+            { "rint",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::round(m);
+                }
+            },
+            { "conj",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::conj(m);
+                }
+            },
+            { "real",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::real(m);
+                }
+            },
+            { "imag",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::imag(m);
+                }
+            },
+            { "sqrt",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::sqrt(m);
+                }
+            },
+            { "invsqrt",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::invsqrt(m);
+                }
+            },
+            { "cbrt",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::cbrt(m);
+                }
+            },
+            { "invcbrt",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::invcbrt(m);
+                }
+            },
+            { "exp",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::exp(m);
+                }
+            },
+            { "exp2",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::exp2(m);
+                }
+            },
+            { "exp10",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::exp10(m);
+                }
+            },
+            { "log",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::log(m);
+                }
+            },
+            { "log2",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::log2(m);
+                }
+            },
+            { "log10",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::log10(m);
+                }
+            },
+            { "sin",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::sin(m);
+                }
+            },
+            { "cos",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::cos(m);
+                }
+            },
+            {"tan",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::tan(m);
+                }
+            },
+            { "arcsin",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::asin(m);
+                }
+            },
+            { "arccos",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::acos(m);
+                }
+            },
+            { "arctan",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::atan(m);
+                }
+            },
+            { "arcsinh",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::asinh(m);
+                }
+            },
+            { "arccosh",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+#if defined(PHYLANX_DEBUG)
+                    for (auto a : m)
+                    {
+                        if (a < 1)
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter, "arccosh",
+                                "vector arccosh: domain error");
+                        }
+                    }
+#endif
+                    return blaze::acosh(m);
+                }
+            },
+            { "arctanh",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+#if defined(PHYLANX_DEBUG)
+                    for (auto a : m)
+                    {
+                        if (a >= 1 || a <= -1)
+                        {
+                            HPX_THROW_EXCEPTION(hpx::bad_parameter, "arctanh",
+                                "vector arctanh: domain error");
+                        }
+                    }
+#endif
+                    return blaze::atanh(m);
+                }
+            },
+            { "erf",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::erf(m);
+                }
+            },
+            { "erfc",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::erfc(m);
+                }
+            },
+            { "normalize",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    return blaze::normalize(m);
+                }
+            },
+            { "trace",
+                [](custom_vector_type const& m) -> dynamic_vector_type
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter, "trace",
+                        "vector operation is not supported for trace()");
+                }
+            }
+        };
         return map1d[name];
     }
 
-    blaze::DynamicMatrix<double> (
-        *generic_operation::get_2d_map(std::string const& name))(
-        const blaze::CustomMatrix<double, blaze::aligned, blaze::padded>&)
+    ///////////////////////////////////////////////////////////////////////////
+    generic_operation::matrix_function_ptr
+        generic_operation::get_2d_map(std::string const& name) const
     {
-        static std::map<std::string,
-            blaze::DynamicMatrix<double> (*)(const blaze::CustomMatrix<double,
-                blaze::aligned, blaze::padded>&)>
-            map2d = {
-                {"amin",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::DynamicMatrix<double>(
-                            1, 1, (blaze::min)(m));
-                    }},
-                {"amax",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::DynamicMatrix<double>(
-                            1, 1, (blaze::max)(m));
-                    }},
-                {"absolute",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::abs(m);
-                    }},
-                {"floor",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::floor(m);
-                    }},
-                {"ceil",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::ceil(m);
-                    }},
-                {"trunc",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::trunc(m);
-                    }},
-                {"rint",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::round(m);
-                    }},
-                {"conj",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::conj(m);
-                    }},
-                {"real",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::real(m);
-                    }},
-                {"imag",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::imag(m);
-                    }},
-                {"sqrt",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::sqrt(m);
-                    }},
-                {"invsqrt",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::invsqrt(m);
-                    }},
-                {"cbrt",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::cbrt(m);
-                    }},
-                {"invcbrt",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::invcbrt(m);
-                    }},
-                {"exp",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::exp(m);
-                    }},
-                {"exp2",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::exp2(m);
-                    }},
-                {"exp10",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::exp10(m);
-                    }},
-                {"log",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::log(m);
-                    }},
-                {"log2",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::log2(m);
-                    }},
-                {"log10",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::log10(m);
-                    }},
-                {"sin",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::sin(m);
-                    }},
-                {"cos",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::cos(m);
-                    }},
-                {"tan",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::tan(m);
-                    }},
-                {"arcsin",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::asin(m);
-                    }},
-                {"arccos",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::acos(m);
-                    }},
-                {"arctan",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::atan(m);
-                    }},
-                {"arcsinh",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::asinh(m);
-                    }},
-                {"arccosh",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        for (size_t i = 0UL; i < m.rows(); ++i)
+        static std::map<std::string, matrix_function_ptr> map2d =
+        {
+            { "amin",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return dynamic_matrix_type{1, 1, (blaze::min)(m)};
+                }
+            },
+            { "amax",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return dynamic_matrix_type{1, 1, (blaze::max)(m)};
+                }
+            },
+            { "absolute",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::abs(m);
+                }
+            },
+            { "floor",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::floor(m);
+                }
+            },
+            { "ceil",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::ceil(m);
+                }
+            },
+            { "trunc",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::trunc(m);
+                }
+            },
+            { "rint",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::round(m);
+                }
+            },
+            { "conj",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::conj(m);
+                }
+            },
+            { "real",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::real(m);
+                }
+            },
+            { "imag",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::imag(m);
+                }
+            },
+            { "sqrt",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::sqrt(m);
+                }
+            },
+            { "invsqrt",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::invsqrt(m);
+                }
+            },
+            { "cbrt",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::cbrt(m);
+                }
+            },
+            { "invcbrt",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::invcbrt(m);
+                }
+            },
+            { "exp",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::exp(m);
+                }
+            },
+            { "exp2",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::exp2(m);
+                }
+            },
+            { "exp10",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::exp10(m);
+                }
+            },
+            { "log",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::log(m);
+                }
+            },
+            { "log2",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::log2(m);
+                }
+            },
+            { "log10",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::log10(m);
+                }
+            },
+            { "sin",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::sin(m);
+                }
+            },
+            { "cos",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::cos(m);
+                }
+            },
+            { "tan",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::tan(m);
+                }
+            },
+            { "arcsin",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::asin(m);
+                }
+            },
+            { "arccos",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::acos(m);
+                }
+            },
+            { "arctan",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::atan(m);
+                }
+            },
+            { "arcsinh",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::asinh(m);
+                }
+            },
+            { "arccosh",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+#if defined(PHYLANX_DEBUG)
+                    for (size_t i = 0UL; i < m.rows(); ++i)
+                    {
+                        for (size_t j = 0UL; j < m.columns(); ++j)
                         {
-                            for (size_t j = 0UL; j < m.columns(); ++j)
+                            if (m(i, j) < 1)
                             {
-                                if (m(i, j) < 1)
-                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "arccosh", "Domain error");
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "arccosh", "matrix arccosh: domain error");
                             }
                         }
-                        return blaze::acosh(m);
-                    }},
-                {"arctanh",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        for (size_t i = 0UL; i < m.rows(); ++i)
+                    }
+#endif
+                    return blaze::acosh(m);
+                }
+            },
+            { "arctanh",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+#if defined(PHYLANX_DEBUG)
+                    for (size_t i = 0UL; i < m.rows(); ++i)
+                    {
+                        for (size_t j = 0UL; j < m.columns(); ++j)
                         {
-                            for (size_t j = 0UL; j < m.columns(); ++j)
-                            {
-                                if (m(i, j) <= -1 || m(i, j) >= 1)
-                                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                        "arctanh", "Domain error");
-                            }
+                            if (m(i, j) <= -1 || m(i, j) >= 1)
+                                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "arctanh", "matrix arctanh: domain error");
                         }
-                        return blaze::atanh(m);
-                    }},
-                {"erf",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::erf(m);
-                    }},
-                {"erfc",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::erfc(m);
-                    }},
-                {"normalize",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
-                            "not support Matrix operation");
-                    }},
-                {"trace",
-                    [](const blaze::CustomMatrix<double, blaze::aligned,
-                        blaze::padded>& m) -> blaze::DynamicMatrix<double> {
-                        return blaze::DynamicMatrix<double>(
-                            1, 1, blaze::trace(m));
-                    }}};
-
+                    }
+#endif
+                    return blaze::atanh(m);
+                }
+            },
+            { "erf",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::erf(m);
+                }
+            },
+            { "erfc",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::erfc(m);
+                }
+            },
+            { "normalize",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
+                        "normalize() is not a supported matrix operation");
+                }
+            },
+            { "trace",
+                [](custom_matrix_type const& m) -> dynamic_matrix_type
+                {
+                    return blaze::DynamicMatrix<double>(
+                        1, 1, blaze::trace(m));
+                }
+            }
+        };
         return map2d[name];
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
+    namespace detail
+    {
         std::string extract_function_name(std::string const& name)
         {
             std::string::size_type p = name.find_first_of("$");
@@ -520,42 +615,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     generic_operation::generic_operation(
-        std::vector<primitive_argument_type> && operands,
-        std::string const& name, std::string const& codename)
+            std::vector<primitive_argument_type> && operands,
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
         std::string func_name = detail::extract_function_name(name);
+
         func0d_ = get_0d_map(func_name);
         func1d_ = get_1d_map(func_name);
         func2d_ = get_2d_map(func_name);
+
+        HPX_ASSERT(
+            func0d_ != nullptr && func1d_ != nullptr && func2d_ != nullptr);
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type generic_operation::generic0d(operands_type && ops)
-        const
+    primitive_argument_type generic_operation::generic0d(
+        operand_type&& op) const
     {
-        ops[0] = func0d_(ops[0].scalar());
-        return primitive_argument_type{std::move(ops[0])};
+        return primitive_argument_type{func0d_(op.scalar())};
     }
 
-    primitive_argument_type generic_operation::generic1d(operands_type && ops)
-        const
+    primitive_argument_type generic_operation::generic1d(
+        operand_type&& op) const
     {
-        using vector_type = blaze::DynamicVector<double>;
-
-        vector_type result = func1d_(ops[0].vector());
         return primitive_argument_type{
-            ir::node_data<double>(std::move(result))};
+            ir::node_data<double>{func1d_(op.vector())}};
     }
 
-    primitive_argument_type generic_operation::generic2d(operands_type && ops)
-        const
+    primitive_argument_type generic_operation::generic2d(
+        operand_type&& op) const
     {
-        using matrix_type = blaze::DynamicMatrix<double>;
-
-        matrix_type result = func2d_(ops[0].matrix());
         return primitive_argument_type{
-            ir::node_data<double>(std::move(result))};
+            ir::node_data<double>{func2d_(op.matrix())}};
     }
 
     hpx::future<primitive_argument_type> generic_operation::eval(
@@ -566,53 +658,49 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "generic_operation::eval",
-                execution_tree::generate_error_message(
+                generate_error_message(
                     "the generic_operation primitive requires"
-                    "exactly one operand",
-                    name_, codename_));
+                        "exactly one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "generic_operation::eval",
-                execution_tree::generate_error_message(
+                generate_error_message(
                     "the generic_operation primitive requires "
-                    "that the arguments given by the operands "
-                    "array is valid",
-                    name_, codename_));
+                        "that the arguments given by the operands "
+                        "array is valid"));
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
-            hpx::util::unwrapping(
-                [this_](operands_type&& ops) -> primitive_argument_type {
-                    std::size_t dims = ops[0].num_dimensions();
-                    switch (dims)
-                    {
-                    case 0:
-                        return this_->generic0d(std::move(ops));
+        return hpx::dataflow(hpx::util::unwrapping(
+            [this_](operand_type&& op) -> primitive_argument_type
+            {
+                std::size_t dims = op.num_dimensions();
+                switch (dims)
+                {
+                case 0:
+                    return this_->generic0d(std::move(op));
 
-                    case 1:
-                        return this_->generic1d(std::move(ops));
+                case 1:
+                    return this_->generic1d(std::move(op));
 
-                    case 2:
-                        return this_->generic2d(std::move(ops));
+                case 2:
+                    return this_->generic2d(std::move(op));
 
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "generic_operation::eval",
-                            execution_tree::generate_error_message(
-                                "left hand side operand has unsupported "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
-                    }
-                }),
-            detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_));
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "generic_operation::eval",
+                        this_->generate_error_message(
+                            "left hand side operand has unsupported "
+                                "number of dimensions"));
+                }
+            }),
+            numeric_operand(operands[0], args, name_, codename_));
     }
 
-    // Implement 'gen' for all possible combinations of lhs and rhs
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> generic_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
