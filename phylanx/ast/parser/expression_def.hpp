@@ -46,6 +46,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::bool_type bool_;
         qi::int_parser<std::int64_t> long_long;
         qi::attr_type attr;
+        qi::hex_type hex;
 
         using qi::on_error;
         using qi::on_success;
@@ -84,6 +85,19 @@ namespace phylanx { namespace ast { namespace parser
         keywords.add
             ("true")
             ("false")
+            ;
+
+        unesc_char.add
+            ("\\a", '\a')   // \a is alert
+            ("\\b", '\b')   // \b is backspace
+            ("\\f", '\f')   // \f is form feed
+            ("\\n", '\n')   // \n is linefeed
+            ("\\r", '\r')   // \r is carriage return
+            ("\\t", '\t')   // \t is tab
+            ("\\v", '\v')   // \v is vertical tab
+            ("\\\\", '\\')  // \\ is backslash
+            ("\\\'", '\'')  // \' is '
+            ("\\\"", '"')   // \" is "
             ;
 
         ///////////////////////////////////////////////////////////////////////
@@ -140,7 +154,7 @@ namespace phylanx { namespace ast { namespace parser
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
             ;
 
-        string = lexeme['"' > raw[*(char_ - '"')] > '"']
+        string = lexeme['"' > *(unesc_char | "\\x" >> hex | (char_ - '"')) > '"']
             ;
 
         ///////////////////////////////////////////////////////////////////////

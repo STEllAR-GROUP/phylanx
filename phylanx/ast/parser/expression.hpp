@@ -69,6 +69,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::symbols<char, ast::optoken> unary_op;
         qi::symbols<char, ast::optoken> binary_op;
         qi::symbols<char> keywords;
+        qi::symbols<char const, char const> unesc_char;
     };
 
     template <typename Iterator>
