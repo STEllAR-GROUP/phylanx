@@ -95,5 +95,5 @@ else()
       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 endif()
 
-set(phylanx_targets ${phylanx_targets} phylanx_py)
+set(phylanx_targets ${phylanx_targets} phylanx_py PARENT_SCOPE)
 

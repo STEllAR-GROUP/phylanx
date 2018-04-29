@@ -4,76 +4,11 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    add_operation
-    all_operation
-    and_operation
-    any_operation
-    argmin
-    argmax
-    block_operation
-    car_cdr_operation
-    column_set
-    column_slicing
-    constant
     define_operation
-    determinant
-    diag_operation
-    div_operation
-    dot_operation
-    cross_operation
-    equal_operation
-    exponential_operation
-    extract_shape
-    file_primitives
-    file_csv_primitives
-    filter_operation
-    fold_left_operation
-    fold_right_operation
-    for_operation
-    gradient_operation
-    add_dimension
-    greater_operation
-    greater_equal_operation
-    hstack_operation
-    identity
-    if_conditional
-    inverse_operation
     invoke_operation
-    less_operation
-    less_equal_operation
     literal_value
-    linearmatrix
-    linspace
-    map_operation
-    mul_operation
-    mean_operation
-    not_equal_operation
-    or_operation
-    parallel_block_operation
-    power_operation
-    random
-    random_distributions
-    row_set
-    row_slicing
-    set_operation
-    shuffle_operation
-    slicing_operation
-    square_root_operation
     store_operation
-    sub_operation
-    sum_operation
-    transpose_operation
-    unary_minus_operation
-    unary_not_operation
-    vstack_operation
-    while_operation
    )
-
-if(PHYLANX_WITH_HIGHFIVE)
-  set(tests ${tests}
-        file_hdf5_primitives
-     )
-endif()
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

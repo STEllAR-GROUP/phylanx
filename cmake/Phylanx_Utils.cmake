@@ -15,6 +15,7 @@ phylanx_include(
   AddLibraryHeaders
   AddLibrarySources
   AddLinkFlag
+  AddPrimitivePlugin
   AddPseudoDependencies
   AddPseudoTarget
   AddSourceGroup

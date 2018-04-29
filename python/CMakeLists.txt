@@ -90,4 +90,4 @@ set(PHYLANX_PYTHON_EXTENSION_LOCATION ${_result} CACHE STRING
     "Location of the staged python extension")
 mark_as_advanced(PHYLANX_PYTHON_EXTENSION_LOCATION)
 
-set(phylanx_targets ${phylanx_targets} python_setup)
+set(phylanx_targets ${phylanx_targets} PARENT_SCOPE)

@@ -14,7 +14,6 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/performance_counters.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/runtime/startup_function.hpp>
 
 #include <atomic>
 #include <cstdint>
@@ -396,7 +395,7 @@ namespace phylanx { namespace performance_counters
     // This function will be registered as a startup function for HPX below.
     // That means it will be executed in an HPX-thread before hpx_main, but
     // after the runtime has been initialized and started.
-    void startup()
+    void startup_counters()
     {
         // Install the counter types, de-installation of the types is handled
         // automatically.
@@ -465,23 +464,7 @@ namespace phylanx { namespace performance_counters
                 &hpx::performance_counters::locality_counter_discoverer);
         }
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    bool get_startup(hpx::startup_function_type& startup_func,
-        bool& pre_startup)
-    {
-        // return our startup-function if performance counters are required
-        startup_func = startup;   // function to run during startup
-        pre_startup = true;       // run 'startup' as pre-startup function
-        return true;
-    }
 }}
-
-///////////////////////////////////////////////////////////////////////////////
-// Register a startup function that will be called as a HPX-thread during
-// runtime startup. We use this function to register our performance counter
-// type and performance counter instances.
-HPX_REGISTER_STARTUP_MODULE(phylanx::performance_counters::get_startup);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Register the factory functionality for the performance counter
