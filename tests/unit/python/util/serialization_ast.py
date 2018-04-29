@@ -6,10 +6,12 @@
 import phylanx
 from phylanx.ast import *
 
+
 @Phylanx("PhySL")
 def foo(a):
     a += 2
     return a
+
 
 foo_ast = generate_ast(foo.__src__)
 foo_serialized = phylanx.util.serialize(foo_ast)
