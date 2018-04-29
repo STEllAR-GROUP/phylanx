@@ -313,11 +313,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
         template <typename F>
         compiled_function* define(std::string name, F && f)
         {
-            if (definitions_.find(name) != definitions_.end())
+            auto existing = definitions_.find(name);
+            if (existing != definitions_.end())
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::environment::define",
-                    "given name was already defined: " + name);
+                definitions_.erase(existing);
             }
 
             auto result = definitions_.emplace(value_type(

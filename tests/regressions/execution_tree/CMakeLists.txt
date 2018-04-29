@@ -17,6 +17,7 @@ set(tests
     shape1d_357
     support_nil_314
     vector_of_variables_244
+    replace_names_374
    )
 
 set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)
