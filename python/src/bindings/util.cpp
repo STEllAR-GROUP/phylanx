@@ -15,6 +15,7 @@
 #include <pybind11/pybind11.h>
 
 #include <cstdint>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 // expose util submodule
@@ -53,7 +54,8 @@ void phylanx::bindings::bind_util(pybind11::module m)
         &phylanx::bindings::serialize<phylanx::ir::node_data<std::uint8_t>>,
         "serialize a node_data<std::uint8_t> expression object into a byte-stream");
 
-    util.def("unserialize", &phylanx::util::unserialize<std::vector<phylanx::ast::expression>>,
+    util.def("unserialize",
+        &phylanx::util::unserialize<std::vector<phylanx::ast::expression>>,
         "un-serialize a byte-stream into a Phylanx object");
     util.def("unserialize", &phylanx::util::unserialize<phylanx::ast::expression>,
         "un-serialize a byte-stream into a Phylanx object");
