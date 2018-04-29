@@ -5,6 +5,7 @@
 
 set(tests
     add_operation
+    add_lists
     div_operation
     mul_operation
     sub_operation
