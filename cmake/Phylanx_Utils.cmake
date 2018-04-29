@@ -36,6 +36,7 @@ phylanx_include(
   SetOutputPaths
   SetupTarget
   ShortenPseudoTarget
+  VimYouCompleteMe
 )
 
 phylanx_include(

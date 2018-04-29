@@ -1,4 +1,5 @@
 # Copyright (c) 2017-2018 Hartmut Kaiser
+# Copyright (c) 2018 R. Tohid
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -110,6 +111,11 @@ phylanx_option(
   "Enable or disable building HDF5 Support"
   OFF ADVANCED CATEGORY "Build")
 
+phylanx_option(
+  PHYLANX_WITH_VIM_YCM BOOL
+  "Enable or disable YouCompleteMe configuration support for VIM"
+  OFF ADVANCED CATEGORY "Build")
+
 if(MSVC)
   phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
     "Force creating pseudo targets and pseudo dependencies (default OFF)."
@@ -120,7 +126,6 @@ else()
     ON CATEGORY "Build Targets")
 endif()
 
-################################################################################
 # Locate dependencies
 phylanx_setup_hpx()
 phylanx_setup_blaze()
