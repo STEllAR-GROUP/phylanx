@@ -62,6 +62,6 @@ def ALS( filename, row_stop, col_stop, regularization, num_factors, iterations, 
     return make_list(X,Y)
 
 
-(a,b) = ALS("/home/shahrzad/Spyder/MovieLens/ml-20m/MovieLens_20m.csv", 10, 10, 0.1, 3, 1, 40, True)
+(a,b) = ALS("MovieLens.csv", 10, 10, 0.1, 3, 1, 40, True)
 print(a)
 print(b)
