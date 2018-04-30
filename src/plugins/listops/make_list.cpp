@@ -43,26 +43,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        bool arguments_valid = true;
-        for (std::size_t i = 0; i != operands.size(); ++i)
-        {
-            if (!valid(operands[i]))
-            {
-                arguments_valid = false;
-            }
-        }
-
-        if (!arguments_valid)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "make_list::eval",
-                execution_tree::generate_error_message(
-                    "the make_list primitive requires that "
-                        "the arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
-        }
-
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](std::vector<primitive_argument_type> && args)

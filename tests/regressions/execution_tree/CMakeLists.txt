@@ -15,6 +15,7 @@ set(tests
     no_integers_313
     out_of_scope_variable_232
     shape1d_357
+    slicing_nil_358
     support_nil_314
     vector_of_variables_244
     replace_names_374
