@@ -57,6 +57,6 @@ void phylanx::bindings::bind_util(pybind11::module m)
     util.def("unserialize",
         &phylanx::util::unserialize<std::vector<phylanx::ast::expression>>,
         "un-serialize a byte-stream into a Phylanx object");
-    util.def("unserialize", &phylanx::util::unserialize<phylanx::ast::expression>,
+    util.def("unserialize_expr", &phylanx::util::unserialize<phylanx::ast::expression>,
         "un-serialize a byte-stream into a Phylanx object");
 }

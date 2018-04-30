@@ -12,7 +12,7 @@ import phylanx.util as util
 
 def test_serialization(in_ast):
     data = util.serialize(in_ast)
-    out_ast = util.unserialize(data)
+    out_ast = util.unserialize_expr(data)
     assert (in_ast == out_ast)
 
     import pickle
