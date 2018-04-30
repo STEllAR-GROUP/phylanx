@@ -4,6 +4,9 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(example_programs
+    als
+    als_csv
+    als_csv_instrumented
     lra
     lra_csv
     lra_csv_instrumented
