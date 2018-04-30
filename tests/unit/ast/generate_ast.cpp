@@ -216,6 +216,11 @@ int main(int argc, char* argv[])
     );
 
     test_expression(
+        "\"string\\x20to\\x200unescape\\x3a\\x20\\n\\r\\t\\\"\\'\\x41\"",
+        "string to 0unescape\x3a \n\r\t\"\'\x41\n"
+    );
+
+    test_expression(
         "'(true, 1, 1.0, A, A + B)",
             "true\n"
             "1\n"
