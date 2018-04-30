@@ -10,6 +10,8 @@
 
 #include <blaze/Math.h>
 #include <boost/program_options.hpp>
+#include <cstdint>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 char const* const read_x_code = R"(block(
