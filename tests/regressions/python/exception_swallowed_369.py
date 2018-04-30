@@ -20,7 +20,7 @@ try:
 
 except Exception as e:
     expected = \
-        '<unknown>: __add$0/0$11$8:: vector size does not match number of ' + \
+        '<unknown>: __add$0/0$12$8:: vector size does not match number of ' + \
         'matrix columns: HPX(bad_parameter)'
     assert(str(e) == expected)
     exception_thrown = True
