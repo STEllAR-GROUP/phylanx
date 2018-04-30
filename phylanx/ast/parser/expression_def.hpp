@@ -46,7 +46,7 @@ namespace phylanx { namespace ast { namespace parser
         qi::bool_type bool_;
         qi::int_parser<std::int64_t> long_long;
         qi::attr_type attr;
-        qi::hex_type hex;
+        qi::uint_parser<unsigned char, 16, 1, 2> hex;
 
         using qi::on_error;
         using qi::on_success;
