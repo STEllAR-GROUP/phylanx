@@ -441,7 +441,6 @@ class PhySL:
             raise Exception("Lists are not supported as loop iters.")
 
         ret += ")), " + self.recompile(a.iter) + ')'
-        print(ret)
         return ret
 
     def recompile(self, a, allowreturn=False):
