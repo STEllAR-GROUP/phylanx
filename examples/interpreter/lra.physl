@@ -3,6 +3,7 @@
 #  Copyright (c) 2018 Parsa Amini
 #  Copyright (c) 2018 Hartmut Kaiser
 #
+#
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
@@ -18,22 +19,21 @@
 # \param enable_output
 # \returns Calculated weights
 
-# Read X-data from given CSV file
+#Read X - data from given CSV file
 define(read_x, filepath, row_start, row_stop, col_start, col_stop,
-    slice(file_read_csv(filepath), row_start, row_stop, col_start, col_stop)
-)
+       slice(file_read_csv(filepath), make_list(row_start, row_stop),
+             make_list(col_start, col_stop)))
 
-# Read Y-data from given CSV file
-define(read_y, filepath, row_start, row_stop,
-    slice(file_read_csv(filepath), row_start, row_stop, -1, 0)
-)
+#Read Y - data from given CSV file
+define(read_y, filepath, row_start, row_stop, col_stop,
+        slice(file_read_csv(filepath), make_list(row_start, row_stop), col_stop))
 
 # Logistic regression analysis algorithm
 define(lra, filepath, row_start, row_stop, col_start, col_stop, alpha,
             iterations, enable_output,
     block(
         define(x, read_x(filepath, row_start, row_stop, col_start, col_stop)),
-        define(y, read_y(filepath, row_start, row_stop)),
+        define(y, read_y(filepath, row_start, row_stop, col_stop)),
         define(weights, constant(0.0, shape(x, 1))),
         define(transx, transpose(x)),
         define(pred, constant(0.0, shape(x, 0))),

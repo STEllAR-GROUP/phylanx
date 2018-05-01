@@ -1,0 +1,95 @@
+#! /usr/bin/env physl
+#
+#Copyright(c) 2018 Shahrzad Shirzad
+#
+#Distributed under the Boost Software License, Version 1.0.(See accompanying
+#file LICENSE_1_0.txt or copy at http:    //www.boost.org/LICENSE_1_0.txt)
+#
+#
+#Linear Regression Algorithm example in PhySL
+# \param filepath
+# \param row_stop
+# \param col_stop
+# \param regularization
+# \param num_factors
+# \param iterations
+# \param alpha
+# \param enable_output
+# \returns X, Y
+
+#Read ratings - data from given CSV file
+define(read_r, filepath, row_start, row_stop, col_start, col_stop,
+    slice(file_read_csv(filepath), make_list(row_start, row_stop),
+        make_list(col_start, col_stop)))
+
+#Alternating Least Squares algorithm
+define(als, filepath, row_stop, col_stop, regularization, num_factors,
+    iterations, alpha, enable_output,
+    block(
+        define(ratings, read_r(filepath, 0, row_stop, 0, col_stop)),
+        define(num_users, shape(ratings, 0)),
+        define(num_items, shape(ratings, 1)),
+        define(conf, alpha* ratings),
+
+        define(conf_u, constant(0.0, make_list(num_items))),
+        define(conf_i, constant(0.0, make_list(num_users))),
+
+        define(c_u, constant(0.0, make_list(num_items, num_items))),
+        define(c_i, constant(0.0, make_list(num_users, num_users))),
+        define(p_u, constant(0.0, make_list(num_items))),
+        define(p_i, constant(0.0, make_list(num_users))),
+
+        set_seed(0),
+        define(X, random(make_list(num_users, num_factors))),
+        define(Y, random(make_list(num_items, num_factors))),
+        define(I_f, identity(num_factors)),
+        define(I_i, identity(num_items)),
+        define(I_u, identity(num_users)),
+        define(k, 0),
+        define(i, 0),
+        define(u, 0),
+
+        define(XtX, constant(0.0, make_list(num_factors, num_factors))),
+        define(YtY, constant(0.0, make_list(num_factors, num_factors))),
+        define(A, constant(0.0, make_list(num_factors, num_factors))),
+        define(b, constant(0.0, make_list(num_factors))),
+        while (k < iterations,
+            block(if (enable_output,
+                      block(cout("iteration ", k),
+                          cout("X: ", X),
+                          cout("Y: ", Y))),
+                store(YtY, dot(transpose(Y), Y) + regularization * I_f),
+                store(XtX, dot(transpose(X), X) + regularization * I_f),
+
+                while (u < num_users,
+                    block(store(conf_u, slice_row(conf, u)),
+                        store(c_u, diag(conf_u)),
+                        store(p_u, __ne(conf_u, 0.0, true)),
+                        store(A, dot(dot(transpose(Y), c_u), Y) + YtY),
+                        store(b,
+                            dot(dot(transpose(Y), (c_u + I_i)),
+                                transpose(p_u))),
+                        set_row(X, u, u + 1, 1, dot(inverse(A), b)),
+                        store(u, u + 1)
+                    )
+                ),
+                store(u, 0),
+                while (i < num_items,
+                    block(store(conf_i, slice_column(conf, i)),
+                        store(c_i, diag(conf_i)),
+                        store(p_i, __ne(conf_i, 0.0, true)),
+                        store(A, dot(dot(transpose(X), c_i), X) + XtX),
+                        store(b,
+                            dot(dot(transpose(X), (c_i + I_u)),
+                                transpose(p_i))),
+                        set_row(Y, i, i + 1, 1, dot(inverse(A), b)),
+                        store(i, i + 1)
+                    )
+                ),
+                store(i, 0),
+                store(k, k + 1))),
+        make_list(X, Y)
+    )
+)
+
+apply(als, sys_argv)

@@ -19,14 +19,14 @@ def ALS(ratings, regularization, num_factors, iterations, alpha=40):
     I_u = np.identity(num_users)
 
     for k in range(iterations):
-        YtY = np.dot(Y.T, Y)
-        XtX = np.dot(X.T, X)
+        YtY = np.dot(Y.T, Y) + regularization * I_f
+        XtX = np.dot(X.T, X) + regularization * I_f
         for u in range(num_users):
             conf_u = conf[u, :]
             c_u = np.diag(conf_u)
             p_u = conf_u.copy()
             p_u[p_u != 0] = 1
-            A = YtY + np.dot(np.dot(Y.T, c_u), Y) + regularization * I_f
+            A = YtY + np.dot(np.dot(Y.T, c_u), Y)
             b = np.dot(np.dot(Y.T, c_u + I_i), p_u.T)
             X[u, :] = np.dot(np.linalg.inv(A), b)
 
@@ -35,7 +35,7 @@ def ALS(ratings, regularization, num_factors, iterations, alpha=40):
             c_i = np.diag(conf_i)
             p_i = conf_i.copy()
             p_i[p_i != 0] = 1
-            A = XtX + np.dot(np.dot(X.T, c_i), X) + regularization * I_f
+            A = XtX + np.dot(np.dot(X.T, c_i), X)
             b = np.dot(np.dot(X.T, c_i + I_u), p_i.T)
             Y[i, :] = np.dot(np.linalg.inv(A), b)
     return X, Y
