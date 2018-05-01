@@ -255,10 +255,12 @@ class PhySL:
             s += self.recompile(a.args[-1])
             s += ')'
 
-        else:
+        else: # a.func is ast.Name
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
+            if args[0].id == "xrange":
+                args[0].id = "range"
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
