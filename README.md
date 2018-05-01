@@ -20,7 +20,7 @@ Studio toolchain:
 
 The [Buildbot](http://ktau.nic.uoregon.edu:8020/tgrid) continuous integration
 service tracks the current build status on several platforms and compilers:
-[![Build status](http://ktau.nic.uoregon.edu:8020/status.png)](http://ktau.nic.uoregon.edu:8020/console)
+[![Build status](http://ktau.nic.uoregon.edu:8020/status.png)](http://ktau.nic.uoregon.edu:8020/#/)
 
 ### Acknowledgements
 
