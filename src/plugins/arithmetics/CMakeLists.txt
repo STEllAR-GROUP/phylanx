@@ -3,10 +3,16 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-add_phylanx_primitive_plugin(phylanx_arithmetics
+add_phylanx_primitive_plugin(arithmetics
   SOURCE_ROOT "${PROJECT_SOURCE_DIR}/src/plugins/arithmetics"
   HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/arithmetics"
   AUTOGLOB
+  PLUGIN
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
+add_phylanx_pseudo_target(primitives.arithmetics_.arithmetics_plugin)
+add_phylanx_pseudo_dependencies(primitives.arithmetics_
+  primitives.arithmetics_.arithmetics_plugin)
+add_phylanx_pseudo_dependencies(primitives.arithmetics_.arithmetics_plugin
+    arithmetics_primitive)

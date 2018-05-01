@@ -13,9 +13,9 @@ set(subdirs
    )
 
 foreach(subdir ${subdirs})
-  add_phylanx_pseudo_target(plugins_.${subdir}_)
+  add_phylanx_pseudo_target(primitives.${subdir}_)
   add_subdirectory(${subdir})
-  add_phylanx_pseudo_dependencies(plugins_ plugins_.${subdir}_)
+  add_phylanx_pseudo_dependencies(primitives primitives.${subdir}_)
 endforeach()
 
 set(phylanx_targets ${phylanx_targets} PARENT_SCOPE)

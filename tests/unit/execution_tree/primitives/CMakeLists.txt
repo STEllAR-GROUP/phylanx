@@ -24,10 +24,10 @@ foreach(test ${tests})
 
   add_phylanx_unit_test("primitives" ${test} ${${test}_PARAMETERS})
 
-  add_phylanx_pseudo_target(tests.unit.execution_tree.primitives.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives
-    tests.unit.execution_tree.primitives.${test})
-  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives.${test}
+  add_phylanx_pseudo_target(tests.unit.execution_tree.primitives_.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives_
+    tests.unit.execution_tree.primitives_.${test})
+  add_phylanx_pseudo_dependencies(tests.unit.execution_tree.primitives_.${test}
     ${test}_test_exe)
 
 endforeach()

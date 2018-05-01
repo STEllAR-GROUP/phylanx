@@ -32,6 +32,7 @@ phylanx_include(
   HighFive
   IsTarget
   SetCMakePolicy
+  SetLibName
   SetupCompilerFlags
   SetOutputPaths
   SetupTarget

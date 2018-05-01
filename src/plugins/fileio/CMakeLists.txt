@@ -26,16 +26,23 @@ if(PHYLANX_WITH_HIGHFIVE)
   set(sources ${sources} "file_read_hdf5.cpp" "file_write_hdf5.cpp")
 endif()
 
-add_phylanx_primitive_plugin(phylanx_fileio
+add_phylanx_primitive_plugin(fileio
   SOURCES ${sources}
   HEADERS ${headers}
   HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio"
+  PLUGIN
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
 if(PHYLANX_WITH_HIGHFIVE)
-  target_link_libraries(phylanx_fileio_component
+  target_link_libraries(fileio_primitive
     PRIVATE
       HighFive
       ${PHYLANX_HDF5_LIBRARIES})
 endif()
+
+add_phylanx_pseudo_target(primitives.fileio_.fileio_plugin)
+add_phylanx_pseudo_dependencies(primitives.fileio_
+  primitives.fileio_.fileio_plugin)
+add_phylanx_pseudo_dependencies(primitives.fileio_.fileio_plugin
+    fileio_primitive)

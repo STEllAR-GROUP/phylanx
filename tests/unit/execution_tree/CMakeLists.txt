@@ -36,9 +36,9 @@ set(subdirs
     primitives)
 
 foreach(subdir ${subdirs})
-  add_phylanx_pseudo_target(tests.unit.execution_tree.${subdir})
+  add_phylanx_pseudo_target(tests.unit.execution_tree.${subdir}_)
   add_subdirectory(${subdir})
   add_phylanx_pseudo_dependencies(tests.unit.execution_tree
-    tests.unit.execution_tree.${subdir})
+    tests.unit.execution_tree.${subdir}_)
 endforeach()
 

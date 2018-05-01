@@ -58,29 +58,28 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // define the export/import helper macros to be used for component modules
-#if defined(PHYLANX_COMPONENT_EXPORTS)
-# define  PHYLANX_COMPONENT_EXPORT   PHYLANX_SYMBOL_EXPORT
+#if defined(PHYLANX_PLUGIN_EXPORTS)
+# define  PHYLANX_PLUGIN_EXPORT     PHYLANX_SYMBOL_EXPORT
 #else
-# define  PHYLANX_COMPONENT_EXPORT   PHYLANX_SYMBOL_IMPORT
+# define  PHYLANX_PLUGIN_EXPORT     PHYLANX_SYMBOL_IMPORT
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // define the export/import helper macros to be used for component modules
 #if defined(PHYLANX_LIBRARY_EXPORTS)
-# define  PHYLANX_LIBRARY_EXPORT     PHYLANX_SYMBOL_EXPORT
+# define  PHYLANX_LIBRARY_EXPORT    PHYLANX_SYMBOL_EXPORT
 #else
-# define  PHYLANX_LIBRARY_EXPORT     PHYLANX_SYMBOL_IMPORT
+# define  PHYLANX_LIBRARY_EXPORT    PHYLANX_SYMBOL_IMPORT
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // helper macro for symbols which have to be exported from the runtime and all
 // components
-#if defined(PHYLANX_EXPORTS) || defined(PHYLANX_COMPONENT_EXPORTS) || \
-    defined(PHYLANX_APPLICATION_EXPORTS) || defined(PHYLANX_SERIALIZATION_EXPORTS) || \
-    defined(PHYLANX_LIBRARY_EXPORTS)
-# define PHYLANX_ALWAYS_EXPORT       PHYLANX_SYMBOL_EXPORT
+#if defined(PHYLANX_EXPORTS) || defined(PHYLANX_PLUGIN_EXPORTS) || \
+    defined(PHYLANX_APPLICATION_EXPORTS) || defined(PHYLANX_LIBRARY_EXPORTS)
+# define PHYLANX_ALWAYS_EXPORT      PHYLANX_SYMBOL_EXPORT
 #else
-# define PHYLANX_ALWAYS_EXPORT       PHYLANX_SYMBOL_IMPORT
+# define PHYLANX_ALWAYS_EXPORT      PHYLANX_SYMBOL_IMPORT
 #endif
 
 #endif
