@@ -96,14 +96,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type handle_list_operand(
             std::vector<primitive_argument_type>&& args) const;
 
-        void extract_slicing_args(std::vector<primitive_argument_type>&& args,
+        std::vector<std::int64_t> extract_slicing_args_list(
+            std::vector<primitive_argument_type>&& args,
+            std::size_t size) const;
+        std::vector<std::int64_t> extract_slicing_args_vector(
+            std::vector<primitive_argument_type>&& args,
+            std::size_t size) const;
+        void extract_slicing_args_matrix(
+            std::vector<primitive_argument_type>&& args,
             std::vector<std::int64_t>& extracted_row,
-            std::vector<std::int64_t>& extracted_column) const;
+            std::vector<std::int64_t>& extracted_column, std::size_t rows,
+            std::size_t columns) const;
 
-        primitive_argument_type list_slicing(ir::range&& list,
+        primitive_argument_type slice_list(ir::range&& list,
             std::vector<std::int64_t> const& columns) const;
-        std::vector<std::int64_t> extract_list_slicing_args(
-            std::vector<primitive_argument_type>&& args) const;
+
+        std::vector<std::int64_t> extract_slicing(
+            primitive_argument_type&& arg, std::size_t arg_size) const;
+
+        std::int64_t extract_integer_value(primitive_argument_type const& val,
+            std::int64_t default_value) const;
     };
 
     inline primitive create_slicing_operation(hpx::id_type const& locality,
