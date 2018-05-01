@@ -15,6 +15,7 @@
 #include <pybind11/pybind11.h>
 
 #include <cstdint>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 // expose util submodule
@@ -39,16 +40,23 @@ void phylanx::bindings::bind_util(pybind11::module m)
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::expression>,
         "serialize an AST expression object into a byte-stream");
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::function_call>,
-        "serialize an AST expression object into a byte-stream");
-
+        "serialize an AST function_call object into a byte-stream");
+    util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ast::literal_value_type>,
+        "serialize an AST literal_value_type object into a byte-stream");
+    util.def("serialize",
+        &phylanx::bindings::serialize<std::vector<phylanx::ast::expression>>,
+        "serialize a vector of AST expressions into a byte-stream");
     util.def("serialize",
         &phylanx::bindings::serialize<phylanx::ir::node_data<double>>,
         "serialize a node_data<double> expression object into a byte-stream");
     util.def("serialize",
         &phylanx::bindings::serialize<phylanx::ir::node_data<std::uint8_t>>,
-        "serialize a node_data<std::uint8_t> expression object into a "
-        "byte-stream");
+        "serialize a node_data<std::uint8_t> expression object into a byte-stream");
 
-    util.def("unserialize", &phylanx::util::unserialize<phylanx::ast::expression>,
+    util.def("unserialize",
+        &phylanx::util::unserialize<std::vector<phylanx::ast::expression>>,
+        "un-serialize a byte-stream into a Phylanx object");
+    util.def("unserialize_expr", &phylanx::util::unserialize<phylanx::ast::expression>,
         "un-serialize a byte-stream into a Phylanx object");
 }
