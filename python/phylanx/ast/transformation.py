@@ -255,7 +255,7 @@ class PhySL:
             s += self.recompile(a.args[-1])
             s += ')'
 
-        else: # a.func is ast.Name
+        else:  # a.func is ast.Name
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
