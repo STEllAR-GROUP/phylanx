@@ -3,12 +3,7 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-try:
-    # first try release version
-    import phylanx
-except Exception:
-    # then try debug version
-    import phylanxd as phylanx
+import phylanx
 
 assert (phylanx.major_version() == 0)
 assert (phylanx.minor_version() == 0)
