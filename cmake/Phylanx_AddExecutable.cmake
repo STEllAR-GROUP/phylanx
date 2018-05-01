@@ -173,5 +173,10 @@ macro(add_phylanx_executable name)
     COMPONENT_DEPENDENCIES ${${name}_COMPONENT_DEPENDENCIES}
     ${_target_flags}
   )
+
+  if(TARGET primitives)
+    add_phylanx_pseudo_dependencies(${name}_exe primitives)
+  endif()
+
 endmacro()
 

@@ -8,6 +8,7 @@
 add_phylanx_executable(inspect
   AUTOGLOB
   NOLIBS
+  EXCLUDE_FROM_ALL
   FOLDER "Tools/Inspect")
 
 set_property(TARGET inspect_exe APPEND

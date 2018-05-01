@@ -131,6 +131,7 @@ endforeach()
 # add all known plugins
 add_phylanx_pseudo_target(primitives)
 add_subdirectory(plugins)
+add_phylanx_pseudo_dependencies(core primitives)
 
 set(phylanx_targets ${phylanx_targets} phylanx_component PARENT_SCOPE)
 

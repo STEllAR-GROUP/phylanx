@@ -131,13 +131,6 @@ function(phylanx_setup_target target)
 
   if("${_type}" STREQUAL "PRIMITIVE")
 
-    if(DEFINED PHYLANX_LIBRARY_VERSION AND DEFINED PHYLANX_SOVERSION)
-    # set properties of generated shared library
-      set_target_properties(${target}
-        PROPERTIES
-        VERSION ${PHYLANX_LIBRARY_VERSION}
-        SOVERSION ${PHYLANX_SOVERSION})
-    endif()
     if(NOT target_NONAMEPREFIX)
       phylanx_set_lib_name(${target} ${name})
     endif()
