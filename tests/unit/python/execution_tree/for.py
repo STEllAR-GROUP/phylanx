@@ -47,15 +47,14 @@ assert sumn3() == 9
 
 
 @Phylanx("PhySL")
-def sumn4():
+def sumn3():
     n = 0
     sum = 0
     c = 0
-    ss = -1
-    for n in xrange(3, 0, ss):
+    for n in xrange(3, 0, -1):
         sum += n
         c += 1
     return sum + c
 
 
-assert sumn4() == 9
+assert sumn3() == 9

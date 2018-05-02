@@ -255,10 +255,12 @@ class PhySL:
             s += self.recompile(a.args[-1])
             s += ')'
 
-        else:
+        else:  # a.func is ast.Name
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
+            if args[0].id == "xrange":
+                args[0].id = "range"
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
@@ -425,60 +427,23 @@ class PhySL:
 
     def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        n = get_node(a, name="Name", num=0)
-        c = get_node(a, name="Call", num=1)
-        if n is not None and c is not None:
-            r = get_node(c, name="Name", num=0)
-            assert r.id == "range" or r.id == "xrange"
-            step = get_node(c, num=3)
-            if step is None:
-                step = ast.Num(1)
-            upper = get_node(c, num=2)
-            if upper is None:
-                upper = get_node(c, num=1)
-                lower = ast.Num(0)
-            else:
-                lower = get_node(c, num=1)
-            ns = self.recompile(n)
-            ls = self.recompile(lower)
-            us = self.recompile(upper)
-            ss = self.recompile(step)
-            bs = "block" + symbol_info + "("
-            blocki = 2
-            while True:
-                blockn = get_node(a, num=blocki)
-                if blockn is None:
-                    break
-                if blocki > 2:
-                    bs += ", "
-                bs += self.recompile(blockn)
-                blocki += 1
-            bs += ")"
-            # The first arg of the for loop is either
-            # a define() or a store(), depending on whether
-            # the variable has already been defined.
-            sd = "store" + symbol_info
-            if remove_line(ns) not in self.defs:
-                sd = "define" + symbol_info
-            lg = "<"
-            # Determine the direction of iteration, if possible
-            if not re.search(r'[a-zA-Z_]', ss):
-                if eval(ss) < 0:
-                    lg = ">"
-                return "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " " + lg + " " \
-                       + us + ",store%s(" % symbol_info + ns + ", " + ns + \
-                    "+" + ss + "), " + bs + ")"
-            else:
-                # if we can't determine the direction of iteration, make two for loops
-                ret = "if(" + ss + " > 0, "
-                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " < " + us + \
-                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
-                    + "), "
-                ret += "for(" + sd + "(" + ns + ", " + ls + "), " + ns + " > " + us + \
-                    ",store%s(" % symbol_info + ns + ", " + ns + "+" + ss + "), " + bs \
-                    + "))"
-                return ret
-            raise Exception("unsupported For loop structure")
+        ret = "map%s(lambda(" % symbol_info
+        ret += self.recompile(a.target) + ', block('
+
+        blocki = 2
+        while True:
+            blockn = get_node(a, num=blocki)
+            if blockn is None:
+                break
+            if blocki > 2:
+                ret += ", "
+            ret += self.recompile(blockn)
+            blocki += 1
+        if isinstance(a.iter, ast.List):
+            raise Exception("Lists are not supported as loop iters.")
+
+        ret += ")), " + self.recompile(a.iter) + ')'
+        return ret
 
     def recompile(self, a, allowreturn=False):
         nm = a.__class__.__name__
