@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const diag_operation::match_data =
     {
         hpx::util::make_tuple("diag",
-            std::vector<std::string>{"diag(_1, _2)"},
+            std::vector<std::string>{"diag(_1)", "diag(_1, _2)"},
             &create_diag_operation, &create_primitive<diag_operation>)
     };
 
@@ -128,28 +128,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping([this_](args_type&& args)
-                -> primitive_argument_type {
-            std::size_t matrix_dims = args[0].num_dimensions();
-            switch (matrix_dims)
+                -> primitive_argument_type
             {
-            case 0:
-                return this_->diag0d(std::move(args));
+                std::size_t matrix_dims = args[0].num_dimensions();
+                switch (matrix_dims)
+                {
+                case 0:
+                    return this_->diag0d(std::move(args));
 
-            case 1:
-                return this_->diag1d(std::move(args));
+                case 1:
+                    return this_->diag1d(std::move(args));
 
-            case 2:
-                return this_->diag2d(std::move(args));
+                case 2:
+                    return this_->diag2d(std::move(args));
 
-            default:
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "diag_operation::eval",
-                    execution_tree::generate_error_message(
-                        "left hand side operand has unsupported "
-                        "number of dimensions",
-                        this_->name_, this_->codename_));
-            }
-        }),
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "diag_operation::eval",
+                        execution_tree::generate_error_message(
+                            "left hand side operand has unsupported "
+                            "number of dimensions",
+                            this_->name_, this_->codename_));
+                }
+            }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
                 name_, codename_));
