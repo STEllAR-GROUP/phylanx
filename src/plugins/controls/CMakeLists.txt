@@ -11,8 +11,8 @@ add_phylanx_primitive_plugin(controls
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
-add_phylanx_pseudo_target(primitives.controls_.controls_plugin)
-add_phylanx_pseudo_dependencies(primitives.controls_
-  primitives.controls_.controls_plugin)
-add_phylanx_pseudo_dependencies(primitives.controls_.controls_plugin
+add_phylanx_pseudo_target(primitives.controls_dir.controls_plugin)
+add_phylanx_pseudo_dependencies(primitives.controls_dir
+  primitives.controls_dir.controls_plugin)
+add_phylanx_pseudo_dependencies(primitives.controls_dir.controls_plugin
     controls_primitive)

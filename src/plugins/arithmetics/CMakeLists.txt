@@ -11,8 +11,8 @@ add_phylanx_primitive_plugin(arithmetics
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
-add_phylanx_pseudo_target(primitives.arithmetics_.arithmetics_plugin)
-add_phylanx_pseudo_dependencies(primitives.arithmetics_
-  primitives.arithmetics_.arithmetics_plugin)
-add_phylanx_pseudo_dependencies(primitives.arithmetics_.arithmetics_plugin
+add_phylanx_pseudo_target(primitives.arithmetics_dir.arithmetics_plugin)
+add_phylanx_pseudo_dependencies(primitives.arithmetics_dir
+  primitives.arithmetics_dir.arithmetics_plugin)
+add_phylanx_pseudo_dependencies(primitives.arithmetics_dir.arithmetics_plugin
     arithmetics_primitive)

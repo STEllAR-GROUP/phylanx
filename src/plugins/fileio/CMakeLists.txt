@@ -41,8 +41,8 @@ if(PHYLANX_WITH_HIGHFIVE)
       ${PHYLANX_HDF5_LIBRARIES})
 endif()
 
-add_phylanx_pseudo_target(primitives.fileio_.fileio_plugin)
-add_phylanx_pseudo_dependencies(primitives.fileio_
-  primitives.fileio_.fileio_plugin)
-add_phylanx_pseudo_dependencies(primitives.fileio_.fileio_plugin
+add_phylanx_pseudo_target(primitives.fileio_dir.fileio_plugin)
+add_phylanx_pseudo_dependencies(primitives.fileio_dir
+  primitives.fileio_dir.fileio_plugin)
+add_phylanx_pseudo_dependencies(primitives.fileio_dir.fileio_plugin
     fileio_primitive)

@@ -11,8 +11,8 @@ add_phylanx_primitive_plugin(matrixops
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
-add_phylanx_pseudo_target(primitives.matrixops_.matrixops_plugin)
-add_phylanx_pseudo_dependencies(primitives.matrixops_
-  primitives.matrixops_.matrixops_plugin)
-add_phylanx_pseudo_dependencies(primitives.matrixops_.matrixops_plugin
+add_phylanx_pseudo_target(primitives.matrixops_dir.matrixops_plugin)
+add_phylanx_pseudo_dependencies(primitives.matrixops_dir
+  primitives.matrixops_dir.matrixops_plugin)
+add_phylanx_pseudo_dependencies(primitives.matrixops_dir.matrixops_plugin
     matrixops_primitive)

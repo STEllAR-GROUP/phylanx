@@ -11,8 +11,8 @@ add_phylanx_primitive_plugin(listops
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
-add_phylanx_pseudo_target(primitives.listops_.listops_plugin)
-add_phylanx_pseudo_dependencies(primitives.listops_
-  primitives.listops_.listops_plugin)
-add_phylanx_pseudo_dependencies(primitives.listops_.listops_plugin
+add_phylanx_pseudo_target(primitives.listops_dir.listops_plugin)
+add_phylanx_pseudo_dependencies(primitives.listops_dir
+  primitives.listops_dir.listops_plugin)
+add_phylanx_pseudo_dependencies(primitives.listops_dir.listops_plugin
     listops_primitive)
