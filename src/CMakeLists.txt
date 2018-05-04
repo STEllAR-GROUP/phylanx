@@ -87,6 +87,7 @@ endif()
 ################################################################################
 # create main module
 set(HPX_TLL_PUBLIC "PUBLIC")
+set(PHYLANX_TLL_PUBLIC "PUBLIC")
 if(phylanx_external_OBJECTS)
   add_hpx_component(phylanx SHARED
     SOURCES ${phylanx_SOURCES}
@@ -128,8 +129,9 @@ foreach(_flag ${PHYLANX_TARGET_COMPILE_OPTIONS_VAR})
 endforeach()
 
 # add all known plugins
-add_phylanx_pseudo_target(plugins_)
+add_phylanx_pseudo_target(primitives)
 add_subdirectory(plugins)
+add_phylanx_pseudo_dependencies(core primitives)
 
 set(phylanx_targets ${phylanx_targets} phylanx_component PARENT_SCOPE)
 
@@ -139,6 +141,6 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
-  COMPONENT runtime
+  COMPONENT core
   OPTIONAL)
 

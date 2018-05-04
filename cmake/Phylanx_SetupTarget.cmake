@@ -114,9 +114,9 @@ function(phylanx_setup_target target)
         VERSION ${PHYLANX_LIBRARY_VERSION}
         SOVERSION ${PHYLANX_SOVERSION})
     endif()
-#    if(NOT target_NONAMEPREFIX)
-#      phylanx_set_lib_name(${target} ${name})
-#    endif()
+    if(NOT target_NONAMEPREFIX)
+      phylanx_set_lib_name(${target} ${name})
+    endif()
     set_target_properties(${target}
       PROPERTIES
       # create *nix style library versions + symbolic links
@@ -129,8 +129,28 @@ function(phylanx_setup_target target)
                  "PHYLANX_LIBRARY_EXPORTS")
   endif()
 
-  # We force the -DDEBUG and -D_DEBUG defines in debug mode to avoid
-  # ABI differences
+  if("${_type}" STREQUAL "PRIMITIVE")
+
+    if(NOT target_NONAMEPREFIX)
+      phylanx_set_lib_name(${target} ${name})
+    endif()
+    set_target_properties(${target}
+      PROPERTIES
+      # create *nix style library versions + symbolic links
+      # allow creating static and shared libs without conflicts
+      CLEAN_DIRECT_OUTPUT 1
+      OUTPUT_NAME ${name})
+
+    set_property(TARGET ${target}
+      APPEND PROPERTY
+        COMPILE_DEFINITIONS
+          "HPX_PLUGIN_NAME=phylanx_${name}"
+          "HPX_PLUGIN_STRING=\"phylanx_${name}\""
+          "HPX_LIBRARY_EXPORTS"
+          "PHYLANX_LIBRARY_EXPORTS")
+
+  endif()
+
   # if Phylanx is an imported target, get the config debug/release
   set(PHYLANX_IMPORT_CONFIG "NOTFOUND")
   if (TARGET "phylanx")

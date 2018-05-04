@@ -17,7 +17,7 @@ endmacro()
 
 macro(add_phylanx_pseudo_target)
   phylanx_debug("add_phylanx_pseudo_target" "adding pseudo target: ${ARGV}")
-  if(HPX_WITH_PSEUDO_DEPENDENCIES)
+  if(PHYLANX_WITH_PSEUDO_DEPENDENCIES)
     add_phylanx_pseudo_target_always(${ARGV})
   endif()
 endmacro()

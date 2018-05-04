@@ -3,10 +3,16 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-add_phylanx_primitive_plugin(phylanx_matrixops
+add_phylanx_primitive_plugin(matrixops
   SOURCE_ROOT "${PROJECT_SOURCE_DIR}/src/plugins/matrixops"
   HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops"
   AUTOGLOB
+  PLUGIN
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
+add_phylanx_pseudo_target(primitives.matrixops_.matrixops_plugin)
+add_phylanx_pseudo_dependencies(primitives.matrixops_
+  primitives.matrixops_.matrixops_plugin)
+add_phylanx_pseudo_dependencies(primitives.matrixops_.matrixops_plugin
+    matrixops_primitive)
