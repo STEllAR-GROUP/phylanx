@@ -175,6 +175,7 @@ if(PHYLANX_WITH_TESTS_BENCHMARKS OR PHYLANX_WITH_TESTS_REGRESSIONS OR PHYLANX_WI
   endif()
 
   add_phylanx_pseudo_target(tests)
+  add_phylanx_pseudo_dependencies(tests core phylanx_py)
 
   enable_testing()
   include(CTest)
