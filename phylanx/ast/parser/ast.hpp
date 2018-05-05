@@ -48,6 +48,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
     phylanx::ast::function_call,
     (phylanx::ast::identifier, function_name)
+    (std::string, locality)
     (std::vector<phylanx::ast::expression>, args)
 )
 

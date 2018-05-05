@@ -149,9 +149,9 @@ namespace phylanx { namespace ast { namespace parser
         double_vector %= '[' > (double_ % ',') > ']';
 
         function_call %=
-                (identifier >> '(')
-            >   argument_list
-            >   ')'
+                identifier
+            >>  attribute
+            >>  ('(' >  argument_list > ')')
             ;
 
         list %=
@@ -161,6 +161,11 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
         argument_list %= -(expr % ',');
+
+        attribute %=
+                '{' > identifier_name > '}'
+            |   attr(std::string{})
+            ;
 
         identifier %=
                 identifier_name

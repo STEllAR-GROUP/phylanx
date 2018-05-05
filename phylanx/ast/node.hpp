@@ -698,6 +698,13 @@ namespace phylanx { namespace ast
           , args(std::move(l))
         {}
 
+        function_call(identifier name, std::string loc,
+                std::vector<expression>&& l)
+          : function_name(std::move(name))
+          , locality(std::move(loc))
+          , args(std::move(l))
+        {}
+
         void append(expression const& expr)
         {
             args.push_back(expr);
@@ -716,6 +723,7 @@ namespace phylanx { namespace ast
         }
 
         identifier function_name;
+        std::string locality;
         std::vector<expression> args;
 
     private:
