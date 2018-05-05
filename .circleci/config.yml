@@ -53,7 +53,7 @@ anchors:
         machine: true
         environment:
             BASE_IMAGE_NAME: stellargroup/phylanx_base:prerequisites
-            TARGET_IMAGE_NAME: prsam/phylanx:devel
+            TARGET_IMAGE_NAME: stellargroup/phylanx:devel
 
     - &ignore_docs
         filters:
