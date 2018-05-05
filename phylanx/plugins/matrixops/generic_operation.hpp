@@ -29,14 +29,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& operands,
             std::vector<primitive_argument_type> const& args) const;
 
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
+        using arg_type = ir::node_data<double>;
+        using args_type = std::vector<arg_type>;
 
         using dynamic_vector_type = ir::node_data<double>::storage1d_type;
-        using custom_vector_type = ir::node_data<double>::custom_storage1d_type;
 
         using dynamic_matrix_type = ir::node_data<double>::storage2d_type;
-        using custom_matrix_type = ir::node_data<double>::custom_storage2d_type;
 
     public:
         static std::vector<match_pattern_type> const match_data;
@@ -51,25 +49,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     public:
         using scalar_function = double(double);
-        using vector_function = dynamic_vector_type(custom_vector_type const&);
-        using matrix_function = dynamic_matrix_type(custom_matrix_type const&);
+        using matrix_vector_function = arg_type(arg_type&&);
 
         using scalar_function_ptr = scalar_function*;
-        using vector_function_ptr = vector_function*;
-        using matrix_function_ptr = matrix_function*;
+        using matrix_vector_function_ptr = matrix_vector_function*;
 
     private:
-        primitive_argument_type generic0d(operand_type&& op) const;
-        primitive_argument_type generic1d(operand_type&& op) const;
-        primitive_argument_type generic2d(operand_type&& op) const;
+        primitive_argument_type generic0d(arg_type&& op) const;
+        primitive_argument_type generic1d(arg_type&& op) const;
+        primitive_argument_type generic2d(arg_type&& op) const;
 
         scalar_function_ptr get_0d_map(std::string const& name) const;
-        vector_function_ptr get_1d_map(std::string const& name) const;
-        matrix_function_ptr get_2d_map(std::string const& name) const;
+        matrix_vector_function_ptr get_1d_map(std::string const& name) const;
+        matrix_vector_function_ptr get_2d_map(std::string const& name) const;
 
         scalar_function_ptr func0d_;
-        vector_function_ptr func1d_;
-        matrix_function_ptr func2d_;
+        matrix_vector_function_ptr func1d_;
+        matrix_vector_function_ptr func2d_;
     };
 
     inline primitive create_generic_operation(hpx::id_type const& locality,
