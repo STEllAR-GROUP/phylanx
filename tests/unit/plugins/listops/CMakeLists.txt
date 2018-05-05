@@ -19,7 +19,7 @@ foreach(test ${tests})
     EXCLUDE_FROM_ALL
     FOLDER "Tests/Unit/Plugins/ListOps")
 
-  add_phylanx_unit_test("listops" ${test} ${${test}_PARAMETERS})
+  add_phylanx_unit_test("plugins.listops" ${test} ${${test}_PARAMETERS})
 
   add_phylanx_pseudo_target(tests.unit.plugins.listops.${test})
   add_phylanx_pseudo_dependencies(tests.unit.plugins.listops

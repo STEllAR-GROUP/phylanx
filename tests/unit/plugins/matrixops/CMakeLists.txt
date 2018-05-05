@@ -50,7 +50,7 @@ foreach(test ${tests})
     EXCLUDE_FROM_ALL
     FOLDER "Tests/Unit/Plugins/MatrixOps")
 
-  add_phylanx_unit_test("plugins" ${test} ${${test}_PARAMETERS})
+  add_phylanx_unit_test("plugins.matrixops" ${test} ${${test}_PARAMETERS})
 
   add_phylanx_pseudo_target(tests.unit.plugins.matrixops.${test})
   add_phylanx_pseudo_dependencies(tests.unit.plugins.matrixops

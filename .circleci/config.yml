@@ -3,61 +3,327 @@
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+################################################################################
+# ## Verifying the config.yml file
+# On this page https://circleci.com/docs/2.0/local-cli/, a tool is introduced
+# that checks your config file.
+# e.g.
+# ```bash
+# $ curl -o circleci https://circle-downloads.s3.amazonaws.com/releases/build_agent_wrapper/circleci
+# $ chmod +x circleci
+# $ ./circleci repo/.circleci/config.yml
+#
+#  config file is valid
+# ```
+# ## Manually triggering a build
+# A build is triggered upon every commit to GitHub. Failed builds can be
+# rebuilt using the web interface. If a new commit did not trigger an automatic
+# build you can use the CircleCI API to manually do so.
+#
+# e.g.
+# ```bash
+# $ curl -X POST https://circleci.com/api/v1.1/project/github/stellar-group/phylanx/tree/cool-branch?circle-token=$CIRCLE_TOKEN
+# ```
+# For more information about using the CircleCI API consult the [API
+# reference](https://circleci.com/docs/api/v1-reference/#version-control-system-vcs-type)
+#
+# API tokens can be generated at: https://circleci.com/account/api
+#
+# ## Most useful CircleCI environment variables
+# * `CIRCLECI`: Is available and set to `true` if you are on CircleCI
+# * `CIRCLE_BRANCH`: The name of the current branch. e.g. `master`
+# * `CIRCLE_SHA1`: Git commit changeset
+# * `CIRCLE_WORKING_DIRECTORY`: Default working directory. Probably set to  `~/project`
+#
+# ## References
+# * CircleCI environment variables: https://circleci.com/docs/2.0/env-vars/
+# * API reference: https://circleci.com/docs/api/v1-reference/
+# * Configuration reference: https://circleci.com/docs/2.0/configuration-reference/
+
+################################################################################
 version: 2
-jobs:
-    build:
+anchors:
+    - &docker_config
+        docker:
+            - image: stellargroup/phylanx_base:prerequisites
+              entrypoint: /bin/bash
+
+    - &machine_config
         machine: true
         environment:
-            IMAGE_NAME: stellargroup/phylanx
-        branches:
-            ignore:
-                - gh-pages
+            BASE_IMAGE_NAME: stellargroup/phylanx_base:prerequisites
+            TARGET_IMAGE_NAME: prsam/phylanx:devel
+
+    - &ignore_docs
+        filters:
+            branches:
+                ignore:
+                    - gh-pages
+
+    - &convert_xml
+        run:
+            name: Converting XML
+            when: always
+            command: |
+                mkdir -p ${CIRCLE_JOB}
+                xsltproc ../conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
+    - &attach_phylanx_tree
+        attach_workspace:
+            at: /phylanx
+
+################################################################################
+jobs:
+    build_test:
+        <<: *docker_config
+        working_directory: /phylanx
         steps:
-            - checkout
-            - run:
-                name: Build the build environment Docker image
-                command: docker build -t $IMAGE_NAME tools/docker
-                no_output_timeout: 1200s
+            - checkout:
+                path:
+                    /phylanx
             - run:
                 name: Create build directory
                 command: mkdir -p build
             - run:
                 name: Check the formatting of Phylanx's Python files
-                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} flake8 --config=tools/flake8/config.ini --tee --output-file=./build/phylanx_flake8_report.txt .
+                command: flake8 --config=tools/flake8/config.ini --tee --output-file=./build/phylanx_flake8_report.txt .
             - store_artifacts:
                 path: build/phylanx_flake8_report.txt
             # CMake
             - run:
                 name: Run CMake
-                command: docker run -v $PWD:/phylanx -w /phylanx/build -e "CIRCLECI=true" ${IMAGE_NAME} cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On ..
+                command: cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On ..
+                working_directory: /phylanx/build
+                when: always
             - run:
                 name: Build the Inspect tool
-                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2 -k tools.inspect
+                command: make -j2 -k tools.inspect
+                working_directory: /phylanx/build
             - run:
                 name: Check the formatting of Phylanx's C++ files
-                command: docker run -v $PWD:/phylanx -w /phylanx ${IMAGE_NAME} ./build/bin/inspect --all --output=./build/phylanx_inspect_report.html /phylanx
+                command: ./build/bin/inspect --all --output=./build/phylanx_inspect_report.html /phylanx
             - store_artifacts:
                 path: build/phylanx_inspect_report.html
             - run:
                 name: Build all targets
-                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2
-            # Tests
+                command: make -j2
+                working_directory: /phylanx/build
+                when: always
             - run:
-                name: Run all tests
-                command: docker run -v $PWD:/phylanx -w /phylanx/build ${IMAGE_NAME} make -j2 tests
+                name: Download CTest XML to JUnit XML transformsheet
+                command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
+            - persist_to_workspace:
+                root: /phylanx
+                paths:
+                    - .
+    tests.regressions:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build regression tests
+                command: make -j4 tests.regressions
+            - run:
+                name: Run regression tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.regressions
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.regressions
+            - store_artifacts:
+                path: tests.regressions
+    tests.unit.plugins.arithmetic:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build arithmetic primitive plugin unit tests
+                command: make -j4 tests.unit.plugins.arithmetics
+            - run:
+                name: Run arithmetic primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.arithmetics
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.arithmetic
+            - store_artifacts:
+                path: tests.unit.plugins.arithmetic
+    tests.unit.plugins.booleans:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build boolean primitive plugin unit tests
+                command: make -j4 tests.unit.plugins.booleans
+            - run:
+                name: Run boolean primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.booleans
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.booleans
+            - store_artifacts:
+                path: tests.unit.plugins.booleans
+    tests.unit.plugins.controls:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build control primitive plugin unit tests
+                command: make -j4 tests.unit.plugins.controls
+            - run:
+                name: Run control primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.controls
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.controls
+            - store_artifacts:
+                path: tests.unit.plugins.controls
+    tests.unit.plugins.fileio:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build file I/O primitive plugin unit tests
+                command: make -j4 tests.unit.plugins.fileio
+            - run:
+                name: Run file I/O primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.fileio
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.fileio
+            - store_artifacts:
+                path: tests.unit.plugins.fileio
+    tests.unit.plugins.listops:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build ListOps primitive plugin unit tests
+                command: make -j4 tests.unit.plugins.listops
+            - run:
+                name: Run ListOps primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.listops
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.listops
+            - store_artifacts:
+                path: tests.unit.plugins.listops
+    tests.unit.plugins.matrixops:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build MatrixOps primitive plugin unit tests
+                command: make -j4 tests.unit.plugins.matrixops
+            - run:
+                name: Run MatrixOps primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.matrixops
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.matrixops
+            - store_artifacts:
+                path: tests.unit.plugins.matrixops
+    tests.unit.group_1:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build tests.unit.{execution_tree,ast,algorithm}
+                command: make -j4 tests.unit.{execution_tree,ast,algorithm}
+            - run:
+                name: Run tests.unit.{execution_tree,ast,algorithm}
+                command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(execution_tree|ast|algorithm)'
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.group_1
+            - store_artifacts:
+                path: tests.unit.group_1
+    tests.unit.group_2:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build tests.unit.{config,ir,util,performance_counters,python}
+                command: make -j4 tests.unit.{config,ir,util,performance_counters,python}
+            - run:
+                name: Run tests.unit.config
+                command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(config|ir|util|performance_counters|python)'
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.group_2
+            - store_artifacts:
+                path: tests.unit.group_2
+    deploy_image:
+        <<: *machine_config
+        steps:
+            - attach_workspace:
+                at: ~/project
             - run:
                 name: Install to the image
                 command: |
-                    docker run --name live -v $PWD:/.data ${IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && make -C /phylanx/build install"
-                    docker commit live $IMAGE_NAME:devel
+                    docker run --name live -v $PWD:/.data ${BASE_IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && make -C /phylanx/build install && ldconfig"
+                    docker commit live $TARGET_IMAGE_NAME
+            - run:
+                name: Test installation
+                command: docker run --rm $TARGET_IMAGE_NAME physl --hpx:threads=1 --code=1+2 --print
             # Deployment
             - deploy:
                 name: Push the Phylanx build environment Docker image
                 command: |
                     if [ "$CIRCLE_BRANCH" == "master" ]; then
                         docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-                        docker tag $IMAGE_NAME $IMAGE_NAME:devel-prerequisites
-                        docker push ${IMAGE_NAME}:devel-prerequisites
-                        docker push ${IMAGE_NAME}:devel
+                        docker push $TARGET_IMAGE_NAME
                     fi
 
+################################################################################
+workflows:
+    version: 2
+    build_and_test_phylanx:
+        jobs:
+            - build_test:
+                <<: *ignore_docs
+            - tests.regressions:
+                requires:
+                    - build_test
+            - tests.unit.plugins.arithmetic:
+                requires:
+                    - build_test
+            - tests.unit.plugins.booleans:
+                requires:
+                    - build_test
+            - tests.unit.plugins.controls:
+                requires:
+                    - build_test
+            - tests.unit.plugins.fileio:
+                requires:
+                    - build_test
+            - tests.unit.plugins.listops:
+                requires:
+                    - build_test
+            - tests.unit.plugins.matrixops:
+                requires:
+                    - build_test
+            - tests.unit.group_1:
+                requires:
+                    - build_test
+            - tests.unit.group_2:
+                requires:
+                    - build_test
+            - deploy_image:
+                requires:
+                    - tests.regressions
+                    - tests.unit.plugins.arithmetic
+                    - tests.unit.plugins.booleans
+                    - tests.unit.plugins.controls
+                    - tests.unit.plugins.fileio
+                    - tests.unit.plugins.listops
+                    - tests.unit.plugins.matrixops
+                    - tests.unit.group_1
+                    - tests.unit.group_2

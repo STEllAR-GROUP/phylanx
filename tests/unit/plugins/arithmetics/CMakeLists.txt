@@ -23,7 +23,7 @@ foreach(test ${tests})
     EXCLUDE_FROM_ALL
     FOLDER "Tests/Unit/Plugins/Arithmetics")
 
-  add_phylanx_unit_test("plugins" ${test} ${${test}_PARAMETERS})
+  add_phylanx_unit_test("plugins.arithmetics" ${test} ${${test}_PARAMETERS})
 
   add_phylanx_pseudo_target(tests.unit.plugins.arithmetics.${test})
   add_phylanx_pseudo_dependencies(tests.unit.plugins.arithmetics
