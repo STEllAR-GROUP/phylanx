@@ -10,7 +10,7 @@ set(tests
 foreach(test ${tests})
   set(script ${test}.py)
 
-  add_phylanx_python_unit_test("python" ${test}
+  add_phylanx_python_regression_test("python" ${test}
     SCRIPT ${script}
     FOLDER "Tests/Python/Regression"
     DEPENDS phylanx_py python_setup
