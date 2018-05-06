@@ -53,7 +53,7 @@ anchors:
         machine: true
         environment:
             BASE_IMAGE_NAME: stellargroup/phylanx_base:prerequisites
-            TARGET_IMAGE_NAME: prsam/phylanx:devel
+            TARGET_IMAGE_NAME: stellargroup/phylanx:devel
 
     - &ignore_docs
         filters:
@@ -86,7 +86,17 @@ jobs:
                 command: mkdir -p build
             - run:
                 name: Check the formatting of Phylanx's Python files
-                command: flake8 --config=tools/flake8/config.ini --tee --output-file=./build/phylanx_flake8_report.txt .
+                command: flake8 --config=tools/flake8/config.ini --tee --output-file=build/phylanx_flake8_report.txt .
+            - run:
+                name: Converting output to XML
+                command: |
+                    mkdir -p /flake8
+                    tools/flake8/flake_to_junit.py build/phylanx_flake8_report.txt /flake8/phylanx_flake8.xml
+                when: always
+            - store_artifacts:
+                path: build/phylanx_flake8_report.txt
+            - store_test_results:
+                path: /flake8
             - store_artifacts:
                 path: build/phylanx_flake8_report.txt
             # CMake
@@ -94,7 +104,6 @@ jobs:
                 name: Run CMake
                 command: cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On ..
                 working_directory: /phylanx/build
-                when: always
             - run:
                 name: Build the Inspect tool
                 command: make -j2 -k tools.inspect
