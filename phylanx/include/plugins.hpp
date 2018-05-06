@@ -7,6 +7,7 @@
 #define PHYLANX_PLUGINS_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/plugins/algorithms/algorithms.hpp>
 #include <phylanx/plugins/arithmetics/arithmetics.hpp>
 #include <phylanx/plugins/booleans/booleans.hpp>
 #include <phylanx/plugins/controls/controls.hpp>

@@ -69,7 +69,7 @@ std::string const lra_code = R"(block(
     //   x: [N, M]
     //   y: [N]
     //
-    define(lra, x, y, alpha, iterations, enable_output,
+    define(lra_explicit, x, y, alpha, iterations, enable_output,
         block(
             define(weights, constant(0.0, shape(x, 1))),            // weights: [M]
             define(transx, transpose(x)),                           // transx:  [M, N]
@@ -88,7 +88,20 @@ std::string const lra_code = R"(block(
             weights
         )
     ),
-    lra
+    lra_explicit
+))";
+
+std::string const lra_code_direct = R"(block(
+    //
+    // Logistic regression analysis algorithm (direct implementation)
+    //
+    //   x: [N, M]
+    //   y: [N]
+    //
+    define(lra_direct, x, y, alpha, iterations, enable_output,
+        lra(x, y, alpha, iterations, enable_output)
+    ),
+    lra_direct
 ))";
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -308,8 +321,10 @@ int hpx_main(boost::program_options::variables_map& vm)
         "read_x", phylanx::ast::generate_ast(read_x_code), snippets);
     auto read_y = phylanx::execution_tree::compile(
         "read_y", phylanx::ast::generate_ast(read_y_code), snippets);
-    auto lra = phylanx::execution_tree::compile(
-        "lra", phylanx::ast::generate_ast(lra_code), snippets);
+    auto lra = phylanx::execution_tree::compile("lra",
+        phylanx::ast::generate_ast(
+            vm.count("direct") != 0 ? lra_code_direct : lra_code),
+        snippets);
 
     // Print instrumentation information, if enabled
     if (vm.count("instrument") != 0)
@@ -371,6 +386,7 @@ int main(int argc, char* argv[])
     desc.add_options()
         ("enable_output,e", "enable progress output (default: false)")
         ("instrument,i", "print instrumentation information (default: false)")
+        ("direct,d", "use direct implementation of LRA (default: false)")
         ("num_iterations,n",
             boost::program_options::value<std::int64_t>()->default_value(750),
             "number of iterations (default: 750)")

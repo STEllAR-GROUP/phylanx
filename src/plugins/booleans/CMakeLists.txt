@@ -11,8 +11,8 @@ add_phylanx_primitive_plugin(booleans
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
-add_phylanx_pseudo_target(primitives.booleans_.booleans_plugin)
-add_phylanx_pseudo_dependencies(primitives.booleans_
-  primitives.booleans_.booleans_plugin)
-add_phylanx_pseudo_dependencies(primitives.booleans_.booleans_plugin
+add_phylanx_pseudo_target(primitives.booleans_dir.booleans_plugin)
+add_phylanx_pseudo_dependencies(primitives.booleans_dir
+  primitives.booleans_dir.booleans_plugin)
+add_phylanx_pseudo_dependencies(primitives.booleans_dir.booleans_plugin
     booleans_primitive)
