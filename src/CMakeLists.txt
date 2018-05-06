@@ -86,8 +86,6 @@ endif()
 
 ################################################################################
 # create main module
-set(HPX_TLL_PUBLIC "PUBLIC")
-set(PHYLANX_TLL_PUBLIC "PUBLIC")
 if(phylanx_external_OBJECTS)
   add_hpx_component(phylanx SHARED
     SOURCES ${phylanx_SOURCES}
@@ -102,12 +100,12 @@ else()
 endif()
 
 target_link_libraries(phylanx_component
-  PUBLIC
+  ${HPX_TLL_PUBLIC}
     ${HPX_LIBRARIES}
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES})
 target_link_libraries(phylanx_component
-  PRIVATE
+  ${HPX_TLL_PRIVATE}
     blaze::blaze)
 
 set_target_properties(

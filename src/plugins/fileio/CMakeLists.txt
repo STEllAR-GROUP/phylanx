@@ -36,7 +36,7 @@ add_phylanx_primitive_plugin(fileio
 
 if(PHYLANX_WITH_HIGHFIVE)
   target_link_libraries(fileio_primitive
-    PRIVATE
+    ${HPX_TLL_PRIVATE}
       HighFive
       ${PHYLANX_HDF5_LIBRARIES})
 endif()

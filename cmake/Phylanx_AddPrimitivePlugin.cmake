@@ -96,7 +96,7 @@ macro(add_phylanx_primitive_plugin name)
         set(install_destination bin/phylanx)
       else()
         set(install_destination lib/phylanx)
-      endif()
+  endif()
       set(${name}_OUTPUT_SUFFIX phylanx)
     else()
       set(install_destination lib)
@@ -185,12 +185,12 @@ macro(add_phylanx_primitive_plugin name)
   )
 
   target_link_libraries(${name}_primitive
-    PUBLIC
+    ${HPX_TLL_PUBLIC}
       ${HPX_LIBRARIES}
       ${BLAS_LIBRARIES}
       ${LAPACK_LIBRARIES})
   target_link_libraries(${name}_primitive
-    PRIVATE
+    ${HPX_TLL_PRIVATE}
       blaze::blaze)
 
 endmacro()
