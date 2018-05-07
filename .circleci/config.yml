@@ -12,7 +12,7 @@
 # ```bash
 # $ curl -o circleci https://circle-downloads.s3.amazonaws.com/releases/build_agent_wrapper/circleci
 # $ chmod +x circleci
-# $ ./circleci repo/.circleci/config.yml
+# $ ./circleci config validate --config=repo/.circleci/config.yml
 #
 #  config file is valid
 # ```
@@ -68,6 +68,7 @@ anchors:
             command: |
                 mkdir -p ${CIRCLE_JOB}
                 xsltproc ../conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
+
     - &attach_phylanx_tree
         attach_workspace:
             at: /phylanx
@@ -82,49 +83,55 @@ jobs:
                 path:
                     /phylanx
             - run:
-                name: Create build directory
-                command: mkdir -p build
+                name: Create build directory, test and artifacts directories
+                command: mkdir -p build /artifacts /code_format
+            # flake8
             - run:
                 name: Check the formatting of Phylanx's Python files
-                command: flake8 --config=tools/flake8/config.ini --tee --output-file=build/phylanx_flake8_report.txt .
+                command: flake8 --config=tools/flake8/config.ini --tee --output-file=/artifacts/phylanx_flake8_report.txt .
             - run:
-                name: Converting output to XML
-                command: |
-                    mkdir -p /flake8
-                    tools/flake8/flake_to_junit.py build/phylanx_flake8_report.txt /flake8/phylanx_flake8.xml
+                name: Converting flake8 text output to XML
+                command: tools/flake8/flake_to_junit.py /artifacts/phylanx_flake8_report.txt /code_format/phylanx_flake8.xml
                 when: always
-            - store_artifacts:
-                path: build/phylanx_flake8_report.txt
-            - store_test_results:
-                path: /flake8
-            - store_artifacts:
-                path: build/phylanx_flake8_report.txt
             # CMake
             - run:
                 name: Run CMake
                 command: cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On ..
                 working_directory: /phylanx/build
+            # Inspect
             - run:
                 name: Build the Inspect tool
-                command: make -j2 -k tools.inspect
+                command: make -j2 tools.inspect
                 working_directory: /phylanx/build
             - run:
                 name: Check the formatting of Phylanx's C++ files
-                command: ./build/bin/inspect --all --output=./build/phylanx_inspect_report.html /phylanx
+                command: ./build/bin/inspect --all --output=/artifacts/phylanx_inspect_report.html /phylanx
+            - run:
+                name: Convert inspect HTML output to XML
+                command: tools/inspect/inspect_to_junit.py /artifacts/phylanx_inspect_report.html >/code_format/phylanx_inspect.xml
+            # Code Formatting Check Reports
             - store_artifacts:
-                path: build/phylanx_inspect_report.html
+                path: /artifacts
+            # Code Format Check JUnit Reports
+            - store_test_results:
+                path: /code_format
+            # Build all targets
             - run:
                 name: Build all targets
                 command: make -j2
                 working_directory: /phylanx/build
                 when: always
+            # CTest to JUnit XML transformation sheet
             - run:
-                name: Download CTest XML to JUnit XML transformsheet
+                name: Download CTest XML to JUnit XML transformation stylesheet
                 command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
             - persist_to_workspace:
                 root: /phylanx
                 paths:
                     - .
+    # ## Test Jobs
+    # Number of test jobs and tests that are assigned to each job are chosen
+    # based on previous build and execution times.
     tests.regressions:
         <<: *docker_config
         working_directory: /phylanx/build

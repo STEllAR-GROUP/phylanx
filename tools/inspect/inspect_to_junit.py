@@ -6,12 +6,12 @@
 
 # ## Synopsis
 # ```
-# usage: flake_to_junit.py [-h] [source] [destination]
+# usage: inspect_to_junit.py [-h] [source] [destination]
 #
-# Generate JUnit XML report from flake8 output
+# Generate JUnit XML report from inspect output
 #
 # positional arguments:
-#   source       File path to read flake8 output from
+#   source       File path to read inspect output from
 #   destination  File path to write JUnit XML report to
 #
 # optional arguments:
@@ -19,54 +19,50 @@
 # ```
 
 import argparse
+import re
 import sys
 from xml.dom import minidom
 from collections import namedtuple
 
-error_item = namedtuple('error_item', 'filename line col code message')
+error_item = namedtuple('error_item', 'filename message')
 
 
-def parse_flake8_log(fh):
+def parse_inspect8_log(fh):
+    line_pattern = re.compile('(.+):\ (\*.+\*.+)')
+    split_pattern = re.compile(',\ (?=\*)')
+
     errors = []
 
     for line in fh:
-        parts = line.split(":", 3)
-
-        # Skip invalid lines
-        if len(parts) == 4:
-            error = error_item(filename=parts[0].strip(),
-                               line=parts[1].strip(),
-                               col=parts[2].strip(),
-                               code=parts[3].strip()[:4],
-                               message=parts[3].strip())
-
-            errors.append(error)
+        m = line_pattern.match(line)
+        if m:
+            for message in split_pattern.split(m.group(2)):
+                error = error_item(filename=m.group(1), message=message)
+                errors.append(error)
 
     return errors
 
 
-def convert(flake8_log_fh):
-    errors = parse_flake8_log(flake8_log_fh)
+def convert(inspect8_log_fh):
+    errors = parse_inspect8_log(inspect8_log_fh)
 
     doc = minidom.Document()
     suite = doc.createElement('testsuite')
     doc.appendChild(suite)
-    suite.setAttribute('name', 'flake8')
+    suite.setAttribute('name', 'inspect')
     suite.setAttribute('errors', str(len(errors)))
     suite.setAttribute('failures', '0')
     suite.setAttribute('tests', str(len(errors)))
 
     if len(errors) == 0:
         case = doc.createElement('testcase')
-        case.setAttribute('name', 'flake8')
+        case.setAttribute('name', 'inspect')
         case.setAttribute('time', '')
         suite.appendChild(case)
 
     for error in errors:
         case = doc.createElement('testcase')
-        case.setAttribute('name', '{0}:{1}:{2}'.format(error.filename,
-                                                       error.line,
-                                                       error.col))
+        case.setAttribute('name', error.filename)
         case.setAttribute('time', '')
         suite.appendChild(case)
 
@@ -74,15 +70,8 @@ def convert(flake8_log_fh):
         case.appendChild(failure)
 
         failure.setAttribute('file', error.filename)
-        failure.setAttribute('line', error.line)
-        failure.setAttribute('col', error.col)
         failure.setAttribute('message', error.message)
-        failure.setAttribute('type', error.code)
-        message = doc.createTextNode('{0}:{1}:{2} {3}'.format(
-            error.filename,
-            error.line,
-            error.col,
-            error.message))
+        message = doc.createTextNode(error.message)
         failure.appendChild(message)
 
     return doc
@@ -90,12 +79,12 @@ def convert(flake8_log_fh):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Generate JUnit XML report from flake8 output')
+        description='Generate JUnit XML report from inspect html output')
     parser.add_argument('source',
                         type=argparse.FileType('r'),
                         nargs='?',
                         default=sys.stdin,
-                        help='File path to read flake8 output from')
+                        help='File path to read inspect html output from')
     parser.add_argument('destination',
                         type=argparse.FileType('w'),
                         nargs='?',
