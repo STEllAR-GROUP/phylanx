@@ -18,6 +18,7 @@
 #include <phylanx/execution_tree/compile.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/compiler/compiler.hpp>
+#include <phylanx/execution_tree/compiler/locality_attribute.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
@@ -587,6 +588,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             if (compiled_function* cf = env_.find(name))
             {
+                // extract and propagate locality
+                hpx::id_type locality = default_locality_;
+
+                std::string attr = ast::detail::function_attribute(expr);
+                if (!attr.empty())
+                {
+                    // a function attribute could reference a specific locality
+                    parse_locality_attribute(attr, locality);
+                }
+
+                // extract and prepare arguments
                 std::vector<ast::expression> argexprs =
                     ast::detail::function_arguments(expr);
 
@@ -615,7 +627,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     for (auto const& argexpr : argexprs)
                     {
                         fargs.push_back(compile(name_, argexpr, snippets_, env,
-                            patterns_, default_locality_).arg_);
+                            patterns_, locality).arg_);
                     }
                 }
 
@@ -624,7 +636,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return function{
                     primitive_argument_type{
                         create_primitive_component(
-                            default_locality_, name_parts.primitive,
+                            locality, name_parts.primitive,
                             std::move(fargs), full_name, name_)
                     },
                     full_name};

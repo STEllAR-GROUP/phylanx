@@ -187,13 +187,13 @@ namespace phylanx { namespace ast
     void function_call::serialize(
         hpx::serialization::output_archive& ar, unsigned)
     {
-        ar << function_name << locality << args;
+        ar << function_name << attribute << args;
     }
 
     void function_call::serialize(
         hpx::serialization::input_archive& ar, unsigned)
     {
-        ar >> function_name >> locality >> args;
+        ar >> function_name >> attribute >> args;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -449,10 +449,11 @@ namespace phylanx { namespace ast
     std::ostream& operator<<(std::ostream& out, function_call const& f)
     {
         out << f.function_name;
-        if (!f.locality.empty())
+        if (!f.attribute.empty())
         {
-            out << '{' << f.locality << '}';
+            out << '{' << f.attribute << '}';
         }
+
         out << "(";
         bool first = true;
         for (auto const& arg : f.args)

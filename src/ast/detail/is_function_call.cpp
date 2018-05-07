@@ -53,6 +53,26 @@ namespace phylanx { namespace ast { namespace detail
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    struct function_attribute_helper
+    {
+        template <typename Ast>
+        std::string operator()(Ast const& ast) const
+        {
+            return function_attribute(ast);
+        }
+    };
+
+    std::string function_attribute(primary_expr const& pe)
+    {
+        return visit(function_attribute_helper(), pe);
+    }
+
+    std::string function_attribute(operand const& op)
+    {
+        return visit(function_attribute_helper(), op);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     struct function_arguments_helper
     {
         template <typename Ast>
