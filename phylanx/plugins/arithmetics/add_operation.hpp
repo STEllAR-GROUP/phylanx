@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -60,6 +61,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_argument_type add2d0d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d1d(arg_type&& lhs, arg_type&& rhs) const;
+        int get_stretch_dimension(std::size_t lhs, std::size_t rhs) const;
+        primitive_argument_type add2d2d_no_stretch(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_stretch_x(
+            arg_type&& lhs, arg_type&& rhs, int stretch_x) const;
+        primitive_argument_type add2d2d_stretch_y(
+            arg_type&& lhs, arg_type&& rhs, int stretch_y) const;
+        primitive_argument_type add2d2d_stretch_xy(
+            arg_type&& lhs, arg_type&& rhs, int stretch_x, int stretch_y) const;
         primitive_argument_type add2d2d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d2d(args_type && args) const;
         primitive_argument_type add2d(arg_type&& lhs, arg_type&& rhs) const;

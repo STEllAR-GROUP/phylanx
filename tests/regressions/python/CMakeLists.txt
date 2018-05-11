@@ -5,6 +5,7 @@
 
 set(tests
     exception_swallowed_369
+    broadcasting_rules_410
    )
 
 foreach(test ${tests})
