@@ -46,7 +46,8 @@ namespace phylanx { namespace ast
         std::vector<ast::transform_rule> rules;
 
         if (!boost::spirit::qi::phrase_parse(first, last,
-                *(expr >> ':' >> expr), skipper, rules))
+                *(expr >> ':' >> expr), skipper,
+                boost::spirit::qi::skip_flag::postskip, rules))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::ast::generate_transform_rule", strm.str());
