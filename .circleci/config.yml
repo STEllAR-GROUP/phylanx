@@ -98,6 +98,7 @@ jobs:
                 name: Run CMake
                 command: cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On ..
                 working_directory: /phylanx/build
+                when: always
             # Inspect
             - run:
                 name: Build the Inspect tool
@@ -109,6 +110,7 @@ jobs:
             - run:
                 name: Convert inspect HTML output to XML
                 command: tools/inspect/inspect_to_junit.py /artifacts/phylanx_inspect_report.html >/code_format/phylanx_inspect.xml
+                when: always
             # Code Formatting Check Reports
             - store_artifacts:
                 path: /artifacts
