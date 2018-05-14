@@ -11,6 +11,7 @@ from phylanx.ast import Phylanx
 def f(lhs, rhs):
     return lhs + rhs
 
+
 def compare_add_with_numpy(l, r):
     lhs = np.array(l)
     rhs = np.array(r)
@@ -18,6 +19,7 @@ def compare_add_with_numpy(l, r):
     expected = lhs + rhs
     actual = f(lhs, rhs)
     return np.array_equal(expected, actual)
+
 
 # (2)+(1)
 assert compare_add_with_numpy([1., 2.], [1.])
