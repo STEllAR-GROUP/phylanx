@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             template <typename T>
             BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-                ->  decltype(a + std::declval<double>())
+                -> decltype(a + std::declval<double>())
             {
                 return a + scalar_;
             }
@@ -144,7 +144,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add0d",
-                "the operands have incompatible number of dimensions");
+                execution_tree::generate_error_message(
+                    "the operands have incompatible number of dimensions",
+                    name_, codename_));
         }
     }
 
@@ -187,46 +189,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
 
-        if (lhs_size != rhs_size)
-        {
-            // Propagation rule 2
-            if (lhs_size == 1)
-            {
-                if (rhs.is_ref())
-                {
-                    rhs = blaze::map(
-                        rhs.vector(), detail::add_simd(lhs.vector()[0]));
-                }
-                else
-                {
-                    rhs.vector() += blaze::map(
-                        rhs.vector(), detail::add_simd(lhs.vector()[0]));
-                }
-            }
-            else if (rhs_size == 1)
-            {
-                if (lhs.is_ref())
-                {
-                    lhs = blaze::map(
-                        lhs.vector(), detail::add_simd(rhs.vector()[0]));
-                }
-                else
-                {
-                    lhs.vector() += blaze::map(
-                        lhs.vector(), detail::add_simd(rhs.vector()[0]));
-                }
-            }
-            else
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "add_operation::add1d1d",
-                    execution_tree::generate_error_message(
-                        "the dimensions of the operands do not match", name_,
-                        codename_));
-            }
-        }
-        // Dimensions are identical
-        else
+        // Broadcasting rule 1: Dimensions are identical
+        if (lhs_size == rhs_size)
         {
             // Avoid overwriting references, avoid memory reallocation when possible
             if (lhs.is_ref())
@@ -248,9 +212,46 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 lhs.vector() += rhs.vector();
             }
+            return primitive_argument_type(std::move(lhs));
+        }
+        // Broadcasting rule 2: One or two of the operand dimensions equal one
+        else
+        {
+            if (lhs_size == 1)
+            {
+                if (rhs.is_ref())
+                {
+                    rhs = blaze::map(
+                        rhs.vector(), detail::add_simd(lhs.vector()[0]));
+                }
+                else
+                {
+                    rhs.vector() = blaze::map(
+                        rhs.vector(), detail::add_simd(lhs.vector()[0]));
+                }
+                return primitive_argument_type(std::move(rhs));
+            }
+            else if (rhs_size == 1)
+            {
+                if (lhs.is_ref())
+                {
+                    lhs = blaze::map(
+                        lhs.vector(), detail::add_simd(rhs.vector()[0]));
+                }
+                else
+                {
+                    lhs.vector() += blaze::map(
+                        lhs.vector(), detail::add_simd(rhs.vector()[0]));
+                }
+                return primitive_argument_type(std::move(lhs));
+            }
         }
 
-        return primitive_argument_type(std::move(lhs));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "add_operation::add1d1d",
+            execution_tree::generate_error_message(
+                "the dimensions of the operands do not match", name_,
+                codename_));
     }
 
     primitive_argument_type add_operation::add1d1d(args_type && args) const
@@ -271,8 +272,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add1d1d",
                 execution_tree::generate_error_message(
-                    "the dimensions of the operands do not match", name_,
-                    codename_));
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
         }
 
         arg_type& first_term = *args.begin();
@@ -298,23 +299,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto lhs_v = lhs.vector();
         auto rhs_m = rhs.matrix();
 
-        // If the vector is effectively a scalar
-        if (lhs_v.size() == 1)
-        {
-            if (rhs.is_ref())
-            {
-                rhs = blaze::map(rhs_m, detail::add_simd(lhs_v[0]));
-
-                return primitive_argument_type{std::move(rhs)};
-            }
-            else
-            {
-                rhs_m = blaze::map(rhs_m, detail::add_simd(lhs_v[0]));
-
-                return primitive_argument_type{std::move(rhs)};
-            }
-        }
-        else if (rhs_m.columns() == lhs_v.size())
+        // If dimensions match
+        if (rhs_m.columns() == lhs_v.size())
         {
             if (rhs.is_ref())
             {
@@ -337,15 +323,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{std::move(rhs)};
             }
         }
+        // If the vector is effectively a scalar
+        else if (lhs_v.size() == 1)
+        {
+            if (rhs.is_ref())
+            {
+                rhs = blaze::map(rhs_m, detail::add_simd(lhs_v[0]));
+
+                return primitive_argument_type{std::move(rhs)};
+            }
+            else
+            {
+                rhs_m = blaze::map(rhs_m, detail::add_simd(lhs_v[0]));
+
+                return primitive_argument_type{std::move(rhs)};
+            }
+        }
+        // If the matrix has only one column
         else if (rhs_m.columns() == 1)
         {
             blaze::DynamicMatrix<double> result(rhs_m.rows(), lhs_v.size());
 
+            // Replicate first and only column of rhs matrix
             for (std::size_t i = 0; i < result.columns(); ++i)
             {
                 blaze::column(result, i) = blaze::column(rhs_m, 0);
             }
 
+            // Replicate lhs vector
             for (std::size_t i = 0; i < result.rows(); ++i)
             {
                 blaze::row(result, i) += blaze::trans(lhs_v);
@@ -426,23 +431,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto lhs_m = lhs.matrix();
         auto rhs_v = rhs.vector();
 
-        // If the vector is effectively a scalar
-        if (rhs_v.size() == 1)
-        {
-            if (lhs.is_ref())
-            {
-                lhs = blaze::map(lhs_m, detail::add_simd(rhs_v[0]));
-
-                return primitive_argument_type{std::move(lhs)};
-            }
-            else
-            {
-                lhs_m = blaze::map(lhs_m, detail::add_simd(rhs_v[0]));
-
-                return primitive_argument_type{std::move(lhs)};
-            }
-        }
-        else if (lhs_m.columns() == rhs_v.size())
+        // If dimensions match
+        if (rhs_v.size() == lhs_m.columns())
         {
             if (lhs.is_ref())
             {
@@ -465,6 +455,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{std::move(lhs)};
             }
         }
+        // If the vector is effectively a scalar
+        else if (rhs_v.size() == 1)
+        {
+            if (lhs.is_ref())
+            {
+                lhs = blaze::map(lhs_m, detail::add_simd(rhs_v[0]));
+
+                return primitive_argument_type{std::move(lhs)};
+            }
+            else
+            {
+                lhs_m = blaze::map(lhs_m, detail::add_simd(rhs_v[0]));
+
+                return primitive_argument_type{std::move(lhs)};
+            }
+        }
+        // If the matrix has only one column
         else if (lhs_m.columns() == 1)
         {
             blaze::DynamicMatrix<double> result(lhs_m.rows(), rhs_v.size());
@@ -537,223 +544,198 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type(std::move(lhs));
     }
 
-    primitive_argument_type add_operation::add2d2d_stretch_rows(
-        arg_type&& lhs, arg_type&& rhs, stretch_operand stretch_rows) const
+    primitive_argument_type add_operation::add2d2d_lhs_both(
+        arg_type&& lhs, arg_type&& rhs) const
     {
         auto lhs_m = lhs.matrix();
         auto rhs_m = rhs.matrix();
 
-        // Stretch lhs x axis
-        if (stretch_rows == stretch_operand::lhs)
+        if (lhs.is_ref())
         {
-            // Ensure we can reuse memory
-            if (rhs.is_ref())
-            {
-                blaze::DynamicMatrix<double> result(
-                    rhs.dimension(0), rhs.dimension(1));
-
-                for (std::size_t i = 0; i != result.rows(); ++i)
-                {
-                    blaze::row(result, i) =
-                        blaze::row(lhs_m, 0) +
-                        blaze::row(rhs_m, i);
-                }
-                return primitive_argument_type{std::move(result)};
-            }
-            else
-            {
-                for (std::size_t i = 0; i != rhs.dimension(0); ++i)
-                {
-                    blaze::row(rhs_m, i) =
-                        blaze::row(lhs_m, 0) +
-                        blaze::row(rhs_m, i);
-                }
-                return primitive_argument_type{std::move(rhs)};
-            }
+            lhs = blaze::map(rhs_m, detail::add_simd(lhs_m(0, 0)));
         }
-        // Stretch rhs x axis
-        else if (stretch_rows == stretch_operand::rhs)
-        {
-            // Ensure we can reuse memory
-            if (lhs.is_ref())
-            {
-                blaze::DynamicMatrix<double> result(
-                    lhs.dimension(0), lhs.dimension(1));
-
-                for (std::size_t i = 0; i != result.rows(); ++i)
-                {
-                    blaze::row(result, i) =
-                        blaze::row(lhs_m, i) +
-                        blaze::row(rhs_m, 0);
-                }
-                return primitive_argument_type{std::move(result)};
-            }
-            else
-            {
-                for (std::size_t i = 0; i != lhs.dimension(0); ++i)
-                {
-                    blaze::row(lhs_m, i) =
-                        blaze::row(lhs_m, i) +
-                        blaze::row(rhs_m, 0);
-                }
-                return primitive_argument_type{std::move(lhs)};
-            }
-        }
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "add_operation::add2d2d_stretch_rows",
-            execution_tree::generate_error_message(
-                "the dimensions of the operands do not match", name_,
-                codename_));
-    }
-
-    primitive_argument_type add_operation::add2d2d_stretch_cols(
-        arg_type&& lhs, arg_type&& rhs, stretch_operand stretch_cols) const
-    {
-        auto lhs_m = lhs.matrix();
-        auto rhs_m = rhs.matrix();
-
-        // Stretch lhs y axis
-        if (stretch_cols == stretch_operand::lhs)
-        {
-            // Avoid overwriting references, avoid memory
-            // reallocation when possible
-            if (rhs.is_ref())
-            {
-                blaze::DynamicMatrix<double> result(
-                    rhs.dimension(0), rhs.dimension(1));
-
-                for (std::size_t i = 0; i != result.columns(); ++i)
-                {
-                    blaze::column(result, i) =
-                        blaze::column(lhs_m, 0) +
-                        blaze::column(rhs_m, i);
-                }
-                return primitive_argument_type{std::move(result)};
-            }
-            else
-            {
-                for (std::size_t i = 0; i != rhs.dimension(1); ++i)
-                {
-                    blaze::column(rhs_m, i) =
-                        blaze::column(lhs_m, 0) + blaze::column(rhs_m, i);
-                }
-                return primitive_argument_type{std::move(rhs)};
-            }
-        }
-        // Stretch rhs y axis
-        else if (stretch_cols == stretch_operand::rhs)
-        {
-            // Avoid overwriting references, avoid memory
-            // reallocation when possible
-            if (lhs.is_ref())
-            {
-                blaze::DynamicMatrix<double> result(
-                    lhs.dimension(0), lhs.dimension(1));
-
-                for (std::size_t i = 0; i != result.columns(); ++i)
-                {
-                    blaze::column(result, i) =
-                        blaze::column(lhs_m, i) +
-                        blaze::column(rhs_m, 0);
-                }
-                return primitive_argument_type{std::move(result)};
-            }
-            else
-            {
-                for (std::size_t i = 0; i != lhs.dimension(1); ++i)
-                {
-                    blaze::column(lhs_m, i) =
-                        blaze::column(lhs_m, i) +
-                        blaze::column(rhs_m, 0);
-                }
-                return primitive_argument_type{std::move(lhs)};
-            }
-        }
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "add_operation::add2d2d_stretch_cols",
-            execution_tree::generate_error_message(
-                "the dimensions of the operands do not match", name_,
-                codename_));
-    }
-
-    primitive_argument_type add_operation::add2d2d_stretch_both(arg_type&& lhs,
-        arg_type&& rhs, stretch_operand stretch_rows,
-        stretch_operand stretch_cols) const
-    {
-        auto lhs_m = lhs.matrix();
-        auto rhs_m = rhs.matrix();
-
-        // If lhs rows needs stretching
-        if (stretch_rows == stretch_operand::lhs)
-        {
-            // If both lhs axes need stretching
-            if (stretch_cols == stretch_operand::lhs)
-            {
-                if (lhs.is_ref())
-                {
-                    lhs = blaze::map(rhs_m, detail::add_simd(lhs_m(0, 0)));
-                }
-                else
-                {
-                    lhs.matrix() = blaze::map(rhs_m, detail::add_simd(lhs_m(0, 0)));
-                }
-
-                return primitive_argument_type{std::move(lhs)};
-            }
-            // If lhs rows and rhs cols need stretching
-            else
-            {
-                blaze::DynamicMatrix<double> result(rhs_m.rows(), lhs_m.columns());
-                for (std::size_t i = 0; i < result.rows(); ++i)
-                {
-                    blaze::row(result, i) = blaze::row(lhs_m, 0);
-                }
-                for (std::size_t i = 0; i < result.columns(); ++i)
-                {
-                    blaze::column(result, i) += blaze::column(rhs_m, 0);
-                }
-                return primitive_argument_type{std::move(result)};
-            }
-        }
-        // If lhs cols needs stretching
         else
         {
-            // If lhs cols and rhs rows need stretching
-            if (stretch_cols == stretch_operand::lhs)
-            {
-                blaze::DynamicMatrix<double> result(
-                    lhs_m.rows(), rhs_m.columns());
-                for (std::size_t i = 0; i < result.columns(); ++i)
-                {
-                    blaze::column(result, i) = blaze::column(lhs_m, 0);
-                }
-                for (std::size_t i = 0; i < result.rows(); ++i)
-                {
-                    blaze::row(result, i) += blaze::row(rhs_m, 0);
-                }
-                return primitive_argument_type{std::move(result)};
-            }
-            // If both rhs axes need stretching
-            else
-            {
-                if (lhs.is_ref())
-                {
-                    lhs = blaze::map(lhs_m, detail::add_simd(rhs_m(0, 0)));
-                }
-                else
-                {
-                    lhs.matrix() = blaze::map(lhs_m, detail::add_simd(rhs_m(0, 0)));
-                }
-
-                return primitive_argument_type{std::move(lhs)};
-            }
+            lhs.matrix() = blaze::map(rhs_m, detail::add_simd(lhs_m(0, 0)));
         }
 
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "add_operation::add2d2d_stretch_both",
-            execution_tree::generate_error_message(
-                "the dimensions of the operands do not match", name_,
-                codename_));
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    primitive_argument_type add_operation::add2d2d_rhs_both(
+        arg_type&& lhs, arg_type&& rhs) const
+    {
+        auto lhs_m = lhs.matrix();
+        auto rhs_m = rhs.matrix();
+
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs_m, detail::add_simd(rhs_m(0, 0)));
+        }
+        else
+        {
+            lhs.matrix() = blaze::map(lhs_m, detail::add_simd(rhs_m(0, 0)));
+        }
+
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    primitive_argument_type add_operation::add2d2d_lhs_row_rhs_col(
+        arg_type&& lhs, arg_type&& rhs) const
+    {
+        auto lhs_m = lhs.matrix();
+        auto rhs_m = rhs.matrix();
+
+        blaze::DynamicMatrix<double> result(rhs_m.rows(), lhs_m.columns());
+        for (std::size_t i = 0; i < result.rows(); ++i)
+        {
+            blaze::row(result, i) = blaze::row(lhs_m, 0);
+        }
+        for (std::size_t i = 0; i < result.columns(); ++i)
+        {
+            blaze::column(result, i) += blaze::column(rhs_m, 0);
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type add_operation::add2d2d_lhs_row(
+        arg_type&& lhs, arg_type&& rhs) const
+    {
+        auto lhs_m = lhs.matrix();
+        auto rhs_m = rhs.matrix();
+
+        // Ensure we can reuse memory
+        if (rhs.is_ref())
+        {
+            blaze::DynamicMatrix<double> result(
+                rhs.dimension(0), rhs.dimension(1));
+
+            for (std::size_t i = 0; i != result.rows(); ++i)
+            {
+                blaze::row(result, i) =
+                    blaze::row(lhs_m, 0) + blaze::row(rhs_m, i);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+        else
+        {
+            for (std::size_t i = 0; i != rhs.dimension(0); ++i)
+            {
+                blaze::row(rhs_m, i) =
+                    blaze::row(lhs_m, 0) + blaze::row(rhs_m, i);
+            }
+            return primitive_argument_type{std::move(rhs)};
+        }
+    }
+
+    primitive_argument_type add_operation::add2d2d_lhs_col_rhs_row(
+        arg_type&& lhs, arg_type&& rhs) const
+    {
+        auto lhs_m = lhs.matrix();
+        auto rhs_m = rhs.matrix();
+
+        blaze::DynamicMatrix<double> result(lhs_m.rows(), rhs_m.columns());
+        for (std::size_t i = 0; i < result.columns(); ++i)
+        {
+            blaze::column(result, i) = blaze::column(lhs_m, 0);
+        }
+        for (std::size_t i = 0; i < result.rows(); ++i)
+        {
+            blaze::row(result, i) += blaze::row(rhs_m, 0);
+        }
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type add_operation::add2d2d_rhs_row(
+        arg_type&& lhs, arg_type&& rhs) const
+    {
+        auto lhs_m = lhs.matrix();
+        auto rhs_m = rhs.matrix();
+
+        // Ensure we can reuse memory
+        if (lhs.is_ref())
+        {
+            blaze::DynamicMatrix<double> result(
+                lhs.dimension(0), lhs.dimension(1));
+
+            for (std::size_t i = 0; i != result.rows(); ++i)
+            {
+                blaze::row(result, i) =
+                    blaze::row(lhs_m, i) + blaze::row(rhs_m, 0);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+        else
+        {
+            for (std::size_t i = 0; i != lhs.dimension(0); ++i)
+            {
+                blaze::row(lhs_m, i) =
+                    blaze::row(lhs_m, i) + blaze::row(rhs_m, 0);
+            }
+            return primitive_argument_type{std::move(lhs)};
+        }
+    }
+
+    primitive_argument_type add_operation::add2d2d_lhs_col(
+        arg_type&& lhs, arg_type&& rhs) const
+    {
+        auto lhs_m = lhs.matrix();
+        auto rhs_m = rhs.matrix();
+
+        // Avoid overwriting references, avoid memory
+        // reallocation when possible
+        if (rhs.is_ref())
+        {
+            blaze::DynamicMatrix<double> result(
+                rhs.dimension(0), rhs.dimension(1));
+
+            for (std::size_t i = 0; i != result.columns(); ++i)
+            {
+                blaze::column(result, i) =
+                    blaze::column(lhs_m, 0) + blaze::column(rhs_m, i);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+        else
+        {
+            for (std::size_t i = 0; i != rhs.dimension(1); ++i)
+            {
+                blaze::column(rhs_m, i) =
+                    blaze::column(lhs_m, 0) + blaze::column(rhs_m, i);
+            }
+            return primitive_argument_type{std::move(rhs)};
+        }
+    }
+
+    primitive_argument_type add_operation::add2d2d_rhs_col(
+        arg_type&& lhs, arg_type&& rhs) const
+    {
+        auto lhs_m = lhs.matrix();
+        auto rhs_m = rhs.matrix();
+
+        // Avoid overwriting references, avoid memory
+        // reallocation when possible
+        if (lhs.is_ref())
+        {
+            blaze::DynamicMatrix<double> result(
+                lhs.dimension(0), lhs.dimension(1));
+
+            for (std::size_t i = 0; i != result.columns(); ++i)
+            {
+                blaze::column(result, i) =
+                    blaze::column(lhs_m, i) + blaze::column(rhs_m, 0);
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+        else
+        {
+            for (std::size_t i = 0; i != lhs.dimension(1); ++i)
+            {
+                blaze::column(lhs_m, i) =
+                    blaze::column(lhs_m, i) + blaze::column(rhs_m, 0);
+            }
+            return primitive_argument_type{std::move(lhs)};
+        }
     }
 
     primitive_argument_type add_operation::add2d2d(
@@ -762,45 +744,77 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
 
-        if (lhs_size != rhs_size)
+        // Dimensions are identical
+        if (lhs_size == rhs_size)
         {
-            // Broadcasting rules
-            // In case x dimensions do not match
+            return add2d2d_no_stretch(std::move(lhs), std::move(rhs));
+        }
+        // Check if broadcasting rules apply
+        else
+        {
+            // Number of rows do not match
             stretch_operand stretch_rows =
                 get_stretch_dimension(lhs_size[0], rhs_size[0]);
-            // In case y dimensions do not match
+            // Number of columns do not match
             stretch_operand stretch_cols =
                 get_stretch_dimension(lhs_size[1], rhs_size[1]);
 
-            // Stretch if stretching is possible
-            if (stretch_rows != stretch_operand::neither ||
-                stretch_cols != stretch_operand::neither)
+            // Shorthand
+            auto lhs_m = lhs.matrix();
+            auto rhs_m = rhs.matrix();
+
+            // If lhs rows needs stretching
+            if (stretch_rows == stretch_operand::lhs)
             {
-                // If only y axis needs stretching
-                if (stretch_rows == stretch_operand::neither)
+                // If both lhs axes need stretching
+                if (stretch_cols == stretch_operand::lhs)
                 {
-                    return add2d2d_stretch_cols(
-                            std::move(lhs), std::move(rhs), stretch_cols);
+                    return add2d2d_lhs_both(std::move(lhs), std::move(rhs));
                 }
-                // If only x axis needs stretching
-                else if(stretch_cols == stretch_operand::neither)
+                // If lhs rows and rhs cols need stretching
+                else if (stretch_cols == stretch_operand::rhs)
                 {
-                    return add2d2d_stretch_rows(
-                            std::move(lhs), std::move(rhs), stretch_rows);
+                    return add2d2d_lhs_row_rhs_col(std::move(lhs), std::move(rhs));
                 }
-                // If both lhs and rhs must be stretched
-                // Separated because memory cannot be reused
+                // If only lhs rows need stretching
                 else
                 {
-                    return add2d2d_stretch_both(std::move(lhs), std::move(rhs),
-                        stretch_rows, stretch_cols);
+                    return add2d2d_lhs_row(std::move(lhs), std::move(rhs));
                 }
             }
-        }
-        // Dimensions are identical
-        else
-        {
-            return add2d2d_no_stretch(std::move(lhs), std::move(rhs));
+            // If lhs cols needs stretching
+            else if (stretch_rows == stretch_operand::rhs)
+            {
+                // If lhs cols and rhs rows need stretching
+                if (stretch_cols == stretch_operand::lhs)
+                {
+                    return add2d2d_lhs_col_rhs_row(std::move(lhs), std::move(rhs));
+                }
+                // If both rhs axes need stretching
+                else if (stretch_cols == stretch_operand::rhs)
+                {
+                    return add2d2d_rhs_both(std::move(lhs), std::move(rhs));
+                }
+                // If only rhs rows need stretching
+                else
+                {
+                    return add2d2d_rhs_row(std::move(lhs), std::move(rhs));
+                }
+            }
+            else
+            {
+                // If only lhs cols need stretching
+                if (stretch_cols == stretch_operand::lhs)
+                {
+                    return add2d2d_lhs_col(std::move(lhs), std::move(rhs));
+                }
+                // If only rhs cols need stretching
+                else if (stretch_cols == stretch_operand::rhs)
+                {
+                    return add2d2d_rhs_col(std::move(lhs), std::move(rhs));
+                }
+                // Otherwise no axis can be stretched
+            }
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -858,11 +872,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 0:
             return add2d0d(std::move(lhs), std::move(rhs));
 
-        case 2:
-            return add2d2d(std::move(lhs), std::move(rhs));
-
         case 1:
             return add2d1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return add2d2d(std::move(lhs), std::move(rhs));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -899,8 +913,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::eval",
                 execution_tree::generate_error_message(
-                    "the add_operation primitive requires at least two "
-                        "operands",
+                    "the add_operation primitive requires at least two operands",
                     name_, codename_));
         }
 
@@ -985,6 +998,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name_, codename_));
     }
 
+    //////////////////////////////////////////////////////////////////////////
     // Implement '+' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> add_operation::eval(
         std::vector<primitive_argument_type> const& args) const

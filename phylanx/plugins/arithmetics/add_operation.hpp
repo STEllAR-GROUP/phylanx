@@ -1,4 +1,6 @@
 // Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2018 Shahrzad Shirzad
+// Copyright (c) 2018 Parsa Amini
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -67,13 +69,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::size_t lhs, std::size_t rhs) const;
         primitive_argument_type add2d2d_no_stretch(
             arg_type&& lhs, arg_type&& rhs) const;
-        primitive_argument_type add2d2d_stretch_rows(
-            arg_type&& lhs, arg_type&& rhs, stretch_operand stretch_x) const;
-        primitive_argument_type add2d2d_stretch_cols(
-            arg_type&& lhs, arg_type&& rhs, stretch_operand stretch_y) const;
-        primitive_argument_type add2d2d_stretch_both(
-            arg_type&& lhs, arg_type&& rhs,
-            stretch_operand stretch_x, stretch_operand stretch_y) const;
+        primitive_argument_type add2d2d_lhs_both(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_rhs_both(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_row_rhs_col(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_row(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_col_rhs_row(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_rhs_row(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_col(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_rhs_col(
+            arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d2d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d2d(args_type && args) const;
         primitive_argument_type add2d(arg_type&& lhs, arg_type&& rhs) const;
