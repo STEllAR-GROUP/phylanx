@@ -569,6 +569,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 {
                     return literal_value(primitive_argument_type{});
                 }
+                else if (name == "false")
+                {
+                    return literal_value(primitive_argument_type{false});
+                }
+                else if (name == "true")
+                {
+                    return literal_value(primitive_argument_type{true});
+                }
                 return handle_variable_reference(name, expr);
             }
 
