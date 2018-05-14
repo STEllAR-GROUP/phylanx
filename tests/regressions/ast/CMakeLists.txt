@@ -5,6 +5,7 @@
 
 set(tests
     list_matching_178
+    trailing_comments_413
    )
 
 foreach(test ${tests})
