@@ -68,8 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const shuffle_operation::match_data =
     {
-        hpx::util::make_tuple("shuffle_operation",
-            std::vector<std::string>{"shuffle_operation(_1)"},
+        hpx::util::make_tuple("shuffle",
+            std::vector<std::string>{"shuffle(_1)"},
             &create_shuffle_operation, &create_primitive<shuffle_operation>)
     };
 

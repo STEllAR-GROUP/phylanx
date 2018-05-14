@@ -30,6 +30,7 @@ error_item = namedtuple('error_item', 'filename message')
 def parse_inspect8_log(fh):
     line_pattern = re.compile('(.+):\ (\*.+\*.+)')
     split_pattern = re.compile(',\ (?=\*)')
+    stripper_pattern = re.compile('<\/?\w+[^>]*>')
 
     errors = []
 
@@ -37,7 +38,8 @@ def parse_inspect8_log(fh):
         m = line_pattern.match(line)
         if m:
             for message in split_pattern.split(m.group(2)):
-                error = error_item(filename=m.group(1), message=message)
+                error = error_item(filename=m.group(1),
+                                   message=stripper_pattern.sub('', message))
                 errors.append(error)
 
     return errors
