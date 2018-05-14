@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -30,7 +31,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const;
 
         using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
 
     public:
         static match_pattern_type const match_data;
@@ -44,9 +44,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params) const override;
 
     private:
-        primitive_argument_type shape0d(args_type&& args) const;
-        primitive_argument_type shape1d(args_type&& args) const;
-        primitive_argument_type shape2d(args_type&& args) const;
+        primitive_argument_type shape0d(arg_type&& arg) const;
+        primitive_argument_type shape1d(arg_type&& arg) const;
+        primitive_argument_type shape2d(arg_type&& arg) const;
+
+        primitive_argument_type shape0d(arg_type&& arg, std::int64_t index) const;
+        primitive_argument_type shape1d(arg_type&& arg, std::int64_t index) const;
+        primitive_argument_type shape2d(arg_type&& arg, std::int64_t index) const;
     };
 
     inline primitive create_extract_shape(hpx::id_type const& locality,
