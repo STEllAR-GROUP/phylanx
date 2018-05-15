@@ -22,7 +22,7 @@ try:
 
 except Exception as e:
     expected = \
-        '<unknown>: __add$0/0$12$8:: the dimensions of the operands do ' + \
+        '<unknown>: __add$0/0$14$8:: the dimensions of the operands do ' + \
         'not match: HPX(bad_parameter)'
     assert(str(e) == expected)
     exception_thrown = True

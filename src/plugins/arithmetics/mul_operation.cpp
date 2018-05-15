@@ -830,14 +830,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     primitive_argument_type mul_operation::mul2d2d(operands_type && ops) const
     {
-        std::size_t dim = ops[0].dimension(1);
+        auto const operand_size = ops[0].dimensions();
         for (auto const& i : ops)
         {
-            if (i.dimension(0) == dim)
-            {
-                dim = i.dimension(1);
-            }
-            else
+            if (i.dimensions() != operand_size)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "sub_operation::mul2d2d",
