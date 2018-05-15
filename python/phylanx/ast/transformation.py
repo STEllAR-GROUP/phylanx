@@ -64,6 +64,17 @@ class PhySL:
     def _Name(self, a, allowreturn=False):
         return full_node_name(a, a.id)
 
+    def _NameConstant(self, a, allowreturn=False):
+        symbol_info = full_node_name(a)
+        if a.value is None:
+            return "nil%s" % symbol_info
+
+        if a.value is False:
+            return "false%s" % symbol_info
+
+        if a.value is True:
+            return "true%s" % symbol_info
+
     def _Expr(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = "("
@@ -463,16 +474,17 @@ class PhySL:
         "Call": _Call,
         "Compare": _Compare,
         "Expr": _Expr,
+        "ExtSlice": _ExtSlice,
         "For": _For,
         "FunctionDef": _FunctionDef,
         "If": _If,
         "List": _List,
         "Module": _Module,
         "Name": _Name,
+        "NameConstant": _NameConstant,
         "Num": _Num,
         "Return": _Return,
         "Slice": _Slice,
-        "ExtSlice": _ExtSlice,
         "Str": _Str,
         "Subscript": _Subscript,
         "Tuple": _Tuple,
