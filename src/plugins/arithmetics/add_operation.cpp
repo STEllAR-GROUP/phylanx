@@ -85,10 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     primitive_argument_type add_operation::add0d0d(args_type && args) const
     {
-        arg_type& first_term = *args.begin();
-
         return primitive_argument_type{std::accumulate(
-            args.begin() + 1, args.end(), std::move(first_term),
+            args.begin() + 1, args.end(), std::move(args[0]),
             [](arg_type& result, arg_type const& curr) -> arg_type
             {
                 result.scalar() += curr.scalar();
@@ -250,35 +248,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "add_operation::add1d1d",
             execution_tree::generate_error_message(
-                "the dimensions of the operands do not match", name_,
-                codename_));
+                "the dimensions of the operands do not match",
+                name_, codename_));
     }
 
     primitive_argument_type add_operation::add1d1d(args_type && args) const
     {
         std::size_t const operand_size = args[0].dimension(0);
-        bool operands_same_size = true;
         for (auto const& i : args)
         {
             if (i.dimension(0) != operand_size)
             {
-                operands_same_size = false;
-                break;
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "add_operation::add1d1d",
+                    execution_tree::generate_error_message(
+                        "the dimensions of the operands do not match",
+                        name_, codename_));
             }
         }
 
-        if (!operands_same_size)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "add_operation::add1d1d",
-                execution_tree::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
-
-        arg_type& first_term = *args.begin();
         return primitive_argument_type(std::accumulate(
-            args.begin() + 1, args.end(), std::move(first_term),
+            args.begin() + 1, args.end(), std::move(args[0]),
             [](arg_type& result, arg_type const& curr) -> arg_type
             {
                 if (result.is_ref())
@@ -300,7 +290,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto rhs_m = rhs.matrix();
 
         // If dimensions match
-        if (rhs_m.columns() == lhs_v.size())
+        if (lhs_v.size() == rhs_m.columns())
         {
             if (rhs.is_ref())
             {
@@ -820,35 +810,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "add_operation::add2d2d",
             execution_tree::generate_error_message(
-                "the dimensions of the operands do not match", name_,
-                codename_));
+                "the dimensions of the operands do not match",
+                name_, codename_));
     }
 
     primitive_argument_type add_operation::add2d2d(args_type && args) const
     {
         auto const operand_size = args[0].dimensions();
-        bool operands_same_size = true;
         for (auto const& i : args)
         {
             if (i.dimensions() != operand_size)
             {
-                operands_same_size = false;
-                break;
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "add_operation::add2d2d",
+                    execution_tree::generate_error_message(
+                        "the dimensions of the operands do not match",
+                        name_, codename_));
             }
         }
 
-        if (!operands_same_size)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "add_operation::add2d2d",
-                execution_tree::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
-        }
-
-        arg_type& first_term = *args.begin();
         return primitive_argument_type{std::accumulate(
-            args.begin() + 1, args.end(), std::move(first_term),
+            args.begin() + 1, args.end(), std::move(args[0]),
             [](arg_type& result, arg_type const& curr) -> arg_type
             {
                 if (result.is_ref())
