@@ -499,7 +499,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name_, codename_));
     }
 
-    
+
 
     mul_operation::stretch_operand mul_operation::get_stretch_dimension(
         std::size_t lhs, std::size_t rhs) const

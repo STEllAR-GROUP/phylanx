@@ -220,7 +220,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type sub_operation::sub1d1d(
         arg_type&& lhs, arg_type&& rhs) const
     {
-std::size_t lhs_size = lhs.dimension(0);
+        std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
 
         // Broadcasting rule 1: Dimensions are identical
@@ -385,8 +385,8 @@ std::size_t lhs_size = lhs.dimension(0);
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "add_operation::sub1d2d",
             execution_tree::generate_error_message(
-                "vector size does not match number of matrix columns", name_,
-                codename_));
+                "vector size does not match number of matrix columns",
+                name_, codename_));
     }
 
     primitive_argument_type sub_operation::sub1d(
