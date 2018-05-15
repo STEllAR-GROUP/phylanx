@@ -45,6 +45,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
+        enum struct stretch_operand { neither, lhs, rhs };
+
         primitive_argument_type mul0d(
             operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type mul0d(operands_type&& ops) const;
@@ -73,6 +75,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type mul2d0d(
             operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type mul2d1d(
+            operand_type&& lhs, operand_type&& rhs) const;
+        stretch_operand get_stretch_dimension(
+            std::size_t lhs, std::size_t rhs) const;
+        primitive_argument_type mul2d2d_no_stretch(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_lhs_both(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_rhs_both(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_lhs_row_rhs_col(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_lhs_row(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_lhs_col_rhs_row(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_rhs_row(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_lhs_col(
+            operand_type&& lhs, operand_type&& rhs) const;
+        primitive_argument_type mul2d2d_rhs_col(
             operand_type&& lhs, operand_type&& rhs) const;
         primitive_argument_type mul2d2d(
             operand_type&& lhs, operand_type&& rhs) const;
