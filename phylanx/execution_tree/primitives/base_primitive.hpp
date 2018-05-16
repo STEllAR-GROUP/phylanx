@@ -564,6 +564,54 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
 
+    // Extract a std::int64_t type from a given primitive_argument_type,
+    // throw if it doesn't hold one.
+    PHYLANX_EXPORT std::int64_t extract_integer_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::int64_t extract_integer_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    // Extract an integer value from a primitive_argument_type
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    namespace functional
+    {
+        struct integer_operand_strict
+        {
+            template <typename... Ts>
+            hpx::future<std::int64_t> operator()(Ts&&... ts) const
+            {
+                return execution_tree::integer_operand(std::forward<Ts>(ts)...);
+            }
+        };
+    }
+
+    PHYLANX_EXPORT bool is_integer_operand_strict(
+        primitive_argument_type const& val);
+
     // Extract a boolean type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::uint8_t extract_boolean_value(

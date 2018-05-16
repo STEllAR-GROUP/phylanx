@@ -82,10 +82,11 @@ namespace phylanx { namespace ast { namespace parser
             ("!", ast::optoken::op_not)
             ;
 
-        keywords.add
-            ("true")
-            ("false")
-            ;
+//         keywords.add
+//             ("true")
+//             ("false")
+//             ("nil")
+//             ;
 
         unesc_char.add
             ("\\a", '\a')   // \a is alert

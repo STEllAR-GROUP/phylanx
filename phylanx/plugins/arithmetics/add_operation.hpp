@@ -1,4 +1,6 @@
 // Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2018 Shahrzad Shirzad
+// Copyright (c) 2018 Parsa Amini
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -13,6 +15,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -44,6 +47,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
     private:
+        enum struct stretch_operand { neither, lhs, rhs };
+
         primitive_argument_type add0d0d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add0d0d(args_type && args) const;
         primitive_argument_type add0d1d(arg_type&& lhs, arg_type&& rhs) const;
@@ -60,6 +65,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         primitive_argument_type add2d0d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d1d(arg_type&& lhs, arg_type&& rhs) const;
+        stretch_operand get_stretch_dimension(
+            std::size_t lhs, std::size_t rhs) const;
+        primitive_argument_type add2d2d_no_stretch(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_both(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_rhs_both(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_row_rhs_col(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_row(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_col_rhs_row(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_rhs_row(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_lhs_col(
+            arg_type&& lhs, arg_type&& rhs) const;
+        primitive_argument_type add2d2d_rhs_col(
+            arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d2d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d2d(args_type && args) const;
         primitive_argument_type add2d(arg_type&& lhs, arg_type&& rhs) const;
