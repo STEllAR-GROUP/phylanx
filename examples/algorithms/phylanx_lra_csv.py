@@ -8,7 +8,7 @@ import phylanx
 from phylanx.ast import *
 
 
-@Phylanx("PhySL")
+@Phylanx
 def lra(file_name, xlo1, xhi1, ylo1, yhi1, xlo2, xhi2, ylo2, yhi2, alpha,
         iterations, enable_output):
     data = file_read_csv(file_name)
