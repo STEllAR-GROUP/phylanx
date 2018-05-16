@@ -42,7 +42,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         // skip statements that don't return anything
         while (i != operands_.size() && !valid(operands_[i]))
+        {
+            if (i == operands_.size() - 1)
+            {
+                result.set_value(primitive_argument_type{});
+            }
             ++i;
+        }
 
         if (i == operands_.size())
             return;
