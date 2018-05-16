@@ -7,7 +7,7 @@ set(tests
     exception_swallowed_369
     broadcasting_rules_410
     name_constants_411
-    create_lists_409
+    create_list_409
    )
 
 foreach(test ${tests})
