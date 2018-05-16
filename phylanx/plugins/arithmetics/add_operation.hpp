@@ -89,6 +89,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type add2d2d(args_type && args) const;
         primitive_argument_type add2d(arg_type&& lhs, arg_type&& rhs) const;
         primitive_argument_type add2d(args_type && args) const;
+
+        primitive_argument_type handle_list_operands(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+        primitive_argument_type handle_numeric_operands(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        primitive_argument_type handle_list_operands(
+            std::vector<primitive_argument_type>&& ops) const;
+        primitive_argument_type handle_numeric_operands(
+            std::vector<primitive_argument_type>&& ops) const;
+
+        void append_element(std::vector<primitive_argument_type>& result,
+            primitive_argument_type&& rhs) const;
     };
 
     inline primitive create_add_operation(hpx::id_type const& locality,

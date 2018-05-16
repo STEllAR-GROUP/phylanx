@@ -886,17 +886,142 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    void add_operation::append_element(
+        std::vector<primitive_argument_type>& result,
+        primitive_argument_type&& rhs) const
+    {
+        if (is_list_operand_strict(rhs))
+        {
+            auto&& rhs_list =
+                extract_list_value_strict(std::move(rhs), name_, codename_);
+
+            for (auto&& elem : std::move(rhs_list))
+            {
+                result.emplace_back(std::move(elem));
+            }
+        }
+        else
+        {
+            result.emplace_back(std::move(rhs));
+        }
+    }
+
+    primitive_argument_type add_operation::handle_list_operands(
+        primitive_argument_type&& op1, primitive_argument_type&& rhs) const
+    {
+        ir::range lhs =
+            extract_list_value_strict(std::move(op1), name_, codename_);
+
+        if (lhs.is_ref())
+        {
+            auto result = lhs.copy();
+            append_element(result, std::move(rhs));
+            return primitive_argument_type{std::move(result)};
+        }
+
+        append_element(lhs.args(), std::move(rhs));
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    primitive_argument_type add_operation::handle_list_operands(
+        std::vector<primitive_argument_type>&& ops) const
+    {
+        auto it = ops.begin();
+        auto end = ops.end();
+
+        ir::range lhs =
+            extract_list_value_strict(std::move(ops[0]), name_, codename_);
+
+        if (lhs.is_ref())
+        {
+            auto result = lhs.copy();
+            for (++it; it != end; ++it)
+            {
+                append_element(result, std::move(*it));
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+
+        for (++it; it != end; ++it)
+        {
+            append_element(lhs.args(), std::move(*it));
+        }
+
+        return primitive_argument_type{std::move(lhs)};
+    }
+
+    primitive_argument_type add_operation::handle_numeric_operands(
+        primitive_argument_type&& op1, primitive_argument_type&& op2) const
+    {
+        arg_type lhs = extract_numeric_value(std::move(op1), name_, codename_);
+        arg_type rhs = extract_numeric_value(std::move(op2), name_, codename_);
+
+        std::size_t lhs_dims = lhs.num_dimensions();
+        switch (lhs_dims)
+        {
+        case 0:
+            return add0d(std::move(lhs), std::move(rhs));
+
+        case 1:
+            return add1d(std::move(lhs), std::move(rhs));
+
+        case 2:
+            return add2d(std::move(lhs), std::move(rhs));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "add_operation::handle_numeric_operands",
+            generate_error_message(
+                "left hand side operand has unsupported number of dimensions"));
+    }
+
+    primitive_argument_type add_operation::handle_numeric_operands(
+        std::vector<primitive_argument_type>&& ops) const
+    {
+        args_type args;
+        args.reserve(ops.size());
+
+        for (auto && op : std::move(ops))
+        {
+            args.emplace_back(
+                extract_numeric_value(std::move(op), name_, codename_));
+        }
+
+        std::size_t lhs_dims = args[0].num_dimensions();
+        switch (lhs_dims)
+        {
+        case 0:
+            return add0d(std::move(args));
+
+        case 1:
+            return add1d(std::move(args));
+
+        case 2:
+            return add2d(std::move(args));
+
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "add_operation::handle_numeric_operands",
+            generate_error_message(
+                "left hand side operand has unsupported number of dimensions"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> add_operation::eval(
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
         if (operands.size() < 2)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "add_operation::eval",
-                execution_tree::generate_error_message(
-                    "the add_operation primitive requires at least two operands",
-                    name_, codename_));
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "add_operation::eval",
+                generate_error_message("the add_operation primitive requires "
+                    "at least two operands"));
         }
 
         bool arguments_valid = true;
@@ -910,12 +1035,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!arguments_valid)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "add_operation::eval",
-                execution_tree::generate_error_message(
-                    "the add_operation primitive requires that the "
-                    "arguments given by the operands array are valid",
-                    name_, codename_));
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "add_operation::eval",
+                generate_error_message(
+                    "the add_operation primitive requires that the arguments "
+                    "given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -923,60 +1046,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             // special case for 2 operands
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](arg_type&& lhs, arg_type&& rhs)
+                [this_](primitive_argument_type&& lhs,
+                        primitive_argument_type&& rhs)
                 -> primitive_argument_type
                 {
-                    std::size_t lhs_dims = lhs.num_dimensions();
-                    switch (lhs_dims)
+                    if (is_list_operand_strict(lhs))
                     {
-                    case 0:
-                        return this_->add0d(std::move(lhs), std::move(rhs));
-
-                    case 1:
-                        return this_->add1d(std::move(lhs), std::move(rhs));
-
-                    case 2:
-                        return this_->add2d(std::move(lhs), std::move(rhs));
-
-                    default:
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "add_operation::eval",
-                            execution_tree::generate_error_message(
-                                "left hand side operand has unsupported "
-                                    "number of dimensions",
-                                this_->name_, this_->codename_));
+                        return this_->handle_list_operands(
+                            std::move(lhs), std::move(rhs));
                     }
+                    return this_->handle_numeric_operands(
+                        std::move(lhs), std::move(rhs));
                 }),
-                numeric_operand(operands[0], args, name_, codename_),
-                numeric_operand(operands[1], args, name_, codename_));
+                value_operand(operands[0], args, name_, codename_),
+                value_operand(operands[1], args, name_, codename_));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](args_type&& args) -> primitive_argument_type
+            [this_](std::vector<primitive_argument_type>&& ops)
+            ->  primitive_argument_type
             {
-                std::size_t lhs_dims = args[0].num_dimensions();
-                switch (lhs_dims)
+                if (is_list_operand_strict(ops[0]))
                 {
-                case 0:
-                    return this_->add0d(std::move(args));
-
-                case 1:
-                    return this_->add1d(std::move(args));
-
-                case 2:
-                    return this_->add2d(std::move(args));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "add_operation::eval",
-                        execution_tree::generate_error_message(
-                            "left hand side operand has unsupported "
-                            "number of dimensions",
-                            this_->name_, this_->codename_));
+                    return this_->handle_list_operands(std::move(ops));
                 }
+                return this_->handle_numeric_operands(std::move(ops));
             }),
             detail::map_operands(
-                operands, functional::numeric_operand{}, args,
+                operands, functional::value_operand{}, args,
                 name_, codename_));
     }
 
