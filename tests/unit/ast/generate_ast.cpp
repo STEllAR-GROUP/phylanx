@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
 
     test_expression(
         "'(true, 1, 1.0, A, A + B)",
-            "true\n"
+            "true$1$3\n"
             "1\n"
             "1\n"
             "A$1$17\n"
@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
 
     test_expression(
         "'(true, 1, '(1.0, A, A + B))",
-            "true\n"
+            "true$1$3\n"
             "1\n"
             "1\n"
             "A$1$19\n"
