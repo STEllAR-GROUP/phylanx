@@ -157,12 +157,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_row_iterator<decltype(a)> a_begin(a);
         const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
-        std::vector<primitive_argument_type> result;
-        for (auto it = a_begin; it != a_end; ++it)
+        blaze::DynamicVector<double> result(a.rows());
+        auto result_it = result.begin();
+        for (auto it = a_begin; it != a_end; ++it, ++result_it)
         {
             const auto local_max = std::max_element(it->begin(), it->end());
-            std::int64_t index = std::distance(it->begin(), local_max);
-            result.emplace_back(primitive_argument_type(index));
+            *result_it = std::distance(it->begin(), local_max);
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -176,12 +176,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_column_iterator<decltype(a)> a_begin(a);
         const matrix_column_iterator<decltype(a)> a_end(a, a.columns());
 
-        std::vector<primitive_argument_type> result;
-        for (auto it = a_begin; it != a_end; ++it)
+        blaze::DynamicVector<double> result(a.columns());
+        auto result_it = result.begin();
+        for (auto it = a_begin; it != a_end; ++it, ++result_it)
         {
             const auto local_max = std::max_element(it->begin(), it->end());
-            std::int64_t index = std::distance(it->begin(), local_max);
-            result.emplace_back(primitive_argument_type(index));
+            *result_it = std::distance(it->begin(), local_max);
         }
         return primitive_argument_type{std::move(result)};
     }
