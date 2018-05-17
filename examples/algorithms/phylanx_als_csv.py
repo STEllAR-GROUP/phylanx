@@ -8,7 +8,7 @@ from phylanx.ast import *
 import numpy as np
 
 
-@Phylanx("PhySL")
+@Phylanx
 def ALS(filename, row_stop, col_stop, regularization, num_factors, iterations, alpha,
         enable_output):
     data = file_read_csv(filename)

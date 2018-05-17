@@ -8,7 +8,7 @@ import numpy as np
 from phylanx.ast import *
 
 
-@Phylanx("PhySL")
+@Phylanx
 def lra(x, y, alpha, iterations, enable_output):
     weights = constant(0.0, shape(x, 1))
     transx = np.transpose(x)
