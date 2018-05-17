@@ -15,17 +15,45 @@
 #include <string>
 #include <sstream>
 
-std::string const code = R"(
-    define(f, block(
-        nil
-    ))
-    cout(f())
-)";
-
-int hpx_main(int argc, char* argv[])
+void compile(std::string const code)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(code, snippets);
+}
+
+int hpx_main(int argc, char* argv[])
+{
+    compile(R"(
+        define(f, block(
+            nil
+        ))
+        cout(f())
+    )");
+
+    compile(R"(
+        define(f, block(
+            0,
+            nil
+        ))
+        cout(f())
+    )");
+
+    compile(R"(
+        define(f, block(
+            nil,
+            0
+        ))
+        cout(f())
+    )");
+
+    compile(R"(
+        define(f, block(
+            0,
+            nil,
+            0
+        ))
+        cout(f())
+    )");
 
     return hpx::finalize();
 }
