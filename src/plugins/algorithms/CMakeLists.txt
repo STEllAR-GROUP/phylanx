@@ -7,6 +7,7 @@ add_phylanx_primitive_plugin(algorithms
   SOURCE_ROOT "${PROJECT_SOURCE_DIR}/src/plugins/algorithms"
   HEADER_ROOT "${PROJECT_SOURCE_DIR}/phylanx/plugins/algorithms"
   AUTOGLOB
+  PLUGIN
   FOLDER "Core/Plugins"
   COMPONENT_DEPENDENCIES phylanx)
 
