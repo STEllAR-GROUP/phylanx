@@ -41,7 +41,8 @@ char const* const als_explicit = R"(block(
     //
     //
     //
-    define(als_explicit, ratings, regularization, num_factors, iterations, alpha, enable_output,
+    define(als_explicit, ratings, regularization, num_factors, iterations, alpha,
+        enable_output,
         block(
             define(num_users, shape(ratings, 0)),
             define(num_items, shape(ratings, 1)),
@@ -122,8 +123,9 @@ std::string const als_direct = R"(block(
     //
     //
     //
-    define(als_direct, ratings, regularization, num_factors, iterations, alpha, enable_output,
-        als(ratings, regularization, num_factors, iterations, alpha, enable_output)
+    define(als_direct, ratings, regularization, num_factors, iterations, alpha,
+        enable_output, als(ratings, regularization, num_factors, iterations, alpha,
+        enable_output)
     ),
     als_direct
 ))";
