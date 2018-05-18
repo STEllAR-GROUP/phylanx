@@ -34,4 +34,4 @@ def f():
 
 
 assert f.__src__ == \
-    "define$30$0(f$30$0, block$30$0(define$31$4(a$31$4, false$31$8), a$32$11))"
+    "define$31$0(f$31$0, block$31$0(define$32$4(a$32$4, false$32$8), a$33$11))"
