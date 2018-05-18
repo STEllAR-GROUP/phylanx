@@ -11,6 +11,7 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(als_plugin,
+    phylanx::execution_tree::primitives::als::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(lra_plugin,
     phylanx::execution_tree::primitives::lra::match_data);
-

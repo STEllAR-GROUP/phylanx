@@ -35,13 +35,14 @@ char const* const read_x_code = R"(block(
 ))";
 
 
-char const* const als_code = R"(block(
+char const* const als_explicit = R"(block(
     //
-    // Alternating Least squares algorithm
+    // Alternating Least squares algorithm (ALS)
     //
     //
     //
-    define(als, ratings, regularization, num_factors, iterations, alpha, enable_output,
+    define(als_explicit, ratings, regularization, num_factors, iterations, alpha,
+        enable_output,
         block(
             define(num_users, shape(ratings, 0)),
             define(num_items, shape(ratings, 1)),
@@ -112,7 +113,21 @@ char const* const als_code = R"(block(
             make_list(X, Y)
         )
     ),
-    als
+    als_explicit
+))";
+
+std::string const als_direct = R"(block(
+    //
+    // Alternating Least squares algorithm (ALS) (direct implementation)
+    //
+    //
+    //
+    //
+    define(als_direct, ratings, regularization, num_factors, iterations, alpha,
+        enable_output, als(ratings, regularization, num_factors, iterations, alpha,
+        enable_output)
+    ),
+    als_direct
 ))";
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -327,14 +342,16 @@ int hpx_main(boost::program_options::variables_map& vm)
     phylanx::execution_tree::compiler::function_list snippets;
     auto read_x =
         phylanx::execution_tree::compile("read_x", read_x_code, snippets);
-    auto als = phylanx::execution_tree::compile(als_code, snippets);
+    auto als = phylanx::execution_tree::compile(
+        vm.count("direct") != 0 ? als_direct : als_explicit, snippets);
 
     // Print instrumentation information, if enabled
     if (vm.count("instrument") != 0)
     {
         auto entries = hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*");
 
-        print_instrumentation("als", 0, als_code, als, entries);
+        print_instrumentation("als", 0,
+            vm.count("direct") != 0 ? als_direct : als_explicit, als, entries);
     }
 
     // evaluate generated execution tree
@@ -390,7 +407,8 @@ int main(int argc, char* argv[])
     boost::program_options::options_description desc("usage: als [options]");
     desc.add_options()("enable_output,e",
         "enable progress output (default: false)")("instrument,i",
-        "print instrumentation information (default: false)")("iterations,n",
+        "print instrumentation information (default: false)")("direct,d",
+        "use direct implementation of ALS (default: false)")("iterations,n",
         boost::program_options::value<std::int64_t>()->default_value(3),
         "number of iterations (default: 10.0)")("factors,f",
         boost::program_options::value<std::int64_t>()->default_value(10),
