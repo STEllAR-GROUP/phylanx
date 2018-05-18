@@ -2618,6 +2618,115 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(args);
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_list_value_strict(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value_strict(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_list_value_strict(val, name, codename));
+    }
+
+    hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_list_value_strict(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value_strict(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_list_value_strict(val, name, codename));
+    }
+
+    hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string && codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(args);
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_list_value_strict(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value_strict(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_list_value_strict(std::move(val), name, codename));
+    }
+
+    hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name, std::string && codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_list_value_strict(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value_strict(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_list_value_strict(std::move(val), name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type to_primitive_value_type(
         ast::literal_value_type&& val)
     {

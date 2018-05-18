@@ -890,6 +890,43 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
+    // Extract a list from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    namespace functional
+    {
+        struct list_operand_strict
+        {
+            template <typename... Ts>
+            hpx::future<ir::range> operator()(
+                Ts&&... ts) const
+            {
+                return execution_tree::list_operand_strict(
+                    std::forward<Ts>(ts)...);
+            }
+        };
+    }
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
