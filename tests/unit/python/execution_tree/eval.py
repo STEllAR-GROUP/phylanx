@@ -152,41 +152,43 @@ def f3():
 
 assert np.all(f3() == np.array([1, 2, 3]))
 
+np_a = np.array([[1, 2], [3, 4]])
+
 
 @Phylanx()
-def f4():
-    a = [[1, 2], [3, 4]]
+def f4(a):
     return a[1, 1]
 
 
-assert f4() == 4.0
+assert f4(np_a) == 4.0
+
+np_a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
 
 @Phylanx()
-def f5():
-    a = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+def f5(a):
     return a[:2, 1:3]
 
 
-assert np.all(f5() == np.array([[2, 3], [5, 6]]))
+assert np.all(f5(np_a) == np.array([[2, 3], [5, 6]]))
 
 b = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
+np_b = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
 
 @Phylanx()
-def f6():
-    b = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+def f6(b):
     return b[0:1, 0]
 
 
-assert np.all(f6() == np.array(b[0:1, 0]))
+assert np.all(f6(np_b) == np.array(np_b[0:1, 0]))
 
 
 @Phylanx()
-def f7():
-    b = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+def f7(b):
     c = b[0, 0:2]
     return c
 
 
-assert np.all(f7() == np.array(b[0, 0:2]))
+assert np.all(f7(np_b) == np.array(b[0, 0:2]))
