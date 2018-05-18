@@ -22,6 +22,7 @@ def f():
     a = True
     return a
 
+
 assert f.__src__ == \
     "define$21$0(f$21$0, block$21$0(define$22$4(a$22$4, true$22$8), a$23$11))"
 
