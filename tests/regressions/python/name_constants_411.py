@@ -24,7 +24,7 @@ def f():
 
 
 assert f.__src__ == \
-    "define$13$0(f$13$0, block$13$0(define$14$4(a$14$4, true$14$8), a$15$11))"
+    "define$21$0(f$21$0, block$21$0(define$22$4(a$22$4, true$22$8), a$23$11))"
 
 
 @Phylanx(debug=True)
@@ -34,4 +34,4 @@ def f():
 
 
 assert f.__src__ == \
-    "define$13$0(f$21$0, block$21$0(define$22$4(a$22$4, false$22$8), a$23$11))"
+    "define$30$0(f$30$0, block$30$0(define$31$4(a$31$4, false$31$8), a$32$11))"
