@@ -125,10 +125,11 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // Measure execution time
     hpx::util::high_resolution_timer t;
-    auto elapsed = t.elapsed();
 
     auto result = phylanx::execution_tree::extract_list_value(
         als(R, regularization, num_factors, iterations, alpha, enable_output));
+
+    auto elapsed = t.elapsed();
 
     auto it = result.begin();
     // Make sure all counters are properly initialized, don't reset current
