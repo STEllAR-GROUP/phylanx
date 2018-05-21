@@ -6,6 +6,7 @@
 
 set(tests
     eval
+    set_operation
     for
     make_array
     map_numpy

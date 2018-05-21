@@ -10,10 +10,16 @@ import re
 import phylanx
 import inspect
 from .oscop import OpenSCoP
-from .utils import full_name, full_node_name, physl_fmt
+from .utils import full_name, full_node_name, physl_fmt, dump_info
 
 et = phylanx.execution_tree
 
+
+def is_node(node,name):
+    """Return the node name"""
+    if node is None:
+        return False
+    return node.__class__.__name__ == name
 
 def get_node(node, **kwargs):
     if node is None:
@@ -295,13 +301,94 @@ class PhySL:
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
-        if args[0].id in self.defs:
-            s += "store" + symbol_info
+
+        if hasattr(args[0],"id"):
+            # Assign to a variable by name, e.g. a = ...
+            if args[0].id in self.defs:
+                s += "store" + symbol_info
+            else:
+                s += "define" + symbol_info
+                self.defs[args[0].id] = 1
+            a = '%s' % full_node_name(args[0], args[0].id)
+            s += "(" + a + ", " + self.recompile(args[1]) + ")"
+        elif len(args) == 2 and is_node(args[0],"Subscript"):
+            # Assign to a variable with a single dimension, e.g. a[ ? ] = ...
+            vname = get_node(args[0],num=0,name="Name")
+            indexv = get_node(args[0],num=1)
+            indexv_nm = indexv.__class__.__name__
+            if indexv_nm == "Slice":
+                # Assign when the subscript is a slice, e.g. a[lo:hi] = ...
+                s += "set("
+                s += self.recompile(vname)
+                s += ","
+                if indexv.lower is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(indexv.lower)+","
+                if indexv.upper is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(indexv.upper)+","
+                s += "1,"
+                s += "0,0,0,"
+                s += self.recompile(args[1])
+                s += ")"
+            elif indexv_nm == "Index":
+                # Assign when the subscript is a value, e.g. a[i] = ... or a[i,j] = ...
+                s += "set("
+                s += self.recompile(vname)
+                s += ","
+                indexs = get_node(indexv,num=0)
+                if not is_node(indexs,"Tuple"):
+                    s += self.recompile(indexs)+","
+                else:
+                    s += self.recompile(get_node(indexs,num=0))+","
+                s += "0,0,"
+                if not is_node(indexs,"Tuple"):
+                    s += "0,"
+                else:
+                    s += self.recompile(get_node(indexs,num=1))+","
+                s += "0,0,"
+                s += self.recompile(args[1])
+                s += ")"
+            elif indexv_nm == "ExtSlice":
+                # Assign when the subscript is an extended slice, e.g. a[x1:x2,y1:y2] = ...
+                slice1 = get_node(indexv,num=0)
+                slice2 = get_node(indexv,num=1)
+                s += "set("
+                s += self.recompile(vname)
+                s += ","
+
+                if slice1.lower is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(slice1.lower)+","
+
+                if slice1.upper is None:
+                    s += "nil,"
+                else:
+                    s += self.recompile(slice1.upper)+","
+                s += "1,"
+
+                if slice2.lower is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(slice2.lower)+","
+
+                if slice2.upper is None:
+                    s += "nil,"
+                else:
+                    s += self.recompile(slice2.upper)+","
+
+                s += "1,"
+
+                s += self.recompile(args[1])
+                s += ")"
+            else:
+                raise Exception()
+            return s
         else:
-            s += "define" + symbol_info
-            self.defs[args[0].id] = 1
-        a = '%s' % full_node_name(args[0], args[0].id)
-        s += "(" + a + ", " + self.recompile(args[1]) + ")"
+            raise Exception()
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -393,14 +480,15 @@ class PhySL:
         return s
 
     def _List(self, a, allowreturn=False):
-        ret = "["
+        start = "make_list("
+        ret = start
         for arg in ast.iter_child_nodes(a):
             if arg.__class__.__name__ == "Load":
                 break
-            if ret != "[":
+            if ret != start:
                 ret += ","
             ret += self.recompile(arg)
-        ret += "]"
+        ret += ")"
         return ret
 
     def _Compare(self, a, allowreturn=False):
@@ -450,8 +538,6 @@ class PhySL:
                 ret += ", "
             ret += self.recompile(blockn)
             blocki += 1
-        if isinstance(a.iter, ast.List):
-            raise Exception("Lists are not supported as loop iters.")
 
         ret += ")), " + self.recompile(a.iter) + ')'
         return ret
@@ -541,6 +627,11 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
             else:
                 self.debug = False
 
+            if "compile" in kwargs:
+                self.compile = kwargs['compile']
+            else:
+                self.compile = True
+
             if target not in self.targets:
                 raise NotImplementedError(
                     "unknown target passed to '@Phylanx()' decorator: %s." %
@@ -565,8 +656,11 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
             self.__src__ = self.transformation.__src__
             if self.debug:
                 physl_fmt(self.__src__)
+                print(end="",flush="")
 
             if target == "PhySL":
+                if not self.compile:
+                    raise Exceptin()
                 et.compile(self.__src__, self.cs)
 
         def __call__(self, *args):
