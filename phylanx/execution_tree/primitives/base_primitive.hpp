@@ -1,5 +1,6 @@
 // Copyright (c) 2017-2018 Hartmut Kaiser
 // Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2018 Tianyi Zhang
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -139,7 +140,7 @@ namespace phylanx { namespace execution_tree
         phylanx::util::variant<
             ast::nil
           , phylanx::ir::node_data<std::uint8_t>
-          , std::int64_t
+          , phylanx::ir::node_data<std::int64_t>
           , std::string
           , phylanx::ir::node_data<double>
           , primitive
@@ -183,9 +184,41 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{std::move(val)}
         {}
 
-        primitive_argument_type(std::int64_t val)
+        explicit primitive_argument_type(std::int64_t val)
+          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
+        {
+        }
+        explicit primitive_argument_type(
+            blaze::DynamicVector<std::int64_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
+        {
+        }
+        explicit primitive_argument_type(
+            blaze::DynamicVector<std::int64_t>&& val)
+          : argument_value_type{
+                phylanx::ir::node_data<std::int64_t>{std::move(val)}}
+        {
+        }
+        explicit primitive_argument_type(
+            blaze::DynamicMatrix<std::int64_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
+        {
+        }
+        explicit primitive_argument_type(
+            blaze::DynamicMatrix<std::int64_t>&& val)
+          : argument_value_type{
+                phylanx::ir::node_data<std::int64_t>{std::move(val)}}
+        {
+        }
+
+        primitive_argument_type(phylanx::ir::node_data<std::int64_t> const& val)
           : argument_value_type{val}
-        {}
+        {
+        }
+        primitive_argument_type(phylanx::ir::node_data<std::int64_t>&& val)
+          : argument_value_type{std::move(val)}
+        {
+        }
 
         primitive_argument_type(std::string const& val)
           : argument_value_type{val}
@@ -360,7 +393,7 @@ namespace phylanx { namespace execution_tree
         ast::literal_value_type && val);
     PHYLANX_EXPORT std::string to_primitive_string_type(
         ast::literal_value_type && val);
-    PHYLANX_EXPORT std::int64_t to_primitive_int_type(
+    PHYLANX_EXPORT ir::node_data<std::int64_t> to_primitive_int_type(
         ast::literal_value_type && val);
     PHYLANX_EXPORT bool to_primitive_bool_type(
         ast::literal_value_type && val);
@@ -517,34 +550,42 @@ namespace phylanx { namespace execution_tree
         return extract_boolean_data(std::move(val), name, codename);
     }
 
-    // Extract a std::int64_t type from a given primitive_argument_type,
+    // Extract a ir::node_data<std::int64_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
-    PHYLANX_EXPORT std::int64_t extract_integer_value(
+    PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::int64_t extract_integer_value(
+    PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::int64_t extract_scalar_integer_value(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::int64_t extract_scalar_integer_value(
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     // Extract an integer value from a primitive_argument_type
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> && args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type && val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand(
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type && val,
         std::vector<primitive_argument_type> && args,
         std::string const& name = "",
@@ -555,7 +596,7 @@ namespace phylanx { namespace execution_tree
         struct integer_operand
         {
             template <typename... Ts>
-            hpx::future<std::int64_t> operator()(Ts&&... ts) const
+            hpx::future<ir::node_data<std::int64_t>> operator()(Ts&&... ts) const
             {
                 return execution_tree::integer_operand(std::forward<Ts>(ts)...);
             }
@@ -564,34 +605,47 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
 
-    // Extract a std::int64_t type from a given primitive_argument_type,
+    // Extract a ir::node_data<std::int64_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
-    PHYLANX_EXPORT std::int64_t extract_integer_value_strict(
+    PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value_strict(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::int64_t extract_integer_value_strict(
+    PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::int64_t extract_scalar_integer_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::int64_t extract_scalar_integer_value_strict(
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     // Extract an integer value from a primitive_argument_type
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+    PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
+            primitive_argument_type const& val,
+            std::vector<primitive_argument_type> const& args,
+            std::string const& name = "",
+            std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> && args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type && val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT hpx::future<std::int64_t> integer_operand_strict(
+    PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type && val,
         std::vector<primitive_argument_type> && args,
         std::string const& name = "",
@@ -602,7 +656,7 @@ namespace phylanx { namespace execution_tree
         struct integer_operand_strict
         {
             template <typename... Ts>
-            hpx::future<std::int64_t> operator()(Ts&&... ts) const
+            hpx::future<ir::node_data<std::int64_t>> operator()(Ts&&... ts) const
             {
                 return execution_tree::integer_operand(std::forward<Ts>(ts)...);
             }

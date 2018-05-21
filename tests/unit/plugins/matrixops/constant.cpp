@@ -46,7 +46,7 @@ void test_constant_1d()
         phylanx::execution_tree::primitives::create_constant(
             hpx::find_here(),
             std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(val), std::int64_t(1007)
+                std::move(val), phylanx::ir::node_data<std::int64_t>(1007)
             });
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -73,7 +73,8 @@ void test_constant_2d()
                 std::move(val),
                 phylanx::execution_tree::primitive_argument_type{std::vector<
                     phylanx::execution_tree::primitive_argument_type>{
-                    std::int64_t(105), std::int64_t(101)}}});
+                    phylanx::ir::node_data<std::int64_t>(105),
+                    phylanx::ir::node_data<std::int64_t>(101)}}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         const_.eval();

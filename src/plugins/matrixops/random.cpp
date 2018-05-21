@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 2:    // std::uint64_t
             return std::array<std::size_t, 2>{
-                std::size_t(util::get<2>(val)), 1ull};
+                std::size_t(util::get<2>(val)[0]), 1ull};
 
         case 4:    // phylanx::ir::node_data<double>
             return util::get<4>(val).dimensions();

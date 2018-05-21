@@ -25,7 +25,7 @@ void test_linspace0d()
 
     phylanx::execution_tree::primitive num_samples =
     phylanx::execution_tree::primitives::create_variable(
-        hpx::find_here(), std::int64_t(1));
+        hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
 
     phylanx::execution_tree::primitive linspace =
         phylanx::execution_tree::primitives::create_linspace(
@@ -55,7 +55,7 @@ void test_linspace1d()
 
     phylanx::execution_tree::primitive num_samples =
     phylanx::execution_tree::primitives::create_variable(
-        hpx::find_here(), std::int64_t(4));
+        hpx::find_here(), phylanx::ir::node_data<std::int64_t>(4));
 
     phylanx::execution_tree::primitive linspace =
         phylanx::execution_tree::primitives::create_linspace(

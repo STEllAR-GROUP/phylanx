@@ -199,7 +199,7 @@ void test_2d_axis0()
             hpx::find_here(), phylanx::ir::node_data<double>(subject));
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), static_cast<std::int64_t>(0));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(0));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
@@ -224,7 +224,7 @@ void test_2d_axis1()
             hpx::find_here(), phylanx::ir::node_data<double>(subject));
     phylanx::execution_tree::primitive arg1 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), static_cast<std::int64_t>(1));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
 
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(

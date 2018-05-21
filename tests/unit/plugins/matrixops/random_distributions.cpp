@@ -38,7 +38,7 @@ std::uint32_t get_seed()
     auto call = compile(code);
 
     return static_cast<std::uint32_t>(
-        phylanx::execution_tree::extract_integer_value(call()));
+        phylanx::execution_tree::extract_scalar_integer_value(call()));
 }
 
 void set_seed(std::uint32_t seed)

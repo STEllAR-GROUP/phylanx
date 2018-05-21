@@ -30,7 +30,7 @@ void test_1d()
 
     auto list = phylanx::execution_tree::extract_list_value(f());
     HPX_TEST_EQ(list.size(), std::int64_t(1));
-    HPX_TEST_EQ(*list.begin(), std::size_t(4));
+    HPX_TEST_EQ(*list.begin(), phylanx::ir::node_data<std::int64_t>(4));
 }
 
 void test_1d_axis()
@@ -41,7 +41,7 @@ void test_1d_axis()
 
     auto result = f();
     HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(result),
-        std::int64_t(4));
+                phylanx::ir::node_data<std::int64_t>((4)));
 }
 
 void test_2d()
@@ -53,8 +53,8 @@ void test_2d()
     auto list = phylanx::execution_tree::extract_list_value(f());
     HPX_TEST_EQ(list.size(), std::int64_t(2));
     auto it = list.begin();
-    HPX_TEST_EQ(*it++, std::size_t(2));
-    HPX_TEST_EQ(*it++, std::size_t(4));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(2));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(4));
 }
 
 void test_2d_x()
@@ -65,7 +65,7 @@ void test_2d_x()
 
     auto result = f();
     HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(result),
-        std::int64_t(2));
+                phylanx::ir::node_data<std::int64_t>((2)));
 }
 
 void test_2d_y()
@@ -76,7 +76,7 @@ void test_2d_y()
 
     auto result = f();
     HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(result),
-        std::int64_t(4));
+                phylanx::ir::node_data<std::int64_t>((4)));
 }
 
 int main(int argc, char* argv[])

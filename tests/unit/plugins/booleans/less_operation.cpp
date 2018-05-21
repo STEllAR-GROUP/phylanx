@@ -590,7 +590,7 @@ void test_less_operation_2d0d_int()
 
     phylanx::execution_tree::primitive rhs =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), 1);
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
 
     phylanx::execution_tree::primitive less =
         phylanx::execution_tree::primitives::create_less(hpx::find_here(),

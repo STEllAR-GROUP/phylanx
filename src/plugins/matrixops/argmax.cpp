@@ -70,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        return 0ul;
+        return primitive_argument_type(std::int64_t(0));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const auto max_it = std::max_element(a.begin(), a.end());
 
         // Return max's index
-        return std::distance(a.begin(), max_it);
+        return primitive_argument_type(std::distance(a.begin(), max_it));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     passed_rows * it->size();
             }
         }
-        return global_index;
+        return primitive_argument_type(std::int64_t(global_index));
     }
 
     primitive_argument_type argmax::argmax2d_x_axis(arg_type && arg_a) const
