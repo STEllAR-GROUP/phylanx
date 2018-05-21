@@ -258,7 +258,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             std::ostringstream msg;
             msg << "argument 'row_start' or 'row_stop' are not valid: ";
-            msg << "start=" << row_start << ", stop=" << row_stop << ", step=" << step_row;
+            msg << "start=" << row_start << ", stop="
+                << row_stop << ", step=" << step_row;
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "set_operation::set2d",
@@ -272,7 +273,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             std::ostringstream msg;
             msg << "argument 'col_start' or 'col_stop' are not valid: ";
-            msg << "start=" << col_start << ", stop=" << col_stop << ", step=" << step_col;
+            msg << "start=" << col_start << ", stop="
+                << col_stop << ", step=" << step_col;
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "set_operation::set2d",
