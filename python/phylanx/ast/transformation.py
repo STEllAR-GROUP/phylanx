@@ -483,15 +483,14 @@ class PhySL:
         return s
 
     def _List(self, a, allowreturn=False):
-        start = "make_list("
-        ret = start
+        ret = "["
         for arg in ast.iter_child_nodes(a):
             if arg.__class__.__name__ == "Load":
                 break
-            if ret != start:
+            if ret != "[":
                 ret += ","
             ret += self.recompile(arg)
-        ret += ")"
+        ret += "]"
         return ret
 
     def _Compare(self, a, allowreturn=False):
