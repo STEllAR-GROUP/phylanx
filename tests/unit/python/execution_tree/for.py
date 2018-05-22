@@ -8,7 +8,7 @@ import phylanx
 from phylanx.ast import *
 
 
-@Phylanx("PhySL")
+@Phylanx
 def sumn():
     n = 0
     sum = 0
@@ -20,7 +20,7 @@ def sumn():
 assert sumn() == 6
 
 
-@Phylanx("PhySL")
+@Phylanx
 def sumn2():
     n = 0
     sum = 0
@@ -32,7 +32,7 @@ def sumn2():
 assert sumn2() == 6
 
 
-@Phylanx("PhySL")
+@Phylanx
 def sumn3():
     n = 0
     sum = 0
@@ -46,7 +46,7 @@ def sumn3():
 assert sumn3() == 9
 
 
-@Phylanx("PhySL")
+@Phylanx
 def sumn3():
     n = 0
     sum = 0

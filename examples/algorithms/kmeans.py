@@ -12,20 +12,20 @@ import phylanx
 from phylanx.ast import *
 
 
-@Phylanx("PhySL")
+@Phylanx
 def initialize_centroids(points, k):
     centroids = copy(points)
     shuffle(centroids)
     return centroids[:k]
 
 
-@Phylanx("PhySL")
+@Phylanx
 def closest_centroid(points, centroids):
     distances = sqrt(sum(pow(points - centroids[:, newaxis], 2.0), axis=2))
     return argmin(distances, axis=0)
 
 
-@Phylanx("PhySL")
+@Phylanx
 def move_centroids(points, closest, centroids):
     k = shape(centroids, 0)
     arr = constant(0.0, k, shape(centroids, 1))
@@ -34,7 +34,7 @@ def move_centroids(points, closest, centroids):
     return arr
 
 
-@Phylanx("PhySL")
+@Phylanx
 def kmeans(points, k, itr):
     centroids = initialize_centroids(points, k)
 

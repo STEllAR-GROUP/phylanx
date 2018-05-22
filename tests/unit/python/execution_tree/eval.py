@@ -38,7 +38,7 @@ block(
 assert sum10 == 55.0
 
 
-@Phylanx("PhySL")
+@Phylanx
 def fib(n):
     if n < 2:
         return n
@@ -52,7 +52,7 @@ assert "[" + fib.__src__ + "]" == str(fib.generate_ast())
 assert fib(10) == 55.0
 
 
-@Phylanx("PhySL")
+@Phylanx
 def pass_str(a):
     return a
 
@@ -63,7 +63,7 @@ assert "[" + pass_str.__src__ + "]" == str(pass_str.generate_ast())
 assert "foo" == str(pass_str("foo"))
 
 
-@Phylanx("PhySL")
+@Phylanx
 def test_slice(a):
     return a[1:3, 1:4]
 
@@ -75,7 +75,7 @@ r2 = two[1:3, 1:4]
 assert (r1 == r2).all()
 
 
-@Phylanx("PhySL")
+@Phylanx
 def test_slice1(a):
     return a[2:4]
 
@@ -84,7 +84,7 @@ v1 = np.arange(10)
 assert (test_slice1(v1) == v1[2:4]).all()
 
 
-@Phylanx("PhySL")
+@Phylanx
 def foo():
     return 3
 
@@ -92,7 +92,7 @@ def foo():
 assert foo() == 3
 
 
-@Phylanx("PhySL")
+@Phylanx
 def foo2(n):
     if n == 1:
         return 2
@@ -105,7 +105,7 @@ def foo2(n):
 assert foo2(1) == 2 and foo2(3) == 4 and foo2(5) == 5
 
 
-@Phylanx("PhySL")
+@Phylanx
 def foo3():
     sumn = 0
     i = 0

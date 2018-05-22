@@ -98,9 +98,8 @@ void test_argmin_2d_x_axis()
 
     blaze::DynamicMatrix<double> m1{{1.0, 2.0, -3.0}, {4.0, 5.0, -6.0}};
 
-    arg_type expected{
-        std::vector<arg_type>{arg_type{static_cast<std::int64_t>(2)},
-            arg_type{static_cast<std::int64_t>(2)}}};
+    phylanx::ir::node_data<double> expected(
+        blaze::DynamicVector<double>{2., 2.});
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -116,8 +115,7 @@ void test_argmin_2d_x_axis()
 
     hpx::future<arg_type> f = p.eval();
 
-    auto actual =
-        arg_type{phylanx::execution_tree::extract_list_value(f.get())};
+    auto actual = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(expected, actual);
 }
@@ -126,12 +124,10 @@ void test_argmin_2d_y_axis()
 {
     using arg_type = phylanx::execution_tree::primitive_argument_type;
 
-    blaze::DynamicMatrix<double> m1{ { 1.0, 2.0, 3.0 },{ 4.0, 5.0, 6.0 } };
+    blaze::DynamicMatrix<double> m1{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
 
-    arg_type expected{
-        std::vector<arg_type>{arg_type{static_cast<std::int64_t>(0)},
-            arg_type{static_cast<std::int64_t>(0)},
-            arg_type{static_cast<std::int64_t>(0)}}};
+    phylanx::ir::node_data<double> expected(
+        blaze::DynamicVector<double>{0., 0., 0.});
 
     phylanx::execution_tree::primitive lhs =
         phylanx::execution_tree::primitives::create_variable(
@@ -147,8 +143,7 @@ void test_argmin_2d_y_axis()
 
     hpx::future<arg_type> f = p.eval();
 
-    auto actual =
-        arg_type{phylanx::execution_tree::extract_list_value(f.get())};
+    auto actual = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(expected, actual);
 }

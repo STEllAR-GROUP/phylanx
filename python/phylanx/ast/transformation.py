@@ -9,6 +9,7 @@ import ast
 import re
 import phylanx
 import inspect
+from phylanx.exceptions import InvalidDecoratorArgumentError
 from .oscop import OpenSCoP
 from .utils import full_name, full_node_name, physl_fmt
 
@@ -531,7 +532,7 @@ cs = phylanx.compiler_state()
 
 
 # Create the decorator
-def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
+def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
     class PhyTransformer(object):
         targets = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
 
@@ -579,5 +580,12 @@ def Phylanx(target="PhySL", compiler_state=cs, **kwargs):
 
         def generate_ast(self):
             return phylanx.ast.generate_ast(self.__src__)
+
+    if callable(arg):
+        return PhyTransformer(arg)
+    elif arg is not None:
+        raise InvalidDecoratorArgumentError
+    else:
+        return PhyTransformer
 
     return PhyTransformer

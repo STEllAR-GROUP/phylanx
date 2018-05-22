@@ -4,10 +4,11 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    exception_swallowed_369
     broadcasting_rules_410
-    name_constants_411
     create_list_409
+    exception_swallowed_369
+    name_constants_411
+    no_parans_decorator_407
    )
 
 foreach(test ${tests})
