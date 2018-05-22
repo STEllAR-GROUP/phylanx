@@ -388,10 +388,10 @@ class PhySL:
                 s += self.recompile(args[1])
                 s += ")"
             else:
-                raise Exception()
+                raise Exception("Unsupported slicing in assignment: line=%d" % a.lineno)
             return s
         else:
-            raise Exception()
+            raise Exception("Unsupported slicing in assignment: line=%d" % a.lineno)
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -629,11 +629,6 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
             else:
                 self.debug = False
 
-            if "compile" in kwargs:
-                self.compile = kwargs['compile']
-            else:
-                self.compile = True
-
             if target not in self.targets:
                 raise NotImplementedError(
                     "unknown target passed to '@Phylanx()' decorator: %s." %
@@ -661,8 +656,6 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
                 print(end="", flush="")
 
             if target == "PhySL":
-                if not self.compile:
-                    raise Exception()
                 et.compile(self.__src__, self.cs)
 
         def __call__(self, *args):
