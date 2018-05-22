@@ -148,7 +148,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lra::eval",
                 generate_error_message(
                     "the lra algorithm primitive requires for the second "
-                    "argument ('y') to represent a vector"));
+                    "argument ('alpha') to represent a vector"));
         }
         auto alpha = arg3.scalar();
 

@@ -20,6 +20,7 @@ set(tests
     support_nil_314
     vector_of_variables_244
     replace_names_374
+    allow_return_nil_432
    )
 
 set(assign_wrong_variable_245_FLAGS COMPONENT_DEPENDENCIES iostreams)

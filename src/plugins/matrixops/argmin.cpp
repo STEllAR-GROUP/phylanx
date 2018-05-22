@@ -158,15 +158,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_row_iterator<decltype(a)> a_begin(a);
         const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
 
-        std::vector<primitive_argument_type> result;
-        for (auto it = a_begin; it != a_end; ++it)
+        // TODO: Result vector must be of int64_t instead of double
+        blaze::DynamicVector<double> result(a.rows());
+        auto result_it = result.begin();
+        for (auto it = a_begin; it != a_end; ++it, ++result_it)
         {
             const auto local_min = std::min_element(it->begin(), it->end());
-            std::int64_t index = std::distance(it->begin(), local_min);
-            result.emplace_back(primitive_argument_type(index));
+            *result_it = std::distance(it->begin(), local_min);
         }
         return primitive_argument_type{std::move(result)};
     }
+
     primitive_argument_type argmin::argmin2d_y_axis(arg_type && arg_a) const
     {
         using phylanx::util::matrix_column_iterator;
@@ -176,12 +178,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_column_iterator<decltype(a)> a_begin(a);
         const matrix_column_iterator<decltype(a)> a_end(a, a.columns());
 
-        std::vector<primitive_argument_type> result;
-        for (auto it = a_begin; it != a_end; ++it)
+        // TODO: Result vector must be of int64_t instead of double
+        blaze::DynamicVector<double> result(a.columns());
+        auto result_it = result.begin();
+        for (auto it = a_begin; it != a_end; ++it, ++result_it)
         {
             const auto local_min = std::min_element(it->begin(), it->end());
-            std::int64_t index = std::distance(it->begin(), local_min);
-            result.emplace_back(primitive_argument_type(index));
+            *result_it = std::distance(it->begin(), local_min);
         }
         return primitive_argument_type{std::move(result)};
     }

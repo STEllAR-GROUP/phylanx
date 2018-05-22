@@ -6,8 +6,7 @@
 #if !defined(PHYLANX_PLUGINS_ALGORITHMS_MAY_02_2108_1251PM)
 #define PHYLANX_PLUGINS_ALGORITHMS_MAY_02_2108_1251PM
 
+#include <phylanx/plugins/algorithms/als.hpp>
 #include <phylanx/plugins/algorithms/lra.hpp>
 
 #endif
-
-
