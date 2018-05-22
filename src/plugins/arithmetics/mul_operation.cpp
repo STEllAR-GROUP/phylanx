@@ -492,7 +492,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "sub_operation::mul2d1d",
+            "mul_operation::mul2d1d",
             execution_tree::generate_error_message(
                 "vector size does not match either the number of matrix "
                 "columns nor rows.",
@@ -836,7 +836,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (i.dimensions() != operand_size)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "sub_operation::mul2d2d",
+                    "mul_operation::mul2d2d",
                     execution_tree::generate_error_message(
                         "the dimensions of the operands do not match",
                         name_, codename_));

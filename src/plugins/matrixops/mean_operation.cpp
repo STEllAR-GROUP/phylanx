@@ -155,14 +155,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_row_iterator<decltype(matrix)> matrix_end(
             matrix, matrix.rows());
 
-        std::vector<primitive_argument_type> result;
-        for (auto it = matrix_begin; it != matrix_end; ++it)
+        blaze::DynamicVector<double> result(matrix.rows());
+        auto result_it = result.begin();
+        for (auto it = matrix_begin; it != matrix_end; ++it, ++result_it)
         {
             const auto local_sum =
                 std::accumulate(it->begin(), it->end(), 0.0);
             const auto local_size = (*it).size();
-            result.emplace_back(
-                primitive_argument_type(local_sum / local_size));
+            *result_it = local_sum / local_size;
         }
         return primitive_argument_type{std::move(result)};
     }
@@ -178,14 +178,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const matrix_column_iterator<decltype(matrix)> matrix_end(
             matrix, matrix.columns());
 
-        std::vector<primitive_argument_type> result;
-        for (auto it = matrix_begin; it != matrix_end; ++it)
+        blaze::DynamicVector<double> result(matrix.columns());
+        auto result_it = result.begin();
+        for (auto it = matrix_begin; it != matrix_end; ++it, ++result_it)
         {
             const auto local_sum =
                 std::accumulate(it->begin(), it->end(), 0.0);
             const auto local_size = (*it).size();
-            result.emplace_back(
-                primitive_argument_type(local_sum / local_size));
+            *result_it = local_sum / local_size;
         }
         return primitive_argument_type{std::move(result)};
     }
