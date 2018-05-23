@@ -636,7 +636,7 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
                     target)
 
             self.f = f
-            self.cs = cs
+            self.cs = compiler_state
             self.target = target
 
             # Get the source code
