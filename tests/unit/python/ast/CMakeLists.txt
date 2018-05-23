@@ -5,7 +5,6 @@
 
 set(tests
     generate_ast
-    lambda
     node
     python_builds_ast
     traverse_ast
