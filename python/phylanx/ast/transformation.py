@@ -56,6 +56,14 @@ class PhySL:
             self.defs[arg.arg] = 1
         self.__src__ = self.recompile(tree)
 
+    def _Arguments(self, a, allowreturn=False):
+        ret = ''
+        if a.args:
+            for arg in a.args[:-1]:
+                ret += arg.arg + ', '
+            ret += a.args[-1].arg
+        return ret
+
     def _Num(self, a, allowreturn=False):
         return str(a.n)
 
@@ -271,8 +279,6 @@ class PhySL:
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
-            if args[0].id == "xrange":
-                args[0].id = "range"
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
@@ -393,6 +399,13 @@ class PhySL:
         s += ")"
         return s
 
+    def _Lambda(self, a, allowreturn=False):
+        symbol_info = full_node_name(a)
+        ret = "lambda%s(" % symbol_info
+        ret += self.recompile(a.args)
+        ret += ", block(" + self.recompile(a.body) + '))'
+        return ret
+
     def _List(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         ret = "make_list%s(" % symbol_info
@@ -469,6 +482,7 @@ class PhySL:
             raise Exception('unsupported AST node type: %s' % nm)
 
     nodes = {
+        "arguments": _Arguments,
         "Assign": _Assign,
         "Attribute": _Attribute,
         "AugAssign": _AugAssign,
@@ -480,6 +494,7 @@ class PhySL:
         "For": _For,
         "FunctionDef": _FunctionDef,
         "If": _If,
+        "Lambda": _Lambda,
         "List": _List,
         "Module": _Module,
         "Name": _Name,

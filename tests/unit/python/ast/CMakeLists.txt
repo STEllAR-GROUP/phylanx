@@ -5,9 +5,10 @@
 
 set(tests
     generate_ast
+    lambda
     node
-    traverse_ast
     python_builds_ast
+    traverse_ast
    )
 
 foreach(test ${tests})
