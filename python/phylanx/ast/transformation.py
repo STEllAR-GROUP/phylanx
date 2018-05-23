@@ -10,11 +10,11 @@ import re
 import phylanx
 import inspect
 from phylanx.exceptions import InvalidDecoratorArgumentError
+from phylanx.utils import prange
 from .oscop import OpenSCoP
 from .utils import full_name, full_node_name, physl_fmt
 
 et = phylanx.execution_tree
-
 
 def get_node(node, **kwargs):
     if node is None:
@@ -273,6 +273,8 @@ class PhySL:
                 args[0].id = "cout"
             if args[0].id == "xrange":
                 args[0].id = "range"
+            if args[0].id == "prange":
+                args[0].id = "prange"
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
@@ -443,6 +445,7 @@ class PhySL:
         ret += self.recompile(a.target) + ', block('
 
         blocki = 2
+        print(repr(a))
         while True:
             blockn = get_node(a, num=blocki)
             if blockn is None:
@@ -490,7 +493,7 @@ class PhySL:
         "Subscript": _Subscript,
         "Tuple": _Tuple,
         "UnaryOp": _UnaryOp,
-        "While": _While
+        "While": _While,
     }
 
     np_to_phylanx = {
@@ -511,8 +514,10 @@ class PhySL:
         "shape": "shape",
         "sqrt": "square_root",
         "transpose": "transpose",
-        "vstack": "vstack"
+        "vstack": "vstack",
         # slicing operations
+        # ranges
+        "prange" : "prange",
     }
 
 
