@@ -563,7 +563,8 @@ namespace phylanx { namespace execution_tree
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
-        case 4:                     // phylanx::ir::node_data<double>
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 7:                     // phylanx::ir::range
             return val;
 
         case 6:                     // std::vector<ast::expression>
@@ -581,7 +582,6 @@ namespace phylanx { namespace execution_tree
             break;
 
         case 5: HPX_FALLTHROUGH;    // primitive
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
         default:
             break;
         }
@@ -634,8 +634,18 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
+        case 7:                     // phylanx::ir::range
+            {
+                auto const& r = util::get<7>(val);
+                if (r.is_ref())
+                {
+                    return primitive_argument_type{r};
+                }
+                return primitive_argument_type{r.ref()};
+            }
+            break;
+
         case 5: HPX_FALLTHROUGH;    // primitive
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
         default:
             break;
         }
@@ -658,7 +668,8 @@ namespace phylanx { namespace execution_tree
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // std::uint64_t
         case 3: HPX_FALLTHROUGH;    // std::string
-        case 4:                     // phylanx::ir::node_data<double>
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 7:                     // phylanx::ir::range
             return std::move(val);
 
         case 6:                     // std::vector<ast::expression>
@@ -676,7 +687,6 @@ namespace phylanx { namespace execution_tree
             break;
 
         case 5: HPX_FALLTHROUGH;    // primitive
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
         default:
             break;
         }
