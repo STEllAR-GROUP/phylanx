@@ -9,6 +9,7 @@ set(tests
     exception_swallowed_369
     name_constants_411
     no_parans_decorator_407
+    passing_compiler_state_453
    )
 
 foreach(test ${tests})
