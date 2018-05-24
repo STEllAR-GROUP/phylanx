@@ -145,67 +145,6 @@ class PhySL:
         s += self.recompile(a.elts[-1])
         return s
 
-
-#        e = get_node(a, name="ExtSlice")
-#        s0 = get_node(e, name="Slice", num=0)
-#        s1 = get_node(e, name="Slice", num=1)
-#        s0alt = get_node(a, name="Slice", num=1)
-#        if s0 is not None and s1 is not None:
-#            xlo = s0.lower
-#            xlo_info = full_node_name(xlo)
-#            xhi = s0.upper
-#            xhi_info = full_node_name(xhi)
-#            ylo = s1.lower
-#            yhi = s1.upper
-#            yhi_info = full_node_name(yhi)
-#            sname = self.recompile(get_node(a, num=0))
-#            s = "slice%s(" % xlo_info
-#            s += sname
-#            s += ","
-#            if xlo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(xlo)
-#            s += ","
-#            if xhi is None:
-#                s += "shape%s(" % xhi_info + sname + ",0)"
-#            else:
-#                s += self.recompile(xhi)
-#            s += ","
-#            if ylo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(ylo)
-#            s += ","
-#            if yhi is None:
-#                s += "shape%s(" % yhi_info + sname + ",1)"
-#            else:
-#                s += self.recompile(yhi)
-#            s += ")"
-#            return s
-#        elif s0alt is not None:
-#            sname = self.recompile(get_node(a, num=0))
-#            xlo = s0alt.lower
-#            xlo_info = full_node_name(xlo)
-#            xhi = s0alt.upper
-#            xhi_info = full_node_name(xhi)
-#            s = 'slice_column%s(' % xlo_info
-#            s += sname
-#            s += ','
-#            if xlo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(xlo)
-#            s += ','
-#            if xhi is None:
-#                s += "shape%s(" % xhi_info + sname + ",0)"
-#            else:
-#                s += self.recompile(xhi)
-#            s += ")"
-#            return s
-#        else:
-#            raise Exception("Unsupported slicing: line=%d" % a.lineno)
-
     def _FunctionDef(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
@@ -465,8 +404,6 @@ class PhySL:
                 ret += ", "
             ret += self.recompile(blockn)
             blocki += 1
-        if isinstance(a.iter, ast.List):
-            raise Exception("Lists are not supported as loop iters.")
 
         ret += ")), " + self.recompile(a.iter) + ')'
         return ret

@@ -7,6 +7,7 @@ set(tests
     broadcasting_rules_410
     create_list_409
     exception_swallowed_369
+    list_iter_space_429
     name_constants_411
     no_parans_decorator_407
     passing_compiler_state_453
