@@ -10,7 +10,7 @@ import re
 import phylanx
 import inspect
 from phylanx.exceptions import InvalidDecoratorArgumentError
-from phylanx.utils import prange
+from phylanx.util import prange
 from .oscop import OpenSCoP
 from .utils import full_name, full_node_name, physl_fmt
 
@@ -48,6 +48,10 @@ def get_node(node, **kwargs):
     # if we can't find what we're looking for...
     return None
 
+def get_call_func_name(ast_call):
+    if is_node(ast_call, 'Call'):
+        return ast_call.func.id
+    return None
 
 def remove_line(a):
     return re.sub(r'\$.*', '', a)
@@ -280,7 +284,7 @@ class PhySL:
             if args[0].id == "xrange":
                 args[0].id = "range"
             if args[0].id == "prange":
-                args[0].id = "prange"
+                args[0].id = "range"
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
@@ -531,10 +535,19 @@ class PhySL:
     def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         ret = "map%s(lambda(" % symbol_info
-        ret += self.recompile(a.target) + ', block('
+
+        # find a prange
+        if is_node(a.iter, 'Call'):
+            func_nom = get_call_func_name(a.iter)
+            if func_nom == 'prange':
+                ret += self.recompile(a.target) + ', parallel_block('
+            else:
+                ret += self.recompile(a.target) + ', block('
+        else:          
+            ret += self.recompile(a.target) + ', block('
 
         blocki = 2
-        print(repr(a))
+        #print(repr(a))
         while True:
             blockn = get_node(a, num=blocki)
             if blockn is None:
@@ -604,6 +617,7 @@ class PhySL:
         "vstack": "vstack",
         # slicing operations
         # ranges
+        "range" : "range",
         "prange" : "prange",
     }
 
