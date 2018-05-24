@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <sstream>
 
 #include <blaze/Math.h>
 #include <blaze/math/Elements.h>
@@ -141,9 +142,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     primitive_argument_type set_operation::set1d(args_type&& args) const
     {
+        auto input_vector = args[0].vector();
         std::int64_t row_start = args[1].scalar();
         std::int64_t row_stop = args[2].scalar();
         std::int64_t step = args[3].scalar();
+
+        if(step == 0)
+        {
+            row_stop = row_start + 1;
+            step = 1;
+        }
         std::size_t value_dimnum = args[7].num_dimensions();
 
         if (value_dimnum == 2)
@@ -169,18 +177,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (!check_set_parameters(
                 row_start, row_stop, step, args[0].size()))
         {
+            std::ostringstream msg;
+            msg << "argument 'start' or 'stop' are not valid: ";
+            msg << "start=" << row_start << ", stop=" << row_stop << ", step=" << step;
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "set_operation::set1d",
                 execution_tree::generate_error_message(
-                    "argument 'start' or 'stop' are not valid", name_,
-                    codename_));
+                    msg.str(),
+                    name_, codename_));
         }
 
         auto init_list =
             create_list_set(row_start, row_stop, step, args[0].size());
 
-        auto input_vector = args[0].vector();
         auto sv = blaze::elements(input_vector, init_list);
 
         if (value_dimnum == 0)
@@ -196,11 +206,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (sv.size() != temp.size())
         {
+            std::ostringstream msg;
+            msg << "Size mismatch, " << sv.size() << " != " << temp.size()
+                << ", please check your parameters or set vector";
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "set_operation::set1d",
-                execution_tree::generate_error_message("size mismatch, please check "
-                                        "your parameters or set vector",
+                execution_tree::generate_error_message(msg.str(),
                     name_, codename_));
         }
 
@@ -213,9 +225,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::int64_t row_start = args[1].scalar();
         std::int64_t row_stop = args[2].scalar();
         std::int64_t step_row = args[3].scalar();
+        if(step_row == 0)
+        {
+            row_stop = row_start + 1;
+            step_row = 1;
+        }
         std::int64_t col_start = args[4].scalar();
         std::int64_t col_stop = args[5].scalar();
         std::int64_t step_col = args[6].scalar();
+        if(step_col == 0)
+        {
+            col_stop = col_start + 1;
+            step_col = 1;
+        }
         std::size_t num_matrix_rows = args[0].dimensions()[0];
         std::size_t num_matrix_cols = args[0].dimensions()[1];
         std::size_t value_dimnum = args[7].num_dimensions();
@@ -234,22 +256,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (!check_set_parameters(
                 row_start, row_stop, step_row, num_matrix_rows))
         {
+            std::ostringstream msg;
+            msg << "argument 'row_start' or 'row_stop' are not valid: ";
+            msg << "start=" << row_start << ", stop="
+                << row_stop << ", step=" << step_row;
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "set_operation::set2d",
                 execution_tree::generate_error_message(
-                    "argument 'row_start' or 'row_stop' are not valid",
+                    msg.str(),
                     name_, codename_));
         }
 
         if (!check_set_parameters(
                 col_start, col_stop, step_col, num_matrix_cols))
         {
+            std::ostringstream msg;
+            msg << "argument 'col_start' or 'col_stop' are not valid: ";
+            msg << "start=" << col_start << ", stop="
+                << col_stop << ", step=" << step_col;
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "set_operation::set2d",
                 execution_tree::generate_error_message(
-                    "argument 'col_start' or 'col_stop' are not valid",
+                    msg.str(),
                     name_, codename_));
         }
 
@@ -308,11 +338,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t num_rows = sm.rows();
         if (data_rows != num_rows || data_cols != num_cols)
         {
+            std::ostringstream msg;
+            msg << "matrix sizes don't match: ";
+            msg << " data.shape()==[" << data.rows() << "," << data.columns() << "]";
+            msg << " sm.shape()==[" << sm.rows() << "," << sm.columns() << "]";
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "set_operation::set2d",
                 execution_tree::generate_error_message(
-                    "matrix sizes dont match", name_, codename_));
+                    msg.str(), name_, codename_));
         }
         blaze::DynamicMatrix<double> temp(data);
         sm = temp;
