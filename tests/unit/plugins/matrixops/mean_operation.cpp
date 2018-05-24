@@ -82,7 +82,8 @@ void test_mean_operation_2d_x_axis()
 
     blaze::DynamicMatrix<double> matrix_1{{1.0, 2.0, 6.0}, {4.0, 5.0, 6.0}};
 
-    arg_type expected{std::vector<arg_type>{arg_type{3.0}, arg_type{5.0}}};
+    phylanx::ir::node_data<double> expected(
+        blaze::DynamicVector<double>{3.0, 5.0});
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -100,7 +101,7 @@ void test_mean_operation_2d_x_axis()
 
     hpx::future<arg_type> f = p.eval();
 
-    arg_type actual{phylanx::execution_tree::extract_list_value(f.get())};
+    auto actual = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(expected, actual);
 }
@@ -110,8 +111,8 @@ void test_mean_operation_2d_y_axis()
     using arg_type = phylanx::execution_tree::primitive_argument_type;
     blaze::DynamicMatrix<double> matrix_1{{1.0, 2.0, 6.0}, {4.0, 5.0, 6.0}};
 
-    arg_type expected{
-        std::vector<arg_type>{arg_type{2.5}, arg_type{3.5}, arg_type{6.0}}};
+    phylanx::ir::node_data<double> expected(
+        blaze::DynamicVector<double>{2.5, 3.5, 6.0});
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -129,7 +130,7 @@ void test_mean_operation_2d_y_axis()
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 
-    arg_type actual{phylanx::execution_tree::extract_list_value(f.get())};
+    auto actual = phylanx::execution_tree::extract_numeric_value(f.get());
 
     HPX_TEST_EQ(expected, actual);
 }
