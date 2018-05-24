@@ -8,6 +8,7 @@
 #define PHYLANX_PRIMITIVES_PRIMITIVES_HPP
 
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
+#include <phylanx/execution_tree/primitives/assert_condition.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>
 #include <phylanx/execution_tree/primitives/debug_output.hpp>
 #include <phylanx/execution_tree/primitives/define_function.hpp>

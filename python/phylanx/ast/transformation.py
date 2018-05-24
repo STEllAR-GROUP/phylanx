@@ -16,13 +16,6 @@ from .utils import full_name, full_node_name, physl_fmt
 et = phylanx.execution_tree
 
 
-def is_node(node, name):
-    """Return the node name"""
-    if node is None:
-        return False
-    return node.__class__.__name__ == name
-
-
 def get_node(node, **kwargs):
     if node is None:
         return None
@@ -62,6 +55,14 @@ class PhySL:
         for arg in tree.body[0].args.args:
             self.defs[arg.arg] = 1
         self.__src__ = self.recompile(tree)
+
+    def _Arguments(self, a, allowreturn=False):
+        ret = ''
+        if a.args:
+            for arg in a.args[:-1]:
+                ret += arg.arg + ', '
+            ret += a.args[-1].arg
+        return ret
 
     def _Num(self, a, allowreturn=False):
         return str(a.n)
@@ -144,67 +145,6 @@ class PhySL:
         s += self.recompile(a.elts[-1])
         return s
 
-
-#        e = get_node(a, name="ExtSlice")
-#        s0 = get_node(e, name="Slice", num=0)
-#        s1 = get_node(e, name="Slice", num=1)
-#        s0alt = get_node(a, name="Slice", num=1)
-#        if s0 is not None and s1 is not None:
-#            xlo = s0.lower
-#            xlo_info = full_node_name(xlo)
-#            xhi = s0.upper
-#            xhi_info = full_node_name(xhi)
-#            ylo = s1.lower
-#            yhi = s1.upper
-#            yhi_info = full_node_name(yhi)
-#            sname = self.recompile(get_node(a, num=0))
-#            s = "slice%s(" % xlo_info
-#            s += sname
-#            s += ","
-#            if xlo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(xlo)
-#            s += ","
-#            if xhi is None:
-#                s += "shape%s(" % xhi_info + sname + ",0)"
-#            else:
-#                s += self.recompile(xhi)
-#            s += ","
-#            if ylo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(ylo)
-#            s += ","
-#            if yhi is None:
-#                s += "shape%s(" % yhi_info + sname + ",1)"
-#            else:
-#                s += self.recompile(yhi)
-#            s += ")"
-#            return s
-#        elif s0alt is not None:
-#            sname = self.recompile(get_node(a, num=0))
-#            xlo = s0alt.lower
-#            xlo_info = full_node_name(xlo)
-#            xhi = s0alt.upper
-#            xhi_info = full_node_name(xhi)
-#            s = 'slice_column%s(' % xlo_info
-#            s += sname
-#            s += ','
-#            if xlo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(xlo)
-#            s += ','
-#            if xhi is None:
-#                s += "shape%s(" % xhi_info + sname + ",0)"
-#            else:
-#                s += self.recompile(xhi)
-#            s += ")"
-#            return s
-#        else:
-#            raise Exception("Unsupported slicing: line=%d" % a.lineno)
-
     def _FunctionDef(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
@@ -278,8 +218,6 @@ class PhySL:
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
-            if args[0].id == "xrange":
-                args[0].id = "range"
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
@@ -303,95 +241,13 @@ class PhySL:
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
-
-        if hasattr(args[0], "id"):
-            # Assign to a variable by name, e.g. a = ...
-            if args[0].id in self.defs:
-                s += "store" + symbol_info
-            else:
-                s += "define" + symbol_info
-                self.defs[args[0].id] = 1
-            a = '%s' % full_node_name(args[0], args[0].id)
-            s += "(" + a + ", " + self.recompile(args[1]) + ")"
-        elif len(args) == 2 and is_node(args[0], "Subscript"):
-            # Assign to a variable with a single dimension, e.g. a[ ? ] = ...
-            vname = get_node(args[0], num=0, name="Name")
-            indexv = get_node(args[0], num=1)
-            indexv_nm = indexv.__class__.__name__
-            if indexv_nm == "Slice":
-                # Assign when the subscript is a slice, e.g. a[lo:hi] = ...
-                s += "set("
-                s += self.recompile(vname)
-                s += ","
-                if indexv.lower is None:
-                    s += "0,"
-                else:
-                    s += self.recompile(indexv.lower) + ","
-                if indexv.upper is None:
-                    s += "0,"
-                else:
-                    s += self.recompile(indexv.upper) + ","
-                s += "1,"
-                s += "0,0,0,"
-                s += self.recompile(args[1])
-                s += ")"
-            elif indexv_nm == "Index":
-                # Assign when the subscript is a value, e.g. a[i] = ... or a[i,j] = ...
-                s += "set("
-                s += self.recompile(vname)
-                s += ","
-                indexs = get_node(indexv, num=0)
-                if not is_node(indexs, "Tuple"):
-                    s += self.recompile(indexs) + ","
-                else:
-                    s += self.recompile(get_node(indexs, num=0)) + ","
-                s += "0,0,"
-                if not is_node(indexs, "Tuple"):
-                    s += "0,"
-                else:
-                    s += self.recompile(get_node(indexs, num=1)) + ","
-                s += "0,0,"
-                s += self.recompile(args[1])
-                s += ")"
-            elif indexv_nm == "ExtSlice":
-                # Assign when the subscript is an extended
-                # slice, e.g. a[x1:x2,y1:y2] = ...
-                slice1 = get_node(indexv, num=0)
-                slice2 = get_node(indexv, num=1)
-                s += "set("
-                s += self.recompile(vname)
-                s += ","
-
-                if slice1.lower is None:
-                    s += "0,"
-                else:
-                    s += self.recompile(slice1.lower) + ","
-
-                if slice1.upper is None:
-                    s += "nil,"
-                else:
-                    s += self.recompile(slice1.upper) + ","
-                s += "1,"
-
-                if slice2.lower is None:
-                    s += "0,"
-                else:
-                    s += self.recompile(slice2.lower) + ","
-
-                if slice2.upper is None:
-                    s += "nil,"
-                else:
-                    s += self.recompile(slice2.upper) + ","
-
-                s += "1,"
-
-                s += self.recompile(args[1])
-                s += ")"
-            else:
-                raise Exception("Unsupported slicing in assignment: line=%d" % a.lineno)
-            return s
+        if args[0].id in self.defs:
+            s += "store" + symbol_info
         else:
-            raise Exception("Unsupported slicing in assignment: line=%d" % a.lineno)
+            s += "define" + symbol_info
+            self.defs[args[0].id] = 1
+        a = '%s' % full_node_name(args[0], args[0].id)
+        s += "(" + a + ", " + self.recompile(args[1]) + ")"
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -482,6 +338,13 @@ class PhySL:
         s += ")"
         return s
 
+    def _Lambda(self, a, allowreturn=False):
+        symbol_info = full_node_name(a)
+        ret = "lambda%s(" % symbol_info
+        ret += self.recompile(a.args)
+        ret += ", block(" + self.recompile(a.body) + '))'
+        return ret
+
     def _List(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         ret = "make_list%s(" % symbol_info
@@ -556,6 +419,7 @@ class PhySL:
             raise Exception('unsupported AST node type: %s' % nm)
 
     nodes = {
+        "arguments": _Arguments,
         "Assign": _Assign,
         "Attribute": _Attribute,
         "AugAssign": _AugAssign,
@@ -567,6 +431,7 @@ class PhySL:
         "For": _For,
         "FunctionDef": _FunctionDef,
         "If": _If,
+        "Lambda": _Lambda,
         "List": _List,
         "Module": _Module,
         "Name": _Name,
@@ -636,7 +501,7 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
                     target)
 
             self.f = f
-            self.cs = cs
+            self.cs = compiler_state
             self.target = target
 
             # Get the source code
@@ -654,7 +519,6 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
             self.__src__ = self.transformation.__src__
             if self.debug:
                 physl_fmt(self.__src__)
-                print(end="", flush="")
 
             if target == "PhySL":
                 et.compile(self.__src__, self.cs)
