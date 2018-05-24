@@ -534,18 +534,21 @@ class PhySL:
 
     def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        ret = "map%s(lambda(" % symbol_info
+        ret = ""
 
-        # find a prange
         if is_node(a.iter, 'Call'):
             func_nom = get_call_func_name(a.iter)
             if func_nom == 'prange':
-                ret += self.recompile(a.target) + ', parallel_block('
+                ret = "parallel_map%s(lambda(" % symbol_info
             else:
-                ret += self.recompile(a.target) + ', block('
+                ret = "map%s(lambda(" % symbol_info
         else:          
-            ret += self.recompile(a.target) + ', block('
+            ret = "map%s(lambda(" % symbol_info
 
+        ret += self.recompile(a.target) + ', block('
+
+        # find a prange
+        
         blocki = 2
         #print(repr(a))
         while True:
