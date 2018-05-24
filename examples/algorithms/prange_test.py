@@ -5,6 +5,7 @@
 
 import phylanx
 from phylanx.ast import *
+from phylanx.util import prange
 
 @Phylanx(debug=True)
 def test_prange():
