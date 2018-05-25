@@ -555,9 +555,6 @@ class PhySL:
         "transpose": "transpose",
         "vstack": "vstack",
         # slicing operations
-        # ranges
-        "range" : "range",
-        "prange" : "prange",
     }
 
 
