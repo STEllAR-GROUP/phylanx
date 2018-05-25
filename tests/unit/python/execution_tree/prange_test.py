@@ -7,9 +7,21 @@ import phylanx
 from phylanx.ast import *
 from phylanx.util import prange
 
-@Phylanx(debug=True)
-def test_prange():
-    for x in prange(0,10):
-        print (x)
+#@Phylanx(debug=True)
+#def test_prange():
+#    for x in prange(0,10):
+#        print (x)
 
-test_prange()
+#test_prange()
+
+@Phylanx(debug=True)
+def test_prange_list():
+    arr = [ 0, 0, 0, 0, 0 ]
+    arrlen = 5
+
+    #TODO: add 'len' support
+    #arrlen = len(arr)
+    for i in prange(0, arrlen):
+        arr[i] = i
+
+test_prange_list()
