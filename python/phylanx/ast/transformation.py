@@ -317,8 +317,8 @@ class PhySL:
         s = ""
 
         if is_node(args[0], 'Subscript'):
-            print('Assign1', args[0], args[1])
-            s += "store" + symbol_info + "("
+            #print('Assign1', args[0], args[1])
+            s += "set_operation" + symbol_info + "("
             s += self.recompile(args[0]) + ", " + self.recompile(args[1]) + ")"
         else:
             print('Assign2', args[0].id)
@@ -506,7 +506,6 @@ class PhySL:
 
     def recompile(self, a, allowreturn=False):
         nm = a.__class__.__name__
-        print(nm)
         try:
             if allowreturn:
                 return self.nodes[nm](self, a, allowreturn)
