@@ -119,7 +119,7 @@ void generate_2d(phylanx::execution_tree::compiler::function const& call,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_uniform_distribution_implicit(std::mt19937& gen)
+void test_normal_distribution_implicit(std::mt19937& gen)
 {
     std::string const code = R"(block(
             define(call, size, random(size)),
@@ -129,15 +129,15 @@ void test_uniform_distribution_implicit(std::mt19937& gen)
     auto call = compile(code);
 
     {
-        std::uniform_real_distribution<double> dist;
+        std::normal_distribution<double> dist;
         generate_0d<double>(call, gen, dist);
     }
     {
-        std::uniform_real_distribution<double> dist;
+        std::normal_distribution<double> dist;
         generate_1d<double>(call, gen, dist);
     }
     {
-        std::uniform_real_distribution<double> dist;
+        std::normal_distribution<double> dist;
         generate_2d<double>(call, gen, dist);
     }
 }
@@ -903,7 +903,8 @@ int main(int argc, char* argv[])
 
     std::mt19937 gen(seed);
 
-    test_uniform_distribution_implicit(gen);
+    test_normal_distribution_implicit(gen);
+
     test_uniform_distribution_explicit(gen);
     test_uniform_distribution_explicit_params(gen);
 
