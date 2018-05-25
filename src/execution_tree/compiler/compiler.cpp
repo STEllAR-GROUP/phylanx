@@ -531,7 +531,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         }
                     }
 
-                    while ((*cit).first == function_name)
+                    while (cit != patterns_.end() && (*cit).first == function_name)
                     {
                         std::multimap<std::string, ast::expression> placeholders;
                         if (!ast::match_ast(expr, hpx::util::get<1>((*cit).second),
