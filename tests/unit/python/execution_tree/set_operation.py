@@ -44,10 +44,10 @@ mb = np.linspace(1, 12, 12).reshape((3, 4))
 def kernel3(a, b):
     for i in range(1, shape(a, 0) - 1):
         for j in range(1, shape(a, 1) - 1):
-            a[i,j] = b[i, j + 1] + b[i, j - 1]
+            a[i, j] = b[i, j + 1] + b[i, j - 1]
     for i in range(1, shape(a, 0) - 1):
         for j in range(1, shape(a, 1) - 1):
-            a[i,j] = a[i,j] + b[i + 1, j] + b[i-1, j]
+            a[i, j] = a[i, j] + b[i + 1, j] + b[i - 1, j]
     return a
 
 
