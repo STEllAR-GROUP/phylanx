@@ -315,13 +315,20 @@ class PhySL:
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
-        if args[0].id in self.defs:
-            s += "store" + symbol_info
+
+        if is_node(args[0], 'Subscript'):
+            print('Assign1', args[0], args[1])
+            s += "store" + symbol_info + "("
+            s += self.recompile(args[0]) + ", " + self.recompile(args[1]) + ")"
         else:
-            s += "define" + symbol_info
-            self.defs[args[0].id] = 1
-        a = '%s' % full_node_name(args[0], args[0].id)
-        s += "(" + a + ", " + self.recompile(args[1]) + ")"
+            print('Assign2', args[0].id)
+            if args[0].id in self.defs:
+                s += "store" + symbol_info
+            else:
+                s += "define" + symbol_info
+                self.defs[args[0].id] = 1
+            a = '%s' % full_node_name(args[0], args[0].id)
+            s += "(" + a + ", " + self.recompile(args[1]) + ")"
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -482,7 +489,7 @@ class PhySL:
         # find a prange
         
         blocki = 2
-        #print(repr(a))
+
         while True:
             blockn = get_node(a, num=blocki)
             if blockn is None:
@@ -499,6 +506,7 @@ class PhySL:
 
     def recompile(self, a, allowreturn=False):
         nm = a.__class__.__name__
+        print(nm)
         try:
             if allowreturn:
                 return self.nodes[nm](self, a, allowreturn)
