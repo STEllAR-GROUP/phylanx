@@ -24,16 +24,3 @@ class prange(object):
    def __next__(self):
        for i in self.iterspace:
            yield i
-       
-
-'''
-# unit test
-#
-if __name__ == "__main__":
-    x = prange(0, 10)
-    for i in x:
-        print(i)
-
-    for j in prange(10,20):
-        print(j)
-'''

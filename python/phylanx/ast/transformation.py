@@ -289,8 +289,6 @@ class PhySL:
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
-            if args[0].id == "xrange":
-                args[0].id = "range"
             if args[0].id == "prange":
                 args[0].id = "range"
 
