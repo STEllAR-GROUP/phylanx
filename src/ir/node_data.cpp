@@ -1,5 +1,6 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
 //  Copyright (c) 2017 Parsa Amini
+//  Copyright (c) 2018 Tianyi Zhang
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -1247,6 +1248,38 @@ namespace phylanx { namespace ir
             "node_data object holds unsupported data type");
     }
 
+    bool operator==(
+        node_data<std::int64_t> const& lhs, node_data<std::int64_t> const& rhs)
+    {
+        if (lhs.num_dimensions() != rhs.num_dimensions() ||
+            lhs.dimensions() != rhs.dimensions())
+        {
+            return false;
+        }
+
+        switch (lhs.num_dimensions())
+        {
+        case 0:
+            return lhs.scalar() == rhs.scalar();
+
+        case 1:
+            HPX_FALLTHROUGH;
+        case 3:
+            return lhs.vector() == rhs.vector();
+
+        case 2:
+            HPX_FALLTHROUGH;
+        case 4:
+            return lhs.matrix() == rhs.matrix();
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::operator==()",
+            "node_data object holds unsupported data type");
+    }
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
@@ -1301,6 +1334,44 @@ namespace phylanx { namespace ir
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "node_data<double>::operator<<()",
                 "invalid dimensionality: " + std::to_string(dims));
+        }
+        return out;
+    }
+
+    std::ostream& operator<<(std::ostream& out, node_data<std::int64_t> const& nd)
+    {
+        std::size_t dims = nd.num_dimensions();
+        switch (dims)
+        {
+            case 0:
+                out << nd[0];
+                break;
+
+            case 1: HPX_FALLTHROUGH;
+            case 3:
+                detail::print_array<std::int64_t>(out, nd.vector(), nd.size());
+                break;
+
+            case 2: HPX_FALLTHROUGH;
+            case 4:
+            {
+                out << "[";
+                auto data = nd.matrix();
+                for (std::size_t row = 0; row != data.rows(); ++row)
+                {
+                    if (row != 0)
+                        out << ", ";
+                    detail::print_array<std::int64_t>(
+                            out, blaze::row(data, row), data.columns());
+                }
+                out << "]";
+            }
+                break;
+
+            default:
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                                    "node_data<std::int64_t>::operator<<()",
+                                    "invalid dimensionality: " + std::to_string(dims));
         }
         return out;
     }
@@ -1453,3 +1524,4 @@ namespace phylanx { namespace ir
 
 template class PHYLANX_EXPORT phylanx::ir::node_data<double>;
 template class PHYLANX_EXPORT phylanx::ir::node_data<std::uint8_t>;
+template class PHYLANX_EXPORT phylanx::ir::node_data<std::int64_t>;

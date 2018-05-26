@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "with exactly one argument"));
         }
 
-        argnum_ = extract_integer_value(operands_[0]);
+        argnum_ = extract_integer_value(operands_[0])[0];
     }
 
     hpx::future<primitive_argument_type> access_argument::eval(

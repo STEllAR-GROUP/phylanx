@@ -17,11 +17,11 @@ void test_linmatrix()
 {
     phylanx::execution_tree::primitive nx =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), std::int64_t(2));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(2));
 
     phylanx::execution_tree::primitive ny =
     phylanx::execution_tree::primitives::create_variable(
-        hpx::find_here(), std::int64_t(2));
+        hpx::find_here(), phylanx::ir::node_data<std::int64_t>(2));
 
     phylanx::execution_tree::primitive base_value =
     phylanx::execution_tree::primitives::create_variable(

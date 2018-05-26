@@ -159,7 +159,7 @@ void test_fold_left_list_length()
         ))";
 
     HPX_TEST_EQ(
-        phylanx::execution_tree::extract_integer_value(compile(code)()), 4);
+        phylanx::execution_tree::extract_scalar_integer_value(compile(code)()), 4);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

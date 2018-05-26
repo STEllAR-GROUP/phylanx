@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        return 0ul;
+        return primitive_argument_type(std::int64_t(0));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const auto min_it = std::min_element(a.begin(), a.end());
 
         // Return min's index
-        return std::distance(a.begin(), min_it);
+        return primitive_argument_type(std::distance(a.begin(), min_it));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     passed_rows * it->size();
             }
         }
-        return global_index;
+        return primitive_argument_type(std::int64_t(global_index));
     }
 
     primitive_argument_type argmin::argmin2d_x_axis(arg_type && arg_a) const

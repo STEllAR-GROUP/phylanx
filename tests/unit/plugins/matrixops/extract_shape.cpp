@@ -49,7 +49,7 @@ void test_extract_shape_1d()
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
 
     auto result = phylanx::execution_tree::extract_list_value(f);
-    HPX_TEST_EQ(1007, *result.begin());
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(1007), *result.begin());
 }
 
 void test_extract_shape_2d_1()
@@ -71,8 +71,8 @@ void test_extract_shape_2d_1()
 
     auto result = phylanx::execution_tree::extract_list_value(f);
     auto it = result.begin();
-    HPX_TEST_EQ(101, *it++);
-    HPX_TEST_EQ(101, *it);
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(101), *it++);
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(101), *it);
 }
 
 void test_extract_shape_2d_2()
@@ -86,7 +86,7 @@ void test_extract_shape_2d_2()
 
     phylanx::execution_tree::primitive arg2 =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), std::int64_t(1));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(1));
 
     phylanx::execution_tree::primitive shape =
         phylanx::execution_tree::primitives::create_extract_shape(

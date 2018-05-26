@@ -181,7 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }),
             numeric_operand(operands[0], args, name_, codename_),
-            integer_operand_strict(operands[1], args, name_, codename_));
+            scalar_integer_operand_strict(operands[1], args, name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////

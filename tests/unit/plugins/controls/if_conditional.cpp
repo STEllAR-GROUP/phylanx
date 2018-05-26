@@ -13,6 +13,7 @@
 
 #include <blaze/Math.h>
 
+#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -165,7 +166,7 @@ void test_if_conditional_t4()
 {
     phylanx::execution_tree::primitive cond =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), true);
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     phylanx::execution_tree::primitive true_case =
         phylanx::execution_tree::primitives::create_variable(
@@ -189,7 +190,7 @@ void test_if_conditional_t5()
 {
     phylanx::execution_tree::primitive cond =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), true);
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(true));
 
     // Create addition expression
     phylanx::execution_tree::primitive add_lhs =
@@ -224,7 +225,7 @@ void test_if_conditional_t6()
 {
     phylanx::execution_tree::primitive cond =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), false);
+            hpx::find_here(), phylanx::ir::node_data<std::uint8_t>(false));
 
     // Create addition expression
     phylanx::execution_tree::primitive add_lhs =

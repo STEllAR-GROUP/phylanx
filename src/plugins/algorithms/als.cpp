@@ -63,9 +63,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         auto regularization = arg2.scalar();
 
-        auto num_factors = extract_integer_value(args[2], name_, codename_);
+        auto num_factors = extract_scalar_integer_value(args[2], name_, codename_);
 
-        auto iterations = extract_integer_value(args[3], name_, codename_);
+        auto iterations = extract_scalar_integer_value(args[3], name_, codename_);
 
         auto arg5 = extract_numeric_value(args[4], name_, codename_);
         if (arg5.num_dimensions() != 0)
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (args.size() == 6 && valid(args[5]))
         {
             enable_output =
-                extract_integer_value(args[5], name_, codename_) != 0;
+                extract_scalar_integer_value(args[5], name_, codename_) != 0;
         }
 
         using vector_type = ir::node_data<double>::storage1d_type;
