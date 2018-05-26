@@ -78,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(result));
             }),
             p->bind(args),
-            list_operand(operands[1], args, name_, codename_));
+            list_operand_strict(operands[1], args, name_, codename_));
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::map_n(
@@ -158,8 +158,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(result));
             }),
             p->bind(args),
-            detail::map_operands(
-                lists, functional::list_operand{}, args, name_, codename_));
+            detail::map_operands(lists, functional::list_operand_strict{}, args,
+                name_, codename_));
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::eval(
