@@ -256,11 +256,9 @@ class PhySL:
         s = ""
 
         if is_node(args[0], 'Subscript'):
-            #print('Assign1', args[0], args[1])
-            s += "set" + symbol_info + "("
-            s += self.recompile(args[0]) + ", 0, 0, 0, 0, 1, 1, " + self.recompile(args[1]) + ")"
+            s += "store" + symbol_info + "("
+            s += self.recompile(args[0]) + ", " + self.recompile(args[1]) + ")"
         else:
-            #print('Assign2', args[0].id)
             if args[0].id in self.defs:
                 s += "store" + symbol_info
             else:
@@ -413,15 +411,16 @@ class PhySL:
     def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         ret = ""
+        func_nom = get_call_func_name(a.iter)
+        func_nom_symbol_info = full_node_name(a.iter)
 
         if is_node(a.iter, 'Call'):
-            func_nom = get_call_func_name(a.iter)
             if func_nom == 'prange':
-                ret = "parallel_map%s(lambda(" % symbol_info
+                ret = "parallel_map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
             else:
-                ret = "map%s(lambda(" % symbol_info
+                ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
         else:          
-            ret = "map%s(lambda(" % symbol_info
+            ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
 
         ret += self.recompile(a.target) + ', block('
 
