@@ -257,10 +257,10 @@ class PhySL:
 
         if is_node(args[0], 'Subscript'):
             #print('Assign1', args[0], args[1])
-            s += "set_operation" + symbol_info + "("
-            s += self.recompile(args[0]) + ", " + self.recompile(args[1]) + ")"
+            s += "set" + symbol_info + "("
+            s += self.recompile(args[0]) + ", 0, 0, 0, 0, 1, 1, " + self.recompile(args[1]) + ")"
         else:
-            print('Assign2', args[0].id)
+            #print('Assign2', args[0].id)
             if args[0].id in self.defs:
                 s += "store" + symbol_info
             else:
