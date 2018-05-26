@@ -6,7 +6,7 @@
 # Fixing #409: Cannot create lists of arbitrary objects
 
 import phylanx
-from phylanx.ast import *
+from phylanx.ast import Phylanx
 
 
 @Phylanx()
