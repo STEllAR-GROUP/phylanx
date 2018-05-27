@@ -10,11 +10,17 @@ import re
 import phylanx
 import inspect
 from phylanx.exceptions import InvalidDecoratorArgumentError
+from phylanx.util import prange
 from .oscop import OpenSCoP
 from .utils import full_name, full_node_name, physl_fmt
 
 et = phylanx.execution_tree
 
+def is_node(node, name):
+    """Return the node name"""
+    if node is None:
+        return False
+    return node.__class__.__name__ == name
 
 def get_node(node, **kwargs):
     if node is None:
@@ -42,6 +48,10 @@ def get_node(node, **kwargs):
     # if we can't find what we're looking for...
     return None
 
+def get_call_func_name(ast_call):
+    if is_node(ast_call, 'Call'):
+        return ast_call.func.id
+    return None
 
 def remove_line(a):
     return re.sub(r'\$.*', '', a)
@@ -218,6 +228,9 @@ class PhySL:
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
+            if args[0].id == "prange":
+                args[0].id = "range"
+
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
@@ -241,13 +254,18 @@ class PhySL:
         symbol_info = full_node_name(a)
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
-        if args[0].id in self.defs:
-            s += "store" + symbol_info
+
+        if is_node(args[0], 'Subscript'):
+            s += "store" + symbol_info + "("
+            s += self.recompile(args[0]) + ", " + self.recompile(args[1]) + ")"
         else:
-            s += "define" + symbol_info
-            self.defs[args[0].id] = 1
-        a = '%s' % full_node_name(args[0], args[0].id)
-        s += "(" + a + ", " + self.recompile(args[1]) + ")"
+            if args[0].id in self.defs:
+                s += "store" + symbol_info
+            else:
+                s += "define" + symbol_info
+                self.defs[args[0].id] = 1
+            a = '%s' % full_node_name(args[0], args[0].id)
+            s += "(" + a + ", " + self.recompile(args[1]) + ")"
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -392,10 +410,24 @@ class PhySL:
 
     def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        ret = "map%s(lambda(" % symbol_info
+        ret = ""
+        func_nom = get_call_func_name(a.iter)
+        func_nom_symbol_info = full_node_name(a.iter)
+
+        if is_node(a.iter, 'Call'):
+            if func_nom == 'prange':
+                ret = "parallel_map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+            else:
+                ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+        else:          
+            ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+
         ret += self.recompile(a.target) + ', block('
 
+        # find a prange
+        
         blocki = 2
+
         while True:
             blockn = get_node(a, num=blocki)
             if blockn is None:
@@ -443,7 +475,7 @@ class PhySL:
         "Subscript": _Subscript,
         "Tuple": _Tuple,
         "UnaryOp": _UnaryOp,
-        "While": _While
+        "While": _While,
     }
 
     np_to_phylanx = {
@@ -464,7 +496,7 @@ class PhySL:
         "shape": "shape",
         "sqrt": "square_root",
         "transpose": "transpose",
-        "vstack": "vstack"
+        "vstack": "vstack",
         # slicing operations
     }
 

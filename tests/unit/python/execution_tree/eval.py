@@ -63,7 +63,7 @@ assert "[" + pass_str.__src__ + "]" == str(pass_str.generate_ast())
 assert "foo" == str(pass_str("foo"))
 
 
-@Phylanx
+@Phylanx()
 def test_slice(a):
     return a[1:3, 1:4]
 
@@ -192,3 +192,9 @@ def f7(b):
 
 
 assert np.all(f7(np_b) == np.array(b[0, 0:2]))
+
+@Phylanx(debug=True)
+def f8():
+    a = [1, 2]
+    a[0] = 1
+    return a[0]
