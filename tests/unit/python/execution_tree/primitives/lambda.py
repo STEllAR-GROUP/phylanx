@@ -14,7 +14,7 @@ def f(a, b):
     return map(lambda x, y: x * y, a, b)
 
 
-assert (f(np.array([1, 2]), np.array([3, 4])) == np.array([3, 8])).all()
+assert f([1, 2], [3, 4]) == [3, 8]
 
 
 @Phylanx
@@ -22,4 +22,4 @@ def f(a):
     return map(lambda x: x * 2, a)
 
 
-assert f(np.array([1])) == np.array([2])
+assert f([1]) == [2]
