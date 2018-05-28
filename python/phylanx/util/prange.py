@@ -10,17 +10,19 @@ over - might be a nice place to add in hpx-smart-executor logic
 
 https://github.com/numba/numba/blob/master/numba/special.py
 '''
+
+
 class prange(object):
-   def __init__(self, *args):
-       # remember range(0, n) iteration space
-       # remember range(0, n, k) iteration broken into chunks
-       #
-       self.iterspace = range(*args) 
+    def __init__(self, *args):
+        # remember range(0, n) iteration space
+        # remember range(0, n, k) iteration broken into chunks
+        #
+        self.iterspace = range(*args)
 
-   def __iter__(self):
-       for i in self.iterspace:
-          yield i
+    def __iter__(self):
+        for i in self.iterspace:
+            yield i
 
-   def __next__(self):
-       for i in self.iterspace:
-           yield i
+    def __next__(self):
+        for i in self.iterspace:
+            yield i

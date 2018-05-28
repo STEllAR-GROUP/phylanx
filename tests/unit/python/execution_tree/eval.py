@@ -193,6 +193,7 @@ def f7(b):
 
 assert np.all(f7(np_b) == np.array(b[0, 0:2]))
 
+
 @Phylanx(debug=True)
 def f8():
     a = [1, 2]

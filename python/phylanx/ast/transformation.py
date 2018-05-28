@@ -16,11 +16,13 @@ from .utils import full_name, full_node_name, physl_fmt
 
 et = phylanx.execution_tree
 
+
 def is_node(node, name):
     """Return the node name"""
     if node is None:
         return False
     return node.__class__.__name__ == name
+
 
 def get_node(node, **kwargs):
     if node is None:
@@ -48,10 +50,12 @@ def get_node(node, **kwargs):
     # if we can't find what we're looking for...
     return None
 
+
 def get_call_func_name(ast_call):
     if is_node(ast_call, 'Call'):
         return ast_call.func.id
     return None
+
 
 def remove_line(a):
     return re.sub(r'\$.*', '', a)
@@ -419,13 +423,13 @@ class PhySL:
                 ret = "parallel_map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
             else:
                 ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
-        else:          
+        else:
             ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
 
         ret += self.recompile(a.target) + ', block('
 
         # find a prange
-        
+
         blocki = 2
 
         while True:
