@@ -51,8 +51,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        std::size_t nx = extract_integer_value(args[0]);
-        std::size_t ny = extract_integer_value(args[1]);
+        std::size_t nx = extract_scalar_integer_value(args[0]);
+        std::size_t ny = extract_scalar_integer_value(args[1]);
         double base_value = args[2].scalar();
         double dx = args[3].scalar();
         double dy = args[4].scalar();

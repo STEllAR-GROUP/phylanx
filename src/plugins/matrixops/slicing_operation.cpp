@@ -87,7 +87,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     {
         if (valid(val))
         {
-            return execution_tree::extract_integer_value(val, name_, codename_);
+            return execution_tree::extract_scalar_integer_value(val, name_, codename_);
         }
         return default_value;
     }
@@ -415,7 +415,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         }
         else
         {
-            indices.push_back(execution_tree::extract_integer_value(
+            indices.push_back(execution_tree::extract_scalar_integer_value(
                 std::move(arg), name_, codename_));
         }
 

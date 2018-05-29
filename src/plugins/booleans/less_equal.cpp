@@ -1,4 +1,5 @@
 //  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2018 Tianyi Zhang
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -519,9 +520,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type operator()(
-            ir::node_data<double>&& lhs, std::int64_t&& rhs) const
+            ir::node_data<double>&& lhs, ir::node_data<std::int64_t>&& rhs) const
         {
-            if (lhs.num_dimensions() != 0)
+            if (lhs.num_dimensions() != 0 || rhs.num_dimensions() != 0)
             {
                 return less_equal_.less_equal_all(
                     std::move(lhs), operand_type(std::move(rhs)), type_double_);
@@ -529,16 +530,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{(lhs[0] <= rhs) ? 1.0 : 0.0});
+                    ir::node_data<double>{(lhs[0] <= rhs[0]) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
-                ir::node_data<std::uint8_t>{lhs[0] <= rhs});
+                ir::node_data<std::uint8_t>{lhs[0] <= rhs[0]});
         }
 
         primitive_argument_type operator()(
-            std::int64_t&& lhs, ir::node_data<double>&& rhs) const
+            ir::node_data<std::int64_t>&& lhs, ir::node_data<double>&& rhs) const
         {
-            if (rhs.num_dimensions() != 0)
+            if (rhs.num_dimensions() != 0 || lhs.num_dimensions() != 0)
             {
                 return less_equal_.less_equal_all(
                     operand_type(std::move(lhs)), std::move(rhs), type_double_);
@@ -546,45 +547,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{(lhs <= rhs[0]) ? 1.0 : 0.0});
+                    ir::node_data<double>{(lhs[0] <= rhs[0]) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
-                ir::node_data<std::uint8_t>{lhs <= rhs[0]});
+                ir::node_data<std::uint8_t>{lhs[0] <= rhs[0]});
         }
 
         primitive_argument_type operator()(
-            ir::node_data<std::uint8_t>&& lhs, std::int64_t&& rhs) const
+            ir::node_data<std::uint8_t>&& lhs, ir::node_data<std::int64_t>&& rhs) const
         {
-            if (lhs.num_dimensions() != 0)
+            if (lhs.num_dimensions() != 0 || rhs.num_dimensions() != 0)
             {
                 return less_equal_.less_equal_all(std::move(lhs),
-                    ir::node_data<std::uint8_t>{rhs != 0}, type_double_);
-            }
-            if (type_double_)
-            {
-                return primitive_argument_type(
-                    ir::node_data<double>{(lhs[0] <= rhs) ? 1.0 : 0.0});
-            }
-            return primitive_argument_type(
-                ir::node_data<std::uint8_t>{lhs[0] <= rhs});
-        }
-
-        primitive_argument_type operator()(
-            std::int64_t&& lhs, ir::node_data<std::uint8_t>&& rhs) const
-        {
-            if (rhs.num_dimensions() != 0)
-            {
-                return less_equal_.less_equal_all(
-                    ir::node_data<std::uint8_t>{lhs != 0}, std::move(rhs),
+                    ir::node_data<std::uint8_t>{
+                        std::move(rhs) != ir::node_data<std::int64_t>(0)},
                     type_double_);
             }
             if (type_double_)
             {
                 return primitive_argument_type(
-                    ir::node_data<double>{(lhs <= rhs[0]) ? 1.0 : 0.0});
+                    ir::node_data<double>{(lhs[0] <= rhs[0]) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
-                ir::node_data<std::uint8_t>{lhs <= rhs[0]});
+                ir::node_data<std::uint8_t>{lhs[0] <= rhs[0]});
+        }
+
+        primitive_argument_type operator()(
+            ir::node_data<std::int64_t>&& lhs, ir::node_data<std::uint8_t>&& rhs) const
+        {
+            if (lhs.num_dimensions() != 0 || rhs.num_dimensions() != 0)
+            {
+                return less_equal_.less_equal_all(
+                    ir::node_data<std::uint8_t>{
+                        std::move(lhs) != ir::node_data<std::int64_t>(0)},
+                    std::move(rhs), type_double_);
+            }
+            if (type_double_)
+            {
+                return primitive_argument_type(
+                    ir::node_data<double>{(lhs[0] <= rhs[0]) ? 1.0 : 0.0});
+            }
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{lhs[0] <= rhs[0]});
         }
 
         primitive_argument_type operator()(
@@ -602,6 +606,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 execution_tree::generate_error_message(
                     "left hand side and right hand side can't be compared",
                     less_equal_.name_, less_equal_.codename_));
+        }
+
+        primitive_argument_type operator()(
+            ir::node_data<std::int64_t>&& lhs, ir::node_data<std::int64_t>&& rhs) const
+        {
+            return less_equal_.less_equal_all(
+                    std::move(lhs), std::move(rhs), type_double_);
         }
 
         less_equal const& less_equal_;

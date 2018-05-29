@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 2:    // std::uint64_t
             return std::array<std::size_t, 2>{
-                std::size_t(util::get<2>(val)), 1ull};
+                std::size_t(util::get<2>(val)[0]), 1ull};
 
         case 4:    // phylanx::ir::node_data<double>
             return util::get<4>(val).dimensions();
@@ -157,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 7:    // phylanx::ir::range
             {
-                distribution_parameters_type result{"uniform", 0, 0.0, 1.0};
+                distribution_parameters_type result{"normal", 0, 0.0, 1.0};
                 auto const& list = util::get<7>(val);
                 auto const& args = list.args();
                 switch (args.size())
@@ -553,7 +553,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() < 2)
         {
             params = hpx::make_ready_future(
-                distribution_parameters_type{"uniform", 2, 0.0, 1.0});
+                distribution_parameters_type{"normal", 2, 0.0, 1.0});
         }
         else
         {

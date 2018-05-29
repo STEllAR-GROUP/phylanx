@@ -198,7 +198,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (args.size() > 1)
                     {
                         if (valid(args[1]))
-                            axis = execution_tree::extract_integer_value(
+                            axis = execution_tree::extract_scalar_integer_value(
                                 args[1], this_->name_, this_->codename_);
 
                         // keep_dims is argument #3

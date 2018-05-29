@@ -13,15 +13,20 @@
 
 #include <string>
 
-std::string const code = R"(
+std::string const code1 = R"(
     0 + 0
     // trailing comment
 )";
 
+std::string const code2 = R"(
+    0 + 0
+    // trailing comment)";
+
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compile(code, snippets);
+    phylanx::execution_tree::compile(code1, snippets);
+    phylanx::execution_tree::compile(code2, snippets);
 
     return hpx::util::report_errors();
 }

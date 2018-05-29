@@ -352,6 +352,8 @@ namespace phylanx { namespace ir
         node_data<double> const& lhs, node_data<double> const& rhs);
     PHYLANX_EXPORT bool operator==(
         node_data<std::uint8_t> const& lhs, node_data<std::uint8_t> const& rhs);
+    PHYLANX_EXPORT bool operator==(
+        node_data<std::int64_t> const& lhs, node_data<std::int64_t> const& rhs);
 
     template <typename T>
     bool operator!=(node_data<T> const& lhs, node_data<T> const& rhs)
@@ -363,6 +365,8 @@ namespace phylanx { namespace ir
         std::ostream& out, node_data<double> const& nd);
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, node_data<std::uint8_t> const& nd);
+    PHYLANX_EXPORT std::ostream& operator<<(
+        std::ostream& out, node_data<std::int64_t> const& nd);
 }}
 
 #endif

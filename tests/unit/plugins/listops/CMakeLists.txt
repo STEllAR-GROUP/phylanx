@@ -5,6 +5,7 @@
 
 set(tests
     car_cdr_operation
+    len_operation
    )
 
 foreach(test ${tests})

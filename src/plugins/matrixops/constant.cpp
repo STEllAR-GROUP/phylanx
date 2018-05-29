@@ -39,11 +39,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::range const& shape)
         {
             std::array<std::size_t, 2> result = {0, 0};
-            result[0] = extract_integer_value(*shape.begin());
+            result[0] = extract_scalar_integer_value(*shape.begin());
             if (shape.size() > 1)
             {
                 auto elem_1 = shape.begin();
-                result[1] = extract_integer_value(*++elem_1);
+                result[1] = extract_scalar_integer_value(*++elem_1);
             }
             return result;
         }

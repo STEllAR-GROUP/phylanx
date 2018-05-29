@@ -157,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bool enable_output = false;
         if (args.size() == 5 && valid(args[4]))
         {
-            enable_output = extract_integer_value(args[4], name_, codename_) != 0;
+            enable_output = extract_boolean_value(args[4], name_, codename_) != 0;
         }
 
         using vector_type = ir::node_data<double>::storage1d_type;
@@ -167,7 +167,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         vector_type weights(x.columns(), 0.0);
         matrix_type transx = blaze::trans(x);
 
-        for (std::int64_t step = 0; step < iterations; ++step)
+        for (std::int64_t step = 0; step < iterations[0]; ++step)
         {
             if (enable_output)
             {

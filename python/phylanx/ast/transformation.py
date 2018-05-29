@@ -10,6 +10,7 @@ import re
 import phylanx
 import inspect
 from phylanx.exceptions import InvalidDecoratorArgumentError
+from phylanx.util import prange
 from .oscop import OpenSCoP
 from .utils import full_name, full_node_name, physl_fmt
 
@@ -50,6 +51,12 @@ def get_node(node, **kwargs):
     return None
 
 
+def get_call_func_name(ast_call):
+    if is_node(ast_call, 'Call'):
+        return ast_call.func.id
+    return None
+
+
 def remove_line(a):
     return re.sub(r'\$.*', '', a)
 
@@ -62,6 +69,14 @@ class PhySL:
         for arg in tree.body[0].args.args:
             self.defs[arg.arg] = 1
         self.__src__ = self.recompile(tree)
+
+    def _Arguments(self, a, allowreturn=False):
+        ret = ''
+        if a.args:
+            for arg in a.args[:-1]:
+                ret += arg.arg + ', '
+            ret += a.args[-1].arg
+        return ret
 
     def _Num(self, a, allowreturn=False):
         return str(a.n)
@@ -144,67 +159,6 @@ class PhySL:
         s += self.recompile(a.elts[-1])
         return s
 
-
-#        e = get_node(a, name="ExtSlice")
-#        s0 = get_node(e, name="Slice", num=0)
-#        s1 = get_node(e, name="Slice", num=1)
-#        s0alt = get_node(a, name="Slice", num=1)
-#        if s0 is not None and s1 is not None:
-#            xlo = s0.lower
-#            xlo_info = full_node_name(xlo)
-#            xhi = s0.upper
-#            xhi_info = full_node_name(xhi)
-#            ylo = s1.lower
-#            yhi = s1.upper
-#            yhi_info = full_node_name(yhi)
-#            sname = self.recompile(get_node(a, num=0))
-#            s = "slice%s(" % xlo_info
-#            s += sname
-#            s += ","
-#            if xlo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(xlo)
-#            s += ","
-#            if xhi is None:
-#                s += "shape%s(" % xhi_info + sname + ",0)"
-#            else:
-#                s += self.recompile(xhi)
-#            s += ","
-#            if ylo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(ylo)
-#            s += ","
-#            if yhi is None:
-#                s += "shape%s(" % yhi_info + sname + ",1)"
-#            else:
-#                s += self.recompile(yhi)
-#            s += ")"
-#            return s
-#        elif s0alt is not None:
-#            sname = self.recompile(get_node(a, num=0))
-#            xlo = s0alt.lower
-#            xlo_info = full_node_name(xlo)
-#            xhi = s0alt.upper
-#            xhi_info = full_node_name(xhi)
-#            s = 'slice_column%s(' % xlo_info
-#            s += sname
-#            s += ','
-#            if xlo is None:
-#                s += "0"
-#            else:
-#                s += self.recompile(xlo)
-#            s += ','
-#            if xhi is None:
-#                s += "shape%s(" % xhi_info + sname + ",0)"
-#            else:
-#                s += self.recompile(xhi)
-#            s += ")"
-#            return s
-#        else:
-#            raise Exception("Unsupported slicing: line=%d" % a.lineno)
-
     def _FunctionDef(self, a, allowreturn=False):
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
@@ -278,8 +232,9 @@ class PhySL:
             args = [arg for arg in ast.iter_child_nodes(a)]
             if args[0].id == "print":
                 args[0].id = "cout"
-            if args[0].id == "xrange":
+            if args[0].id == "prange":
                 args[0].id = "range"
+
             s = args[0].id + symbol_info + '('
             for n in range(1, len(args)):
                 if n > 1:
@@ -482,6 +437,13 @@ class PhySL:
         s += ")"
         return s
 
+    def _Lambda(self, a, allowreturn=False):
+        symbol_info = full_node_name(a)
+        ret = "lambda%s(" % symbol_info
+        ret += self.recompile(a.args)
+        ret += ", block(" + self.recompile(a.body) + '))'
+        return ret
+
     def _List(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
         ret = "make_list%s(" % symbol_info
@@ -529,10 +491,24 @@ class PhySL:
 
     def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        ret = "map%s(lambda(" % symbol_info
+        ret = ""
+        func_nom = get_call_func_name(a.iter)
+        func_nom_symbol_info = full_node_name(a.iter)
+
+        if is_node(a.iter, 'Call'):
+            if func_nom == 'prange':
+                ret = "parallel_map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+            else:
+                ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+        else:
+            ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+
         ret += self.recompile(a.target) + ', block('
 
+        # find a prange
+
         blocki = 2
+
         while True:
             blockn = get_node(a, num=blocki)
             if blockn is None:
@@ -556,6 +532,7 @@ class PhySL:
             raise Exception('unsupported AST node type: %s' % nm)
 
     nodes = {
+        "arguments": _Arguments,
         "Assign": _Assign,
         "Attribute": _Attribute,
         "AugAssign": _AugAssign,
@@ -567,6 +544,7 @@ class PhySL:
         "For": _For,
         "FunctionDef": _FunctionDef,
         "If": _If,
+        "Lambda": _Lambda,
         "List": _List,
         "Module": _Module,
         "Name": _Name,
@@ -578,7 +556,7 @@ class PhySL:
         "Subscript": _Subscript,
         "Tuple": _Tuple,
         "UnaryOp": _UnaryOp,
-        "While": _While
+        "While": _While,
     }
 
     np_to_phylanx = {
@@ -599,7 +577,7 @@ class PhySL:
         "shape": "shape",
         "sqrt": "square_root",
         "transpose": "transpose",
-        "vstack": "vstack"
+        "vstack": "vstack",
         # slicing operations
     }
 
@@ -636,7 +614,7 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
                     target)
 
             self.f = f
-            self.cs = cs
+            self.cs = compiler_state
             self.target = target
 
             # Get the source code

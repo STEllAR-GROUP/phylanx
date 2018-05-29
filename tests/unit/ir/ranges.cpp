@@ -18,7 +18,7 @@ void test_int_iterator_inc()
 {
     phylanx::ir::range_iterator it(0, 1);
     ++it;
-    HPX_TEST_EQ(*it, 1);
+    HPX_TEST_EQ(*it, phylanx::ir::node_data<std::int64_t>(1));
 }
 
 void test_int_iterator_equal()
@@ -30,8 +30,8 @@ void test_int_iterator_equal()
 void test_int_iterator_deref()
 {
     phylanx::ir::range_iterator it(9, 6);
-    HPX_TEST_EQ(*it++, 9);
-    HPX_TEST_EQ(*it, 15);
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(9));
+    HPX_TEST_EQ(*it, phylanx::ir::node_data<std::int64_t>(15));
 }
 
 void test_arg_type_iterator()
@@ -44,9 +44,9 @@ void test_arg_type_iterator()
         arg_t{static_cast<std::int64_t>(42)}};
 
     phylanx::ir::range_iterator it(v.begin());
-    HPX_TEST_EQ(*it++, 6);
-    HPX_TEST_EQ(*it++, 9);
-    HPX_TEST_EQ(*it++, 42);
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(6));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(9));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(42));
     HPX_TEST(it == phylanx::ir::range_iterator{v.end()});
 }
 
@@ -57,7 +57,7 @@ void test_int_range_stop_arg()
     phylanx::ir::range_iterator rb = r.begin();
     for (std::int64_t i = 0; i < 10; ++i)
     {
-        HPX_TEST_EQ(i, *rb++);
+        HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(i), *rb++);
     }
     HPX_TEST(rb == r.end());
 }
@@ -101,7 +101,7 @@ void test_int_rev_iterator_inc()
 {
     phylanx::ir::reverse_range_iterator it(0, 1);
     ++it;
-    HPX_TEST_EQ(*it, -1);
+    HPX_TEST_EQ(*it, phylanx::ir::node_data<std::int64_t>(-1));
 }
 
 void test_int_rev_iterator_equal()
@@ -113,8 +113,8 @@ void test_int_rev_iterator_equal()
 void test_int_rev_iterator_deref()
 {
     phylanx::ir::reverse_range_iterator it(9, 6);
-    HPX_TEST_EQ(*it++, 9);
-    HPX_TEST_EQ(*it, 3);
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(9));
+    HPX_TEST_EQ(*it, phylanx::ir::node_data<std::int64_t>(3));
 }
 
 void test_arg_type_rev_iterator()
@@ -127,9 +127,9 @@ void test_arg_type_rev_iterator()
         arg_t{static_cast<std::int64_t>(42)}};
 
     phylanx::ir::reverse_range_iterator it(v.rbegin());
-    HPX_TEST_EQ(*it++, 42);
-    HPX_TEST_EQ(*it++, 9);
-    HPX_TEST_EQ(*it++, 6);
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(42));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(9));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(6));
     HPX_TEST(it == phylanx::ir::reverse_range_iterator{v.rend()});
 }
 
@@ -140,7 +140,7 @@ void test_int_range_rev_stop_arg()
     phylanx::ir::reverse_range_iterator rb = r.rbegin();
     for (std::int64_t i = 9; i >= 0; --i)
     {
-        HPX_TEST_EQ(i, *rb++);
+        HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(i), *rb++);
     }
     HPX_TEST(rb == r.rend());
 }
