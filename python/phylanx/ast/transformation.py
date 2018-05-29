@@ -259,10 +259,8 @@ class PhySL:
         args = [arg for arg in ast.iter_child_nodes(a)]
         s = ""
 
-        if is_node(args[0], 'Subscript'):
-            s += "store" + symbol_info + "("
-            s += self.recompile(args[0]) + ", " + self.recompile(args[1]) + ")"
-        else:
+        if hasattr(args[0], "id"):
+            # Assign to a variable by name, e.g. a = ...
             if args[0].id in self.defs:
                 s += "store" + symbol_info
             else:
@@ -270,6 +268,85 @@ class PhySL:
                 self.defs[args[0].id] = 1
             a = '%s' % full_node_name(args[0], args[0].id)
             s += "(" + a + ", " + self.recompile(args[1]) + ")"
+        elif len(args) == 2 and is_node(args[0], "Subscript"):
+            # Assign to a variable with a single dimension, e.g. a[ ? ] = ...
+            vname = get_node(args[0], num=0, name="Name")
+            indexv = get_node(args[0], num=1)
+            indexv_nm = indexv.__class__.__name__
+            if indexv_nm == "Slice":
+                # Assign when the subscript is a slice, e.g. a[lo:hi] = ...
+                s += "set("
+                s += self.recompile(vname)
+                s += ","
+                if indexv.lower is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(indexv.lower) + ","
+                if indexv.upper is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(indexv.upper) + ","
+                s += "1,"
+                s += "0,0,0,"
+                s += self.recompile(args[1])
+                s += ")"
+            elif indexv_nm == "Index":
+                # Assign when the subscript is a value, e.g. a[i] = ... or a[i,j] = ...
+                s += "set("
+                s += self.recompile(vname)
+                s += ","
+                indexs = get_node(indexv, num=0)
+                if not is_node(indexs, "Tuple"):
+                    s += self.recompile(indexs) + ","
+                else:
+                    s += self.recompile(get_node(indexs, num=0)) + ","
+                s += "0,0,"
+                if not is_node(indexs, "Tuple"):
+                    s += "0,"
+                else:
+                    s += self.recompile(get_node(indexs, num=1)) + ","
+                s += "0,0,"
+                s += self.recompile(args[1])
+                s += ")"
+            elif indexv_nm == "ExtSlice":
+                # Assign when the subscript is an extended
+                # slice, e.g. a[x1:x2,y1:y2] = ...
+                slice1 = get_node(indexv, num=0)
+                slice2 = get_node(indexv, num=1)
+                s += "set("
+                s += self.recompile(vname)
+                s += ","
+
+                if slice1.lower is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(slice1.lower) + ","
+
+                if slice1.upper is None:
+                    s += "nil,"
+                else:
+                    s += self.recompile(slice1.upper) + ","
+                s += "1,"
+
+                if slice2.lower is None:
+                    s += "0,"
+                else:
+                    s += self.recompile(slice2.lower) + ","
+
+                if slice2.upper is None:
+                    s += "nil,"
+                else:
+                    s += self.recompile(slice2.upper) + ","
+
+                s += "1,"
+
+                s += self.recompile(args[1])
+                s += ")"
+            else:
+                raise Exception("Unsupported slicing in assignment: line=%d" % a.lineno)
+            return s
+        else:
+            raise Exception("Unsupported slicing in assignment: line=%d" % a.lineno)
         return s
 
     def _Attribute(self, a, allowreturn=False):
@@ -555,6 +632,7 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
             self.__src__ = self.transformation.__src__
             if self.debug:
                 physl_fmt(self.__src__)
+                print(end="", flush="")
 
             if target == "PhySL":
                 et.compile(self.__src__, self.cs)
