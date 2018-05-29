@@ -13,19 +13,20 @@
 #include <utility>
 #include <vector>
 
+using arg_type = phylanx::execution_tree::primitive_argument_type;
+using args_type = std::vector<phylanx::execution_tree::primitive_argument_type>;
+
 void test_assert_true()
 {
     phylanx::execution_tree::primitive op =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), true);
+            hpx::find_here(), arg_type{true});
 
     phylanx::execution_tree::primitive assert_cond =
         phylanx::execution_tree::primitives::create_assert_condition(
-            hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{op});
+            hpx::find_here(), args_type{op});
 
-    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        assert_cond.eval();
+    hpx::future<arg_type> f = assert_cond.eval();
 
     HPX_TEST(!phylanx::execution_tree::valid(f.get()));
 }
@@ -34,14 +35,14 @@ void test_assert_false()
 {
     phylanx::execution_tree::primitive op =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), false);
+            hpx::find_here(), arg_type{false});
 
     phylanx::execution_tree::primitive assert_cond =
         phylanx::execution_tree::primitives::create_assert_condition(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{op});
+            args_type{op});
 
-    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+    hpx::future<arg_type> f =
         assert_cond.eval();
 
     bool exception_thrown = false;
