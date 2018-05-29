@@ -306,8 +306,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             snippets_.snippets_.emplace_back(function{});
             function& f = snippets_.snippets_.back();
 
-            std::string lambda_name("lambda" + std::to_string(sequence_number) +
-                "/" + annotation(lambda_id));
+            std::string lambda_name("lambda$" + std::to_string(sequence_number) +
+                annotation(lambda_id));
 
             static std::string function_("call-function");
             sequence_number =
@@ -414,7 +414,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 if (id.id >= 0)
                 {
-                    name += annotation(id);
+                    std::size_t sequence_number =
+                        snippets_.sequence_numbers_[name]++;
+
+                    name +=
+                        "$" + std::to_string(sequence_number) + annotation(id);
                 }
                 return (*cf)(std::list<function>{}, name, name_);
             }
