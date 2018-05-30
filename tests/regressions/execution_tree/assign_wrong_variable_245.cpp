@@ -269,7 +269,7 @@ void test_add()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(add_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_sub()
@@ -277,7 +277,7 @@ void test_sub()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(sub_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_mul()
@@ -285,7 +285,7 @@ void test_mul()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(mul_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_div()
@@ -293,7 +293,7 @@ void test_div()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(div_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_equal()
@@ -301,7 +301,7 @@ void test_equal()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(equal_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_not_equal()
@@ -309,7 +309,7 @@ void test_not_equal()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(not_equal_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_greater()
@@ -317,7 +317,7 @@ void test_greater()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(greater_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_greater_equal()
@@ -325,7 +325,7 @@ void test_greater_equal()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(greater_equal_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_less()
@@ -333,7 +333,7 @@ void test_less()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(less_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_less_equal()
@@ -341,7 +341,7 @@ void test_less_equal()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(less_equal_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_dot()
@@ -349,7 +349,7 @@ void test_dot()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(dot_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_and()
@@ -357,7 +357,7 @@ void test_and()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(and_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 void test_or()
@@ -365,7 +365,7 @@ void test_or()
     phylanx::execution_tree::compiler::function_list snippets;
     auto f = phylanx::execution_tree::compile(or_code, snippets);
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
 int main(int argc, char* argv[])

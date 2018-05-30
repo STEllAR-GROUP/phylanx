@@ -85,7 +85,7 @@ void test_for_operation_true()
     hpx::future<pe::primitive_argument_type> f =
         for_.eval();
 
-    HPX_TEST(!pe::extract_boolean_value(f.get()));
+    HPX_TEST(!pe::extract_scalar_boolean_value(f.get()));
 }
 
 // init is stated at zero
