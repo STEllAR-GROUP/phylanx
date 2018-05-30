@@ -17,7 +17,6 @@ from .utils import full_name, full_node_name, physl_fmt
 et = phylanx.execution_tree
 
 # globals used during the compilation
-fglobals = {}
 
 
 def is_node(node, name):
@@ -68,6 +67,7 @@ class PhySL:
     def __init__(self, tree, kwargs):
         self.defs = {}
         self.priority = 0
+        self.fglobals = kwargs['fglobals']
         self.groupAggressively = True
         for arg in tree.body[0].args.args:
             self.defs[arg.arg] = 1
@@ -370,7 +370,7 @@ class PhySL:
             if a.value.id in self.defs:
                 s += a.value.id + full_node_name(a.value)
                 return s
-            elif a.value.id in fglobals and hasattr(fglobals[a.value.id], a.attr):
+            elif a.value.id in self.fglobals and hasattr(self.fglobals[a.value.id], a.attr):
                 # Note that the above check verifies that in the extenal environment
                 # a module named a.value.id contains a symbol named a.attr, e.g.
                 # module "np" contains "shape"
@@ -608,8 +608,7 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
         targets = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
 
         def __init__(self, f):
-            global fglobals
-            fglobals = f.__globals__
+            kwargs['fglobals'] = f.__globals__
 
             if "debug" in kwargs:
                 self.debug = kwargs['debug']
@@ -629,15 +628,13 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
             actual_lineno = inspect.getsourcelines(f)[-1]
             src = inspect.getsource(f)
 
-            # Strip off indentation if the function
-            # is not defined at top level.
-            g = re.match(r'^([ \t]+)', src)
-            if g:
-                src = re.sub(r'(?m)^' + g.group(1), '', src)
-
             # Before recompiling the code, take
             # off the decorator from the source.
-            src = re.sub(r'^@\w+.*\n', '', src)
+            src = re.sub(r'^\s*@\w+.*\n', '', src)
+
+            # Strip off indentation if the function
+            # is not defined at top level.
+            src = re.sub(r'^\s*', '', src)
 
             # Create the AST
             tree = ast.parse(src)
