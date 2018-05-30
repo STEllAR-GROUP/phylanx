@@ -10,9 +10,12 @@ import re
 import phylanx
 import inspect
 from phylanx.exceptions import InvalidDecoratorArgumentError
-from phylanx.util import prange
 from .oscop import OpenSCoP
 from .utils import full_name, full_node_name, physl_fmt
+try:
+    from _phylanx import init_hpx_runtime
+except:
+    from _phylanxd import init_hpx_runtime
 
 et = phylanx.execution_tree
 
@@ -516,6 +519,36 @@ def convert_to_phylanx_type(v):
     return v
 
 
+class InitHPX:
+    cfg = \
+    [
+    # make sure hpx_main is always executed
+    "hpx.run_hpx_main!=1",
+    # allow for unknown command line options
+    "hpx.commandline.allow_unknown!=1",
+    # disable HPX' short options
+    "hpx.commandline.aliasing!=0",
+    # run one thread only (for now)
+    "hpx.os_threads!=1",
+    # don't print diagnostics during forced terminate
+    "hpx.diagnostics_on_terminate!=0",
+    # disable the TCP parcelport
+    "hpx.parcel.tcp.enable!=0"
+    ]
+    hpx_init = False
+
+    def __init__(self, config=cfg):
+        # load and initialize the HPX runtime
+        if not InitHPX.hpx_init:
+            init_hpx_runtime(config)
+            InitHPX.hpx_init = True
+    
+    @staticmethod
+    def configure(config):
+        init_hpx_runtime(config)
+
+# HPX must be initialized before setting the compiler state.
+InitHPX()
 cs = phylanx.compiler_state()
 
 
