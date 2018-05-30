@@ -1,7 +1,7 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 // phylanxinspect:noinclude:HPX_ASSERT
 
@@ -10,6 +10,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
@@ -66,10 +67,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function operator()(std::list<function> elements,
-            std::string const& name,
+            primitive_name_parts name_parts,
             std::string const& codename = "<unknown>") const
         {
-            return derived().compose(std::move(elements), name, codename);
+            return derived().compose(
+                std::move(elements), std::move(name_parts), codename);
         }
 
         template <typename ... Ts>
@@ -97,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function compose(std::list<function> && args,
-            std::string const& name, std::string const& codename) const
+            primitive_name_parts name_parts, std::string const& codename) const
         {
             arguments_type fargs;
             fargs.reserve(args.size());
@@ -107,11 +109,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 fargs.push_back(arg.arg_);
             }
 
+            std::string full_name = compose_primitive_name(name_parts);
+
             return function{
                 primitive_argument_type{
-                    (*f_)(this->locality_, std::move(fargs), name,
+                    (*f_)(this->locality_, std::move(fargs), full_name,
                         codename)
-                }, name};
+                }, full_name};
         }
 
     private:
@@ -145,14 +149,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
           : locality_(locality)
         {}
 
-        function operator()(argument_type && arg, std::string const& name,
+        function operator()(argument_type && arg,
+            primitive_name_parts name_parts,
             std::string const& codename = "<unknown>") const
         {
-            static std::string type("define-variable");
+            std::string full_name = compose_primitive_name(name_parts);
+
             return function{
-                primitive_argument_type{create_primitive_component(
-                    locality_, type, std::move(arg), name, codename)},
-                name};
+                primitive_argument_type{create_primitive_component(locality_,
+                    name_parts.primitive, std::move(arg), full_name, codename)},
+                full_name};
         }
 
     private:
@@ -168,9 +174,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             return function{ast::nil{}, "always-nil"};
         }
-        function operator()(std::string && name) const
+        function operator()(primitive_name_parts && name_parts) const
         {
-            return function{ast::nil{}, "always-nil$ " + name};
+            name_parts.instance = "always-nil";
+            return function{ast::nil{}, compose_primitive_name(name_parts)};
         }
     };
 
@@ -182,9 +189,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
           : locality_(locality)
         {}
 
-        function operator()(std::string const& name,
+        function operator()(primitive_name_parts name_parts,
             std::string const& codename = "<unknown>") const
         {
+            std::string name = compose_primitive_name(name_parts);
+
             static std::string type("define-function");
 
             return function{
@@ -207,13 +216,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
         }
 
-        function operator()(std::size_t n, std::string const& name,
+        function operator()(std::size_t n, primitive_name_parts name_parts,
             std::string const& codename = "<unknown>") const
         {
             static std::size_t sequence_number = 0;
             static std::string type("access-argument");
-            std::string full_name = type + "$" +
-                std::to_string(sequence_number++) + "$" + name;
+            // The compiler does not know if it was the name of the instance or
+            // a primitive.
+            name_parts.instance = name_parts.primitive;
+            name_parts.primitive = type;
+            name_parts.sequence_number = sequence_number++;
+
+            std::string const full_name =
+                compose_primitive_name(name_parts);
 
             return function{
                 primitive_argument_type{create_primitive_component(locality_,
@@ -238,12 +253,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function compose(std::list<function> && elements,
-            std::string const& name, std::string const& codename) const
+            primitive_name_parts name_parts, std::string const& codename) const
         {
             static std::size_t sequence_number = 0;
             static std::string type("access-variable");
-            std::string full_name = type + "$" +
-                std::to_string(sequence_number++) + "$" + name;
+            // The compiler does not know if it was the name of the instance or
+            // a primitive.
+            name_parts.instance = name_parts.primitive;
+            name_parts.primitive = type;
+            name_parts.sequence_number = sequence_number++;
+
+            std::string full_name = compose_primitive_name(name_parts);
 
             return function{
                 primitive_argument_type{create_primitive_component(
@@ -269,8 +289,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
         function compose(std::list<function> && elements,
-            std::string const& name, std::string const& codename) const
+            primitive_name_parts name_parts, std::string const& codename) const
         {
+            // The compiler does not know if it was the name of the instance or
+            // a primitive.
+            name_parts.instance = name_parts.primitive;
+
             arguments_type fargs;
             fargs.reserve(elements.size() + 1);
 
@@ -281,8 +305,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             }
 
             static std::string type("call-function");
-            std::string full_name = type + "$" +
-                std::to_string(sequence_number_) + "$" + name;
+            name_parts.primitive = type;
+            name_parts.sequence_number = sequence_number_;
+
+            std::string full_name =
+                compose_primitive_name(name_parts);
 
             return function{
                 primitive_argument_type{create_primitive_component(
@@ -293,9 +320,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    typedef hpx::util::function_nonser<function(
-            std::list<function> const&, std::string const&, std::string const&
-        )> compiled_function;
+    using compiled_function = hpx::util::function_nonser<function(
+            std::list<function> const&, primitive_name_parts, std::string const&
+        )>;
 
     class environment
     {
@@ -383,7 +410,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
     /// Add the given variable to the compilation environment
     PHYLANX_EXPORT function define_variable(std::string const& codename,
-        std::string name, function_list& snippets, environment& env,
+        primitive_name_parts name_parts, function_list& snippets, environment& env,
         primitive_argument_type body, hpx::id_type const& default_locality);
 }}}
 

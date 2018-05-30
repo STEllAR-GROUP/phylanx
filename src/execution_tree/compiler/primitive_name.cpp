@@ -99,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         bool result = boost::spirit::qi::parse(begin, name.end(),
             detail::primitive_name_parser<std::string::const_iterator>(), parts);
 
-        return result && begin != name.end();
+        return result && begin == name.end();
     }
 
     ///////////////////////////////////////////////////////////////////////////

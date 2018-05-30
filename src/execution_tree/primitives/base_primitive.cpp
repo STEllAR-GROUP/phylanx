@@ -106,7 +106,7 @@ namespace phylanx { namespace execution_tree
     {
         if (!name.empty())
         {
-            this->base_type::register_as("/phylanx/" + name).get();
+            this->base_type::register_as(name).get();
         }
     }
 

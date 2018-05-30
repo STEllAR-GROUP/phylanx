@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/generic_operation.hpp>
 
@@ -943,12 +944,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail {
         std::string extract_function_name(std::string const& name)
         {
-            std::string::size_type p = name.find_first_of("$");
-            if (p != std::string::npos)
+            compiler::primitive_name_parts name_parts;
+            if (!compiler::parse_primitive_name(name, name_parts))
             {
-                return name.substr(0, p);
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "generic_operation::extract_function_name",
+                    "Operation extraction received an invalid name");
             }
-            return name;
+
+            return name_parts.primitive;
         }
     }
 

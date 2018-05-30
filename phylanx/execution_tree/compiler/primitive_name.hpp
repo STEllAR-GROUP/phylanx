@@ -47,6 +47,24 @@ namespace phylanx { namespace execution_tree { namespace compiler
           , tag2(-1)
         {}
 
+        primitive_name_parts(char const* primitive_)
+            : primitive(primitive_)
+            , sequence_number(-1)
+            , compile_id(-1)
+            , tag1(-1)
+            , tag2(-1)
+        {}
+
+        primitive_name_parts(std::string const& primitive_,
+            std::int64_t sequence_number_ = -1, std::int64_t tag1_ = -1,
+            std::int64_t tag2_ = -1, std::int64_t compile_id_ = -1)
+          : primitive(primitive_)
+          , sequence_number(sequence_number_)
+          , tag1(tag1_)
+          , tag2(tag2_)
+          , compile_id(compile_id_)
+        {}
+
         std::string primitive;
         std::int64_t sequence_number;
         std::string instance;
