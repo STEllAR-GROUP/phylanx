@@ -19,6 +19,22 @@ def kernel(a, b):
     return a
 
 
+try:
+
+    # Quiet Flake8
+    class numpy:
+        pass
+
+    @Phylanx()
+    def bad_kernel(a):
+        return numpy.shape()
+
+    raise Exception(
+        "Should fail because numpy.shape doesn't exist")
+
+except LookupError:
+    pass
+
 bv = np.linspace(0, 10, 11)
 av = np.zeros(len(bv))
 bsum = (bv[2:] + bv[:-2])

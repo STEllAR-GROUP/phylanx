@@ -376,7 +376,7 @@ class PhySL:
                 # module "np" contains "shape"
                 return s
             else:
-                raise Exception("Undefined function: %s.%s()" % (a.value.id, a.attr))
+                raise LookupError("Undefined function: %s.%s()" % (a.value.id, a.attr))
         else:
             s += self.recompile(a.value)
             return s
@@ -628,9 +628,16 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
             # Get the source code
             actual_lineno = inspect.getsourcelines(f)[-1]
             src = inspect.getsource(f)
+
+            # Strip off indentation if the function
+            # is not defined at top level.
+            g = re.match(r'^([ \t]+)', src)
+            if g:
+                src = re.sub(r'(?m)^' + g.group(1), '', src)
+
             # Before recompiling the code, take
             # off the decorator from the source.
-            src = re.sub(r'^\s*@\w+.*\n', '', src)
+            src = re.sub(r'^@\w+.*\n', '', src)
 
             # Create the AST
             tree = ast.parse(src)
