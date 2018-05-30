@@ -16,6 +16,9 @@ from .utils import full_name, full_node_name, physl_fmt
 
 et = phylanx.execution_tree
 
+# globals used during the compilation
+fglobals = {}
+
 
 def is_node(node, name):
     """Return the node name"""
@@ -367,10 +370,13 @@ class PhySL:
             if a.value.id in self.defs:
                 s += a.value.id + full_node_name(a.value)
                 return s
-            elif a.value.id == "np" or a.value.id == "numpy":
+            elif a.value.id in fglobals and hasattr(fglobals[a.value.id],a.attr):
+                # Note that the above check verifies that in the extenal environment
+                # a module named a.value.id contains a symbol named a.attr, e.g.
+                # module "np" contains "shape"
                 return s
             else:
-                raise NotImplementedError
+                raise Exception("Undefined function: %s.%s()" % (a.value.id,a.attr))
         else:
             s += self.recompile(a.value)
             return s
@@ -602,6 +608,8 @@ def Phylanx(arg=None, target="PhySL", compiler_state=cs, **kwargs):
         targets = {"PhySL": PhySL, "OpenSCoP": OpenSCoP}
 
         def __init__(self, f):
+            global fglobals
+            fglobals = f.__globals__
 
             if "debug" in kwargs:
                 self.debug = kwargs['debug']
