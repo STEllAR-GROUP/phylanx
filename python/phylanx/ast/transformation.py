@@ -370,7 +370,8 @@ class PhySL:
             if a.value.id in self.defs:
                 s += a.value.id + full_node_name(a.value)
                 return s
-            elif a.value.id in self.fglobals and hasattr(self.fglobals[a.value.id], a.attr):
+            elif a.value.id in self.fglobals and  \
+                    hasattr(self.fglobals[a.value.id], a.attr):
                 # Note that the above check verifies that in the extenal environment
                 # a module named a.value.id contains a symbol named a.attr, e.g.
                 # module "np" contains "shape"
