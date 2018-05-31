@@ -18,6 +18,7 @@
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/util/logging.hpp>
 
+#include <array>
 #include <cstdint>
 #include <iosfwd>
 #include <set>
@@ -134,12 +135,20 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         std::vector<primitive_argument_type> const& params) const
     {
-        return eval(params).get();
+        using action_type = primitives::primitive_component::eval_action;
+        return detail::lazy_trace("eval", *this,
+                hpx::async<action_type>(hpx::launch::sync,
+                    this->base_type::get_id(), params)
+            ).get();
     }
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         std::vector<primitive_argument_type> && params) const
     {
-        return eval(std::move(params)).get();
+        using action_type = primitives::primitive_component::eval_action;
+        return detail::lazy_trace("eval", *this,
+                hpx::async<action_type>(hpx::launch::sync,
+                    this->base_type::get_id(), std::move(params))
+            ).get();
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy) const
@@ -850,7 +859,7 @@ namespace phylanx { namespace execution_tree
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 2: HPX_FALLTHROUGH;    // ir::node_data<std::int64_t>
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-        case 6:     // std::vector<ast::expression>
+        case 6:                     // std::vector<ast::expression>
             return true;
 
         case 0: HPX_FALLTHROUGH;    // nil
@@ -861,6 +870,99 @@ namespace phylanx { namespace execution_tree
             break;
         }
         return false;
+    }
+
+    std::size_t extract_numeric_value_dimension(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            return util::get<1>(val).num_dimensions();
+
+        case 2:     // ir::node_data<std::int64_t>
+            return util::get<2>(val).num_dimensions();
+
+        case 4:     // phylanx::ir::node_data<double>
+            return util::get<4>(val).num_dimensions();
+
+        case 6:     // std::vector<ast::expression>
+            {
+                auto const& exprs = util::get<6>(val);
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_numeric_type(
+                            ast::detail::literal_value(exprs[0]))
+                                .num_dimensions();
+                    }
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_numeric_value_dimension",
+            generate_error_message(
+                "primitive_argument_type does not hold a numeric "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    std::array<std::size_t, 2> extract_numeric_value_dimensions(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            return util::get<1>(val).dimensions();
+
+        case 2:     // ir::node_data<std::int64_t>
+            return util::get<2>(val).dimensions();
+
+        case 4:     // phylanx::ir::node_data<double>
+            return util::get<4>(val).dimensions();
+
+        case 6:     // std::vector<ast::expression>
+            {
+                auto const& exprs = util::get<6>(val);
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_numeric_type(
+                            ast::detail::literal_value(exprs[0])).dimensions();
+                    }
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_numeric_value_dimensions",
+            generate_error_message(
+                "primitive_argument_type does not hold a numeric "
+                    "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1040,17 +1142,17 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            if(util::get<1>(val).num_dimensions()==0)
+            if (util::get<1>(val).num_dimensions() ==0 )
                 return std::int64_t(util::get<1>(val)[0]);
             break;
 
         case 2:    // ir::node_data<std::int64_t>
-            if(util::get<2>(val).num_dimensions()==0)
+            if (util::get<2>(val).num_dimensions() ==0 )
                 return util::get<2>(val)[0];
             break;
 
         case 4:    // phylanx::ir::node_data<double>
-            if(util::get<4>(val).num_dimensions()==0)
+            if (util::get<4>(val).num_dimensions() == 0)
                 return std::int64_t(util::get<4>(val)[0]);
             break;
 
@@ -1093,17 +1195,17 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            if(util::get<1>(val).num_dimensions()==0)
+            if (util::get<1>(val).num_dimensions() == 0)
                 return std::int64_t(util::get<1>(std::move(val))[0]);
             break;
 
         case 2:    // ir::node_data<std::int64_t>
-            if(util::get<2>(val).num_dimensions()==0)
+            if (util::get<2>(val).num_dimensions() == 0)
                 return util::get<2>(std::move(val))[0];
             break;
 
         case 4:    // phylanx::ir::node_data<double>
-            if(util::get<4>(val).num_dimensions()==0)
+            if (util::get<4>(val).num_dimensions() == 0)
                 return std::int64_t(util::get<4>(std::move(val))[0]);
             break;
 
@@ -1355,8 +1457,102 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::uint8_t extract_boolean_value(primitive_argument_type const& val,
-        std::string const& name, std::string const& codename)
+    ir::node_data<std::uint8_t> extract_boolean_value(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            return util::get<1>(val);
+
+        case 2:     // ir::node_data<std::int64_t>
+            return ir::node_data<std::uint8_t>{util::get<2>(val)};
+
+        case 4:     // phylanx::ir::node_data<double>
+            return ir::node_data<std::uint8_t>{util::get<4>(val)};
+
+        case 6:     // std::vector<ast::expression>
+            {
+                auto const& exprs = util::get<6>(val);
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_bool_type(
+                            ast::detail::literal_value(std::move(exprs[0])));
+                    }
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_boolean_value",
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    ir::node_data<std::uint8_t> extract_boolean_value(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            return util::get<1>(std::move(val));
+
+        case 2:     // ir::node_data<std::int64_t>
+            return ir::node_data<std::uint8_t>{util::get<2>(std::move(val))};
+
+        case 4:     // phylanx::ir::node_data<double>
+            return ir::node_data<std::uint8_t>{util::get<4>(std::move(val))};
+
+        case 6:     // std::vector<ast::expression>
+            {
+                auto const& exprs = util::get<6>(val);
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_bool_type(
+                            ast::detail::literal_value(std::move(exprs[0])));
+                    }
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_boolean_value",
+            generate_error_message(
+                "primitive_argument_type does not hold a boolean "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::uint8_t extract_scalar_boolean_value(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
     {
         switch (val.index())
         {
@@ -1380,7 +1576,7 @@ namespace phylanx { namespace execution_tree
                     if (ast::detail::is_literal_value(exprs[0]))
                     {
                         return to_primitive_bool_type(
-                            ast::detail::literal_value(exprs[0]));
+                            ast::detail::literal_value(std::move(exprs[0])))[0];
                     }
                 }
             }
@@ -1397,14 +1593,14 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_boolean_value",
+            "phylanx::execution_tree::extract_scalar_boolean_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
     }
 
-    std::uint8_t extract_boolean_value(primitive_argument_type && val,
+    std::uint8_t extract_scalar_boolean_value(primitive_argument_type && val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -1428,7 +1624,7 @@ namespace phylanx { namespace execution_tree
                 {
                     if (ast::detail::is_literal_value(exprs[0]))
                     {
-                        return to_primitive_int_type(
+                        return to_primitive_bool_type(
                             ast::detail::literal_value(std::move(exprs[0])))[0];
                     }
                 }
@@ -1446,7 +1642,7 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_boolean_value",
+            "phylanx::execution_tree::extract_scalar_boolean_value",
             generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
@@ -2651,19 +2847,19 @@ namespace phylanx { namespace execution_tree
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
-                    extract_boolean_value(f.get(), name, codename));
+                    extract_scalar_boolean_value(f.get(), name, codename));
             }
 
             return f.then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_boolean_value(f.get(), name, codename);
+                    return extract_scalar_boolean_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
         return hpx::make_ready_future(
-            extract_boolean_value(val, name, codename));
+            extract_scalar_boolean_value(val, name, codename));
     }
 
     std::uint8_t boolean_operand_sync(primitive_argument_type const& val,
@@ -2673,12 +2869,12 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_boolean_value(
+            return extract_scalar_boolean_value(
                 p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_boolean_value(val, name, codename);
+        return extract_scalar_boolean_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -3093,7 +3289,8 @@ namespace phylanx { namespace execution_tree
             "unsupported primitive_argument_type");
     }
 
-    ir::node_data<std::int64_t> to_primitive_int_type(ast::literal_value_type&& val)
+    ir::node_data<std::int64_t> to_primitive_int_type(
+        ast::literal_value_type&& val)
     {
         switch (val.index())
         {
@@ -3119,18 +3316,26 @@ namespace phylanx { namespace execution_tree
             "unsupported primitive_argument_type");
     }
 
-    bool to_primitive_bool_type(ast::literal_value_type&& val)
+    ir::node_data<std::uint8_t> to_primitive_bool_type(
+        ast::literal_value_type&& val)
     {
         switch (val.index())
         {
         case 1:     // bool
-            return util::get<1>(std::move(val));
+            return ir::node_data<std::uint8_t>{
+                util::get<1>(std::move(val)) ? std::uint8_t(1) : std::uint8_t(0)
+            };
 
         case 2:     // ir::node_data<std::int64_t>
-            return util::get<2>(std::move(val)) != 0;
+            return ir::node_data<std::uint8_t>{
+                util::get<1>(std::move(val)) ? std::uint8_t(1) : std::uint8_t(0)
+            };
 
         case 4:     // phylanx::ir::node_data<double>
-            return bool(util::get<4>(std::move(val)));
+            return ir::node_data<std::uint8_t>{
+                util::get<1>(std::move(val)) ? std::uint8_t(1) : std::uint8_t(0)
+            };
+
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
         case 3: HPX_FALLTHROUGH;    // std::string

@@ -63,7 +63,7 @@ void test_while_operation_true()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         while_.eval();
 
-    HPX_TEST(!phylanx::execution_tree::extract_boolean_value(f.get()));
+    HPX_TEST(!phylanx::execution_tree::extract_scalar_boolean_value(f.get()));
 }
 
 // condition is set to false in first iteration
@@ -98,7 +98,7 @@ void test_while_operation_true_return()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         while_.eval();
 
-    HPX_TEST(phylanx::execution_tree::extract_boolean_value(f.get()));
+    HPX_TEST(phylanx::execution_tree::extract_scalar_boolean_value(f.get()));
 }
 
 int main(int argc, char* argv[])

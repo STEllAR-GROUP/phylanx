@@ -100,7 +100,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> body(
             hpx::future<primitive_argument_type>&& cond)
         {
-            if (extract_boolean_value(cond.get(), that_->name_, that_->codename_))
+            if (extract_scalar_boolean_value(
+                    cond.get(), that_->name_, that_->codename_))
             {
                 // Evaluate body of for statement
                 auto this_ = this->shared_from_this();

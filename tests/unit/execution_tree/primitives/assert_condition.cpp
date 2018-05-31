@@ -52,7 +52,7 @@ void test_assert_false()
         f.get();
         HPX_TEST(false);
     }
-    catch (std::exception const& e)
+    catch (std::exception const&)
     {
         exception_thrown = true;
     }

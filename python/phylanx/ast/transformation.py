@@ -493,8 +493,13 @@ class PhySL:
                 return "-(" + self.recompile(args[1]) + ")"
             else:
                 return "-" + self.recompile(args[1])
+        elif nm2 == "Not":
+            if self.groupAggressively:
+                return "!(" + self.recompile(args[1]) + ")"
+            else:
+                return "!" + self.recompile(args[1])
         else:
-            raise Exception(nm2)
+            raise Exception('unary operation not supported: %s' % nm2)
 
     def _For(self, a, allowreturn=False):
         symbol_info = full_node_name(a)

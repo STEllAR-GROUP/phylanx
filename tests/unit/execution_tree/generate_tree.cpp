@@ -40,7 +40,7 @@ void test_generate_tree(
     auto f = phylanx::execution_tree::compile(exprstr, snippets, env);
 
     HPX_TEST_EQ(expected_result,
-        phylanx::execution_tree::extract_boolean_value(
+        phylanx::execution_tree::extract_scalar_boolean_value(
             f()
         ) != 0);
 }

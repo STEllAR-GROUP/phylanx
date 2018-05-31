@@ -17,6 +17,8 @@
 #include <hpx/include/util.hpp>
 #include <hpx/include/serialization.hpp>
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <initializer_list>
 #include <iosfwd>
@@ -395,7 +397,7 @@ namespace phylanx { namespace execution_tree
         ast::literal_value_type && val);
     PHYLANX_EXPORT ir::node_data<std::int64_t> to_primitive_int_type(
         ast::literal_value_type && val);
-    PHYLANX_EXPORT bool to_primitive_bool_type(
+    PHYLANX_EXPORT ir::node_data<std::uint8_t> to_primitive_bool_type(
         ast::literal_value_type && val);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -488,7 +490,17 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
-    PHYLANX_EXPORT bool is_numeric_value(primitive_argument_type const& val);
+    PHYLANX_EXPORT bool is_numeric_operand(primitive_argument_type const& val);
+
+    PHYLANX_EXPORT std::size_t extract_numeric_value_dimension(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT std::array<std::size_t, 2> extract_numeric_value_dimensions(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
 
     // Extract a ir::node_data<std::uint8_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
@@ -550,6 +562,7 @@ namespace phylanx { namespace execution_tree
         return extract_boolean_data(std::move(val), name, codename);
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a ir::node_data<std::int64_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value(
@@ -666,13 +679,23 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT bool is_integer_operand_strict(
         primitive_argument_type const& val);
 
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a boolean type from a given primitive_argument_type,
     // throw if it doesn't hold one.
-    PHYLANX_EXPORT std::uint8_t extract_boolean_value(
+    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_value(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::uint8_t extract_boolean_value(
+    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_value(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value(
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
