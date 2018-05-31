@@ -947,9 +947,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             compiler::primitive_name_parts name_parts;
             if (!compiler::parse_primitive_name(name, name_parts))
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "generic_operation::extract_function_name",
-                    "Operation extraction received an invalid name");
+                return name;
             }
 
             return name_parts.primitive;

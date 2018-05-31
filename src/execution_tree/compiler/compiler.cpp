@@ -400,12 +400,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (compiled_function* cf = env_.find(name))
             {
                 name_parts.compile_id = snippets_.compile_id_ - 1;
+                name_parts.sequence_number = snippets_.sequence_numbers_[name]++;
 
-                if (id.id >= 0)
-                {
-                    name_parts.sequence_number =
-                        snippets_.sequence_numbers_[name]++;
-                }
                 return (*cf)(std::list<function>{}, std::move(name_parts), name_);
             }
 

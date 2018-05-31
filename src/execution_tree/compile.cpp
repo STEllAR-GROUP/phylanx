@@ -139,7 +139,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type body, hpx::id_type const& default_locality)
     {
         return compiler::define_variable(
-            codename, std::move(name_parts), snippets, env, body, default_locality)();
+            codename, name_parts, snippets, env, body, default_locality)();
     }
 }}
 

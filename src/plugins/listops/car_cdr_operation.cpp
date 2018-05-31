@@ -77,9 +77,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             compiler::primitive_name_parts name_parts;
             if (!compiler::parse_primitive_name(name, name_parts))
             {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "car_cdr_operation::generate_operation_code",
-                     "Failed to extract the name of the primitive");
+                return name.substr(1, name.size() - 2);
             }
 
             return name_parts.primitive.substr(1, name_parts.primitive.size() - 2);

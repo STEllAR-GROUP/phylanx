@@ -4,7 +4,6 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
-#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
 #include <hpx/hpx_main.hpp>
 #include <hpx/runtime/find_here.hpp>

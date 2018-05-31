@@ -153,11 +153,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive_name_parts name_parts,
             std::string const& codename = "<unknown>") const
         {
+            if (name_parts.instance.empty())
+            {
+                name_parts.instance = name_parts.primitive;
+                name_parts.primitive = "define-variable";
+            }
+
             std::string full_name = compose_primitive_name(name_parts);
 
             return function{
                 primitive_argument_type{create_primitive_component(locality_,
-                    name_parts.primitive, std::move(arg), full_name, codename)},
+                    "define-variable", std::move(arg), full_name, codename)},
                 full_name};
         }
 
@@ -223,6 +229,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             static std::string type("access-argument");
             // The compiler does not know if it was the name of the instance or
             // a primitive.
+            HPX_ASSERT(name_parts.instance.empty());
             name_parts.instance = name_parts.primitive;
             name_parts.primitive = type;
             name_parts.sequence_number = sequence_number++;
@@ -259,6 +266,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             static std::string type("access-variable");
             // The compiler does not know if it was the name of the instance or
             // a primitive.
+            HPX_ASSERT(name_parts.instance.empty());
             name_parts.instance = name_parts.primitive;
             name_parts.primitive = type;
             name_parts.sequence_number = sequence_number++;
@@ -293,6 +301,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             // The compiler does not know if it was the name of the instance or
             // a primitive.
+            HPX_ASSERT(name_parts.instance.empty());
             name_parts.instance = name_parts.primitive;
 
             arguments_type fargs;
