@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
 
@@ -29,14 +30,22 @@
 namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const slicing_operation::match_data =
-    {
+    std::vector<match_pattern_type> const slicing_operation::match_data = {
         hpx::util::make_tuple("slice",
             std::vector<std::string>{
                 "slice(_1)", "slice(_1, _2)", "slice(_1,_2,_3)"},
             &create_slicing_operation,
-            &create_primitive<slicing_operation>)
-    };
+            &create_primitive<slicing_operation>),
+
+        hpx::util::make_tuple("slice_row",
+            std::vector<std::string>{"slice_row(_1, _2)"},
+            &create_slicing_operation,
+            &create_primitive<slicing_operation>),
+
+        hpx::util::make_tuple("slice_column",
+            std::vector<std::string>{"slice_column(_1, _2)"},
+            &create_slicing_operation,
+            &create_primitive<slicing_operation>)};
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
@@ -285,32 +294,72 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             generate_error_message("too many arguments for slicing a vector"));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    std::string slicing_operation::extract_function_name(
+        std::string const& name) const
+    {
+        compiler::primitive_name_parts name_parts;
+        if (!compiler::parse_primitive_name(name, name_parts))
+        {
+            std::string::size_type p = name.find_first_of("$");
+            if (p != std::string::npos)
+            {
+                return name.substr(0, p);
+            }
+        }
+
+        return name_parts.primitive;
+    }
+
     void slicing_operation::extract_slicing_args_matrix(
         std::vector<primitive_argument_type>&& args,
         std::vector<std::int64_t>& extracted_row,
         std::vector<std::int64_t>& extracted_column,
         std::size_t rows, std::size_t columns) const
     {
-        // Extract the list or the single integer index
-        // from second argument (row-> start, stop, step)
-        if (args.size() > 1)
+        const auto& func_name = extract_function_name(name_);
+        // If its column only slicing, extract the index for the column
+        // and use all of the rows.
+        if (func_name == "slice_column")
         {
-            extracted_row = extract_slicing(std::move(args[1]), rows);
-        }
-        else
-        {
-            extracted_row = extract_slicing(primitive_argument_type{}, rows);
-        }
+            if (args.size() > 1)
+            {
+                extracted_column = extract_slicing(std::move(args[1]), columns);
+            }
+            else
+            {
+                extracted_column =
+                    extract_slicing(primitive_argument_type{}, columns);
+            }
 
-        // Extract the list or the single integer index
-        // from third argument (column-> start, stop, step)
-        if (args.size() == 3)
-        {
-            extracted_column = extract_slicing(std::move(args[2]), columns);
+            extracted_row.push_back(0);
+            extracted_row.push_back(rows);
         }
         else
         {
-            extracted_column = extract_slicing(primitive_argument_type{}, columns);
+            // Extract the list or the single integer index
+            // from second argument (row-> start, stop, step)
+            if (args.size() > 1)
+            {
+                extracted_row = extract_slicing(std::move(args[1]), rows);
+            }
+            else
+            {
+                extracted_row =
+                    extract_slicing(primitive_argument_type{}, rows);
+            }
+
+            // Extract the list or the single integer index
+            // from third argument (column-> start, stop, step)
+            if (args.size() == 3)
+            {
+                extracted_column = extract_slicing(std::move(args[2]), columns);
+            }
+            else
+            {
+                extracted_column =
+                    extract_slicing(primitive_argument_type{}, columns);
+            }
         }
     }
 

@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         slicing_operation() = default;
 
@@ -102,6 +102,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::int64_t> extract_slicing_args_vector(
             std::vector<primitive_argument_type>&& args,
             std::size_t size) const;
+        std::string extract_function_name(
+            std::string const& name) const;
         void extract_slicing_args_matrix(
             std::vector<primitive_argument_type>&& args,
             std::vector<std::int64_t>& extracted_row,
