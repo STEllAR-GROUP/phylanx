@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
 #include <hpx/hpx_main.hpp>
 
@@ -309,7 +310,9 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
         phylanx::execution_tree::compiler::default_environment();
 
     phylanx::execution_tree::define_variable(code_source_name,
-        "sys_argv/0$0", snippets, env,
+        phylanx::execution_tree::compiler::primitive_name_parts{
+            "sys_argv", -1, 0, 0},
+        snippets, env,
         phylanx::execution_tree::primitive_argument_type{std::move(args)});
     auto const code = phylanx::execution_tree::compile(
         code_source_name, ast, snippets, env);

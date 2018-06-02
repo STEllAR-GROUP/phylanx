@@ -18,6 +18,7 @@
 #include <phylanx/execution_tree/compile.hpp>
 #include <phylanx/execution_tree/compiler/actors.hpp>
 #include <phylanx/execution_tree/compiler/compiler.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -93,21 +94,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {}
 
     private:
-        std::string annotation(ast::tagged const& id)
-        {
-            // Note: the compile-id needs to be adjusted to be zero-based.
-            std::string result = "/" +
-                std::to_string(snippets_.compile_id_ - 1) + "$" +
-                std::to_string(id.id);
-
-            if (id.col != -1)
-            {
-                result += '$' + std::to_string(id.col);
-            }
-
-            return result;
-        }
-
         ///////////////////////////////////////////////////////////////////////
         static std::string generate_error_message(std::string const& msg,
             std::string const& name, ast::tagged const& id)
@@ -306,8 +292,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
             snippets_.snippets_.emplace_back(function{});
             function& f = snippets_.snippets_.back();
 
-            std::string lambda_name("lambda" + std::to_string(sequence_number) +
-                "/" + annotation(lambda_id));
+            primitive_name_parts name_parts("lambda", sequence_number,
+                lambda_id.id, lambda_id.col, snippets_.compile_id_ - 1);
+
+            std::string lambda_name = compose_primitive_name(name_parts);
 
             static std::string function_("call-function");
             sequence_number =
@@ -316,13 +304,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
             auto extf = external_function(f, sequence_number, default_locality_);
 
             // create define_function helper object
-            f = primitive_function{default_locality_}(lambda_name, name_);
+            f = primitive_function{default_locality_}(name_parts, name_);
 
             // set the body for the compiled function
             primitive_operand(f.arg_, lambda_name, name_).set_body(
                 hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
 
-            return extf({}, lambda_name, name_);
+            return extf({}, name_parts, name_);
         }
 
         function handle_define(
@@ -343,12 +331,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::string name = ast::detail::identifier_name(name_expr);
 
             // get global name of the component created
-            std::string full_name = name;
+            primitive_name_parts name_parts;
+            name_parts.instance = name;
+
             ast::tagged id = ast::detail::tagged_id(name_expr);
-            if (id.id >= 0)
-            {
-                full_name += annotation(id);
-            }
+            name_parts.compile_id = snippets_.compile_id_ - 1;
+            name_parts.tag1 = id.id;
+            name_parts.tag2 = id.col;
 
             auto args = extract_define_arguments(p, define_id);
             auto body = extract_define_body(p, define_id);
@@ -359,7 +348,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     std::move(name), external_variable(f, default_locality_));
 
                 static std::string define_variable("define-variable");
-                std::size_t sequence_number =
+                name_parts.primitive = define_variable;
+                name_parts.sequence_number =
                     snippets_.sequence_numbers_[define_variable]++;
 
                 // define variable
@@ -368,8 +358,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     default_locality_);
 
                 f = primitive_variable{default_locality_}(
-                        std::move(bf.arg_), define_variable + "$" +
-                            std::to_string(sequence_number) + "$" + full_name,
+                        std::move(bf.arg_), name_parts,
                             name_);
                 return f;
             }
@@ -386,37 +375,34 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 external_function(f, sequence_number, default_locality_));
 
             static std::string define_function_("define-function");
-            sequence_number =
+            name_parts.primitive = define_function_;
+            name_parts.sequence_number =
                 snippets_.sequence_numbers_[define_function_]++;
 
-            // create define_function helper object
-            std::string define_function_name =
-                std::to_string(sequence_number) + "$" + full_name;
-
-            f = primitive_function{default_locality_}(
-                    define_function_ + "$" + define_function_name,
-                    name_);
+            f = primitive_function{default_locality_}(name_parts, name_);
 
             // set the body for the compiled function
-            primitive_operand(f.arg_, define_function_name, name_).set_body(
-                hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
+            primitive_operand(f.arg_, compose_primitive_name(name_parts), name_)
+                .set_body(hpx::launch::sync,
+                    std::move(handle_lambda(args, body).arg_));
 
             // define-function shouldn't return a function that evaluates
             // to itself, let it return nil{} instead
-            return always_nil{}(std::move(define_function_name));
+            return always_nil{}(std::move(name_parts));
         }
 
         function handle_variable_reference(std::string name,
             ast::expression const& expr)
         {
             ast::tagged id = ast::detail::tagged_id(expr);
+            primitive_name_parts name_parts(name, -1, id.id, id.col);
+
             if (compiled_function* cf = env_.find(name))
             {
-                if (id.id >= 0)
-                {
-                    name += annotation(id);
-                }
-                return (*cf)(std::list<function>{}, name, name_);
+                name_parts.compile_id = snippets_.compile_id_ - 1;
+                name_parts.sequence_number = snippets_.sequence_numbers_[name]++;
+
+                return (*cf)(std::list<function>{}, std::move(name_parts), name_);
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -430,6 +416,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             ast::expression const& expr)
         {
             ast::tagged id = ast::detail::tagged_id(expr);
+
             if (compiled_function* cf = env_.find(name))
             {
                 std::vector<ast::expression> argexprs =
@@ -443,11 +430,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         patterns_, default_locality_));
                 }
 
-                if (id.id >= 0)
-                {
-                    name += annotation(id);
-                }
-                return (*cf)(std::move(args), name, name_);
+                primitive_name_parts name_parts{std::move(name), -1, id.id,
+                    id.col, static_cast<std::int64_t>(snippets_.compile_id_ - 1)};
+
+                return (*cf)(std::move(args), std::move(name_parts), name_);
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -466,12 +452,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 snippets_.sequence_numbers_[name]++;
 
             // get global name of the component created
-            std::string global_name =
-                name + "$" + std::to_string(sequence_number);
-            if (id.id >= 0)
-            {
-                global_name += annotation(id);
-            }
+            primitive_name_parts name_parts(name, sequence_number, id.id,
+                id.col, snippets_.compile_id_ - 1);
 
             if (compiled_function* cf = env_.find(name))
             {
@@ -484,8 +466,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         snippets_, env, patterns_, default_locality_));
                 }
 
+
                 // create primitive with given arguments
-                return (*cf)(std::move(args), global_name, name_);
+                return (*cf)(std::move(args), std::move(name_parts), name_);
             }
 
             // otherwise the match was not complete, bail out
@@ -622,30 +605,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    function define_variable(std::string const& codename, std::string name,
-        function_list& snippets, environment& env, primitive_argument_type body,
+    function define_variable(std::string const& codename,
+        primitive_name_parts name_parts, function_list& snippets,
+        environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
-        std::string full_name = name;
-        auto p = name.find_first_of("$/");
-        if (p != std::string::npos)
-        {
-            name.erase(p);
-        }
-
         snippets.snippets_.emplace_back(function{});
         function& f = snippets.snippets_.back();
 
         // get sequence number of this component
-        env.define(std::move(name), external_variable(f, default_locality));
-
-        static std::string define_variable("define-variable");
-        std::size_t sequence_number =
-            snippets.sequence_numbers_[define_variable]++;
+        env.define(name_parts.primitive, external_variable(f, default_locality));
+        name_parts.primitive = "define-variable";
+        name_parts.sequence_number =
+            snippets.sequence_numbers_[name_parts.primitive]++;
 
         f = primitive_variable{default_locality}(
-                std::move(body), define_variable + "$" +
-                    std::to_string(sequence_number) + "$" + full_name,
+                std::move(body), std::move(name_parts),
                 codename);
         return f;
     }

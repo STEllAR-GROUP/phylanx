@@ -6,10 +6,12 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <set>
 #include <string>
@@ -55,15 +57,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         operands_.resize(2);
     }
 
-    static std::string extract_variable_name(std::string const& name)
-    {
-        if (name.find("define-") == 0)
-        {
-            return name.substr(7);
-        }
-        return name;
-    }
-
     hpx::future<primitive_argument_type> define_variable::eval(
         std::vector<primitive_argument_type> const& args) const
     {
@@ -73,12 +66,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> operands;
             operands.push_back(operands_[0]);
 
-            static std::string type("variable");
+            auto name_parts = compiler::parse_primitive_name(name_);
+
+            HPX_ASSERT(name_parts.primitive == "define-variable");
+            name_parts.primitive = "variable";
 
             operands_[1] = primitive_argument_type{
                 create_primitive_component(
-                    hpx::find_here(), type, std::move(operands),
-                    extract_variable_name(name_), codename_)
+                    hpx::find_here(), name_parts.primitive, std::move(operands),
+                    compiler::compose_primitive_name(name_parts), codename_)
                 };
 
             // bind this name to the result of the expression right away

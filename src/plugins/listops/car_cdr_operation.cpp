@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/plugins/listops/car_cdr_operation.hpp>
 
 #include <phylanx/ir/ranges.hpp>
@@ -73,12 +74,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             // extract actual name of the primitive and remove leading 'c' and
             // trailing 'r'
-            std::string::size_type p = name.find_first_of("$");
-            if (p != std::string::npos)
+            compiler::primitive_name_parts name_parts;
+            if (!compiler::parse_primitive_name(name, name_parts))
             {
-                return name.substr(1, p - 2);
+                return name.substr(1, name.size() - 2);
             }
-            return name.substr(1, name.size() - 2);
+
+            return name_parts.primitive.substr(1, name_parts.primitive.size() - 2);
         }
     }
 
