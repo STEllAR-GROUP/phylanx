@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/for_each.hpp>
+#include <phylanx/plugins/controls/for_each.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -23,15 +23,6 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_for_each(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-            std::string const& name, std::string const& codename)
-    {
-        static std::string type("for_each");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
     match_pattern_type const for_each::match_data =
     {
         hpx::util::make_tuple("for_each",
@@ -84,8 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func,
-                    std::vector<primitive_argument_type>&& list)
+            [this_](primitive_argument_type&& bound_func, ir::range&& list)
             -> primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -99,13 +89,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_));
                 }
 
-                std::size_t size = list.size();
-                for (std::size_t i = 0; i != size; ++i)
+                // evaluate function for each of the element from the given
+                // range
+                for (auto && e : std::move(list))
                 {
-                    // evaluate function for each of the argument sets
                     std::vector<primitive_argument_type> arg;
-                    arg.push_back(std::move(list[i]));
-                    p->eval_direct(std::move(arg));
+                    arg.push_back(std::move(e));
+                    auto r = p->eval(hpx::launch::sync, std::move(arg));
+                    if (extract_boolean_value(r, this_->name_, this_->codename_))
+                    {
+                        break;      // stop, if requested
+                    }
                 }
 
                 return primitive_argument_type{};

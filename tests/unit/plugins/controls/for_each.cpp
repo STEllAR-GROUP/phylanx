@@ -26,7 +26,7 @@ void test_for_each_operation_lambda()
 {
     std::string const code = R"(block(
             define(x, 0),
-            for_each(lambda(y, store(x, y + x)), '(1, 2, 3)),
+            for_each(lambda(y, store(x, y + x)), make_list(1, 2, 3)),
             x
         ))";
 
@@ -40,7 +40,7 @@ void test_for_each_operation_func()
     std::string const code = R"(block(
             define(x, 0),
             define(f, y, store(x, y + x)),
-            for_each(f, '(1, 2, 3)),
+            for_each(f, make_list(1, 2, 3)),
             x
         ))";
 
@@ -54,7 +54,7 @@ void test_for_each_operation_func_lambda()
     std::string const code = R"(block(
             define(x, 0),
             define(f, lambda(y, store(x, y + x))),
-            for_each(f, '(1, 2, 3)),
+            for_each(f, make_list(1, 2, 3)),
             x
         ))";
 
@@ -69,7 +69,7 @@ void test_for_each_operation_lambda_arg()
     std::string const code_str = R"(block(
             define(f, a, block(
                 define(x, 0),
-                for_each(lambda(y, store(x, y + x + a)), '(1, 2, 3)),
+                for_each(lambda(y, store(x, y + x + a)), make_list(1, 2, 3)),
                 x
             )),
             f
@@ -95,7 +95,7 @@ void test_for_each_operation_func_arg()
             define(f, a, block(
                 define(x, 0),
                 define(ffor_each, y, store(x, y + x + a)),
-                for_each(ffor_each, '(1, 2, 3)),
+                for_each(ffor_each, make_list(1, 2, 3)),
                 x
             )),
             f
@@ -121,7 +121,7 @@ void test_for_each_operation_func_lambda_arg()
             define(f, a, block(
                 define(x, 0),
                 define(ffor_each, lambda(y, store(x, y + x + a))),
-                for_each(ffor_each, '(1, 2, 3)),
+                for_each(ffor_each, make_list(1, 2, 3)),
                 x
             )),
             f
@@ -141,6 +141,22 @@ void test_for_each_operation_func_lambda_arg()
     }
 }
 
+void test_for_each_break()
+{
+    std::string const code = R"(block(
+            define(x, 0),
+            for_each(
+                lambda(y, block(store(x, y), if(y < 2, false, true))),
+                make_list(1, 2, 3)
+            ),
+            x
+        ))";
+
+    auto result = phylanx::execution_tree::extract_numeric_value(compile(code)());
+
+    HPX_TEST_EQ(result[0], 2);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -151,6 +167,8 @@ int main(int argc, char* argv[])
     test_for_each_operation_lambda_arg();
     test_for_each_operation_func_arg();
     test_for_each_operation_func_lambda_arg();
+
+    test_for_each_break();
 
     return hpx::util::report_errors();
 }

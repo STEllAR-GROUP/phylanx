@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/parallel_for_each.hpp>
+#include <phylanx/plugins/controls/parallel_for_each.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -23,15 +23,6 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_parallel_for_each(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
-            std::string const& name, std::string const& codename)
-    {
-        static std::string type("parallel_for_each");
-        return create_primitive_component(
-            locality, type, std::move(operands), name, codename);
-    }
-
     match_pattern_type const parallel_for_each::match_data =
     {
         hpx::util::make_tuple("parallel_for_each",
@@ -84,8 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func,
-                    std::vector<primitive_argument_type>&& list)
+            [this_](primitive_argument_type&& bound_func, ir::range&& list)
             -> hpx::future<primitive_argument_type>
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -105,13 +95,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<hpx::future<void>> result;
                 result.reserve(size);
 
-                for (std::size_t i = 0; i != size; ++i)
+                for (auto && e : list)
                 {
+                    // evaluate function for each of the elements from the
+                    // given range
                     std::vector<primitive_argument_type> args;
-                    args.push_back(std::move(list[i]));
-
-                    // evaluate function for each of the argument sets
-                    result.push_back(p->eval(std::move(args)));
+                    args.push_back(std::move(e));
+                    result.emplace_back(p->eval(std::move(args)));
                 }
 
                 return hpx::dataflow(hpx::util::unwrapping(

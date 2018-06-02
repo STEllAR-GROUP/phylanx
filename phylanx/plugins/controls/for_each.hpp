@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PARALLEL_FOR_EACH_MAR_14_2018_1054PM)
-#define PHYLANX_PARALLEL_FOR_EACH_MAR_14_2018_1054PM
+#if !defined(PHYLANX_FOR_EACH_MAR_14_2018_1053PM)
+#define PHYLANX_FOR_EACH_MAR_14_2018_1053PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -18,16 +18,16 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class parallel_for_each
+    class for_each
       : public primitive_component_base
-      , public std::enable_shared_from_this<parallel_for_each>
+      , public std::enable_shared_from_this<for_each>
     {
     public:
         static match_pattern_type const match_data;
 
-        parallel_for_each() = default;
+        for_each() = default;
 
-        parallel_for_each(std::vector<primitive_argument_type>&& operands,
+        for_each(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
@@ -42,9 +42,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         struct iteration_for;
     };
 
-    PHYLANX_EXPORT primitive create_parallel_for_each(hpx::id_type const& locality,
+    inline primitive create_for_each(hpx::id_type const& locality,
         std::vector<primitive_argument_type>&& operands,
-        std::string const& name = "", std::string const& codename = "");
+        std::string const& name = "", std::string const& codename = "")
+    {
+        return create_primitive_component(
+            locality, "for_each", std::move(operands), name, codename);
+    }
+
 }}}
 
 #endif

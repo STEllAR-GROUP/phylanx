@@ -8,10 +8,12 @@ set(tests
     filter_operation
     fold_left_operation
     fold_right_operation
+    for_each
     for_operation
     if_conditional
     map_operation
     parallel_block_operation
+    parallel_for_each
     parallel_map_operation
     range_operation
     while_operation

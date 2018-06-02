@@ -17,6 +17,7 @@
 #include <phylanx/execution_tree/primitives/function_reference.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>
+#include <phylanx/execution_tree/primitives/synchronize.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_function.hpp>
 #include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
