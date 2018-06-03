@@ -84,7 +84,7 @@ jobs:
                     /phylanx
             - run:
                 name: Create build directory, test and artifacts directories
-                command: mkdir -p build /artifacts /code_format
+                command: mkdir -p /artifacts /code_format
             # flake8
             - run:
                 name: Check the formatting of Phylanx's Python files
@@ -96,17 +96,15 @@ jobs:
             # CMake
             - run:
                 name: Run CMake
-                command: cmake -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On ..
-                working_directory: /phylanx/build
+                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
                 when: always
             # Inspect
             - run:
                 name: Build the Inspect tool
-                command: make -j2 tools.inspect
-                working_directory: /phylanx/build
+                command: cmake --build build -- -j2 tools.inspect
             - run:
                 name: Check the formatting of Phylanx's C++ files
-                command: ./build/bin/inspect --all --output=/artifacts/phylanx_inspect_report.html /phylanx
+                command: build/bin/inspect --all --output=/artifacts/phylanx_inspect_report.html /phylanx
             - run:
                 name: Convert inspect HTML output to XML
                 command: tools/inspect/inspect_to_junit.py /artifacts/phylanx_inspect_report.html >/code_format/phylanx_inspect.xml
@@ -120,8 +118,7 @@ jobs:
             # Build all targets
             - run:
                 name: Build all targets
-                command: make -j2
-                working_directory: /phylanx/build
+                command: cmake --build build -- -j2
                 when: always
             # CTest to JUnit XML transformation sheet
             - run:
@@ -141,7 +138,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build regression tests
-                command: make -j4 tests.regressions
+                command: cmake --build . -- -j2 tests.regressions
             - run:
                 name: Run regression tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.regressions
@@ -157,7 +154,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build arithmetic primitive plugin unit tests
-                command: make -j4 tests.unit.plugins.arithmetics
+                command: cmake --build . -- -j2 tests.unit.plugins.arithmetics
             - run:
                 name: Run arithmetic primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.arithmetics
@@ -173,7 +170,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build boolean primitive plugin unit tests
-                command: make -j4 tests.unit.plugins.booleans
+                command: cmake --build . -- -j2 tests.unit.plugins.booleans
             - run:
                 name: Run boolean primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.booleans
@@ -189,7 +186,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build control primitive plugin unit tests
-                command: make -j4 tests.unit.plugins.controls
+                command: cmake --build . -- -j2 tests.unit.plugins.controls
             - run:
                 name: Run control primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.controls
@@ -205,7 +202,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build file I/O primitive plugin unit tests
-                command: make -j4 tests.unit.plugins.fileio
+                command: cmake --build . -- -j2 tests.unit.plugins.fileio
             - run:
                 name: Run file I/O primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.fileio
@@ -221,7 +218,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build ListOps primitive plugin unit tests
-                command: make -j4 tests.unit.plugins.listops
+                command: cmake --build . -- -j2 tests.unit.plugins.listops
             - run:
                 name: Run ListOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.listops
@@ -237,7 +234,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build MatrixOps primitive plugin unit tests
-                command: make -j4 tests.unit.plugins.matrixops
+                command: cmake --build . -- -j2 tests.unit.plugins.matrixops
             - run:
                 name: Run MatrixOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.matrixops
@@ -253,7 +250,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build tests.unit.{execution_tree,ast,algorithm}
-                command: make -j4 tests.unit.{execution_tree,ast,algorithm}
+                command: cmake --build . -- -j2 tests.unit.{execution_tree,ast,algorithm}
             - run:
                 name: Run tests.unit.{execution_tree,ast,algorithm}
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(execution_tree|ast|algorithm)'
@@ -269,7 +266,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build tests.unit.{config,ir,util,performance_counters,python}
-                command: make -j4 tests.unit.{config,ir,util,performance_counters,python}
+                command: cmake --build . -- -j2 tests.unit.{config,ir,util,performance_counters,python}
             - run:
                 name: Run tests.unit.config
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(config|ir|util|performance_counters|python)'
@@ -286,7 +283,7 @@ jobs:
             - run:
                 name: Install to the image
                 command: |
-                    docker run --name live -v $PWD:/.data ${BASE_IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && make -C /phylanx/build install && ldconfig"
+                    docker run --name live -v $PWD:/.data ${BASE_IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && cmake --build /phylanx/build -- install && ldconfig"
                     docker commit live $TARGET_IMAGE_NAME
             - run:
                 name: Test installation
