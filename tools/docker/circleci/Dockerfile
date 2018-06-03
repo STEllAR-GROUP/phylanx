@@ -8,8 +8,8 @@
 
 FROM stellargroup/phylanx_base:prerequisites
 
-ADD /.data /phylanx
-RUN make -C /phylanx/build -j2 install
+ADD . /phylanx
+RUN cmake --build /phylanx/build -- -j2 install && rm -rf /phylanx/build
 RUN ldconfig
 WORKDIR /
 CMD /bin/bash

@@ -67,7 +67,7 @@ anchors:
             when: always
             command: |
                 mkdir -p ${CIRCLE_JOB}
-                xsltproc ../conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
+                xsltproc conv.xsl Testing/$(head -n 1 < Testing/TAG)/Test.xml >${CIRCLE_JOB}/Test.xml
 
     - &attach_phylanx_tree
         attach_workspace:
@@ -82,6 +82,27 @@ jobs:
             - checkout:
                 path:
                     /phylanx
+            # CMake
+            - run:
+                name: Run CMake
+                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
+            # Build all targets
+            - run:
+                name: Build all targets
+                command: cmake --build build -- -j2
+            # CTest to JUnit XML transformation sheet
+            - run:
+                name: Download CTest XML to JUnit XML transformation stylesheet
+                command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o build/conv.xsl
+            - persist_to_workspace:
+                root: /phylanx
+                paths:
+                    - .
+    check_code_format:
+        <<: *docker_config
+        working_directory: /phylanx
+        steps:
+            - <<: *attach_phylanx_tree
             - run:
                 name: Create build directory, test and artifacts directories
                 command: mkdir -p /artifacts /code_format
@@ -93,18 +114,15 @@ jobs:
                 name: Converting flake8 text output to XML
                 command: tools/flake8/flake_to_junit.py /artifacts/phylanx_flake8_report.txt /code_format/phylanx_flake8.xml
                 when: always
-            # CMake
-            - run:
-                name: Run CMake
-                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
-                when: always
             # Inspect
             - run:
                 name: Build the Inspect tool
                 command: cmake --build build -- -j2 tools.inspect
+                when: always
             - run:
                 name: Check the formatting of Phylanx's C++ files
                 command: build/bin/inspect --all --output=/artifacts/phylanx_inspect_report.html /phylanx
+                when: always
             - run:
                 name: Convert inspect HTML output to XML
                 command: tools/inspect/inspect_to_junit.py /artifacts/phylanx_inspect_report.html >/code_format/phylanx_inspect.xml
@@ -115,19 +133,6 @@ jobs:
             # Code Format Check JUnit Reports
             - store_test_results:
                 path: /code_format
-            # Build all targets
-            - run:
-                name: Build all targets
-                command: cmake --build build -- -j2
-                when: always
-            # CTest to JUnit XML transformation sheet
-            - run:
-                name: Download CTest XML to JUnit XML transformation stylesheet
-                command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o conv.xsl
-            - persist_to_workspace:
-                root: /phylanx
-                paths:
-                    - .
     # ## Test Jobs
     # Number of test jobs and tests that are assigned to each job are chosen
     # based on previous build and execution times.
@@ -281,20 +286,24 @@ jobs:
             - attach_workspace:
                 at: ~/project
             - run:
+                name: Enable experimental features on Docker daemon
+                command: |
+                    sudo sh -c 'echo '\''DOCKER_OPTS="--experimental=true"'\'' >> /etc/default/docker'
+                    sudo service docker restart
+            - run:
                 name: Install to the image
                 command: |
-                    docker run --name live -v $PWD:/.data ${BASE_IMAGE_NAME} /bin/sh -c "mkdir -p /phylanx && cd /.data && cp -a . /phylanx && cmake --build /phylanx/build -- install && ldconfig"
-                    docker commit live $TARGET_IMAGE_NAME
+                    docker build -t ${TARGET_IMAGE_NAME} -f tools/docker/circleci/Dockerfile --squash .
             - run:
                 name: Test installation
-                command: docker run --rm $TARGET_IMAGE_NAME physl --hpx:threads=1 --code=1+2 --print
+                command: docker run --rm ${TARGET_IMAGE_NAME} physl --hpx:threads=1 --code=1+2 --print
             # Deployment
             - deploy:
                 name: Push the Phylanx build environment Docker image
                 command: |
                     if [ "$CIRCLE_BRANCH" == "master" ]; then
                         docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-                        docker push $TARGET_IMAGE_NAME
+                        docker push ${TARGET_IMAGE_NAME}
                     fi
 
 ################################################################################
@@ -304,6 +313,9 @@ workflows:
         jobs:
             - build_test:
                 <<: *ignore_docs
+            - check_code_format:
+                requires:
+                    - build_test
             - tests.regressions:
                 requires:
                     - build_test
@@ -333,6 +345,8 @@ workflows:
                     - build_test
             - deploy_image:
                 requires:
+                    - build_test
+                    - check_code_format
                     - tests.regressions
                     - tests.unit.plugins.arithmetic
                     - tests.unit.plugins.booleans

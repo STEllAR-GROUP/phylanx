@@ -21,36 +21,43 @@
 
 FROM stellargroup/hpx:dev
 
-RUN apt-get update  &&                                                           \
-    apt-get -y install wget &&                                                   \
-    apt-get -y install python3 python3-dev python3-pip &&                        \
-    apt-get -y install libblas-dev liblapack-dev &&                              \
-    apt-get -y install libhdf5-dev &&                                            \
-    pip3 install setuptools &&                                                   \
-    pip3 install pytest &&                                                       \
-    pip3 install numpy &&                                                        \
-    pip3 install flake8 &&                                                       \
-    cd / &&                                                                      \
-    git clone --depth 1 https://github.com/pybind/pybind11.git pybind11-src &&   \
-    cd pybind11-src &&                                                           \
-    mkdir build && cd build &&                                                   \
-    cmake  -DPYBIND11_TEST=OFF .. &&                                             \
-    make install &&                                                              \
-    cd / &&                                                                      \
-    rm -rf /pybind11-src &&                                                      \
-    git clone --depth 1 https://bitbucket.org/blaze-lib/blaze.git blaze-src &&   \
-    cd blaze-src &&                                                              \
-    mkdir build && cd build &&                                                   \
-    cmake -DBLAZE_SMP_THREADS=C++11 .. &&                                        \
-    make install &&                                                              \
-    cd / &&                                                                      \
-    rm -rf /blaze-src  &&                                                        \
-    git clone --depth 1 https://github.com/BlueBrain/HighFive.git highfive-src &&\
-    cd highfive-src &&                                                           \
-    mkdir build && cd build &&                                                   \
-    cmake -DUSE_BOOST=Off .. &&                                                  \
-    make install &&                                                              \
-    cd / &&                                                                      \
+RUN apt-get update &&                                                               \
+    apt-get install --yes --no-install-recommends                                   \
+        python3                                                                     \
+        python3-dev                                                                 \
+        python3-pip                                                                 \
+        libblas-dev                                                                 \
+        liblapack-dev                                                               \
+        libhdf5-dev &&                                                              \
+    apt-get purge && apt-get clean && rm -rf /var/lib/apt/lists/*                && \
+                                                                                    \
+    pip3 --no-cache-dir install setuptools                                       && \
+    pip3 --no-cache-dir install pytest                                           && \
+    pip3 --no-cache-dir install numpy                                            && \
+    pip3 --no-cache-dir install flake8                                           && \
+                                                                                    \
+    git clone --depth=1 https://github.com/pybind/pybind11.git /pybind11-src     && \
+    (                                                                               \
+    cd /pybind11-src                                                             && \
+    cmake -H. -Bbuild -DPYBIND11_TEST=OFF                                        && \
+    cmake --build build -- install                                                  \
+    )                                                                            && \
+    rm -rf /pybind11-src                                                         && \
+                                                                                    \
+    git clone --depth=1 https://bitbucket.org/blaze-lib/blaze.git /blaze-src     && \
+    (                                                                               \
+    cd /blaze-src                                                                && \
+    cmake -H. -Bbuild -DBLAZE_SMP_THREADS=C++11                                  && \
+    cmake --build build -- install                                                  \
+    )                                                                            && \
+    rm -rf /blaze-src                                                            && \
+                                                                                    \
+    git clone --depth=1 https://github.com/BlueBrain/HighFive.git /highfive-src  && \
+    (                                                                               \
+    cd /highfive-src                                                             && \
+    cmake -H. -Bbuild -DUSE_BOOST=Off                                            && \
+    cmake --build build -- install                                                  \
+    )                                                                            && \
     rm -rf /highfive-src
 WORKDIR /
 CMD /bin/bash
