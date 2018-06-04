@@ -16,6 +16,26 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     std::vector<std::pair<std::string, match_pattern_type>> registered_patterns;
 
+    void show_patterns()
+    {
+        std::set<std::string> printed;
+        for(auto p : registered_patterns)
+        {
+            std::string pattern_name = p.first; 
+            std::vector<std::string> patterns = hpx::util::get<1>(p.second);
+            auto f = printed.find(pattern_name);
+            if(f == printed.end())
+            {
+                std::cout << "pattern: " << pattern_name << std::endl;
+                for(auto pat : patterns)
+                {
+                    std::cout << "  matches: " << pat << std::endl;
+                }
+                printed.insert(pattern_name);
+            }
+        }
+    }
+
     void register_pattern(
         std::string const& name, match_pattern_type const& pattern)
     {
