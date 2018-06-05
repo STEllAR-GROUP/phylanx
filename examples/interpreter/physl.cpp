@@ -149,6 +149,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             "Usage: physl <physl_script> [options] [arguments...]");
         cmdline_options.add_options()
             ("help,h", "print out program usage")
+            ("docs","Print out all primitives/plugins and descriptions")
             ("code,c", po::value<std::string>(),
              "Execute the PhySL code given in argument")
             ("print,p", "Print the result of evaluation of the last "
@@ -384,6 +385,11 @@ int main(int argc, char* argv[])
     if (cmdline_result != 0)
     {
         return cmdline_result > 0 ? 0 : cmdline_result;
+    }
+
+    if(vm.count("docs") != 0) {
+        phylanx::execution_tree::show_patterns();
+        return 0;
     }
 
     try
