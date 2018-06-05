@@ -10,6 +10,8 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <set>
+#include <iostream>
 
 namespace phylanx { namespace execution_tree
 {
@@ -21,7 +23,7 @@ namespace phylanx { namespace execution_tree
         std::set<std::string> printed;
         for(auto p : registered_patterns)
         {
-            std::string pattern_name = p.first; 
+            std::string pattern_name = p.first;
             std::vector<std::string> patterns = hpx::util::get<1>(p.second);
             auto f = printed.find(pattern_name);
             if(f == printed.end())
