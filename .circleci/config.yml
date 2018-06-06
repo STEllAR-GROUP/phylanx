@@ -200,22 +200,22 @@ jobs:
                 path: tests.unit.plugins.controls
             - store_artifacts:
                 path: tests.unit.plugins.controls
-    tests.unit.plugins.fileio:
+    tests.unit.plugins.fileio_solvers:
         <<: *docker_config
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
             - run:
-                name: Build file I/O primitive plugin unit tests
-                command: cmake --build . -- -j2 tests.unit.plugins.fileio
+                name: Build file I/O and solvers primitive plugin unit tests
+                command: cmake --build . -- -j2 tests.unit.plugins.{fileio,solvers}
             - run:
-                name: Run file I/O primitive plugin unit tests
-                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.fileio
+                name: Run file I/O and solvers primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.plugins.(fileio|solvers)'
             - <<: *convert_xml
             - store_test_results:
-                path: tests.unit.plugins.fileio
+                path: tests.unit.plugins.fileio_solvers
             - store_artifacts:
-                path: tests.unit.plugins.fileio
+                path: tests.unit.plugins.fileio_solvers
     tests.unit.plugins.listops:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -328,7 +328,7 @@ workflows:
             - tests.unit.plugins.controls:
                 requires:
                     - build_test
-            - tests.unit.plugins.fileio:
+            - tests.unit.plugins.fileio_solvers:
                 requires:
                     - build_test
             - tests.unit.plugins.listops:
@@ -351,7 +351,7 @@ workflows:
                     - tests.unit.plugins.arithmetic
                     - tests.unit.plugins.booleans
                     - tests.unit.plugins.controls
-                    - tests.unit.plugins.fileio
+                    - tests.unit.plugins.fileio_solvers
                     - tests.unit.plugins.listops
                     - tests.unit.plugins.matrixops
                     - tests.unit.group_1
