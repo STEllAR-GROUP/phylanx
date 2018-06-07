@@ -39,15 +39,17 @@ namespace phylanx { namespace bindings
         {
             if (pbase() != pptr())
             {
-                // acquire GIL to avoid multi-threading problems
-                pybind11::gil_scoped_acquire acquire;
+                {
+                    // acquire GIL to avoid multi-threading problems
+                    pybind11::gil_scoped_acquire acquire;
 
-                // This subtraction cannot be negative, so dropping the sign
-                pybind11::str line(
-                    pbase(), static_cast<std::size_t>(pptr() - pbase()));
+                    // This subtraction cannot be negative, so dropping the sign
+                    pybind11::str line(
+                        pbase(), static_cast<std::size_t>(pptr() - pbase()));
 
-                pywrite(line);
-                pyflush();
+                    pywrite(line);
+                    pyflush();
+                }
 
                 setp(pbase(), epptr());
             }
@@ -68,10 +70,16 @@ namespace phylanx { namespace bindings
             setp(d_buffer, d_buffer + sizeof(d_buffer) - 1);
         }
 
-        /// Sync before destroy
+        // Sync before destroy
         ~pythonbuf()
         {
-            sync();
+            {
+                pybind11::gil_scoped_release release;
+                sync();
+            }
+
+            pywrite.release();
+            pyflush.release();
         }
     };
 
@@ -91,7 +99,8 @@ namespace phylanx { namespace bindings
     public:
         scoped_ostream_redirect(std::ostream& costream = std::cout,
                 pybind11::object pyostream = import_stdout())
-          : costream(costream)
+          : old(nullptr)
+          , costream(costream)
           , buffer(std::move(pyostream))
         {
             old = costream.rdbuf(&buffer);
@@ -103,7 +112,8 @@ namespace phylanx { namespace bindings
         }
 
         scoped_ostream_redirect(const scoped_ostream_redirect&) = delete;
-        scoped_ostream_redirect(scoped_ostream_redirect&& other) = default;
+        scoped_ostream_redirect(scoped_ostream_redirect&&) = delete;
+
         scoped_ostream_redirect& operator=(
             const scoped_ostream_redirect&) = delete;
         scoped_ostream_redirect& operator=(scoped_ostream_redirect&&) = delete;
