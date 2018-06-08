@@ -6,6 +6,7 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 import phylanx
 import numpy as np
+from phylanx.ast import Phylanx
 
 # Create a vector
 x0 = 0
@@ -50,3 +51,35 @@ m3 = et.var(m2).eval()
 for i in range(len(m2)):
     for j in range(len(m2[0])):
         assert m3[i][j] == m2[i][j]
+
+
+@Phylanx
+def mk1():
+    return np.array((3, 2, 4))
+
+
+assert np.all(np.array((3, 2, 4)) == mk1())
+
+
+@Phylanx
+def mk2():
+    return np.array([3, 2, 4])
+
+
+assert np.all(np.array([3, 2, 4]) == mk2())
+
+
+@Phylanx
+def mk3():
+    return np.zeros((3, 2))
+
+
+assert np.all(np.zeros((3, 2)) == mk3())
+
+
+@Phylanx
+def mk4():
+    return np.zeros([3, 2])
+
+
+assert np.all(np.zeros([3, 2]) == mk4())
