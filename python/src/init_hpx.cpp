@@ -232,16 +232,24 @@ protected:
 
         startup_cond_.notify_one();
 
-        {
-            // redirect all console output to Python's stdout
-            phylanx::bindings::scoped_ostream_redirect stream;
+        // redirect all console output to Python's stdout
+        std::unique_ptr<phylanx::bindings::scoped_ostream_redirect> stream;
 
-            // Now, wait for destructor to be called.
-            {
-                std::unique_lock<hpx::lcos::local::spinlock> lk(mtx_);
-                if (rts_ != nullptr)
-                    cond_.wait(lk);
-            }
+        {
+            pybind11::gil_scoped_acquire acquire;
+            stream = std::unique_ptr<phylanx::bindings::scoped_ostream_redirect>{};
+        }
+
+        // Now, wait for destructor to be called.
+        {
+            std::unique_lock<hpx::lcos::local::spinlock> lk(mtx_);
+            if (rts_ != nullptr)
+                cond_.wait(lk);
+        }
+
+        {
+            pybind11::gil_scoped_acquire acquire;
+            stream.reset();
         }
 
         // tell the runtime it's ok to exit
