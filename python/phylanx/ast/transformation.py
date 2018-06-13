@@ -224,7 +224,33 @@ class PhySL:
         symbol_info = full_node_name(a)
         s = ''
         if isinstance(a.func, ast.Attribute):
-            s += self._Attribute(a.func)
+            func_name = a.func.attr
+            pkg_name = get_node(a.func, num=0, name="Name")
+            if pkg_name is not None and pkg_name.id not in self.fglobals:
+                print(self.fglobals)
+                raise Exception("package name '%s' does not exist" % pkg_name)
+            if func_name == "zeros" and len(a.args) == 1:
+                s += 'constant(0,make_list('
+                # The code below works the same for tuples and lists
+                args = [arg for arg in ast.iter_child_nodes(a.args[0])]
+                for i in range(len(args) - 1):
+                    if i > 0:
+                        s += ','
+                    s += self.recompile(args[i])
+                s += '))'
+                return s
+            elif func_name == "array" and len(a.args) == 1:
+                s += 'hstack('
+                # The code below works the same for tuples and lists
+                args = [arg for arg in ast.iter_child_nodes(a.args[0])]
+                for i in range(len(args) - 1):
+                    if i > 0:
+                        s += ','
+                    s += self.recompile(args[i])
+                s += ')'
+                return s
+            else:
+                s += self._Attribute(a.func)
             for i in range(len(a.args) - 1):
                 s += self.recompile(a.args[i])
                 s += ', '
@@ -370,6 +396,8 @@ class PhySL:
             if a.value.id in self.defs:
                 s += a.value.id + full_node_name(a.value)
                 return s
+            elif a.attr == "array":
+                raise Exception()
             elif a.value.id in self.fglobals and  \
                     hasattr(self.fglobals[a.value.id], a.attr):
                 # Note that the above check verifies that in the extenal environment
