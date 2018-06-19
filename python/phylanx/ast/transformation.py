@@ -623,13 +623,6 @@ class PhySL:
 
 
 def convert_to_phylanx_type(v):
-    t = type(v)
-    try:
-        import numpy
-        if t == numpy.ndarray:
-            return et.var(v)
-    except NotImplementedError:
-        pass
     return v
 
 

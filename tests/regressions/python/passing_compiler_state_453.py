@@ -28,4 +28,4 @@ def foo(n):
     return mul2(n)  # noqa: F821
 
 
-print(foo(3))
+assert(6.0 == foo(3))
