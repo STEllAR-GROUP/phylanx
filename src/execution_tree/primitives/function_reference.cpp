@@ -60,8 +60,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 fargs.reserve(operands_.size() + params.size() - 1);
                 std::copy(params.begin(), params.end(), std::back_inserter(fargs));
-                return value_operand(
-                    operands_[0], std::move(fargs), name_, codename_);
             }
 
             return value_operand(

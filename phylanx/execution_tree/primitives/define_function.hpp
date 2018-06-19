@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // This is a helper primitive needed for proper binding of the expression
     // value to a variable.
     class define_function
-        : public primitive_component_base
+      : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;

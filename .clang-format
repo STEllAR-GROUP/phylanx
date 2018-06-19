@@ -71,16 +71,14 @@ ExperimentalAutoDetectBinPacking: true
 FixNamespaceComments: false
 # ForEachMacros: ['']
 IncludeCategories:
-  - Regex:           '^<hpx/config\.hpp>'
+  - Regex:           '^<phylanx/config\.hpp>'
     Priority:        1
-  - Regex:           '^<hpx/.*\.hpp>'
+  - Regex:           '^<phylanx/.*\.hpp>'
     Priority:        2
-  - Regex:           '^<hpx/parallel/.*\.hpp>'
-    Priority:        3
   - Regex:           '^<.*'
-    Priority:        4
+    Priority:        3
   - Regex:           '.*'
-    Priority:        5
+    Priority:        4
 # IncludeIsMainRegex: ''
 IndentCaseLabels: false
 IndentWidth: 4
