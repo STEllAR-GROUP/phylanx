@@ -11,6 +11,7 @@ set(subdirs
     fileio
     listops
     matrixops
+    solvers
    )
 
 foreach(subdir ${subdirs})

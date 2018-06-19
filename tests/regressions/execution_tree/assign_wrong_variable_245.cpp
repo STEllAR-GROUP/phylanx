@@ -264,6 +264,21 @@ std::string const or_code = R"(define(test, block(
     R))
 )";
 
+std::string const linear_solver_code = R"(define(test, block(
+    define(A, [[2,-1,0],[-1,2,-1],[0,-1,1]]),
+    define(b, [0, 0, 1]),
+    define(R, true),
+    define(Result, linear_solver_lu(A, b)),
+    store(Result, linear_solver_ldlt(A, b)),
+    store(Result, linear_solver_ldlt(A, b, "L")),
+    store(Result, linear_solver_ldlt(A, b, "U")),
+    store(Result, linear_solver_cholesky(A, b)),
+    store(Result, linear_solver_cholesky(A, b, "L")),
+    store(Result, linear_solver_cholesky(A, b, "U")),
+    if((any(A!=[[2,-1,0],[-1,2,-1],[0,-1,1]]) || any(b!=[0, 0, 1])), store(R,false)),
+    R))
+)";
+
 void test_add()
 {
     phylanx::execution_tree::compiler::function_list snippets;
@@ -368,6 +383,14 @@ void test_or()
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
+void test_linear_solver()
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    auto f = phylanx::execution_tree::compile(linear_solver_code, snippets);
+
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
+}
+
 int main(int argc, char* argv[])
 {
     test_add();
@@ -383,6 +406,7 @@ int main(int argc, char* argv[])
     test_dot();
     test_and();
     test_or();
+    test_linear_solver();
 
     return hpx::util::report_errors();
 }

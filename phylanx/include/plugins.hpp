@@ -14,5 +14,6 @@
 #include <phylanx/plugins/fileio/fileio.hpp>
 #include <phylanx/plugins/listops/listops.hpp>
 #include <phylanx/plugins/matrixops/matrixops.hpp>
+#include <phylanx/plugins/solvers/solvers.hpp>
 
 #endif
