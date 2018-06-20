@@ -264,14 +264,77 @@ namespace pybind11 { namespace detail
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
+    struct is_scalar_instance
+    {
+        static bool call(handle src)
+        {
+            return false;
+        }
+    };
+
+    template <>
+    struct is_scalar_instance<bool>
+    {
+        static bool call(handle src)
+        {
+            return PyBool_Check(src.ptr());
+        }
+    };
+
+    template <>
+    struct is_scalar_instance<std::int64_t>
+    {
+        static bool call(handle src)
+        {
+            return PyLong_Check(src.ptr());
+        }
+    };
+
+    template <>
+    struct is_scalar_instance<double>
+    {
+        static bool call(handle src)
+        {
+            return PyFloat_Check(src.ptr());
+        }
+    };
+
+    template <typename T>
+    struct is_array_instance
+    {
+        static bool call(handle src)
+        {
+            return isinstance<array_t<T>>(src);
+        }
+    };
+
+    template <>
+    struct is_array_instance<std::int64_t>
+    {
+        static bool call(handle src)
+        {
+            return isinstance<array_t<std::int64_t>>(src) ||
+                   isinstance<array_t<std::int32_t>>(src) ||
+                   isinstance<array_t<std::int16_t>>(src);
+        }
+    };
+
+    template <typename T>
     class type_caster<phylanx::ir::node_data<T>>
     {
         bool load0d(handle src, bool convert)
         {
+            // np.array([0]) is convertible to a scalar value
+            if (!is_scalar_instance<typename casted_type<T>::type>::call(src))
+            {
+                return false;
+            }
+
             auto caster = make_caster<typename casted_type<T>::type>();
             if (caster.load(src, convert))
             {
-                value = cast_op<typename casted_type<T>::type>(caster);
+                value =
+                    std::move(cast_op<typename casted_type<T>::type>(caster));
                 return true;
             }
             return false;
@@ -280,7 +343,7 @@ namespace pybind11 { namespace detail
         bool load1d(handle src, bool convert)
         {
             if (!convert &&
-                !isinstance<array_t<typename casted_type<T>::type>>(src))
+                !is_array_instance<typename casted_type<T>::type>::call(src))
             {
                 return false;
             }
@@ -320,7 +383,7 @@ namespace pybind11 { namespace detail
         bool load2d(handle src, bool convert)
         {
             if (!convert &&
-                !isinstance<array_t<typename casted_type<T>::type>>(src))
+                !is_array_instance<typename casted_type<T>::type>::call(src))
             {
                 return false;
             }
@@ -835,7 +898,7 @@ namespace pybind11 { namespace detail
         auto caster = make_caster<U>();
         if (caster.load(src, convert))
         {
-            value = cast_op<U>(caster);
+            value = std::move(cast_op<U>(caster));
             return true;
         }
         return load_alternative(src, convert, type_list<Us...>{});
@@ -849,7 +912,7 @@ namespace pybind11 { namespace detail
         auto caster = make_caster<U>();
         if (caster.load(src, convert))
         {
-            value = cast_op<U>(caster);
+            value = std::move(cast_op<U>(caster));
             return true;
         }
         return load_alternative(src, convert, type_list<Us...>{});

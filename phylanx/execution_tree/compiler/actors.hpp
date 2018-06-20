@@ -130,12 +130,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
+                arguments_type keep_alive(std::move(args));
+
                 // construct argument-pack to use for actual call
                 arguments_type params;
-                params.reserve(args.size());
-                for (auto && arg : args)
+                params.reserve(keep_alive.size());
+                for (auto const& arg : keep_alive)
                 {
-                    params.emplace_back(extract_ref_value(std::move(arg)));
+                    params.emplace_back(extract_ref_value(arg));
                 }
                 return extract_copy_value(
                     p->eval(hpx::launch::sync, std::move(params)));
@@ -186,7 +188,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 keep_alive.reserve(args.size());
                 for (auto && arg : std::move(args))
                 {
-                    keep_alive.emplace_back(extract_copy_value(std::move(arg)));
+                    keep_alive.emplace_back(extract_value(std::move(arg)));
                 }
 
                 return p->eval(std::move(keep_alive));
