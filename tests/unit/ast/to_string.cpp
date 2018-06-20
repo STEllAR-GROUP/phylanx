@@ -152,7 +152,7 @@ void test_list()
         phylanx::ast::expression{fc}
     };
 
-    test_to_string(list, "'(true, function_name(true, true, true))");
+    test_to_string(list, "make_list(true, function_name(true, true, true))");
 }
 
 void test_vector()

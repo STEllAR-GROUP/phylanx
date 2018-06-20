@@ -8,6 +8,8 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
+#include <phylanx/ast/node.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
@@ -966,7 +968,8 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::node_data<std::uint8_t> extract_boolean_data(primitive_argument_type const& val,
+    ir::node_data<std::uint8_t>
+    extract_boolean_data(primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -1142,12 +1145,12 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            if (util::get<1>(val).num_dimensions() ==0 )
+            if (util::get<1>(val).num_dimensions() == 0)
                 return std::int64_t(util::get<1>(val)[0]);
             break;
 
         case 2:    // ir::node_data<std::int64_t>
-            if (util::get<2>(val).num_dimensions() ==0 )
+            if (util::get<2>(val).num_dimensions() == 0)
                 return util::get<2>(val)[0];
             break;
 
@@ -1269,7 +1272,7 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 2:     // ir::node_data<std::int64_t>
-            if(util::get<2>(val).num_dimensions()==0)
+            if (util::get<2>(val).num_dimensions() == 0)
                 return util::get<2>(val)[0];
             break;
 
@@ -2112,6 +2115,21 @@ namespace phylanx { namespace execution_tree
             generate_error_message(
                 "primitive_value_type does not hold a primitive",
                 name, codename));
+    }
+
+    primitive primitive_operand(primitive_argument_type const& val,
+        compiler::primitive_name_parts const& parts,
+        std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+            return *p;
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_primitive",
+            generate_error_message(
+                "primitive_value_type does not hold a primitive",
+                parts, codename));
     }
 
     bool is_primitive_operand(primitive_argument_type const& val)
@@ -3364,46 +3382,39 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
-            os << util::get<0>(val);
+            ast::detail::to_string{os}(util::get<0>(val));
             return os;
 
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            os << util::get<1>(val);
+            ast::detail::to_string{os}(util::get<1>(val));
             return os;
 
         case 2:     // ir::node_data<std::int64_t>
-            os << util::get<2>(val);
+            ast::detail::to_string{os}(util::get<2>(val));
             return os;
 
         case 3:     // std::string
-            if (util::is_repr(os))
-            {
-                os << "\"" << util::get<3>(val) << "\"";
-            }
-            else
-            {
-                os << util::get<3>(val);
-            }
+            ast::detail::to_string{os}(util::get<3>(val));
             return os;
 
         case 4:     // phylanx::ir::node_data<double>
-            os << util::get<4>(val);
+            ast::detail::to_string{os}(util::get<4>(val));
             return os;
 
         case 5:
-            os << util::get<5>(val);
+            ast::detail::to_string{os}(util::get<5>(val));
             return os;
 
         case 6:     // std::vector<ast::expression>
             for (auto const& ast : util::get<6>(val))
             {
-                os << ast;
+                ast::detail::to_string{os}(ast);
             }
             return os;
 
         case 7:     // phylanx::ir::range
             {
-                os << "'(";
+                os << "make_list(";
                 bool first = true;
                 for (auto const& elem : util::get<7>(val))
                 {
@@ -3412,7 +3423,7 @@ namespace phylanx { namespace execution_tree
                         os << ", ";
                     }
                     first = false;
-                    os << elem;
+                    ast::detail::to_string{os}(elem);
                 }
                 os << ")";
             }

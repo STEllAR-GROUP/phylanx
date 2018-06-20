@@ -185,36 +185,45 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
     {
-        if (eval_count_ != 0)
-        {
-            // check whether execution status needs to be changed (with some
-            // hysteresis)
-            std::int64_t exec_time = (eval_duration_ / eval_count_);
-            if (exec_time > 300000)
-            {
-                execute_directly_ = 0;
-            }
-            else if (exec_time < 150000)
-            {
-                execute_directly_ = 1;
-            }
-        }
-
-        if (execute_directly_ == 1)
-        {
-            return hpx::launch::sync;
-        }
-        else if (execute_directly_ == 0)
-        {
-            return hpx::launch::async;
-        }
-
-        return policy;
+//         if (eval_count_ != 0)
+//         {
+//             // check whether execution status needs to be changed (with some
+//             // hysteresis)
+//             std::int64_t exec_time = (eval_duration_ / eval_count_);
+//             if (exec_time > 300000)
+//             {
+//                 execute_directly_ = 0;
+//             }
+//             else if (exec_time < 150000)
+//             {
+//                 execute_directly_ = 1;
+//             }
+//         }
+//
+//         if (execute_directly_ == 1)
+//         {
+//             return hpx::launch::sync;
+//         }
+//         else if (execute_directly_ == 0)
+//         {
+//             return hpx::launch::async;
+//         }
+//
+//         return policy;
+        return hpx::launch::sync;
     }
 }}}
 
 namespace phylanx { namespace execution_tree
 {
+    std::string generate_error_message(std::string const& msg,
+        compiler::primitive_name_parts const& parts,
+        std::string const& codename)
+    {
+        return generate_error_message(msg,
+            compiler::compose_primitive_name(parts), codename);
+    }
+
     std::string generate_error_message(std::string const& msg,
         std::string const& name, std::string const& codename)
     {

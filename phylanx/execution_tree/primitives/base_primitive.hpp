@@ -10,6 +10,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 
@@ -761,6 +762,10 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT primitive primitive_operand(
         primitive_argument_type const& val,
         std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT primitive primitive_operand(
+        primitive_argument_type const& val,
+        compiler::primitive_name_parts const& parts,
         std::string const& codename = "<unknown>");
     PHYLANX_EXPORT bool is_primitive_operand(
         primitive_argument_type const& val);

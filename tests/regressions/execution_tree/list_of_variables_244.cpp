@@ -40,8 +40,9 @@ int main(int argc, char* argv[])
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
     std::stringstream const& strm = hpx::get_consolestream();
-    HPX_TEST_EQ(strm.str(),
-        std::string("'(5, 6, 42)\n'([5, 6], '(5, 6, 42), string)\n"));
+    HPX_TEST_EQ(strm.str(), std::string(
+        "make_list(5, 6, 42)\n"
+        "make_list([5, 6], make_list(5, 6, 42), string)\n"));
 
     return hpx::util::report_errors();
 }

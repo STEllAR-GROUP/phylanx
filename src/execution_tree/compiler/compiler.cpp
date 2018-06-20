@@ -322,7 +322,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 typename std::multimap<std::string, ast::expression>::iterator;
             std::pair<iterator, iterator> p = placeholders.equal_range("__1");
 
-            // extract expressions representing the newly defined function
+            // extract expressions representing the newly defined variable
             // and store new function description for later use
             snippets_.snippets_.emplace_back(function{});
             function& f = snippets_.snippets_.back();
@@ -343,9 +343,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             auto body = extract_define_body(p, define_id);
             if (args.empty())
             {
-                // get sequence number of this component
-                env_.define(
-                    std::move(name), external_variable(f, default_locality_));
+            // get sequence number of this component
+            env_.define(
+                std::move(name), external_variable(f, default_locality_));
 
                 static std::string define_variable("define-variable");
                 name_parts.primitive = define_variable;

@@ -13,7 +13,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstdint>
-#include <iosfwd>
+#include <strstream>
 
 namespace phylanx { namespace ast
 {
@@ -196,91 +196,6 @@ namespace phylanx { namespace ast
         ar >> function_name >> args;
     }
 
-//     ///////////////////////////////////////////////////////////////////////////
-//     void assignment::serialize(hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << lhs << operator_ << rhs;
-//     }
-//
-//     void assignment::serialize(hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> lhs >> operator_ >> rhs;
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     void variable_declaration::serialize(
-//         hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << lhs << rhs;
-//     }
-//
-//     void variable_declaration::serialize(
-//         hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> lhs >> rhs;
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     void statement::serialize(hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << *static_cast<statement_node_type*>(this);
-//     }
-//
-//     void statement::serialize(hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> *static_cast<statement_node_type*>(this);
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     void if_statement::serialize(
-//         hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << condition << then << else_;
-//     }
-//
-//     void if_statement::serialize(
-//         hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> condition >> then >> else_;
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     void while_statement::serialize(
-//         hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << condition << body;
-//     }
-//
-//     void while_statement::serialize(
-//         hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> condition >> body;
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     void return_statement::serialize(
-//         hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << expr;
-//     }
-//
-//     void return_statement::serialize(
-//         hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> expr;
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     void function::serialize(hpx::serialization::output_archive& ar, unsigned)
-//     {
-//         ar << return_type << function_name << args << body;
-//     }
-//
-//     void function::serialize(hpx::serialization::input_archive& ar, unsigned)
-//     {
-//         ar >> return_type >> function_name >> args >> body;
-//     }
-
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
@@ -454,19 +369,16 @@ namespace phylanx { namespace ast
 
     namespace detail
     {
-        struct to_string
+        void to_string::operator()(bool ast) const
         {
-            void operator()(bool ast) const
-            {
-                out_ << std::boolalpha << ast;
-            }
+            out_ << std::boolalpha << ast;
+        }
 
-            void operator()(std::string const& ast) const
+        void to_string::operator()(std::string const& ast) const
+        {
+            if (util::is_repr(out_))
             {
-                if (util::is_repr(out_))
-                {
-                    out_ << "\"";
-                }
+                out_ << "\"";
                 for (char c : ast)
                 {
                     switch (c)
@@ -480,26 +392,16 @@ namespace phylanx { namespace ast
                     default:    out_ << c;
                     }
                 }
-                if (util::is_repr(out_))
+                out_ << "\"";
+            }
+            else
+            {
+                for (char c : ast)
                 {
-                    out_ << "\"";
+                    out_ << c;
                 }
             }
-
-            template <typename Ast>
-            void operator()(util::recursive_wrapper<Ast> const& ast) const
-            {
-                out_ << ast.get();
-            }
-
-            template <typename Ast>
-            void operator()(Ast const& ast) const
-            {
-                out_ << ast;
-            }
-
-            std::ostream& out_;
-        };
+        }
     }
 
     std::ostream& operator<<(std::ostream& out, primary_expr const& pe)
@@ -564,7 +466,7 @@ namespace phylanx { namespace ast
     std::ostream& operator<<(
         std::ostream& out, std::vector<ast::expression> const& l)
     {
-        out << "'(";
+        out << "make_list(";
         bool first = true;
         for (auto const& arg : l)
         {
@@ -585,52 +487,4 @@ namespace phylanx { namespace ast
         str << expr;
         return str.str();
     }
-
-//     std::ostream& operator<<(std::ostream& out, assignment const& a)
-//     {
-//         out << "assignment";
-//         return out;
-//     }
-//
-//     std::ostream& operator<<(std::ostream& out, variable_declaration const& vd)
-//     {
-//         out << "variable_declaration";
-//         return out;
-//     }
-//
-//     std::ostream& operator<<(std::ostream& out, statement const& stmt)
-//     {
-//         out << "statement";
-//         return out;
-//     }
-//
-//     std::ostream& operator<<(std::ostream& out, if_statement const& if_)
-//     {
-//         out << "if_statement";
-//         return out;
-//     }
-//
-//     std::ostream& operator<<(std::ostream& out, while_statement const& while_)
-//     {
-//         out << "while_statement";
-//         return out;
-//     }
-//
-//     std::ostream& operator<<(std::ostream& out, return_statement const& ret)
-//     {
-//         out << "return_statement";
-//         return out;
-//     }
-//
-//     std::ostream& operator<<(std::ostream& out, function const& func)
-//     {
-//         out << "function";
-//         return out;
-//     }
-//
-//     std::ostream& operator<<(std::ostream& out, function_list const& fl)
-//     {
-//         out << "function_list";
-//         return out;
-//     }
 }}

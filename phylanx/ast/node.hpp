@@ -35,13 +35,6 @@ namespace phylanx { namespace ast
     struct expression;
     struct function_call;
 
-//     struct if_statement;
-//     struct while_statement;
-//     struct statement;
-//     struct return_statement;
-//
-//     using statement_list = std::list<statement>;
-
     ///////////////////////////////////////////////////////////////////////////
     //  The AST
     struct tagged
@@ -719,226 +712,6 @@ namespace phylanx { namespace ast
         return !(lhs == rhs);
     }
 
-//     ///////////////////////////////////////////////////////////////////////////
-//     struct assignment
-//     {
-//         identifier lhs;
-//         optoken operator_;
-//         expression rhs;
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     inline bool operator==(assignment const& lhs, assignment const& rhs)
-//     {
-//         return lhs.lhs == rhs.lhs && lhs.operator_ == rhs.operator_ &&
-//             lhs.rhs == rhs.rhs;
-//     }
-//     inline bool operator!=(assignment const& lhs, assignment const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     struct variable_declaration
-//     {
-//         identifier lhs;
-//         hpx::util::optional<expression> rhs;
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     inline bool operator==(
-//         variable_declaration const& lhs, variable_declaration const& rhs)
-//     {
-//         return lhs.lhs == rhs.lhs && lhs.rhs == rhs.rhs;
-//     }
-//     inline bool operator!=(
-//         variable_declaration const& lhs, variable_declaration const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     using statement_node_type = phylanx::ast::parser::extended_variant<
-//             nil
-//           , variable_declaration
-//           , assignment
-//           , phylanx::util::recursive_wrapper<if_statement>
-//           , phylanx::util::recursive_wrapper<while_statement>
-//           , phylanx::util::recursive_wrapper<return_statement>
-//           , phylanx::util::recursive_wrapper<statement_list>
-//           , phylanx::util::recursive_wrapper<expression>
-//         >;
-//
-//     struct statement : statement_node_type
-//     {
-//         statement() = default;
-//
-//         statement(nil val)
-//           : statement_node_type(val)
-//         {
-//         }
-//
-//         statement(variable_declaration const& val)
-//           : statement_node_type(val)
-//         {
-//         }
-//         statement(variable_declaration && val)
-//           : statement_node_type(std::move(val))
-//         {
-//         }
-//
-//         statement(assignment const& val)
-//           : statement_node_type(val)
-//         {
-//         }
-//         statement(assignment && val)
-//           : statement_node_type(std::move(val))
-//         {
-//         }
-//
-//         statement(if_statement const& val)
-//           : statement_node_type(val)
-//         {
-//         }
-//         statement(if_statement && val)
-//           : statement_node_type(std::move(val))
-//         {
-//         }
-//
-//         statement(while_statement const& val)
-//           : statement_node_type(val)
-//         {
-//         }
-//         statement(while_statement && val)
-//           : statement_node_type(std::move(val))
-//         {
-//         }
-//
-//         statement(return_statement const& val)
-//           : statement_node_type(val)
-//         {
-//         }
-//         statement(return_statement && val)
-//           : statement_node_type(std::move(val))
-//         {
-//         }
-//
-//         statement(statement_list const& val)
-//           : statement_node_type(val)
-//         {
-//         }
-//         statement(statement_list && val)
-//           : statement_node_type(std::move(val))
-//         {
-//         }
-//
-//         statement(expression const& val)
-//           : statement_node_type(val)
-//         {
-//         }
-//         statement(expression && val)
-//           : statement_node_type(std::move(val))
-//         {
-//         }
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     struct if_statement
-//     {
-//         expression condition;
-//         statement then;
-//         hpx::util::optional<statement> else_;
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     inline bool operator==(if_statement const& lhs, if_statement const& rhs)
-//     {
-//         return lhs.condition == rhs.condition && lhs.then == rhs.then &&
-//             lhs.else_ == rhs.else_;
-//     }
-//     inline bool operator!=(if_statement const& lhs, if_statement const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     struct while_statement
-//     {
-//         expression condition;
-//         statement body;
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     inline bool operator==(
-//         while_statement const& lhs, while_statement const& rhs)
-//     {
-//         return lhs.condition == rhs.condition && lhs.body == rhs.body;
-//     }
-//     inline bool operator!=(
-//         while_statement const& lhs, while_statement const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     struct return_statement : tagged
-//     {
-//         hpx::util::optional<expression> expr;
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     inline bool operator==(
-//         return_statement const& lhs, return_statement const& rhs)
-//     {
-//         return lhs.expr == rhs.expr;
-//     }
-//     inline bool operator!=(
-//         return_statement const& lhs, return_statement const& rhs)
-//     {
-//         return !(lhs == rhs);
-//     }
-//
-//     ///////////////////////////////////////////////////////////////////////////
-//     struct function
-//     {
-//         std::string return_type;
-//         identifier function_name;
-//         std::list<identifier> args;
-//         hpx::util::optional<statement_list> body;
-//
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::input_archive& ar, unsigned);
-//         PHYLANX_EXPORT void serialize(
-//             hpx::serialization::output_archive& ar, unsigned);
-//     };
-//
-//     using function_list = std::list<function>;
-
     ///////////////////////////////////////////////////////////////////////////
     // print functions for debugging
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& out, nil);
@@ -959,24 +732,31 @@ namespace phylanx { namespace ast
         std::ostream& out, function_call const& fc);
     PHYLANX_EXPORT std::ostream& operator<<(
         std::ostream& out, std::vector<ast::expression> const& fc);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, assignment const& assign);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, variable_declaration const& vd);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, statement const& stmt);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, if_statement const& if_);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, while_statement const& while_);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, return_statement const& ret);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, function const& func);
-//     PHYLANX_EXPORT std::ostream& operator<<(
-//         std::ostream& out, function_list const& fl);
 
     PHYLANX_EXPORT std::string to_string(expression const& expr);
+
+    namespace detail
+    {
+        struct to_string
+        {
+            PHYLANX_EXPORT void operator()(bool ast) const;
+            PHYLANX_EXPORT void operator()(std::string const& ast) const;
+
+            template <typename Ast>
+            void operator()(util::recursive_wrapper<Ast> const& ast) const
+            {
+                out_ << ast.get();
+            }
+
+            template <typename Ast>
+            void operator()(Ast const& ast) const
+            {
+                out_ << ast;
+            }
+
+            std::ostream& out_;
+        };
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     struct literal_argument_type;

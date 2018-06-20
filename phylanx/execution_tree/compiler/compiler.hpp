@@ -264,6 +264,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             static std::size_t sequence_number = 0;
             static std::string type("access-variable");
+
             // The compiler does not know if it was the name of the instance or
             // a primitive.
             HPX_ASSERT(name_parts.instance.empty());

@@ -7,6 +7,7 @@
 #define PHYLANX_PRIMITIVES_PRIMITIVE_COMPONENTBASE__FEB_10_2018_0141PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -136,6 +137,9 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::string generate_error_message(std::string const& msg,
         std::string const& name, std::string const& codename);
+    PHYLANX_EXPORT std::string generate_error_message(std::string const& msg,
+        compiler::primitive_name_parts const& parts,
+        std::string const& codename);
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Primitive>
