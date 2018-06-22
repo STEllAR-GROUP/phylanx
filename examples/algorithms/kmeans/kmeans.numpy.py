@@ -7,17 +7,15 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-# Phylanx K-Means algorithm example in Python. Iteratively
-# clusters provided or randomly generated points into 3 clusters for the
-# specified number of iterations.
+# Phylanx K-Means algorithm example in Python. Iteratively clusters 250
+# randomly generated points into 3 clusters for the specified number of
+# iterations.
 #
 # Code adapted from: http://flothesof.github.io/k-means-numpy.html
 # Original source code is BSD-licensed
 #
-# \param centroids Number of centroids. Default is 3.
-# \param iterations Number of iterations. Default is 2.
-# \param csv-file Path to dataset file. Default is to generate 250 random points.
-# \returns the cluster centroids.
+# \param iterations Number of iterations
+# \returns the cluster centroids
 
 import argparse
 import csv
@@ -43,7 +41,8 @@ def move_centroids(points, closest, centroids):
 def kmeans(points, k, iterations):
     centroids = initialize_centroids(points, k)
     for i in range(iterations):
-        centroids = move_centroids(points, closest_centroid(points, centroids), centroids)
+        centroids = move_centroids(points, closest_centroid(points, centroids),
+                                   centroids)
     return centroids
 
 
@@ -55,25 +54,31 @@ def generate_random():
     ))
 
 
-def main():
+def csv_records(path):
+    with argparse.FileType('r')(path) as csv_file:
+        data = [d for d in csv.reader(csv_file, delimiter=',')]
+        return np.asarray(data, dtype=np.float_)
+
+
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--centroids', type=int, default=3)
     parser.add_argument('--iterations', type=int, default=2)
-    parser.add_argument('--csv-file', type=argparse.FileType('r'))
-    parser.add_argument('--dry-run', type=bool, nargs='?', const=True, default=False)
-    args = parser.parse_args()
+    parser.add_argument('--csv-file', dest='points', type=csv_records,
+                        default=generate_random())
+    parser.add_argument('--dry-run', type=bool, nargs='?', const=True,
+                        default=False)
+    return parser.parse_args()
 
-    if args.csv_file:
-        d_iter = csv.reader(args.csv_file, delimiter=',')
-        data = [d for d in d_iter]
-        points = np.asarray(data, dtype=np.float_)
-    else:
-        points = generate_random()
+
+def main():
+    args = parse_args()
 
     if args.dry_run:
-        print('Will run kmeans', points.shape, args.centroids, args.iterations)
+        print('kmeans', args.points.shape, args.centroids, args.iterations)
     else:
-        print('Cluster centroids are:\n', kmeans(points, 3, 2))
+        print('Cluster centroids are:\n',
+              kmeans(args.points, args.centroids, args.iterations))
 
 
 if __name__ == '__main__':
