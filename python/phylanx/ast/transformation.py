@@ -417,7 +417,23 @@ class PhySL:
         nn = args[1].__class__.__name__
         if nn == "Add":
             sym = "+"
-        arg0 = '%s' % full_node_name(args[0], args[0].id)
+        elif nn == "Sub":
+            sym = "-"
+        elif nn == "Mult":
+            sym = "*"
+        elif nn == "Div":
+            sym = "/"
+        else:
+            raise LookupError("Undefined arithmetic self-assignment operation discovered: %s=" % (nn,))
+
+        id_ = "UNKNOWN_ID"
+        if type(args[0]) == ast.Subscript:
+            id_ = args[0].value.id
+        else:
+            id_ = args[0].id
+
+        arg0 = '%s' % full_node_name(args[0], id_)
+
         return "store%s(" % symbol_info + arg0 + ", " + arg0 + sym + self.recompile(
             args[2]) + ")"
 
