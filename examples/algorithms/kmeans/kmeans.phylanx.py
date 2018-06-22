@@ -18,6 +18,8 @@
 # \returns the cluster centroids
 
 from phylanx.ast import *
+import argparse
+import csv
 import numpy as np
 
 
@@ -61,10 +63,40 @@ def kmeans(points, k, iterations):
     return centroids
 
 
-if __name__ == '__main__':
-    points = np.vstack((
+def generate_random():
+    return np.vstack((
         (np.random.randn(150, 2) * 0.75 + np.array([1, 0])),
         (np.random.randn(50, 2) * 0.25 + np.array([-0.5, 0.5])),
         (np.random.randn(50, 2) * 0.5 + np.array([-0.5, -0.5]))
     ))
-    print('Cluster centroids are:\n', kmeans(points, 3, 2))
+
+
+def csv_records(path):
+    with argparse.FileType('r')(path) as csv_file:
+        data = [d for d in csv.reader(csv_file, delimiter=',')]
+        return np.asarray(data, dtype=np.float_)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--centroids', type=int, default=3)
+    parser.add_argument('--iterations', type=int, default=2)
+    parser.add_argument('--csv-file', dest='points', type=csv_records,
+                        default=generate_random())
+    parser.add_argument('--dry-run', type=bool, nargs='?', const=True,
+                        default=False)
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
+    if args.dry_run:
+        print('kmeans', args.points.shape, args.centroids, args.iterations)
+    else:
+        print('Cluster centroids are:\n',
+              kmeans(args.points, args.centroids, args.iterations))
+
+
+if __name__ == '__main__':
+    main()
