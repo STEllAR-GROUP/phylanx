@@ -64,12 +64,18 @@ endif(APPLE)
 
 include_directories(${pybind11_INCLUDE_DIR})
 
+# this makes sure CMake uses the proper HPX library dependencies
 target_link_libraries(phylanx_py
   PRIVATE
     phylanx_component
     blaze::blaze
-    ${pybind11_LIBRARIES}
-    "-L${HPX_LIBRARY_DIR}")
+    ${pybind11_LIBRARIES})
+if(NOT MSVC)
+    foreach(dir ${HPX_LIBRARY_DIR})
+        target_link_libraries(phylanx_py PRIVATE -L${dir})
+    endforeach()
+endif()
+
 target_include_directories(phylanx_py
   PRIVATE
     ${pybind11_INCLUDE_DIR}
