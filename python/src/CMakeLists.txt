@@ -68,7 +68,8 @@ target_link_libraries(phylanx_py
   PRIVATE
     phylanx_component
     blaze::blaze
-    ${pybind11_LIBRARIES})
+    ${pybind11_LIBRARIES}
+    "-L${HPX_LIBRARY_DIR}")
 target_include_directories(phylanx_py
   PRIVATE
     ${pybind11_INCLUDE_DIR}
