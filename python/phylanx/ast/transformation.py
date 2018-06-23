@@ -424,9 +424,8 @@ class PhySL:
         elif nn == "Div":
             sym = "/"
         else:
-            raise LookupError(
-                "Undefined operation discovered: %s="
-                    % (nn,))
+            le_str = "Undefined operation discovered: %s="
+            raise LookupError( le_str % (nn,))
 
         id_ = "UNKNOWN_ID"
         if type(args[0]) == ast.Subscript:
