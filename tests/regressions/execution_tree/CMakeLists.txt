@@ -5,6 +5,7 @@
 
 set(tests
     allow_empty_blocks_278
+    assign_variable_twice_491
     assign_wrong_variable_245
     cout_noargs_prints_nothing_159
     cout_prints_twice_155
