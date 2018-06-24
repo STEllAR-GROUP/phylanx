@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name_, codename_));
         }
 
-        if (!operands_.empty())
+        if (valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
         }
@@ -66,6 +66,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type variable::bind(
         std::vector<primitive_argument_type> const& args) const
     {
+        if (!valid(operands_[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::bind",
+                execution_tree::generate_error_message(
+                    "the expression representing the variable target "
+                        "has not been initialized",
+                    name_, codename_));
+        }
+
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {

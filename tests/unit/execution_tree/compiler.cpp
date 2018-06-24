@@ -600,11 +600,11 @@ int main(int argc, char* argv[])
     test_use_builtin_function();
     test_use_builtin_function_ind();
 
-//    test_define_curry_function();
+//     test_define_curry_function();
     test_define_embedded_function();
 
-//     test_recursive_function();
-//
+    test_recursive_function();
+
 //     test_define_call_lambda_function_noarg();
 //     test_define_call_lambda_function();
 //     test_define_call_lambda_function_ind();

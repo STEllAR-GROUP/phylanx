@@ -353,8 +353,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
             f = function{primitive_argument_type{
                     create_primitive_component(
                         default_locality_, name_parts.primitive,
-                        handle_lambda(args, body).arg_, variable_name, name_)
+                        primitive_argument_type{}, variable_name, name_)
                 }, variable_name};
+
+            primitive_operand(f.arg_, variable_name, name_).store(
+                hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
 
             // the define-variable object is invoked whenever a define() is
             // executed
