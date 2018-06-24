@@ -74,17 +74,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::move(elements), std::move(name_parts), codename);
         }
 
-        template <typename ... Ts>
-        function operator()(Ts &&... ts) const
-        {
-            std::list<function> elements;
-            int const sequencer_[] = {
-                0, (elements.emplace_back(std::forward<Ts>(ts)), 0)...
-            };
-            (void)sequencer_;
-            return derived().compose(std::move(elements));
-        }
-
     protected:
         hpx::id_type locality_;
     };
@@ -98,8 +87,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
           , f_(f)
         {}
 
-        function compose(std::list<function> && args,
-            primitive_name_parts name_parts, std::string const& codename) const
+        function compose(std::list<function>&& args,
+            primitive_name_parts&& name_parts,
+            std::string const& codename) const
         {
             arguments_type fargs;
             fargs.reserve(args.size());
@@ -141,49 +131,29 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
     static const primitive_literal_value literal_value = {};
 
-    // compose a primitive::variable
-    struct primitive_variable
+    // compose a define-variable object
+    struct define_operation : compiled_actor<define_operation>
     {
-        explicit primitive_variable(
+        explicit define_operation(
                 hpx::id_type const& locality = hpx::find_here())
-          : locality_(locality)
+          : compiled_actor<define_operation>(locality)
         {}
 
         function operator()(argument_type && arg,
-            primitive_name_parts name_parts,
+            primitive_name_parts&& name_parts,
             std::string const& codename = "<unknown>") const
         {
             if (name_parts.instance.empty())
             {
                 name_parts.instance = name_parts.primitive;
-                name_parts.primitive = "define-variable";
             }
+            name_parts.primitive = "define-variable";
 
             std::string full_name = compose_primitive_name(name_parts);
-
-            return function{
-                primitive_argument_type{create_primitive_component(locality_,
-                    "define-variable", std::move(arg), full_name, codename)},
-                full_name};
-        }
-
-    private:
-        hpx::id_type locality_;
-    };
-
-    // compose a  nil{} value
-    struct always_nil
-    {
-        always_nil() = default;
-
-        function operator()() const
-        {
-            return function{ast::nil{}, "always-nil"};
-        }
-        function operator()(primitive_name_parts && name_parts) const
-        {
-            name_parts.instance = "always-nil";
-            return function{ast::nil{}, compose_primitive_name(name_parts)};
+            return function{primitive_argument_type{
+                create_primitive_component(this->locality_,
+                    name_parts.primitive, std::move(arg), full_name, codename)
+                }, full_name};
         }
     };
 
@@ -215,116 +185,108 @@ namespace phylanx { namespace execution_tree { namespace compiler
     };
 
     // compose an argument selector
-    struct argument
+    struct access_argument : compiled_actor<access_argument>
     {
-        argument(hpx::id_type const& locality = hpx::find_here())
-          : locality_(locality)
+        access_argument(hpx::id_type const& locality = hpx::find_here())
+          : compiled_actor<access_argument>(locality)
         {
         }
 
-        function operator()(std::size_t n, primitive_name_parts name_parts,
+        function operator()(std::size_t n, primitive_name_parts&& name_parts,
             std::string const& codename = "<unknown>") const
         {
             static std::size_t sequence_number = 0;
-            static std::string type("access-argument");
-            // The compiler does not know if it was the name of the instance or
-            // a primitive.
-            HPX_ASSERT(name_parts.instance.empty());
-            name_parts.instance = name_parts.primitive;
-            name_parts.primitive = type;
+
+            if (name_parts.instance.empty())
+            {
+                name_parts.instance = name_parts.primitive;
+            }
+            name_parts.primitive = "access-argument";
             name_parts.sequence_number = sequence_number++;
 
             std::string const full_name =
                 compose_primitive_name(name_parts);
 
             return function{
-                primitive_argument_type{create_primitive_component(locality_,
-                    type, primitive_argument_type{std::int64_t(n)}, full_name,
+                primitive_argument_type{create_primitive_component(
+                    this->locality_, name_parts.primitive,
+                    primitive_argument_type{std::int64_t(n)}, full_name,
                     codename)},
                 full_name};
         }
-
-        hpx::id_type locality_;
     };
 
-    // compose an external variable
-    struct external_variable : compiled_actor<external_variable>
+    // compose an object that accesses an existing variable
+    struct access_variable : compiled_actor<access_variable>
     {
         // we must hold f by reference
         std::reference_wrapper<function const> f_;
 
-        explicit external_variable(function const& f,
+        explicit access_variable(function const& f,
                 hpx::id_type const& locality = hpx::find_here())
-          : compiled_actor<external_variable>(locality)
+          : compiled_actor<access_variable>(locality)
           , f_(f)
         {}
 
-        function compose(std::list<function> && elements,
-            primitive_name_parts name_parts, std::string const& codename) const
+        function compose(std::list<function>&& elements,
+            primitive_name_parts&& name_parts,
+            std::string const& codename) const
         {
-            static std::size_t sequence_number = 0;
-            static std::string type("access-variable");
-
-            // The compiler does not know if it was the name of the instance or
-            // a primitive.
-            HPX_ASSERT(name_parts.instance.empty());
-            name_parts.instance = name_parts.primitive;
-            name_parts.primitive = type;
-            name_parts.sequence_number = sequence_number++;
+            if (name_parts.instance.empty())
+            {
+                name_parts.instance = name_parts.primitive;
+            }
+            name_parts.primitive = "access-variable";
 
             std::string full_name = compose_primitive_name(name_parts);
 
             return function{
-                primitive_argument_type{create_primitive_component(
-                    this->locality_, type, f_.get().arg_, full_name,
-                    codename)},
+                primitive_argument_type{
+                    create_primitive_component(
+                        this->locality_, name_parts.primitive, f_.get().arg_,
+                        full_name, codename)
+                },
                 full_name};
         }
     };
 
-    // compose an external function
-    struct external_function : compiled_actor<external_function>
+    // compose a call-function object
+    struct call_function : compiled_actor<call_function>
     {
         // we must hold f by reference because functions can be recursive
         std::reference_wrapper<function const> f_;
-        std::size_t sequence_number_;
 
-        explicit external_function(function const& f,
-                std::size_t sequence_number = std::size_t(-1),
+        explicit call_function(function const& f,
                 hpx::id_type const& locality = hpx::find_here())
-          : compiled_actor<external_function>(locality)
+          : compiled_actor<call_function>(locality)
           , f_(f)
-          , sequence_number_(sequence_number)
         {}
 
-        function compose(std::list<function> && elements,
-            primitive_name_parts name_parts, std::string const& codename) const
+        function compose(std::list<function>&& elements,
+            primitive_name_parts&& name_parts,
+            std::string const& codename) const
         {
-            // The compiler does not know if it was the name of the instance or
-            // a primitive.
             HPX_ASSERT(name_parts.instance.empty());
             name_parts.instance = name_parts.primitive;
+            name_parts.primitive = "call-function";
 
-            arguments_type fargs;
+            std::vector<primitive_argument_type> fargs;
             fargs.reserve(elements.size() + 1);
 
             fargs.push_back(f_.get().arg_);
-            for (auto const& arg : elements)
+            for (auto && elem : elements)
             {
-                fargs.push_back(arg.arg_);
+                fargs.push_back(elem.arg_);
             }
 
-            static std::string type("call-function");
-            name_parts.primitive = type;
-            name_parts.sequence_number = sequence_number_;
-
-            std::string full_name =
-                compose_primitive_name(name_parts);
+            std::string full_name = compose_primitive_name(name_parts);
 
             return function{
-                primitive_argument_type{create_primitive_component(
-                    this->locality_, type, std::move(fargs), full_name,
-                    codename)},
+                primitive_argument_type{
+                    create_primitive_component(
+                        this->locality_, name_parts.primitive, std::move(fargs),
+                        full_name, codename)
+                },
                 full_name};
         }
     };

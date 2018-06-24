@@ -12,7 +12,6 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -23,7 +22,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //
     // This is a helper primitive needed for proper binding of the expression
     // value to a variable.
-    class define_variable : public primitive_component_base
+    class define_variable
+      : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
@@ -44,10 +44,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // return the topology for this variable definition
         topology expression_topology(
             std::set<std::string>&& functions) const override;
-
-    private:
-        primitive_argument_type body_;
-        mutable primitive_argument_type target_;
     };
 }}}
 

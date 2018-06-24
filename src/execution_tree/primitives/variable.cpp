@@ -11,8 +11,8 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/unlock_guard.hpp>
 
+#include <memory>
 #include <mutex>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -41,7 +41,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     variable::variable(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
-      , evaluated_(false)
     {
         if (operands_.size() != 1)
         {
@@ -61,29 +60,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> variable::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        using lock_type = std::unique_lock<mutex_type>;
-        lock_type l(mtx_);
+        return hpx::make_ready_future(value_);
+    }
 
-        if (!evaluated_)
+    primitive_argument_type variable::bind(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
         {
-            primitive_argument_type result;
-            {
-                hpx::util::unlock_guard<lock_type> ul(l);
-                result =
-                    value_operand_sync(operands_[0], args, name_, codename_);
-            }
-            operands_[0] = std::move(result);
-            evaluated_ = true;
+            value_ = p->bind(args);
         }
-
-        return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        else
+        {
+            value_ = extract_ref_value(operands_[0]);
+        }
+        return {};
     }
 
     void variable::store(primitive_argument_type && data)
     {
-        std::lock_guard<mutex_type> l(mtx_);
         operands_[0] = extract_copy_value(std::move(data));
-        evaluated_ = true;
     }
 
     topology variable::expression_topology(std::set<std::string>&&) const

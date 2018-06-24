@@ -138,19 +138,15 @@ namespace phylanx { namespace execution_tree
         std::vector<primitive_argument_type> const& params) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        return detail::lazy_trace("eval", *this,
-                hpx::async<action_type>(hpx::launch::sync,
-                    this->base_type::get_id(), params)
-            ).get();
+        return detail::trace("eval", *this,
+                action_type()(this->base_type::get_id(), params).get());
     }
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         std::vector<primitive_argument_type> && params) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        return detail::lazy_trace("eval", *this,
-                hpx::async<action_type>(hpx::launch::sync,
-                    this->base_type::get_id(), std::move(params))
-            ).get();
+        return detail::trace("eval", *this,
+            action_type()(this->base_type::get_id(), std::move(params)).get());
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy) const

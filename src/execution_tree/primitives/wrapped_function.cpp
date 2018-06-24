@@ -11,7 +11,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
-#include <set>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -57,84 +57,56 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> wrapped_function::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        // evaluation of the define-function yields the function body
-        primitive_argument_type body;
-
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            body = value_operand_sync(operands_[0], params, name_, codename_);
-        }
-        else
-        {
-            body = operands_[0];
-        }
-
         std::vector<primitive_argument_type> fargs;
-        if (operands_.size() == 1)
-        {
-            // no pre-bound arguments
-            fargs.reserve(params.size() + 1);
-            fargs.push_back(std::move(body));
-            std::copy(params.begin(), params.end(), std::back_inserter(fargs));
-
-            static std::string type("function");
-
-            return hpx::make_ready_future(
-                primitive_argument_type{
-                    create_primitive_component(hpx::find_here(),
-                        type, std::move(fargs),
-                        extract_function_name(name_), codename_)
-                });
-        }
-
         fargs.reserve(operands_.size() - 1);
+
+        // pass along pre-bound arguments
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
             fargs.push_back(value_operand_sync(*it, params, name_, codename_));
         }
-        return value_operand(body, std::move(fargs), name_, codename_);
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping(
+                [this_](primitive_argument_type&& func,
+                    std::vector<primitive_argument_type>&& args)
+                {
+                    return value_operand_sync(std::move(func), std::move(args),
+                        this_->name_, this_->codename_);
+                }),
+            value_operand(operands_[0], params, name_, codename_),
+            std::move(fargs));
     }
 
     primitive_argument_type wrapped_function::bind(
         std::vector<primitive_argument_type> const& params) const
     {
         // evaluation of the define-function yields the function body
-        primitive_argument_type body;
-
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            body = p->bind(params);
-        }
-        else
-        {
-            body = operands_[0];
-        }
+            std::vector<primitive_argument_type> fargs;
+            fargs.reserve(operands_.size() - 1);
 
-        std::vector<primitive_argument_type> fargs;
-        if (operands_.size() == 1)
-        {
-            // no pre-bound arguments
-            fargs.reserve(params.size() + 1);
-            fargs.push_back(std::move(body));
-            std::copy(params.begin(), params.end(), std::back_inserter(fargs));
+            // handle pre-bound arguments
+            for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+            {
+                // bind pre-bound arguments using actual ones
+                primitive const* arg = util::get_if<primitive>(&*it);
+                if (arg != nullptr)
+                {
+                    fargs.push_back(arg->bind(params));
+                }
+                else
+                {
+                    fargs.push_back(extract_ref_value(*it));
+                }
+            }
 
-            static std::string type("function");
-
-            return primitive_argument_type{
-                    create_primitive_component(hpx::find_here(),
-                        type, std::move(fargs),
-                        extract_function_name(name_), codename_)
-                };
+            p->bind(std::move(fargs));
         }
-
-        fargs.reserve(operands_.size() - 1);
-        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
-        {
-            fargs.push_back(value_operand_sync(*it, params, name_, codename_));
-        }
-        return value_operand_sync(body, std::move(fargs), name_, codename_);
+        return {};
     }
 
     topology wrapped_function::expression_topology(

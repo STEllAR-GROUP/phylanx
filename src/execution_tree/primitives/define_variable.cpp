@@ -13,7 +13,6 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/assert.hpp>
 
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -52,43 +51,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "operand",
                     name_, codename_));
         }
-
-        // target is assumed to be operands_[1]
-        operands_.resize(2);
     }
 
     hpx::future<primitive_argument_type> define_variable::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        // this proxy was created where the variable should be created on.
-        if (!valid(operands_[1]))
+        // evaluate the expression bound to this name and store the value in
+        // the associated variable
+        primitive* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
         {
-            std::vector<primitive_argument_type> operands;
-            operands.push_back(operands_[0]);
-
-            auto name_parts = compiler::parse_primitive_name(name_);
-
-            HPX_ASSERT(name_parts.primitive == "define-variable");
-            name_parts.primitive = "variable";
-
-            operands_[1] = primitive_argument_type{
-                create_primitive_component(
-                    hpx::find_here(), name_parts.primitive, std::move(operands),
-                    compiler::compose_primitive_name(name_parts), codename_)
-                };
-
-            // bind this name to the result of the expression right away
-            primitive* p = util::get_if<primitive>(&operands_[1]);
-            if (p != nullptr)
-            {
-                p->eval(hpx::launch::sync, args);
-            }
-
-            return hpx::make_ready_future(extract_ref_value(operands_[1]));
+            p->bind(args);
         }
-
-        // just evaluate the expression bound to this name
-        return value_operand(operands_[1], args, name_, codename_);
+        return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
     void define_variable::store(primitive_argument_type && val)

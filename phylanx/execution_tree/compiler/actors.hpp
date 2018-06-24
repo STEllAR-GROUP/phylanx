@@ -318,7 +318,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 for (auto const& element : elements_)
                 {
-                    fargs.push_back(primitive_argument_type{element(args)});
+                    fargs.emplace_back(element(args));
                 }
 
                 return f_.get()(std::move(fargs));

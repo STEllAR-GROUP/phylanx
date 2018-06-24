@@ -12,13 +12,15 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <set>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class wrapped_function : public primitive_component_base
+    class wrapped_function
+      : public primitive_component_base
+      , public std::enable_shared_from_this<wrapped_function>
     {
     public:
         static match_pattern_type const match_data;

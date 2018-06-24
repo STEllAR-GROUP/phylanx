@@ -151,6 +151,11 @@ namespace phylanx { namespace execution_tree
           , ir::range
         >;
 
+    PHYLANX_EXPORT primitive_argument_type extract_copy_value(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
     struct primitive_argument_type : argument_value_type
     {
         primitive_argument_type() = default;
@@ -298,6 +303,26 @@ namespace phylanx { namespace execution_tree
         inline primitive_argument_type
         operator()(std::vector<primitive_argument_type> const& args) const;
 
+        inline primitive_argument_type
+        operator()(std::vector<primitive_argument_type> && args) const;
+
+        template <typename ... Ts>
+        primitive_argument_type operator()(Ts &&... ts) const
+        {
+            std::vector<primitive_argument_type> args;
+            args.reserve(sizeof...(Ts));
+
+            int const sequencer_[] = {
+                0, (args.emplace_back(
+                        extract_copy_value(primitive_argument_type{
+                            std::forward<Ts>(ts)
+                        })), 0)...
+            };
+            (void)sequencer_;
+
+            return (*this)(std::move(args));
+        }
+
         explicit operator bool() const
         {
             return variant().index() != 0;
@@ -389,6 +414,12 @@ namespace phylanx { namespace execution_tree
         return value_operand_sync(*this, args);
     }
 
+    inline primitive_argument_type primitive_argument_type::operator()(
+        std::vector<primitive_argument_type> && args) const
+    {
+        return value_operand_sync(*this, std::move(args));
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive_argument_type to_primitive_value_type(
         ast::literal_value_type && val);
@@ -409,10 +440,6 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
     PHYLANX_EXPORT primitive_argument_type extract_ref_value(
-        primitive_argument_type const& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT primitive_argument_type extract_copy_value(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
