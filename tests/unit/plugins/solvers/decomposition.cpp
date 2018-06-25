@@ -1,8 +1,8 @@
-//  Copyright (c) 2018 Hartmut Kaiser
-//  Copyright (c) 2017-2018 Shahrzad Shirzad
+// Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Shahrzad Shirzad
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/phylanx.hpp>
 
@@ -35,8 +35,8 @@ void test_decomposition_lu_PhySL()
         define(L,slice(b,0)),
         define(U,slice(b,1)),
         define(P,slice(b,2)),
-	    define(result, false),
-	    if (all(A == dot(dot(L, U), P)), store(result, true), store(result, false)),
+        define(result, false),
+        if (all(A == dot(dot(L, U), P)), store(result, true), store(result, false)),
             if ((all(L == [[10, 0, 0], [-3, 12, 0], [5, 12, -1]]) &&
             all(U == [[1, -1, 0], [0, 1, 0.5], [0, 0, 1]]))
             && (all(P == [[1, 0, 0], [0, 1, 0], [0, 0, 1]])),
