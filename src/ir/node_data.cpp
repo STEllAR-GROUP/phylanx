@@ -1293,7 +1293,7 @@ namespace phylanx { namespace ir
                 {
                     out << ", ";
                 }
-                out << T(r[i]);
+                out << std::setprecision(8) << T(r[i]);
             }
             out << "]";
         }
@@ -1306,7 +1306,7 @@ namespace phylanx { namespace ir
         switch (dims)
         {
         case 0:
-            out << nd[0];
+            out << std::setprecision(8) << nd[0];
             break;
 
         case 1: HPX_FALLTHROUGH;
