@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_WRAPPED_PRIMITIVE_OCT_22_2017_0111PM)
-#define PHYLANX_PRIMITIVES_WRAPPED_PRIMITIVE_OCT_22_2017_0111PM
+#if !defined(PHYLANX_PRIMITIVES_CALL_FUNCCTION_OCT_22_2017_0111PM)
+#define PHYLANX_PRIMITIVES_CALL_FUNCCTION_OCT_22_2017_0111PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -12,22 +12,24 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class wrapped_function
+    class call_function
       : public primitive_component_base
-      , public std::enable_shared_from_this<wrapped_function>
+      , public std::enable_shared_from_this<call_function>
     {
     public:
         static match_pattern_type const match_data;
 
-        wrapped_function() = default;
+        call_function() = default;
 
-        wrapped_function(std::vector<primitive_argument_type>&& operands,
+        call_function(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
         // return the topology for this function definition
@@ -37,8 +39,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
-        primitive_argument_type bind(
+        bool bind(
             std::vector<primitive_argument_type> const& args) const override;
+
+        void store(primitive_argument_type&& data) override;
+        void set_num_arguments(std::size_t) override;
+
+    private:
+        std::size_t num_arguments_;
     };
 }}}
 

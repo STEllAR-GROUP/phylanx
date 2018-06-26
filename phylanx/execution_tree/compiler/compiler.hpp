@@ -216,16 +216,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
     };
 
-    // compose an object that accesses an existing variable
-    struct access_variable : compiled_actor<access_variable>
+    // compose an object that accesses an existing variable or function
+    struct access_target : compiled_actor<access_target>
     {
         // we must hold f by reference
         std::reference_wrapper<function const> f_;
+        std::string target_name_;
 
-        explicit access_variable(function const& f,
+        explicit access_target(function const& f,
+                std::string && target_name,
                 hpx::id_type const& locality = hpx::find_here())
-          : compiled_actor<access_variable>(locality)
+          : compiled_actor<access_target>(locality)
           , f_(f)
+          , target_name_(std::move(target_name))
         {}
 
         function compose(std::list<function>&& elements,
@@ -236,7 +239,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             {
                 name_parts.instance = name_parts.primitive;
             }
-            name_parts.primitive = "access-variable";
+            name_parts.primitive = target_name_;
 
             std::string full_name = compose_primitive_name(name_parts);
 
@@ -248,6 +251,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 },
                 full_name};
         }
+    };
+
+    struct access_variable : access_target
+    {
+        explicit access_variable(function const& f,
+                hpx::id_type const& locality = hpx::find_here())
+          : access_target(f, "access-variable", locality)
+        {}
+    };
+
+    struct access_function : access_target
+    {
+        explicit access_function(function const& f,
+                hpx::id_type const& locality = hpx::find_here())
+          : access_target(f, "access-function", locality)
+        {}
     };
 
     // compose a call-function object
@@ -281,13 +300,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             std::string full_name = compose_primitive_name(name_parts);
 
-            return function{
-                primitive_argument_type{
-                    create_primitive_component(
-                        this->locality_, name_parts.primitive, std::move(fargs),
-                        full_name, codename)
-                },
-                full_name};
+            auto cf = create_primitive_component(this->locality_,
+                name_parts.primitive, std::move(fargs), full_name, codename);
+            cf.set_num_arguments(elements.size());
+            return function{primitive_argument_type{std::move(cf)}, full_name};
         }
     };
 

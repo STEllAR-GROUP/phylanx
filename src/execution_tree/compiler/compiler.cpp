@@ -251,11 +251,18 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         ///////////////////////////////////////////////////////////////////////
-        function handle_lambda(
+        function compile_body(ast::expression const& body) const
+        {
+            environment env(&env_);
+            return compile(
+                name_, body, snippets_, env, patterns_, default_locality_);
+        }
+
+        function compile_body(
             std::vector<ast::expression> const& args,
             ast::expression const& body) const
         {
-            std::size_t base_arg_num = 0; // env_.base_arg_num();
+            std::size_t base_arg_num = env_.base_arg_num();
             environment env(&env_, args.size());
             for (std::size_t i = 0; i != args.size(); ++i)
             {
@@ -270,6 +277,34 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 name_, body, snippets_, env, patterns_, default_locality_);
         }
 
+        function compile_lambda(std::vector<ast::expression> const& args,
+            ast::expression const& body, ast::tagged const& id)
+        {
+            snippets_.snippets_.emplace_back(function{});
+            function& f = snippets_.snippets_.back();
+
+            static std::string define_lambda_("lambda");
+
+            primitive_name_parts name_parts(define_lambda_,
+                snippets_.sequence_numbers_[define_lambda_]++,
+                id.id, id.col, snippets_.compile_id_ - 1);
+
+            std::string lambda_name = compose_primitive_name(name_parts);
+            f = function{
+                    primitive_argument_type{create_primitive_component(
+                        default_locality_, name_parts.primitive,
+                        primitive_argument_type{}, lambda_name, name_)},
+                    lambda_name};
+
+            auto p = primitive_operand(f.arg_, lambda_name, name_);
+
+            p.store(
+                hpx::launch::sync, std::move(compile_body(args, body).arg_));
+            p.set_num_arguments(hpx::launch::sync, args.size());
+
+            return f;
+        }
+
         function handle_lambda(
             std::multimap<std::string, ast::expression>& placeholders,
             ast::tagged const& lambda_id)
@@ -279,37 +314,11 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 typename std::multimap<std::string, ast::expression>::iterator;
             std::pair<iterator, iterator> p = placeholders.equal_range("__1");
 
+            // extract expressions representing the newly defined function
             auto args = extract_lambda_arguments(p, lambda_id);
             auto body = extract_lambda_body(p, lambda_id);
 
-            static std::string define_lambda_("define-lambda");
-            std::size_t sequence_number =
-                snippets_.sequence_numbers_[define_lambda_]++;
-
-            // extract expressions representing the newly defined function
-            // and store new function description for later use
-            snippets_.snippets_.emplace_back(function{});
-            function& f = snippets_.snippets_.back();
-
-            primitive_name_parts name_parts("lambda", sequence_number,
-                lambda_id.id, lambda_id.col, snippets_.compile_id_ - 1);
-
-            std::string lambda_name = compose_primitive_name(name_parts);
-
-            static std::string function_("call-function");
-            sequence_number =
-                snippets_.sequence_numbers_[function_]++;
-
-            auto extf = call_function(f, default_locality_);
-
-            // create define_function helper object
-            f = primitive_function{default_locality_}(name_parts, name_);
-
-            // set the body for the compiled function
-            primitive_operand(f.arg_, lambda_name, name_).set_body(
-                hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
-
-            return extf({}, name_parts, name_);
+            return compile_lambda(args, body, lambda_id);
         }
 
         function handle_define(
@@ -329,35 +338,78 @@ namespace phylanx { namespace execution_tree { namespace compiler
             ast::expression name_expr = extract_name(p, define_id);
             std::string name = ast::detail::identifier_name(name_expr);
 
-            // get global name of the component created
-            static std::string variable_("variable");
-            ast::tagged id = ast::detail::tagged_id(name_expr);
-
-            primitive_name_parts name_parts(variable_,
-                snippets_.sequence_numbers_[variable_]++,
-                id.id, id.col, snippets_.compile_id_ - 1);
-            name_parts.instance = name;
-
             auto args = extract_define_arguments(p, define_id);
             auto body = extract_define_body(p, define_id);
+
+            ast::tagged id = ast::detail::tagged_id(name_expr);
 
             // define(x, ...) creates a new variable that stores the value of x
             //
             // The symbol table will hold a compiler-function that returns an
             // object of type 'access-variable' that extracts the current value
             // of the variable it refers to.
-            env_.define(std::move(name), access_variable(f, default_locality_));
 
-            // now create the variable object
-            std::string variable_name = compose_primitive_name(name_parts);
-            f = function{primitive_argument_type{
-                    create_primitive_component(
-                        default_locality_, name_parts.primitive,
-                        primitive_argument_type{}, variable_name, name_)
-                }, variable_name};
+            // a define() either sets up a named variable or a named lambda
+            primitive_name_parts name_parts;
+            if (args.empty())
+            {
+                // get global name of the component created
+                std::string variable_type = "variable";
 
-            primitive_operand(f.arg_, variable_name, name_).store(
-                hpx::launch::sync, std::move(handle_lambda(args, body).arg_));
+                name_parts = primitive_name_parts(variable_type,
+                    snippets_.sequence_numbers_[variable_type]++,
+                    id.id, id.col, snippets_.compile_id_ - 1);
+                name_parts.instance = std::move(name);
+
+                env_.define(name_parts.instance,
+                    access_target(f, "access-variable", default_locality_));
+
+                // now create the variable object
+                std::string variable_name = compose_primitive_name(name_parts);
+                f = function{primitive_argument_type{
+                        create_primitive_component(
+                            default_locality_, name_parts.primitive,
+                            primitive_argument_type{}, variable_name, name_)
+                    }, variable_name};
+
+//                 if (util::get_if<primitive>(&bodyarg.arg_) != nullptr)
+//                 {
+//                     primitive_name_parts body_name_parts;
+//                     if (parse_primitive_name(bodyarg.name_, body_name_parts) &&
+//                         body_name_parts.primitive == "lambda")
+//                     {
+//                         variable_type = "function";
+//                     }
+//                 }
+
+                auto var = primitive_operand(f.arg_, variable_name, name_);
+                var.store(
+                    hpx::launch::sync, std::move(compile_body(body).arg_));
+            }
+            else
+            {
+                std::string variable_type = "function";
+
+                name_parts = primitive_name_parts(variable_type,
+                    snippets_.sequence_numbers_[variable_type]++,
+                    id.id, id.col, snippets_.compile_id_ - 1);
+                name_parts.instance = std::move(name);
+
+                env_.define(name_parts.instance,
+                    access_target(f, "access-function", default_locality_));
+
+                std::string variable_name = compose_primitive_name(name_parts);
+                f = function{primitive_argument_type{
+                        create_primitive_component(
+                            default_locality_, name_parts.primitive,
+                            primitive_argument_type{}, variable_name, name_)
+                    }, variable_name};
+
+                auto var = primitive_operand(f.arg_, variable_name, name_);
+                var.store(hpx::launch::sync,
+                    std::move(compile_lambda(args, body, id).arg_));
+                var.set_num_arguments(hpx::launch::sync, args.size());
+            }
 
             // the define-variable object is invoked whenever a define() is
             // executed

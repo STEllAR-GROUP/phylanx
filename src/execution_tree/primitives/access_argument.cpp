@@ -61,12 +61,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(params[argnum_]));
     }
 
-    primitive_argument_type access_argument::bind(
+    bool access_argument::bind(
         std::vector<primitive_argument_type> const& params) const
     {
         if (argnum_ >= params.size())
         {
-            return {};
+            return false;
         }
 
         primitive const* p = util::get_if<primitive>(&params[argnum_]);
@@ -74,9 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return p->bind(params);
         }
-        else
-        {
-            return extract_ref_value(params[argnum_]);
-        }
+
+        return true;
     }
 }}}

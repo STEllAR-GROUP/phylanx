@@ -62,8 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // the first argument must be an invokable
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p == nullptr)
+        if (util::get_if<primitive>(&operands_[0]) == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
@@ -106,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return primitive_argument_type{std::move(result)};
             }),
-            p->bind(args),
+            value_operand(operands_[0], args, name_, codename_),
             list_operand(operands_[1], args, name_, codename_));
     }
 

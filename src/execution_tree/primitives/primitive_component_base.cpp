@@ -16,6 +16,7 @@
 #include <hpx/runtime/naming_fwd.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <set>
 #include <string>
@@ -104,13 +105,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // store_action
-    void primitive_component_base::store(primitive_argument_type &&)
+    void primitive_component_base::store(primitive_argument_type&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::store",
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+                "store",
             generate_error_message(
                 "store function should only be called for the primitives that "
-                    "support it (e.g. variables)"));
+                "support it (e.g. variables)"));
+    }
+
+    // set_num_arguments_action
+    void primitive_component_base::set_num_arguments(std::size_t)
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::"
+                "primitive_component_base::set_num_arguments",
+            generate_error_message(
+                "set_num_arguments function should only be called for the "
+                    "primitives that support it (e.g. call_function)"));
     }
 
     // extract_topology_action
@@ -145,20 +158,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // eval_action
-    primitive_argument_type primitive_component_base::bind(
+    bool primitive_component_base::bind(
         std::vector<primitive_argument_type> const& params) const
     {
-        return primitive_argument_type{};
-    }
-
-    // set_body_action (define_function only)
-    void primitive_component_base::set_body(primitive_argument_type&& target)
-    {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base",
-            generate_error_message(
-                "set_body function should only be called for primitivces that "
-                    "support it (e.g. the define_function_primitive"));
+        for (auto const& operand : operands_)
+        {
+            primitive const* p = util::get_if<primitive>(&operand);
+            if (p != nullptr && !p->bind(params))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     std::string primitive_component_base::generate_error_message(

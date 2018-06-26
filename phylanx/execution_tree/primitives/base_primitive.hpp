@@ -118,21 +118,22 @@ namespace phylanx { namespace execution_tree
             std::vector<primitive_argument_type> const& args) const;
 
         PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type);
-        PHYLANX_EXPORT void store(
-            hpx::launch::sync_policy, primitive_argument_type);
+        PHYLANX_EXPORT void store(hpx::launch::sync_policy,
+            primitive_argument_type);
+
+        PHYLANX_EXPORT hpx::future<void> set_num_arguments(std::size_t);
+        PHYLANX_EXPORT void set_num_arguments(hpx::launch::sync_policy,
+            std::size_t);
 
         PHYLANX_EXPORT hpx::future<topology> expression_topology(
             std::set<std::string>&& functions) const;
         PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
             std::set<std::string>&& functions) const;
 
-        PHYLANX_EXPORT primitive_argument_type bind(
-            std::vector<primitive_argument_type> && args) const;
-        PHYLANX_EXPORT primitive_argument_type bind(
+        PHYLANX_EXPORT bool bind(
+            std::vector<primitive_argument_type>&& args) const;
+        PHYLANX_EXPORT bool bind(
             std::vector<primitive_argument_type> const& args) const;
-
-        PHYLANX_EXPORT void set_body(
-            hpx::launch::sync_policy, primitive_argument_type&& target);
 
     public:
         static bool enable_tracing;

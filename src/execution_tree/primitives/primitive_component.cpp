@@ -15,6 +15,7 @@
 #include <hpx/runtime/naming_fwd.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -40,8 +41,8 @@ HPX_REGISTER_ACTION(primitive_component_type::expression_topology_action,
     phylanx_primitive_expression_topology_action)
 HPX_REGISTER_ACTION(primitive_component_type::bind_action,
     phylanx_primitive_bind_action)
-HPX_REGISTER_ACTION(primitive_component_type::set_body_action,
-    phylanx_primitive_set_body_action)
+HPX_REGISTER_ACTION(primitive_component_type::set_num_arguments_action,
+    phylanx_primitive_set_num_arguments_action)
 
 //////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<primitive_component_type>
@@ -111,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // store_action
-    void primitive_component::store(primitive_argument_type && arg)
+    void primitive_component::store(primitive_argument_type&& arg)
     {
         primitive_->store(std::move(arg));
     }
@@ -124,16 +125,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // bind_action
-    primitive_argument_type primitive_component::bind(
+    bool primitive_component::bind(
         std::vector<primitive_argument_type> const& params) const
     {
         return primitive_->bind(params);
     }
 
-    // set_body_action (define_function only)
-    void primitive_component::set_body(primitive_argument_type&& target)
+    // bind_action
+    void primitive_component::set_num_arguments(std::size_t num_args)
     {
-        primitive_->set_body(std::move(target));
+        return primitive_->set_num_arguments(num_args);
     }
 
     // access data for performance counter

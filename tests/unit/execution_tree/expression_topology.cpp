@@ -36,7 +36,9 @@ int main(int argc, char* argv[])
         "define(x, 42)",
             "(/phylanx/define-variable$0$x/0$1$8) test1;",
             "graph test1 {\n"
-            "    \"/phylanx/define-variable$0$x/0$1$8\";\n"
+            "    \"/phylanx/define-variable$0$x/0$1$8\" -- "
+                    "\"/phylanx/variable$0$x/0$1$8\"\n"
+            "    \"/phylanx/variable$0$x/0$1$8\";\n"
             "}\n");
 
     test_expressiontree_topology("test2",
@@ -48,12 +50,14 @@ int main(int argc, char* argv[])
             "graph test2 {\n"
             "    \"/phylanx/block$0/0$1$1\" -- "
                     "\"/phylanx/define-variable$0$x/0$1$14\";\n"
-            "    \"/phylanx/define-variable$0$x/0$1$14\";\n"
+            "    \"/phylanx/define-variable$0$x/0$1$14\" -- "
+                    "\"/phylanx/variable$0$x/0$1$14\";\n"
+            "    \"/phylanx/variable$0$x/0$1$14\";\n"
             "    \"/phylanx/block$0/0$1$1\" -- "
                     "\"/phylanx/define-variable$1$y/0$1$29\";\n"
             "    \"/phylanx/define-variable$1$y/0$1$29\" -- "
-                    "\"/phylanx/access-variable$0$x/0$1$32\";\n"
-            "    \"/phylanx/access-variable$0$x/0$1$32\";\n"
+                    "\"/phylanx/variable$1$y/0$1$29\";\n"
+            "    \"/phylanx/variable$1$y/0$1$29\";\n"
             "}\n");
 
     return hpx::util::report_errors();

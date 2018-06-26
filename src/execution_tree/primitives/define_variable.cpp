@@ -13,6 +13,7 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/assert.hpp>
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,6 +33,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
+            nullptr, nullptr)
+    };
+
+    match_pattern_type const define_variable::match_data_lambda =
+    {
+        hpx::util::make_tuple("lambda",
+            std::vector<std::string>{"lambda(__1)"},
             nullptr, nullptr)
     };
 
@@ -66,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    void define_variable::store(primitive_argument_type && val)
+    void define_variable::store(primitive_argument_type&& val)
     {
         if (!valid(operands_[1]))
         {
@@ -94,6 +102,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     topology define_variable::expression_topology(
         std::set<std::string>&& functions) const
     {
+        if (functions.find(name_) != functions.end())
+        {
+            return {};      // avoid recursion
+        }
+
         if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -107,6 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
+            functions.insert(name_);
             return p->expression_topology(
                 hpx::launch::sync, std::move(functions));
         }

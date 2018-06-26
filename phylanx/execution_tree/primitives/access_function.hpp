@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_VARIABLE_SEP_05_2017_1105AM)
-#define PHYLANX_PRIMITIVES_VARIABLE_SEP_05_2017_1105AM
+#if !defined(PHYLANX_PRIMITIVES_ACCESS_FUNCTION_JUN_29_2018_0535AM)
+#define PHYLANX_PRIMITIVES_ACCESS_FUNCTION_JUN_29_2018_0535AM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -12,31 +12,29 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <cstddef>
 #include <set>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class variable
-      : public primitive_component_base
+    class access_function : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
 
-        variable() = default;
+        access_function() = default;
 
-        variable(std::vector<primitive_argument_type>&& operands,
+        access_function(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
+
+        void store(primitive_argument_type&& val) override;
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
-        bool bind(
-            std::vector<primitive_argument_type> const& params) const override;
 
-        void store(primitive_argument_type&& data) override;
-        void set_num_arguments(std::size_t) override;
+        bool bind(
+            std::vector<primitive_argument_type> const& args) const override;
 
         topology expression_topology(
             std::set<std::string>&& functions) const override;
@@ -44,12 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         mutable primitive_argument_type bound_value_;
     };
-
-    PHYLANX_EXPORT primitive create_variable(hpx::id_type const& locality,
-        primitive_argument_type&& operand,
-        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif
-
 

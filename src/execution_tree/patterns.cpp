@@ -73,15 +73,16 @@ namespace phylanx { namespace execution_tree
 
                 // compiler-specific (internal) primitives
                 PHYLANX_MATCH_DATA(access_argument),
-                PHYLANX_MATCH_DATA(function_reference),
-                PHYLANX_MATCH_DATA(wrapped_function),
-                PHYLANX_MATCH_DATA(define_function),
-                PHYLANX_MATCH_DATA_VERBATIM(define_function::match_data_lambda),
+                PHYLANX_MATCH_DATA(call_function),
+                PHYLANX_MATCH_DATA(target_reference),
 
-                PHYLANX_MATCH_DATA(variable),
-                PHYLANX_MATCH_DATA(wrapped_variable),
+                PHYLANX_MATCH_DATA(access_function),
+                PHYLANX_MATCH_DATA(access_variable),
                 PHYLANX_MATCH_DATA(define_variable),
-                PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data_define)
+                PHYLANX_MATCH_DATA_VERBATIM(define_variable::match_data_define),
+                PHYLANX_MATCH_DATA(function),
+                PHYLANX_MATCH_DATA(lambda),
+                PHYLANX_MATCH_DATA(variable)
             };
 
             // patterns registered from external primitive plugins

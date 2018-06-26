@@ -15,6 +15,7 @@
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <set>
@@ -49,18 +50,18 @@ namespace phylanx { namespace execution_tree
                 std::vector<primitive_argument_type> const& params) const;
 
             // store_action
-            virtual void store(primitive_argument_type &&);
+            virtual void store(primitive_argument_type&&);
 
             // extract_topology_action
             virtual topology expression_topology(
                 std::set<std::string>&& functions) const;
 
             // bind_action
-            virtual primitive_argument_type bind(
+            virtual bool bind(
                 std::vector<primitive_argument_type> const& params) const;
 
-            // set_body_action (define_function only)
-            virtual void set_body(primitive_argument_type&& target);
+            // set_num_arguments_action
+            virtual void set_num_arguments(std::size_t);
 
         protected:
             friend class primitive_component;

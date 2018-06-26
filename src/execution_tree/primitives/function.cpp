@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/execution_tree/primitives/function.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
@@ -23,33 +23,34 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    primitive create_variable(hpx::id_type const& locality,
+    primitive create_function(hpx::id_type const& locality,
         primitive_argument_type&& operand, std::string const& name,
         std::string const& codename)
     {
-        static std::string type("variable");
+        static std::string type("function");
         return create_primitive_component(
             locality, type, std::move(operand), name, codename);
     }
 
-    match_pattern_type const variable::match_data =
+    match_pattern_type const function::match_data =
     {
-        hpx::util::make_tuple("variable",
+        hpx::util::make_tuple("function",
             std::vector<std::string>{},
-            nullptr, &create_primitive<variable>)
+            nullptr, &create_primitive<function>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    variable::variable(std::vector<primitive_argument_type>&& operands,
+    function::function(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
+      , num_arguments_(std::size_t(-1))
     {
         if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "variable::variable",
+                "function::function",
                 generate_error_message(
-                    "the variable primitive requires exactly one operand"));
+                    "the function primitive requires exactly one operand"));
         }
 
         if (valid(operands_[0]))
@@ -58,46 +59,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    hpx::future<primitive_argument_type> variable::eval(
+    hpx::future<primitive_argument_type> function::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        primitive_argument_type const& target =
-            valid(bound_value_) ? bound_value_ : operands_[0];
-        return hpx::make_ready_future(extract_ref_value(target));
+        return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    bool variable::bind(
+    bool function::bind(
         std::vector<primitive_argument_type> const& args) const
     {
         if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "variable::bind",
+                "function::bind",
                 generate_error_message(
-                    "the expression representing the variable target "
+                    "the expression representing the function target "
                         "has not been initialized"));
+        }
+
+        // return if the bound function expects more arguments than provided
+        if (num_arguments_ != std::size_t(-1) && args.size() < num_arguments_)
+        {
+            return false;
         }
 
         // evaluation of the define-function yields the function body
         primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr && p->bind(args))
+        if (p != nullptr)
         {
-            bound_value_ = p->eval(hpx::launch::sync, args);
+            return p->bind(args);
         }
         return true;
     }
 
-    void variable::store(primitive_argument_type&& data)
+    void function::store(primitive_argument_type&& data)
     {
-        bound_value_ = primitive_argument_type{};
         operands_[0] = extract_copy_value(std::move(data));
     }
 
-    void variable::set_num_arguments(std::size_t num_args)
+    void function::set_num_arguments(std::size_t num_args)
     {
+        num_arguments_ = num_args;
     }
 
-    topology variable::expression_topology(std::set<std::string>&&) const
+    topology function::expression_topology(std::set<std::string>&&) const
     {
         return topology{};
     }

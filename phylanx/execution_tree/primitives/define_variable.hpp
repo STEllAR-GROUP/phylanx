@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     public:
         static match_pattern_type const match_data;
         static match_pattern_type const match_data_define;
+        static match_pattern_type const match_data_lambda;
 
         define_variable() = default;
 
@@ -39,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& args) const override;
 
-        void store(primitive_argument_type && val) override;
+        void store(primitive_argument_type&& val) override;
 
         // return the topology for this variable definition
         topology expression_topology(
