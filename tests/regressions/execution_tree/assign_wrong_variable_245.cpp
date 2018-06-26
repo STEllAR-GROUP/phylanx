@@ -279,6 +279,14 @@ std::string const linear_solver_code = R"(define(test, block(
     R))
 )";
 
+std::string const decomposition_code = R"(block(
+    define(A, [[10, -10, 0], [-3, 15, 6], [5, 7, 5]]),
+    define(R, true),
+    define(Result, lu((A))),
+    if((any(A!=[[10, -10, 0], [-3, 15, 6], [5, 7, 5]])), store(R,false),
+    R))
+)";
+
 void test_add()
 {
     phylanx::execution_tree::compiler::function_list snippets;
@@ -391,6 +399,14 @@ void test_linear_solver()
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }
 
+void test_decomposition()
+{
+    phylanx::execution_tree::compiler::function_list snippets;
+    auto f = phylanx::execution_tree::compile(decomposition_code, snippets);
+
+    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
+}
+
 int main(int argc, char* argv[])
 {
     test_add();
@@ -407,6 +423,7 @@ int main(int argc, char* argv[])
     test_and();
     test_or();
     test_linear_solver();
+    test_decomposition();
 
     return hpx::util::report_errors();
 }

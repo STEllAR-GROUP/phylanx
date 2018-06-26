@@ -6,6 +6,7 @@
 #if !defined(PHYLANX_PLUGINS_SOLVERS_PRIMITIVES_MAY_11_2018_1030AM)
 #define PHYLANX_PLUGINS_SOLVERS_PRIMITIVES_MAY_11_2018_1030AM
 
+#include <phylanx/plugins/solvers/decomposition.hpp>
 #include <phylanx/plugins/solvers/linear_solver.hpp>
 
 #endif
