@@ -425,7 +425,7 @@ class PhySL:
             sym = "/"
         else:
             le_str = "Undefined operation discovered: %s=" % (nn,)
-            raise LookupError( le_str )
+            raise LookupError(le_str)
 
         id_ = "UNKNOWN_ID"
         if type(args[0]) == ast.Subscript:
