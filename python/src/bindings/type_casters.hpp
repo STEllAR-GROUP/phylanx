@@ -112,15 +112,23 @@ namespace pybind11 { namespace detail
             t = array_index_type{np_rows, np_cols, np_rstride, np_cstride};
             return true;
         }
+        else if (dims == 1)
+        {
+            // Otherwise we're storing an n-vector.  Only one of the strides
+            // will be used, but whichever is used, we want the (single) numpy
+            // stride value.
+            std::size_t const n = a.shape(0);
+            std::size_t stride = a.strides(0) / sizeof(Scalar);
 
-        // Otherwise we're storing an n-vector.  Only one of the strides will
-        // be used, but whichever is used, we want the (single) numpy stride
-        // value.
-        std::size_t const n = a.shape(0);
-        std::size_t stride = a.strides(0) / sizeof(Scalar);
-
-        t = array_index_type{n, 1, stride, 0};
-        return true;
+            t = array_index_type{n, 1, stride, 0};
+            return true;
+        }
+        else if (dims == 0)
+        {
+            t = array_index_type{1, 1, 0, 0};
+            return true;
+        }
+        return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -322,19 +330,45 @@ namespace pybind11 { namespace detail
     template <typename T>
     class type_caster<phylanx::ir::node_data<T>>
     {
+        using result_type = typename casted_type<T>::type;
+
         bool load0d(handle src, bool convert)
         {
             // np.array([0]) is convertible to a scalar value
-            if (!is_scalar_instance<typename casted_type<T>::type>::call(src))
+            if (!is_scalar_instance<result_type>::call(src))
             {
+                if (is_array_instance<result_type>::call(src))
+                {
+                    auto buf = array::ensure(src);
+                    if (!buf) return false;
+
+                    auto dims = buf.ndim();
+                    if (dims != 0) return false;
+
+                    buf = buf.squeeze();
+
+                    // Allocate the new type, then build a numpy reference into it
+                    pybind11::array_t<T> ref(1);
+
+                    int result = detail::npy_api::get().PyArray_CopyInto_(
+                        ref.ptr(), buf.ptr());
+                    if (result < 0)
+                    {
+                        // Copy failed!
+                        PyErr_Clear();
+                        return false;
+                    }
+
+                    value = *reinterpret_cast<T*>(ref.request().ptr);
+                    return true;
+                }
                 return false;
             }
 
-            auto caster = make_caster<typename casted_type<T>::type>();
+            auto caster = make_caster<result_type>();
             if (caster.load(src, convert))
             {
-                value =
-                    std::move(cast_op<typename casted_type<T>::type>(caster));
+                value = std::move(cast_op<result_type>(caster));
                 return true;
             }
             return false;
@@ -342,8 +376,7 @@ namespace pybind11 { namespace detail
 
         bool load1d(handle src, bool convert)
         {
-            if (!convert &&
-                !is_array_instance<typename casted_type<T>::type>::call(src))
+            if (!convert && !is_array_instance<result_type>::call(src))
             {
                 return false;
             }
@@ -357,7 +390,7 @@ namespace pybind11 { namespace detail
             if (dims != 1) return false;
 
             array_index_type t;
-            bool fits = conformable<typename casted_type<T>::type>(buf, 1, t);
+            bool fits = conformable<result_type>(buf, 1, t);
             if (!fits) return false;
 
             // Allocate the new type, then build a numpy reference into it
@@ -382,8 +415,7 @@ namespace pybind11 { namespace detail
 
         bool load2d(handle src, bool convert)
         {
-            if (!convert &&
-                !is_array_instance<typename casted_type<T>::type>::call(src))
+            if (!convert && !is_array_instance<result_type>::call(src))
             {
                 return false;
             }
@@ -397,7 +429,7 @@ namespace pybind11 { namespace detail
             if (dims != 2) return false;
 
             array_index_type t;
-            bool fits = conformable<typename casted_type<T>::type>(buf, 2, t);
+            bool fits = conformable<result_type>(buf, 2, t);
             if (!fits) return false;
 
             // Allocate the new type, then build a numpy reference into it
@@ -557,7 +589,7 @@ namespace pybind11 { namespace detail
         {
             if (0 == src->index())      // T
             {
-                return make_caster<typename casted_type<T>::type>::cast(
+                return make_caster<result_type>::cast(
                     src->scalar(), policy, parent);
             }
 
