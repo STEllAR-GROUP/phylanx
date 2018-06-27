@@ -1,3 +1,4 @@
+//  Copyright (c) 2018 Hartmut Kaiser
 //  Copyright (c) 2018 Shahrzad Shirzad
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -27,6 +28,21 @@ namespace phylanx { namespace plugin
             }
         }
     };
+
+    struct decomposition_plugin : plugin_base
+    {
+        void register_known_primitives() override
+        {
+            namespace pet = phylanx::execution_tree;
+
+            std::string decomposition_name("_decomposition");
+            for (auto const& pattern :
+                pet::primitives::decomposition::match_data)
+            {
+                pet::register_pattern(decomposition_name, pattern);
+            }
+        }
+    };
 }}
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::linear_solver_plugin,
@@ -34,3 +50,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::linear_solver_plugin,
     phylanx::execution_tree::primitives::make_list::match_data,
     "_linear_solver");
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::decomposition_plugin,
+    decomposition_plugin,
+    phylanx::execution_tree::primitives::make_list::match_data,
+    "_decomposition");
