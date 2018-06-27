@@ -19,6 +19,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(fold_left_operation_plugin,
     phylanx::execution_tree::primitives::fold_left_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(fold_right_operation_plugin,
     phylanx::execution_tree::primitives::fold_right_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(for_each_plugin,
+    phylanx::execution_tree::primitives::for_each::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(for_operation_plugin,
     phylanx::execution_tree::primitives::for_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(if_conditional_plugin,
@@ -27,6 +29,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(map_operation_plugin,
     phylanx::execution_tree::primitives::map_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(parallel_block_operation_plugin,
     phylanx::execution_tree::primitives::parallel_block_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(parallel_for_each_plugin,
+    phylanx::execution_tree::primitives::parallel_for_each::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(parallel_map_operation_plugin,
     phylanx::execution_tree::primitives::parallel_map_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(range_operation_plugin,

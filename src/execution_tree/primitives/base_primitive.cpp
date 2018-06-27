@@ -1,8 +1,8 @@
-// Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 // Copyright (c) 2018 Tianyi Zhang
 //
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 // phylanxinspect:noinclude:HPX_ASSERT
 
@@ -446,7 +446,7 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-            case 4:    // phylanx::ir::node_data<double>
+        case 4:     // phylanx::ir::node_data<double>
             {
                 auto const& v = util::get<4>(val);
                 if (v.is_ref())
@@ -532,7 +532,7 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-            case 4:    // phylanx::ir::node_data<double>
+        case 4:     // phylanx::ir::node_data<double>
             {
                 auto && v = util::get<4>(std::move(val));
                 if (v.is_ref())
@@ -1261,7 +1261,7 @@ namespace phylanx { namespace execution_tree
         default:
             break;
         }
-        return false;
+            return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -2163,7 +2163,7 @@ namespace phylanx { namespace execution_tree
         {
             return hpx::make_ready_future(
                 extract_ref_value(val, name, codename));
-        }
+    }
         return hpx::make_ready_future(val);
     }
 
@@ -2192,7 +2192,7 @@ namespace phylanx { namespace execution_tree
         {
             return hpx::make_ready_future(
                 extract_ref_value(val, name, codename));
-        }
+    }
         return hpx::make_ready_future(val);
     }
 
@@ -2219,9 +2219,9 @@ namespace phylanx { namespace execution_tree
 
         if (valid(val))
         {
-            return hpx::make_ready_future(
-                extract_ref_value(std::move(val), name, codename));
-        }
+        return hpx::make_ready_future(
+            extract_ref_value(std::move(val), name, codename));
+    }
         return hpx::make_ready_future(std::move(val));
     }
 
@@ -2248,9 +2248,9 @@ namespace phylanx { namespace execution_tree
 
         if (valid(val))
         {
-            return hpx::make_ready_future(
-                extract_ref_value(std::move(val), name, codename));
-        }
+        return hpx::make_ready_future(
+            extract_ref_value(std::move(val), name, codename));
+    }
         return hpx::make_ready_future(std::move(val));
     }
 
@@ -2269,8 +2269,8 @@ namespace phylanx { namespace execution_tree
 
         if (valid(val))
         {
-            return extract_value(val, name, codename);
-        }
+        return extract_value(val, name, codename);
+    }
         return val;
     }
 
@@ -2288,8 +2288,8 @@ namespace phylanx { namespace execution_tree
 
         if (valid(val))
         {
-            return extract_value(val, name, codename);
-        }
+        return extract_value(val, name, codename);
+    }
         return val;
     }
 
@@ -2307,8 +2307,8 @@ namespace phylanx { namespace execution_tree
 
         if (valid(val))
         {
-            return extract_value(std::move(val), name, codename);
-        }
+        return extract_value(std::move(val), name, codename);
+    }
         return std::move(val);
     }
 
@@ -2326,8 +2326,8 @@ namespace phylanx { namespace execution_tree
 
         if (valid(val))
         {
-            return extract_value(std::move(val), name, codename);
-        }
+        return extract_value(std::move(val), name, codename);
+    }
         return std::move(val);
     }
 
@@ -2346,8 +2346,8 @@ namespace phylanx { namespace execution_tree
 
         if (valid(val))
         {
-            return extract_ref_value(val, name, codename);
-        }
+        return extract_ref_value(val, name, codename);
+    }
         return val;
     }
 
@@ -2818,7 +2818,7 @@ namespace phylanx { namespace execution_tree
         {
             hpx::future<primitive_argument_type> f = p->eval(std::move(args));
             if (f.is_ready())
-            {
+                {
                 return hpx::make_ready_future(
                     extract_numeric_value(f.get(), name, codename));
             }
@@ -2863,7 +2863,7 @@ namespace phylanx { namespace execution_tree
         {
             hpx::future<primitive_argument_type> f = p->eval(args);
             if (f.is_ready())
-            {
+                {
                 return hpx::make_ready_future(
                     extract_scalar_boolean_value(f.get(), name, codename));
             }
@@ -3035,9 +3035,9 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::range> list_operand(
-        primitive_argument_type const& val,
+        primitive_argument_type && val,
         std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string && codename)
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -3062,9 +3062,9 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::range> list_operand(
-        primitive_argument_type const& val,
+        primitive_argument_type && val,
         std::vector<primitive_argument_type> && args,
-        std::string const& name, std::string && codename)
+        std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -3262,14 +3262,14 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 1:                     // bool
+        case 1:     // bool
             return ir::node_data<double>{
                 util::get<1>(std::move(val)) ? 1.0 : 0.0};
 
         case 2:                     // ir::node_data<std::int64_t>
             return ir::node_data<double>{double(util::get<2>(std::move(val)))};
 
-        case 4:                     // phylanx::ir::node_data<double>
+        case 4:     // phylanx::ir::node_data<double>
             return util::get<4>(std::move(val));
 
         case 0: HPX_FALLTHROUGH;    // ast::nil
