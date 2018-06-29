@@ -15,12 +15,25 @@ def phy_run(y, k):
     for i in range(k):
         x[y[i]] += 1.0
 
+def py_run_mat(y, k):
+    x = np.zeros((k, k))
+    print(x.shape)
+    for i in range(k):
+        x[y[i], y[i]] += 1.0
+
+@Phylanx
+def phy_run_mat(y, k):
+    x = constant(0.0, make_list(k, k))
+    for i in range(k):
+        x[y[i], y[i]] += 1.0
+
+
 if __name__ == "__main__":
-    K = 100000
+    K = 10000 # add a 0
     y = np.random.randint(0, K, size=K)
 
-    func = [ py_run, phy_run ]
-    func_nom = [ 'py_run', 'phy_run' ]
+    func = [ py_run_mat, phy_run_mat, py_run, phy_run ]
+    func_nom = [ 'py_run_mat', 'phy_run_mat', 'py_run', 'phy_run' ]
 
     for n, f in zip(func_nom, func):
         print(n)
