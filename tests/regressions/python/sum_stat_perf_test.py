@@ -58,25 +58,23 @@ if __name__ == "__main__":
     K = 10000 # add a 0
     y = np.random.randint(0, K, size=K)
 
-    func = [ py_run_mat
-           , phy_run_mat
-           , py_run
-           , phy_run
-           , py_run_self_update
-           , phy_run_self_update
-           , py_run_mat_self_update
-           , phy_run_mat_self_update
-    ]
+    func = [ py_run_mat \
+           , phy_run_mat \
+           , py_run \
+           , phy_run \
+           , py_run_self_update \
+           , phy_run_self_update \
+           , py_run_mat_self_update \
+           , phy_run_mat_self_update ]
 
-    func_nom = [ 'py_run_mat'
-               , 'phy_run_mat'
-               , 'py_run'
-               , 'phy_run'
-               , 'py_run_self_update'
-               , 'phy_run_self_update'
+    func_nom = [ 'py_run_mat' \
+               , 'phy_run_mat' \
+               , 'py_run' \
+               , 'phy_run' \
+               , 'py_run_self_update' \
+               , 'phy_run_self_update' \
                , 'py_run_mat_self_update'
-               , 'phy_run_mat_self_update'
-    ]
+               , 'phy_run_mat_self_update' ]
 
     for n, f in zip(func_nom, func):
         print(n)
