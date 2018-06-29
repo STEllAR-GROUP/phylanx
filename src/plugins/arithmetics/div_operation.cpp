@@ -8,6 +8,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/arithmetics/div_operation.hpp>
+#include <phylanx/util/detail/div_simd.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -26,100 +27,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        struct divndnd_simd
-        {
-            divndnd_simd() = default;
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE auto operator()(T const& a, T const& b) const
-            ->  decltype(a / b)
-            {
-                return a / b;
-            }
-
-            template <typename T1, typename T2>
-            static constexpr bool simdEnabled()
-            {
-                return blaze::HasSIMDDiv<T1, T2>::value;
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(
-                T const& a, T const& b) const
-            {
-                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-                return a / b;
-            }
-        };
-
-        struct divnd0d_simd
-        {
-        public:
-            explicit divnd0d_simd(double scalar)
-                : scalar_(scalar)
-            {
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-            ->  decltype(a / std::declval<double>())
-            {
-                return a / scalar_;
-            }
-
-            template <typename T>
-            static constexpr bool simdEnabled()
-            {
-                return blaze::HasSIMDDiv<T, double>::value;
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-            {
-                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-                return a / blaze::set(scalar_);
-            }
-
-        private:
-            double scalar_;
-        };
-
-        struct div0dnd_simd
-        {
-        public:
-            explicit div0dnd_simd(double scalar)
-                : scalar_(scalar)
-            {
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-            ->  decltype(std::declval<double>() / a)
-            {
-                return scalar_ / a;
-            }
-
-            template <typename T>
-            static constexpr bool simdEnabled()
-            {
-                return blaze::HasSIMDDiv<T, double>::value;
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-            {
-                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-                return blaze::set(scalar_) / a;
-            }
-
-        private:
-            double scalar_;
-        };
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const div_operation::match_data =
     {
@@ -258,13 +165,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (rhs.is_ref())
                 {
-                    rhs = blaze::map(
-                        lhs.vector(), rhs.vector(), detail::divndnd_simd());
+                    rhs = lhs.vector() / rhs.vector();
                 }
                 else
                 {
-                    rhs.vector() = blaze::map(
-                        lhs.vector(), rhs.vector(), detail::divndnd_simd());
+                    rhs.vector() = lhs.vector() / rhs.vector();
                 }
                 return primitive_argument_type(std::move(rhs));
             }
