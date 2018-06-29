@@ -54,7 +54,6 @@ def phy_run_mat_self_update(y, k):
     for i in range(k):
         x[y[i], y[i]] = x[y[i], y[i]] + 1.0
 
-
 if __name__ == "__main__":
     K = 10000 # add a 0
     y = np.random.randint(0, K, size=K)
