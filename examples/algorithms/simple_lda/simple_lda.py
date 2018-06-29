@@ -80,7 +80,13 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
 
 if __name__ == "__main__":
     matlab_vars = dict()
-    loadmat('docword.kos.train.mat', matlab_vars)
+    loadmat('../datasets/docword.kos.train.mat', matlab_vars)
+
+    # NOTE: the load mat function returns some unexpected/unhandled
+    # numpy types. wrapping those types with a call to the 'int'
+    # initializer function fixed everything such that phylanx could
+    # map the types into something it can comprehend.
+    #
     D = int(matlab_vars['D'][0][0])
     W = int(matlab_vars['W'][0][0])
     N = int(matlab_vars['N'][0][0])
