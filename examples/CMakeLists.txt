@@ -8,7 +8,6 @@ set(subdirs
     ast
     profiling
     interpreter
-    distributed
    )
 
 foreach(subdir ${subdirs})
