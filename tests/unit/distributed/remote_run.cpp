@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 ///////////////////////////////////////////////////////////////////////////////
 bool is_locality_0 = false;
 
-std::string code1 = "define(a, 1)";
+std::string code1 = "block(define(a, 1), a)";
 std::string code2 = R"(block(
     define(fx, arg0, block(
         debug(arg0 + 4),
@@ -74,42 +74,19 @@ phylanx::execution_tree::compiler::function compile(
     return phylanx::execution_tree::compile(code, snippets, env);
 }
 
-void test_remote_run_on_0()
+void test_remote_run_on(std::uint32_t there)
 {
-    auto et = compile("debug(locality_id())", 0);
+    auto et = compile("debug(locality_id())", there);
     et();
 }
 
-void test_remote_run_on_1()
+void test_remote_run_chain(std::uint32_t here, std::uint32_t there)
 {
-    auto et = compile("debug(locality_id())", 1);
-    et();
-}
-
-void test_remote_run_chain()
-{
-    auto et1 = compile(code1, 1);
+    auto et1 = compile(code1, here);
     auto r1 = et1();
+    HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(r1)[0], 1);
 
-    auto et2 = compile(code2, 1);
-    et2(r1);
-}
-
-void test_remote_run_communicate_0_to_1()
-{
-    auto et1 = compile(code1, 0);
-    auto r1 = et1();
-
-    auto et2 = compile(code2, 1);
-    et2(r1);
-}
-
-void test_remote_run_communicate_1_to_0()
-{
-    auto et1 = compile(code1, 1);
-    auto r1 = et1();
-
-    auto et2 = compile(code2, 0);
+    auto et2 = compile(code2, there);
     et2(r1);
 }
 
@@ -119,11 +96,12 @@ int hpx_main(int argc, char* argv[])
 
     is_locality_0 = hpx::naming::get_locality_id_from_id(hpx::find_here()) == 0;
 
-    test_remote_run_on_0();
-    test_remote_run_on_1();
-    test_remote_run_chain();
-    test_remote_run_communicate_0_to_1();
-    test_remote_run_communicate_1_to_0();
+    test_remote_run_on(0);
+    test_remote_run_on(1);
+    test_remote_run_chain(0, 0);
+    test_remote_run_chain(0, 1);
+    test_remote_run_chain(1, 0);
+    test_remote_run_chain(1, 1);
 
     return hpx::finalize();
 }
