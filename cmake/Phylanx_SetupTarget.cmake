@@ -103,7 +103,8 @@ function(phylanx_setup_target target)
                  PROPERTY COMPILE_DEFINITIONS
                  "PHYLANX_APPLICATION_NAME=${name}"
                  "PHYLANX_APPLICATION_STRING=\"${name}\""
-                 "PHYLANX_APPLICATION_EXPORTS")
+                 "PHYLANX_APPLICATION_EXPORTS"
+                 "HPX_APPLICATION_EXPORTS")
   endif()
 
   if("${_type}" STREQUAL "LIBRARY")
