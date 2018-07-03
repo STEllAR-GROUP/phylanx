@@ -34,7 +34,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type>&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
-      , num_arguments_(0)
     {
         // the first entry of operands represents the target
         if (operands_.empty())
@@ -63,21 +62,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
-        auto this_ = this->shared_from_this();
-//         if (params.empty() && operands_.size() > 1)
-//         {
-//             std::vector<primitive_argument_type> fargs;
-//             fargs.reserve(operands_.size() - 1);
-//
-//             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
-//             {
-//                 fargs.push_back(extract_ref_value(*it));
-//             }
-//
-//             return value_operand(
-//                 operands_[0], std::move(fargs), name_, codename_);
-//         }
-
         std::vector<primitive_argument_type> fargs;
         fargs.reserve(operands_.size() - 1);
 
@@ -87,6 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             fargs.push_back(extract_ref_value(*it));
         }
 
+        auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_](primitive_argument_type&& func,
@@ -95,9 +80,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return value_operand_sync(std::move(func),
                         std::move(args), this_->name_, this_->codename_);
                 }),
-            value_operand(operands_[0], noargs, name_, codename_),
+            value_operand(operands_[0], params, name_, codename_,
+                eval_dont_wrap_functions),
             detail::map_operands(std::move(fargs), functional::value_operand{},
-                params, name_, codename_));
+                params, name_, codename_, eval_dont_evaluate_partials));
     }
 
     bool call_function::bind(
@@ -110,12 +96,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     "the expression representing the function target "
                         "has not been initialized"));
-        }
-
-        // return if the bound function expects more arguments than provided
-        if (params.size() < num_arguments_)
-        {
-            return false;
         }
 
         // evaluation of the define-function yields the function body
@@ -174,11 +154,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         operands_[0] = extract_copy_value(std::move(data));
-    }
-
-    void call_function::set_num_arguments(std::size_t num_args)
-    {
-        num_arguments_ = num_args;
     }
 
     topology call_function::expression_topology(

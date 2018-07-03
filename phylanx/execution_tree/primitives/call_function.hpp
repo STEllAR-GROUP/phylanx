@@ -43,10 +43,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
         void store(primitive_argument_type&& data) override;
-        void set_num_arguments(std::size_t) override;
-
-    private:
-        std::size_t num_arguments_;
     };
 }}}
 

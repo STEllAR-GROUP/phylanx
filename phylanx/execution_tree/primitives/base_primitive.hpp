@@ -79,6 +79,13 @@ namespace phylanx { namespace execution_tree
     struct primitive_argument_type;
 
     ///////////////////////////////////////////////////////////////////////////
+    enum eval_mode
+    {
+        eval_default = 0x00,                // always evaluate everything
+        eval_dont_wrap_functions = 0x01,    // don't wrap partially bound functions
+        eval_dont_evaluate_partials = 0x02  // don't evaluate partially bound functions
+    };
+
     class primitive
       : public hpx::components::client_base<primitive,
             primitives::primitive_component>
@@ -90,6 +97,10 @@ namespace phylanx { namespace execution_tree
     public:
         primitive() = default;
 
+        primitive(hpx::id_type && id)
+          : base_type(std::move(id))
+        {
+        }
         primitive(hpx::future<hpx::id_type> && fid)
           : base_type(std::move(fid))
         {
@@ -104,18 +115,23 @@ namespace phylanx { namespace execution_tree
         primitive& operator=(primitive const&) = default;
         primitive& operator=(primitive &&) = default;
 
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval() const;
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> && args) const;
+            eval_mode mode = eval_default) const;
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const;
+            std::vector<primitive_argument_type> && args,
+            eval_mode mode = eval_default) const;
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& args,
+            eval_mode mode = eval_default) const;
 
-        PHYLANX_EXPORT primitive_argument_type eval(
-            hpx::launch::sync_policy) const;
         PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
-            std::vector<primitive_argument_type> && args) const;
+            eval_mode mode = eval_default) const;
         PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
-            std::vector<primitive_argument_type> const& args) const;
+            std::vector<primitive_argument_type>&& args,
+            eval_mode mode = eval_default) const;
+        PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
+            std::vector<primitive_argument_type> const& args,
+            eval_mode mode = eval_default) const;
 
         PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type);
         PHYLANX_EXPORT void store(hpx::launch::sync_policy,
@@ -367,22 +383,26 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        std::vector<primitive_argument_type>&& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
-        primitive_argument_type && val,
+        primitive_argument_type&& val,
         std::vector<primitive_argument_type> const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
-        primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args,
+        primitive_argument_type&& val,
+        std::vector<primitive_argument_type>&& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
 
     namespace functional
     {
@@ -803,23 +823,23 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::vector<primitive_argument_type>&& args,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
-        primitive_argument_type && val,
+        primitive_argument_type&& val,
         std::vector<primitive_argument_type> const& args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
-        primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        primitive_argument_type&& val,
+        std::vector<primitive_argument_type>&& args,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
 
     namespace functional
     {

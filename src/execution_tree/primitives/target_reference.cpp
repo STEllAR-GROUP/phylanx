@@ -68,7 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 operands_[0], std::move(fargs), name_, codename_);
         }
 
-        return value_operand(operands_[0], params, name_, codename_);
+        return value_operand(
+            operands_[0], params, name_, codename_, eval_dont_wrap_functions);
     }
 
     bool target_reference::bind(

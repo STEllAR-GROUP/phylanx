@@ -50,7 +50,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const;
+            std::vector<primitive_argument_type> const& params,
+            eval_mode mode) const;
 
         // store_action
         PHYLANX_EXPORT void store(primitive_argument_type&&);

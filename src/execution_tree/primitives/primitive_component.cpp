@@ -106,9 +106,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
-        return primitive_->do_eval(params);
+        if ((mode & eval_dont_evaluate_partials) &&
+            primitive_->operands_.empty() && !params.empty())
+        {
+            // return a client referring to this component as the evaluation
+            // result
+            primitive this_{this->get_id()};
+            return hpx::make_ready_future(
+                primitive_argument_type{std::move(this_)});
+        }
+        return primitive_->do_eval(params, mode);
     }
 
     // store_action

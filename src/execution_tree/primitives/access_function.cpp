@@ -51,14 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_function::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
-        if (!params.empty())
+        if (!(mode & eval_dont_wrap_functions) && !params.empty())
         {
-            primitive_argument_type const& target =
-                valid(bound_value_) ?
-                    bound_value_ :
-                    value_operand_sync(operands_[0], params, name_, codename_);
+            primitive_argument_type const& target = valid(bound_value_) ?
+                bound_value_ :
+                value_operand_sync(operands_[0], params, name_, codename_,
+                    eval_dont_wrap_functions);
 
             std::vector<primitive_argument_type> fargs;
             fargs.reserve(params.size() + 1);
@@ -84,7 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return hpx::make_ready_future(bound_value_);
         }
-        return value_operand(operands_[0], params, name_, codename_);
+        return value_operand(
+            operands_[0], params, name_, codename_, eval_dont_wrap_functions);
     }
 
     bool access_function::bind(

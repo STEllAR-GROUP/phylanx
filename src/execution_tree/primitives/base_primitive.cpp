@@ -126,45 +126,54 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> primitive::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        return detail::lazy_trace("eval", *this,
-            hpx::async(action_type(), this->base_type::get_id(), params));
+        hpx::future<primitive_argument_type> f =
+            hpx::async(action_type(), this->base_type::get_id(), params, mode);
+        return detail::lazy_trace("eval", *this, std::move(f));
     }
     hpx::future<primitive_argument_type> primitive::eval(
-        std::vector<primitive_argument_type> && params) const
+        std::vector<primitive_argument_type>&& params,
+        eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        return detail::lazy_trace("eval", *this,
-            hpx::async(
-                action_type(), this->base_type::get_id(), std::move(params)));
+        hpx::future<primitive_argument_type> f = hpx::async(
+            action_type(), this->base_type::get_id(), std::move(params), mode);
+        return detail::lazy_trace("eval", *this, std::move(f));
     }
 
-    hpx::future<primitive_argument_type> primitive::eval() const
+    hpx::future<primitive_argument_type> primitive::eval(
+        eval_mode mode) const
     {
         static std::vector<primitive_argument_type> params;
-        return eval(params);
+        return eval(params, mode);
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        return detail::trace("eval", *this,
-                action_type()(this->base_type::get_id(), params).get());
+        hpx::future<primitive_argument_type> f =
+            action_type()(this->base_type::get_id(), params, mode);
+        return detail::trace("eval", *this, f.get());
     }
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type> && params) const
+        std::vector<primitive_argument_type>&& params,
+        eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        return detail::trace("eval", *this,
-            action_type()(this->base_type::get_id(), std::move(params)).get());
+        hpx::future<primitive_argument_type> f =
+            action_type()(this->base_type::get_id(), std::move(params), mode);
+        return detail::trace("eval", *this, f.get());
     }
 
-    primitive_argument_type primitive::eval(hpx::launch::sync_policy) const
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy,
+        eval_mode mode) const
     {
-        return eval().get();
+        return eval(mode).get();
     }
 
     hpx::future<void> primitive::store(primitive_argument_type data)
@@ -2142,12 +2151,12 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f = p->eval(args, mode);
             if (f.is_ready())
             {
                 return f;
@@ -2170,13 +2179,14 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
-        std::string const& name, std::string const& codename)
+        std::vector<primitive_argument_type>&& args, std::string const& name,
+        std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), mode);
             if (f.is_ready())
             {
                 return f;
@@ -2198,14 +2208,15 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> value_operand(
-        primitive_argument_type && val,
+        primitive_argument_type&& val,
         std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_mode mode)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f = p->eval(args, mode);
             if (f.is_ready())
             {
                 return f;
@@ -2227,14 +2238,15 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> value_operand(
-        primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type&& val,
+        std::vector<primitive_argument_type>&& args, std::string const& name,
+        std::string const& codename, eval_mode mode)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), mode);
             if (f.is_ready())
             {
                 return f;
@@ -2259,13 +2271,14 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, mode), name, codename);
         }
 
         if (valid(val))
@@ -2277,14 +2290,15 @@ namespace phylanx { namespace execution_tree
 
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
-        std::string const& name, std::string const& codename)
+        std::vector<primitive_argument_type>&& args, std::string const& name,
+        std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, std::move(args)), name, codename);
+                p->eval(hpx::launch::sync, std::move(args), mode), name,
+                codename);
         }
 
         if (valid(val))
@@ -2294,16 +2308,16 @@ namespace phylanx { namespace execution_tree
         return val;
     }
 
-    primitive_argument_type value_operand_sync(
-        primitive_argument_type && val,
+    primitive_argument_type value_operand_sync(primitive_argument_type&& val,
         std::vector<primitive_argument_type> const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename,
+        eval_mode mode)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, mode), name, codename);
         }
 
         if (valid(val))
@@ -2313,16 +2327,16 @@ namespace phylanx { namespace execution_tree
         return std::move(val);
     }
 
-    primitive_argument_type value_operand_sync(
-        primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args,
-        std::string const& name, std::string const& codename)
+    primitive_argument_type value_operand_sync(primitive_argument_type&& val,
+        std::vector<primitive_argument_type>&& args, std::string const& name,
+        std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, std::move(args)), name, codename);
+                p->eval(hpx::launch::sync, std::move(args), mode), name,
+                codename);
         }
 
         if (valid(val))

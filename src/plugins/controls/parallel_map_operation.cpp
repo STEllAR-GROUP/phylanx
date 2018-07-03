@@ -42,10 +42,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& args) const
     {
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func, ir::range&& list)
-            -> hpx::future<primitive_argument_type>
-            {
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping([this_](primitive_argument_type&& bound_func,
+                                      ir::range&& list)
+                                      -> hpx::future<primitive_argument_type> {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -76,7 +76,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }),
                     std::move(result));
             }),
-            value_operand(operands_[0], args, name_, codename_),
+            value_operand(
+                operands_[0], args, name_, codename_, eval_dont_wrap_functions),
             list_operand_strict(operands[1], args, name_, codename_));
     }
 
@@ -90,11 +91,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::back_inserter(lists));
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func,
-                        std::vector<ir::range>&& lists)
-            -> hpx::future<primitive_argument_type>
-            {
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping([this_](primitive_argument_type&& bound_func,
+                                      std::vector<ir::range>&& lists)
+                                      -> hpx::future<primitive_argument_type> {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -155,7 +155,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }),
                     std::move(result));
             }),
-            value_operand(operands_[0], args, name_, codename_),
+            value_operand(
+                operands_[0], args, name_, codename_, eval_dont_wrap_functions),
             detail::map_operands(lists, functional::list_operand_strict{}, args,
                 name_, codename_));
     }

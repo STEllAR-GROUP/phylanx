@@ -69,7 +69,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -78,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         util::scoped_timer<std::int64_t> timer(eval_duration_);
         ++eval_count_;
 
-        auto f = this->eval(params);
+        auto f = this->eval(params, mode);
         if (!f.is_ready())
         {
             using shared_state_ptr =
@@ -96,12 +97,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::eval",
-            generate_error_message(
-                "attempting to invoke an undefined evalaluation"));
+        return this->eval(params, eval_default);
+    }
 
-        return hpx::make_ready_future(primitive_argument_type{});
+    hpx::future<primitive_argument_type> primitive_component_base::eval(
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
+    {
+        return this->eval(params);
     }
 
     // store_action
@@ -234,8 +237,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (execute_directly_ == 1)
         {
-            return hpx::launch::sync;
-        }
+        return hpx::launch::sync;
+    }
         else if (execute_directly_ == 0)
         {
             return hpx::launch::async;

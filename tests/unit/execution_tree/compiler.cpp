@@ -555,7 +555,7 @@ void test_define_call_lambda_function_direct()
 void test_define_call_lambda_function_ind1()
 {
     auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, b, lambda(a, a + b)),
+            define(x, b, block(define(l, lambda(a, a + b)), l)),
             x(42)
         ))");
 
@@ -573,6 +573,46 @@ void test_define_call_lambda_function_ind1()
 }
 
 void test_define_call_lambda_function_ind2()
+{
+    auto expr = phylanx::ast::generate_ast(R"(block(
+            define(x, lambda(b, lambda(a, a + b))),
+            x(42)
+        ))");
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto lambda = phylanx::execution_tree::compile(expr, snippets, env);
+
+    auto arg = phylanx::ir::node_data<double>{1.0};
+    HPX_TEST_EQ(43.0,
+        phylanx::execution_tree::extract_numeric_value(
+            lambda(std::move(arg))
+        )[0]);
+}
+
+void test_define_call_lambda_function_ind3()
+{
+    auto expr = phylanx::ast::generate_ast(R"(block(
+            define(x, b, lambda(a, a + b)),
+            x(42)
+        ))");
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto lambda = phylanx::execution_tree::compile(expr, snippets, env);
+
+    auto arg = phylanx::ir::node_data<double>{1.0};
+    HPX_TEST_EQ(43.0,
+        phylanx::execution_tree::extract_numeric_value(
+            lambda(std::move(arg))
+        )[0]);
+}
+
+void test_define_call_lambda_function_ind4()
 {
     auto expr = phylanx::ast::generate_ast(R"(block(
             define(x, b, lambda(a, a + b)),
@@ -618,7 +658,7 @@ int main(int argc, char* argv[])
     test_define_call_function();
 
     test_use_builtin_function();
-//     test_use_builtin_function_ind();
+    test_use_builtin_function_ind();
 
     test_define_curry_function();
     test_define_embedded_function();
@@ -631,6 +671,8 @@ int main(int argc, char* argv[])
 
 //     test_define_call_lambda_function_ind1();
 //     test_define_call_lambda_function_ind2();
+//     test_define_call_lambda_function_ind3();
+//     test_define_call_lambda_function_ind4();
 
     return hpx::util::report_errors();
 }

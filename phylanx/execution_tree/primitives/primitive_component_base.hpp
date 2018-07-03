@@ -47,7 +47,8 @@ namespace phylanx { namespace execution_tree
 
             // eval_action
             virtual hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& params) const;
+                std::vector<primitive_argument_type> const& params,
+                eval_mode mode) const;
 
             // store_action
             virtual void store(primitive_argument_type&&);
@@ -68,6 +69,10 @@ namespace phylanx { namespace execution_tree
 
             // helper functions to invoke eval functionalities
             hpx::future<primitive_argument_type> do_eval(
+                std::vector<primitive_argument_type> const& params,
+                eval_mode mode) const;
+
+            virtual hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& params) const;
 
             // access data for performance counter
@@ -85,8 +90,8 @@ namespace phylanx { namespace execution_tree
             static std::vector<primitive_argument_type> noargs;
             mutable std::vector<primitive_argument_type> operands_;
 
-            std::string name_;          // the unique name of this primitive
-            std::string codename_;      // the name of the original code source
+            std::string const name_;        // the unique name of this primitive
+            std::string const codename_;    // the name of the original code source
 
             // Performance counter data
             mutable std::int64_t eval_count_;
