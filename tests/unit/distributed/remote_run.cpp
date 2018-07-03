@@ -48,13 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             hpx::naming::get_locality_id_from_id(hpx::find_here());
         return hpx::make_ready_future(primitive_argument_type(locality_));
     }
-
 }}}
-
-PHYLANX_REGISTER_PLUGIN_MODULE();
-PHYLANX_REGISTER_PLUGIN_FACTORY(locality_id,
-    phylanx::execution_tree::primitives::locality_id_match_data,
-    "locality_id_action");
 
 ///////////////////////////////////////////////////////////////////////////////
 bool is_locality_0 = false;
@@ -121,6 +115,8 @@ void test_remote_run_communicate_1_to_0()
 
 int hpx_main(int argc, char* argv[])
 {
+    HPX_TEST(hpx::get_num_localities(hpx::launch::sync) >= 2);
+
     is_locality_0 = hpx::naming::get_locality_id_from_id(hpx::find_here()) == 0;
 
     test_remote_run_on_0();
@@ -134,12 +130,15 @@ int hpx_main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    phylanx::execution_tree::register_pattern("locality_id_action",
+        phylanx::execution_tree::primitives::locality_id_match_data);
+
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
     if (is_locality_0)
     {
         std::stringstream const& strm = hpx::get_consolestream();
-        HPX_TEST_EQ(strm.str(), std::string("42\n5\n42\n5\n42\n"));
+        HPX_TEST_EQ(strm.str(), std::string("0\n1\n5\n42\n5\n42\n5\n42\n"));
     }
 
     return hpx::util::report_errors();
