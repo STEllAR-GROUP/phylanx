@@ -116,7 +116,8 @@ int main(int argc, char* argv[])
     if (is_locality_0)
     {
         std::stringstream const& strm = hpx::get_consolestream();
-        HPX_TEST_EQ(strm.str(), std::string("0\n1\n5\n42\n5\n42\n5\n42\n5\n42\n"));
+        HPX_TEST_EQ(
+            strm.str(), std::string("0\n1\n5\n42\n5\n42\n5\n42\n5\n42\n"));
     }
 
     return hpx::util::report_errors();
