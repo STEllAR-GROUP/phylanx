@@ -10,6 +10,7 @@ set(tests
     cout_noargs_prints_nothing_159
     cout_prints_twice_155
     define_loses_values_177
+    empty_hstack_509
     expression_topology_213
     list_of_variables_244
     negative_integral_value_131

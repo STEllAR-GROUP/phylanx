@@ -230,7 +230,7 @@ class PhySL:
                 print(self.fglobals)
                 raise Exception("package name '%s' does not exist" % pkg_name)
             if func_name == "zeros" and len(a.args) == 1:
-                s += 'constant(0,make_list('
+                s += 'constant(0, make_list('
                 # The code below works the same for tuples and lists
                 args = [arg for arg in ast.iter_child_nodes(a.args[0])]
                 for i in range(len(args) - 1):
@@ -240,7 +240,7 @@ class PhySL:
                 s += '))'
                 return s
             elif func_name == "array" and len(a.args) == 1:
-                s += 'hstack('
+                s += 'hstack%s(' % symbol_info
                 # The code below works the same for tuples and lists
                 args = [arg for arg in ast.iter_child_nodes(a.args[0])]
                 for i in range(len(args) - 1):

@@ -49,24 +49,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (args[i].num_dimensions() != 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                    "phylanx::execution_tree::primitives::"
-                                        "vstack_operation::vstack0d",
-                                    execution_tree::generate_error_message(
-                                        "the vstack_operation primitive requires all the "
-                                            "inputs be a scalar for 0d stacking",
-                                        name_,
-                                        codename_));
+                    "phylanx::execution_tree::primitives::"
+                    "vstack_operation::vstack0d",
+                    generate_error_message(
+                        "the vstack_operation primitive requires all the "
+                        "inputs be a scalar for 0d stacking"));
             }
-        }
-        blaze::DynamicVector<double> temp(vec_size);
-
-        for (std::size_t i = 0; i < vec_size; ++i)
-        {
-            temp[i] = args[i].scalar();
         }
 
         blaze::DynamicMatrix<double> result(vec_size, 1);
-        blaze::column(result, 0) = temp;
+        auto col = blaze::column(result, 0);
+
+        for (std::size_t i = 0; i < vec_size; ++i)
+        {
+            col[i] = args[i].scalar();
+        }
 
         return primitive_argument_type{
             ir::node_data<double>{storage2d_type{std::move(result)}}};
@@ -163,15 +160,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() < 1)
+        if (operands.empty())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "vstack_operation::vstack_operation",
-                execution_tree::generate_error_message(
-                    "the vstack_operation primitive requires at least "
-                        "one argument",
-                    name_, codename_));
+            // hstack() without arguments returns an empty column
+            return hpx::make_ready_future(primitive_argument_type{
+                ir::node_data<double>{storage2d_type(0, 1)}});
         }
 
         bool arguments_valid = true;
@@ -228,10 +221,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> vstack_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

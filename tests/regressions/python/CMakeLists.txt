@@ -7,6 +7,8 @@ set(tests
     array_shape_486
     broadcasting_rules_410
     create_list_409
+    empty_list_509
+    empty_list_510
     exception_swallowed_369
     list_iter_space_429
     name_constants_411

@@ -500,12 +500,23 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (compiled_function* cf = env_.find(name))
             {
                 std::list<function> args;
-                environment env(&env_);
 
-                for (auto const& placeholder : placeholders)
+                // we represent function calls with empty argument lists as
+                // a function call with a single nil argument to be able to
+                // distinguish func() from invoke(func)
+                if (placeholders.empty())
                 {
-                    args.push_back(compile(name_, placeholder.second,
-                        snippets_, env, patterns_, default_locality_));
+                    args.push_back(function{
+                        ast::nil{}, compose_primitive_name(name_parts)});
+                }
+                else
+                {
+                    environment env(&env_);
+                    for (auto const& placeholder : placeholders)
+                    {
+                        args.push_back(compile(name_, placeholder.second,
+                            snippets_, env, patterns_, default_locality_));
+                    }
                 }
 
                 // create primitive with given arguments

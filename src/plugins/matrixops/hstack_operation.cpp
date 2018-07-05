@@ -159,13 +159,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (operands.empty())
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "hstack_operation::hstack_operation",
-                execution_tree::generate_error_message(
-                    "the hstack_operation primitive requires at least "
-                        "one argument",
-                    name_, codename_));
+            // hstack() without arguments returns an empty 1D vector
+            return hpx::make_ready_future(primitive_argument_type{
+                ir::node_data<double>{storage1d_type(0)}});
         }
 
         bool arguments_valid = true;
@@ -222,10 +218,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> hstack_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

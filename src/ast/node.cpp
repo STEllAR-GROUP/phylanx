@@ -13,7 +13,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstdint>
-#include <strstream>
+#include <sstream>
 
 namespace phylanx { namespace ast
 {

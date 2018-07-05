@@ -83,6 +83,9 @@ namespace phylanx { namespace execution_tree
             // decide whether to execute eval directly
             hpx::launch select_direct_eval_execution(hpx::launch policy) const;
 
+            bool no_operands() const;
+            std::vector<primitive_argument_type> const& operands() const;
+
         protected:
             std::string generate_error_message(std::string const& msg) const;
 

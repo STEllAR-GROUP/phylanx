@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(args), name, codename)
     {
         // the first entry of operands represents the target
-        if (operands_.empty())
+        if (this->no_operands())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "call_function::call_function",
