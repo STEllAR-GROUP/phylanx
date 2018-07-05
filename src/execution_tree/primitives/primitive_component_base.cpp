@@ -11,9 +11,10 @@
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
-#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/runtime/config_entry.hpp>
 #include <hpx/runtime/launch_policy.hpp>
+#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/throw_exception.hpp>
 
 #include <cstdint>
 #include <set>
@@ -181,10 +182,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::util::get_and_reset_value(execute_directly_, reset);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    bool primitive_component_base::get_sync_execution()
+    {
+        static bool sync_execution =
+            hpx::get_config_entry("phylanx.sync_execution", "0") == "1";
+        return sync_execution;
+    }
+
     // decide whether to execute eval directly
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
     {
+        // always run this on an HPX thread
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::launch::async;
+        }
+
+        // always execute synchronously, if requested
+        if (get_sync_execution())
+        {
+            return hpx::launch::sync;
+        }
+
         if (eval_count_ != 0)
         {
             // check whether execution status needs to be changed (with some
