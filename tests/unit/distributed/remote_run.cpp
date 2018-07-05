@@ -4,7 +4,6 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// Fixing #XXX: DESC_GOES_HERE
 #include <phylanx/execution_tree/primitives/generic_function.hpp>
 #include <phylanx/phylanx.hpp>
 #include <phylanx/plugins/plugin_factory.hpp>
@@ -14,8 +13,9 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <cstdint>
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
