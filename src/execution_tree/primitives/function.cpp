@@ -102,9 +102,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         num_arguments_ = num_args;
     }
 
-    topology function::expression_topology(std::set<std::string>&&) const
+    topology function::expression_topology(
+        std::set<std::string>&& functions) const
     {
-        return topology{};
+        if (functions.find(name_) != functions.end())
+        {
+            return {};      // avoid recursion
+        }
+
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            functions.insert(name_);
+            return p->expression_topology(
+                hpx::launch::sync, std::move(functions));
+        }
+        return {};
     }
 }}}
 

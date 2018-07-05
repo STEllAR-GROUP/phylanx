@@ -7,7 +7,7 @@ import phylanx
 from phylanx.ast import *
 
 
-@Phylanx()
+@Phylanx(debug=True)
 def f():
     a = None
     return a

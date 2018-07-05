@@ -59,34 +59,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type const& target = valid(bound_value_) ?
                 bound_value_ :
                 value_operand_sync(operands_[0], params, name_, codename_,
-                    eval_dont_wrap_functions);
+                    eval_mode(mode | eval_dont_wrap_functions));
 
-            std::vector<primitive_argument_type> fargs;
-            fargs.reserve(params.size() + 1);
-
-            fargs.push_back(extract_value(target));
-            for (auto const& param : params)
+            if (!params.empty())
             {
-                fargs.push_back(extract_value(param));
+                std::vector<primitive_argument_type> fargs;
+                fargs.reserve(params.size() + 1);
+
+                fargs.push_back(extract_value(target));
+                for (auto const& param : params)
+                {
+                    fargs.push_back(extract_value(param));
+                }
+
+                compiler::primitive_name_parts name_parts =
+                    compiler::parse_primitive_name(name_);
+                name_parts.primitive = "target-reference";
+
+                return hpx::make_ready_future(primitive_argument_type{
+                    create_primitive_component(hpx::find_here(),
+                        name_parts.primitive, std::move(fargs),
+                        compiler::compose_primitive_name(name_parts),
+                        codename_)
+                    });
             }
 
-            compiler::primitive_name_parts name_parts =
-                compiler::parse_primitive_name(name_);
-            name_parts.primitive = "target-reference";
-
-            return hpx::make_ready_future(primitive_argument_type{
-                create_primitive_component(hpx::find_here(),
-                    name_parts.primitive, std::move(fargs),
-                    compiler::compose_primitive_name(name_parts), codename_)
-                });
+            return hpx::make_ready_future(target);
         }
 
         if (valid(bound_value_))
         {
             return hpx::make_ready_future(bound_value_);
         }
-        return value_operand(
-            operands_[0], params, name_, codename_, eval_dont_wrap_functions);
+
+        return value_operand(operands_[0], params, name_, codename_,
+            eval_mode(mode | eval_dont_wrap_functions));
     }
 
     bool access_function::bind(
@@ -116,9 +123,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     topology access_function::expression_topology(
-        std::set<std::string>&&) const
+        std::set<std::string>&& functions) const
     {
-        return topology{};
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            // add only the name of the direct dependent node (no recursion)
+            return topology{p->registered_name()};
+        }
+        return {};
     }
 }}}
 

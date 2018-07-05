@@ -12,6 +12,7 @@ set(tests
     define_loses_values_177
     empty_hstack_509
     expression_topology_213
+    list_iter_space_429
     list_of_variables_244
     negative_integral_value_131
     no_integers_313

@@ -10,10 +10,12 @@ set(tests
     empty_list_509
     empty_list_510
     exception_swallowed_369
+    for_map_516
     list_iter_space_429
     name_constants_411
     no_parans_decorator_407
     passing_compiler_state_453
+    reassign_512
     zero_dimensional_array_502
    )
 

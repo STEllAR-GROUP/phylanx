@@ -197,6 +197,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // decide whether to execute eval directly
     bool primitive_component_base::get_sync_execution()
     {
         static bool sync_execution =
@@ -204,7 +205,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return sync_execution;
     }
 
-    // decide whether to execute eval directly
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
     {
@@ -245,22 +245,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return policy;
-    }
-
-    // A primitive was constructed with no operands if the list of operands is
-    // empty or the only provided operand is 'nil' (used for function
-    // invocations like 'func()').
-    bool primitive_component_base::no_operands() const
-    {
-        return operands_.empty();
-    }
-
-    std::vector<primitive_argument_type> const&
-    primitive_component_base::operands() const
-    {
-        return operands_.empty() ||
-                (operands_.size() == 1 && !valid(operands_[0])) ?
-            noargs : operands_;
     }
 }}}
 

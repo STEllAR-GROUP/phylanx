@@ -224,7 +224,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::string target_name_;
 
         explicit access_target(function const& f,
-                std::string && target_name,
+                std::string && target_name, 
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<access_target>(locality)
           , f_(f)
@@ -258,14 +258,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
         explicit access_variable(function const& f,
                 hpx::id_type const& locality = hpx::find_here())
           : access_target(f, "access-variable", locality)
-        {}
-    };
-
-    struct access_function : access_target
-    {
-        explicit access_function(function const& f,
-                hpx::id_type const& locality = hpx::find_here())
-          : access_target(f, "access-function", locality)
         {}
     };
 

@@ -72,8 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
                 [this_](primitive_argument_type&& func,
                     std::vector<primitive_argument_type>&& args)
                 {
@@ -81,7 +80,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         std::move(args), this_->name_, this_->codename_);
                 }),
             value_operand(operands_[0], params, name_, codename_,
-                eval_dont_wrap_functions),
+                eval_mode(eval_dont_wrap_functions |
+                    eval_dont_evaluate_partials |
+                    eval_dont_evaluate_lambdas)),
             detail::map_operands(std::move(fargs), functional::value_operand{},
                 params, name_, codename_, eval_dont_evaluate_partials));
     }

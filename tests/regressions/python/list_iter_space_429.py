@@ -9,15 +9,16 @@ import phylanx
 from phylanx.ast import *
 
 
-@Phylanx
+@Phylanx(debug=True)
 def f1():
     a = 0
     for i in [1]:
         a = 0
     return a
 
+assert f1() == 0
 
-@Phylanx
+@Phylanx(debug=True)
 def f2():
     a = 0
     for i in [1, 2, 3]:

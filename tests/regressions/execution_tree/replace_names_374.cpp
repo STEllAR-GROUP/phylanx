@@ -18,17 +18,32 @@
 std::string const code = R"(
     define(ultimate_answer, 42)
     debug(ultimate_answer)
-    define(ultimate_answer, block(
-        debug("'42'")
-    ))
-    ultimate_answer()
+    define(ultimate_answer, lambda(debug("'42'")))
+    ultimate_answer
 )";
+
+std::string const blocked_code = R"(block(
+    define(ultimate_answer, 42),
+    debug(ultimate_answer),
+    define(ultimate_answer, lambda(debug("'42'"))),
+    ultimate_answer
+))";
 
 int hpx_main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto ultimate_answer = phylanx::execution_tree::compile("code", code, snippets);
-    ultimate_answer();
+
+    {
+        auto ultimate_answer =
+            phylanx::execution_tree::compile("code", code, snippets);
+        ultimate_answer();
+    }
+
+    {
+        auto ultimate_answer = phylanx::execution_tree::compile(
+            "blocked_code", blocked_code, snippets);
+        ultimate_answer();
+    }
 
     return hpx::finalize();
 }
@@ -38,7 +53,7 @@ int main(int argc, char* argv[])
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
 
     std::stringstream const& strm = hpx::get_consolestream();
-    HPX_TEST_EQ(strm.str(), std::string("42\n'42'\n"));
+    HPX_TEST_EQ(strm.str(), std::string("42\n'42'\n42\n'42'\n"));
 
     return hpx::util::report_errors();
 }

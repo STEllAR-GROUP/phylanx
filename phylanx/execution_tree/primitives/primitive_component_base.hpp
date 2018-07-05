@@ -83,11 +83,23 @@ namespace phylanx { namespace execution_tree
             // decide whether to execute eval directly
             hpx::launch select_direct_eval_execution(hpx::launch policy) const;
 
-            bool no_operands() const;
-            std::vector<primitive_argument_type> const& operands() const;
+            // A primitive was constructed with no operands if the list of
+            // operands is empty or the only provided operand is 'nil' (used
+            // for function invocations like 'func()').
+            bool no_operands() const
+            {
+                return operands_.empty();
+            }
+            std::vector<primitive_argument_type> const& operands() const
+            {
+                return operands_.empty() ||
+                        (operands_.size() == 1 && !valid(operands_[0])) ?
+                    noargs : operands_;
+            }
 
         protected:
             std::string generate_error_message(std::string const& msg) const;
+            static bool get_sync_execution();
 
         protected:
             static std::vector<primitive_argument_type> noargs;
@@ -104,7 +116,6 @@ namespace phylanx { namespace execution_tree
 #if defined(HPX_HAVE_APEX)
             std::string eval_name_;
 #endif
-            static bool get_sync_execution();
         };
     }
 

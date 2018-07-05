@@ -43,6 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     variable::variable(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
+      , value_set_(false)
     {
         if (operands_.size() != 1)
         {
@@ -55,6 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
+            value_set_ = true;
         }
     }
 
@@ -69,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     bool variable::bind(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (!valid(operands_[0]))
+        if (!value_set_)
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "variable::bind",
@@ -91,15 +93,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         bound_value_ = primitive_argument_type{};
         operands_[0] = extract_copy_value(std::move(data));
+        value_set_ = true;
     }
 
     void variable::set_num_arguments(std::size_t num_args)
     {
     }
 
-    topology variable::expression_topology(std::set<std::string>&&) const
+    topology variable::expression_topology(
+        std::set<std::string>&& functions) const
     {
-        return topology{};
+        if (functions.find(name_) != functions.end())
+        {
+            return {};      // avoid recursion
+        }
+
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            functions.insert(name_);
+            return p->expression_topology(
+                hpx::launch::sync, std::move(functions));
+        }
+        return {};
     }
 }}}
 

@@ -226,8 +226,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                    primitive_argument_type&& arg)
-            -> primitive_argument_type
+                primitive_argument_type&& arg) -> primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
@@ -287,7 +286,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the second argument to map must be an iterable "
                             "object (a list or a numeric type)"));
             }),
-            value_operand(operands[0], args, name_, codename_),
+            value_operand(operands[0], args, name_, codename_,
+                eval_dont_evaluate_lambdas),
             value_operand(operands[1], args, name_, codename_));
     }
 
@@ -508,10 +508,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::back_inserter(lists));
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_](primitive_argument_type&& bound_func,
-                                      std::vector<primitive_argument_type>&&
-                                          args) -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](primitive_argument_type&& bound_func,
+                std::vector<primitive_argument_type>&& args)
+            ->  primitive_argument_type
+            {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -555,8 +556,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "compatible iterable objects (all lists or all "
                             "numeric)"));
             }),
-            value_operand(
-                operands_[0], args, name_, codename_, eval_dont_wrap_functions),
+            value_operand(operands_[0], args, name_, codename_,
+                eval_dont_evaluate_lambdas),
             detail::map_operands(
                 lists, functional::value_operand{}, args, name_, codename_));
     }

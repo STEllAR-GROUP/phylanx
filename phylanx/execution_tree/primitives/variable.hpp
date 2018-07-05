@@ -43,6 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         mutable primitive_argument_type bound_value_;
+        bool value_set_;
     };
 
     PHYLANX_EXPORT primitive create_variable(hpx::id_type const& locality,

@@ -198,9 +198,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         void set_name(std::string && name)
         {
-#if defined(_DEBUG)
             name_ = std::move(name);
-#endif
         }
 
         topology get_expression_topology() const
@@ -232,9 +230,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         }
 
         primitive_argument_type arg_;
-#if defined(_DEBUG)
         std::string name_;
-#endif
     };
 
     // this must be a list to ensure stable references

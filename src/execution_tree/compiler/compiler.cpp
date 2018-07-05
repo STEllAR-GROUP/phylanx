@@ -361,7 +361,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     id.id, id.col, snippets_.compile_id_ - 1);
                 name_parts.instance = std::move(name);
 
-                env_.define(name_parts.instance,
+                compiled_function* cf = env_.define(name_parts.instance,
                     access_target(f, "access-variable", default_locality_));
 
                 // now create the variable object
@@ -372,19 +372,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
                             primitive_argument_type{}, variable_name, name_)
                     }, variable_name};
 
-//                 if (util::get_if<primitive>(&bodyarg.arg_) != nullptr)
-//                 {
-//                     primitive_name_parts body_name_parts;
-//                     if (parse_primitive_name(bodyarg.name_, body_name_parts) &&
-//                         body_name_parts.primitive == "lambda")
-//                     {
-//                         variable_type = "function";
-//                     }
-//                 }
+                // Correct type of the access object if this variable refers
+                // to a lambda.
+                auto body_f = compile_body(body);
+                primitive_name_parts body_name_parts;
+                if (parse_primitive_name(body_f.name_, body_name_parts) &&
+                    body_name_parts.primitive == "lambda")
+                {
+                    cf->target<access_target>()->target_name_ =
+                        "access-function";
+                }
 
                 auto var = primitive_operand(f.arg_, variable_name, name_);
-                var.store(
-                    hpx::launch::sync, std::move(compile_body(body).arg_));
+                var.store(hpx::launch::sync, std::move(body_f.arg_));
             }
             else
             {
@@ -460,11 +460,22 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 fargs.push_back(
                     (*cf)(std::list<function>{}, name_parts, name_).arg_);
-                for (auto const& argexpr : argexprs)
+
+                // we represent function calls with empty argument lists as
+                // a function call with a single nil argument to be able to
+                // distinguish func() from invoke(func)
+                if (argexprs.empty())
+                {
+                    fargs.push_back(primitive_argument_type{});
+                }
+                else
                 {
                     environment env(&env_);
-                    fargs.push_back(compile(name_, argexpr, snippets_, env,
-                        patterns_, default_locality_).arg_);
+                    for (auto const& argexpr : argexprs)
+                    {
+                        fargs.push_back(compile(name_, argexpr, snippets_, env,
+                            patterns_, default_locality_).arg_);
+                    }
                 }
 
                 std::string full_name = compose_primitive_name(name_parts);
@@ -669,9 +680,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
         snippets.snippets_.emplace_back(function{});
         function& f = snippets.snippets_.back();
 
-        // get sequence number of this component
-        env.define(name_parts.primitive, access_variable(f, default_locality));
-
         if (name_parts.instance.empty())
         {
             name_parts.instance = name_parts.primitive;
@@ -679,6 +687,10 @@ namespace phylanx { namespace execution_tree { namespace compiler
         name_parts.primitive = "variable";
         name_parts.sequence_number =
             snippets.sequence_numbers_[name_parts.primitive]++;
+
+        // get sequence number of this component
+        env.define(name_parts.instance,
+            access_target(f, "access-variable", default_locality));
 
         // now create the variable object
         std::string variable_name = compose_primitive_name(name_parts);

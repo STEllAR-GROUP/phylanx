@@ -51,13 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
         if (valid(bound_value_))
         {
             return hpx::make_ready_future(bound_value_);
         }
-        return value_operand(operands_[0], params, name_, codename_);
+        return value_operand(operands_[0], params, name_, codename_,
+            eval_mode(mode | eval_dont_wrap_functions));
     }
 
     bool access_variable::bind(
@@ -87,9 +89,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     topology access_variable::expression_topology(
-        std::set<std::string>&&) const
+        std::set<std::string>&& functions) const
     {
-        return topology{};
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            // add only the name of the direct dependent node (no recursion)
+            return topology{p->registered_name()};
+        }
+        return {};
     }
 }}}
 

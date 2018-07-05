@@ -9,6 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
@@ -52,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lambda::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode mode) const
     {
         if (!valid(operands_[0]))
         {
@@ -63,9 +64,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
+        if (mode & eval_dont_evaluate_lambdas)
+        {
+            if (!args.empty())
+            {
+                std::vector<primitive_argument_type> fargs;
+                fargs.reserve(args.size() + 1);
+
+                fargs.push_back(extract_ref_value(operands_[0]));
+                for (auto const& arg : args)
+                {
+                    fargs.push_back(extract_value(arg));
+                }
+
+                compiler::primitive_name_parts name_parts =
+                    compiler::parse_primitive_name(name_);
+                name_parts.primitive = "target-reference";
+
+                return hpx::make_ready_future(primitive_argument_type{
+                    create_primitive_component(hpx::find_here(),
+                        name_parts.primitive, std::move(fargs),
+                        compiler::compose_primitive_name(name_parts), codename_)
+                    });
+            }
+
+            return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        }
+
         // simply invoke the given body with the given arguments
-        return value_operand(
-            operands_[0], args, name_, codename_, eval_dont_wrap_functions);
+        return value_operand(operands_[0], args, name_, codename_,
+            eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
     }
 
     bool lambda::bind(std::vector<primitive_argument_type> const& params) const
@@ -79,19 +107,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
-        // return if the bound function expects more arguments than provided
-//         if (params.size() < num_arguments_)
-//         {
-//             return false;
-//         }
-
         // evaluation of the define-function yields the function body
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
             return p->bind(params);
         }
-        return true;
+        return false;
     }
 
     void lambda::store(primitive_argument_type&& data)

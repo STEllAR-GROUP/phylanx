@@ -11,8 +11,10 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(list_plugin,
+    phylanx::execution_tree::primitives::make_list::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(make_list_plugin,
-    phylanx::execution_tree::primitives::make_list::match_data);
+    phylanx::execution_tree::primitives::make_list::match_data[1]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(len_operation_plugin,
     phylanx::execution_tree::primitives::len_operation::match_data);
 

@@ -331,7 +331,7 @@ namespace phylanx { namespace execution_tree
 
     std::string dot_tree(std::string const& name, topology const& t)
     {
-        std::string result = "graph " + name + " {\n";
+        std::string result = "graph \"" + name + "\" {\n";
 
         if (!t.children_.empty())
         {

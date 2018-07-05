@@ -230,12 +230,12 @@ class PhySL:
                 print(self.fglobals)
                 raise Exception("package name '%s' does not exist" % pkg_name)
             if func_name == "zeros" and len(a.args) == 1:
-                s += 'constant(0, make_list('
+                s += 'constant%s(0, make_list%s(' % (symbol_info, symbol_info)
                 # The code below works the same for tuples and lists
                 args = [arg for arg in ast.iter_child_nodes(a.args[0])]
                 for i in range(len(args) - 1):
                     if i > 0:
-                        s += ','
+                        s += ', '
                     s += self.recompile(args[i])
                 s += '))'
                 return s
@@ -245,7 +245,7 @@ class PhySL:
                 args = [arg for arg in ast.iter_child_nodes(a.args[0])]
                 for i in range(len(args) - 1):
                     if i > 0:
-                        s += ','
+                        s += ', '
                     s += self.recompile(args[i])
                 s += ')'
                 return s
@@ -306,7 +306,7 @@ class PhySL:
                 # Assign when the subscript is a slice, e.g. a[lo:hi] = ...
                 s += "set("
                 s += self.recompile(vname)
-                s += ","
+                s += ", "
                 if indexv.lower is None:
                     s += "0,"
                 else:
@@ -316,25 +316,25 @@ class PhySL:
                 else:
                     s += self.recompile(indexv.upper) + ","
                 s += "1,"
-                s += "0,0,0,"
+                s += "0, 0, 0, "
                 s += self.recompile(args[1])
                 s += ")"
             elif indexv_nm == "Index":
                 # Assign when the subscript is a value, e.g. a[i] = ... or a[i,j] = ...
                 s += "set("
                 s += self.recompile(vname)
-                s += ","
+                s += ", "
                 indexs = get_node(indexv, num=0)
                 if not is_node(indexs, "Tuple"):
                     s += self.recompile(indexs) + ","
                 else:
-                    s += self.recompile(get_node(indexs, num=0)) + ","
-                s += "0,0,"
+                    s += self.recompile(get_node(indexs, num=0)) + ", "
+                s += "0, 0, "
                 if not is_node(indexs, "Tuple"):
-                    s += "0,"
+                    s += "0, "
                 else:
-                    s += self.recompile(get_node(indexs, num=1)) + ","
-                s += "0,0,"
+                    s += self.recompile(get_node(indexs, num=1)) + ", "
+                s += "0, 0, "
                 s += self.recompile(args[1])
                 s += ")"
             elif indexv_nm == "ExtSlice":
@@ -347,27 +347,27 @@ class PhySL:
                 s += ","
 
                 if slice1.lower is None:
-                    s += "0,"
+                    s += "0, "
                 else:
-                    s += self.recompile(slice1.lower) + ","
+                    s += self.recompile(slice1.lower) + ", "
 
                 if slice1.upper is None:
-                    s += "nil,"
+                    s += "nil, "
                 else:
-                    s += self.recompile(slice1.upper) + ","
-                s += "1,"
+                    s += self.recompile(slice1.upper) + ", "
+                s += "1, "
 
                 if slice2.lower is None:
-                    s += "0,"
+                    s += "0, "
                 else:
-                    s += self.recompile(slice2.lower) + ","
+                    s += self.recompile(slice2.lower) + ", "
 
                 if slice2.upper is None:
-                    s += "nil,"
+                    s += "nil, "
                 else:
-                    s += self.recompile(slice2.upper) + ","
+                    s += self.recompile(slice2.upper) + ", "
 
-                s += "1,"
+                s += "1, "
 
                 s += self.recompile(args[1])
                 s += ")"
@@ -503,7 +503,7 @@ class PhySL:
             if arg.__class__.__name__ == "Load":
                 break
             if ret != "make_list%s(" % symbol_info:
-                ret += ","
+                ret += ", "
             ret += self.recompile(arg)
         ret += ")"
         return ret

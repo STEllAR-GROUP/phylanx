@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -430,6 +430,8 @@ void test_define_curry_function()
         )[0]);
 }
 
+// <image url="$(ItemDir)/images/compiler_test_embedded_function.dot.png" />
+//
 void test_define_embedded_function()
 {
     char const* exprstr1 = R"(block(
@@ -570,8 +572,15 @@ void test_define_call_lambda_function_ind1()
         phylanx::execution_tree::extract_numeric_value(
             lambda(std::move(arg))
         )[0]);
+
+    arg = phylanx::ir::node_data<double>{2.0};
+    HPX_TEST_EQ(44.0,
+        phylanx::execution_tree::extract_numeric_value(
+            lambda(std::move(arg))
+        )[0]);
 }
 
+// <image url="$(ItemDir)/images/compiler_test_define_call_lambda_function_ind2.dot.png" />
 void test_define_call_lambda_function_ind2()
 {
     auto expr = phylanx::ast::generate_ast(R"(block(
@@ -587,6 +596,12 @@ void test_define_call_lambda_function_ind2()
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
+        phylanx::execution_tree::extract_numeric_value(
+            lambda(std::move(arg))
+        )[0]);
+
+    arg = phylanx::ir::node_data<double>{2.0};
+    HPX_TEST_EQ(44.0,
         phylanx::execution_tree::extract_numeric_value(
             lambda(std::move(arg))
         )[0]);
@@ -607,6 +622,12 @@ void test_define_call_lambda_function_ind3()
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
+        phylanx::execution_tree::extract_numeric_value(
+            lambda(std::move(arg))
+        )[0]);
+
+    arg = phylanx::ir::node_data<double>{2.0};
+    HPX_TEST_EQ(44.0,
         phylanx::execution_tree::extract_numeric_value(
             lambda(std::move(arg))
         )[0]);
@@ -631,6 +652,12 @@ void test_define_call_lambda_function_ind4()
 
     auto arg_b = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
+        phylanx::execution_tree::extract_numeric_value(
+            lambda(std::move(arg_b))
+        )[0]);
+
+    arg_b = phylanx::ir::node_data<double>{2.0};
+    HPX_TEST_EQ(44.0,
         phylanx::execution_tree::extract_numeric_value(
             lambda(std::move(arg_b))
         )[0]);
@@ -669,10 +696,10 @@ int main(int argc, char* argv[])
     test_define_call_lambda_function();
     test_define_call_lambda_function_direct();
 
-//     test_define_call_lambda_function_ind1();
-//     test_define_call_lambda_function_ind2();
-//     test_define_call_lambda_function_ind3();
-//     test_define_call_lambda_function_ind4();
+    test_define_call_lambda_function_ind1();
+    test_define_call_lambda_function_ind2();
+    test_define_call_lambda_function_ind3();
+    test_define_call_lambda_function_ind4();
 
     return hpx::util::report_errors();
 }

@@ -72,10 +72,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_](primitive_argument_type&& bound_func,
-                                      ir::range&& list)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](primitive_argument_type&& bound_func, ir::range&& list)
+            ->  primitive_argument_type
+            {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -92,20 +92,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::vector<primitive_argument_type> result;
                 result.reserve(size);
 
-                for (auto const& i : list)
+                for (auto && curr : list)
                 {
-                    std::vector<primitive_argument_type> arg(1, i);
+                    std::vector<primitive_argument_type> arg(1, curr);
                     if (boolean_operand_sync(bound_func, std::move(arg),
                             this_->name_, this_->codename_))
                     {
-                        result.push_back(std::move(i));
+                        result.push_back(std::move(curr));
                     }
                 }
 
                 return primitive_argument_type{std::move(result)};
             }),
-            value_operand(
-                operands_[0], args, name_, codename_, eval_dont_wrap_functions),
+            value_operand(operands_[0], args, name_, codename_,
+                eval_dont_evaluate_lambdas),
             list_operand(operands_[1], args, name_, codename_));
     }
 
