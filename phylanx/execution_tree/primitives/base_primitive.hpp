@@ -333,6 +333,8 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
         primitive_argument_type const&);
 
+    PHYLANX_EXPORT std::string to_string(primitive_argument_type const&);
+
     PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
         primitive const&);
 
