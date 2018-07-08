@@ -224,7 +224,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::string target_name_;
 
         explicit access_target(function const& f,
-                std::string && target_name, 
+                std::string && target_name,
                 hpx::id_type const& locality = hpx::find_here())
           : compiled_actor<access_target>(locality)
           , f_(f)

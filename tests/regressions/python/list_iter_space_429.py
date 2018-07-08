@@ -18,6 +18,7 @@ def f1():
 
 assert f1() == 0
 
+
 @Phylanx(debug=True)
 def f2():
     a = 0

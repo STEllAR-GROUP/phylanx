@@ -430,7 +430,7 @@ void test_define_curry_function()
         )[0]);
 }
 
-// <image url="$(ItemDir)/images/compiler_test_embedded_function.dot.png" />
+/// <image url="$(ItemDir)/images/compiler_test_embedded_function.dot.png" />
 //
 void test_define_embedded_function()
 {
@@ -580,7 +580,7 @@ void test_define_call_lambda_function_ind1()
         )[0]);
 }
 
-// <image url="$(ItemDir)/images/compiler_test_define_call_lambda_function_ind2.dot.png" />
+/// <image url="$(ItemDir)/images/compiler_test_define_call_lambda_function_ind2.dot.png" />
 void test_define_call_lambda_function_ind2()
 {
     auto expr = phylanx::ast::generate_ast(R"(block(
