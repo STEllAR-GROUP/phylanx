@@ -101,11 +101,31 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             std::string full_name = compose_primitive_name(name_parts);
 
-            return function{
+            auto f = function{
                 primitive_argument_type{
                     (*f_)(this->locality_, std::move(fargs), full_name,
                         codename)
-                }, full_name};
+                }, full_name };
+
+            // A built-in function can be directly referenced by its name, in
+            // which case we wrap it into a variable object to avoid premature
+            // evaluation.
+            if (name_parts.primitive != "call-function" && args.empty())
+            {
+                HPX_ASSERT(name_parts.instance.empty());
+                name_parts.instance = std::move(name_parts.primitive);
+                name_parts.primitive = "variable";
+
+                full_name = compose_primitive_name(name_parts);
+
+                f = function{primitive_argument_type{
+                        create_primitive_component(
+                            this->locality_, name_parts.primitive,
+                            std::move(f.arg_), full_name, codename)
+                    }, full_name};
+            }
+
+            return f;
         }
 
     private:
@@ -145,7 +165,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             if (name_parts.instance.empty())
             {
-                name_parts.instance = name_parts.primitive;
+                name_parts.instance = std::move(name_parts.primitive);
             }
             name_parts.primitive = "define-variable";
 
@@ -199,7 +219,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             if (name_parts.instance.empty())
             {
-                name_parts.instance = name_parts.primitive;
+                name_parts.instance = std::move(name_parts.primitive);
             }
             name_parts.primitive = "access-argument";
             name_parts.sequence_number = sequence_number++;
@@ -278,7 +298,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::string const& codename) const
         {
             HPX_ASSERT(name_parts.instance.empty());
-            name_parts.instance = name_parts.primitive;
+            name_parts.instance = std::move(name_parts.primitive);
             name_parts.primitive = "call-function";
 
             std::vector<primitive_argument_type> fargs;

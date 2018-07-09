@@ -25,7 +25,7 @@ phylanx::execution_tree::compiler::function compile(std::string const& code)
 void test_map_operation_lambda()
 {
     std::string const code = R"(
-            map(lambda(x, x + 1), make_list(1, 2, 3))
+            map(lambda(x, x + 1), list(1, 2, 3))
         )";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
@@ -45,7 +45,7 @@ void test_map_operation_func()
 {
     std::string const code = R"(block(
             define(f, x, x + 1),
-            map(f, make_list(1, 2, 3))
+            map(f, list(1, 2, 3))
         ))";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
@@ -65,7 +65,7 @@ void test_map_operation_func_lambda()
 {
     std::string const code = R"(block(
             define(f, lambda(x, x + 1)),
-            map(f, make_list(1, 2, 3))
+            map(f, list(1, 2, 3))
         ))";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
@@ -85,7 +85,7 @@ void test_map_operation_func_lambda()
 void test_map_operation_lambda_arg()
 {
     std::string const code_str = R"(block(
-            define(f, a, map(lambda(x, x + a), make_list(1, 2, 3))),
+            define(f, a, map(lambda(x, x + a), list(1, 2, 3))),
             f
         ))";
 
@@ -121,7 +121,7 @@ void test_map_operation_func_arg()
     std::string const code_str = R"(block(
             define(f, a, block(
                 define(fmap, x, x + a),
-                map(fmap, make_list(1, 2, 3))
+                map(fmap, list(1, 2, 3))
             )),
             f
         ))";
@@ -154,12 +154,14 @@ void test_map_operation_func_arg()
         phylanx::execution_tree::extract_numeric_value(*it)[0], 5.0);
 }
 
+/// <image url="$(ItemDir)/images/test_map_operation_func_lambda_arg.dot.png" />
+//
 void test_map_operation_func_lambda_arg()
 {
     std::string const code_str = R"(block(
             define(f, a, block(
-                define(fmap, x, lambda(x, x + a)),
-                map(fmap, make_list(1, 2, 3))
+                define(fmap, lambda(x, x + a)),
+                map(fmap, list(1, 2, 3))
             )),
             f
         ))";
@@ -195,7 +197,7 @@ void test_map_operation_func_lambda_arg()
 void test_map_operation_lambda2()
 {
     std::string const code = R"(
-            map(lambda(x, y, x + y), make_list(1, 2, 3), make_list(1, 2, 3))
+            map(lambda(x, y, x + y), list(1, 2, 3), list(1, 2, 3))
         )";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
@@ -214,7 +216,7 @@ void test_map_operation_lambda2()
 void test_map_operation_builtin2()
 {
     std::string const code = R"(
-            map(__add, make_list(1, 2, 3), make_list(1, 2, 3))
+            map(__add, list(1, 2, 3), list(1, 2, 3))
         )";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
@@ -234,7 +236,7 @@ void test_map_operation_func2()
 {
     std::string const code = R"(block(
             define(f, x, y, x + y),
-            map(f, make_list(1, 2, 3), make_list(1, 2, 3))
+            map(f, list(1, 2, 3), list(1, 2, 3))
         ))";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());
@@ -254,7 +256,7 @@ void test_map_operation_func_lambda2()
 {
     std::string const code = R"(block(
             define(f, lambda(x, y, x + y)),
-            map(f, make_list(1, 2, 3), make_list(1, 2, 3))
+            map(f, list(1, 2, 3), list(1, 2, 3))
         ))";
 
     auto result = phylanx::execution_tree::extract_list_value(compile(code)());

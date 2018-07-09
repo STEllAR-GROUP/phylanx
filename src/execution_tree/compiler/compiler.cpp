@@ -422,12 +422,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
             ast::expression const& expr)
         {
             ast::tagged id = ast::detail::tagged_id(expr);
-            primitive_name_parts name_parts(name, -1, id.id, id.col);
 
             if (compiled_function* cf = env_.find(name))
             {
-                name_parts.compile_id = snippets_.compile_id_ - 1;
-                name_parts.sequence_number = snippets_.sequence_numbers_[name]++;
+                primitive_name_parts name_parts(name,
+                    snippets_.sequence_numbers_[name]++, id.id, id.col,
+                    snippets_.compile_id_ - 1);
 
                 return (*cf)(std::list<function>{}, std::move(name_parts), name_);
             }
@@ -682,7 +682,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         if (name_parts.instance.empty())
         {
-            name_parts.instance = name_parts.primitive;
+            name_parts.instance = std::move(name_parts.primitive);
         }
         name_parts.primitive = "variable";
         name_parts.sequence_number =

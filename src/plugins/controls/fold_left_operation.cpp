@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "fold_left_operation::eval",
                 execution_tree::generate_error_message(
                     "the fold_left_operation primitive requires exactly "
-                        "three operands",
+                    "three operands",
                     name_, codename_));
         }
 
@@ -57,8 +57,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "fold_left_operation::eval",
                 execution_tree::generate_error_message(
                     "the fold_left_operation primitive requires that the "
-                        "arguments given by the operands array "
-                        "are valid",
+                    "arguments given by the operands array "
+                    "are valid",
                     name_, codename_));
         }
 

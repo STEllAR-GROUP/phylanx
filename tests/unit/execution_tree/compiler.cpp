@@ -116,7 +116,10 @@ void test_builtin_environment_vars_lazy()
     auto defx = (*cfx)(funcs, "x", "<unknown>");
     auto defy = (*cfy)(funcs, "y", "<unknown>");
 
-    auto add = (*cfadd)(funcs, "__add", "<unknown>");
+    phylanx::execution_tree::compiler::primitive_name_parts name_parts(
+        "call-function");
+    name_parts.instance = "__add";
+    auto add = (*cfadd)(funcs, std::move(name_parts), "<unknown>");
 
     // invoking the factory functions defx and defy actually creates and binds
     // the variables
