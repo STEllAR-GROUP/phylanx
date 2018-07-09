@@ -11,7 +11,7 @@ set(tests
     list_iter_space_429
     name_constants_411
     no_parans_decorator_407
-    np_sum_489.py
+    np_sum_489
     passing_compiler_state_453
     zero_dimensional_array_502
    )
