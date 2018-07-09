@@ -68,8 +68,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(target));
     }
 
-    bool variable::bind(
-        std::vector<primitive_argument_type> const& args) const
+    bool variable::bind(std::vector<primitive_argument_type> const& args) const
     {
         if (!value_set_)
         {
@@ -82,9 +81,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // evaluation of the define-function yields the function body
         primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr && p->bind(args))
+        if (p != nullptr)
         {
-            bound_value_ = p->eval(hpx::launch::sync, args);
+            if (p->bind(args))
+            {
+                bound_value_ = p->eval(hpx::launch::sync, args);
+                return true;
+            }
+            return false;
         }
         return true;
     }

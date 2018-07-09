@@ -589,7 +589,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 3 &&
             phylanx::execution_tree::extract_scalar_boolean_value(operands[2]))
         {
-            return hpx::dataflow(
+            return hpx::dataflow(hpx::launch::sync,
                 hpx::util::unwrapping([this_](primitive_argument_type&& op1,
                     primitive_argument_type&& op2)
                                           -> primitive_argument_type {

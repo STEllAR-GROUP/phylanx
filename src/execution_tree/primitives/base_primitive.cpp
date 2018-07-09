@@ -3429,7 +3429,7 @@ namespace phylanx { namespace execution_tree
 
         case 7:     // phylanx::ir::range
             {
-                os << "make_list(";
+                os << "list(";
                 bool first = true;
                 for (auto const& elem : util::get<7>(val))
                 {

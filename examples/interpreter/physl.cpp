@@ -91,13 +91,22 @@ std::vector<phylanx::ast::expression> load_ast_dump(std::string const& path)
 }
 
 std::vector<phylanx::execution_tree::primitive_argument_type>
-read_arguments(std::vector<std::string> const& args)
+read_arguments(std::vector<std::string> const& args,
+    phylanx::execution_tree::compiler::function_list& snippets,
+    phylanx::execution_tree::compiler::environment& env)
 {
     std::vector<phylanx::execution_tree::primitive_argument_type> result(
         args.size());
 
-    std::transform(args.begin(), args.end(), result.begin(),
-        [](std::string const& s) { return phylanx::ast::generate_ast(s); });
+    std::transform(
+        args.begin(), args.end(), result.begin(),
+        [&](std::string const& s)
+        {
+            return phylanx::execution_tree::primitive_argument_type{
+                phylanx::execution_tree::compile(
+                    "<arguments>", s, snippets, env).arg_
+            };
+        });
 
     return result;
 }
@@ -221,8 +230,9 @@ std::string get_dump_file(po::variables_map const& vm,
     return dump_file;
 }
 
-std::vector<phylanx::ast::expression> ast_from_code_or_dump(po::variables_map const& vm,
-    std::vector<std::string>& positional_args, std::string& code_source_name)
+std::vector<phylanx::ast::expression> ast_from_code_or_dump(
+    po::variables_map const& vm, std::vector<std::string>& positional_args,
+    std::string& code_source_name)
 {
     // Return value
     std::vector<phylanx::ast::expression> ast;
@@ -299,22 +309,24 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(po::variables_map co
 }
 
 phylanx::execution_tree::compiler::result_type compile_and_run(
-    std::vector<phylanx::ast::expression> const ast,
-    std::vector<std::string> const positional_args,
+    std::vector<phylanx::ast::expression> const& ast,
+    std::vector<std::string> const& positional_args,
     phylanx::execution_tree::compiler::function_list& snippets,
     std::string const& code_source_name)
 {
-    // Collect the arguments for running the code
-    auto const args = read_arguments(positional_args);
-    // Now compile AST into expression tree (into actual executable code);
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
+    // Collect the arguments for running the code
+    auto args = read_arguments(positional_args, snippets, env);
+
+    // Compile AST into expression tree (into actual executable code);
     phylanx::execution_tree::define_variable(code_source_name,
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
         snippets, env,
-        phylanx::execution_tree::primitive_argument_type{std::move(args)});
+        phylanx::execution_tree::primitive_argument_type{args});
+
     auto const code = phylanx::execution_tree::compile(
         code_source_name, ast, snippets, env);
 
@@ -323,12 +335,12 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     hpx::reinit_active_counters();
 
     // Evaluate user code using the read data
-    return code();
+    return code(std::move(args));
 }
 
 void print_performance_profile(
     phylanx::execution_tree::compiler::function_list& snippets,
-    std::string const code_source_name)
+    std::string const& code_source_name)
 {
     auto topology = snippets.snippets_.back().get_expression_topology();
 
@@ -345,7 +357,7 @@ void print_performance_profile(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void interpreter(po::variables_map vm)
+void interpreter(po::variables_map const& vm)
 {
     // Collect positional arguments
     std::vector<std::string> positional_args;

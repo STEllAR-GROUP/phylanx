@@ -65,65 +65,65 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///             where the first list element is the name of the
         ///             distribution to use (see below). The remaining list
         ///             elements are specific to the distribution selected.
-        ///             (default: <code>make_list("normal", 0.0, 1.0)</code>).\n
+        ///             (default: <code>list("normal", 0.0, 1.0)</code>).\n
         ///
         /// \note       Possible values for \a parameters\n
-        ///     make_list("uniform", min, max): Produces integer values evenly
+        ///     list("uniform", min, max): Produces integer values evenly
         ///             distributed across a range ([min, max): range of
         ///             generated values)\n
-        ///     make_list("bernoulli", p):      Produces random boolean values,
+        ///     list("bernoulli", p):      Produces random boolean values,
         ///             according to the discrete probability function
         ///             (p: probability of a trial generating true)\n
-        ///     make_list("binomial", t, p):    Produces random non-negative
+        ///     list("binomial", t, p):    Produces random non-negative
         ///             integer values, distributed according to the discrete
         ///             binomial probability function (t: number of trials,
         ///             p: probability of a trial generating true)\n
-        ///     make_list("negative_binomial", k, p): Produces random non-
+        ///     list("negative_binomial", k, p): Produces random non-
         ///             negative integer values, distributed according to the
         ///             discrete negative binomial probability (k: number of
         ///             trial failures, p: probability of a trial generating
         ///             true)\n
-        ///     make_list("geometric", p): Produces random non-negative integer
+        ///     list("geometric", p): Produces random non-negative integer
         ///             values, distributed according to the discrete geometric
         ///             probability function (p: probability of a trial
         ///             generating true)\n
-        ///     make_list("poisson", mean): Produces random non-negative integer
+        ///     list("poisson", mean): Produces random non-negative integer
         ///             values, distributed according to discrete Poisson
         ///             probability function (mean: the mean of the distribution)\n
-        ///     make_list("exponential", lambda): Produces random non-negative
+        ///     list("exponential", lambda): Produces random non-negative
         ///             floating-point values, distributed according to the
         ///             exponential probability density function
         ///             (lambda: the rate parameter)\n
-        ///     make_list("gamma", alpha, beta): Produces random positive
+        ///     list("gamma", alpha, beta): Produces random positive
         ///             floating-point values, distributed according to the
         ///             gamma probability density function
         ///             (alpha: shape, beta: scale)\n
-        ///     make_list("weibull", a, b): Produces random positive
+        ///     list("weibull", a, b): Produces random positive
         ///             floating-point values, distributed according to the
         ///             Weibull probability density function (a: shape, b: scale)\n
-        ///     make_list("extreme_value", a, b): Produces random positive
+        ///     list("extreme_value", a, b): Produces random positive
         ///             floating-point values, distributed according to the
         ///             extreme value probability density function, also known
         ///             as Gumbel Type I, log-Weibull, or Fisher-Tippett Type I
         ///             distribution (a: location, b: scale)\n
-        ///     make_list("normal", mean, stddev): Generates random numbers
+        ///     list("normal", mean, stddev): Generates random numbers
         ///             according to the Normal (or Gaussian) random number
         ///             distribution (mean: mean, stddev: standard deviation)\n
-        ///     make_list("lognormal", m, s): Produces random numbers according
+        ///     list("lognormal", m, s): Produces random numbers according
         ///             to a log-normal distribution (m: log-scale, s: shape)\n
-        ///     make_list("chi_squared", n): Produces random positive
+        ///     list("chi_squared", n): Produces random positive
         ///             floating-point values, distributed according to the
         ///             Chi-squared probability density function
         ///             (n: degrees of freedom)\n
-        ///     make_list("cauchy", a, b): Produces random positive
+        ///     list("cauchy", a, b): Produces random positive
         ///             floating-point values, distributed according to the
         ///             Cauchy (Lorentz) probability density function
         ///             (a: location, s: scale)\n
-        ///     make_list("fisher_f", m, n): Produces random positive
+        ///     list("fisher_f", m, n): Produces random positive
         ///             floating-point values, distributed according to the
         ///             f-probability density function (m: degrees of freedom,
         ///             n: degrees of freedom)\n
-        ///     make_list("student_t", n): Produces random positive floating-point
+        ///     list("student_t", n): Produces random positive floating-point
         ///             values, distributed according to the student probability
         ///             density function (n: degrees of freedom)\n
         ///
