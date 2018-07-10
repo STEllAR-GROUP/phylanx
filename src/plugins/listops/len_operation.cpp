@@ -73,12 +73,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{ir::node_data<std::int64_t>{
                     static_cast<std::int64_t>(val.size())}};
             }
+            else if (is_boolean_operand_strict(arg) ||
+                is_integer_operand_strict(arg) ||
+                is_numeric_operand_strict(arg))
+            {
+                auto val = extract_numeric_value_dimensions(std::move(arg));
+                return primitive_argument_type{ir::node_data<std::int64_t>{
+                    static_cast<std::int64_t>(val[0])}};
+            }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::len_operation::eval",
-                execution_tree::generate_error_message(
-                    "len_operation accepts a list or a string as operand",
-                    this_->name_, this_->codename_));
+                this_->generate_error_message(
+                    "len_operation accepts a list, a string, or a numeric "
+                    "value as its operand only"));
         }),
             value_operand(operands[0], args,
             name_, codename_));

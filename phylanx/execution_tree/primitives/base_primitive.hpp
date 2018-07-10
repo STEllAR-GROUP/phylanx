@@ -547,7 +547,18 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT ir::node_data<double> extract_numeric_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT ir::node_data<double> extract_numeric_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT bool is_numeric_operand(primitive_argument_type const& val);
+    PHYLANX_EXPORT bool is_numeric_operand_strict(
+        primitive_argument_type const& val);
 
     PHYLANX_EXPORT std::size_t extract_numeric_value_dimension(
         primitive_argument_type const& val,
@@ -748,6 +759,15 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_value_strict(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_value_strict(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -758,6 +778,8 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>");
 
     PHYLANX_EXPORT bool is_boolean_operand(primitive_argument_type const& val);
+    PHYLANX_EXPORT bool is_boolean_operand_strict(
+        primitive_argument_type const& val);
 
     // Extract a std::string type from a given primitive_argument_type,
     // throw if it doesn't hold one.

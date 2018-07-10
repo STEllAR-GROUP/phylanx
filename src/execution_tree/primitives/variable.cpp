@@ -87,7 +87,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (p->bind(args))
             {
-                bound_value_ = p->eval(hpx::launch::sync, args);
+                bound_value_ =
+                    extract_copy_value(p->eval(hpx::launch::sync, args));
                 return true;
             }
             return false;

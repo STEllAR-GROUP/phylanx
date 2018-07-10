@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    array_len_494
     array_shape_486
     broadcasting_rules_410
     create_list_409
