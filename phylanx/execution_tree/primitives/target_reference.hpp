@@ -36,8 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         void store(primitive_argument_type&& data) override;
 
-        topology expression_topology(
-            std::set<std::string>&& functions) const override;
+        topology expression_topology(std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const override;
     };
 }}}
 

@@ -209,6 +209,14 @@ namespace phylanx { namespace execution_tree
     hpx::future<topology> primitive::expression_topology(
         std::set<std::string>&& functions) const
     {
+        return expression_topology(
+            std::move(functions), std::set<std::string>{});
+    }
+
+    hpx::future<topology> primitive::expression_topology(
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
+    {
         // retrieve name of this node (the component can only retrieve
         // names of dependent nodes)
         std::string this_name = this->base_type::registered_name();
@@ -217,8 +225,9 @@ namespace phylanx { namespace execution_tree
         using action_type = primitives::primitive_component::
             expression_topology_action;
 
-        hpx::future<topology> f = hpx::async(
-            action_type(), this->base_type::get_id(), std::move(functions));
+        hpx::future<topology> f =
+            hpx::async(action_type(), this->base_type::get_id(),
+                std::move(functions), std::move(resolve_children));
 
         return f.then(hpx::launch::sync,
             [this_name](hpx::future<topology> && f)
@@ -241,6 +250,14 @@ namespace phylanx { namespace execution_tree
         return expression_topology(std::move(functions)).get();
     }
 
+    topology primitive::expression_topology(hpx::launch::sync_policy,
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
+    {
+        return expression_topology(
+            std::move(functions), std::move(resolve_children)).get();
+    }
+
     bool primitive::bind(
         std::vector<primitive_argument_type> const& params) const
     {
@@ -259,41 +276,49 @@ namespace phylanx { namespace execution_tree
     // traverse expression-tree topology and generate Newick representation
     namespace detail
     {
-        std::string newick_tree_helper(topology const& t)
+        std::string newick_tree_helper(
+            topology const& t, std::set<std::string>& handled_nodes)
         {
             std::string result;
 
-            if (!t.children_.empty())
+            // handle each node only once
+            if (handled_nodes.find(t.name_) == handled_nodes.end())
             {
-                bool first = true;
-                for (auto const& child : t.children_)
+                handled_nodes.insert(t.name_);
+
+                if (!t.children_.empty())
                 {
-                    std::string name = newick_tree_helper(child);
-                    if (!first && !name.empty())
+                    bool first = true;
+                    for (auto const& child : t.children_)
                     {
-                        result += ',';
+                        std::string name =
+                            newick_tree_helper(child, handled_nodes);
+                        if (!first && !name.empty())
+                        {
+                            result += ',';
+                        }
+                        first = false;
+                        if (!name.empty())
+                        {
+                            result += std::move(name);
+                        }
                     }
-                    first = false;
-                    if (!name.empty())
+
+                    if (!result.empty() &&
+                        !(result[0] == '(' && result[result.size() - 1] == ')'))
                     {
-                        result += std::move(name);
+                        result = "(" + result + ")";
                     }
                 }
 
-                if (!result.empty() &&
-                    !(result[0] == '(' && result[result.size()-1] == ')'))
+                if (!t.name_.empty())
                 {
-                    result = "(" + result + ")";
+                    if (!result.empty())
+                    {
+                        result += " ";
+                    }
+                    result += t.name_;
                 }
-            }
-
-            if (!t.name_.empty())
-            {
-                if (!result.empty())
-                {
-                    result += " ";
-                }
-                result += t.name_;
             }
 
             return result;
@@ -302,26 +327,36 @@ namespace phylanx { namespace execution_tree
 
     std::string newick_tree(std::string const& name, topology const& t)
     {
-        return "(" + detail::newick_tree_helper(t) + ") " + name + ";";
+        std::set<std::string> handled_nodes;
+        return "(" + detail::newick_tree_helper(t, handled_nodes) + ") " +
+            name + ";";
     }
 
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::string dot_tree_helper(topology const& t)
+        std::string dot_tree_helper(
+            topology const& t, std::set<std::string>& handled_nodes)
         {
             std::string result;
 
-            for (auto const& child : t.children_)
+            // handle each node only once
+            if (handled_nodes.find(t.name_) == handled_nodes.end())
             {
-                result += "    \"" + t.name_ + "\" -- \"" + child.name_ + "\";\n";
-                if (!child.children_.empty())
+                handled_nodes.insert(t.name_);
+
+                for (auto const& child : t.children_)
                 {
-                    result += dot_tree_helper(child);
-                }
-                else if (!child.name_.empty())
-                {
-                    result += "    \"" + child.name_ + "\";\n";
+                    result +=
+                        "    \"" + t.name_ + "\" -- \"" + child.name_ + "\";\n";
+                    if (!child.children_.empty())
+                    {
+                        result += dot_tree_helper(child, handled_nodes);
+                    }
+                    else if (!child.name_.empty())
+                    {
+                        result += "    \"" + child.name_ + "\";\n";
+                    }
                 }
             }
 
@@ -331,11 +366,12 @@ namespace phylanx { namespace execution_tree
 
     std::string dot_tree(std::string const& name, topology const& t)
     {
+        std::set<std::string> handled_nodes;
         std::string result = "graph \"" + name + "\" {\n";
 
         if (!t.children_.empty())
         {
-            result += detail::dot_tree_helper(t);
+            result += detail::dot_tree_helper(t, handled_nodes);
         }
         else if (!t.name_.empty())
         {

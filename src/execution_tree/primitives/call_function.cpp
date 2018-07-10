@@ -158,13 +158,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     topology call_function::expression_topology(
-        std::set<std::string>&& functions) const
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            return p->expression_topology(
-                hpx::launch::sync, std::move(functions));
+            return p->expression_topology(hpx::launch::sync,
+                std::move(functions), std::move(resolve_children));
         }
         return {};
     }

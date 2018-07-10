@@ -129,9 +129,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // extract_topology_action
     topology primitive_component::expression_topology(
-        std::set<std::string>&& functions) const
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
-        return primitive_->expression_topology(std::move(functions));
+        return primitive_->expression_topology(
+            std::move(functions), std::move(resolve_children));
     }
 
     // bind_action

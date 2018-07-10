@@ -131,7 +131,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // extract_topology_action
     topology primitive_component_base::expression_topology(
-        std::set<std::string>&& functions) const
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
         std::vector<hpx::future<topology>> results;
         results.reserve(operands_.size());
@@ -142,7 +143,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (p != nullptr)
             {
                 std::set<std::string> funcs{functions};
-                results.push_back(p->expression_topology(std::move(funcs)));
+                std::set<std::string> resolve{resolve_children};
+                results.push_back(p->expression_topology(
+                    std::move(funcs), std::move(resolve)));
             }
         }
 

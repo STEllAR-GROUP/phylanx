@@ -89,13 +89,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     topology access_variable::expression_topology(
-        std::set<std::string>&& functions) const
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
+            std::string name = p->registered_name();
+            if (resolve_children.find(name) != resolve_children.end())
+            {
+                // recurse into function, if asked to do that
+                return p->expression_topology(hpx::launch::sync,
+                    std::move(functions), std::move(resolve_children));
+            }
+
             // add only the name of the direct dependent node (no recursion)
-            return topology{p->registered_name()};
+            return topology{std::move(name)};
         }
         return {};
     }

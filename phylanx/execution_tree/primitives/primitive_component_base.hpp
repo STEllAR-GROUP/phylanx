@@ -55,7 +55,8 @@ namespace phylanx { namespace execution_tree
 
             // extract_topology_action
             virtual topology expression_topology(
-                std::set<std::string>&& functions) const;
+                std::set<std::string>&& functions,
+                std::set<std::string>&& resolve_children) const;
 
             // bind_action
             virtual bool bind(

@@ -147,6 +147,13 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
             std::set<std::string>&& functions) const;
 
+        PHYLANX_EXPORT hpx::future<topology> expression_topology(
+            std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const;
+        PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
+            std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const;
+
         PHYLANX_EXPORT bool bind(
             std::vector<primitive_argument_type>&& args) const;
         PHYLANX_EXPORT bool bind(

@@ -206,9 +206,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                std::set<std::string> functions;
-                return p->expression_topology(
-                    hpx::launch::sync, std::move(functions));
+                return p->expression_topology(hpx::launch::sync,
+                    std::set<std::string>{}, std::set<std::string>{});
             }
             return {};
         }
@@ -218,8 +217,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive const* p = util::get_if<primitive>(&arg_);
             if (p != nullptr)
             {
-                return p->expression_topology(
-                    hpx::launch::sync, std::move(functions));
+                return p->expression_topology(hpx::launch::sync,
+                    std::move(functions), std::set<std::string>{});
+            }
+            return {};
+        }
+
+        topology get_expression_topology(std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const
+        {
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                return p->expression_topology(hpx::launch::sync,
+                    std::move(functions), std::move(resolve_children));
             }
             return {};
         }
@@ -263,6 +274,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             return snippets_.back().get_expression_topology(
                 std::move(functions));
+        }
+        topology get_expression_topology(std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const
+        {
+            return snippets_.back().get_expression_topology(
+                std::move(functions), std::move(resolve_children));
         }
 
         std::size_t compile_id_;
