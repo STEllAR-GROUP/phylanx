@@ -8,7 +8,7 @@ import numpy as np
 
 
 @Phylanx
-def foo1(x):
+def f1(x):
     local_x = x
     return local_x
 
@@ -16,5 +16,16 @@ def foo1(x):
 c = 1
 d = 2
 
-assert (foo1(c) == 1)
-assert (foo1(d) == 2)
+assert (f1(c) == 1)
+assert (f1(d) == 2)
+
+
+@Phylanx
+def f2(x):
+    local_x = x
+    local_x = local_x + 1
+    return local_x
+
+
+assert(f2(1) == 2)
+assert(f2(1) == 2)

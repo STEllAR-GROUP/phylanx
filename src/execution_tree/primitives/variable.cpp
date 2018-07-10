@@ -79,6 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
+        bound_value_ = primitive_argument_type{};
+
         // evaluation of the define-function yields the function body
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
@@ -95,9 +97,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     void variable::store(primitive_argument_type&& data)
     {
-        bound_value_ = primitive_argument_type{};
-        operands_[0] = extract_copy_value(std::move(data));
-        value_set_ = true;
+        if (!value_set_)
+        {
+            operands_[0] = extract_copy_value(std::move(data));
+            value_set_ = true;
+        }
+        else
+        {
+            bound_value_ = extract_copy_value(std::move(data));
+        }
     }
 
     void variable::set_num_arguments(std::size_t num_args)
