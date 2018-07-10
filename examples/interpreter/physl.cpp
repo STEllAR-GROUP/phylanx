@@ -9,7 +9,6 @@
 
 #include <hpx/hpx_main.hpp>
 
-#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -90,6 +89,33 @@ std::vector<phylanx::ast::expression> load_ast_dump(std::string const& path)
         std::move(bytes));
 }
 
+void print_physl_code(std::vector<phylanx::ast::expression> const& ast)
+{
+    std::cout << "PhySL Code:\n";
+    for (auto const& i : ast)
+    {
+        std::cout << phylanx::ast::to_string(i) << '\n';
+    }
+    std::cout << "\n\n";
+}
+
+void dump_physl_code(std::vector<phylanx::ast::expression> const& ast,
+    std::string const& path)
+{
+    std::ofstream os(path);
+    if (!os.good())
+    {
+        HPX_THROW_EXCEPTION(hpx::filesystem_error,
+            "dump_physl_code",
+            "Failed to open the specified file: " + path);
+    }
+
+    for (auto const& i : ast)
+    {
+        os << phylanx::ast::to_string(i) << '\n';
+    }
+}
+
 std::vector<phylanx::execution_tree::primitive_argument_type>
 read_arguments(std::vector<std::string> const& args,
     phylanx::execution_tree::compiler::function_list& snippets,
@@ -112,44 +138,6 @@ read_arguments(std::vector<std::string> const& args,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void print_performance_counter_data_csv()
-{
-    // CSV Header
-    std::cout << "primitive_instance,display_name,count,time,eval_direct\n";
-
-    // List of existing primitive instances
-    std::vector<std::string> existing_primitive_instances;
-
-    // Retrieve all primitive instances
-    for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
-    {
-        existing_primitive_instances.push_back(entry.first);
-    }
-
-    // Print performance data
-    std::vector<std::string> const counter_names{
-        "count/eval", "time/eval", "eval_direct"
-    };
-
-    for (auto const& entry : phylanx::util::retrieve_counter_data(
-             existing_primitive_instances, counter_names))
-    {
-        std::cout << "\"" << entry.first << "\",\""
-                  << phylanx::execution_tree::compiler::primitive_display_name(
-                         entry.first)
-                  << "\"";
-        for (auto const& counter_value : entry.second)
-        {
-            std::cout << "," << counter_value;
-        }
-        std::cout << "\n";
-    }
-
-    std::cout << "\n";
-}
-
-///////////////////////////////////////////////////////////////////////////////
 int handle_command_line(int argc, char* argv[], po::variables_map& vm)
 {
     try
@@ -160,11 +148,15 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             ("help,h", "print out program usage")
             ("docs","Print out all primitives/plugins and descriptions")
             ("code,c", po::value<std::string>(),
-             "Execute the PhySL code given in argument")
+                "Execute the PhySL code given in argument")
             ("print,p", "Print the result of evaluation of the last "
                 "PhySL expression encountered in the input")
             ("performance", "Print the topology of the created execution "
                 "tree and the corresponding performance counter results")
+            ("dump-dot", po::value<std::string>(), "Write the topology of the "
+                "created execution tree as a dot file to a file")
+            ("dump-newick-tree", po::value<std::string>(), "Write the topology "
+                "of the created execution tree as a Newick tree to a file")
             ("transform,t", po::value<std::string>(),
                 "file to read transformation rules from")
             ("dump-ast,d", po::value<std::string>()->implicit_value("<none>"),
@@ -172,6 +164,13 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             ("load-ast,l", po::value<std::string>(),
                 "file to dump AST to. If none path is provided, use the base "
                 "file name of the input file replacing the extension to .ast")
+            ("print-code", "Print the PhySL code that is to be executed")
+            ("dump-code", po::value<std::string>(), "Write the PhySL code that "
+                "is to be executed to a file")
+            ("dump-counters", po::value<std::string>(), "Write the performance "
+                "counter CSV data code to a file")
+            ("dry-run", "Perform all other options requested but do not "
+                "actually run the code")
         ;
 
         po::positional_options_description pd;
@@ -305,6 +304,7 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(
             get_dump_file(vm, std::move(code_source_path), code_is_file);
         dump_ast(ast, std::move(dump_file));
     }
+
     return ast;
 }
 
@@ -312,7 +312,7 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     std::vector<phylanx::ast::expression> const& ast,
     std::vector<std::string> const& positional_args,
     phylanx::execution_tree::compiler::function_list& snippets,
-    std::string const& code_source_name)
+    std::string const& code_source_name, bool dry_run)
 {
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
@@ -335,28 +335,134 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     hpx::reinit_active_counters();
 
     // Evaluate user code using the read data
-    return code(std::move(args));
+    if (!dry_run)
+    {
+        return code(std::move(args));
+    }
+    return phylanx::ast::nil{};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void print_performance_counter_data_csv(std::ostream& os)
+{
+    // CSV Header
+    os << "primitive_instance,display_name,count,time,eval_direct\n";
+
+    // List of existing primitive instances
+    std::vector<std::string> existing_primitive_instances;
+
+    // Retrieve all primitive instances
+    for (auto const& entry :
+        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
+    {
+        existing_primitive_instances.push_back(entry.first);
+    }
+
+    // Print performance data
+    std::vector<std::string> const counter_names{
+        "count/eval", "time/eval", "eval_direct"
+    };
+
+    for (auto const& entry : phylanx::util::retrieve_counter_data(
+             existing_primitive_instances, counter_names))
+    {
+        os << "\"" << entry.first << "\",\""
+                  << phylanx::execution_tree::compiler::primitive_display_name(
+                         entry.first)
+                  << "\"";
+        for (auto const& counter_value : entry.second)
+        {
+            os << "," << counter_value;
+        }
+        os << "\n";
+    }
+
+    os << "\n";
+}
+
+void print_dot(std::string const& code_source_name,
+    phylanx::execution_tree::topology const& topology, std::ostream& os)
+{
+    os << phylanx::execution_tree::dot_tree(code_source_name, topology) << "\n";
+}
+
+void print_newick_tree(std::string const& code_source_name,
+    phylanx::execution_tree::topology const& topology, std::ostream& os)
+{
+    os << phylanx::execution_tree::newick_tree(code_source_name, topology)
+       << "\n";
 }
 
 void print_performance_profile(
     phylanx::execution_tree::compiler::function_list& snippets,
-    std::string const& code_source_name)
+    std::string const& code_source_name, std::string const& dot_file,
+    std::string const& newick_tree_file, std::string const& counter_file)
 {
-    auto topology = snippets.snippets_.back().get_expression_topology();
+    std::set<std::string> resolve_children;
+    for (auto const& f : snippets.snippets_)
+    {
+        resolve_children.insert(f.name_);
+    }
 
-    std::cout << "\n"
-        << phylanx::execution_tree::dot_tree(code_source_name, topology)
-        << "\n";
+    auto const topology = snippets.get_expression_topology(
+        std::set<std::string>{}, std::move(resolve_children));
 
-    std::cout << "\n"
-        << phylanx::execution_tree::newick_tree(code_source_name, topology)
-        << "\n\n";
+    if (dot_file.empty())
+    {
+        std::cout << "\n";
+        print_dot(code_source_name, topology, std::cout);
+    }
+    else
+    {
+        std::ofstream os(dot_file);
+        if (!os.good())
+        {
+            HPX_THROW_EXCEPTION(hpx::filesystem_error,
+                "print_performance_profile",
+                "Failed to open the specified file: " + dot_file);
+        }
 
-    print_performance_counter_data_csv();
+        print_dot(code_source_name, topology, os);
+    }
+
+    if (newick_tree_file.empty())
+    {
+        std::cout << "\n";
+        print_newick_tree(code_source_name, topology, std::cout);
+        std::cout << "\n";
+    }
+    else
+    {
+        std::ofstream os(newick_tree_file);
+        if (!os.good())
+        {
+            HPX_THROW_EXCEPTION(hpx::filesystem_error,
+                "print_performance_profile",
+                "Failed to open the specified file: " + newick_tree_file);
+        }
+
+        print_newick_tree(code_source_name, topology, os);
+    }
+
+    if (counter_file.empty())
+    {
+        print_performance_counter_data_csv(std::cout);
+    }
+    else
+    {
+        std::ofstream os(counter_file);
+        if (!os.good())
+        {
+            HPX_THROW_EXCEPTION(hpx::filesystem_error,
+                "print_performance_profile",
+                "Failed to open the specified file: " + counter_file);
+        }
+
+        print_performance_counter_data_csv(os);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
 void interpreter(po::variables_map const& vm)
 {
     // Collect positional arguments
@@ -368,13 +474,28 @@ void interpreter(po::variables_map const& vm)
 
     // Origin of PhySL code. It is either file name or <command_line>
     std::string code_source_name;
-    // The AST that is either generated from PhySL code or loaded from an AST dump
+
+    // The AST that is either generated from PhySL code or loaded from an AST
+    // dump. This also sets the name of the source code 'code_source_name'.
     std::vector<phylanx::ast::expression> ast =
         ast_from_code_or_dump(vm, positional_args, code_source_name);
 
+    // Dump the code that is to be executed to the standard output, if requested
+    if (vm.count("print-code") != 0)
+    {
+        print_physl_code(ast);
+    }
+
+    // Dump the code that is to be executed to a file, if requested
+    if (vm.count("dump-code") != 0)
+    {
+        std::string const physl_file = vm["dump-code"].as<std::string>();
+        dump_physl_code(ast, physl_file);
+    }
+
     phylanx::execution_tree::compiler::function_list snippets;
-    auto const result = compile_and_run(
-        std::move(ast), std::move(positional_args), snippets, code_source_name);
+    auto const result = compile_and_run(ast, positional_args, snippets,
+            code_source_name, vm.count("dry-run") != 0);
 
     // Print the result of the last PhySL expression, if requested
     if (vm.count("print") != 0)
@@ -386,7 +507,17 @@ void interpreter(po::variables_map const& vm)
     // and the associate performance counter data
     if (vm.count("performance") != 0)
     {
-        print_performance_profile(snippets, std::move(code_source_name));
+        std::string dot_file =
+            vm.count("dump-dot") == 0 ? "" : vm["dump-dot"].as<std::string>();
+        std::string newick_tree_file = vm.count("dump-newick-tree") == 0 ?
+            "" :
+            vm["dump-newick-tree"].as<std::string>();
+        std::string counter_file = vm.count("dump-counters") == 0 ?
+            "" :
+            vm["dump-counters"].as<std::string>();
+
+        print_performance_profile(snippets, code_source_name, dot_file,
+            newick_tree_file, counter_file);
     }
 }
 
@@ -399,14 +530,15 @@ int main(int argc, char* argv[])
         return cmdline_result > 0 ? 0 : cmdline_result;
     }
 
-    if(vm.count("docs") != 0) {
+    if (vm.count("docs") != 0)
+    {
         phylanx::execution_tree::show_patterns();
         return 0;
     }
 
     try
     {
-        interpreter(std::move(vm));
+        interpreter(vm);
     }
     catch (std::exception const& e)
     {
