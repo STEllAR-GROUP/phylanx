@@ -127,10 +127,10 @@ else()
 endif()
 
 # Locate dependencies
+phylanx_setup_hpx()
 phylanx_setup_blaze()
 phylanx_setup_pybind11()
 phylanx_setup_highfive()
-phylanx_setup_hpx()
 
 phylanx_include(GitCommit)
 
