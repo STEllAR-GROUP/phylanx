@@ -6,9 +6,6 @@
 #if !defined(PHYLANX_CONFIG_AUG_25_2017_0711PM)
 #define PHYLANX_CONFIG_AUG_25_2017_0711PM
 
-// temporary hack to make builds pass
-#define HPX_HAVE_DYNAMIC_HPX_MAIN 0
-
 #include <hpx/config.hpp>
 
 #include <phylanx/config/defines.hpp>
