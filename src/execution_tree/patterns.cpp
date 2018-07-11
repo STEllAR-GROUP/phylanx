@@ -65,6 +65,7 @@ namespace phylanx { namespace execution_tree
                 PHYLANX_MATCH_DATA(console_output),
                 PHYLANX_MATCH_DATA(debug_output),
                 PHYLANX_MATCH_DATA(enable_tracing),
+                PHYLANX_MATCH_DATA(format_string),
                 PHYLANX_MATCH_DATA(string_output),
                 PHYLANX_MATCH_DATA(assert_condition),
 

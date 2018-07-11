@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return {};
         }),
             detail::map_operands(
-                operands, functional::value_operand{}, args));
+                operands, functional::value_operand{}, args, name_, codename_));
     }
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content

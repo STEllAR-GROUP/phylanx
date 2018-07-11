@@ -45,50 +45,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    namespace detail
+    hpx::future<primitive_argument_type> console_output::eval(
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args) const
     {
-        struct console_output : std::enable_shared_from_this<console_output>
-        {
-            console_output() = default;
-
-        protected:
-            using args_type = std::vector<primitive_argument_type>;
-
-        public:
-            hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& operands,
-                std::vector<primitive_argument_type> const& args)
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](std::vector<primitive_argument_type>&& args)
+                -> primitive_argument_type
             {
-                auto this_ = this->shared_from_this();
-                return hpx::dataflow(hpx::launch::sync,
-                    hpx::util::unwrapping(
-                    [this_](args_type&& args) -> primitive_argument_type
+                bool init = true;
+                for (auto const& arg : args)
+                {
+                    if (init)
                     {
-                        bool init = true;
-                        for (auto const& arg : args)
-                        {
-                            if (init)
-                            {
-                                init = false;
-                            }
-                            else
-                            {
-                                // Put spaces in the output to match Python
-                                hpx::cout << ' ';
-                            }
-                            hpx::cout << arg;
-                        }
-                        hpx::cout << std::endl;
+                        init = false;
+                    }
+                    else
+                    {
+                        // Put spaces in the output to match Python
+                        hpx::cout << ' ';
+                    }
+                    hpx::cout << arg;
+                }
+                hpx::cout << std::endl;
 
-                        return {};
-                    }),
-                    detail::map_operands(
-                        operands, functional::value_operand{}, args));
-            }
-
-        private:
-            primitive_argument_type operand_;
-        };
+                return {};
+            }),
+            detail::map_operands(
+                operands, functional::value_operand{}, args, name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -98,8 +83,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (this->no_operands())
         {
-            return std::make_shared<detail::console_output>()->eval(args, noargs);
+            return eval(args, noargs);
         }
-        return std::make_shared<detail::console_output>()->eval(operands_, args);
+        return eval(operands_, args);
     }
 }}}

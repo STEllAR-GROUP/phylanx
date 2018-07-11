@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <utility>
@@ -3646,6 +3647,13 @@ namespace phylanx { namespace execution_tree
             "primitive_argument_type does not hold a value type");
 
         return os;
+    }
+
+    std::string to_string(primitive_argument_type const& value)
+    {
+        std::stringstream str;
+        str << value;
+        return str.str();
     }
 }}
 
