@@ -86,7 +86,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         }
         else if (step < 0)
         {
-            for (std::int64_t i = start; i > stop; i += step)
+            for (std::int64_t i = stop - 1; i >= start; i += step)
             {
                 result.push_back(i);
             }
@@ -552,7 +552,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         auto idx_end = index_list.end();
 
         // extract elements from list at given indices
-        if (row_start <= row_stop)
+        if (row_start <= row_stop && step > 0)
         {
             auto list_it = list.begin();
             auto list_end = list.end();
