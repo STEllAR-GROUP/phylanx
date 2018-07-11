@@ -67,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type(strm.str());
             }),
             detail::map_operands(
-                operands, functional::value_operand{}, args));
+                operands, functional::value_operand{}, args, name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////

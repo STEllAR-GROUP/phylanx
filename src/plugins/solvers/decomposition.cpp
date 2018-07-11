@@ -143,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->calculate_decomposition(std::move(args));
                 }),
             detail::map_operands(operands, functional::numeric_operand{}, args,
-                this_->name_, this_->codename_));
+                name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////
