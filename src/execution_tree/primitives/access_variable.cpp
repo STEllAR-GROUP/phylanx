@@ -70,7 +70,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr && p->bind(params))
         {
-            bound_value_ = p->eval(hpx::launch::sync, params);
+            bound_value_ =
+                extract_copy_value(p->eval(hpx::launch::sync, params));
             return true;
         }
 
