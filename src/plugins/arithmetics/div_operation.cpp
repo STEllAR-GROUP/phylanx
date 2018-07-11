@@ -69,12 +69,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (rhs.is_ref())
         {
-            rhs = blaze::map(rhs.vector(), phylanx::util::detail::div0dnd_simd(lhs.scalar()));
+            rhs = blaze::map(rhs.vector(),
+                phylanx::util::detail::div0dnd_simd(lhs.scalar()));
         }
         else
         {
-            rhs.vector() =
-                blaze::map(rhs.vector(), phylanx::util::detail::div0dnd_simd(lhs.scalar()));
+            rhs.vector() = blaze::map(rhs.vector(),
+                phylanx::util::detail::div0dnd_simd(lhs.scalar()));
         }
         return primitive_argument_type(std::move(rhs));
     }
@@ -84,12 +85,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (rhs.is_ref())
         {
-            rhs = blaze::map(rhs.matrix(), phylanx::util::detail::div0dnd_simd(lhs.scalar()));
+            rhs = blaze::map(rhs.matrix(),
+                phylanx::util::detail::div0dnd_simd(lhs.scalar()));
         }
         else
         {
-            rhs.matrix() =
-                blaze::map(rhs.matrix(), phylanx::util::detail::div0dnd_simd(lhs.scalar()));
+            rhs.matrix() = blaze::map(rhs.matrix(),
+                phylanx::util::detail::div0dnd_simd(lhs.scalar()));
         }
         return primitive_argument_type(std::move(rhs));
     }
@@ -141,12 +143,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (lhs.is_ref())
         {
-            lhs = blaze::map(lhs.vector(), phylanx::util::detail::divnd0d_simd(rhs.scalar()));
+            lhs = blaze::map(lhs.vector(),
+                phylanx::util::detail::divnd0d_simd(rhs.scalar()));
         }
         else
         {
-            lhs.vector() =
-                blaze::map(lhs.vector(), phylanx::util::detail::divnd0d_simd(rhs.scalar()));
+            lhs.vector() = blaze::map(lhs.vector(),
+                phylanx::util::detail::divnd0d_simd(rhs.scalar()));
         }
 
         return primitive_argument_type(std::move(lhs));
@@ -175,8 +178,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             else
             {
-                lhs.vector() = blaze::map(
-                    lhs.vector(), rhs.vector(), phylanx::util::detail::divndnd_simd());
+                lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
+                    phylanx::util::detail::divndnd_simd());
             }
             return primitive_argument_type{std::move(lhs)};
         }
@@ -187,13 +190,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (rhs.is_ref())
                 {
-                    rhs = blaze::map(
-                        rhs.vector(), phylanx::util::detail::div0dnd_simd(lhs.vector()[0]));
+                    rhs = blaze::map(rhs.vector(),
+                        phylanx::util::detail::div0dnd_simd(lhs.vector()[0]));
                 }
                 else
                 {
-                    rhs.vector() = blaze::map(
-                        rhs.vector(), phylanx::util::detail::div0dnd_simd(lhs.vector()[0]));
+                    rhs.vector() = blaze::map(rhs.vector(),
+                        phylanx::util::detail::div0dnd_simd(lhs.vector()[0]));
                 }
                 return primitive_argument_type{std::move(rhs)};
             }
@@ -201,13 +204,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (lhs.is_ref())
                 {
-                    lhs = blaze::map(
-                        lhs.vector(), phylanx::util::detail::divnd0d_simd(rhs.vector()[0]));
+                    lhs = blaze::map(lhs.vector(),
+                        phylanx::util::detail::divnd0d_simd(rhs.vector()[0]));
                 }
                 else
                 {
-                    lhs.vector() = blaze::map(
-                        lhs.vector(), phylanx::util::detail::divnd0d_simd(rhs.vector()[0]));
+                    lhs.vector() = blaze::map(lhs.vector(),
+                        phylanx::util::detail::divnd0d_simd(rhs.vector()[0]));
                 }
                 return primitive_argument_type{std::move(lhs)};
             }
@@ -242,13 +245,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 if (result.is_ref())
                 {
-                    result = blaze::map(
-                        result.vector(), curr.vector(), phylanx::util::detail::divndnd_simd());
+                    result = blaze::map(result.vector(), curr.vector(),
+                        phylanx::util::detail::divndnd_simd());
                 }
                 else
                 {
-                    result.vector() = blaze::map(
-                        result.vector(), curr.vector(), phylanx::util::detail::divndnd_simd());
+                    result.vector() = blaze::map(result.vector(), curr.vector(),
+                        phylanx::util::detail::divndnd_simd());
                 }
                 return std::move(result);
             }));
@@ -290,13 +293,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (rhs.is_ref())
             {
-                rhs = blaze::map(rhs_m, phylanx::util::detail::div0dnd_simd(lhs_v[0]));
+                rhs = blaze::map(
+                    rhs_m, phylanx::util::detail::div0dnd_simd(lhs_v[0]));
 
                 return primitive_argument_type{std::move(rhs)};
             }
             else
             {
-                rhs_m = blaze::map(rhs_m, phylanx::util::detail::div0dnd_simd(lhs_v[0]));
+                rhs_m = blaze::map(
+                    rhs_m, phylanx::util::detail::div0dnd_simd(lhs_v[0]));
 
                 return primitive_argument_type{std::move(rhs)};
             }
@@ -375,12 +380,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (lhs.is_ref())
         {
-            lhs = blaze::map(lhs.matrix(), phylanx::util::detail::divnd0d_simd(rhs.scalar()));
+            lhs = blaze::map(lhs.matrix(),
+                phylanx::util::detail::divnd0d_simd(rhs.scalar()));
         }
         else
         {
-            lhs.matrix() =
-                blaze::map(lhs.matrix(), phylanx::util::detail::divnd0d_simd(rhs.scalar()));
+            lhs.matrix() = blaze::map(lhs.matrix(),
+                phylanx::util::detail::divnd0d_simd(rhs.scalar()));
         }
 
         return primitive_argument_type(std::move(lhs));
@@ -421,13 +427,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (lhs.is_ref())
             {
-                lhs = blaze::map(lhs_m, phylanx::util::detail::divnd0d_simd(rhs_v[0]));
+                lhs = blaze::map(
+                    lhs_m, phylanx::util::detail::divnd0d_simd(rhs_v[0]));
 
                 return primitive_argument_type{std::move(lhs)};
             }
             else
             {
-                lhs_m = blaze::map(lhs_m, phylanx::util::detail::divnd0d_simd(rhs_v[0]));
+                lhs_m = blaze::map(
+                    lhs_m, phylanx::util::detail::divnd0d_simd(rhs_v[0]));
 
                 return primitive_argument_type{std::move(lhs)};
             }
@@ -487,22 +495,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // Cannot reuse the memory if an operand is a reference
             if (rhs.is_ref())
             {
-                rhs = blaze::map(
-                    lhs.matrix(), rhs.matrix(), phylanx::util::detail::divndnd_simd());
+                rhs = blaze::map(lhs.matrix(), rhs.matrix(),
+                    phylanx::util::detail::divndnd_simd());
             }
             // Reuse the memory from rhs operand
             else
             {
-                rhs.matrix() = blaze::map(
-                    lhs.matrix(), rhs.matrix(), phylanx::util::detail::divndnd_simd());
+                rhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
+                    phylanx::util::detail::divndnd_simd());
             }
             return primitive_argument_type(std::move(rhs));
         }
         // Reuse the memory from lhs operand
         else
         {
-            lhs.matrix() =
-                blaze::map(lhs.matrix(), rhs.matrix(), phylanx::util::detail::divndnd_simd());
+            lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
+                phylanx::util::detail::divndnd_simd());
         }
 
         return primitive_argument_type(std::move(lhs));
@@ -516,11 +524,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (lhs.is_ref())
         {
-            lhs = blaze::map(rhs_m, phylanx::util::detail::div0dnd_simd(lhs_m(0, 0)));
+            lhs = blaze::map(
+                rhs_m, phylanx::util::detail::div0dnd_simd(lhs_m(0, 0)));
         }
         else
         {
-            lhs.matrix() = blaze::map(rhs_m, phylanx::util::detail::div0dnd_simd(lhs_m(0, 0)));
+            lhs.matrix() = blaze::map(
+                rhs_m, phylanx::util::detail::div0dnd_simd(lhs_m(0, 0)));
         }
 
         return primitive_argument_type{std::move(lhs)};
@@ -534,11 +544,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (lhs.is_ref())
         {
-            lhs = blaze::map(lhs_m, phylanx::util::detail::divnd0d_simd(rhs_m(0, 0)));
+            lhs = blaze::map(
+                lhs_m, phylanx::util::detail::divnd0d_simd(rhs_m(0, 0)));
         }
         else
         {
-            lhs.matrix() = blaze::map(lhs_m, phylanx::util::detail::divnd0d_simd(rhs_m(0, 0)));
+            lhs.matrix() = blaze::map(
+                lhs_m, phylanx::util::detail::divnd0d_simd(rhs_m(0, 0)));
         }
 
         return primitive_argument_type{std::move(lhs)};
@@ -813,13 +825,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [](operand_type& result, operand_type const& curr) -> operand_type {
                 if (result.is_ref())
                 {
-                    result = blaze::map(
-                        result.matrix(), curr.matrix(), phylanx::util::detail::divndnd_simd());
+                    result = blaze::map(result.matrix(), curr.matrix(),
+                        phylanx::util::detail::divndnd_simd());
                 }
                 else
                 {
-                    result.matrix() = blaze::map(
-                        result.matrix(), curr.matrix(), phylanx::util::detail::divndnd_simd());
+                    result.matrix() = blaze::map(result.matrix(), curr.matrix(),
+                        phylanx::util::detail::divndnd_simd());
                 }
                 return std::move(result);
             }));
