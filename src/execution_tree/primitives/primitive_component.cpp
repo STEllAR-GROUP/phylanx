@@ -138,12 +138,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component::bind(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
     {
-        return primitive_->bind(params);
+        return primitive_->bind(params, mode);
     }
 
-    // bind_action
+    // set_num_arguments_action
     void primitive_component::set_num_arguments(std::size_t num_args)
     {
         return primitive_->set_num_arguments(num_args);

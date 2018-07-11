@@ -73,12 +73,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     bool target_reference::bind(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args,
+        bind_mode mode) const
     {
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            return p->bind(args);
+            return p->bind(args, mode);
         }
         return false;
     }

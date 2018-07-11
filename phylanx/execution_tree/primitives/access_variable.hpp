@@ -34,8 +34,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params,
             eval_mode mode) const override;
 
-        bool bind(
-            std::vector<primitive_argument_type> const& args) const override;
+        bool bind(std::vector<primitive_argument_type> const& args,
+            bind_mode mode) const override;
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;

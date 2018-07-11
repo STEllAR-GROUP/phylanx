@@ -60,7 +60,8 @@ namespace phylanx { namespace execution_tree
 
             // bind_action
             virtual bool bind(
-                std::vector<primitive_argument_type> const& params) const;
+                std::vector<primitive_argument_type> const& params,
+                bind_mode mode) const;
 
             // set_num_arguments_action
             virtual void set_num_arguments(std::size_t);

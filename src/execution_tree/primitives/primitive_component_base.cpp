@@ -163,14 +163,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return topology{std::move(children)};
     }
 
-    // eval_action
+    // bind_action
     bool primitive_component_base::bind(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
     {
         for (auto const& operand : operands_)
         {
             primitive const* p = util::get_if<primitive>(&operand);
-            if (p != nullptr && !p->bind(params))
+            if (p != nullptr && !p->bind(params, mode))
             {
                 return false;
             }

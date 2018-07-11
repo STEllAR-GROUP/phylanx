@@ -84,7 +84,13 @@ namespace phylanx { namespace execution_tree
         eval_default = 0x00,                // always evaluate everything
         eval_dont_wrap_functions = 0x01,    // don't wrap partially bound functions
         eval_dont_evaluate_partials = 0x02, // don't evaluate partially bound functions
-        eval_dont_evaluate_lambdas = 0x04 // don't evaluate functions
+        eval_dont_evaluate_lambdas = 0x04   // don't evaluate functions
+    };
+
+    enum bind_mode
+    {
+        bind_default = 0x00,                // always evaluate everything
+        bind_force_binding = 0x01,          // always force rebind
     };
 
     class primitive
@@ -155,9 +161,11 @@ namespace phylanx { namespace execution_tree
             std::set<std::string>&& resolve_children) const;
 
         PHYLANX_EXPORT bool bind(
-            std::vector<primitive_argument_type>&& args) const;
+            std::vector<primitive_argument_type>&& args,
+            bind_mode mode = bind_default) const;
         PHYLANX_EXPORT bool bind(
-            std::vector<primitive_argument_type> const& args) const;
+            std::vector<primitive_argument_type> const& args,
+            bind_mode mode = bind_default) const;
 
     public:
         static bool enable_tracing;

@@ -96,7 +96,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
     }
 
-    bool lambda::bind(std::vector<primitive_argument_type> const& params) const
+    bool lambda::bind(std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
     {
         if (!valid(operands_[0]))
         {
@@ -111,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            return p->bind(params);
+            return p->bind(params, mode);
         }
         return false;
     }

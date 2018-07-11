@@ -88,7 +88,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     bool call_function::bind(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
     {
         if (!valid(operands_[0]))
         {
@@ -116,7 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     primitive const* arg = util::get_if<primitive>(&*it);
                     if (arg != nullptr)
                     {
-                        if (arg->bind(params))
+                        if (arg->bind(params, mode))
                         {
                             fargs.push_back(
                                 arg->eval(hpx::launch::sync, params));
@@ -128,13 +129,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
 
-                if (p->bind(fargs))
+                if (p->bind(fargs, mode))
                 {
                     return true;
                 }
             }
 
-            if (p->bind(params))
+            if (p->bind(params, mode))
             {
                 return true;
             }

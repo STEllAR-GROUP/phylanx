@@ -62,7 +62,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     bool access_argument::bind(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
     {
         if (argnum_ >= params.size())
         {
@@ -72,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&params[argnum_]);
         if (p != nullptr)
         {
-            return p->bind(params);
+            return p->bind(params, mode);
         }
 
         return true;

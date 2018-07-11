@@ -84,12 +84,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
             }
 
-            return hpx::make_ready_future(target);
+            return hpx::make_ready_future(extract_ref_value(target));
         }
 
         if (valid(bound_value_))
         {
-            return hpx::make_ready_future(bound_value_);
+            return hpx::make_ready_future(extract_ref_value(bound_value_));
         }
 
         return value_operand(operands_[0], params, name_, codename_,
@@ -97,14 +97,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     bool access_function::bind(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
     {
+        if (!(mode & bind_force_binding))
+        {
+            return valid(bound_value_);
+        }
+
         bound_value_ = primitive_argument_type{};
 
         primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr && p->bind(params))
+        if (p != nullptr && p->bind(params, mode))
         {
-            bound_value_ = p->eval(hpx::launch::sync, params);
+            bound_value_ =
+                p->eval(hpx::launch::sync, params, eval_dont_wrap_functions);
             return true;
         }
 

@@ -259,17 +259,18 @@ namespace phylanx { namespace execution_tree
     }
 
     bool primitive::bind(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params, bind_mode mode) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), params));
+            action_type()(this->base_type::get_id(), params, mode));
     }
-    bool primitive::bind(std::vector<primitive_argument_type>&& params) const
+    bool primitive::bind(
+        std::vector<primitive_argument_type>&& params, bind_mode mode) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), std::move(params)));
+            action_type()(this->base_type::get_id(), std::move(params), mode));
     }
 
     ///////////////////////////////////////////////////////////////////////////
