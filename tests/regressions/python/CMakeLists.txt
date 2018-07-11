@@ -11,15 +11,7 @@ set(tests
     list_iter_space_429
     name_constants_411
     no_parans_decorator_407
-<<<<<<< HEAD
-<<<<<<< HEAD
     np_sum_489
-=======
-    np_sum_489.py
->>>>>>> Fixing #489 - Mapping np.sum to phylanx's sum primitive.
-=======
-    np_sum_489
->>>>>>> ff3b9eca95eb1be0d1300bee854c947ccbed79bb
     passing_compiler_state_453
     zero_dimensional_array_502
    )
