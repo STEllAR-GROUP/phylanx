@@ -1450,7 +1450,7 @@ namespace phylanx { namespace ir
         {
         case 0:
             {
-                double val = 0;
+                T val = 0;
                 ar >> val;
                 data_ = val;
             }

@@ -12,6 +12,7 @@ set(tests
     name_constants_411
     no_parans_decorator_407
     passing_compiler_state_453
+    zero_dimensional_array_502
    )
 
 foreach(test ${tests})

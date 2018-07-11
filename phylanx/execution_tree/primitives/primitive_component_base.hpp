@@ -95,6 +95,7 @@ namespace phylanx { namespace execution_tree
 #if defined(HPX_HAVE_APEX)
             std::string eval_name_;
 #endif
+            static bool get_sync_execution();
         };
     }
 
