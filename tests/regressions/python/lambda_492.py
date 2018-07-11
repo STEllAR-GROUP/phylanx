@@ -8,7 +8,7 @@ from phylanx.ast import Phylanx
 
 @Phylanx
 def foo():
-    f = lambda a : a
+    f = lambda a: a     # noqa: E731
     f(42)
 
 

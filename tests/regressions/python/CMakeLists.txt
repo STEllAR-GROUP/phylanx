@@ -13,7 +13,6 @@ set(tests
     exception_swallowed_369
     for_map_516
     lambda_492
-    list_element_523
     list_iter_space_429
     name_constants_411
     no_parans_decorator_407

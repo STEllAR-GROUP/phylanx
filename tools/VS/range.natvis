@@ -32,7 +32,7 @@
             <Item Name="[value]" Condition="(it_.impl_.index_ == 2)">it_.impl_.data_.tail_.tail_.head_.value</Item>
         </Expand>
     </Type>
-    
+
     <Type Name="phylanx::ir::range">
         <DisplayString Condition="(data_.impl_.index_ == 0)">{{start={((hpx::util::detail::tuple_member&lt;0,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value}, stop={((hpx::util::detail::tuple_member&lt;1,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value}, step={((hpx::util::detail::tuple_member&lt;2,__int64,void&gt;&amp;)data_.impl_.data_.head_.value._impl)._value}}}</DisplayString>
         <DisplayString Condition="(data_.impl_.index_ == 1)">{data_.impl_.data_.tail_.head_.value}</DisplayString>
@@ -46,5 +46,5 @@
             <Item Name="[second]" Condition="(data_.impl_.index_ == 2)">data_.impl_.data_.tail_.tail_.head_.value.second</Item>
         </Expand>
     </Type>
-    
+
 </AutoVisualizer>
