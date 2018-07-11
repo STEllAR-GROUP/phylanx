@@ -41,6 +41,11 @@ namespace phylanx { namespace util
         return detail::serialize(ast);
     }
 
+    std::vector<char> serialize(ir::node_data<std::int64_t> const& ast)
+    {
+        return detail::serialize(ast);
+    }
+
     std::vector<char> serialize(ir::node_data<double> const& ast)
     {
         return detail::serialize(ast);
@@ -113,6 +118,12 @@ namespace phylanx { namespace util
 
         void unserialize(
             std::vector<char> const& input, ir::node_data<double>& ast)
+        {
+            detail::unserialize_helper(input, ast);
+        }
+
+        void unserialize(
+            std::vector<char> const& input, ir::node_data<std::int64_t>& ast)
         {
             detail::unserialize_helper(input, ast);
         }
