@@ -14,23 +14,21 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-char const* const read_x_code = R"(block(
+char const* const read_x_code = R"(
     //
     // Read input-data from given CSV file
     //
     define(read_x, filepath, row_start, row_stop, col_start, col_stop,
         slice(file_read_csv(filepath), make_list(row_start , row_stop),
               make_list(col_start , col_stop))
-    ),
+    )
     read_x
-))";
+)";
 
 
-char const* const als_code = R"(block(
+char const* const als_code = R"(
     //
     // Alternating Least squares algorithm
-    //
-    //
     //
     define(als, ratings, regularization, num_factors, iterations, alpha, enable_output,
         block(
@@ -102,9 +100,9 @@ char const* const als_code = R"(block(
             ),
             make_list(X, Y)
         )
-    ),
+    )
     als
-))";
+)";
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
@@ -130,11 +128,14 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto read_x =
+    auto code_read_x =
         phylanx::execution_tree::compile("read_x", read_x_code, snippets);
+    auto read_x = code_read_x.run();
+
     auto ratings = read_x(filepath, row_start, row_stop, col_start, col_stop);
 
-    auto als = phylanx::execution_tree::compile(als_code, snippets);
+    auto code_als = phylanx::execution_tree::compile(als_code, snippets);
+    auto als = code_als.run();
 
     hpx::evaluate_active_counters(true, "start");
     hpx::util::high_resolution_timer t;

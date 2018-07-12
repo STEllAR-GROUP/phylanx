@@ -14,7 +14,8 @@
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile("block()", snippets);
+    phylanx::execution_tree::compile("block()", snippets);
+    auto f = snippets.run();
 
     auto result = f();
     HPX_TEST_EQ(result, phylanx::execution_tree::primitive_argument_type{});

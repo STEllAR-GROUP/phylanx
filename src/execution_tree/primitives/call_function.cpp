@@ -87,63 +87,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 params, name_, codename_, eval_dont_evaluate_partials));
     }
 
-    bool call_function::bind(
-        std::vector<primitive_argument_type> const& params,
-        bind_mode mode) const
-    {
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "call_function::bind",
-                generate_error_message(
-                    "the expression representing the function target "
-                        "has not been initialized"));
-        }
-
-        // evaluation of the define-function yields the function body
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            if (operands_.size() > 1)
-            {
-                std::vector<primitive_argument_type> fargs;
-                fargs.reserve(operands_.size() - 1);
-
-                // handle pre-bound arguments
-                for (auto it = operands_.begin() + 1; it != operands_.end();
-                     ++it)
-                {
-                    // bind pre-bound arguments using actual ones
-                    primitive const* arg = util::get_if<primitive>(&*it);
-                    if (arg != nullptr)
-                    {
-                        if (arg->bind(params, mode))
-                        {
-                            fargs.push_back(
-                                arg->eval(hpx::launch::sync, params));
-                        }
-                    }
-                    else
-                    {
-                        fargs.push_back(extract_ref_value(*it));
-                    }
-                }
-
-                if (p->bind(fargs, mode))
-                {
-                    return true;
-                }
-            }
-
-            if (p->bind(params, mode))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     void call_function::store(primitive_argument_type&& data)
     {
         if (valid(operands_[0]))

@@ -178,9 +178,13 @@ namespace phylanx { namespace bindings
             {
                 pybind11::gil_scoped_acquire acquire;
                 auto xexpr = phylanx::ast::generate_ast(xexpr_str);
-                auto x = phylanx::execution_tree::compile(
+                auto code_x = phylanx::execution_tree::compile(
                     xexpr, c.eval_snippets, c.eval_env);
+                auto x = code_x.run();
 
+                std::vector<phylanx::execution_tree::primitive_argument_type>
+                    keep_alive;
+                keep_alive.reserve(args.size());
                 std::vector<phylanx::execution_tree::primitive_argument_type>
                     fargs;
                 fargs.reserve(args.size());
@@ -190,7 +194,8 @@ namespace phylanx { namespace bindings
                     phylanx::execution_tree::primitive_argument_type value =
                         item.cast<
                             phylanx::execution_tree::primitive_argument_type>();
-                    fargs.emplace_back(std::move(value));
+                    keep_alive.emplace_back(std::move(value));
+                    fargs.emplace_back(extract_ref_value(keep_alive.back()));
                 }
 
                 pybind11::gil_scoped_release release;       // release GIL

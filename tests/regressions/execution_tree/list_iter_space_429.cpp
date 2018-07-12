@@ -37,7 +37,8 @@ std::string const code = R"(block(
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(code, snippets);
+    phylanx::execution_tree::compile(code, snippets);
+    auto f = snippets.run();
 
     f();
 

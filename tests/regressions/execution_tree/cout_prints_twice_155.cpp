@@ -22,7 +22,8 @@ std::string const code = R"(block(
 int hpx_main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto pr = phylanx::execution_tree::compile(code, snippets);
+    phylanx::execution_tree::compile(code, snippets);
+    auto pr = snippets.run();
 
     pr(42.0);
 

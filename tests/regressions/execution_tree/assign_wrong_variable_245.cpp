@@ -36,7 +36,8 @@ std::string const add_code = R"(define(test, block(
 void test_add()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(add_code, snippets);
+    phylanx::execution_tree::compile(add_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -63,7 +64,8 @@ std::string const sub_code = R"(define(test, block(
 void test_sub()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(sub_code, snippets);
+    phylanx::execution_tree::compile(sub_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -91,7 +93,8 @@ std::string const mul_code = R"(define(test, block(
 void test_mul()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(mul_code, snippets);
+    phylanx::execution_tree::compile(mul_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -119,7 +122,8 @@ std::string const div_code = R"(define(test, block(
 void test_div()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(div_code, snippets);
+    phylanx::execution_tree::compile(div_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -147,7 +151,8 @@ std::string const equal_code = R"(define(test, block(
 void test_equal()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(equal_code, snippets);
+    phylanx::execution_tree::compile(equal_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -174,7 +179,8 @@ std::string const not_equal_code = R"(define(test, block(
 void test_not_equal()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(not_equal_code, snippets);
+    phylanx::execution_tree::compile(not_equal_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -201,7 +207,8 @@ std::string const greater_code = R"(define(test, block(
 void test_greater()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(greater_code, snippets);
+    phylanx::execution_tree::compile(greater_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -228,7 +235,8 @@ std::string const greater_equal_code = R"(define(test, block(
 void test_greater_equal()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(greater_equal_code, snippets);
+    phylanx::execution_tree::compile(greater_equal_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -255,7 +263,8 @@ std::string const less_code = R"(define(test, block(
 void test_less()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(less_code, snippets);
+    phylanx::execution_tree::compile(less_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -282,7 +291,8 @@ std::string const less_equal_code = R"(define(test, block(
 void test_less_equal()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(less_equal_code, snippets);
+    phylanx::execution_tree::compile(less_equal_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -309,7 +319,8 @@ std::string const dot_code = R"(define(test, block(
 void test_dot()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(dot_code, snippets);
+    phylanx::execution_tree::compile(dot_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -336,7 +347,8 @@ std::string const and_code = R"(define(test, block(
 void test_and()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(and_code, snippets);
+    phylanx::execution_tree::compile(and_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -363,7 +375,8 @@ std::string const or_code = R"(define(test, block(
 void test_or()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(or_code, snippets);
+    phylanx::execution_tree::compile(or_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -386,7 +399,8 @@ std::string const linear_solver_code = R"(define(test, block(
 void test_linear_solver()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(linear_solver_code, snippets);
+    phylanx::execution_tree::compile(linear_solver_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()()), 1);
 }
@@ -402,7 +416,8 @@ std::string const decomposition_code = R"(block(
 void test_decomposition()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(decomposition_code, snippets);
+    phylanx::execution_tree::compile(decomposition_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }

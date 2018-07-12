@@ -16,17 +16,6 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& code)
-{
-    phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compiler::environment env =
-        phylanx::execution_tree::compiler::default_environment();
-
-    return phylanx::execution_tree::compile(code, snippets, env);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void test_decomposition_lu_PhySL()
 {
     std::string const lu_code = R"(block(
@@ -45,7 +34,8 @@ void test_decomposition_lu_PhySL()
     )";
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(lu_code, snippets);
+    phylanx::execution_tree::compile(lu_code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
 }

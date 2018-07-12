@@ -51,10 +51,13 @@ int main(int argc, char* argv[])
 
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto direct =
+    auto code_direct =
         phylanx::execution_tree::compile("direct", expr_str, snippets);
-    auto transformed =
+    auto direct = code_direct.run();
+
+    auto code_transformed =
         phylanx::execution_tree::compile("transformed", result, snippets);
+    auto transformed = code_transformed.run();
 
     blaze::Rand<blaze::DynamicMatrix<double>> gen{};
 

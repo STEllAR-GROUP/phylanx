@@ -71,7 +71,8 @@ phylanx::execution_tree::compiler::function compile(
         phylanx::execution_tree::compiler::default_environment(
             hpx::naming::get_id_from_locality_id(locality_id));
 
-    return phylanx::execution_tree::compile(code, snippets, env);
+    phylanx::execution_tree::compile(code, snippets, env);
+    return snippets.run();
 }
 
 void test_remote_run_on(std::uint32_t there)

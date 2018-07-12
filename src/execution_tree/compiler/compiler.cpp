@@ -280,8 +280,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compile_lambda(std::vector<ast::expression> const& args,
             ast::expression const& body, ast::tagged const& id)
         {
-            snippets_.snippets_.emplace_back(function{});
-            function& f = snippets_.snippets_.back();
+            function& f = snippets_.scratchpad_.add_empty();
 
             static std::string define_lambda_("lambda");
 
@@ -300,7 +299,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             p.store(
                 hpx::launch::sync, std::move(compile_body(args, body).arg_));
-            p.set_num_arguments(hpx::launch::sync, args.size());
 
             return f;
         }
@@ -332,8 +330,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined variable
             // and store new function description for later use
-            snippets_.snippets_.emplace_back(function{});
-            function& f = snippets_.snippets_.back();
+            function& f = snippets_.scratchpad_.add_empty();
 
             ast::expression name_expr = extract_name(p, define_id);
             std::string name = ast::detail::identifier_name(name_expr);
@@ -354,23 +351,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (args.empty())
             {
                 // get global name of the component created
-                std::string variable_type = "variable";
 
-                name_parts = primitive_name_parts(variable_type,
-                    snippets_.sequence_numbers_[variable_type]++,
-                    id.id, id.col, snippets_.compile_id_ - 1);
-                name_parts.instance = std::move(name);
-
-                compiled_function* cf = env_.define(name_parts.instance,
+                compiled_function* cf = env_.define(name,
                     access_target(f, "access-variable", default_locality_));
-
-                // now create the variable object
-                std::string variable_name = compose_primitive_name(name_parts);
-                f = function{primitive_argument_type{
-                        create_primitive_component(
-                            default_locality_, name_parts.primitive,
-                            primitive_argument_type{}, variable_name, name_)
-                    }, variable_name};
 
                 // Correct type of the access object if this variable refers
                 // to a lambda.
@@ -379,9 +362,30 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 if (parse_primitive_name(body_f.name_, body_name_parts) &&
                     body_name_parts.primitive == "lambda")
                 {
+                    std::string variable_type = "function";
+                    name_parts = primitive_name_parts(variable_type,
+                        snippets_.sequence_numbers_[variable_type]++,
+                        id.id, id.col, snippets_.compile_id_ - 1);
+
                     cf->target<access_target>()->target_name_ =
                         "access-function";
                 }
+                else
+                {
+                    std::string variable_type = "variable";
+                    name_parts = primitive_name_parts(variable_type,
+                        snippets_.sequence_numbers_[variable_type]++,
+                        id.id, id.col, snippets_.compile_id_ - 1);
+                }
+                name_parts.instance = std::move(name);
+
+                // now create the variable object
+                std::string variable_name = compose_primitive_name(name_parts);
+                f = function{primitive_argument_type{
+                        create_primitive_component(
+                            default_locality_, name_parts.primitive,
+                            primitive_argument_type{}, variable_name, name_)
+                    }, variable_name};
 
                 auto var = primitive_operand(f.arg_, variable_name, name_);
                 var.store(hpx::launch::sync, std::move(body_f.arg_));
@@ -408,7 +412,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 auto var = primitive_operand(f.arg_, variable_name, name_);
                 var.store(hpx::launch::sync,
                     std::move(compile_lambda(args, body, id).arg_));
-                var.set_num_arguments(hpx::launch::sync, args.size());
             }
 
             // the define-variable object is invoked whenever a define() is
@@ -677,8 +680,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
-        snippets.snippets_.emplace_back(function{});
-        function& f = snippets.snippets_.back();
+        function& f = snippets.code_.add_empty();
 
         if (name_parts.instance.empty())
         {

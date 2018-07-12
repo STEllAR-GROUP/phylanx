@@ -13,7 +13,8 @@
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile("define(x, 2 * 2)", snippets);
+    phylanx::execution_tree::compile("define(x, 2 * 2)", snippets);
+    auto f = snippets.run();
 
     auto result = f();
     HPX_TEST_EQ(phylanx::execution_tree::extract_numeric_value(result)[0], 4.0);

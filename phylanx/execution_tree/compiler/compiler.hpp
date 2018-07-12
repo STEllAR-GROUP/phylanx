@@ -314,7 +314,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             auto cf = create_primitive_component(this->locality_,
                 name_parts.primitive, std::move(fargs), full_name, codename);
-            cf.set_num_arguments(elements.size());
+
             return function{primitive_argument_type{std::move(cf)}, full_name};
         }
     };

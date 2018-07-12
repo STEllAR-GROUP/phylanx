@@ -16,7 +16,8 @@
 void test_0d()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile("shape(1)", snippets);
+    phylanx::execution_tree::compile("shape(1)", snippets);
+    auto f = snippets.run();
 
     auto list = phylanx::execution_tree::extract_list_value(f());
     HPX_TEST_EQ(list.size(), std::int64_t(0));
@@ -25,8 +26,8 @@ void test_0d()
 void test_1d()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(
-        "shape([1, 2, 3, 4], 0)", snippets);
+    phylanx::execution_tree::compile("shape([1, 2, 3, 4], 0)", snippets);
+    auto f = snippets.run();
 
     auto list = phylanx::execution_tree::extract_list_value(f());
     HPX_TEST_EQ(list.size(), std::int64_t(1));
@@ -36,8 +37,8 @@ void test_1d()
 void test_1d_axis()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(
-        "shape([1, 2, 3, 4], 0)", snippets);
+    phylanx::execution_tree::compile("shape([1, 2, 3, 4], 0)", snippets);
+    auto f = snippets.run();
 
     auto result = f();
     HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(result),
@@ -47,8 +48,9 @@ void test_1d_axis()
 void test_2d()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(
+    phylanx::execution_tree::compile(
         "shape([[1, 2, 3, 4], [1, 2, 3, 4]])", snippets);
+    auto f = snippets.run();
 
     auto list = phylanx::execution_tree::extract_list_value(f());
     HPX_TEST_EQ(list.size(), std::int64_t(2));
@@ -60,8 +62,9 @@ void test_2d()
 void test_2d_x()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(
+    phylanx::execution_tree::compile(
         "shape([[1, 2, 3, 4], [1, 2, 3, 4]], 0)", snippets);
+    auto f = snippets.run();
 
     auto result = f();
     HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(result),
@@ -71,8 +74,9 @@ void test_2d_x()
 void test_2d_y()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(
+    phylanx::execution_tree::compile(
         "shape([[1, 2, 3, 4], [1, 2, 3, 4]], 1)", snippets);
+    auto f = snippets.run();
 
     auto result = f();
     HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(result),

@@ -31,17 +31,19 @@ std::string const blocked_code = R"(block(
 
 int hpx_main(int argc, char* argv[])
 {
-    phylanx::execution_tree::compiler::function_list snippets;
-
     {
-        auto ultimate_answer =
-            phylanx::execution_tree::compile("code", code, snippets);
+        phylanx::execution_tree::compiler::function_list snippets;
+        phylanx::execution_tree::compile("code", code, snippets);
+        auto ultimate_answer = snippets.run();
+
         ultimate_answer();
     }
 
     {
-        auto ultimate_answer = phylanx::execution_tree::compile(
+        phylanx::execution_tree::compiler::function_list snippets;
+        phylanx::execution_tree::compile(
             "blocked_code", blocked_code, snippets);
+        auto ultimate_answer = snippets.run();
         ultimate_answer();
     }
 

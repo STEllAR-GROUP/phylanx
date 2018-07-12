@@ -93,7 +93,8 @@ int main()
 
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto const lra = phylanx::execution_tree::compile(lra_code, snippets);
+    phylanx::execution_tree::compile(lra_code, snippets);
+    auto lra = snippets.run();
 
     // Evaluate generated execution tree
     auto x = phylanx::ir::node_data<double>{v1};

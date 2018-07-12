@@ -55,7 +55,7 @@ define(kmeans, points, k, iterations, block(
     define(centroids, initialize_centroids(points, k)),
     for(define(i, 0), i < iterations, store(i, i + 1), block(
         store(centroids,
-              apply(vstack, 
+              apply(vstack,
                     move_centroids(points,
                                    closest_centroids(points, centroids),
                                    centroids)))
@@ -73,4 +73,5 @@ define(program, iterations, block(
     kmeans(points, k, iterations)
 ))
 
-apply(program, sys_argv)
+#apply(program, sys_argv)
+program

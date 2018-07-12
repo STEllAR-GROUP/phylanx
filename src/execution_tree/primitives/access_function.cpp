@@ -57,9 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (!(mode & eval_dont_wrap_functions) && !params.empty())
         {
             primitive_argument_type const& target = valid(bound_value_) ?
-                bound_value_ :
-                value_operand_sync(operands_[0], params, name_, codename_,
-                    eval_mode(mode | eval_dont_wrap_functions));
+                bound_value_ : operands_[0];
 
             if (!params.empty())
             {
@@ -92,30 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(extract_ref_value(bound_value_));
         }
 
-        return value_operand(operands_[0], params, name_, codename_,
-            eval_mode(mode | eval_dont_wrap_functions));
-    }
-
-    bool access_function::bind(
-        std::vector<primitive_argument_type> const& params,
-        bind_mode mode) const
-    {
-        if (!(mode & bind_force_binding))
-        {
-            return valid(bound_value_);
-        }
-
-        bound_value_ = primitive_argument_type{};
-
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr && p->bind(params, mode))
-        {
-            bound_value_ =
-                p->eval(hpx::launch::sync, params, eval_dont_wrap_functions);
-            return true;
-        }
-
-        return false;
+        return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
     void access_function::store(primitive_argument_type&& val)

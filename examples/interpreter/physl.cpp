@@ -128,11 +128,11 @@ read_arguments(std::vector<std::string> const& args,
     std::transform(
         args.begin(), args.end(), result.begin(),
         [&](std::string const& s)
+        -> phylanx::execution_tree::primitive_argument_type
         {
-            return phylanx::execution_tree::primitive_argument_type{
-                phylanx::execution_tree::compile(
-                    "<arguments>", s, snippets, env).arg_
-            };
+            auto code = phylanx::execution_tree::compile(
+                "<arguments>", s, snippets, env);
+            return code.run();
         });
 
     return result;
@@ -338,7 +338,12 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     // Evaluate user code using the read data
     if (!dry_run)
     {
-        return code(std::move(args));
+        auto retval = code.run();
+        if (phylanx::execution_tree::is_primitive_operand(retval))
+        {
+            return retval(std::move(args));
+        }
+        return retval;
     }
     return phylanx::ast::nil{};
 }
@@ -400,7 +405,11 @@ void print_performance_profile(
     std::string const& newick_tree_file, std::string const& counter_file)
 {
     std::set<std::string> resolve_children;
-    for (auto const& f : snippets.snippets_)
+    for (auto const& f : snippets.code_.entry_points())
+    {
+        resolve_children.insert(f.name_);
+    }
+    for (auto const& f : snippets.scratchpad_.entry_points())
     {
         resolve_children.insert(f.name_);
     }

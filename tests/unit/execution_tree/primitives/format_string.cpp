@@ -15,7 +15,8 @@ void test_formatting(
     std::string const& code, std::string const& expected)
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(code, snippets);
+    phylanx::execution_tree::compile(code, snippets);
+    auto f = snippets.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_string_value(f()), expected);
 }

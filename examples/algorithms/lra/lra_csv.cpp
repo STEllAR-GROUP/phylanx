@@ -96,10 +96,13 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto read_x =
+    auto code_read_x =
         phylanx::execution_tree::compile("read_x", read_x_code, snippets);
-    auto read_y =
+    auto read_x = code_read_x.run();
+
+    auto code_read_y =
         phylanx::execution_tree::compile("read_y", read_y_code, snippets);
+    auto read_y = code_read_y.run();
 
     auto row_start = vm["row_start"].as<std::int64_t>();
     auto col_start = vm["col_start"].as<std::int64_t>();
@@ -122,7 +125,8 @@ int hpx_main(boost::program_options::variables_map& vm)
     bool enable_output = vm.count("enable_output") != 0;
 
     // evaluate LRA using the read data
-    auto lra = phylanx::execution_tree::compile("lra", lra_code, snippets);
+    auto code_lra = phylanx::execution_tree::compile("lra", lra_code, snippets);
+    auto lra = code_lra.run();
 
     // time the execution
     hpx::util::high_resolution_timer t;

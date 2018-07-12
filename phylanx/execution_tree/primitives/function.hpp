@@ -37,13 +37,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             bind_mode mode) const override;
 
         void store(primitive_argument_type&& data) override;
-        void set_num_arguments(std::size_t) override;
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;
 
     private:
-        std::size_t num_arguments_;
+        bool value_set_;
     };
 
     PHYLANX_EXPORT primitive create_function(hpx::id_type const& locality,

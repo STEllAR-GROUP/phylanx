@@ -75,6 +75,9 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT std::string dot_tree(
         std::string const& name, topology const& t);
 
+    PHYLANX_EXPORT bool is_primitive_operand(
+        primitive_argument_type const& val);
+
     ///////////////////////////////////////////////////////////////////////////
     struct primitive_argument_type;
 
@@ -84,7 +87,8 @@ namespace phylanx { namespace execution_tree
         eval_default = 0x00,                // always evaluate everything
         eval_dont_wrap_functions = 0x01,    // don't wrap partially bound functions
         eval_dont_evaluate_partials = 0x02, // don't evaluate partially bound functions
-        eval_dont_evaluate_lambdas = 0x04   // don't evaluate functions
+        eval_dont_evaluate_lambdas = 0x04,  // don't evaluate functions
+        eval_run_code = 0x08                // just run the code (normal evaluation)
     };
 
     enum bind_mode
@@ -144,10 +148,6 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT void store(hpx::launch::sync_policy,
             primitive_argument_type);
 
-        PHYLANX_EXPORT hpx::future<void> set_num_arguments(std::size_t);
-        PHYLANX_EXPORT void set_num_arguments(hpx::launch::sync_policy,
-            std::size_t);
-
         PHYLANX_EXPORT hpx::future<topology> expression_topology(
             std::set<std::string>&& functions) const;
         PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
@@ -160,10 +160,16 @@ namespace phylanx { namespace execution_tree
             std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const;
 
-        PHYLANX_EXPORT bool bind(
+        PHYLANX_EXPORT hpx::future<bool> bind(
             std::vector<primitive_argument_type>&& args,
             bind_mode mode = bind_default) const;
-        PHYLANX_EXPORT bool bind(
+        PHYLANX_EXPORT hpx::future<bool> bind(
+            std::vector<primitive_argument_type> const& args,
+            bind_mode mode = bind_default) const;
+        PHYLANX_EXPORT bool bind(hpx::launch::sync_policy,
+            std::vector<primitive_argument_type>&& args,
+            bind_mode mode = bind_default) const;
+        PHYLANX_EXPORT bool bind(hpx::launch::sync_policy,
             std::vector<primitive_argument_type> const& args,
             bind_mode mode = bind_default) const;
 
@@ -331,12 +337,14 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{std::move(val)}
         {}
 
-        inline primitive_argument_type operator()() const;
+        inline primitive_argument_type run() const;
 
-        inline primitive_argument_type
+        PHYLANX_EXPORT primitive_argument_type operator()() const;
+
+        PHYLANX_EXPORT primitive_argument_type
         operator()(std::vector<primitive_argument_type> const& args) const;
 
-        inline primitive_argument_type
+        PHYLANX_EXPORT primitive_argument_type
         operator()(std::vector<primitive_argument_type> && args) const;
 
         template <typename ... Ts>
@@ -442,21 +450,9 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>");
 
     ///////////////////////////////////////////////////////////////////////////
-    inline primitive_argument_type primitive_argument_type::operator()() const
+    inline primitive_argument_type primitive_argument_type::run() const
     {
         return value_operand_sync(*this, {});
-    }
-
-    inline primitive_argument_type primitive_argument_type::operator()(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        return value_operand_sync(*this, args);
-    }
-
-    inline primitive_argument_type primitive_argument_type::operator()(
-        std::vector<primitive_argument_type> && args) const
-    {
-        return value_operand_sync(*this, std::move(args));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -855,8 +851,6 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         compiler::primitive_name_parts const& parts,
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT bool is_primitive_operand(
-        primitive_argument_type const& val);
 
     // Extract a primitive_argument_type from a primitive_argument_type (that
     // could be a value type).
