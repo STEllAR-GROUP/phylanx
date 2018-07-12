@@ -633,6 +633,7 @@ class PhySL:
         "random": "random",
         "shape": "shape",
         "sqrt": "square_root",
+        "sum": "sum",
         "transpose": "transpose",
         "vstack": "vstack",
         # slicing operations
