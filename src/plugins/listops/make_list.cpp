@@ -24,10 +24,14 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const make_list::match_data =
+    std::vector<match_pattern_type> const make_list::match_data =
     {
+        hpx::util::make_tuple("list",
+            std::vector<std::string>{"list(__1)"},
+            &create_make_list, &create_primitive<make_list>),
+
         hpx::util::make_tuple("make_list",
-            std::vector<std::string>{"make_list(__1)", "'(__1)"},
+            std::vector<std::string>{"make_list(__1)"},
             &create_make_list, &create_primitive<make_list>)
     };
 
@@ -58,10 +62,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> make_list::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

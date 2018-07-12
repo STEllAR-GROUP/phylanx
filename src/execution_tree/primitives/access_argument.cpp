@@ -1,4 +1,4 @@
-//  Copyright (c) 2017 Hartmut Kaiser
+//  Copyright (c) 2017-2018 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -57,6 +57,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         PHYLANX_FORMAT_SPEC(2) " argument(s) were supplied",
                         argnum_ + 1, params.size())));
         }
-        return value_operand(params[argnum_], params, name_, codename_);
+
+        return hpx::make_ready_future(extract_ref_value(params[argnum_]));
+    }
+
+    bool access_argument::bind(
+        std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
+    {
+        if (argnum_ >= params.size())
+        {
+            return false;
+        }
+
+        primitive const* p = util::get_if<primitive>(&params[argnum_]);
+        if (p != nullptr)
+        {
+            return p->bind(params, mode);
+        }
+
+        return true;
     }
 }}}

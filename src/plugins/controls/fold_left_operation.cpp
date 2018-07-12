@@ -26,7 +26,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("fold_left",
             std::vector<std::string>{"fold_left(_1, _2, _3)"},
-            &create_fold_left_operation, &create_primitive<fold_left_operation>)
+            &create_fold_left_operation,
+            &create_primitive<fold_left_operation>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -46,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "fold_left_operation::eval",
                 execution_tree::generate_error_message(
                     "the fold_left_operation primitive requires exactly "
-                        "three operands",
+                    "three operands",
                     name_, codename_));
         }
 
@@ -56,14 +57,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "fold_left_operation::eval",
                 execution_tree::generate_error_message(
                     "the fold_left_operation primitive requires that the "
-                        "arguments given by the operands array "
-                        "are valid",
+                    "arguments given by the operands array "
+                    "are valid",
                     name_, codename_));
         }
 
         // the first argument must be an invokable
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p == nullptr)
+        if (util::get_if<primitive>(&operands_[0]) == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "fold_left_operation::eval",
@@ -75,8 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                    primitive_argument_type&& initial,
-                    ir::range&& list)
+                primitive_argument_type&& initial, ir::range&& list)
             -> primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -102,7 +101,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return primitive_argument_type{std::move(initial)};
             }),
-            p->bind(args),
+            value_operand(operands_[0], args, name_, codename_,
+                eval_dont_evaluate_lambdas),
             value_operand(operands_[1], args, name_, codename_),
             list_operand(operands_[2], args, name_, codename_));
     }
@@ -111,10 +111,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> fold_left_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

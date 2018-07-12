@@ -30,7 +30,8 @@
 namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const slicing_operation::match_data = {
+    std::vector<match_pattern_type> const slicing_operation::match_data =
+    {
         hpx::util::make_tuple("slice",
             std::vector<std::string>{
                 "slice(_1)", "slice(_1, _2)", "slice(_1,_2,_3)"},
@@ -38,20 +39,24 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             &create_primitive<slicing_operation>),
 
         hpx::util::make_tuple("slice_row",
-            std::vector<std::string>{"slice_row(_1, _2)"},
+            std::vector<std::string>{
+                "slice_row(_1)", "slice_row(_1, _2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>),
 
         hpx::util::make_tuple("slice_column",
-            std::vector<std::string>{"slice_column(_1, _2)"},
+            std::vector<std::string>{
+                "slice_column(_1)", "slice_column(_1, _2)"},
             &create_slicing_operation,
-            &create_primitive<slicing_operation>)};
+            &create_primitive<slicing_operation>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
             std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , column_slicing_(extract_function_name(name_) == "slice_column")
     {
     }
 
@@ -296,7 +301,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     std::string slicing_operation::extract_function_name(
-        std::string const& name) const
+        std::string const& name)
     {
         compiler::primitive_name_parts name_parts;
         if (!compiler::parse_primitive_name(name, name_parts))
@@ -317,10 +322,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<std::int64_t>& extracted_column,
         std::size_t rows, std::size_t columns) const
     {
-        const auto& func_name = extract_function_name(name_);
         // If its column only slicing, extract the index for the column
         // and use all of the rows.
-        if (func_name == "slice_column")
+        if (column_slicing_)
         {
             if (args.size() > 1)
             {
@@ -600,7 +604,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() > 3)
+        if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
@@ -638,10 +642,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     hpx::future<primitive_argument_type> slicing_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

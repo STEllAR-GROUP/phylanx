@@ -86,7 +86,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return literal_operand(operands[1], args, name_, codename_)
             .then(hpx::launch::sync, hpx::util::unwrapping(
-                [this_, lhs = operands[0]](primitive_argument_type&& val)
+                [this_, lhs = extract_ref_value(operands[0])](
+                        primitive_argument_type&& val)
                 ->  primitive_argument_type
                 {
                     primitive_operand(lhs, this_->name_, this_->codename_)
@@ -99,11 +100,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> store_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}
 

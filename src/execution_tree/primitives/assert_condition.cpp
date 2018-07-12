@@ -55,8 +55,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "assert_condition",
-                execution_tree::generate_error_message(
-                    "Assert requires exactly one argument", name_, codename_));
+                generate_error_message(
+                    "Assert requires exactly one argument"));
         }
 
         auto this_ = this->shared_from_this();
@@ -68,11 +68,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "assert_condition",
-                        execution_tree::generate_error_message(
-                            "Assertion failed",
-                            this_->name_, this_->codename_));
+                        this_->generate_error_message("Assertion failed"));
                 }
-
                 return {};
             }),
             boolean_operand(operands_[0], args, name_, codename_));
@@ -82,10 +79,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> assert_condition::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

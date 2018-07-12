@@ -11,6 +11,8 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/unlock_guard.hpp>
 
+#include <cstddef>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <string>
@@ -41,54 +43,98 @@ namespace phylanx { namespace execution_tree { namespace primitives
     variable::variable(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
-      , evaluated_(false)
+      , value_set_(false)
     {
         if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "variable::variable",
-                execution_tree::generate_error_message(
-                    "the variable primitive requires exactly one operand",
-                    name_, codename_));
+                generate_error_message(
+                    "the variable primitive requires exactly one operand"));
         }
 
-        if (!operands_.empty())
+        if (valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
+            value_set_ = true;
         }
     }
 
     hpx::future<primitive_argument_type> variable::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        using lock_type = std::unique_lock<mutex_type>;
-        lock_type l(mtx_);
+        primitive_argument_type const& target =
+            valid(bound_value_) ? bound_value_ : operands_[0];
+        return hpx::make_ready_future(extract_ref_value(target));
+    }
 
-        if (!evaluated_)
+    bool variable::bind(std::vector<primitive_argument_type> const& args,
+        bind_mode mode) const
+    {
+        if (!value_set_)
         {
-            primitive_argument_type result;
-            {
-                hpx::util::unlock_guard<lock_type> ul(l);
-                result =
-                    value_operand_sync(operands_[0], args, name_, codename_);
-            }
-            operands_[0] = std::move(result);
-            evaluated_ = true;
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::bind",
+                generate_error_message(
+                    "the expression representing the variable target "
+                        "has not been initialized"));
         }
 
-        return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        if (!(mode & bind_force_binding))
+        {
+            return valid(bound_value_);
+        }
+
+        bound_value_ = primitive_argument_type{};
+
+        // evaluation of the define-function yields the function body
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            if (p->bind(args, mode))
+            {
+                bound_value_ =
+                    extract_copy_value(p->eval(hpx::launch::sync, args));
+                return true;
+            }
+            return false;
+        }
+        return true;
     }
 
-    void variable::store(primitive_argument_type && data)
+    void variable::store(primitive_argument_type&& data)
     {
-        std::lock_guard<mutex_type> l(mtx_);
-        operands_[0] = extract_copy_value(std::move(data));
-        evaluated_ = true;
+        if (!value_set_)
+        {
+            operands_[0] = extract_copy_value(std::move(data));
+            value_set_ = true;
+        }
+        else
+        {
+            bound_value_ = extract_copy_value(std::move(data));
+        }
     }
 
-    topology variable::expression_topology(std::set<std::string>&&) const
+    void variable::set_num_arguments(std::size_t num_args)
     {
-        return topology{};
+    }
+
+    topology variable::expression_topology(std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
+    {
+        if (functions.find(name_) != functions.end())
+        {
+            return {};      // avoid recursion
+        }
+
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            functions.insert(name_);
+            return p->expression_topology(hpx::launch::sync,
+                std::move(functions), std::move(resolve_children));
+        }
+        return {};
     }
 }}}
 

@@ -16,6 +16,7 @@
 #include <hpx/runtime/naming_fwd.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <set>
 #include <string>
@@ -68,7 +69,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -77,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         util::scoped_timer<std::int64_t> timer(eval_duration_);
         ++eval_count_;
 
-        auto f = this->eval(params);
+        auto f = this->eval(params, mode);
         if (!f.is_ready())
         {
             using shared_state_ptr =
@@ -95,27 +97,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::eval",
-            generate_error_message(
-                "attempting to invoke an undefined evalaluation"));
+        return this->eval(params, eval_default);
+    }
 
-        return hpx::make_ready_future(primitive_argument_type{});
+    hpx::future<primitive_argument_type> primitive_component_base::eval(
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
+    {
+        return this->eval(params);
     }
 
     // store_action
-    void primitive_component_base::store(primitive_argument_type &&)
+    void primitive_component_base::store(primitive_argument_type&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::store",
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+                "store",
             generate_error_message(
                 "store function should only be called for the primitives that "
-                    "support it (e.g. variables)"));
+                "support it (e.g. variables)"));
+    }
+
+    // set_num_arguments_action
+    void primitive_component_base::set_num_arguments(std::size_t)
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::"
+                "primitive_component_base::set_num_arguments",
+            generate_error_message(
+                "set_num_arguments function should only be called for the "
+                    "primitives that support it (e.g. call_function)"));
     }
 
     // extract_topology_action
     topology primitive_component_base::expression_topology(
-        std::set<std::string>&& functions) const
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
         std::vector<hpx::future<topology>> results;
         results.reserve(operands_.size());
@@ -126,7 +143,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (p != nullptr)
             {
                 std::set<std::string> funcs{functions};
-                results.push_back(p->expression_topology(std::move(funcs)));
+                std::set<std::string> resolve{resolve_children};
+                results.push_back(p->expression_topology(
+                    std::move(funcs), std::move(resolve)));
             }
         }
 
@@ -144,21 +163,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return topology{std::move(children)};
     }
 
-    // eval_action
-    primitive_argument_type primitive_component_base::bind(
-        std::vector<primitive_argument_type> const& params) const
+    // bind_action
+    bool primitive_component_base::bind(
+        std::vector<primitive_argument_type> const& params,
+        bind_mode mode) const
     {
-        return primitive_argument_type{};
-    }
-
-    // set_body_action (define_function only)
-    void primitive_component_base::set_body(primitive_argument_type&& target)
-    {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base",
-            generate_error_message(
-                "set_body function should only be called for primitivces that "
-                    "support it (e.g. the define_function_primitive"));
+        for (auto const& operand : operands_)
+        {
+            primitive const* p = util::get_if<primitive>(&operand);
+            if (p != nullptr && !p->bind(params, mode))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     std::string primitive_component_base::generate_error_message(
@@ -183,6 +201,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // decide whether to execute eval directly
     bool primitive_component_base::get_sync_execution()
     {
         static bool sync_execution =
@@ -190,7 +209,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return sync_execution;
     }
 
-    // decide whether to execute eval directly
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
     {

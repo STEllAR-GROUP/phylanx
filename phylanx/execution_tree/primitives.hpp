@@ -8,18 +8,20 @@
 #define PHYLANX_PRIMITIVES_PRIMITIVES_HPP
 
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
+#include <phylanx/execution_tree/primitives/access_function.hpp>
+#include <phylanx/execution_tree/primitives/access_variable.hpp>
 #include <phylanx/execution_tree/primitives/assert_condition.hpp>
+#include <phylanx/execution_tree/primitives/call_function.hpp>
 #include <phylanx/execution_tree/primitives/console_output.hpp>
 #include <phylanx/execution_tree/primitives/debug_output.hpp>
-#include <phylanx/execution_tree/primitives/define_function.hpp>
 #include <phylanx/execution_tree/primitives/define_variable.hpp>
 #include <phylanx/execution_tree/primitives/enable_tracing.hpp>
 #include <phylanx/execution_tree/primitives/format_string.hpp>
-#include <phylanx/execution_tree/primitives/function_reference.hpp>
+#include <phylanx/execution_tree/primitives/function.hpp>
+#include <phylanx/execution_tree/primitives/lambda.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>
+#include <phylanx/execution_tree/primitives/target_reference.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
-#include <phylanx/execution_tree/primitives/wrapped_function.hpp>
-#include <phylanx/execution_tree/primitives/wrapped_variable.hpp>
 
 #endif

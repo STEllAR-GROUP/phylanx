@@ -17,9 +17,9 @@
 std::string const code = R"(block(
     define(f, a, block(
         define(b, 6),
-        define(lst1, make_list(a, b, 42)),
+        define(lst1, list(a, b, 42)),
         debug(lst1),
-        define(lst2, make_list(hstack(a, b), lst1, "string")),
+        define(lst2, list(hstack(a, b), lst1, "string")),
         debug(lst2)
     )),
     f
@@ -41,8 +41,8 @@ int main(int argc, char* argv[])
 
     std::stringstream const& strm = hpx::get_consolestream();
     HPX_TEST_EQ(strm.str(), std::string(
-        "make_list(5, 6, 42)\n"
-        "make_list([5, 6], make_list(5, 6, 42), string)\n"));
+        "list(5, 6, 42)\n"
+        "list([5, 6], list(5, 6, 42), string)\n"));
 
     return hpx::util::report_errors();
 }

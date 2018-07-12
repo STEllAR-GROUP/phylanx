@@ -13,7 +13,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstdint>
-#include <strstream>
+#include <sstream>
 
 namespace phylanx { namespace ast
 {
@@ -466,7 +466,7 @@ namespace phylanx { namespace ast
     std::ostream& operator<<(
         std::ostream& out, std::vector<ast::expression> const& l)
     {
-        out << "make_list(";
+        out << "list(";
         bool first = true;
         for (auto const& arg : l)
         {

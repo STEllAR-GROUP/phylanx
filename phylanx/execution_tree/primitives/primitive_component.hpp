@@ -15,6 +15,7 @@
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <set>
@@ -49,21 +50,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const;
+            std::vector<primitive_argument_type> const& params,
+            eval_mode mode) const;
 
         // store_action
-        PHYLANX_EXPORT void store(primitive_argument_type &&);
+        PHYLANX_EXPORT void store(primitive_argument_type&&);
 
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(
-            std::set<std::string>&& functions) const;
+            std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const;
 
         // bind an invocable object
-        PHYLANX_EXPORT primitive_argument_type bind(
-            std::vector<primitive_argument_type> const& params) const;
+        PHYLANX_EXPORT bool bind(
+            std::vector<primitive_argument_type> const& params,
+            bind_mode mode) const;
 
-        // set_body_action (define_function only)
-        PHYLANX_EXPORT void set_body(primitive_argument_type&& target);
+        // set number of arguments (call_function only)
+        PHYLANX_EXPORT void set_num_arguments(std::size_t);
 
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, eval, eval_action);
@@ -75,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, store, store_action);
         HPX_DEFINE_COMPONENT_ACTION(
-            primitive_component, set_body, set_body_action);
+            primitive_component, set_num_arguments, set_num_arguments_action);
 
         // access data for performance counter
         PHYLANX_EXPORT std::int64_t get_eval_count(bool reset) const;
@@ -106,7 +110,8 @@ HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::bind_action,
     phylanx_primitive_bind_action);
 HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::execution_tree::primitives::primitive_component::set_body_action,
-    phylanx_primitive_set_body_action);
+    phylanx::execution_tree::primitives::primitive_component::
+        set_num_arguments_action,
+    phylanx_primitive_set_num_arguments_action);
 
 #endif

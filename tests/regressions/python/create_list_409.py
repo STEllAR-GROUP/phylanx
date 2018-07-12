@@ -15,4 +15,4 @@ def f():
 
 
 assert f.__src__ == \
-    "define$13$0(f$13$0, make_list$14$11(1,make_list$14$15(1)))"
+    "define$13$0(f$13$0, make_list$14$11(1, make_list$14$15(1)))"

@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -117,13 +118,22 @@ void dump_physl_code(std::vector<phylanx::ast::expression> const& ast,
 }
 
 std::vector<phylanx::execution_tree::primitive_argument_type>
-read_arguments(std::vector<std::string> const& args)
+read_arguments(std::vector<std::string> const& args,
+    phylanx::execution_tree::compiler::function_list& snippets,
+    phylanx::execution_tree::compiler::environment& env)
 {
     std::vector<phylanx::execution_tree::primitive_argument_type> result(
         args.size());
 
-    std::transform(args.begin(), args.end(), result.begin(),
-        [](std::string const& s) { return phylanx::ast::generate_ast(s); });
+    std::transform(
+        args.begin(), args.end(), result.begin(),
+        [&](std::string const& s)
+        {
+            return phylanx::execution_tree::primitive_argument_type{
+                phylanx::execution_tree::compile(
+                    "<arguments>", s, snippets, env).arg_
+            };
+        });
 
     return result;
 }
@@ -139,7 +149,7 @@ int handle_command_line(int argc, char* argv[], po::variables_map& vm)
             ("help,h", "print out program usage")
             ("docs","Print out all primitives/plugins and descriptions")
             ("code,c", po::value<std::string>(),
-             "Execute the PhySL code given in argument")
+                "Execute the PhySL code given in argument")
             ("print,p", "Print the result of evaluation of the last "
                 "PhySL expression encountered in the input")
             ("performance", "Print the topology of the created execution "
@@ -220,8 +230,9 @@ std::string get_dump_file(po::variables_map const& vm,
     return dump_file;
 }
 
-std::vector<phylanx::ast::expression> ast_from_code_or_dump(po::variables_map const& vm,
-    std::vector<std::string>& positional_args, std::string& code_source_name)
+std::vector<phylanx::ast::expression> ast_from_code_or_dump(
+    po::variables_map const& vm, std::vector<std::string>& positional_args,
+    std::string& code_source_name)
 {
     // Return value
     std::vector<phylanx::ast::expression> ast;
@@ -299,22 +310,24 @@ std::vector<phylanx::ast::expression> ast_from_code_or_dump(po::variables_map co
 }
 
 phylanx::execution_tree::compiler::result_type compile_and_run(
-    std::vector<phylanx::ast::expression> const ast,
-    std::vector<std::string> const positional_args,
+    std::vector<phylanx::ast::expression> const& ast,
+    std::vector<std::string> const& positional_args,
     phylanx::execution_tree::compiler::function_list& snippets,
     std::string const& code_source_name, bool dry_run)
 {
-    // Collect the arguments for running the code
-    auto const args = read_arguments(positional_args);
-    // Now compile AST into expression tree (into actual executable code);
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
+    // Collect the arguments for running the code
+    auto args = read_arguments(positional_args, snippets, env);
+
+    // Compile AST into expression tree (into actual executable code);
     phylanx::execution_tree::define_variable(code_source_name,
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
         snippets, env,
         phylanx::execution_tree::primitive_argument_type{args});
+
     auto const code = phylanx::execution_tree::compile(
         code_source_name, ast, snippets, env);
 
@@ -322,11 +335,11 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     // results if those are requested on the command line.
     hpx::reinit_active_counters();
 
+    // Evaluate user code using the read data
     if (!dry_run)
     {
-        return code();
+        return code(std::move(args));
     }
-    // Evaluate user code using the read data
     return phylanx::ast::nil{};
 }
 
@@ -368,13 +381,13 @@ void print_performance_counter_data_csv(std::ostream& os)
     os << "\n";
 }
 
-void print_dot(std::string const code_source_name,
+void print_dot(std::string const& code_source_name,
     phylanx::execution_tree::topology const& topology, std::ostream& os)
 {
     os << phylanx::execution_tree::dot_tree(code_source_name, topology) << "\n";
 }
 
-void print_newick_tree(std::string const code_source_name,
+void print_newick_tree(std::string const& code_source_name,
     phylanx::execution_tree::topology const& topology, std::ostream& os)
 {
     os << phylanx::execution_tree::newick_tree(code_source_name, topology)
@@ -383,11 +396,17 @@ void print_newick_tree(std::string const code_source_name,
 
 void print_performance_profile(
     phylanx::execution_tree::compiler::function_list& snippets,
-    std::string const code_source_name, std::string const dot_file,
-    std::string const newick_tree_file,
-    std::string const counter_file)
+    std::string const& code_source_name, std::string const& dot_file,
+    std::string const& newick_tree_file, std::string const& counter_file)
 {
-    auto const topology = snippets.snippets_.back().get_expression_topology();
+    std::set<std::string> resolve_children;
+    for (auto const& f : snippets.snippets_)
+    {
+        resolve_children.insert(f.name_);
+    }
+
+    auto const topology = snippets.get_expression_topology(
+        std::set<std::string>{}, std::move(resolve_children));
 
     if (dot_file.empty())
     {
@@ -445,8 +464,7 @@ void print_performance_profile(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-void interpreter(po::variables_map vm)
+void interpreter(po::variables_map const& vm)
 {
     // Collect positional arguments
     std::vector<std::string> positional_args;
@@ -457,7 +475,9 @@ void interpreter(po::variables_map vm)
 
     // Origin of PhySL code. It is either file name or <command_line>
     std::string code_source_name;
-    // The AST that is either generated from PhySL code or loaded from an AST dump
+
+    // The AST that is either generated from PhySL code or loaded from an AST
+    // dump. This also sets the name of the source code 'code_source_name'.
     std::vector<phylanx::ast::expression> ast =
         ast_from_code_or_dump(vm, positional_args, code_source_name);
 
@@ -475,8 +495,7 @@ void interpreter(po::variables_map vm)
     }
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto const result =
-        compile_and_run(std::move(ast), std::move(positional_args), snippets,
+    auto const result = compile_and_run(ast, positional_args, snippets,
             code_source_name, vm.count("dry-run") != 0);
 
     // Print the result of the last PhySL expression, if requested
@@ -498,9 +517,8 @@ void interpreter(po::variables_map vm)
             "" :
             vm["dump-counters"].as<std::string>();
 
-        print_performance_profile(snippets, std::move(code_source_name),
-            std::move(dot_file), std::move(newick_tree_file),
-            std::move(counter_file));
+        print_performance_profile(snippets, code_source_name, dot_file,
+            newick_tree_file, counter_file);
     }
 }
 
@@ -513,14 +531,15 @@ int main(int argc, char* argv[])
         return cmdline_result > 0 ? 0 : cmdline_result;
     }
 
-    if(vm.count("docs") != 0) {
+    if (vm.count("docs") != 0)
+    {
         phylanx::execution_tree::show_patterns();
         return 0;
     }
 
     try
     {
-        interpreter(std::move(vm));
+        interpreter(vm);
     }
     catch (std::exception const& e)
     {

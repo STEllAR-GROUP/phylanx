@@ -64,6 +64,7 @@ namespace phylanx { namespace execution_tree
             // to resolve to the desired result
             f = snippets.snippets_.back()();
         }
+
         return f;
     }
 
@@ -93,6 +94,8 @@ namespace phylanx { namespace execution_tree
             // to resolve to the desired result
             f = snippets.snippets_.back()();
         }
+
+        // always return the last of all generated compiler-functions
         return f;
     }
 

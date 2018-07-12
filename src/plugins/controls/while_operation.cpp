@@ -111,7 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> while_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return std::make_shared<iteration>(noargs, shared_from_this())
                 ->loop();
