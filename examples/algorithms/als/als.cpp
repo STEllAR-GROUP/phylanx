@@ -114,8 +114,8 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compile(als_code, snippets);
-    auto als = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(als_code, snippets);
+    auto als = code.run();
 
     // evaluate generated execution tree
     auto regularization = vm["regularization"].as<double>();

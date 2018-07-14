@@ -37,7 +37,7 @@ namespace phylanx { namespace util
         //   value: future of vector of performance counter values
         std::map<std::string,
             std::vector<
-            hpx::future<hpx::performance_counters::counter_values_array>>>
+                hpx::future<hpx::performance_counters::counter_values_array>>>
             values_futures_pile;
 
         // Iterate through all provided primitive instances

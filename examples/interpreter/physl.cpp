@@ -130,7 +130,7 @@ read_arguments(std::vector<std::string> const& args,
         [&](std::string const& s)
         -> phylanx::execution_tree::primitive_argument_type
         {
-            auto code = phylanx::execution_tree::compile(
+            auto const& code = phylanx::execution_tree::compile(
                 "<arguments>", s, snippets, env);
             return code.run();
         });
@@ -328,7 +328,7 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
         snippets, env,
         phylanx::execution_tree::primitive_argument_type{args});
 
-    auto const code = phylanx::execution_tree::compile(
+    auto const& code = phylanx::execution_tree::compile(
         code_source_name, ast, snippets, env);
 
     // Re-init all performance counters to guarantee correct measurement
@@ -405,16 +405,16 @@ void print_performance_profile(
     std::string const& newick_tree_file, std::string const& counter_file)
 {
     std::set<std::string> resolve_children;
-    for (auto const& f : snippets.code_.entry_points())
+    for (auto const& f : snippets.program_.entry_points())
     {
         resolve_children.insert(f.name_);
     }
-    for (auto const& f : snippets.scratchpad_.entry_points())
+    for (auto const& f : snippets.program_.scratchpad())
     {
         resolve_children.insert(f.name_);
     }
 
-    auto const topology = snippets.get_expression_topology(
+    auto const topology = snippets.program_.get_expression_topology(
         std::set<std::string>{}, std::move(resolve_children));
 
     if (dot_file.empty())

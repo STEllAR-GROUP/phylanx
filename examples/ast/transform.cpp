@@ -51,11 +51,11 @@ int main(int argc, char* argv[])
 
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto code_direct =
+    auto const& code_direct =
         phylanx::execution_tree::compile("direct", expr_str, snippets);
     auto direct = code_direct.run();
 
-    auto code_transformed =
+    auto const& code_transformed =
         phylanx::execution_tree::compile("transformed", result, snippets);
     auto transformed = code_transformed.run();
 

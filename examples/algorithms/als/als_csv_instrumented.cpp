@@ -335,11 +335,11 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto code_read_x =
+    auto const& code_read_x =
         phylanx::execution_tree::compile("read_x", read_x_code, snippets);
     auto read_x = code_read_x.run();
 
-    auto code_als = phylanx::execution_tree::compile(
+    auto const& code_als = phylanx::execution_tree::compile(
         vm.count("direct") != 0 ? als_direct : als_explicit, snippets);
     auto als = code_als.run();
 

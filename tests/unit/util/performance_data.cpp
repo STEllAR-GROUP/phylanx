@@ -93,9 +93,9 @@ int main()
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
 
-    phylanx::execution_tree::compile(
+    auto const& code = phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(fib_code), snippets);
-    auto const fibonacci = snippets.run();
+    auto const fibonacci = code.run();
 
     // Evaluate Fibonacci using the read data
     auto const result = fibonacci();

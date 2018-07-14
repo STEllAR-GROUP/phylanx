@@ -22,7 +22,8 @@ int main(int argc, char* argv[])
     auto arg = phylanx::ir::node_data<double>{41.0};
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto hstack_f_code = phylanx::execution_tree::compile(hstack, snippets);
+    auto const& hstack_f_code =
+        phylanx::execution_tree::compile(hstack, snippets);
     auto hstack_f = hstack_f_code.run();
 
     auto hstack_data =
@@ -32,7 +33,8 @@ int main(int argc, char* argv[])
     HPX_TEST(hstack_data.dimension(0) == 0);
     HPX_TEST(hstack_data.size() == 0);
 
-    auto vstack_f_code = phylanx::execution_tree::compile(vstack, snippets);
+    auto const& vstack_f_code =
+        phylanx::execution_tree::compile(vstack, snippets);
     auto vstack_f = vstack_f_code.run();
 
     auto vstack_data =

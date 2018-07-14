@@ -178,7 +178,7 @@ namespace phylanx { namespace bindings
             {
                 pybind11::gil_scoped_acquire acquire;
                 auto xexpr = phylanx::ast::generate_ast(xexpr_str);
-                auto code_x = phylanx::execution_tree::compile(
+                auto const& code_x = phylanx::execution_tree::compile(
                     xexpr, c.eval_snippets, c.eval_env);
                 auto x = code_x.run();
 

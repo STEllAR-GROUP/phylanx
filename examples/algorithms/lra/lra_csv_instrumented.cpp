@@ -317,15 +317,15 @@ int hpx_main(boost::program_options::variables_map& vm)
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto code_read_x = phylanx::execution_tree::compile(
+    auto const& code_read_x = phylanx::execution_tree::compile(
         "read_x", phylanx::ast::generate_ast(read_x_code), snippets);
     auto read_x = code_read_x.run();
 
-    auto code_read_y = phylanx::execution_tree::compile(
+    auto const& code_read_y = phylanx::execution_tree::compile(
         "read_y", phylanx::ast::generate_ast(read_y_code), snippets);
     auto read_y = code_read_y.run();
 
-    auto code_lra = phylanx::execution_tree::compile("lra",
+    auto const& code_lra = phylanx::execution_tree::compile("lra",
         phylanx::ast::generate_ast(
             vm.count("direct") != 0 ? lra_code_direct : lra_code),
         snippets);

@@ -80,9 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    bool function::bind(
-        std::vector<primitive_argument_type> const& args,
-        bind_mode mode) const
+    bool function::bind(std::vector<primitive_argument_type> const& args) const
     {
         if (!value_set_)
         {

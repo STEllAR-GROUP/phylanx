@@ -67,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-             p->bind(args, bind_force_binding).get();
+             p->bind(args);
         }
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }

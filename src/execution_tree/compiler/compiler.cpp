@@ -280,7 +280,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compile_lambda(std::vector<ast::expression> const& args,
             ast::expression const& body, ast::tagged const& id)
         {
-            function& f = snippets_.scratchpad_.add_empty();
+            function& f = snippets_.program_.add_empty();
 
             static std::string define_lambda_("lambda");
 
@@ -330,7 +330,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined variable
             // and store new function description for later use
-            function& f = snippets_.scratchpad_.add_empty();
+            function& f = snippets_.program_.add_empty();
 
             ast::expression name_expr = extract_name(p, define_id);
             std::string name = ast::detail::identifier_name(name_expr);
@@ -680,7 +680,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
-        function& f = snippets.code_.add_empty();
+        function& f = snippets.program_.add_empty();
 
         if (name_parts.instance.empty())
         {

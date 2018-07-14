@@ -60,8 +60,7 @@ namespace phylanx { namespace execution_tree
 
             // bind_action
             virtual bool bind(
-                std::vector<primitive_argument_type> const& params,
-                bind_mode mode) const;
+                std::vector<primitive_argument_type> const& params) const;
 
         protected:
             friend class primitive_component;

@@ -13,8 +13,8 @@
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compile("nil", snippets);
-    auto f = snippets.run();
+    auto const& code = phylanx::execution_tree::compile("nil", snippets);
+    auto f = code.run();
 
     auto result = f();
     HPX_TEST_EQ(result, phylanx::execution_tree::primitive_argument_type{});

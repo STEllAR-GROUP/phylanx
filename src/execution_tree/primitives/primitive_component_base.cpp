@@ -154,8 +154,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component_base::bind(
-        std::vector<primitive_argument_type> const& params,
-        bind_mode mode) const
+        std::vector<primitive_argument_type> const& params) const
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::"
@@ -163,14 +162,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "bind function should only be called for the "
                     "primitives that support it (e.g. variable/function)"));
-//         for (auto const& operand : operands_)
-//         {
-//             primitive const* p = util::get_if<primitive>(&operand);
-//             if (p != nullptr && !p->bind(hpx::launch::sync, params, mode))
-//             {
-//                 return false;
-//             }
-//         }
         return true;
     }
 

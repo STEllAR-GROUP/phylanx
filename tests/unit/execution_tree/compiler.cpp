@@ -142,14 +142,14 @@ void test_define_variable()
         phylanx::execution_tree::compiler::default_environment();
 
     auto defexpr = phylanx::ast::generate_ast("define(x, 42.0)");
-    auto def = phylanx::execution_tree::compile(defexpr, snippets, env);
+    auto const& def = phylanx::execution_tree::compile(defexpr, snippets, env);
 
     // executing the define will create the variable, executing whatever it
     // returned will bind the value to the variable
     def.run();
 
     auto xexpr = phylanx::ast::generate_ast("x");
-    auto code = phylanx::execution_tree::compile(xexpr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(xexpr, snippets, env);
     auto x = code.run();
 
     // executing x() will return the bound value
@@ -163,7 +163,7 @@ void test_define_variable_block()
 {
     phylanx::execution_tree::compiler::function_list snippets;
     auto xexpr = phylanx::ast::generate_ast("define(x, 42.0) x");
-    auto code = phylanx::execution_tree::compile(xexpr, snippets);
+    auto const& code = phylanx::execution_tree::compile(xexpr, snippets);
     auto x = code.run();
 
     // executing the block will create the variable, and bind the value to the
@@ -187,8 +187,8 @@ void test_define_variable_ref()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto y = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     HPX_TEST_EQ(42.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -211,8 +211,8 @@ void test_define_variable_ref_expr()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto y = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     HPX_TEST_EQ(43.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -232,7 +232,7 @@ void test_redefine_variable()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
     auto x = code.run();
 
     HPX_TEST_EQ(43.0,
@@ -249,7 +249,7 @@ void test_define_constant_function()
         )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto code = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
     auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{41.0};
@@ -267,7 +267,7 @@ void test_define_simple_function()
         )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto code = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
     auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
@@ -285,7 +285,7 @@ void test_define_simple_function_arg1()
         )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto code = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
     auto x = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
@@ -304,7 +304,7 @@ void test_define_simple_function_arg2()
         )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto code = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
     auto x = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
@@ -326,7 +326,7 @@ void test_define_return_simple_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
     auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
@@ -348,7 +348,7 @@ void test_define_return_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
     auto y = code.run();
 
     HPX_TEST_EQ(42.0,
@@ -369,7 +369,7 @@ void test_define_call_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
     auto y = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
@@ -387,7 +387,7 @@ void test_use_builtin_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto code = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr1, snippets, env);
     auto x = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
@@ -410,7 +410,7 @@ void test_use_builtin_function_ind()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
     auto y = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
@@ -439,8 +439,8 @@ void test_define_curry_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr1, snippets, env);
-    auto f1 = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto f1 = code.run();
 
     auto arg0 = phylanx::ir::node_data<double>{41.0};
     auto arg1 = phylanx::ir::node_data<double>{1.0};
@@ -483,8 +483,8 @@ void test_define_embedded_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr1, snippets, env);
-    auto f1 = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto f1 = code.run();
 
     auto arg0 = phylanx::ir::node_data<double>{41.0};
     auto arg1 = phylanx::ir::node_data<double>{1.0};
@@ -519,8 +519,8 @@ void test_recursive_function()
     )";
 
     phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compile(exprstr, snippets);
-    auto fact = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(exprstr, snippets);
+    auto fact = code.run();
 
     auto arg = phylanx::ir::node_data<double>{10.0};
     HPX_TEST_EQ(3628800.0,
@@ -541,8 +541,8 @@ void test_define_call_lambda_function_noarg()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto y = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     HPX_TEST_EQ(42.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -561,8 +561,8 @@ void test_define_call_lambda_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto x = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
     HPX_TEST_EQ(43.0,
@@ -582,8 +582,8 @@ void test_define_call_lambda_function_direct()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto x = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto x = code.run();
 
     HPX_TEST_EQ(43.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -602,8 +602,8 @@ void test_define_call_lambda_function_ind1()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto lambda = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto lambda = code.run();
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
@@ -630,8 +630,8 @@ void test_define_call_lambda_function_ind2()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto lambda = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto lambda = code.run();
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
@@ -657,8 +657,8 @@ void test_define_call_lambda_function_ind3()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto lambda = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto lambda = code.run();
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
@@ -685,8 +685,8 @@ void test_define_call_lambda_function_ind4()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
-    auto y = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     auto arg_a = phylanx::ir::node_data<double>{42.0};
     phylanx::execution_tree::compiler::function lambda = y(std::move(arg_a));
@@ -720,15 +720,15 @@ void test_define_variable_function_call()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto pts =
+    auto const& pts =
         phylanx::execution_tree::compile("[[1, 2], [3, 4]]", snippets, env);
 
     phylanx::execution_tree::define_variable("<unknown>",
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
-        snippets, env, std::move(pts.arg_));
+        snippets, env, pts.run());
 
-    auto f = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& f = phylanx::execution_tree::compile(expr, snippets, env);
 
     blaze::DynamicVector<double> expected{0, 0};
     auto result =

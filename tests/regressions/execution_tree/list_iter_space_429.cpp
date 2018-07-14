@@ -14,7 +14,7 @@
 #include <string>
 #include <sstream>
 
-std::string const code = R"(block(
+std::string const codestr = R"(block(
     define(
         f,
         block(
@@ -37,8 +37,8 @@ std::string const code = R"(block(
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compile(code, snippets);
-    auto f = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets);
+    auto f = code.run();
 
     f();
 

@@ -11,6 +11,7 @@
 
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <array>
 #include <cstddef>
@@ -112,9 +113,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             if (is_primitive_operand(arg_))
             {
-                return value_operand_sync(arg_,
-                    std::vector<primitive_argument_type>{}, name_, "<unknown>",
-                    eval_run_code);
+                return extract_copy_value(value_operand_sync(arg_,
+                    std::vector<primitive_argument_type>{}, name_));
             }
             return extract_ref_value(arg_);
         }
@@ -270,6 +270,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
         }
 
+        ///////////////////////////////////////////////////////////////////////
         // simply run the program, return whatever the last snippet has returned
         primitive_argument_type run() const
         {
@@ -281,12 +282,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return result;
         }
 
+        ///////////////////////////////////////////////////////////////////////
         function& add_empty()
         {
-            code_.emplace_back(function{});
-            return code_.back();
+            scratchpad_.emplace_back(function{});
+            return scratchpad_.back();
         }
         function& add(function&& f)
+        {
+            scratchpad_.emplace_back(std::move(f));
+            return scratchpad_.back();
+        }
+
+        function& add_entry_point(function&& f)
         {
             code_.emplace_back(std::move(f));
             return code_.back();
@@ -302,8 +310,49 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return code_;
         }
 
+        void store_entry_points()
+        {
+            // move all current entry points to scratch pad
+            scratchpad_.splice(scratchpad_.end(), code_);
+        }
+
+        bool has_entry_points() const
+        {
+            return !code_.empty();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        std::list<function> const& scratchpad() const
+        {
+            return scratchpad_;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        topology get_expression_topology() const
+        {
+            HPX_ASSERT(has_entry_points());
+            std::set<std::string> functions;
+            return entry_point().get_expression_topology(
+                std::move(functions));
+        }
+        topology get_expression_topology(
+            std::set<std::string>&& functions) const
+        {
+            HPX_ASSERT(has_entry_points());
+            return entry_point().get_expression_topology(
+                std::move(functions));
+        }
+        topology get_expression_topology(std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const
+        {
+            HPX_ASSERT(has_entry_points());
+            return entry_point().get_expression_topology(
+                std::move(functions), std::move(resolve_children));
+        }
+
     private:
         std::list<function> code_;
+        std::list<function> scratchpad_;
     };
 
     struct function_list
@@ -318,39 +367,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function_list& operator=(function_list const&) = delete;
         function_list& operator=(function_list &&) = delete;
 
-        result_type run() const
-        {
-            return code_.run();
-        }
-
-        template <typename ... Ts>
-        result_type operator()(Ts &&... ts) const
-        {
-            return code_.entry_point()(std::forward<Ts>(ts)...);
-        }
-
-        topology get_expression_topology() const
-        {
-            std::set<std::string> functions;
-            return code_.entry_point().get_expression_topology(
-                std::move(functions));
-        }
-        topology get_expression_topology(
-            std::set<std::string>&& functions) const
-        {
-            return code_.entry_point().get_expression_topology(
-                std::move(functions));
-        }
-        topology get_expression_topology(std::set<std::string>&& functions,
-            std::set<std::string>&& resolve_children) const
-        {
-            return code_.entry_point().get_expression_topology(
-                std::move(functions), std::move(resolve_children));
-        }
-
         std::size_t compile_id_;    // sequence number of this compiler invocation
-        program scratchpad_;        // storage for dependent code
-        program code_;              // storage for top-level code
+        program program_;           // storage for top-level code
         std::map<std::string, std::size_t> sequence_numbers_;
     };
 
@@ -374,39 +392,6 @@ namespace phylanx { namespace execution_tree { namespace compiler
     private:
         std::size_t n;
     };
-
-    ///////////////////////////////////////////////////////////////////////////
-    // lambda
-//     struct lambda : actor<lambda>
-//     {
-//         std::list<function> elements_;
-//
-//         // we must hold f by reference because functions can be recursive
-//         std::reference_wrapper<function const> f_;
-//
-//         lambda(function const& f, function_list const& elements)
-//           : elements_(elements.snippets_)
-//           , f_(f)
-//         {}
-//
-//         result_type call(arguments_type && args) const
-//         {
-//             if (!elements_.empty())
-//             {
-//                 std::vector<result_type> fargs;
-//                 fargs.reserve(elements_.size());
-//
-//                 for (auto const& element : elements_)
-//                 {
-//                     fargs.emplace_back(element(args));
-//                 }
-//
-//                 return f_.get()(std::move(fargs));
-//             }
-//
-//             return f_.get()();
-//         }
-//     };
 }}}
 
 #endif

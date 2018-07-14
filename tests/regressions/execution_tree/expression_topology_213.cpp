@@ -11,22 +11,20 @@
 #include <string>
 
 void test_expressiontree_topology(char const* name,
-    char const* code, char const* newick_expected,
+    char const* codestr, char const* newick_expected,
     char const* dot_expected)
 {
     phylanx::execution_tree::compiler::function_list snippets;
 
-    phylanx::execution_tree::compile(
-        phylanx::ast::generate_ast(code), snippets);
+    auto const& code = phylanx::execution_tree::compile(
+        phylanx::ast::generate_ast(codestr), snippets);
+    auto topology = code.get_expression_topology();
 
-    auto topology = snippets.get_expression_topology();
     std::string newick_tree =
         phylanx::execution_tree::newick_tree(name, topology);
-
     HPX_TEST_EQ(newick_tree, std::string(newick_expected));
 
     std::string dot_tree = phylanx::execution_tree::dot_tree(name, topology);
-
     HPX_TEST_EQ(dot_tree, std::string(dot_expected));
 }
 

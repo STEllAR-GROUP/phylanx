@@ -18,9 +18,11 @@ void test_generate_tree(
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
-    phylanx::execution_tree::compile(variables, snippets, env);
+    auto const& vars =
+        phylanx::execution_tree::compile(variables, snippets, env);
+    vars.run();
 
-    auto code = phylanx::execution_tree::compile(exprstr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(exprstr, snippets, env);
     auto f = code.run();
 
     HPX_TEST_EQ(expected_result,
@@ -36,9 +38,11 @@ void test_generate_tree(
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
-    phylanx::execution_tree::compile(variables, snippets, env);
+    auto const& vars =
+        phylanx::execution_tree::compile(variables, snippets, env);
+    vars.run();
 
-    auto code = phylanx::execution_tree::compile(exprstr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(exprstr, snippets, env);
     auto f = code.run();
 
     HPX_TEST_EQ(expected_result,
@@ -53,9 +57,11 @@ void test_generate_tree_nil(std::string const& exprstr, char const* variables)
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
-    phylanx::execution_tree::compile(variables, snippets, env);
+    auto const& vars =
+        phylanx::execution_tree::compile(variables, snippets, env);
+    vars.run();
 
-    auto code = phylanx::execution_tree::compile(exprstr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(exprstr, snippets, env);
     auto f = code.run();
 
     HPX_TEST(!phylanx::execution_tree::valid(f()));

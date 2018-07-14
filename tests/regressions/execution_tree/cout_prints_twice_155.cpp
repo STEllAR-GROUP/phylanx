@@ -14,7 +14,7 @@
 #include <string>
 #include <sstream>
 
-std::string const code = R"(block(
+std::string const codestr = R"(block(
     define(pr, a, debug("hello: ", a)),
     pr
 ))";
@@ -22,8 +22,8 @@ std::string const code = R"(block(
 int hpx_main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compile(code, snippets);
-    auto pr = snippets.run();
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets);
+    auto pr = code.run();
 
     pr(42.0);
 

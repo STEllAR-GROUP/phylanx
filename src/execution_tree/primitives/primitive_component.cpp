@@ -136,10 +136,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component::bind(
-        std::vector<primitive_argument_type> const& params,
-        bind_mode mode) const
+        std::vector<primitive_argument_type> const& params) const
     {
-        return primitive_->bind(params, mode);
+        return primitive_->bind(params);
     }
 
     // access data for performance counter

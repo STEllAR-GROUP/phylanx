@@ -63,8 +63,9 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compile("lir", lir_code, snippets);
-    auto lir = snippets.run();
+    auto const& code =
+        phylanx::execution_tree::compile("lir", lir_code, snippets);
+    auto lir = code.run();
 
     // evaluate generated execution tree
     auto x = phylanx::ir::node_data<double>{v1};

@@ -128,13 +128,13 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto code_read_x =
+    auto const& code_read_x =
         phylanx::execution_tree::compile("read_x", read_x_code, snippets);
     auto read_x = code_read_x.run();
 
     auto ratings = read_x(filepath, row_start, row_stop, col_start, col_stop);
 
-    auto code_als = phylanx::execution_tree::compile(als_code, snippets);
+    auto const& code_als = phylanx::execution_tree::compile(als_code, snippets);
     auto als = code_als.run();
 
     hpx::evaluate_active_counters(true, "start");

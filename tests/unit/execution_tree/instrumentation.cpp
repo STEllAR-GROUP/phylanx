@@ -22,9 +22,9 @@ void test_unary_expr()
     std::vector<std::string::const_iterator> iterators;
     phylanx::execution_tree::compiler::function_list snippets;
 
-    phylanx::execution_tree::compile(
+    auto const& code = phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(code, iterators), snippets);
-    auto f = snippets.run();
+    auto f = code.run();
 
     auto entries = hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*");
 }

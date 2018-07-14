@@ -244,36 +244,18 @@ namespace phylanx { namespace execution_tree
             std::move(functions), std::move(resolve_children)).get();
     }
 
-    hpx::future<bool> primitive::bind(
-        std::vector<primitive_argument_type> const& params, bind_mode mode) const
-    {
-        using action_type = primitives::primitive_component::bind_action;
-        auto f =
-            hpx::async(action_type(), this->base_type::get_id(), params, mode);
-        return detail::lazy_trace("bind", *this, std::move(f));
-    }
-    hpx::future<bool> primitive::bind(
-        std::vector<primitive_argument_type>&& params, bind_mode mode) const
-    {
-        using action_type = primitives::primitive_component::bind_action;
-        auto f = hpx::async(
-            action_type(), this->base_type::get_id(), std::move(params), mode);
-        return detail::lazy_trace("bind", *this, std::move(f));
-    }
-
-    bool primitive::bind(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type> const& params, bind_mode mode) const
+    bool primitive::bind(
+        std::vector<primitive_argument_type> const& params) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), params, mode));
+            action_type()(this->base_type::get_id(), params));
     }
-    bool primitive::bind(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type>&& params, bind_mode mode) const
+    bool primitive::bind(std::vector<primitive_argument_type>&& params) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), std::move(params), mode));
+            action_type()(this->base_type::get_id(), std::move(params)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
