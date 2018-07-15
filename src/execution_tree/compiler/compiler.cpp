@@ -416,6 +416,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // the define-variable object is invoked whenever a define() is
             // executed
+            std::string define_variable = "define-variable";
+
+            name_parts.sequence_number =
+                snippets_.sequence_numbers_[define_variable]++;
+            name_parts.primitive = std::move(define_variable);
+
             function variable_ref = f;      // copy f as we need to move it
             return define_operation{default_locality_}(
                 std::move(variable_ref.arg_), std::move(name_parts), name_);
@@ -428,9 +434,19 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             if (compiled_function* cf = env_.find(name))
             {
-                primitive_name_parts name_parts(name,
-                    snippets_.sequence_numbers_[name]++, id.id, id.col,
-                    snippets_.compile_id_ - 1);
+                std::size_t seq_num = 0;
+                auto at = cf->target<access_target>();
+                if (at != nullptr)
+                {
+                    seq_num = snippets_.sequence_numbers_[at->target_name_]++;
+                }
+                else
+                {
+                    seq_num = snippets_.sequence_numbers_[name]++;
+                }
+
+                primitive_name_parts name_parts(
+                    name, seq_num, id.id, id.col, snippets_.compile_id_ - 1);
 
                 return (*cf)(std::list<function>{}, std::move(name_parts), name_);
             }
@@ -704,6 +720,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         // the define-variable object is invoked whenever a define() is
         // executed
+        std::string define_variable = "define-variable";
+
+        name_parts.sequence_number =
+            snippets.sequence_numbers_[define_variable]++;
+        name_parts.primitive = std::move(define_variable);
+
         function variable_ref = f;      // copy f as we need to move it
         return define_operation{default_locality}(
             std::move(variable_ref.arg_), std::move(name_parts), codename);

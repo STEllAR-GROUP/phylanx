@@ -44,44 +44,44 @@ char const* const fib_code = R"(block(
 
 std::map<std::string, std::size_t> expected_counts =
 {
-    { "access-variable$0", 9 },
-    { "access-variable$1", 0 },
-    { "access-variable$2", 8 },
-    { "access-variable$3", 8 },
-    { "access-variable$4", 0 },
-    { "access-variable$5", 8 },
-    { "access-variable$6", 0 },
-    { "access-variable$7", 8 },
-    { "access-variable$8", 0 },
-    { "access-variable$9", 8 },
-    { "access-variable$10", 0 },
-    { "access-variable$11", 8 },
-    { "access-variable$12", 1 },
-    { "access-variable$13", 1 },
-    { "__add$0", 8 },
-    { "__add$1", 8 },
-    { "block$0", 1 },
-    { "block$1", 1 },
-    { "block$2", 8 },
-    { "define-variable$0", 2 },
-    { "define-variable$1", 9 },
-    { "define-variable$2", 10 },
-    { "define-variable$3", 17 },
-    { "define-variable$4", 9 },
-    { "define-variable$5", 18 },
-    { "__lt$0", 9 },
-    { "store$0", 8 },
-    { "store$1", 8 },
-    { "store$2", 8 },
-    { "store$3", 8 },
-    { "store$4", 8 },
-    { "while$0", 1 },
-    { "variable$0", 2 },
-    { "variable$1", 9 },
-    { "variable$2", 10 },
-    { "variable$3", 17 },
-    { "variable$4", 9 },
-    { "variable$5", 18 },
+    { "/phylanx/__add$0/0$12$30", 8 },
+    { "/phylanx/__add$1/0$16$33", 8 },
+    { "/phylanx/__lt$0/0$10$17", 9 },
+    { "/phylanx/access-variable$0$fib_test/0$22$5", 0 },
+    { "/phylanx/access-variable$0$step/0$10$17", 0 },
+    { "/phylanx/access-variable$0$temp/0$13$27", 0 },
+    { "/phylanx/access-variable$0$x/0$12$30", 0 },
+    { "/phylanx/access-variable$0$y/0$12$34", 0 },
+    { "/phylanx/access-variable$0$z/0$12$27", 0 },
+    { "/phylanx/access-variable$1$step/0$16$27", 8 },
+    { "/phylanx/access-variable$1$temp/0$15$30", 8 },
+    { "/phylanx/access-variable$1$x/0$15$27", 8 },
+    { "/phylanx/access-variable$1$y/0$13$33", 8 },
+    { "/phylanx/access-variable$1$z/0$14$30", 8 },
+    { "/phylanx/access-variable$2$step/0$16$33", 1 },
+    { "/phylanx/access-variable$2$y/0$14$27", 1 },
+    { "/phylanx/access-variable$2$z/0$19$13", 1 },
+    { "/phylanx/block$0/0$1$1", 1 },
+    { "/phylanx/block$1/0$3$9", 1 },
+    { "/phylanx/block$2/0$11$17", 8 },
+    { "/phylanx/define-variable$0$x/0$4$20", 1 },
+    { "/phylanx/define-variable$1$z/0$5$20", 1 },
+    { "/phylanx/define-variable$2$y/0$6$20", 1 },
+    { "/phylanx/define-variable$3$temp/0$7$20", 1 },
+    { "/phylanx/define-variable$4$step/0$8$20", 1 },
+    { "/phylanx/define-variable$5$fib_test/0$2$12", 1 },
+    { "/phylanx/store$0/0$12$21", 8 },
+    { "/phylanx/store$1/0$13$21", 8 },
+    { "/phylanx/store$2/0$14$21", 8 },
+    { "/phylanx/store$3/0$15$21", 8 },
+    { "/phylanx/store$4/0$16$21", 8 },
+    { "/phylanx/variable$0$x/0$4$20", 8 },
+    { "/phylanx/variable$1$z/0$5$20", 9 },
+    { "/phylanx/variable$2$y/0$6$20", 16 },
+    { "/phylanx/variable$3$temp/0$7$20", 8 },
+    { "/phylanx/variable$4$step/0$8$20", 17 },
+    { "/phylanx/variable$5$fib_test/0$2$12", 1 },
+    { "/phylanx/while$0/0$9$13", 1 },
 };
 
 const std::vector<std::string> performance_counter_name_last_part{
@@ -115,13 +115,7 @@ int main()
             performance_counter_name_last_part,
             hpx::find_here()))
     {
-        auto const tags =
-            phylanx::execution_tree::compiler::parse_primitive_name(
-                entry.first);
-
-        std::string const expected_key(
-            tags.primitive + "$" + std::to_string(tags.sequence_number));
-        auto expected_value = expected_counts[expected_key];
+        auto expected_value = expected_counts[entry.first];
 
         HPX_TEST_EQ(
             entry.second.size(), performance_counter_name_last_part.size());

@@ -86,7 +86,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         }
         else if (step < 0)
         {
-            for (std::int64_t i = stop - 1; i >= start; i += step)
+            for (std::int64_t i = start; i > stop; i += step)
             {
                 result.push_back(i);
             }
@@ -101,7 +101,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     {
         if (valid(val))
         {
-            return execution_tree::extract_scalar_integer_value(val, name_, codename_);
+            return execution_tree::extract_scalar_integer_value(
+                val, name_, codename_);
         }
         return default_value;
     }
@@ -429,10 +430,30 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
             auto it = arg_list.begin();
 
+            // if step is negative and start/stop are not given, then start and
+            // stop must be swapped
+            std::int64_t default_start = 0;
+            std::int64_t default_stop = arg_size;
+            std::int64_t step = 1;
+            if (size == 3)
+            {
+                std::advance(it, 2);
+                step = extract_integer_value(*it, 1ll);
+                if (step < 0)
+                {
+                    // create_list_slice above will add list size to these values
+                    default_start = -1;
+                    default_stop = -arg_size - 1;
+                }
+            }
+
+            // reinit iterator
+            it = arg_list.begin();
+
             // default first index is '0'
             if (size > 0)
             {
-                indices.push_back(extract_integer_value(*it, 0));
+                indices.push_back(extract_integer_value(*it, default_start));
             }
             else
             {
@@ -442,7 +463,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             // default last index is 'size'
             if (size > 1)
             {
-                indices.push_back(extract_integer_value(*++it, arg_size));
+                indices.push_back(extract_integer_value(*++it, default_stop));
             }
             else
             {
@@ -450,14 +471,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             }
 
             // default step is '1'
-            if (size > 2)
-            {
-                indices.push_back(extract_integer_value(*++it, 1ll));
-            }
-            else
-            {
-                indices.push_back(1ll);
-            }
+            indices.push_back(step);
         }
         else if (!valid(arg))
         {

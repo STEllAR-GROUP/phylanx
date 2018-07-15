@@ -156,7 +156,7 @@ def np_slice_01(x):
 
 assert (np_slice_01(arr) == arr[1:4]).all
 assert np_slice_01.__src__ == \
-    "define$153$0(np_slice_01$153$0, x$153$16, slice$154$11(x$154$11,make_list(1, 4)))"
+    "define$153$0(np_slice_01$153$0, x$153$16, slice$154$11(x$154$11,list(1, 4)))"
 
 a = np.array([1, 4, 9])
 

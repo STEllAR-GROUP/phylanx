@@ -7,7 +7,7 @@ from phylanx.ast import *
 import numpy as np
 
 
-@Phylanx
+@Phylanx(debug=True)
 def foo(x):
     local_x = x
     result = []

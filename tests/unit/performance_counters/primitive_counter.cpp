@@ -53,27 +53,28 @@ char const* const lra_code = R"(block(
 
 std::map<std::string, std::size_t> expected_counts =
 {
-    { "block", 3 },
-    { "parallel_block", 1 },
-    { "dot", 2 },
-    { "while", 1 },
-    { "constant", 4 },
-    { "exp", 1 },
-    { "shape", 4 },
-    { "transpose", 1 },
-    { "__add", 2 },
-    { "__div", 1 },
-    { "__mul", 1 },
-    { "__sub", 2 },
-    { "__lt", 1 },
     { "store", 5 },
-    { "__minus", 1 },
     { "access-argument", 8 },
+    { "access-function", 1 },
     { "access-variable", 14 },
-    { "define-variable", 6 },
-    { "call-function", 1 },
-    { "define-function", 1 },
+    { "define-variable", 7 },
+    { "function", 1 },
+    { "lambda", 1 },
     { "variable", 6 },
+    { "__add", 2 },
+    { "block", 3 },
+    { "constant", 4 },
+    { "__div", 1 },
+    { "dot", 2 },
+    { "shape", 4 },
+    { "exp", 1 },
+    { "__lt", 1 },
+    { "__mul", 1 },
+    { "parallel_block", 1 },
+    { "__sub", 2 },
+    { "transpose", 1 },
+    { "__minus", 1 },
+    { "while", 1 },
 };
 
 int main()
@@ -109,12 +110,17 @@ int main()
     {
         std::string const& name = hpx::util::get<0>(hpx::util::get<1>(pattern));
 
-        // HACK: There is an access-argument/access-variable primitive
-        // registered in AGAS for each argument/variable access. This is a
-        // problem because several instances with the same sequence ids may
-        // exist and thus we ignore these two primitives for now.
-        if (name == "access-argument" || name == "access-variable")
+        // Verify the number of primitive instances in lra
+        auto entries = hpx::agas::find_symbols(
+            hpx::launch::sync, "/phylanx/" + name + "$*");
+
+        if (entries.empty())
+        {
+            HPX_TEST(expected_counts.find(name) == expected_counts.end());
             continue;
+        }
+
+        HPX_TEST_EQ(expected_counts[name], entries.size());
 
         std::string const count_pc_name(
             "/phylanx{locality#0/total}/primitives/" + name + "/count/eval");
@@ -129,10 +135,18 @@ int main()
             "/phylanx{locality#0/total}/primitives/" + name + "/eval_direct");
         hpx::performance_counters::performance_counter eval_pc(eval_pc_name);
 
-        // Verify the number of primitive instances in lra
-        auto entries = hpx::agas::find_symbols(
-            hpx::launch::sync, "/phylanx/" + name + "$*");
-        HPX_TEST_EQ(expected_counts[name], entries.size());
+
+        // Count performance counters
+        auto const info = count_pc.get_info(hpx::launch::sync);
+        HPX_TEST_EQ(info.fullname_, count_pc_name);
+        HPX_TEST_EQ(
+            info.type_, hpx::performance_counters::counter_raw_values);
+
+        auto const count_values =
+            count_pc.get_counter_values_array(hpx::launch::sync, false);
+
+        HPX_TEST_EQ(count_values.count_, 1ll);
+        HPX_TEST_EQ(count_values.values_.size(), entries.size());
 
         // Time performance counters
         {
@@ -150,27 +164,8 @@ int main()
             // At least one of the values for each primitive should be non-zero
             for (std::size_t i = 0; i != values.values_.size(); ++i)
             {
-                HPX_TEST(values.values_[i] != 0ll);
-            }
-        }
-
-        // Count performance counters
-        {
-            auto const info = count_pc.get_info(hpx::launch::sync);
-            HPX_TEST_EQ(info.fullname_, count_pc_name);
-            HPX_TEST_EQ(
-                info.type_, hpx::performance_counters::counter_raw_values);
-
-            auto const values =
-                count_pc.get_counter_values_array(hpx::launch::sync, false);
-
-            HPX_TEST_EQ(values.count_, 1ll);
-            HPX_TEST_EQ(values.values_.size(), entries.size());
-
-            // At least one of the values for each primitive should be non-zero
-            for (std::size_t i = 0; i != values.values_.size(); ++i)
-            {
-                HPX_TEST(values.values_[i] != 0ll);
+                HPX_TEST_EQ(
+                    values.values_[i] != 0ll, count_values.values_[i] != 0ll);
             }
         }
 
