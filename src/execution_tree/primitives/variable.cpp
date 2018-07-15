@@ -45,15 +45,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename, true)
       , value_set_(false)
     {
-        if (operands_.size() != 1)
+        if (operands_.size() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "variable::variable",
                 generate_error_message(
-                    "the variable primitive requires exactly one operand"));
+                    "the variable primitive requires no more than one operand"));
         }
 
-        if (valid(operands_[0]))
+        if (!operands_.empty())
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
             value_set_ = true;
@@ -63,13 +63,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> variable::eval(
         std::vector<primitive_argument_type> const& args) const
     {
+        if (!value_set_ && !valid(bound_value_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::eval",
+                generate_error_message(
+                    "the expression representing the variable target "
+                        "has not been initialized"));
+        }
+
         primitive_argument_type const& target =
             valid(bound_value_) ? bound_value_ : operands_[0];
         return hpx::make_ready_future(extract_ref_value(target));
     }
 
-    bool variable::bind(std::vector<primitive_argument_type> const& args,
-        bind_mode mode) const
+    bool variable::bind(std::vector<primitive_argument_type> const& args) const
     {
         if (!value_set_)
         {
@@ -80,31 +88,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
-        if (!(mode & bind_force_binding))
-        {
-            return valid(bound_value_);
-        }
-
-        bound_value_ = primitive_argument_type{};
-
-        // evaluation of the define-function yields the function body
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            if (p->bind(args, mode))
-            {
-                bound_value_ =
-                    extract_copy_value(p->eval(hpx::launch::sync, args));
-                return true;
-            }
-            return false;
+            bound_value_ = extract_copy_value(p->eval(hpx::launch::sync, args));
         }
+        else
+        {
+            bound_value_ = extract_ref_value(operands_[0]);
+        }
+
         return true;
     }
 
     void variable::store(primitive_argument_type&& data)
     {
-        if (!value_set_)
+        if (!value_set_ || !valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(data));
             value_set_ = true;
@@ -113,10 +112,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             bound_value_ = extract_copy_value(std::move(data));
         }
-    }
-
-    void variable::set_num_arguments(std::size_t num_args)
-    {
     }
 
     topology variable::expression_topology(std::set<std::string>&& functions,

@@ -100,8 +100,9 @@ namespace phylanx { namespace execution_tree
             return std::move(data);
         }
 
-        hpx::future<primitive_argument_type> lazy_trace(char const* const func,
-            primitive const& this_, hpx::future<primitive_argument_type>&& f)
+        template <typename T>
+        hpx::future<T> lazy_trace(char const* const func,
+            primitive const& this_, hpx::future<T>&& f)
         {
             if (!primitive::enable_tracing)
             {
@@ -109,7 +110,7 @@ namespace phylanx { namespace execution_tree
             }
 
             return f.then(hpx::launch::sync,
-                [=](hpx::future<primitive_argument_type>&& f)
+                [=](hpx::future<T>&& f)
                 {
                     return trace(func, this_, f.get());
                 });
@@ -191,22 +192,6 @@ namespace phylanx { namespace execution_tree
         action_type()(this->base_type::get_id(), std::move(data));
     }
 
-    hpx::future<void> primitive::set_num_arguments(std::size_t num_args)
-    {
-        using action_type =
-            primitives::primitive_component::set_num_arguments_action;
-        return hpx::async(
-            action_type(), this->base_type::get_id(), num_args);
-    }
-
-    void primitive::set_num_arguments(hpx::launch::sync_policy,
-        std::size_t num_args)
-    {
-        using action_type =
-            primitives::primitive_component::set_num_arguments_action;
-        action_type()(this->base_type::get_id(), num_args);
-    }
-
     hpx::future<topology> primitive::expression_topology(
         std::set<std::string>&& functions) const
     {
@@ -260,18 +245,17 @@ namespace phylanx { namespace execution_tree
     }
 
     bool primitive::bind(
-        std::vector<primitive_argument_type> const& params, bind_mode mode) const
+        std::vector<primitive_argument_type> const& params) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), params, mode));
+            action_type()(this->base_type::get_id(), params));
     }
-    bool primitive::bind(
-        std::vector<primitive_argument_type>&& params, bind_mode mode) const
+    bool primitive::bind(std::vector<primitive_argument_type>&& params) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), std::move(params), mode));
+            action_type()(this->base_type::get_id(), std::move(params)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -2339,6 +2323,37 @@ namespace phylanx { namespace execution_tree
     bool is_primitive_operand(primitive_argument_type const& val)
     {
         return util::get_if<primitive>(&val) != nullptr;
+    }
+
+    primitive_argument_type primitive_argument_type::operator()() const
+    {
+        if (is_primitive_operand(*this))
+        {
+            return extract_copy_value(value_operand_sync(*this, {}));
+        }
+        return extract_ref_value(*this);
+    }
+
+    primitive_argument_type primitive_argument_type::operator()(
+        std::vector<primitive_argument_type> const& args) const
+    {
+        if (is_primitive_operand(*this))
+        {
+            return extract_copy_value(value_operand_sync(*this, args));
+        }
+        return extract_ref_value(*this);
+    }
+
+    primitive_argument_type primitive_argument_type::operator()(
+        std::vector<primitive_argument_type> && args) const
+    {
+        if (is_primitive_operand(*this))
+        {
+            // evaluate the function itself
+            return extract_copy_value(
+                value_operand_sync(*this, std::move(args)));
+        }
+        return extract_ref_value(*this);
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@
 void compile(std::string const code)
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(code, snippets);
+    phylanx::execution_tree::compile(code, snippets);
 }
 
 int hpx_main(int argc, char* argv[])

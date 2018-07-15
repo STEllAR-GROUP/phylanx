@@ -34,7 +34,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     lambda::lambda(std::vector<primitive_argument_type>&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
-      , num_arguments_(0)
     {
         // the first entry of operands represents the target
         if (operands_.size() != 1)
@@ -96,27 +95,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
     }
 
-    bool lambda::bind(std::vector<primitive_argument_type> const& params,
-        bind_mode mode) const
-    {
-        if (!valid(operands_[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "lambda::bind",
-                generate_error_message(
-                    "the expression representing the function target "
-                        "has not been initialized"));
-        }
-
-        // evaluation of the define-function yields the function body
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            return p->bind(params, mode);
-        }
-        return false;
-    }
-
     void lambda::store(primitive_argument_type&& data)
     {
         if (valid(operands_[0]))
@@ -130,11 +108,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // initialize the lambda's body
         operands_[0] = extract_copy_value(std::move(data));
-    }
-
-    void lambda::set_num_arguments(std::size_t num_args)
-    {
-        num_arguments_ = num_args;
     }
 
     topology lambda::expression_topology(std::set<std::string>&& functions,

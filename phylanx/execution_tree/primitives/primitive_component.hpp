@@ -63,11 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // bind an invocable object
         PHYLANX_EXPORT bool bind(
-            std::vector<primitive_argument_type> const& params,
-            bind_mode mode) const;
-
-        // set number of arguments (call_function only)
-        PHYLANX_EXPORT void set_num_arguments(std::size_t);
+            std::vector<primitive_argument_type> const& params) const;
 
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, eval, eval_action);
@@ -78,8 +74,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_component, bind, bind_action);
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, store, store_action);
-        HPX_DEFINE_COMPONENT_ACTION(
-            primitive_component, set_num_arguments, set_num_arguments_action);
 
         // access data for performance counter
         PHYLANX_EXPORT std::int64_t get_eval_count(bool reset) const;
@@ -109,9 +103,5 @@ HPX_REGISTER_ACTION_DECLARATION(
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::bind_action,
     phylanx_primitive_bind_action);
-HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::execution_tree::primitives::primitive_component::
-        set_num_arguments_action,
-    phylanx_primitive_set_num_arguments_action);
 
 #endif

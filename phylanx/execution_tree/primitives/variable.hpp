@@ -33,11 +33,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params) const override;
 
-        bool bind(std::vector<primitive_argument_type> const& params,
-            bind_mode mode) const override;
+        bool bind(
+            std::vector<primitive_argument_type> const& params) const override;
 
         void store(primitive_argument_type&& data) override;
-        void set_num_arguments(std::size_t) override;
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;

@@ -163,11 +163,13 @@ namespace phylanx { namespace execution_tree { namespace compiler
             primitive_name_parts&& name_parts,
             std::string const& codename = "<unknown>") const
         {
-            if (name_parts.instance.empty())
+            std::string define_variable = "define-variable";
+            if (name_parts.primitive != define_variable)
             {
+                HPX_ASSERT(name_parts.instance.empty());
                 name_parts.instance = std::move(name_parts.primitive);
+                name_parts.primitive = std::move(define_variable);
             }
-            name_parts.primitive = "define-variable";
 
             std::string full_name = compose_primitive_name(name_parts);
             return function{primitive_argument_type{
@@ -314,7 +316,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             auto cf = create_primitive_component(this->locality_,
                 name_parts.primitive, std::move(fargs), full_name, codename);
-            cf.set_num_arguments(elements.size());
+
             return function{primitive_argument_type{std::move(cf)}, full_name};
         }
     };

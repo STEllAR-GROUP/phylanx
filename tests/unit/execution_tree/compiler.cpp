@@ -12,6 +12,8 @@
 #include <list>
 #include <utility>
 
+#include <blaze/Math.h>
+
 void test_builtin_environment()
 {
     hpx::id_type here = hpx::find_here();
@@ -37,7 +39,8 @@ void test_builtin_environment()
     auto x = def();
 
     // invoke 'x' primitive
-    HPX_TEST_EQ(41.0, phylanx::execution_tree::extract_numeric_value(x())[0]);
+    HPX_TEST_EQ(
+        41.0, phylanx::execution_tree::extract_numeric_value(x.run())[0]);
 }
 
 void test_builtin_environment_vars()
@@ -76,11 +79,13 @@ void test_builtin_environment_vars()
     // invoking the factory functions defx and defy actually creates and binds
     // the variables
     auto add = (*cfadd)(
-        std::list<phylanx::execution_tree::compiler::function>{defx(), defy()},
+        std::list<phylanx::execution_tree::compiler::function>{
+            defx.run(), defy.run()},
         "add", "<unknown>");
 
     // invoke '+' primitive
-    HPX_TEST_EQ(42.0, phylanx::execution_tree::extract_numeric_value(add())[0]);
+    HPX_TEST_EQ(
+        42.0, phylanx::execution_tree::extract_numeric_value(add.run())[0]);
 }
 
 void test_builtin_environment_vars_lazy()
@@ -127,7 +132,7 @@ void test_builtin_environment_vars_lazy()
     // invoke '+' primitive
     HPX_TEST_EQ(42.0,
         phylanx::execution_tree::extract_numeric_value(
-            add({defx(), defy()}))[0]);
+            add(defx.run(), defy.run()))[0]);
 }
 
 void test_define_variable()
@@ -137,17 +142,15 @@ void test_define_variable()
         phylanx::execution_tree::compiler::default_environment();
 
     auto defexpr = phylanx::ast::generate_ast("define(x, 42.0)");
-    auto def = phylanx::execution_tree::compile(defexpr, snippets, env);
+    auto const& def = phylanx::execution_tree::compile(defexpr, snippets, env);
 
     // executing the define will create the variable, executing whatever it
     // returned will bind the value to the variable
-    HPX_TEST_EQ(42.0,
-        phylanx::execution_tree::numeric_operand_sync(
-            def(), {}
-        )[0]);
+    def.run();
 
     auto xexpr = phylanx::ast::generate_ast("x");
-    auto x = phylanx::execution_tree::compile(xexpr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(xexpr, snippets, env);
+    auto x = code.run();
 
     // executing x() will return the bound value
     HPX_TEST_EQ(42.0,
@@ -159,8 +162,9 @@ void test_define_variable()
 void test_define_variable_block()
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto xexpr = phylanx::ast::generate_ast("block(define(x, 42.0), x)");
-    auto x = phylanx::execution_tree::compile(xexpr, snippets);
+    auto xexpr = phylanx::ast::generate_ast("define(x, 42.0) x");
+    auto const& code = phylanx::execution_tree::compile(xexpr, snippets);
+    auto x = code.run();
 
     // executing the block will create the variable, and bind the value to the
     // variable
@@ -172,18 +176,19 @@ void test_define_variable_block()
 
 void test_define_variable_ref()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, 42.0),
-            define(y, x),
-            store(x, 0),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, 42.0)
+            define(y, x)
+            store(x, 0)
             y
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     HPX_TEST_EQ(42.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -195,18 +200,19 @@ void test_define_variable_ref_expr()
 {
     // verify that names are bound to the expression result at the point of
     // definition
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, 42.0),
-            define(y, x + 1),
-            store(x, 0),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, 42.0)
+            define(y, x + 1)
+            store(x, 0)
             y
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     HPX_TEST_EQ(43.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -216,17 +222,18 @@ void test_define_variable_ref_expr()
 
 void test_redefine_variable()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, 42.0),
-            define(x, 43.0),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, 42.0)
+            define(x, 43.0)
             x
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto x = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto x = code.run();
 
     HPX_TEST_EQ(43.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -236,10 +243,14 @@ void test_redefine_variable()
 
 void test_define_constant_function()
 {
-    auto expr = phylanx::ast::generate_ast("block(define(x, a, 42.0), x)");
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, a, 42.0)
+            x
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto x = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
+    auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{41.0};
     HPX_TEST_EQ(42.0,
@@ -250,10 +261,14 @@ void test_define_constant_function()
 
 void test_define_simple_function()
 {
-    auto expr = phylanx::ast::generate_ast("block(define(x, a, a), x)");
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, a, a)
+            x
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto x = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
+    auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
     HPX_TEST_EQ(42.0,
@@ -264,10 +279,14 @@ void test_define_simple_function()
 
 void test_define_simple_function_arg1()
 {
-    auto expr = phylanx::ast::generate_ast("block(define(x, a, b, a), x)");
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, a, b, a)
+            x
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto x = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
+    auto x = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
     auto arg2 = phylanx::ir::node_data<double>{42.0};
@@ -279,10 +298,14 @@ void test_define_simple_function_arg1()
 
 void test_define_simple_function_arg2()
 {
-    auto expr = phylanx::ast::generate_ast("block(define(x, a, b, b), x)");
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, a, b, b)
+            x
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto x = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
+    auto x = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
     auto arg2 = phylanx::ir::node_data<double>{42.0};
@@ -294,16 +317,17 @@ void test_define_simple_function_arg2()
 
 void test_define_return_simple_function()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, a, a),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, a, a)
             x
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto x = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
     HPX_TEST_EQ(42.0,
@@ -314,17 +338,18 @@ void test_define_return_simple_function()
 
 void test_define_return_function()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, a, a),
-            define(y, x(42.0)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, a, a)
+            define(y, x(42.0))
             y
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     HPX_TEST_EQ(42.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -334,17 +359,18 @@ void test_define_return_function()
 
 void test_define_call_function()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, a, a),
-            define(y, a, x(a)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, a, a)
+            define(y, a, x(a))
             y
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
     HPX_TEST_EQ(42.0,
@@ -355,13 +381,14 @@ void test_define_call_function()
 
 void test_use_builtin_function()
 {
-    auto expr1 = phylanx::ast::generate_ast("block(define(x, a, b, a + b), x)");
+    auto expr1 = phylanx::ast::generate_ast("define(x, a, b, a + b) x");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto x = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto x = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
     auto arg2 = phylanx::ir::node_data<double>{1.0};
@@ -373,17 +400,18 @@ void test_use_builtin_function()
 
 void test_use_builtin_function_ind()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, f, a, b, f(a, b)),
-            define(y, a, b, x(__add, a, b)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, f, a, b, f(a, b))
+            define(y, a, b, x(__add, a, b))
             y
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     auto arg1 = phylanx::ir::node_data<double>{41.0};
     auto arg2 = phylanx::ir::node_data<double>{1.0};
@@ -395,15 +423,15 @@ void test_use_builtin_function_ind()
 
 void test_define_curry_function()
 {
-    char const* exprstr1 = R"(block(
+    char const* exprstr1 = R"(
         define(f1, arg0,
             block(
                 define(f2, arg1, arg0 + arg1),
                 f2
             )
-        ),
+        )
         f1
-    ))";
+    )";
 
     auto expr1 = phylanx::ast::generate_ast(exprstr1);
 
@@ -411,7 +439,8 @@ void test_define_curry_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto f1 = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto f1 = code.run();
 
     auto arg0 = phylanx::ir::node_data<double>{41.0};
     auto arg1 = phylanx::ir::node_data<double>{1.0};
@@ -437,16 +466,16 @@ void test_define_curry_function()
 //
 void test_define_embedded_function()
 {
-    char const* exprstr1 = R"(block(
+    char const* exprstr1 = R"(
         define(f1, arg0,
             block(
                 define(local_arg0, arg0),
                 define(f2, arg1, local_arg0 + arg1),
                 f2
             )
-        ),
+        )
         f1
-    ))";
+    )";
 
     auto expr1 = phylanx::ast::generate_ast(exprstr1);
 
@@ -454,7 +483,8 @@ void test_define_embedded_function()
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto f1 = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr1, snippets, env);
+    auto f1 = code.run();
 
     auto arg0 = phylanx::ir::node_data<double>{41.0};
     auto arg1 = phylanx::ir::node_data<double>{1.0};
@@ -478,18 +508,19 @@ void test_define_embedded_function()
 
 void test_recursive_function()
 {
-    char const* exprstr = R"(block(
+    char const* exprstr = R"(
         define(fact, arg0,
             if(arg0 <= 1,
                 1,
                 arg0 * fact(arg0 - 1)
             )
-        ),
+        )
         fact
-    ))";
+    )";
 
     phylanx::execution_tree::compiler::function_list snippets;
-    auto fact = phylanx::execution_tree::compile(exprstr, snippets);
+    auto const& code = phylanx::execution_tree::compile(exprstr, snippets);
+    auto fact = code.run();
 
     auto arg = phylanx::ir::node_data<double>{10.0};
     HPX_TEST_EQ(3628800.0,
@@ -500,17 +531,18 @@ void test_recursive_function()
 
 void test_define_call_lambda_function_noarg()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, lambda(42)),
-            define(y, x()),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, lambda(42))
+            define(y, x())
             y
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     HPX_TEST_EQ(42.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -520,16 +552,17 @@ void test_define_call_lambda_function_noarg()
 
 void test_define_call_lambda_function()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, lambda(a, a + 1)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, lambda(a, a + 1))
             x
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto x = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto x = code.run();
 
     auto arg = phylanx::ir::node_data<double>{42.0};
     HPX_TEST_EQ(43.0,
@@ -540,16 +573,17 @@ void test_define_call_lambda_function()
 
 void test_define_call_lambda_function_direct()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, lambda(a, a + 1)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, lambda(a, a + 1))
             x(42)
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto x = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto x = code.run();
 
     HPX_TEST_EQ(43.0,
         phylanx::execution_tree::extract_numeric_value(
@@ -559,16 +593,17 @@ void test_define_call_lambda_function_direct()
 
 void test_define_call_lambda_function_ind1()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, b, block(define(l, lambda(a, a + b)), l)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, b, block(define(l, lambda(a, a + b)), l))
             x(42)
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto lambda = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto lambda = code.run();
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
@@ -586,16 +621,17 @@ void test_define_call_lambda_function_ind1()
 /// <image url="$(ItemDir)/images/compiler_test_define_call_lambda_function_ind2.dot.png" />
 void test_define_call_lambda_function_ind2()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, lambda(b, lambda(a, a + b))),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, lambda(b, lambda(a, a + b)))
             x(42)
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto lambda = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto lambda = code.run();
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
@@ -612,16 +648,17 @@ void test_define_call_lambda_function_ind2()
 
 void test_define_call_lambda_function_ind3()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, b, lambda(a, a + b)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, b, lambda(a, a + b))
             x(42)
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto lambda = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto lambda = code.run();
 
     auto arg = phylanx::ir::node_data<double>{1.0};
     HPX_TEST_EQ(43.0,
@@ -638,17 +675,18 @@ void test_define_call_lambda_function_ind3()
 
 void test_define_call_lambda_function_ind4()
 {
-    auto expr = phylanx::ast::generate_ast(R"(block(
-            define(x, b, lambda(a, a + b)),
-            define(y, b, x(b)),
+    auto expr = phylanx::ast::generate_ast(R"(
+            define(x, b, lambda(a, a + b))
+            define(y, b, x(b))
             y
-        ))");
+        )");
 
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    auto y = phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    auto y = code.run();
 
     auto arg_a = phylanx::ir::node_data<double>{42.0};
     phylanx::execution_tree::compiler::function lambda = y(std::move(arg_a));
@@ -664,6 +702,38 @@ void test_define_call_lambda_function_ind4()
         phylanx::execution_tree::extract_numeric_value(
             lambda(std::move(arg_b))
         )[0]);
+}
+
+/// <image url="$(ItemDir)/images/test_define_variable_function_call.dot.png" />
+//
+void test_define_variable_function_call()
+{
+    auto expr = phylanx::ast::generate_ast(R"(
+        define(f, pts, block(
+            define(var, add_dim(slice_column(pts, 0))),
+            argmin(sqrt(power(var - var, 2) + power(var - var, 2)), 0)
+        ))
+        apply(f, sys_argv)
+    )");
+
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment();
+
+    auto const& pts =
+        phylanx::execution_tree::compile("[[1, 2], [3, 4]]", snippets, env);
+
+    phylanx::execution_tree::define_variable("<unknown>",
+        phylanx::execution_tree::compiler::primitive_name_parts{
+            "sys_argv", -1, 0, 0},
+        snippets, env, pts.run());
+
+    auto const& f = phylanx::execution_tree::compile(expr, snippets, env);
+
+    blaze::DynamicVector<double> expected{0, 0};
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(f.run());
+    HPX_TEST_EQ(expected, result.vector());
 }
 
 int main(int argc, char* argv[])
@@ -703,6 +773,8 @@ int main(int argc, char* argv[])
     test_define_call_lambda_function_ind2();
     test_define_call_lambda_function_ind3();
     test_define_call_lambda_function_ind4();
+
+    test_define_variable_function_call();
 
     return hpx::util::report_errors();
 }

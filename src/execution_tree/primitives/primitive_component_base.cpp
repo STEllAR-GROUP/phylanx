@@ -118,17 +118,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "support it (e.g. variables)"));
     }
 
-    // set_num_arguments_action
-    void primitive_component_base::set_num_arguments(std::size_t)
-    {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::"
-                "primitive_component_base::set_num_arguments",
-            generate_error_message(
-                "set_num_arguments function should only be called for the "
-                    "primitives that support it (e.g. call_function)"));
-    }
-
     // extract_topology_action
     topology primitive_component_base::expression_topology(
         std::set<std::string>&& functions,
@@ -165,17 +154,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component_base::bind(
-        std::vector<primitive_argument_type> const& params,
-        bind_mode mode) const
+        std::vector<primitive_argument_type> const& params) const
     {
-        for (auto const& operand : operands_)
-        {
-            primitive const* p = util::get_if<primitive>(&operand);
-            if (p != nullptr && !p->bind(params, mode))
-            {
-                return false;
-            }
-        }
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::"
+                "primitive_component_base::bind",
+            generate_error_message(
+                "bind function should only be called for the "
+                    "primitives that support it (e.g. variable/function)"));
         return true;
     }
 

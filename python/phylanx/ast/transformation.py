@@ -126,14 +126,14 @@ class PhySL:
 
     def _Slice(self, a, allowreturn=False):
         if a.lower is None:
-            alow = "0"
+            alow = "nil"
         else:
             alow = self.recompile(a.lower)
         if a.upper is None:
             aupp = "nil"
         else:
             aupp = self.recompile(a.upper)
-        s = 'make_list(%s, %s' % (alow, aupp)
+        s = 'list(%s, %s' % (alow, aupp)
         if a.step:
             s += ', %s)' % self.recompile(a.step)
         else:

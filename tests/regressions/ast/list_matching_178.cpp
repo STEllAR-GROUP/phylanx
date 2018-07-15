@@ -16,7 +16,7 @@
 #include <vector>
 
 std::string const read_code = R"(block(
-    define(somelist, '(1, 2)),
+    define(somelist, list(1, 2)),
     somelist
 ))";
 
@@ -24,7 +24,8 @@ int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto somelist = phylanx::execution_tree::compile(read_code, snippets);
+    auto const& code = phylanx::execution_tree::compile(read_code, snippets);
+    auto somelist = code.run();
 
     auto result = somelist();
 

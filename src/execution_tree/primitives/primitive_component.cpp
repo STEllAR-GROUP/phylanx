@@ -41,8 +41,6 @@ HPX_REGISTER_ACTION(primitive_component_type::expression_topology_action,
     phylanx_primitive_expression_topology_action)
 HPX_REGISTER_ACTION(primitive_component_type::bind_action,
     phylanx_primitive_bind_action)
-HPX_REGISTER_ACTION(primitive_component_type::set_num_arguments_action,
-    phylanx_primitive_set_num_arguments_action)
 
 //////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<primitive_component_type>
@@ -138,16 +136,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component::bind(
-        std::vector<primitive_argument_type> const& params,
-        bind_mode mode) const
+        std::vector<primitive_argument_type> const& params) const
     {
-        return primitive_->bind(params, mode);
-    }
-
-    // set_num_arguments_action
-    void primitive_component::set_num_arguments(std::size_t num_args)
-    {
-        return primitive_->set_num_arguments(num_args);
+        return primitive_->bind(params);
     }
 
     // access data for performance counter

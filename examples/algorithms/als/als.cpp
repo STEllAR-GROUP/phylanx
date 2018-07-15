@@ -23,7 +23,7 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-char const* const als_code = R"(block(
+char const* const als_code = R"(
     //
     // Alternating Least squares algorithm
     //
@@ -99,9 +99,9 @@ char const* const als_code = R"(block(
             ),
             make_list(X, Y)
         )
-    ),
+    )
     als
-))";
+)";
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
@@ -114,7 +114,8 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto als = phylanx::execution_tree::compile(als_code, snippets);
+    auto const& code = phylanx::execution_tree::compile(als_code, snippets);
+    auto als = code.run();
 
     // evaluate generated execution tree
     auto regularization = vm["regularization"].as<double>();

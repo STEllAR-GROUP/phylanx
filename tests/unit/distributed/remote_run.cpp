@@ -64,14 +64,15 @@ std::string code2 = R"(block(
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::compiler::function compile(
-    std::string const& code, std::uint32_t locality_id)
+    std::string const& codestr, std::uint32_t locality_id)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment(
             hpx::naming::get_id_from_locality_id(locality_id));
 
-    return phylanx::execution_tree::compile(code, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
 }
 
 void test_remote_run_on(std::uint32_t there)

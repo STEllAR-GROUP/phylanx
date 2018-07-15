@@ -12,10 +12,11 @@
 #include <utility>
 
 void test_formatting(
-    std::string const& code, std::string const& expected)
+    std::string const& codestr, std::string const& expected)
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(code, snippets);
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets);
+    auto f = code.run();
 
     HPX_TEST_EQ(phylanx::execution_tree::extract_string_value(f()), expected);
 }

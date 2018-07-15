@@ -61,7 +61,8 @@ void test_lra()
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto lra = phylanx::execution_tree::compile(lra_code, snippets);
+    auto const& code = phylanx::execution_tree::compile(lra_code, snippets);
+    auto lra = code.run();
 
     // evaluate generated execution tree
     auto x = phylanx::ir::node_data<double>{v1};

@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     function::function(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
-      , num_arguments_(std::size_t(-1))
+      , value_set_(false)
     {
         if (operands_.size() != 1)
         {
@@ -56,20 +56,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
+            value_set_ = true;
         }
     }
 
     hpx::future<primitive_argument_type> function::eval(
         std::vector<primitive_argument_type> const& args) const
     {
+        if (!value_set_)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "function::eval",
+                generate_error_message(
+                    "the expression representing the function target "
+                        "has not been initialized"));
+        }
+
+        primitive const* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            return p->eval(args);
+        }
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    bool function::bind(
-        std::vector<primitive_argument_type> const& args,
-        bind_mode mode) const
+    bool function::bind(std::vector<primitive_argument_type> const& args) const
     {
-        if (!valid(operands_[0]))
+        if (!value_set_)
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "function::bind",
@@ -77,30 +90,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the expression representing the function target "
                         "has not been initialized"));
         }
-
-        // return if the bound function expects more arguments than provided
-        if (num_arguments_ != std::size_t(-1) && args.size() < num_arguments_)
-        {
-            return false;
-        }
-
-        // evaluation of the define-function yields the function body
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            return p->bind(args, mode);
-        }
         return true;
     }
 
     void function::store(primitive_argument_type&& data)
     {
         operands_[0] = extract_copy_value(std::move(data));
-    }
-
-    void function::set_num_arguments(std::size_t num_args)
-    {
-        num_arguments_ = num_args;
+        value_set_ = true;
     }
 
     topology function::expression_topology(std::set<std::string>&& functions,
