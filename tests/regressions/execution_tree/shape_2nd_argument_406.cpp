@@ -16,7 +16,8 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& codestr)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
@@ -29,7 +30,7 @@ phylanx::execution_tree::compiler::function compile(std::string const& codestr)
 void test_shape_operation(std::string const& code,
     std::string const& expected_str)
 {
-    HPX_TEST_EQ(compile(code)(), compile(expected_str)());
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
 }
 
 void test_shape_operation_fail(std::string const& code)
@@ -37,7 +38,7 @@ void test_shape_operation_fail(std::string const& code)
     bool caught_exception = false;
     try
     {
-        compile(code)();
+        compile_and_run(code);
         HPX_TEST(false);
     }
     catch (...)

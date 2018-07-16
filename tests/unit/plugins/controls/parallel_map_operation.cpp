@@ -12,7 +12,8 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& codestr)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
@@ -29,7 +30,8 @@ void test_map_operation_lambda()
             parallel_map(lambda(x, x + 1), list(1, 2, 3))
         )";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3ul);
 
@@ -49,7 +51,8 @@ void test_map_operation_func()
             parallel_map(f, list(1, 2, 3))
         ))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3ul);
 
@@ -69,7 +72,8 @@ void test_map_operation_func_lambda()
             parallel_map(f, list(1, 2, 3))
         ))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3ul);
 
@@ -90,7 +94,7 @@ void test_map_operation_lambda_arg()
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
@@ -127,7 +131,7 @@ void test_map_operation_func_arg()
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
@@ -165,7 +169,7 @@ void test_map_operation_func_lambda_arg()
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
@@ -199,7 +203,8 @@ void test_map_operation_lambda2()
             parallel_map(lambda(x, y, x + y), list(1, 2, 3), list(1, 2, 3))
         )";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3ul);
 
@@ -218,7 +223,8 @@ void test_map_operation_builtin2()
             parallel_map(__add, list(1, 2, 3), list(1, 2, 3))
         )";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3ul);
 
@@ -238,7 +244,8 @@ void test_map_operation_func2()
             parallel_map(f, list(1, 2, 3), list(1, 2, 3))
         ))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3ul);
 
@@ -258,7 +265,8 @@ void test_map_operation_func_lambda2()
             parallel_map(f, list(1, 2, 3), list(1, 2, 3))
         ))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3ul);
 

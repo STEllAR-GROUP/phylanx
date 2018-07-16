@@ -13,7 +13,8 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& codestr)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
@@ -27,16 +28,17 @@ phylanx::execution_tree::compiler::function compile(std::string const& codestr)
 void test_len_operation(std::string const& code,
     std::string const& expected_str)
 {
-    HPX_TEST_EQ(compile(code)(), compile(expected_str)());
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_len_operation("len( make_list() )", "0");
-    test_len_operation("len( make_list(1, 2) )", "2");
-    test_len_operation("len( make_list(1, 2, 3) )", "3");
-    test_len_operation("len( \"Question of Life, Universe, and Everything\" )", "42");
+    test_len_operation("len( list() )", "0");
+    test_len_operation("len( list(1, 2) )", "2");
+    test_len_operation("len( list(1, 2, 3) )", "3");
+    test_len_operation(
+        "len( \"Question of Life, Universe, and Everything\" )", "42");
 
     return hpx::util::report_errors();
 }

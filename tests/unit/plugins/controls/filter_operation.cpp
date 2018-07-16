@@ -12,7 +12,8 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& codestr)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
@@ -31,7 +32,8 @@ void test_filter_operation_lambda()
             filter(lambda(x, x > 1), list(1, 2, 3))
         )";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
     HPX_TEST_EQ(result.size(), 2ul);
 
     auto it = result.begin();
@@ -51,7 +53,8 @@ void test_filter_operation_func()
             filter(f, list(1, 2, 3))
         ))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 2ul);
 
@@ -72,7 +75,8 @@ void test_filter_operation_func_lambda()
             filter(f, list(1, 2, 3))
         ))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 2ul);
 
@@ -93,7 +97,7 @@ void test_filter_operation_lambda_arg()
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
@@ -121,7 +125,7 @@ void test_filter_operation_func_arg()
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
@@ -148,7 +152,7 @@ void test_filter_operation_func_lambda_arg()
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
