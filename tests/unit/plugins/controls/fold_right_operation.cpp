@@ -12,7 +12,8 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& codestr)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
@@ -30,7 +31,7 @@ void test_fold_right_operation_lambda()
         )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result[0], 10.0);
 }
@@ -42,7 +43,7 @@ void test_fold_right_operation_builtin()
         )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result[0], 10.0);
 }
@@ -55,7 +56,7 @@ void test_fold_right_operation_func()
         ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result[0], 10.0);
 }
@@ -68,7 +69,7 @@ void test_fold_right_operation_func_lambda()
         ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result[0], 10.0);
 }
@@ -80,14 +81,15 @@ void test_fold_right_operation_lambda_list()
         )";
 
     auto result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(code)())};
+        phylanx::execution_tree::extract_list_value(compile_and_run(code))};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
     auto expected_result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
+        phylanx::execution_tree::extract_list_value(
+            compile_and_run(expected_str))};
 
     HPX_TEST_EQ(result, expected_result);
 }
@@ -99,14 +101,15 @@ void test_fold_right_operation_builtin_list()
         )";
 
     auto result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(code)())};
+        phylanx::execution_tree::extract_list_value(compile_and_run(code))};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
     auto expected_result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
+        phylanx::execution_tree::extract_list_value(
+            compile_and_run(expected_str))};
 
     HPX_TEST_EQ(result, expected_result);
 }
@@ -119,14 +122,15 @@ void test_fold_right_operation_func_list()
         ))";
 
     auto result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(code)())};
+        phylanx::execution_tree::extract_list_value(compile_and_run(code))};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
     auto expected_result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
+        phylanx::execution_tree::extract_list_value(
+            compile_and_run(expected_str))};
 
     HPX_TEST_EQ(result, expected_result);
 }
@@ -139,14 +143,15 @@ void test_fold_right_operation_func_lambda_list()
         ))";
 
     auto result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(code)())};
+        phylanx::execution_tree::extract_list_value(compile_and_run(code))};
 
     std::string const expected_str = R"(
             '(1, '(2, '(3, '(4, '()))))
         )";
 
     auto expected_result = phylanx::execution_tree::primitive_argument_type{
-        phylanx::execution_tree::extract_list_value(compile(expected_str)())};
+        phylanx::execution_tree::extract_list_value(
+            compile_and_run(expected_str))};
 
     HPX_TEST_EQ(result, expected_result);
 }
