@@ -15,7 +15,8 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& codestr)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
@@ -35,7 +36,7 @@ void test_linear_solver_lu_PhySL()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{1, 2, 3}));
@@ -50,7 +51,7 @@ void test_linear_solver_ldlt_PhySL()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{1, 2, 3}));
@@ -65,7 +66,7 @@ void test_linear_solver_ldlt_l_PhySL()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{1, 2, 3}));
@@ -80,7 +81,7 @@ void test_linear_solver_ldlt_u_PhySL()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{1, 2, 3}));
@@ -95,7 +96,7 @@ void test_linear_solver_cholesky_PhySL()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{1, 2, 3}));
@@ -110,7 +111,7 @@ void test_linear_solver_cholesky_l_PhySL()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{1, 2, 3}));
@@ -125,7 +126,7 @@ void test_linear_solver_cholesky_u_PhySL()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result,
         phylanx::ir::node_data<double>(blaze::DynamicVector<double>{1, 2, 3}));
