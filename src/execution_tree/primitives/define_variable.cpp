@@ -97,6 +97,63 @@ namespace phylanx { namespace execution_tree { namespace primitives
         p->store(hpx::launch::sync, std::move(val));
     }
 
+    ///////////////////////////////////////////////////////////////////
+
+    void define_variable::store_set_1d(
+        phylanx::ir::node_data<double>&& data, std::vector<int64_t>&& list)
+    {
+        if (!valid(operands_[1]))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_variable::store",
+                execution_tree::generate_error_message(
+                    "the variable associated with this define has not been "
+                    "initialized yet",
+                    name_, codename_));
+        }
+
+        primitive* p = util::get_if<primitive>(&operands_[1]);
+        if (p == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_variable::store",
+                execution_tree::generate_error_message(
+                    "the variable associated with this define has not been "
+                    "properly initialized",
+                    name_, codename_));
+        }
+        p->store_set_1d(hpx::launch::sync, std::move(data), std::move(list));
+    }
+
+    void define_variable::store_set_2d(phylanx::ir::node_data<double>&& data,
+        std::vector<int64_t>&& list_row, std::vector<int64_t>&& list_col)
+    {
+        if (!valid(operands_[1]))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_variable::store",
+                execution_tree::generate_error_message(
+                    "the variable associated with this define has not been "
+                    "initialized yet",
+                    name_, codename_));
+        }
+
+        primitive* p = util::get_if<primitive>(&operands_[1]);
+        if (p == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_variable::store",
+                execution_tree::generate_error_message(
+                    "the variable associated with this define has not been "
+                    "properly initialized",
+                    name_, codename_));
+        }
+        p->store_set_2d(hpx::launch::sync, std::move(data), std::move(list_row),
+            std::move(list_col));
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////
+
     topology define_variable::expression_topology(
         std::set<std::string>&& functions,
         std::set<std::string>&& resolve_children) const

@@ -52,6 +52,10 @@ namespace phylanx { namespace execution_tree
 
             // store_action
             virtual void store(primitive_argument_type&&);
+            virtual void store_set_1d(
+                phylanx::ir::node_data<double>&&, std::vector<int64_t>&&);
+            virtual void store_set_2d(phylanx::ir::node_data<double>&&,
+                std::vector<int64_t>&&, std::vector<int64_t>&&);
 
             // extract_topology_action
             virtual topology expression_topology(

@@ -118,6 +118,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "support it (e.g. variables)"));
     }
 
+    void primitive_component_base::store_set_1d(
+        phylanx::ir::node_data<double>&&, std::vector<int64_t>&&)
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+            "store_set_1d",
+            generate_error_message("store_set_1d function should only be "
+                                   "called for the primitives that "
+                                   "support it (e.g. variables)"));
+    }
+
+    void primitive_component_base::store_set_2d(
+        phylanx::ir::node_data<double>&&, std::vector<int64_t>&&,
+        std::vector<int64_t>&&)
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+            "store_set_1d",
+            generate_error_message("store_set_2d function should only be "
+                                   "called for the primitives that "
+                                   "support it (e.g. variables)"));
+    }
+
     // extract_topology_action
     topology primitive_component_base::expression_topology(
         std::set<std::string>&& functions,
