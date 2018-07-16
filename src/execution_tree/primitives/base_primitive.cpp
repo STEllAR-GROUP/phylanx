@@ -192,6 +192,45 @@ namespace phylanx { namespace execution_tree
         action_type()(this->base_type::get_id(), std::move(data));
     }
 
+    ///////////////////////////////////////////////////////////////////////
+    hpx::future<void> primitive::store_set_1d(
+        ir::node_data<double> data, std::vector<int64_t> list)
+    {
+        using action_type =
+            primitives::primitive_component::store_set_1d_action;
+        return hpx::async(action_type(), this->base_type::get_id(),
+            std::move(data), std::move(list));
+    }
+
+    void primitive::store_set_1d(hpx::launch::sync_policy,
+        ir::node_data<double> data, std::vector<int64_t> list)
+    {
+        using action_type =
+            primitives::primitive_component::store_set_1d_action;
+        action_type()(
+            this->base_type::get_id(), std::move(data), std::move(list));
+    }
+
+    hpx::future<void> primitive::store_set_2d(ir::node_data<double> data,
+        std::vector<int64_t> list_row, std::vector<int64_t> list_col)
+    {
+        using action_type =
+            primitives::primitive_component::store_set_2d_action;
+        return hpx::async(action_type(), this->base_type::get_id(),
+            std::move(data), std::move(list_row), std::move(list_col));
+    }
+
+    void primitive::store_set_2d(hpx::launch::sync_policy,
+        ir::node_data<double> data, std::vector<int64_t> list_row,
+        std::vector<int64_t> list_col)
+    {
+        using action_type =
+            primitives::primitive_component::store_set_2d_action;
+        action_type()(this->base_type::get_id(), std::move(data),
+            std::move(list_row), std::move(list_col));
+    }
+    /////////////////////////////////////////////////////////////////////////
+
     hpx::future<topology> primitive::expression_topology(
         std::set<std::string>&& functions) const
     {

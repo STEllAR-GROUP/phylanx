@@ -55,6 +55,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // store_action
         PHYLANX_EXPORT void store(primitive_argument_type&&);
+        PHYLANX_EXPORT void store_set_1d(
+            phylanx::ir::node_data<double>&&, std::vector<int64_t>&&);
+        PHYLANX_EXPORT void store_set_2d(phylanx::ir::node_data<double>&&,
+            std::vector<int64_t>&&, std::vector<int64_t>&&);
 
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(
@@ -74,6 +78,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_component, bind, bind_action);
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, store, store_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            primitive_component, store_set_1d, store_set_1d_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            primitive_component, store_set_2d, store_set_2d_action);
 
         // access data for performance counter
         PHYLANX_EXPORT std::int64_t get_eval_count(bool reset) const;
@@ -96,6 +104,12 @@ HPX_REGISTER_ACTION_DECLARATION(
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::store_action,
     phylanx_primitive_store_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::primitive_component::store_set_1d_action,
+    phylanx_primitive_store_set_1d_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::primitive_component::store_set_2d_action,
+    phylanx_primitive_store_set_2d_action);
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::
         primitive_component::expression_topology_action,

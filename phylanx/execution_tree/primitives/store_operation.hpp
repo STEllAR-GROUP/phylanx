@@ -37,6 +37,25 @@ namespace phylanx {namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& operands,
             std::vector<primitive_argument_type> const& args) const;
+        bool check_set_parameters(int64_t start, int64_t stop, int64_t step,
+            size_t array_length) const;
+        std::vector<int64_t> create_list_set(int64_t start,
+            int64_t stop,
+            int64_t step,
+            size_t array_length) const;
+        int64_t extract_integer_value(
+            const primitive_argument_type& val, int64_t default_value) const;
+        std::vector<int64_t> extract_slicing(
+            primitive_argument_type&& arg, size_t arg_size) const;
+        primitive_argument_type set0d(
+            std::vector<primitive_argument_type>&& args) const;
+        void set1d(std::vector<primitive_argument_type>&& args,
+            ir::node_data<double>& data,
+            std::vector<int64_t>& init_list) const;
+        void set2d(std::vector<primitive_argument_type>&& args,
+            ir::node_data<double>& data,
+            std::vector<int64_t>& init_list_row,
+            std::vector<int64_t>& init_list_col) const;
     };
 
     PHYLANX_EXPORT primitive create_store_operation(

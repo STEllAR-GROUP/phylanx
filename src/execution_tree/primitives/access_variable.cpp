@@ -67,6 +67,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    void access_variable::store_set_1d(
+        phylanx::ir::node_data<double>&& data, std::vector<int64_t>&& list)
+    {
+        primitive* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            p->store_set_1d(
+                hpx::launch::sync, std::move(data), std::move(list));
+        }
+    }
+
+    void access_variable::store_set_2d(phylanx::ir::node_data<double>&& data,
+        std::vector<int64_t>&& list_row, std::vector<int64_t>&& list_col)
+    {
+        primitive* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            p->store_set_2d(hpx::launch::sync, std::move(data),
+                std::move(list_row), std::move(list_col));
+        }
+    }
+
     topology access_variable::expression_topology(
         std::set<std::string>&& functions,
         std::set<std::string>&& resolve_children) const
