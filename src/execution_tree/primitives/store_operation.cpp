@@ -8,6 +8,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -132,89 +133,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return result;
     }
 
-    ///////////////////////////These need to be moved to util/////////////////////////
-
-    std::int64_t store_operation::extract_integer_value(
-        primitive_argument_type const& val, std::int64_t default_value) const
-    {
-        if (valid(val))
-        {
-            return execution_tree::extract_scalar_integer_value(
-                val, name_, codename_);
-        }
-        return default_value;
-    }
-
-    std::vector<std::int64_t> store_operation::extract_slicing(
-        primitive_argument_type&& arg, std::size_t arg_size) const
-    {
-        std::vector<std::int64_t> indices;
-
-        // Extract the list or the single integer index
-        // from second argument (row-> start, stop, step)
-        if (is_list_operand_strict(arg))
-        {
-            auto arg_list =
-                extract_list_value(std::move(arg), name_, codename_);
-
-            std::size_t size = arg_list.size();
-            if (size > 3)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                    "slicing_operation::extract_list_slicing_args",
-                    generate_error_message("too many indicies given"));
-            }
-
-            auto it = arg_list.begin();
-
-            // default first index is '0'
-            if (size > 0)
-            {
-                indices.push_back(extract_integer_value(*it, 0));
-            }
-            else
-            {
-                indices.push_back(0);
-            }
-
-            // default last index is 'size'
-            if (size > 1)
-            {
-                indices.push_back(extract_integer_value(*++it, arg_size));
-            }
-            else
-            {
-                indices.push_back(arg_size);
-            }
-
-            // default step is '1'
-            if (size > 2)
-            {
-                indices.push_back(extract_integer_value(*++it, 1ll));
-            }
-            else
-            {
-                indices.push_back(1ll);
-            }
-        }
-        else if (!valid(arg))
-        {
-            // no arguments given means return all of the argument
-            indices.push_back(0);
-            indices.push_back(arg_size);
-            indices.push_back(1ll);
-        }
-        else
-        {
-            indices.push_back(execution_tree::extract_scalar_integer_value(
-                std::move(arg), name_, codename_));
-        }
-
-        return indices;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
     primitive_argument_type store_operation::set0d(
         std::vector<primitive_argument_type>&& args) const
     {
@@ -234,7 +152,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto size = input.size();
         auto input_vector = input.vector();
         std::vector<std::int64_t> extracted =
-            extract_slicing(std::move(temp), size);
+            util::slicing_helpers::extract_slicing(std::move(temp), size);
         std::int64_t row_start = extracted[0];
         std::int64_t row_stop = extracted[1];
         std::int64_t step = extracted[2];
@@ -300,24 +218,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (args.size() > 1)
         {
-            extracted_row = extract_slicing(std::move(temp1), num_matrix_rows);
+            extracted_row = util::slicing_helpers::extract_slicing(
+                std::move(temp1), num_matrix_rows);
         }
         else
         {
-            extracted_row =
-                extract_slicing(primitive_argument_type{}, num_matrix_rows);
+            extracted_row = util::slicing_helpers::extract_slicing(
+                primitive_argument_type{}, num_matrix_rows);
         }
 
         // Extract the list or the single integer index
         // from third argument (column-> start, stop, step)
         if (args.size() == 4)
         {
-            extracted_col = extract_slicing(std::move(temp2), num_matrix_cols);
+            extracted_col = util::slicing_helpers::extract_slicing(
+                std::move(temp2), num_matrix_cols);
         }
         else
         {
-            extracted_col =
-                extract_slicing(primitive_argument_type{}, num_matrix_cols);
+            extracted_col = util::slicing_helpers::extract_slicing(
+                primitive_argument_type{}, num_matrix_cols);
         }
 
         std::int64_t row_start = extracted_row[0];
