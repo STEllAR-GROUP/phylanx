@@ -147,12 +147,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     void store_operation::set1d(std::vector<primitive_argument_type>&& args,
         ir::node_data<double>& data, std::vector<int64_t>& init_list) const
     {
-        primitive_argument_type temp = args[1];
         auto input = extract_numeric_value(args[0]);
         auto size = input.size();
         auto input_vector = input.vector();
         std::vector<std::int64_t> extracted =
-            util::slicing_helpers::extract_slicing(std::move(temp), size);
+            util::slicing_helpers::extract_slicing(std::move(args[1]), size);
         std::int64_t row_start = extracted[0];
         std::int64_t row_stop = extracted[1];
         std::int64_t step = extracted[2];
@@ -213,13 +212,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         std::vector<std::int64_t> extracted_row;
         std::vector<std::int64_t> extracted_col;
-        primitive_argument_type temp1 = args[1];
-        primitive_argument_type temp2 = args[2];
 
         if (args.size() > 1)
         {
             extracted_row = util::slicing_helpers::extract_slicing(
-                std::move(temp1), num_matrix_rows);
+                std::move(args[1]), num_matrix_rows);
         }
         else
         {
@@ -232,7 +229,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (args.size() == 4)
         {
             extracted_col = util::slicing_helpers::extract_slicing(
-                std::move(temp2), num_matrix_cols);
+                std::move(args[2]), num_matrix_cols);
         }
         else
         {
