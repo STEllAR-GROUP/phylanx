@@ -1036,8 +1036,7 @@ namespace phylanx { namespace execution_tree
         struct list_operand
         {
             template <typename... Ts>
-            hpx::future<ir::range> operator()(
-                Ts&&... ts) const
+            hpx::future<ir::range> operator()(Ts&&... ts) const
             {
                 return execution_tree::list_operand(std::forward<Ts>(ts)...);
             }
@@ -1078,8 +1077,7 @@ namespace phylanx { namespace execution_tree
         struct list_operand_strict
         {
             template <typename... Ts>
-            hpx::future<ir::range> operator()(
-                Ts&&... ts) const
+            hpx::future<ir::range> operator()(Ts&&... ts) const
             {
                 return execution_tree::list_operand_strict(
                     std::forward<Ts>(ts)...);
@@ -1096,32 +1094,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // returning another vector holding the respective results.
         template <typename T, typename F, typename ... Ts>
         auto map_operands(std::vector<T> const& in, F && f, Ts && ... ts)
-        ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>(), ts...))>
+        ->  std::vector<decltype(
+                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+            )>
         {
-            std::vector<
-                    decltype(hpx::util::invoke(f, std::declval<T>(), ts...))
-                > out;
+            std::vector<decltype(
+                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+            )> out;
             out.reserve(in.size());
 
             for (auto const& d : in)
             {
-                out.push_back(hpx::util::invoke(f, d, ts...));
+                out.push_back(hpx::util::invoke(f, d, std::ref(ts)...));
             }
             return out;
         }
 
         template <typename T, typename F, typename ... Ts>
         auto map_operands(std::vector<T> && in, F && f, Ts && ... ts)
-        ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>(), ts...))>
+        ->  std::vector<decltype(
+                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+            )>
         {
-            std::vector<
-                    decltype(hpx::util::invoke(f, std::declval<T>(), ts...))
-                > out;
+            std::vector<decltype(
+                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+            )> out;
             out.reserve(in.size());
 
             for (auto && d : in)
             {
-                out.push_back(hpx::util::invoke(f, std::move(d), ts...));
+                out.push_back(
+                    hpx::util::invoke(f, std::move(d), std::ref(ts)...));
             }
             return out;
         }

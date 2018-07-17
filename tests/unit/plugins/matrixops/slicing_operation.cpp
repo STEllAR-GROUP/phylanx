@@ -9,6 +9,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstddef>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -36,6 +37,7 @@ void test_slicing_operation_0d()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 42.0);
 }
 
@@ -50,6 +52,7 @@ void test_slicing_operation_1d()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 3);
     HPX_TEST_EQ(result[1], 4);
 }
@@ -64,6 +67,7 @@ void test_slicing_operation_1d_step()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 3);
     HPX_TEST_EQ(result[1], 5);
 }
@@ -78,6 +82,7 @@ void test_slicing_operation_1d_neg_step()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 7);
     HPX_TEST_EQ(result[1], 5);
 }
@@ -92,6 +97,7 @@ void test_slicing_operation_1d_negative_index()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(4));
     HPX_TEST_EQ(result[0], 3);
     HPX_TEST_EQ(result[1], 4);
     HPX_TEST_EQ(result[2], 5);
@@ -108,6 +114,7 @@ void test_slicing_operation_1d_single_slice_negative_index()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 3);
 }
 
@@ -121,6 +128,7 @@ void test_slicing_operation_1d_negative_index_zero_start()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(7));
     HPX_TEST_EQ(result[0], 1);
     HPX_TEST_EQ(result[1], 2);
     HPX_TEST_EQ(result[2], 3);
@@ -140,6 +148,7 @@ void test_slicing_operation_1d_negative_index_neg_step()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 7);
     HPX_TEST_EQ(result[1], 5);
 }
@@ -154,6 +163,7 @@ void test_slicing_operation_1d_single()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 3);
 }
 
@@ -167,6 +177,7 @@ void test_slicing_operation_1d_single_negetive()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 7);
 }
 
@@ -186,6 +197,7 @@ void test_slicing_operation_2d_value()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 30);
 }
 

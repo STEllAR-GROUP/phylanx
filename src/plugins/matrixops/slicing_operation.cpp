@@ -15,6 +15,8 @@
 #include <hpx/throw_exception.hpp>
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -97,12 +99,23 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     std::int64_t slicing_operation::extract_integer_value(
-        primitive_argument_type const& val, std::int64_t default_value) const
+        primitive_argument_type&& val, std::int64_t default_value) const
     {
         if (valid(val))
         {
-            return execution_tree::extract_scalar_integer_value(
-                val, name_, codename_);
+            auto&& nd = execution_tree::extract_integer_value(
+                std::move(val), name_, codename_);
+
+            if (nd.size() == 0)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                        "slicing_operation::extract_integer_value",
+                    generate_error_message(
+                        "slicing arguments cannot be empty"));
+            }
+
+            return nd[0];
         }
         return default_value;
     }
@@ -115,46 +128,37 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::slicing1d(arg_type&& arg,
-        std::vector<std::int64_t> const& extracted_row) const
+        slicing_operation::indices const& extracted_rows) const
     {
-        if (extracted_row.empty())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "slicing_operation::slicing1d",
-                generate_error_message("rows can not be empty"));
-        }
-
+        // handle single argument slicing parameters
         auto input_vector = arg.vector();
-        if (extracted_row.size() == 1)
+        std::int64_t row_start = extracted_rows.slice_[0];
+
+        // handle single value slicing result
+        if (extracted_rows.single_value_)
         {
-            std::int64_t index = extracted_row[0];
+            std::int64_t index = row_start;
             if (index < 0)
             {
                 index = input_vector.size() + index;
             }
+
             return primitive_argument_type{input_vector[index]};
         }
 
-        std::int64_t row_start = extracted_row[0];
-        std::int64_t row_stop = extracted_row[1];
-        std::int64_t step = 1;
+        std::int64_t row_stop = extracted_rows.slice_[1];
+        std::int64_t step = extracted_rows.slice_[2];
 
-        if (extracted_row.size() == 3)
+        if (step == 0)
         {
-            step = extracted_row[2];
-
-            if (step == 0)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                        "slicing_operation::slicing1d",
-                    generate_error_message("step can not be zero"));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                    "slicing_operation::slicing1d",
+                generate_error_message("step can not be zero"));
         }
 
         auto init_list =
-            create_list_slice(row_start, row_stop, step, arg.size());
+            create_list_slice(row_start, row_stop, step, input_vector.size());
 
         auto sv = blaze::elements(input_vector, init_list);
         storage1d_type v{sv};
@@ -162,119 +166,86 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::slicing2d(
-        arg_type&& arg, std::vector<std::int64_t> const& extracted_row,
-        std::vector<std::int64_t> const& extracted_column) const
+        arg_type&& arg, slicing_operation::indices const& extracted_rows,
+        slicing_operation::indices const& extracted_columns) const
     {
-        if (extracted_column.empty() || extracted_row.empty())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "slicing_operation::slicing2d",
-                generate_error_message("columns/rows can not be empty"));
-        }
-
         blaze::DynamicMatrix<double> input_matrix = arg.matrix();
         std::size_t num_matrix_rows = input_matrix.rows();
         std::size_t num_matrix_cols = input_matrix.columns();
 
-        // return a value and not a vector if you are not given a list
-        if (extracted_row.size() == 1)
+        std::int64_t row_start = extracted_rows.slice_[0];
+        std::int64_t row_stop = extracted_rows.slice_[1];
+        std::int64_t row_step = extracted_rows.slice_[2];
+
+        if (row_step == 0 && !extracted_rows.single_value_)
         {
-            std::int64_t index = extracted_row[0];
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                    "row_slicing_operation::row_slicing_operation",
+                generate_error_message("step can not be zero"));
+        }
+
+        std::int64_t col_start = extracted_columns.slice_[0];
+        std::int64_t col_stop = extracted_columns.slice_[1];
+        std::int64_t col_step = extracted_columns.slice_[2];
+
+        if (col_step == 0 && !extracted_columns.single_value_)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::"
+                    "slicing_operation::slicing2d",
+                generate_error_message("step can not be zero"));
+        }
+
+        // return a value and not a vector if you are not given a list
+        if (extracted_rows.single_value_)
+        {
+            std::int64_t index = row_start;
             if (index < 0)
             {
                 index = num_matrix_rows + index;
             }
 
             auto sv = blaze::trans(blaze::row(input_matrix, index));
-            if (extracted_column.size() == 1)
+            if (extracted_columns.single_value_)
             {
-                std::int64_t index_col = extracted_column[0];
+                std::int64_t index_col = col_start;
                 if (index_col < 0)
                 {
                     index_col = num_matrix_cols + index_col;
                 }
 
                 double value = sv[index_col];
-                storage0d_type v{value};
-                return primitive_argument_type{
-                    ir::node_data<double>{std::move(v)}};
-            }
-
-            std::int64_t col_start = extracted_column[0];
-            std::int64_t col_stop = extracted_column[1];
-            std::int64_t step_col = 1;
-
-            if (extracted_column.size() == 3)
-            {
-                step_col = extracted_column[2];
-                if (step_col == 0)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                            "slicing_operation::slicing2d",
-                        generate_error_message("step can not be zero"));
-                }
+                return primitive_argument_type{ir::node_data<double>{value}};
             }
 
             auto init_list_col = create_list_slice(
-                col_start, col_stop, step_col, num_matrix_cols);
+                col_start, col_stop, col_step, num_matrix_cols);
 
             auto final_vec = blaze::elements(sv, init_list_col);
             storage1d_type v{final_vec};
             return primitive_argument_type{ir::node_data<double>{std::move(v)}};
         }
 
-        std::int64_t row_start = extracted_row[0];
-        std::int64_t row_stop = extracted_row[1];
-        std::int64_t step = 1;
-
-        if (extracted_row.size() == 3)
-        {
-            step = extracted_row[2];
-            if (step == 0)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                        "row_slicing_operation::row_slicing_operation",
-                    generate_error_message("step can not be zero"));
-            }
-        }
-
         auto init_list =
-            create_list_slice(row_start, row_stop, step, num_matrix_rows);
+            create_list_slice(row_start, row_stop, row_step, num_matrix_rows);
 
         auto sm = blaze::rows(input_matrix, init_list);
-        if (extracted_column.size() == 1)
+        if (extracted_columns.single_value_)
         {
-            std::int64_t index_col = extracted_column[0];
+            std::int64_t index_col = col_start;
             if (index_col < 0)
             {
                 index_col = num_matrix_cols + index_col;
             }
+
             auto vec = blaze::column(sm, index_col);
             storage1d_type v{vec};
             return primitive_argument_type{ir::node_data<double>{std::move(v)}};
         }
 
-        std::int64_t col_start = extracted_column[0];
-        std::int64_t col_stop = extracted_column[1];
-        std::int64_t step_col = 1;
-
-        if (extracted_column.size() == 3)
-        {
-            step_col = extracted_column[2];
-            if (step_col == 0)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                        "slicing_operation::slicing2d",
-                    generate_error_message("step can not be zero"));
-            }
-        }
-
         auto init_list_col =
-            create_list_slice(col_start, col_stop, step_col, num_matrix_cols);
+            create_list_slice(col_start, col_stop, col_step, num_matrix_cols);
 
         auto final_mat = blaze::columns(sm, init_list_col);
         storage2d_type m{final_mat};
@@ -282,7 +253,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<std::int64_t> slicing_operation::extract_slicing_args_vector(
+    slicing_operation::indices slicing_operation::extract_slicing_args_vector(
         std::vector<primitive_argument_type>&& args, std::size_t size) const
     {
         if (args.size() == 2)
@@ -319,9 +290,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     void slicing_operation::extract_slicing_args_matrix(
         std::vector<primitive_argument_type>&& args,
-        std::vector<std::int64_t>& extracted_row,
-        std::vector<std::int64_t>& extracted_column,
-        std::size_t rows, std::size_t columns) const
+        slicing_operation::indices& extracted_rows,
+        slicing_operation::indices& extracted_columns,
+        std::size_t num_rows, std::size_t num_columns) const
     {
         // If its column only slicing, extract the index for the column
         // and use all of the rows.
@@ -329,16 +300,18 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         {
             if (args.size() > 1)
             {
-                extracted_column = extract_slicing(std::move(args[1]), columns);
+                extracted_columns =
+                    extract_slicing(std::move(args[1]), num_columns);
             }
             else
             {
-                extracted_column =
-                    extract_slicing(primitive_argument_type{}, columns);
+                extracted_columns =
+                    extract_slicing(primitive_argument_type{}, num_columns);
             }
 
-            extracted_row.push_back(0);
-            extracted_row.push_back(rows);
+            extracted_rows.slice_[0] = 0;
+            extracted_rows.slice_[1] = num_rows;
+            extracted_rows.slice_[2] = 1;
         }
         else
         {
@@ -346,24 +319,25 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             // from second argument (row-> start, stop, step)
             if (args.size() > 1)
             {
-                extracted_row = extract_slicing(std::move(args[1]), rows);
+                extracted_rows = extract_slicing(std::move(args[1]), num_rows);
             }
             else
             {
-                extracted_row =
-                    extract_slicing(primitive_argument_type{}, rows);
+                extracted_rows =
+                    extract_slicing(primitive_argument_type{}, num_rows);
             }
 
             // Extract the list or the single integer index
             // from third argument (column-> start, stop, step)
             if (args.size() == 3)
             {
-                extracted_column = extract_slicing(std::move(args[2]), columns);
+                extracted_columns =
+                    extract_slicing(std::move(args[2]), num_columns);
             }
             else
             {
-                extracted_column =
-                    extract_slicing(primitive_argument_type{}, columns);
+                extracted_columns =
+                    extract_slicing(primitive_argument_type{}, num_columns);
             }
         }
     }
@@ -382,19 +356,21 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             return slicing0d(std::move(matrix_input));
 
         case 1:
-            return slicing1d(std::move(matrix_input),
-                extract_slicing_args_vector(
-                    std::move(args), matrix_input.vector().size()));
+            {
+                std::size_t size = matrix_input.vector().size();
+                return slicing1d(std::move(matrix_input),
+                    extract_slicing_args_vector(std::move(args), size));
+            }
 
         case 2:
             {
-                std::vector<std::int64_t> extracted_row;
-                std::vector<std::int64_t> extracted_column;
-                extract_slicing_args_matrix(std::move(args), extracted_row,
-                    extracted_column, matrix_input.matrix().rows(),
+                indices extracted_rows;
+                indices extracted_columns;
+                extract_slicing_args_matrix(std::move(args), extracted_rows,
+                    extracted_columns, matrix_input.matrix().rows(),
                     matrix_input.matrix().columns());
                 return slicing2d(
-                    std::move(matrix_input), extracted_row, extracted_column);
+                    std::move(matrix_input), extracted_rows, extracted_columns);
             }
 
         default:
@@ -407,10 +383,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<std::int64_t> slicing_operation::extract_slicing(
+    slicing_operation::indices slicing_operation::extract_slicing(
         primitive_argument_type&& arg, std::size_t arg_size) const
     {
-        std::vector<std::int64_t> indices;
+        slicing_operation::indices indices;
 
         // Extract the list or the single integer index
         // from second argument (row-> start, stop, step)
@@ -438,7 +414,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             if (size == 3)
             {
                 std::advance(it, 2);
-                step = extract_integer_value(*it, 1ll);
+                step = extract_integer_value(std::move(*it), 1ll);
                 if (step < 0)
                 {
                     // create_list_slice above will add list size to these values
@@ -453,43 +429,50 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             // default first index is '0'
             if (size > 0)
             {
-                indices.push_back(extract_integer_value(*it, default_start));
+                indices.slice_[0] =
+                    extract_integer_value(std::move(*it), default_start);
+                indices.single_value_ = true;
             }
             else
             {
-                indices.push_back(0);
+                indices.slice_[0] = 0;
             }
 
             // default last index is 'size'
             if (size > 1)
             {
-                indices.push_back(extract_integer_value(*++it, default_stop));
+                indices.slice_[1] =
+                    extract_integer_value(std::move(*++it), default_stop);
+                indices.single_value_ = false;
             }
             else
             {
-                indices.push_back(arg_size);
+                indices.slice_[1] = arg_size;
             }
 
             // default step is '1'
-            indices.push_back(step);
+            indices.slice_[2] = step;
         }
         else if (!valid(arg))
         {
             // no arguments given means return all of the argument
-            indices.push_back(0);
-            indices.push_back(arg_size);
-            indices.push_back(1ll);
+            indices.slice_[0] = 0;
+            indices.slice_[1] = arg_size;
+            indices.slice_[2] = 1;
         }
         else
         {
-            indices.push_back(execution_tree::extract_scalar_integer_value(
-                std::move(arg), name_, codename_));
+            // allow for the slicing parameters to be a single integer
+            std::int64_t start = extract_integer_value(std::move(arg), 0);
+
+            indices.slice_[0] = start;
+            indices.single_value_ = true;
         }
 
         return indices;
     }
 
-    std::vector<std::int64_t> slicing_operation::extract_slicing_args_list(
+    slicing_operation::indices slicing_operation::extract_slicing_args_list(
         std::vector<primitive_argument_type>&& args, std::size_t size) const
     {
         if (args.size() == 2)
@@ -508,27 +491,25 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::slice_list(ir::range&& list,
-        std::vector<std::int64_t> const& columns) const
+        slicing_operation::indices const& columns) const
     {
-        if (columns.empty())
+        std::size_t list_size = list.size();
+
+        std::int64_t start = columns.slice_[0];
+        std::int64_t stop = columns.slice_[1];
+        std::int64_t step = columns.slice_[2];
+
+        if (step == 0 && !columns.single_value_)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "slicing_operation::slice_list",
-                generate_error_message("column indicies can not be empty"));
-        }
-        if (columns.size() > 3)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "slicing_operation::slice_list",
-                generate_error_message("too many column indicies"));
+                generate_error_message("step can not be zero"));
         }
 
-        std::size_t list_size = list.size();
-        if (columns.size() == 1)
+        if (columns.single_value_)
         {
-            std::int64_t index = columns[0];
+            std::int64_t index = start;
             if (index < 0)
             {
                 index = list_size + index;
@@ -539,25 +520,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             return primitive_argument_type{std::move(*it)};
         }
 
-        std::int64_t row_start = columns[0];
-        std::int64_t row_stop = columns[1];
-        std::int64_t step = 1;
-
-        if (columns.size() == 3)
-        {
-            step = columns[2];
-            if (step == 0)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                        "slicing_operation::slice_list",
-                    generate_error_message("step can not be zero"));
-            }
-        }
-
         // list of indices to extract
         std::vector<std::int64_t> index_list =
-            create_list_slice(row_start, row_stop, step, list_size);
+            create_list_slice(start, stop, step, list_size);
 
         std::vector<primitive_argument_type> result;
         result.reserve(index_list.size());
@@ -566,7 +531,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         auto idx_end = index_list.end();
 
         // extract elements from list at given indices
-        if (row_start <= row_stop && step > 0)
+        if (start <= stop && step > 0)
         {
             auto list_it = list.begin();
             auto list_end = list.end();
