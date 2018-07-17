@@ -257,56 +257,105 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive_argument_type{}, num_matrix_cols);
         }
 
-        std::int64_t row_start = extracted_row[0];
-        std::int64_t row_stop = extracted_row[1];
-        std::int64_t step_row = extracted_row[2];
-
-        std::int64_t col_start = extracted_col[0];
-        std::int64_t col_stop = extracted_col[1];
-        std::int64_t step_col = extracted_col[2];
-
-        if (step_row == 0 || step_col == 0)
+        if (extracted_col.empty() || extracted_row.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "store_operation::set2d",
-                execution_tree::generate_error_message(
-                    "argument 'step_row' or 'step_col' can not be zero", name_,
-                    codename_));
+                                "phylanx::execution_tree::primitives::"
+                                "store_operation::set2d",
+                                generate_error_message("columns/rows can not be empty"));
         }
 
-        if (!check_set_parameters(
+        bool row_set = false;
+        bool col_set = false;
+
+        if (extracted_row.size() == 1)
+        {
+            std::int64_t index = extracted_row[0];
+            if (index < 0)
+            {
+                index = num_matrix_rows + index;
+            }
+            init_list_row.push_back(index);
+            row_set = true;
+        }
+
+        if (extracted_col.size() == 1)
+        {
+            std::int64_t index = extracted_col[0];
+            if (index < 0)
+            {
+                index = num_matrix_cols + index;
+            }
+            init_list_col.push_back(index);
+            col_set = true;
+        }
+
+        if (!row_set) {
+            std::int64_t row_start = extracted_row[0];
+            std::int64_t row_stop = extracted_row[1];
+            std::int64_t step_row = 1;
+
+            if (extracted_row.size() == 3)
+            {
+                step_row = extracted_row[2];
+                if (step_row == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "phylanx::execution_tree::primitives::"
+                                        "store_operation::store2d",
+                                        generate_error_message("step can not be zero"));
+                }
+            }
+
+            if (!check_set_parameters(
                 row_start, row_stop, step_row, num_matrix_rows))
-        {
-            std::ostringstream msg;
-            msg << "argument 'row_start' or 'row_stop' are not valid: ";
-            msg << "start=" << row_start << ", stop=" << row_stop
-                << ", step=" << step_row;
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "store_operation::set2d",
-                execution_tree::generate_error_message(
-                    msg.str(), name_, codename_));
+            {
+                std::ostringstream msg;
+                msg << "argument 'row_start' or 'row_stop' are not valid: ";
+                msg << "start=" << row_start << ", stop=" << row_stop
+                    << ", step=" << step_row;
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "phylanx::execution_tree::primitives::"
+                                    "store_operation::set2d",
+                                    execution_tree::generate_error_message(
+                                        msg.str(), name_, codename_));
+            }
+            init_list_row =
+                create_list_set(row_start, row_stop, step_row, num_matrix_rows);
         }
 
-        if (!check_set_parameters(
+        if (!col_set) {
+            std::int64_t col_start = extracted_col[0];
+            std::int64_t col_stop = extracted_col[1];
+            std::int64_t step_col = 1;
+
+            if (extracted_col.size() == 3) {
+                step_col = extracted_col[2];
+                if (step_col == 0) {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                        "phylanx::execution_tree::primitives::"
+                                        "store_operation::store2d",
+                                        generate_error_message("step can not be zero"));
+                }
+            }
+            if (!check_set_parameters(
                 col_start, col_stop, step_col, num_matrix_cols))
-        {
-            std::ostringstream msg;
-            msg << "argument 'col_start' or 'col_stop' are not valid: ";
-            msg << "start=" << col_start << ", stop=" << col_stop
-                << ", step=" << step_col;
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "store_operation::set2d",
-                execution_tree::generate_error_message(
-                    msg.str(), name_, codename_));
+            {
+                std::ostringstream msg;
+                msg << "argument 'col_start' or 'col_stop' are not valid: ";
+                msg << "start=" << col_start << ", stop=" << col_stop
+                    << ", step=" << step_col;
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                                    "phylanx::execution_tree::primitives::"
+                                    "store_operation::set2d",
+                                    execution_tree::generate_error_message(
+                                        msg.str(), name_, codename_));
+            }
+            init_list_col =
+                create_list_set(col_start, col_stop, step_col, num_matrix_cols);
         }
 
-        init_list_row =
-            create_list_set(row_start, row_stop, step_row, num_matrix_rows);
-        init_list_col =
-            create_list_set(col_start, col_stop, step_col, num_matrix_cols);
+
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -275,6 +275,77 @@ void test_set_single_value_to_vector()
     HPX_TEST_EQ(result[4], 0.85);
 }
 
+void test_set_single_value_to_vector_negetive_dir()
+{
+    std::string const code = R"(block(
+        define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
+        define(val, 0.42),
+        store(a, -1, val),
+        a
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result[0], 0.052);
+    HPX_TEST_EQ(result[1], 0.95);
+    HPX_TEST_EQ(result[2], 0.55);
+    HPX_TEST_EQ(result[3], 0.17);
+    HPX_TEST_EQ(result[4], 0.42);
+}
+
+void test_set_single_value_to_matrix()
+{
+    std::string const code = R"(block(
+        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
+        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
+        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
+        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
+        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
+        define(input, vstack(a,b,c,d,e)),
+        define(val,42.42),
+        store(input, 3, 3, val),
+        input
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+    auto expected = phylanx::ir::node_data<double>(blaze::DynamicMatrix<double>{
+        {0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998},
+        {0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144},
+        {0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486},
+        {0.84430163, 0.22872386, 0.38010922, 42.42, 0.82180563},
+        {0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477}});
+
+    HPX_TEST_EQ(result, expected);
+}
+
+void test_set_single_value_to_matrix_negetive_dir()
+{
+    std::string const code = R"(block(
+        define(a, hstack(0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998)),
+        define(b, hstack(0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144)),
+        define(c, hstack(0.04567072, 0.15471737, 0.77637891, 0.84232174, 0.54772486)),
+        define(d, hstack(0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563)),
+        define(e, hstack(0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477)),
+        define(input, vstack(a,b,c,d,e)),
+        define(val,42.42),
+        store(input, -3, -3, val),
+        input
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+    auto expected = phylanx::ir::node_data<double>(blaze::DynamicMatrix<double>{
+        {0.05286532, 0.95232529, 0.55222064, 0.17133773, 0.85641998},
+        {0.84212087, 0.69646313, 0.18924143, 0.61812872, 0.48111144},
+        {0.04567072, 0.15471737, 42.42 , 0.84232174, 0.54772486},
+        {0.84430163, 0.22872386, 0.38010922, 0.93930709, 0.82180563},
+        {0.63714445, 0.06884843, 0.9002559, 0.14518178, 0.5056477}});
+
+    HPX_TEST_EQ(result, expected);
+}
+
 int main(int argc, char* argv[])
 {
     test_store_operation();
@@ -291,6 +362,9 @@ int main(int argc, char* argv[])
     test_set_operation_2d_single_element_input();
 
     test_set_single_value_to_vector();
+    test_set_single_value_to_vector_negetive_dir();
+    test_set_single_value_to_matrix();
+    test_set_single_value_to_matrix_negetive_dir();
 
     return hpx::util::report_errors();
 }
