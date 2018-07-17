@@ -256,6 +256,25 @@ void test_set_operation_2d_single_element_input()
     HPX_TEST_EQ(result, expected);
 }
 
+void test_set_single_value_to_vector()
+{
+    std::string const code = R"(block(
+        define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
+        define(val, 0.42),
+        store(a, 1, val),
+        a
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result[0], 0.052);
+    HPX_TEST_EQ(result[1], 0.42);
+    HPX_TEST_EQ(result[2], 0.55);
+    HPX_TEST_EQ(result[3], 0.17);
+    HPX_TEST_EQ(result[4], 0.85);
+}
+
 int main(int argc, char* argv[])
 {
     test_store_operation();
@@ -270,6 +289,8 @@ int main(int argc, char* argv[])
     test_set_operation_2d_vector_input_negative_single_step();
     test_set_operation_2d_negetive_step();
     test_set_operation_2d_single_element_input();
+
+    test_set_single_value_to_vector();
 
     return hpx::util::report_errors();
 }

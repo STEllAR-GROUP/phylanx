@@ -150,52 +150,72 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto input = extract_numeric_value(args[0]);
         auto size = input.size();
         auto input_vector = input.vector();
-        std::vector<std::int64_t> extracted =
-            util::slicing_helpers::extract_slicing(std::move(args[1]), size);
-        std::int64_t row_start = extracted[0];
-        std::int64_t row_stop = extracted[1];
-        std::int64_t step = extracted[2];
-        data = extract_numeric_value(args[2]);
 
-        if (step == 0)
-        {
-            row_stop = row_start + 1;
-            step = 1;
-        }
+        data = extract_numeric_value(args[2]);
         std::size_t value_dimnum = data.num_dimensions();
 
-        if (value_dimnum == 2)
+        std::vector<std::int64_t> extracted_row =
+            util::slicing_helpers::extract_slicing(std::move(args[1]), size);
+
+        if (extracted_row.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "store_operation::set1d",
-                execution_tree::generate_error_message(
-                    "can not store matrix in a vetor", name_, codename_));
+                                "phylanx::execution_tree::primitives::"
+                                "store_operation::store1d",
+                                generate_error_message("rows can not be empty"));
         }
 
-        if (step == 0)
+        if (extracted_row.size() == 1 && value_dimnum == 0)
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "store_operation::set1d",
-                execution_tree::generate_error_message(
-                    "argument 'step' can not be zero", name_, codename_));
+            std::int64_t index = extracted_row[0];
+            if (index < 0)
+            {
+                index = input_vector.size() + index;
+            }
+            init_list.push_back(index);
         }
-
-        if (!check_set_parameters(row_start, row_stop, step, size))
+        else
         {
-            std::ostringstream msg;
-            msg << "argument 'start' or 'stop' are not valid: ";
-            msg << "start=" << row_start << ", stop=" << row_stop
-                << ", step=" << step;
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "store_operation::set1d",
-                execution_tree::generate_error_message(
-                    msg.str(), name_, codename_));
-        }
+            std::int64_t row_start = extracted_row[0];
+            std::int64_t row_stop = extracted_row[1];
+            std::int64_t step = 1;
 
-        init_list = create_list_set(row_start, row_stop, step, size);
+            if (extracted_row.size() == 3)
+            {
+                step = extracted_row[2];
+
+                if (step == 0)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "store_operation::store1d",
+                        generate_error_message("step can not be zero"));
+                }
+            }
+
+            if (value_dimnum == 2)
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                    "store_operation::set1d",
+                    execution_tree::generate_error_message(
+                        "can not store matrix in a vetor", name_, codename_));
+            }
+
+            if (!check_set_parameters(row_start, row_stop, step, size))
+            {
+                std::ostringstream msg;
+                msg << "argument 'start' or 'stop' are not valid: ";
+                msg << "start=" << row_start << ", stop=" << row_stop
+                    << ", step=" << step;
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                    "store_operation::set1d",
+                    execution_tree::generate_error_message(
+                        msg.str(), name_, codename_));
+            }
+            init_list = create_list_set(row_start, row_stop, step, size);
+        }
     }
 
     void store_operation::set2d(std::vector<primitive_argument_type>&& args,
