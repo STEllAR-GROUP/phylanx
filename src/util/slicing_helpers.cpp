@@ -5,10 +5,15 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <phylanx/util/slicing_helpers.hpp>
+
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
+#include <phylanx/util/slicing_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
+
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
 namespace phylanx { namespace util {
   namespace slicing_helpers {

@@ -12,6 +12,11 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
+#include <cstddef>
+#include <cstdint>
+#include <utility>
+#include <vector>
+
 namespace phylanx { namespace util {
   namespace slicing_helpers
   {

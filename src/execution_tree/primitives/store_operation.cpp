@@ -14,9 +14,12 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
