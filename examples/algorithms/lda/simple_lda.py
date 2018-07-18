@@ -129,7 +129,7 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
 
                 sum_ = sum(topic_term_scores)
 
-                sample_ = np.random(10)[9] * sum_
+                sample_ = random(10)[9] * sum_
 
                 new_topic_ = -1
                 while sample_ > 0.0:
