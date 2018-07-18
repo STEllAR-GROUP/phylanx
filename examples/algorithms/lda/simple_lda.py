@@ -6,8 +6,7 @@
 #  Code ported from java to python based on the mallet implementation:
 #
 #  http://mallet.cs.umass.edu/index.php
-#
-#
+
 from phylanx.ast import *
 import numpy as np
 from scipy.io import loadmat
@@ -82,7 +81,7 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
 @Phylanx
 def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     betaSum = W * beta
-    alpha /= T # NOTE: presents a float/int error
+    alpha /= T          # NOTE: presents a float/int error
 
     word_topic_count = constant(0.0, make_list(W, T))
     doc_topic_count = constant(0.0, make_list(D, T))
@@ -99,10 +98,10 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     tokens_per_topic = constant(0.0, T)
 
     for t in range(T):
-        tokens_per_topic[t] = sum(word_topic_count[:,t])
+        tokens_per_topic[t] = np.sum(word_topic_count[:, t])
 
-    topic_term_scores = constant(0.0, T)
-    doc_topics = constant(0.0, make_list(D, W))
+    topic_term_scores = np.constant(0.0, T)
+    doc_topics = np.constant(0.0, list(D, W))
 
     old_topic = 0
     new_topic_ = -1
@@ -126,11 +125,11 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
 
                 topic_term_scores = (alpha + local_topic_counts) * \
                     ((beta + current_token_topic_counts) /
-                    (betaSum + tokens_per_topic))
+                        (betaSum + tokens_per_topic))
 
-                sum_ = sum(topic_term_scores) 
+                sum_ = sum(topic_term_scores)
 
-                sample_ = random(10)[9] * sum_
+                sample_ = np.random(10)[9] * sum_
 
                 new_topic_ = -1
                 while sample_ > 0.0:
@@ -144,6 +143,7 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
 
     # TODO: add in print out of the trained/learned model
     return
+
 
 if __name__ == "__main__":
     matlab_vars = dict()
@@ -165,8 +165,8 @@ if __name__ == "__main__":
     w = w.reshape(w.shape[0])
     d = d.reshape(d.shape[0])
 
-    w -= 1 # w min val is 1, matlab indexing artifact
-    d -= 1 # d min val is 1, matlab indexing artifact
+    w -= 1      # w min val is 1, matlab indexing artifact
+    d -= 1      # d min val is 1, matlab indexing artifact
 
     z = np.random.randint(0, T, size=N)
     beta = 0.01
@@ -174,4 +174,3 @@ if __name__ == "__main__":
     iters = 10000
 
     simple_lda(D, W, N, T, w, d, z, alpha, beta, iters)
-
