@@ -14,13 +14,15 @@
 #include <string>
 
 //////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& code)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
-
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
-    return phylanx::execution_tree::compile(code, snippets, env);
+
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,7 +30,8 @@ void test_range_stop()
 {
     char const* const code = "map(lambda(x, x), range(2))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 2);
 
@@ -43,7 +46,8 @@ void test_range_start_stop()
 {
     char const* const code = "map(lambda(x, x), range(-1, 2))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 3);
 
@@ -58,7 +62,8 @@ void test_range_start_stop_step()
 {
     char const* const code = "map(lambda(x, x), range(-3, 2, 4))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 2);
 

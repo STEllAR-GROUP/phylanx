@@ -12,7 +12,8 @@
 void test_invoke_operation(char const* expr, double expected)
 {
     phylanx::execution_tree::compiler::function_list snippets;
-    auto f = phylanx::execution_tree::compile(expr, snippets);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets);
+    auto f = code.run();
 
     HPX_TEST_EQ(expected,
         phylanx::execution_tree::extract_numeric_value(

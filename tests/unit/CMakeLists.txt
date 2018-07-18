@@ -8,6 +8,7 @@ set(subdirs
     ast
     config
     execution_tree
+    distributed
     ir
     plugins
     python

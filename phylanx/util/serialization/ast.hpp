@@ -17,12 +17,15 @@ namespace phylanx { namespace util
 {
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::vector<char> serialize(ir::node_data<double> const&);
+    PHYLANX_EXPORT std::vector<char> serialize(ir::node_data<std::int64_t> const&);
     PHYLANX_EXPORT std::vector<char> serialize(ir::node_data<std::uint8_t> const&);
 
     namespace detail
     {
         PHYLANX_EXPORT void unserialize(
             std::vector<char> const&, ir::node_data<double>&);
+        PHYLANX_EXPORT void unserialize(
+            std::vector<char> const&, ir::node_data<std::int64_t>&);
         PHYLANX_EXPORT void unserialize(
             std::vector<char> const&, ir::node_data<std::uint8_t>&);
     }

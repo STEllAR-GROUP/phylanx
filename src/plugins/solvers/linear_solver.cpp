@@ -249,18 +249,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->calculate_linear_solver(std::move(args));
                 }),
             detail::map_operands(operands, functional::numeric_operand{}, args,
-                this_->name_, this_->codename_));
+                name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> linear_solver::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}
 

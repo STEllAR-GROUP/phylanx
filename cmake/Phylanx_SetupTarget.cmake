@@ -103,7 +103,8 @@ function(phylanx_setup_target target)
                  PROPERTY COMPILE_DEFINITIONS
                  "PHYLANX_APPLICATION_NAME=${name}"
                  "PHYLANX_APPLICATION_STRING=\"${name}\""
-                 "PHYLANX_APPLICATION_EXPORTS")
+                 "PHYLANX_APPLICATION_EXPORTS"
+                 "HPX_APPLICATION_EXPORTS")
   endif()
 
   if("${_type}" STREQUAL "LIBRARY")
@@ -182,6 +183,10 @@ function(phylanx_setup_target target)
     endif()
     if(DEFINED PHYLANX_LIBRARIES)
       set(phylanx_libs ${phylanx_libs} ${PHYLANX_LIBRARIES})
+    endif()
+    if(HPX_WITH_DYNAMIC_HPX_MAIN AND ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") AND ("${_type}" STREQUAL "EXECUTABLE"))
+      set_target_properties(${target} PROPERTIES LINK_FLAGS "${HPX_LINKER_FLAGS}")
+      set(phylanx_libs "${HPX_LINK_LIBRARIES}${phylanx_libs}")
     endif()
   else()
     target_compile_options(${target} PUBLIC ${CXX_FLAG})

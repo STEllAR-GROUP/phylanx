@@ -12,49 +12,52 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& code)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    return phylanx::execution_tree::compile(code, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_car_cdr_operation(std::string const& code,
     std::string const& expected_str)
 {
-    HPX_TEST_EQ(compile(code)(), compile(expected_str)());
+    HPX_TEST_EQ(compile_and_run(code), compile_and_run(expected_str));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_car_cdr_operation("car( '(1, 2, 3) )", "1");
-    test_car_cdr_operation("cdr( '(1, 2, 3) )", "'(2, 3)");
+    test_car_cdr_operation("car( list(1, 2, 3) )", "1");
+    test_car_cdr_operation("cdr( list(1, 2, 3) )", "list(2, 3)");
 
-    test_car_cdr_operation("caar( '('(1, 2), '(3, 4)) )", "1");
-    test_car_cdr_operation("cadr( '('(1, 2), '(3, 4)) )", "'(3, 4)");
-    test_car_cdr_operation("cdar( '('(1, 2), '(3, 4)) )", "'(2)");
-    test_car_cdr_operation("cddr( '('(1, 2), '(3, 4)) )", "'()");
+    test_car_cdr_operation("caar( list(list(1, 2), list(3, 4)) )", "1");
+    test_car_cdr_operation(
+        "cadr( list(list(1, 2), list(3, 4)) )", "list(3, 4)");
+    test_car_cdr_operation("cdar( list(list(1, 2), list(3, 4)) )", "list(2)");
+    test_car_cdr_operation("cddr( list(list(1, 2), list(3, 4)) )", "list()");
 
-    test_car_cdr_operation(
-        "caaar( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "1");
-    test_car_cdr_operation(
-        "caadr( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "'('(3), 4)");
-    test_car_cdr_operation(
-        "cadar( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "2");
-    test_car_cdr_operation(
-        "caddr( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "7");
-    test_car_cdr_operation(
-        "cdaar( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "'()");
-    test_car_cdr_operation(
-        "cdadr( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "'('(5), 6)");
-    test_car_cdr_operation(
-        "cddar( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "'()");
-    test_car_cdr_operation(
-        "cdddr( '( '('(1), 2), '( '('(3), 4), '(5), 6), 7 ) )", "'()");
+    test_car_cdr_operation("caaar( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "1");
+    test_car_cdr_operation("caadr( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "list(list(3), 4)");
+    test_car_cdr_operation("cadar( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "2");
+    test_car_cdr_operation("caddr( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "7");
+    test_car_cdr_operation("cdaar( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "list()");
+    test_car_cdr_operation("cdadr( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "list(list(5), 6)");
+    test_car_cdr_operation("cddar( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "list()");
+    test_car_cdr_operation("cdddr( list( list(list(1), 2), list( list(list(3), "
+                           "4), list(5), 6), 7 ) )", "list()");
 
     return hpx::util::report_errors();
 }

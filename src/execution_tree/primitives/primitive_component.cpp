@@ -15,6 +15,7 @@
 #include <hpx/runtime/naming_fwd.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -40,8 +41,6 @@ HPX_REGISTER_ACTION(primitive_component_type::expression_topology_action,
     phylanx_primitive_expression_topology_action)
 HPX_REGISTER_ACTION(primitive_component_type::bind_action,
     phylanx_primitive_bind_action)
-HPX_REGISTER_ACTION(primitive_component_type::set_body_action,
-    phylanx_primitive_set_body_action)
 
 //////////////////////////////////////////////////////////////////////////////
 typedef hpx::components::component<primitive_component_type>
@@ -105,35 +104,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
-        return primitive_->do_eval(params);
+        if ((mode & eval_dont_evaluate_partials) &&
+            primitive_->operands_.empty() && !params.empty())
+        {
+            // return a client referring to this component as the evaluation
+            // result
+            primitive this_{this->get_id()};
+            return hpx::make_ready_future(
+                primitive_argument_type{std::move(this_)});
+        }
+        return primitive_->do_eval(params, mode);
     }
 
     // store_action
-    void primitive_component::store(primitive_argument_type && arg)
+    void primitive_component::store(primitive_argument_type&& arg)
     {
         primitive_->store(std::move(arg));
     }
 
     // extract_topology_action
     topology primitive_component::expression_topology(
-        std::set<std::string>&& functions) const
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
-        return primitive_->expression_topology(std::move(functions));
+        return primitive_->expression_topology(
+            std::move(functions), std::move(resolve_children));
     }
 
     // bind_action
-    primitive_argument_type primitive_component::bind(
+    bool primitive_component::bind(
         std::vector<primitive_argument_type> const& params) const
     {
         return primitive_->bind(params);
-    }
-
-    // set_body_action (define_function only)
-    void primitive_component::set_body(primitive_argument_type&& target)
-    {
-        primitive_->set_body(std::move(target));
     }
 
     // access data for performance counter

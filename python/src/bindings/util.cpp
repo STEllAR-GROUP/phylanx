@@ -27,19 +27,25 @@ void phylanx::bindings::bind_util(pybind11::module m)
         "serialize an AST optoken object into a byte-stream");
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::optoken>,
         "serialize an AST optoken object into a byte-stream");
-    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::identifier>,
+    util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ast::identifier>,
         "serialize an AST identifier object into a byte-stream");
-    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::primary_expr>,
+    util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ast::primary_expr>,
         "serialize an AST primary_expr object into a byte-stream");
     util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::operand>,
         "serialize an AST operand object into a byte-stream");
-    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::unary_expr>,
+    util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ast::unary_expr>,
         "serialize an AST unary_expr object into a byte-stream");
-    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::operation>,
+    util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ast::operation>,
         "serialize an AST operation object into a byte-stream");
-    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::expression>,
+    util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ast::expression>,
         "serialize an AST expression object into a byte-stream");
-    util.def("serialize", &phylanx::bindings::serialize<phylanx::ast::function_call>,
+    util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ast::function_call>,
         "serialize an AST function_call object into a byte-stream");
     util.def("serialize",
         &phylanx::bindings::serialize<phylanx::ast::literal_value_type>,
@@ -51,12 +57,18 @@ void phylanx::bindings::bind_util(pybind11::module m)
         &phylanx::bindings::serialize<phylanx::ir::node_data<double>>,
         "serialize a node_data<double> expression object into a byte-stream");
     util.def("serialize",
+        &phylanx::bindings::serialize<phylanx::ir::node_data<std::int64_t>>,
+        "serialize a node_data<std::int64_t> expression object into a "
+        "byte-stream");
+    util.def("serialize",
         &phylanx::bindings::serialize<phylanx::ir::node_data<std::uint8_t>>,
-        "serialize a node_data<std::uint8_t> expression object into a byte-stream");
+        "serialize a node_data<std::uint8_t> expression object into a "
+        "byte-stream");
 
     util.def("unserialize",
         &phylanx::util::unserialize<std::vector<phylanx::ast::expression>>,
         "un-serialize a byte-stream into a Phylanx object");
-    util.def("unserialize_expr", &phylanx::util::unserialize<phylanx::ast::expression>,
+    util.def("unserialize_expr",
+        &phylanx::util::unserialize<phylanx::ast::expression>,
         "un-serialize a byte-stream into a Phylanx object");
 }

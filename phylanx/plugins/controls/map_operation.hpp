@@ -41,12 +41,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> map_1(
             std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args,
-            primitive const* p) const;
+            std::vector<primitive_argument_type> const& args) const;
         hpx::future<primitive_argument_type> map_n(
             std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args,
-            primitive const* p) const;
+            std::vector<primitive_argument_type> const& args) const;
 
         primitive_argument_type map_1_scalar(
             primitive const* p, primitive_argument_type&& arg) const;

@@ -86,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> args) const
     {
         // Empty blocks are allowed (Issue #278)
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return hpx::make_ready_future(primitive_argument_type{ast::nil{}});
         }
@@ -102,10 +102,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> block_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

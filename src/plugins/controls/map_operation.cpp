@@ -221,14 +221,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> map_operation::map_1(
         std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args,
-        primitive const* p) const
+        std::vector<primitive_argument_type> const& args) const
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                    primitive_argument_type&& arg)
-            -> primitive_argument_type
+                primitive_argument_type&& arg) -> primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
@@ -288,7 +286,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the second argument to map must be an iterable "
                             "object (a list or a numeric type)"));
             }),
-            p->bind(args),
+            value_operand(operands[0], args, name_, codename_,
+                eval_dont_evaluate_lambdas),
             value_operand(operands[1], args, name_, codename_));
     }
 
@@ -501,8 +500,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> map_operation::map_n(
         std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args,
-        primitive const* p) const
+        std::vector<primitive_argument_type> const& args) const
     {
         // all remaining operands have to be lists
         std::vector<primitive_argument_type> lists;
@@ -512,8 +510,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                    std::vector<primitive_argument_type>&& args)
-            -> primitive_argument_type
+                std::vector<primitive_argument_type>&& args)
+            ->  primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
@@ -558,9 +556,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "compatible iterable objects (all lists or all "
                             "numeric)"));
             }),
-            p->bind(args),
-            detail::map_operands(lists, functional::value_operand{}, args,
-                name_, codename_));
+            value_operand(operands_[0], args, name_, codename_,
+                eval_dont_evaluate_lambdas),
+            detail::map_operands(
+                lists, functional::value_operand{}, args, name_, codename_));
     }
 
     hpx::future<primitive_argument_type> map_operation::eval(
@@ -595,8 +594,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // the first argument must be an invokable
-        primitive const* p = util::get_if<primitive>(&operands_[0]);
-        if (p == nullptr)
+        if (util::get_if<primitive>(&operands_[0]) == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "map_operation::eval",
@@ -607,20 +605,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // handle common case separately
         if (operands.size() == 2)
         {
-            return map_1(operands, args, p);
+            return map_1(operands, args);
         }
 
-        return map_n(operands, args, p);
+        return map_n(operands, args);
     }
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> map_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

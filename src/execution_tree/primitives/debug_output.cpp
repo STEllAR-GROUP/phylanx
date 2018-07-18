@@ -62,17 +62,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return {};
         }),
             detail::map_operands(
-                operands, functional::value_operand{}, args));
+                operands, functional::value_operand{}, args, name_, codename_));
     }
     ///////////////////////////////////////////////////////////////////////////
     // write data to given file and return content
     hpx::future<primitive_argument_type> debug_output::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

@@ -15,6 +15,7 @@
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/runtime/naming_fwd.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <set>
@@ -46,27 +47,30 @@ namespace phylanx { namespace execution_tree
 
             // eval_action
             virtual hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& params) const;
+                std::vector<primitive_argument_type> const& params,
+                eval_mode mode) const;
 
             // store_action
-            virtual void store(primitive_argument_type &&);
+            virtual void store(primitive_argument_type&&);
 
             // extract_topology_action
             virtual topology expression_topology(
-                std::set<std::string>&& functions) const;
+                std::set<std::string>&& functions,
+                std::set<std::string>&& resolve_children) const;
 
             // bind_action
-            virtual primitive_argument_type bind(
+            virtual bool bind(
                 std::vector<primitive_argument_type> const& params) const;
-
-            // set_body_action (define_function only)
-            virtual void set_body(primitive_argument_type&& target);
 
         protected:
             friend class primitive_component;
 
             // helper functions to invoke eval functionalities
             hpx::future<primitive_argument_type> do_eval(
+                std::vector<primitive_argument_type> const& params,
+                eval_mode mode) const;
+
+            virtual hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& params) const;
 
             // access data for performance counter
@@ -77,15 +81,30 @@ namespace phylanx { namespace execution_tree
             // decide whether to execute eval directly
             hpx::launch select_direct_eval_execution(hpx::launch policy) const;
 
+            // A primitive was constructed with no operands if the list of
+            // operands is empty or the only provided operand is 'nil' (used
+            // for function invocations like 'func()').
+            bool no_operands() const
+            {
+                return operands_.empty();
+            }
+            std::vector<primitive_argument_type> const& operands() const
+            {
+                return operands_.empty() ||
+                        (operands_.size() == 1 && !valid(operands_[0])) ?
+                    noargs : operands_;
+            }
+
         protected:
             std::string generate_error_message(std::string const& msg) const;
+            static bool get_sync_execution();
 
         protected:
             static std::vector<primitive_argument_type> noargs;
             mutable std::vector<primitive_argument_type> operands_;
 
-            std::string name_;          // the unique name of this primitive
-            std::string codename_;      // the name of the original code source
+            std::string const name_;        // the unique name of this primitive
+            std::string const codename_;    // the name of the original code source
 
             // Performance counter data
             mutable std::int64_t eval_count_;
@@ -136,10 +155,10 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::string generate_error_message(std::string const& msg,
-        std::string const& name, std::string const& codename);
+        std::string const& name = "", std::string const& codename = "");
     PHYLANX_EXPORT std::string generate_error_message(std::string const& msg,
         compiler::primitive_name_parts const& parts,
-        std::string const& codename);
+        std::string const& codename = "");
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Primitive>

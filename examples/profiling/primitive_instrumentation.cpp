@@ -51,8 +51,9 @@ int hpx_main(boost::program_options::variables_map& vm)
     // Compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
 
-    auto const fibonacci = phylanx::execution_tree::compile(
+    auto const& code = phylanx::execution_tree::compile(
         "fib", phylanx::ast::generate_ast(fib_code), snippets);
+    auto const fibonacci = code.run();
 
     // Fibonacci arguments
     auto num_iterations = vm["num_iterations"].as<std::int64_t>();

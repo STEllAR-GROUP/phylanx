@@ -56,30 +56,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return list_operand(operands_[1], params, name_, codename_)
-            .then(hpx::launch::sync,
-                [this_](hpx::future<ir::range>&& f)
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](primitive_argument_type&& func, ir::range&& list)
+            {
+                if (list.is_ref())
                 {
-                    primitive const* p =
-                        util::get_if<primitive>(&this_->operands_[0]);
-
-                    if (p == nullptr)
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "apply::eval",
-                            this_->generate_error_message(
-                                "the first argument to apply must be an "
-                                    "invocable object"));
-                    }
-
-                    auto && list = f.get();
-                    if (list.is_ref())
-                    {
-                        return p->eval(
-                            hpx::launch::sync, std::move(list.args()));
-                    }
-
-                    return p->eval(hpx::launch::sync, list.copy());
-                });
+                    return value_operand_sync(func,
+                        std::move(list.args()), this_->name_, this_->codename_);
+                }
+                return value_operand_sync(
+                    func, list.copy(), this_->name_, this_->codename_);
+            }),
+            value_operand(operands_[0], params, name_, codename_,
+                eval_mode(eval_dont_wrap_functions |
+                    eval_dont_evaluate_partials |
+                    eval_dont_evaluate_lambdas)),
+            list_operand(operands_[1], params, name_, codename_));
     }
 }}}

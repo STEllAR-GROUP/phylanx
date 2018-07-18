@@ -23,7 +23,7 @@ void test_define_operation_var(
 
     std::size_t num_entries = env.size();
 
-    auto f = phylanx::execution_tree::compile(expr, snippets, env);
+    phylanx::execution_tree::compile(expr, snippets, env);
 
     HPX_TEST_EQ(env.size(), num_entries + 1);
 
@@ -34,7 +34,7 @@ void test_define_operation_var(
     auto var_def =
         (*cf)(std::list<phylanx::execution_tree::compiler::function>{}, name,
             "<unknown>");
-    auto var = var_def();       // bind the variable
+    auto var = var_def.run();       // bind the variable
 
     // evaluate expression
     HPX_TEST_EQ(expected,
@@ -61,7 +61,7 @@ void test_define_operation(char const* expr, char const* name, double expected,
 
     auto def_f = (*cf)(std::list<phylanx::execution_tree::compiler::function>{},
         name, "<unknown>");
-    auto f = def_f();     // bind the function
+    auto f = def_f.run();     // bind the function
 
     // evaluate expression
     std::vector<phylanx::execution_tree::primitive_argument_type> values;

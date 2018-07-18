@@ -30,7 +30,8 @@
 namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<match_pattern_type> const slicing_operation::match_data = {
+    std::vector<match_pattern_type> const slicing_operation::match_data =
+    {
         hpx::util::make_tuple("slice",
             std::vector<std::string>{
                 "slice(_1)", "slice(_1, _2)", "slice(_1,_2,_3)"},
@@ -38,20 +39,24 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             &create_primitive<slicing_operation>),
 
         hpx::util::make_tuple("slice_row",
-            std::vector<std::string>{"slice_row(_1, _2)"},
+            std::vector<std::string>{
+                "slice_row(_1)", "slice_row(_1, _2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>),
 
         hpx::util::make_tuple("slice_column",
-            std::vector<std::string>{"slice_column(_1, _2)"},
+            std::vector<std::string>{
+                "slice_column(_1)", "slice_column(_1, _2)"},
             &create_slicing_operation,
-            &create_primitive<slicing_operation>)};
+            &create_primitive<slicing_operation>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
             std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , column_slicing_(extract_function_name(name_) == "slice_column")
     {
     }
 
@@ -96,7 +101,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     {
         if (valid(val))
         {
-            return execution_tree::extract_scalar_integer_value(val, name_, codename_);
+            return execution_tree::extract_scalar_integer_value(
+                val, name_, codename_);
         }
         return default_value;
     }
@@ -296,7 +302,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     std::string slicing_operation::extract_function_name(
-        std::string const& name) const
+        std::string const& name)
     {
         compiler::primitive_name_parts name_parts;
         if (!compiler::parse_primitive_name(name, name_parts))
@@ -317,10 +323,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<std::int64_t>& extracted_column,
         std::size_t rows, std::size_t columns) const
     {
-        const auto& func_name = extract_function_name(name_);
         // If its column only slicing, extract the index for the column
         // and use all of the rows.
-        if (func_name == "slice_column")
+        if (column_slicing_)
         {
             if (args.size() > 1)
             {
@@ -425,10 +430,30 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
             auto it = arg_list.begin();
 
+            // if step is negative and start/stop are not given, then start and
+            // stop must be swapped
+            std::int64_t default_start = 0;
+            std::int64_t default_stop = arg_size;
+            std::int64_t step = 1;
+            if (size == 3)
+            {
+                std::advance(it, 2);
+                step = extract_integer_value(*it, 1ll);
+                if (step < 0)
+                {
+                    // create_list_slice above will add list size to these values
+                    default_start = -1;
+                    default_stop = -arg_size - 1;
+                }
+            }
+
+            // reinit iterator
+            it = arg_list.begin();
+
             // default first index is '0'
             if (size > 0)
             {
-                indices.push_back(extract_integer_value(*it, 0));
+                indices.push_back(extract_integer_value(*it, default_start));
             }
             else
             {
@@ -438,7 +463,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             // default last index is 'size'
             if (size > 1)
             {
-                indices.push_back(extract_integer_value(*++it, arg_size));
+                indices.push_back(extract_integer_value(*++it, default_stop));
             }
             else
             {
@@ -446,14 +471,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             }
 
             // default step is '1'
-            if (size > 2)
-            {
-                indices.push_back(extract_integer_value(*++it, 1ll));
-            }
-            else
-            {
-                indices.push_back(1ll);
-            }
+            indices.push_back(step);
         }
         else if (!valid(arg))
         {
@@ -548,7 +566,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         auto idx_end = index_list.end();
 
         // extract elements from list at given indices
-        if (row_start <= row_stop)
+        if (row_start <= row_stop && step > 0)
         {
             auto list_it = list.begin();
             auto list_end = list.end();
@@ -600,7 +618,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() > 3)
+        if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
@@ -638,10 +656,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     hpx::future<primitive_argument_type> slicing_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

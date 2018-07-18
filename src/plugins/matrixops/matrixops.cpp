@@ -77,8 +77,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(set_seed,
     phylanx::execution_tree::primitives::set_seed_match_data,
     "set_seed_action");
 
-namespace phylanx {
-namespace plugin {
+namespace phylanx { namespace plugin
+{
     struct generic_operation_plugin : plugin_base
     {
         void register_known_primitives() override
@@ -93,8 +93,7 @@ namespace plugin {
             }
         }
     };
-}
-}
+}}
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(phylanx::plugin::generic_operation_plugin,
     generic_operation_plugin,

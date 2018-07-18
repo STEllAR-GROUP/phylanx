@@ -4,7 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/function_reference.hpp>
+#include <phylanx/execution_tree/primitives/target_reference.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -22,67 +22,74 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const function_reference::match_data =
+    match_pattern_type const target_reference::match_data =
     {
-        hpx::util::make_tuple("function",
+        hpx::util::make_tuple("target-reference",
             std::vector<std::string>{},
-            nullptr, &create_primitive<function_reference>)
+            nullptr, &create_primitive<target_reference>)
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    function_reference::function_reference(
+    target_reference::target_reference(
             std::vector<primitive_argument_type>&& args, std::string const& name,
             std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
-        // operands_[0] holds the target function
+        // operands_[0] holds the target function/variable
         if (operands_.empty() || !valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "function_reference::function_reference",
-                execution_tree::generate_error_message(
-                    "no target given",
-                    name_, codename_));
+                "target_reference::target_reference",
+                generate_error_message("no target given"));
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> function_reference::eval(
+    hpx::future<primitive_argument_type> target_reference::eval(
         std::vector<primitive_argument_type> const& params) const
     {
         if (operands_.size() > 1)
         {
-            // the function has prebound arguments
-            std::vector<primitive_argument_type> fargs(
-                operands_.begin() + 1, operands_.end());
+            // the function has pre-bound arguments
+            std::vector<primitive_argument_type> fargs;
+            fargs.reserve(operands_.size() - 1 + params.size());
 
-            if (!params.empty())
+            for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
             {
-                fargs.reserve(operands_.size() + params.size() - 1);
-                std::copy(params.begin(), params.end(), std::back_inserter(fargs));
+                fargs.push_back(extract_ref_value(*it));
+            }
+
+            for (auto const& param : params)
+            {
+                fargs.push_back(extract_value(param));
             }
 
             return value_operand(
                 operands_[0], std::move(fargs), name_, codename_);
         }
 
-        return value_operand(operands_[0], params, name_, codename_);
+        return value_operand(
+            operands_[0], params, name_, codename_, eval_dont_wrap_functions);
     }
 
-    primitive_argument_type function_reference::bind(
-        std::vector<primitive_argument_type> const& args) const
+    void target_reference::store(primitive_argument_type&& data)
     {
-        return operands_[0];
+        primitive* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            p->store(std::move(data));
+        }
     }
 
-    topology function_reference::expression_topology(
-        std::set<std::string>&& functions) const
+    topology target_reference::expression_topology(
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            return p->expression_topology(
-                hpx::launch::sync, std::move(functions));
+            return p->expression_topology(hpx::launch::sync,
+                std::move(functions), std::move(resolve_children));
         }
         return {};
     }

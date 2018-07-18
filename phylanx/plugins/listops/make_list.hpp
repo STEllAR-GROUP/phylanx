@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         make_list() = default;
 

@@ -1011,7 +1011,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(
+        return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_](arg_type&& op) -> primitive_argument_type {
                     std::size_t dims = op.num_dimensions();
@@ -1041,10 +1041,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> generic_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

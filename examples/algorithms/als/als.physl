@@ -1,12 +1,12 @@
 #! /usr/bin/env physl
 #
-#Copyright(c) 2018 Shahrzad Shirzad
+# Copyright(c) 2018 Shahrzad Shirzad
 #
-#Distributed under the Boost Software License, Version 1.0.(See accompanying
-#file LICENSE_1_0.txt or copy at http:    //www.boost.org/LICENSE_1_0.txt)
+# Distributed under the Boost Software License, Version 1.0.(See accompanying
+# file LICENSE_1_0.txt or copy at http:    //www.boost.org/LICENSE_1_0.txt)
 #
 #
-#Linear Regression Algorithm example in PhySL
+# Linear Regression Algorithm example in PhySL
 # \param filepath
 # \param row_stop
 # \param col_stop
@@ -19,10 +19,10 @@
 
 #Read ratings - data from given CSV file
 define(read_r, filepath, row_start, row_stop, col_start, col_stop,
-    slice(file_read_csv(filepath), make_list(row_start, row_stop),
-        make_list(col_start, col_stop)))
+    slice(file_read_csv(filepath), list(row_start, row_stop),
+        list(col_start, col_stop)))
 
-#Alternating Least Squares algorithm
+# Alternating Least Squares algorithm
 define(als, filepath, row_stop, col_stop, regularization, num_factors,
     iterations, alpha, enable_output,
     block(
@@ -31,17 +31,17 @@ define(als, filepath, row_stop, col_stop, regularization, num_factors,
         define(num_items, shape(ratings, 1)),
         define(conf, alpha* ratings),
 
-        define(conf_u, constant(0.0, make_list(num_items))),
-        define(conf_i, constant(0.0, make_list(num_users))),
+        define(conf_u, constant(0.0, list(num_items))),
+        define(conf_i, constant(0.0, list(num_users))),
 
-        define(c_u, constant(0.0, make_list(num_items, num_items))),
-        define(c_i, constant(0.0, make_list(num_users, num_users))),
-        define(p_u, constant(0.0, make_list(num_items))),
-        define(p_i, constant(0.0, make_list(num_users))),
+        define(c_u, constant(0.0, list(num_items, num_items))),
+        define(c_i, constant(0.0, list(num_users, num_users))),
+        define(p_u, constant(0.0, list(num_items))),
+        define(p_i, constant(0.0, list(num_users))),
 
         set_seed(0),
-        define(X, random(make_list(num_users, num_factors))),
-        define(Y, random(make_list(num_items, num_factors))),
+        define(X, random(list(num_users, num_factors))),
+        define(Y, random(list(num_items, num_factors))),
         define(I_f, identity(num_factors)),
         define(I_i, identity(num_items)),
         define(I_u, identity(num_users)),
@@ -49,10 +49,10 @@ define(als, filepath, row_stop, col_stop, regularization, num_factors,
         define(i, 0),
         define(u, 0),
 
-        define(XtX, constant(0.0, make_list(num_factors, num_factors))),
-        define(YtY, constant(0.0, make_list(num_factors, num_factors))),
-        define(A, constant(0.0, make_list(num_factors, num_factors))),
-        define(b, constant(0.0, make_list(num_factors))),
+        define(XtX, constant(0.0, list(num_factors, num_factors))),
+        define(YtY, constant(0.0, list(num_factors, num_factors))),
+        define(A, constant(0.0, list(num_factors, num_factors))),
+        define(b, constant(0.0, list(num_factors))),
         while (k < iterations,
             block(if (enable_output,
                       block(cout("iteration ", k),
@@ -88,8 +88,15 @@ define(als, filepath, row_stop, col_stop, regularization, num_factors,
                 ),
                 store(i, 0),
                 store(k, k + 1))),
-        make_list(X, Y)
+        list(X, Y)
     )
 )
 
-apply(als, sys_argv)
+if(len(sys_argv) < 8,
+    block(
+        cout("Linear Regression Algorithm example in PhySL"),
+        cout("Usage: als.physl filepath row col regularization numfactors iterations alpha enableoutput")
+    ),
+    apply(als, sys_argv)
+)
+

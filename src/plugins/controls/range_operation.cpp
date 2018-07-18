@@ -98,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::util::unwrapping(
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type&& args) -> primitive_argument_type
             {
                 return this_->generate_range(std::move(args));
@@ -111,10 +111,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> range_operation::eval(
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

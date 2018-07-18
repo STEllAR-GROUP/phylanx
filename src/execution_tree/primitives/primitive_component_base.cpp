@@ -11,10 +11,12 @@
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/throw_exception.hpp>
-#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/runtime/config_entry.hpp>
 #include <hpx/runtime/launch_policy.hpp>
+#include <hpx/runtime/naming_fwd.hpp>
+#include <hpx/throw_exception.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <set>
 #include <string>
@@ -67,7 +69,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -76,7 +79,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         util::scoped_timer<std::int64_t> timer(eval_duration_);
         ++eval_count_;
 
-        auto f = this->eval(params);
+        auto f = this->eval(params, mode);
         if (!f.is_ready())
         {
             using shared_state_ptr =
@@ -94,27 +97,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         std::vector<primitive_argument_type> const& params) const
     {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::eval",
-            generate_error_message(
-                "attempting to invoke an undefined evalaluation"));
+        return this->eval(params, eval_default);
+    }
 
-        return hpx::make_ready_future(primitive_argument_type{});
+    hpx::future<primitive_argument_type> primitive_component_base::eval(
+        std::vector<primitive_argument_type> const& params,
+        eval_mode mode) const
+    {
+        return this->eval(params);
     }
 
     // store_action
-    void primitive_component_base::store(primitive_argument_type &&)
+    void primitive_component_base::store(primitive_argument_type&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::store",
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+                "store",
             generate_error_message(
                 "store function should only be called for the primitives that "
-                    "support it (e.g. variables)"));
+                "support it (e.g. variables)"));
     }
 
     // extract_topology_action
     topology primitive_component_base::expression_topology(
-        std::set<std::string>&& functions) const
+        std::set<std::string>&& functions,
+        std::set<std::string>&& resolve_children) const
     {
         std::vector<hpx::future<topology>> results;
         results.reserve(operands_.size());
@@ -125,7 +132,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (p != nullptr)
             {
                 std::set<std::string> funcs{functions};
-                results.push_back(p->expression_topology(std::move(funcs)));
+                std::set<std::string> resolve{resolve_children};
+                results.push_back(p->expression_topology(
+                    std::move(funcs), std::move(resolve)));
             }
         }
 
@@ -143,21 +152,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return topology{std::move(children)};
     }
 
-    // eval_action
-    primitive_argument_type primitive_component_base::bind(
+    // bind_action
+    bool primitive_component_base::bind(
         std::vector<primitive_argument_type> const& params) const
     {
-        return primitive_argument_type{};
-    }
-
-    // set_body_action (define_function only)
-    void primitive_component_base::set_body(primitive_argument_type&& target)
-    {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base",
+            "phylanx::execution_tree::primitives::"
+                "primitive_component_base::bind",
             generate_error_message(
-                "set_body function should only be called for primitivces that "
-                    "support it (e.g. the define_function_primitive"));
+                "bind function should only be called for the "
+                    "primitives that support it (e.g. variable/function)"));
+        return true;
     }
 
     std::string primitive_component_base::generate_error_message(
@@ -181,36 +186,55 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::util::get_and_reset_value(execute_directly_, reset);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     // decide whether to execute eval directly
+    bool primitive_component_base::get_sync_execution()
+    {
+        static bool sync_execution =
+            hpx::get_config_entry("phylanx.sync_execution", "0") == "1";
+        return sync_execution;
+    }
+
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
     {
-//         if (eval_count_ != 0)
-//         {
-//             // check whether execution status needs to be changed (with some
-//             // hysteresis)
-//             std::int64_t exec_time = (eval_duration_ / eval_count_);
-//             if (exec_time > 300000)
-//             {
-//                 execute_directly_ = 0;
-//             }
-//             else if (exec_time < 150000)
-//             {
-//                 execute_directly_ = 1;
-//             }
-//         }
-//
-//         if (execute_directly_ == 1)
-//         {
-//             return hpx::launch::sync;
-//         }
-//         else if (execute_directly_ == 0)
-//         {
-//             return hpx::launch::async;
-//         }
-//
-//         return policy;
-        return hpx::launch::sync;
+        // always run this on an HPX thread
+        if (hpx::threads::get_self_ptr() == nullptr)
+        {
+            return hpx::launch::async;
+        }
+
+        // always execute synchronously, if requested
+        if (get_sync_execution())
+        {
+            return hpx::launch::sync;
+        }
+
+        if (eval_count_ != 0)
+        {
+            // check whether execution status needs to be changed (with some
+            // hysteresis)
+            std::int64_t exec_time = (eval_duration_ / eval_count_);
+            if (exec_time > 300000)
+            {
+                execute_directly_ = 0;
+            }
+            else if (exec_time < 150000)
+            {
+                execute_directly_ = 1;
+            }
+        }
+
+        if (execute_directly_ == 1)
+        {
+            return hpx::launch::sync;
+        }
+        else if (execute_directly_ == 0)
+        {
+            return hpx::launch::async;
+        }
+
+        return policy;
     }
 }}}
 

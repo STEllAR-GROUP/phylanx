@@ -23,23 +23,21 @@
 #include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
-char const* const read_x_code = R"(block(
+char const* const read_x_code = R"(
     //
     // Read input-data from given CSV file
     //
     define(read_x, filepath, row_start, row_stop, col_start, col_stop,
         slice(file_read_csv(filepath), make_list(row_start , row_stop),
               make_list(col_start , col_stop))
-    ),
+    )
     read_x
-))";
+)";
 
 
-char const* const als_explicit = R"(block(
+char const* const als_explicit = R"(
     //
     // Alternating Least squares algorithm (ALS)
-    //
-    //
     //
     define(als_explicit, ratings, regularization, num_factors, iterations, alpha,
         enable_output,
@@ -112,23 +110,20 @@ char const* const als_explicit = R"(block(
             ),
             make_list(X, Y)
         )
-    ),
+    )
     als_explicit
-))";
+)";
 
-std::string const als_direct = R"(block(
+std::string const als_direct = R"(b
     //
     // Alternating Least squares algorithm (ALS) (direct implementation)
-    //
-    //
-    //
     //
     define(als_direct, ratings, regularization, num_factors, iterations, alpha,
         enable_output, als(ratings, regularization, num_factors, iterations, alpha,
         enable_output)
-    ),
+    )
     als_direct
-))";
+)";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Find the line/column position in the source code from a given iterator
@@ -340,10 +335,13 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
-    auto read_x =
+    auto const& code_read_x =
         phylanx::execution_tree::compile("read_x", read_x_code, snippets);
-    auto als = phylanx::execution_tree::compile(
+    auto read_x = code_read_x.run();
+
+    auto const& code_als = phylanx::execution_tree::compile(
         vm.count("direct") != 0 ? als_direct : als_explicit, snippets);
+    auto als = code_als.run();
 
     // Print instrumentation information, if enabled
     if (vm.count("instrument") != 0)
@@ -369,7 +367,8 @@ int hpx_main(boost::program_options::variables_map& vm)
     bool enable_output = vm.count("enable_output") != 0;
 
     // Read the data from the files
-    auto ratings = read_x(filepath, row_start, row_stop, col_start, col_stop);
+    auto code_ratings = read_x(filepath, row_start, row_stop, col_start, col_stop);
+    auto ratings = code_ratings.run();
 
     // Measure execution time
     hpx::util::high_resolution_timer t;

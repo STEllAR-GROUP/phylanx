@@ -12,23 +12,28 @@
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& code)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    return phylanx::execution_tree::compile(code, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// <image url="$(ItemDir)/images/test_filter_operation_lambda.dot.png" />
+//
 void test_filter_operation_lambda()
 {
     std::string const code = R"(
-            filter(lambda(x, x > 1), '(1, 2, 3))
+            filter(lambda(x, x > 1), list(1, 2, 3))
         )";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
     HPX_TEST_EQ(result.size(), 2ul);
 
     auto it = result.begin();
@@ -38,32 +43,18 @@ void test_filter_operation_lambda()
         phylanx::execution_tree::extract_numeric_value(*it)[0], 3.0);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// <image url="$(ItemDir)/images/test_filter_operation_func.dot.png" />
+//
 void test_filter_operation_func()
 {
     std::string const code = R"(block(
             define(f, x, x > 1),
-            filter(f, '(1, 2, 3))
+            filter(f, list(1, 2, 3))
         ))";
 
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
-
-    HPX_TEST_EQ(result.size(), 2ul);
-
-    auto it = result.begin();
-    HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(*it++)[0], 2.0);
-    HPX_TEST_EQ(
-        phylanx::execution_tree::extract_numeric_value(*it)[0], 3.0);
-}
-
-void test_filter_operation_func_lambda()
-{
-    std::string const code = R"(block(
-            define(f, lambda(x, x > 1)),
-            filter(f, '(1, 2, 3))
-        ))";
-
-    auto result = phylanx::execution_tree::extract_list_value(compile(code)());
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), 2ul);
 
@@ -75,14 +66,38 @@ void test_filter_operation_func_lambda()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// <image url="$(ItemDir)/images/test_filter_operation_func_lambda.dot.png" />
+//
+void test_filter_operation_func_lambda()
+{
+    std::string const code = R"(block(
+            define(f, lambda(x, x > 1)),
+            filter(f, list(1, 2, 3))
+        ))";
+
+    auto result =
+        phylanx::execution_tree::extract_list_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), 2ul);
+
+    auto it = result.begin();
+    HPX_TEST_EQ(
+        phylanx::execution_tree::extract_numeric_value(*it++)[0], 2.0);
+    HPX_TEST_EQ(
+        phylanx::execution_tree::extract_numeric_value(*it)[0], 3.0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// <image url="$(ItemDir)/images/test_filter_operation_lambda_arg.dot.png" />
+//
 void test_filter_operation_lambda_arg()
 {
     std::string const code_str = R"(block(
-            define(f, a, filter(lambda(x, x > a), '(1, 2, 3))),
+            define(f, a, filter(lambda(x, x > a), list(1, 2, 3))),
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
@@ -97,17 +112,20 @@ void test_filter_operation_lambda_arg()
         phylanx::execution_tree::extract_numeric_value(*result.begin())[0], 3.0);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// <image url="$(ItemDir)/images/test_filter_operation_func_arg.dot.png" />
+//
 void test_filter_operation_func_arg()
 {
     std::string const code_str = R"(block(
             define(f, a, block(
                 define(fmap, x, x > a),
-                filter(fmap, '(1, 2, 3))
+                filter(fmap, list(1, 2, 3))
             )),
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 
@@ -121,17 +139,20 @@ void test_filter_operation_func_arg()
         phylanx::execution_tree::extract_numeric_value(*result.begin())[0], 3.0);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// <image url="$(ItemDir)/images/test_filter_operation_func_lambda_arg.dot.png" />
+//
 void test_filter_operation_func_lambda_arg()
 {
     std::string const code_str = R"(block(
             define(f, a, block(
-                define(fmap, x, lambda(x, x > a)),
-                filter(fmap, '(1, 2, 3))
+                define(fmap, lambda(x, x > a)),
+                filter(fmap, list(1, 2, 3))
             )),
             f
         ))";
 
-    auto code = compile(code_str);
+    auto code = compile_and_run(code_str);
     auto result = phylanx::execution_tree::extract_list_value(
         code(std::int64_t{42}));
 

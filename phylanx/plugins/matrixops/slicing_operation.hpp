@@ -102,8 +102,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::int64_t> extract_slicing_args_vector(
             std::vector<primitive_argument_type>&& args,
             std::size_t size) const;
-        std::string extract_function_name(
-            std::string const& name) const;
         void extract_slicing_args_matrix(
             std::vector<primitive_argument_type>&& args,
             std::vector<std::int64_t>& extracted_row,
@@ -118,6 +116,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         std::int64_t extract_integer_value(primitive_argument_type const& val,
             std::int64_t default_value) const;
+
+        static std::string extract_function_name(std::string const& name);
+
+        bool const column_slicing_;
     };
 
     inline primitive create_slicing_operation(hpx::id_type const& locality,

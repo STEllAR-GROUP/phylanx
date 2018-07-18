@@ -9,19 +9,22 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstddef>
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(std::string const& code)
+phylanx::execution_tree::primitive_argument_type compile_and_run(
+    std::string const& codestr)
 {
     phylanx::execution_tree::compiler::function_list snippets;
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
 
-    return phylanx::execution_tree::compile(code, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
+    return code.run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,8 +36,9 @@ void test_row_slicing_operation_0d()
     )";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 42.0);
 }
 
@@ -47,8 +51,9 @@ void test_row_slicing_operation_1d()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 3);
     HPX_TEST_EQ(result[1], 4);
 }
@@ -61,8 +66,9 @@ void test_row_slicing_operation_1d_step()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 3);
     HPX_TEST_EQ(result[1], 5);
 }
@@ -75,8 +81,9 @@ void test_row_slicing_operation_1d_neg_step()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 7);
     HPX_TEST_EQ(result[1], 5);
 }
@@ -89,8 +96,9 @@ void test_row_slicing_operation_1d_negative_index()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(4));
     HPX_TEST_EQ(result[0], 3);
     HPX_TEST_EQ(result[1], 4);
     HPX_TEST_EQ(result[2], 5);
@@ -105,8 +113,9 @@ void test_row_slicing_operation_1d_single_slice_negative_index()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 3);
 }
 
@@ -118,8 +127,9 @@ void test_row_slicing_operation_1d_negative_index_zero_start()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(7));
     HPX_TEST_EQ(result[0], 1);
     HPX_TEST_EQ(result[1], 2);
     HPX_TEST_EQ(result[2], 3);
@@ -137,8 +147,9 @@ void test_row_slicing_operation_1d_negative_index_neg_step()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(2));
     HPX_TEST_EQ(result[0], 7);
     HPX_TEST_EQ(result[1], 5);
 }
@@ -151,8 +162,9 @@ void test_row_slicing_operation_1d_single()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 3);
 }
 
@@ -164,8 +176,9 @@ void test_row_slicing_operation_1d_single_negetive()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 7);
 }
 
@@ -183,7 +196,7 @@ void test_row_slicing_operation_2d_single_row()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(
         blaze::DynamicVector<double>{10, 2, 30, 40, 5, 60, 70, 80});
 
@@ -204,7 +217,7 @@ void test_row_slicing_operation_2d()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(
         blaze::DynamicMatrix<double>{{10, 2, 30, 40, 5, 60, 70, 80},
             {101, 102, 103, 104, 105, 106, 107, 108}});
@@ -226,7 +239,7 @@ void test_row_slicing_operation_2d_step()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(
         blaze::DynamicMatrix<double>{{11, 12, 13, 14, 15, 16, 17, 18},
             {101, 102, 103, 104, 105, 106, 107, 108}});
@@ -248,7 +261,7 @@ void test_row_slicing_operation_2d_neg_step()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(
         blaze::DynamicMatrix<double>{{311, 132, 313, 134, 135, 136, 137, 318},
             {101, 102, 103, 104, 105, 106, 107, 108}});
@@ -270,7 +283,7 @@ void test_row_slicing_operation_2d_negative_index()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(blaze::DynamicMatrix<double>{
         {11, 12, 13, 14, 15, 16, 17, 18}, {10, 2, 30, 40, 5, 60, 70, 80},
         {101, 102, 103, 104, 105, 106, 107, 108}});
@@ -292,7 +305,7 @@ void test_row_slicing_operation_2d_single_slice_negative_index()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(
         blaze::DynamicMatrix<double>{{11, 12, 13, 14, 15, 16, 17, 18}});
 
@@ -313,7 +326,7 @@ void test_row_slicing_operation_2d_negative_index_zero_start()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(
         blaze::DynamicMatrix<double>{{1, 2, 3, 4, 5, 6, 7, 8},
             {11, 12, 13, 14, 15, 16, 17, 18}, {10, 2, 30, 40, 5, 60, 70, 80},
@@ -336,7 +349,7 @@ void test_row_slicing_operation_2d_negative_index_neg_step()
     ))";
 
     auto result =
-        phylanx::execution_tree::extract_numeric_value(compile(code)());
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
     auto expected = phylanx::ir::node_data<double>(
         blaze::DynamicMatrix<double>{{311, 132, 313, 134, 135, 136, 137, 318},
             {101, 102, 103, 104, 105, 106, 107, 108}});

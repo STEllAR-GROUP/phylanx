@@ -4,14 +4,23 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    array_len_494
     array_shape_486
     broadcasting_rules_410
     create_list_409
+    empty_list_509
+    empty_list_510
     exception_swallowed_369
+    for_map_516
+    lambda_492
+    list_iteration_524
     list_iter_space_429
     name_constants_411
     no_parans_decorator_407
+    np_sum_489
     passing_compiler_state_453
+    reassign_512
+    zero_dimensional_array_502
    )
 
 foreach(test ${tests})

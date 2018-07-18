@@ -3,8 +3,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_WRAPPED_VARIABLE_OCT_22_2017_0111PM)
-#define PHYLANX_PRIMITIVES_WRAPPED_VARIABLE_OCT_22_2017_0111PM
+#if !defined(PHYLANX_PRIMITIVES_FORMAT_STRING_JUL_08_2018_1139AM)
+#define PHYLANX_PRIMITIVES_FORMAT_STRING_JUL_08_2018_1139AM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -12,37 +12,39 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <set>
+#include <iosfwd>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class wrapped_variable : public primitive_component_base
+    class format_string
+      : public primitive_component_base
+      , public:: std::enable_shared_from_this<format_string>
     {
     public:
         static match_pattern_type const match_data;
 
-        wrapped_variable() = default;
+        format_string() = default;
 
-        wrapped_variable(std::vector<primitive_argument_type>&& operands,
+        format_string(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
-        void store(primitive_argument_type && val) override;
-
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
-
-        primitive_argument_type bind(
             std::vector<primitive_argument_type> const& args) const override;
 
-        topology expression_topology(
-            std::set<std::string>&& functions) const override;
-
     private:
-        primitive_argument_type target_;
+        hpx::future<primitive_argument_type> eval(
+            std::vector<primitive_argument_type> const& operands,
+            std::vector<primitive_argument_type> const& args) const;
     };
+
+    PHYLANX_EXPORT primitive create_format_string(hpx::id_type const& locality,
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name = "", std::string const& codename = "");
 }}}
 
 #endif
+
 
