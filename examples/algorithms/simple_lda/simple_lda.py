@@ -13,7 +13,7 @@ import numpy as np
 
 from scipy.io import loadmat
 
-#@Phylanx
+@Phylanx
 def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     betaSum = W * beta
     alpha /= T # NOTE: presents a float/int error
@@ -21,16 +21,15 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     word_topic_count = constant(0.0, make_list(W, T))
     doc_topic_count = constant(0.0, make_list(D, T))
     doc_word_count = constant(0.0, make_list(D, W))
-    word_topic_mat = constant(0.0, make_list(W, T))
+    word_doc_topic_mat = constant(0.0, make_list(W, T))
 
     for j in range(N):
         word_topic_count[ w[j], z[i] ] += 1.0
         doc_topic_count[ d[j], z[i] ] += 1.0
         doc_word_count[ d[j], w[i] ] += 1.0
-        word_topic_mat[ d[j], w[i] ] = argmax(random(T))
+        word_doc_topic_mat[ d[j], w[i] ] = argmax(random(T))
 
     sum_ = 0.0
-    score_ = 0.0
 
     tokens_per_topic = constant(0.0, T)
 
@@ -41,7 +40,7 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     doc_topics = constant(0.0, make_list(D, W))
 
     old_topic = 0
-    new_topic = -1
+    new_topic_ = -1
     sample_ = 0.0
 
     for itr in range(iters):
@@ -50,12 +49,12 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
             local_topic_counts = doc_topic_count[d,:] # ref var, maybe a view?
 
             for pos in filter(lambda pos_ : topic_seq[pos_] > -1.0, range(W)):
-                oldtopic = topic_seq[pos]
+                old_topic = topic_seq[pos]
                 current_token_topic_counts = word_topic_count[pos,:]
 
-                local_topic_counts[oldtopic] -= 1
-                tokens_per_topic[oldtopic] -= 1
-                current_token_topic_counts[oldtopic] -= 1
+                local_topic_counts[old_topic] -= 1
+                tokens_per_topic[old_topic] -= 1
+                current_token_topic_counts[old_topic] -= 1
 
                 topic_term_scores = (alpha + local_topic_counts) *
                     ((beta + current_token_topic_counts) /
@@ -75,7 +74,7 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
                 tokens_per_topic[new_topic_] += 1
                 current_token_topic_counts[new_topic_] += 1
 
-    # return value is a model...tbd
+    # TODO: add in print out of the trained/learned model
     return
 
 if __name__ == "__main__":
