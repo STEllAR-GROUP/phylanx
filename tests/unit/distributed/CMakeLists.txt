@@ -6,6 +6,7 @@
 
 set(tests
     remote_run
+    strassen
    )
 
 foreach(test ${tests})
