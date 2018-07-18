@@ -24,10 +24,10 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     word_doc_topic_mat = constant(0.0, make_list(W, T))
 
     for j in range(N):
-        word_topic_count[ w[j], z[i] ] += 1.0
-        doc_topic_count[ d[j], z[i] ] += 1.0
-        doc_word_count[ d[j], w[i] ] += 1.0
-        word_doc_topic_mat[ d[j], w[i] ] = argmax(random(T))
+        word_topic_count[ w[j], z[j] ] += 1.0
+        doc_topic_count[ d[j], z[j] ] += 1.0
+        doc_word_count[ d[j], w[j] ] += 1.0
+        word_doc_topic_mat[ d[j], w[j] ] = argmax(random(T))
 
     sum_ = 0.0
 
