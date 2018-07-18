@@ -32,7 +32,7 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     sum_ = 0.0
     tokens_per_topic = zeros(T)
     topic_term_scores = zeros(T)
-    doc_topics = zeros((D, W))
+    #doc_topics = zeros((D, W))
 
     for t in range(T):
         tokens_per_topic[t] = sum(word_topic_count[:,t])
@@ -101,17 +101,17 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
         tokens_per_topic[t] = np.sum(word_topic_count[:, t])
 
     topic_term_scores = np.constant(0.0, T)
-    doc_topics = np.constant(0.0, list(D, W))
+    #doc_topics = np.constant(0.0, list(D, W))
 
     old_topic = 0
     new_topic_ = -1
     sample_ = 0.0
 
     for itr in range(iters):
-        print("iteration\t%d" % (itr,))
+        print("iteration\t%d\ttotal docs" % (itr, D))
         for d in range(D):
             if d % 100 == 0:
-                print("\tcurrent docs processed\t%d\ttotal documents to process %d" % (d,D))
+                print("\tcurrent docs processed\t%d" % (d,))
             topic_seq = word_doc_topic_mat[d,:] # ref var, maybe a view?
             local_topic_counts = doc_topic_count[d,:] # ref var, maybe a view?
 
