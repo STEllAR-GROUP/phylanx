@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -41,6 +42,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;
+
+    private:
+        std::shared_ptr<primitive_component> target_;
     };
 }}}
 

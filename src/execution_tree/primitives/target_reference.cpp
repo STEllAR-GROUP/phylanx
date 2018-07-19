@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/target_reference.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -42,11 +43,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "target_reference::target_reference",
                 generate_error_message("no target given"));
         }
+
+        // try to bind to the function object locally
+        primitive* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            hpx::error_code ec(hpx::lightweight);
+            target_ = hpx::get_ptr<primitive_component>(
+                hpx::launch::sync, p->get_id(), ec);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> target_reference::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params, eval_mode) const
     {
         if (operands_.size() > 1)
         {
@@ -64,8 +74,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 fargs.push_back(extract_value(param));
             }
 
+            if (target_)
+            {
+                return target_->eval(std::move(fargs), eval_default);
+            }
+
             return value_operand(
                 operands_[0], std::move(fargs), name_, codename_);
+        }
+
+        if (target_)
+        {
+            return target_->eval(params, eval_dont_wrap_functions);
         }
 
         return value_operand(
@@ -74,10 +94,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     void target_reference::store(primitive_argument_type&& data)
     {
-        primitive* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
+        if (target_)
         {
-            p->store(std::move(data));
+            target_->store(std::move(data));
+        }
+        else
+        {
+            primitive* p = util::get_if<primitive>(&operands_[0]);
+            if (p != nullptr)
+            {
+                p->store(std::move(data));
+            }
         }
     }
 

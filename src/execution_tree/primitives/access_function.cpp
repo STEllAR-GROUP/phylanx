@@ -56,15 +56,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (!(mode & eval_dont_wrap_functions) && !params.empty())
         {
-            primitive_argument_type const& target = valid(bound_value_) ?
-                bound_value_ : operands_[0];
-
             if (!params.empty())
             {
                 std::vector<primitive_argument_type> fargs;
                 fargs.reserve(params.size() + 1);
 
-                fargs.push_back(extract_value(target));
+                fargs.push_back(extract_ref_value(operands_[0]));
                 for (auto const& param : params)
                 {
                     fargs.push_back(extract_value(param));
@@ -81,13 +78,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         codename_)
                     });
             }
-
-            return hpx::make_ready_future(extract_ref_value(target));
-        }
-
-        if (valid(bound_value_))
-        {
-            return hpx::make_ready_future(extract_ref_value(bound_value_));
         }
 
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
@@ -95,8 +85,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     void access_function::store(primitive_argument_type&& val)
     {
-        bound_value_ = primitive_argument_type{};
-
         primitive* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {

@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> access_argument::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params, eval_mode) const
     {
         if (argnum_ >= params.size())
         {

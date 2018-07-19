@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/access_variable.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -30,9 +31,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     access_variable::access_variable(
-            std::vector<primitive_argument_type>&& operands,
-            std::string const& name, std::string const& codename)
-      : primitive_component_base(std::move(operands), name, codename, true)
+        std::vector<primitive_argument_type>&& operands,
+        std::string const& name, std::string const& codename)
+        : primitive_component_base(std::move(operands), name, codename, true)
     {
         if (operands_.empty() || !valid(operands_[0]))
         {
@@ -40,12 +41,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "access_variable::access_variable",
                 generate_error_message(
                     "the access_variable primitive requires at least one "
-                        "operand"));
+                    "operand"));
         }
 
         if (valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
+        }
+
+        // try to bind to the variable object locally
+        primitive* p = util::get_if<primitive>(&operands_[0]);
+        if (p != nullptr)
+        {
+            hpx::error_code ec(hpx::lightweight);
+            target_ = hpx::get_ptr<primitive_component>(
+                hpx::launch::sync, p->get_id(), ec);
         }
     }
 
@@ -54,16 +64,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& params,
         eval_mode mode) const
     {
+        if (target_)
+        {
+            return target_->eval(
+                params, eval_mode(mode | eval_dont_wrap_functions));
+        }
+
         return value_operand(operands_[0], params, name_, codename_,
             eval_mode(mode | eval_dont_wrap_functions));
     }
 
     void access_variable::store(primitive_argument_type&& val)
     {
-        primitive* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
+        if (target_)
         {
-            p->store(hpx::launch::sync, std::move(val));
+            target_->store(std::move(val));
+        }
+        else
+        {
+            primitive* p = util::get_if<primitive>(&operands_[0]);
+            if (p != nullptr)
+            {
+                p->store(hpx::launch::sync, std::move(val));
+            }
         }
     }
 

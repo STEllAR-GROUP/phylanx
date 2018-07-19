@@ -76,11 +76,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::annotate_function annotate(eval_name_.c_str());
 #endif
 
-        util::scoped_timer<std::int64_t> timer(eval_duration_);
-        ++eval_count_;
+        // perform measurements only when needed
+        bool enable_timer = execute_directly_ == -1;
+
+        util::scoped_timer<std::int64_t> timer(eval_duration_, enable_timer);
+        if (enable_timer)
+        {
+            ++eval_count_;
+        }
 
         auto f = this->eval(params, mode);
-        if (!f.is_ready())
+
+        if (enable_timer && !f.is_ready())
         {
             using shared_state_ptr =
                 typename hpx::traits::detail::shared_state_ptr_for<
@@ -233,18 +240,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-        if (eval_count_ != 0)
+        if (eval_count_ > 5)
         {
             // check whether execution status needs to be changed (with some
             // hysteresis)
             std::int64_t exec_time = (eval_duration_ / eval_count_);
-            if (exec_time > 300000)
+            if (exec_time > 500000)
             {
                 execute_directly_ = 0;
             }
-            else if (exec_time < 150000)
+            else if (exec_time < 350000)
             {
                 execute_directly_ = 1;
+            }
+            else
+            {
+                execute_directly_ = -1;
             }
         }
 

@@ -32,7 +32,7 @@ std::string const codestr = R"(
     run
 )";
 
-#define ARRAY_SIZE 10000ll
+#define ARRAY_SIZE 100000ll
 
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
