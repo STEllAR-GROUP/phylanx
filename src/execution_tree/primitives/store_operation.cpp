@@ -81,57 +81,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t array_length) const
     {
         HPX_ASSERT(step != 0);
-        auto actual_start = 0;
-        auto actual_stop = 0;
-
-        if (start >= 0)
+        if (start < 0)
         {
-            actual_start = start;
-        }
-        else    //(start < 0)
-        {
-            actual_start = array_length + start;
+            start = array_length + start;
         }
 
-        if (stop >= 0)
+        if (stop < 0)
         {
-            actual_stop = stop;
-        }
-        else    //(stop < 0)
-        {
-            actual_stop = array_length + stop;
+            stop = array_length + stop;
         }
 
         std::vector<std::int64_t> result;
 
         if (step > 0)
         {
-            HPX_ASSERT(actual_stop > actual_start);
-            result.reserve((actual_stop - actual_start + step) / step);
-            for (std::int64_t i = actual_start; i < actual_stop; i += step)
+            for (std::int64_t i = start; i < stop; i += step)
             {
                 result.push_back(i);
             }
         }
-        else    //(step < 0)
+        else if (step < 0)
         {
-            HPX_ASSERT(actual_start > actual_stop);
-            result.reserve((actual_start - actual_stop - step) / (-step));
-            for (std::int64_t i = actual_start; i > actual_stop; i += step)
+            for (std::int64_t i = start; i > stop; i += step)
             {
                 result.push_back(i);
             }
-        }
-
-        if (result.empty())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                "store_operation::create_list_set",
-                execution_tree::generate_error_message(
-                    "Set will produce empty result, please check your "
-                    "parameters",
-                    name_, codename_));
         }
         return result;
     }

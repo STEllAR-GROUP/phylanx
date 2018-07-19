@@ -42,11 +42,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& args) const override;
 
         void store(primitive_argument_type&& val) override;
-        void store_set_1d(
-            ir::node_data<double>&& data, std::vector<int64_t>&& list) override;
-        void store_set_2d(ir::node_data<double>&& data,
-            std::vector<int64_t>&& list_row,
-            std::vector<int64_t>&& list_col) override;
 
         // return the topology for this variable definition
         topology expression_topology(std::set<std::string>&& functions,

@@ -37,6 +37,7 @@ void test_store_operation()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(1));
     HPX_TEST_EQ(result[0], 42.0);
 }
 
@@ -52,6 +53,7 @@ void test_set_operation_1d()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(5));
     HPX_TEST_EQ(result[0], 0.052);
     HPX_TEST_EQ(result[1], 0.152);
     HPX_TEST_EQ(result[2], 0.55);
@@ -71,6 +73,7 @@ void test_set_operation_1d_single_step()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(5));
     HPX_TEST_EQ(result[0], 0.052);
     HPX_TEST_EQ(result[1], 0.152);
     HPX_TEST_EQ(result[2], 0.195);
@@ -90,6 +93,7 @@ void test_set_operation_1d_single_negative_step()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(5));
     HPX_TEST_EQ(result[0], 0.052);
     HPX_TEST_EQ(result[1], 0.95);
     HPX_TEST_EQ(result[2], 0.195);
@@ -269,6 +273,7 @@ void test_set_single_value_to_vector()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(5));
     HPX_TEST_EQ(result[0], 0.052);
     HPX_TEST_EQ(result[1], 0.42);
     HPX_TEST_EQ(result[2], 0.55);
@@ -288,6 +293,7 @@ void test_set_single_value_to_vector_negetive_dir()
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
+    HPX_TEST_EQ(result.size(), std::size_t(5));
     HPX_TEST_EQ(result[0], 0.052);
     HPX_TEST_EQ(result[1], 0.95);
     HPX_TEST_EQ(result[2], 0.55);
