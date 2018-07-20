@@ -427,6 +427,15 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::move(variable_ref.arg_), std::move(name_parts), name_);
         }
 
+        // handle slice(), this has to be transformed into a immediate slicing
+        // on the first argument
+        function handle_slice(
+            std::multimap<std::string, ast::expression>& placeholders,
+            ast::tagged const& slice_id)
+        {
+            return function{};
+        }
+
         function handle_variable_reference(std::string name,
             ast::expression const& expr)
         {
@@ -485,7 +494,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // distinguish func() from invoke(func)
                 if (argexprs.empty())
                 {
-                    fargs.push_back(primitive_argument_type{});
+                    fargs.emplace_back();
                 }
                 else
                 {
@@ -536,8 +545,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // distinguish func() from invoke(func)
                 if (placeholders.empty())
                 {
-                    args.push_back(function{
-                        ast::nil{}, compose_primitive_name(name_parts)});
+                    args.emplace_back(
+                        ast::nil{}, compose_primitive_name(name_parts));
                 }
                 else
                 {
@@ -593,6 +602,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
                                 ast::detail::on_placeholder_match{placeholders}))
                         {
                             return handle_lambda(placeholders, id);
+                        }
+                    }
+
+                    // Handle slice(_1, _2) or slice(_1, _2, _3)
+                    if (function_name == "slice")
+                    {
+                        std::multimap<std::string, ast::expression> placeholders;
+                        if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
+                                ast::detail::on_placeholder_match{placeholders}))
+                        {
+                            return handle_slice(placeholders, id);
                         }
                     }
 

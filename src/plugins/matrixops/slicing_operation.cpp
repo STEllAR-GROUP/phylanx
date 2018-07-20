@@ -8,6 +8,7 @@
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
+#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -128,11 +129,11 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::slicing1d(arg_type&& arg,
-        slicing_operation::indices const& extracted_rows) const
+        ir::slicing_indices const& extracted_rows) const
     {
         // handle single argument slicing parameters
         auto input_vector = arg.vector();
-        std::int64_t row_start = extracted_rows.slice_[0];
+        std::int64_t row_start = extracted_rows.start();
 
         // handle single value slicing result
         if (extracted_rows.single_value_)
@@ -146,8 +147,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             return primitive_argument_type{input_vector[index]};
         }
 
-        std::int64_t row_stop = extracted_rows.slice_[1];
-        std::int64_t step = extracted_rows.slice_[2];
+        std::int64_t row_stop = extracted_rows.stop();
+        std::int64_t step = extracted_rows.step();
 
         if (step == 0)
         {
@@ -166,16 +167,16 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::slicing2d(
-        arg_type&& arg, slicing_operation::indices const& extracted_rows,
-        slicing_operation::indices const& extracted_columns) const
+        arg_type&& arg, ir::slicing_indices const& extracted_rows,
+        ir::slicing_indices const& extracted_columns) const
     {
         blaze::DynamicMatrix<double> input_matrix = arg.matrix();
         std::size_t num_matrix_rows = input_matrix.rows();
         std::size_t num_matrix_cols = input_matrix.columns();
 
-        std::int64_t row_start = extracted_rows.slice_[0];
-        std::int64_t row_stop = extracted_rows.slice_[1];
-        std::int64_t row_step = extracted_rows.slice_[2];
+        std::int64_t row_start = extracted_rows.start();
+        std::int64_t row_stop = extracted_rows.stop();
+        std::int64_t row_step = extracted_rows.step();
 
         if (row_step == 0 && !extracted_rows.single_value_)
         {
@@ -185,9 +186,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                 generate_error_message("step can not be zero"));
         }
 
-        std::int64_t col_start = extracted_columns.slice_[0];
-        std::int64_t col_stop = extracted_columns.slice_[1];
-        std::int64_t col_step = extracted_columns.slice_[2];
+        std::int64_t col_start = extracted_columns.start();
+        std::int64_t col_stop = extracted_columns.stop();
+        std::int64_t col_step = extracted_columns.step();
 
         if (col_step == 0 && !extracted_columns.single_value_)
         {
@@ -253,8 +254,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    slicing_operation::indices slicing_operation::extract_slicing_args_vector(
-        std::vector<primitive_argument_type>&& args, std::size_t size) const
+    ir::slicing_indices slicing_operation::extract_slicing_args_vector(
+        util::small_vector<primitive_argument_type>&& args,
+        std::size_t size) const
     {
         if (args.size() == 2)
         {
@@ -289,9 +291,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     void slicing_operation::extract_slicing_args_matrix(
-        std::vector<primitive_argument_type>&& args,
-        slicing_operation::indices& extracted_rows,
-        slicing_operation::indices& extracted_columns,
+        util::small_vector<primitive_argument_type>&& args,
+        ir::slicing_indices& extracted_rows,
+        ir::slicing_indices& extracted_columns,
         std::size_t num_rows, std::size_t num_columns) const
     {
         // If its column only slicing, extract the index for the column
@@ -309,9 +311,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                     extract_slicing(primitive_argument_type{}, num_columns);
             }
 
-            extracted_rows.slice_[0] = 0;
-            extracted_rows.slice_[1] = num_rows;
-            extracted_rows.slice_[2] = 1;
+            extracted_rows.start(0, false);
+            extracted_rows.stop(num_rows);
+            extracted_rows.step(1);
         }
         else
         {
@@ -343,7 +345,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::handle_numeric_operand(
-        std::vector<primitive_argument_type>&& args) const
+        util::small_vector<primitive_argument_type>&& args) const
     {
         // Extract the matrix i.e the first argument
         arg_type matrix_input =
@@ -364,8 +366,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
         case 2:
             {
-                indices extracted_rows;
-                indices extracted_columns;
+                ir::slicing_indices extracted_rows;
+                ir::slicing_indices extracted_columns;
                 extract_slicing_args_matrix(std::move(args), extracted_rows,
                     extracted_columns, matrix_input.matrix().rows(),
                     matrix_input.matrix().columns());
@@ -383,10 +385,10 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    slicing_operation::indices slicing_operation::extract_slicing(
+    ir::slicing_indices slicing_operation::extract_slicing(
         primitive_argument_type&& arg, std::size_t arg_size) const
     {
-        slicing_operation::indices indices;
+        ir::slicing_indices indices;
 
         // Extract the list or the single integer index
         // from second argument (row-> start, stop, step)
@@ -429,51 +431,47 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             // default first index is '0'
             if (size > 0)
             {
-                indices.slice_[0] =
-                    extract_integer_value(std::move(*it), default_start);
-                indices.single_value_ = true;
+                indices.start(
+                    extract_integer_value(std::move(*it), default_start), true);
             }
             else
             {
-                indices.slice_[0] = 0;
+                indices.start(0, true);
             }
 
             // default last index is 'size'
             if (size > 1)
             {
-                indices.slice_[1] =
-                    extract_integer_value(std::move(*++it), default_stop);
-                indices.single_value_ = false;
+                indices.stop(
+                    extract_integer_value(std::move(*++it), default_stop), false);
             }
             else
             {
-                indices.slice_[1] = arg_size;
+                indices.stop(arg_size, false);
             }
 
             // default step is '1'
-            indices.slice_[2] = step;
+            indices.step(step);
         }
         else if (!valid(arg))
         {
             // no arguments given means return all of the argument
-            indices.slice_[0] = 0;
-            indices.slice_[1] = arg_size;
-            indices.slice_[2] = 1;
+            indices.start(0, false);
+            indices.stop(arg_size);
+            indices.step(1);
         }
         else
         {
             // allow for the slicing parameters to be a single integer
-            std::int64_t start = extract_integer_value(std::move(arg), 0);
-
-            indices.slice_[0] = start;
-            indices.single_value_ = true;
+            indices.start(extract_integer_value(std::move(arg), 0), true);
         }
 
         return indices;
     }
 
-    slicing_operation::indices slicing_operation::extract_slicing_args_list(
-        std::vector<primitive_argument_type>&& args, std::size_t size) const
+    ir::slicing_indices slicing_operation::extract_slicing_args_list(
+        util::small_vector<primitive_argument_type>&& args,
+        std::size_t size) const
     {
         if (args.size() == 2)
         {
@@ -491,13 +489,13 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::slice_list(ir::range&& list,
-        slicing_operation::indices const& columns) const
+        ir::slicing_indices const& columns) const
     {
         std::size_t list_size = list.size();
 
-        std::int64_t start = columns.slice_[0];
-        std::int64_t stop = columns.slice_[1];
-        std::int64_t step = columns.slice_[2];
+        std::int64_t start = columns.start();
+        std::int64_t stop = columns.stop();
+        std::int64_t step = columns.step();
 
         if (step == 0 && !columns.single_value_)
         {
@@ -568,7 +566,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     primitive_argument_type slicing_operation::handle_list_operand(
-        std::vector<primitive_argument_type>&& args) const
+        util::small_vector<primitive_argument_type>&& args) const
     {
         // Extract the matrix i.e the first argument
         auto list =
@@ -604,7 +602,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type>&& args)
+            [this_](util::small_vector<primitive_argument_type>&& args)
             ->  primitive_argument_type
             {
                 if (execution_tree::is_list_operand_strict(args[0]))
@@ -613,13 +611,13 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                 }
                 return this_->handle_numeric_operand(std::move(args));
             }),
-            detail::map_operands(
+            detail::map_operands_sv(
                 operands, functional::value_operand{}, args, name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> slicing_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode) const
     {
         if (this->no_operands())
         {

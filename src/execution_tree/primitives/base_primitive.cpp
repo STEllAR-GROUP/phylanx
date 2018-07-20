@@ -132,18 +132,28 @@ namespace phylanx { namespace execution_tree
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        hpx::future<primitive_argument_type> f =
+        hpx::future<hpx::future<primitive_argument_type>> f =
             hpx::async(action_type(), this->base_type::get_id(), params, mode);
-        return detail::lazy_trace("eval", *this, std::move(f));
+        if (f.is_ready())
+        {
+            return detail::lazy_trace("eval", *this, f.get());
+        }
+        return detail::lazy_trace(
+            "eval", *this, hpx::future<primitive_argument_type>(std::move(f)));
     }
     hpx::future<primitive_argument_type> primitive::eval(
         std::vector<primitive_argument_type>&& params,
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        hpx::future<primitive_argument_type> f = hpx::async(
+        hpx::future<hpx::future<primitive_argument_type>> f = hpx::async(
             action_type(), this->base_type::get_id(), std::move(params), mode);
-        return detail::lazy_trace("eval", *this, std::move(f));
+        if (f.is_ready())
+        {
+            return detail::lazy_trace("eval", *this, f.get());
+        }
+        return detail::lazy_trace(
+            "eval", *this, hpx::future<primitive_argument_type>(std::move(f)));
     }
 
     hpx::future<primitive_argument_type> primitive::eval(
@@ -3474,6 +3484,23 @@ namespace phylanx { namespace execution_tree
         HPX_ASSERT(valid(val));
         return hpx::make_ready_future(
             extract_list_value_strict(std::move(val), name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    ir::range list_operand_strict_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name, std::string const& codename)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            return extract_list_value_strict(
+                p->eval(hpx::launch::sync, args), name, codename);
+        }
+
+        HPX_ASSERT(valid(val));
+        return extract_list_value_strict(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////

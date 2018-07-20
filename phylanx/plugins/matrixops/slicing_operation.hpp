@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/lcos/future.hpp>
 
@@ -78,47 +79,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
+            std::vector<primitive_argument_type> const& params,
+            eval_mode) const override;
 
     private:
-        struct indices
-        {
-            std::array<std::int64_t, 3> slice_;
-            bool single_value_ = false;
-        };
-
         std::vector<std::int64_t> create_list_slice(std::int64_t& start,
             std::int64_t& stop, std::int64_t step,
             std::size_t array_length) const;
 
         primitive_argument_type slicing0d(arg_type&& arg) const;
         primitive_argument_type slicing1d(arg_type&& arg,
-            indices const& extracted_rows) const;
+            ir::slicing_indices const& extracted_rows) const;
         primitive_argument_type slicing2d(arg_type&& arg,
-            indices const& extracted_rows,
-            indices const& extracted_columns) const;
+            ir::slicing_indices const& extracted_rows,
+            ir::slicing_indices const& extracted_columns) const;
 
         primitive_argument_type handle_numeric_operand(
-            std::vector<primitive_argument_type>&& args) const;
+            util::small_vector<primitive_argument_type>&& args) const;
         primitive_argument_type handle_list_operand(
-            std::vector<primitive_argument_type>&& args) const;
+            util::small_vector<primitive_argument_type>&& args) const;
 
-        indices extract_slicing_args_list(
-            std::vector<primitive_argument_type>&& args,
+        ir::slicing_indices extract_slicing_args_list(
+            util::small_vector<primitive_argument_type>&& args,
             std::size_t size) const;
-        indices extract_slicing_args_vector(
-            std::vector<primitive_argument_type>&& args,
+        ir::slicing_indices extract_slicing_args_vector(
+            util::small_vector<primitive_argument_type>&& args,
             std::size_t size) const;
         void extract_slicing_args_matrix(
-            std::vector<primitive_argument_type>&& args,
-            indices& extracted_rows,
-            indices& extracted_columns, std::size_t rows,
+            util::small_vector<primitive_argument_type>&& args,
+            ir::slicing_indices& extracted_rows,
+            ir::slicing_indices& extracted_columns, std::size_t rows,
             std::size_t columns) const;
 
         primitive_argument_type slice_list(ir::range&& list,
-            indices const& columns) const;
+            ir::slicing_indices const& columns) const;
 
-        indices extract_slicing(
+        ir::slicing_indices extract_slicing(
             primitive_argument_type&& arg, std::size_t arg_size) const;
 
         std::int64_t extract_integer_value(primitive_argument_type&& val,

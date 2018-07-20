@@ -4,7 +4,9 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/slice.hpp>
 #include <phylanx/execution_tree/primitives/variable.hpp>
+#include <phylanx/ir/ranges.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
@@ -46,23 +48,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename, true)
       , value_set_(false)
     {
-        if (operands_.size() > 1)
+        // operands_[0] is expected to be the actual variable, operands_[1] and
+        // operands_[2] are optional slicing arguments
+        if (operands_.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "variable::variable",
                 generate_error_message(
-                    "the variable primitive requires no more than one operand"));
+                    "the variable primitive requires no more than three "
+                    "operands"));
         }
 
         if (!operands_.empty())
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
             value_set_ = true;
+
+            if (operands_.size() > 1)
+            {
+                if (!is_list_operand_strict(operands_[1]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "variable::variable",
+                        generate_error_message(
+                            "the row-slicing construct associated with the "
+                            "variable must be represented as a range"));
+                }
+            }
+
+            if (operands_.size() > 2)
+            {
+                if (!is_list_operand_strict(operands_[2]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "variable::variable",
+                        generate_error_message(
+                            "the column-slicing construct associated with the "
+                            "variable must be represented as a range"));
+                }
+            }
         }
     }
 
     hpx::future<primitive_argument_type> variable::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode) const
     {
         if (!value_set_ && !valid(bound_value_))
         {
@@ -70,11 +99,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::eval",
                 generate_error_message(
                     "the expression representing the variable target "
-                        "has not been initialized"));
+                    "has not been initialized"));
         }
 
         primitive_argument_type const& target =
             valid(bound_value_) ? bound_value_ : operands_[0];
+
+        if (operands_.size() > 1)
+        {
+            // handle row-slicing
+            ir::range row_slicing =
+                list_operand_strict_sync(operands_[1], args, name_, codename_);
+
+            if (operands_.size() > 2)
+            {
+                // handle column-slicing
+                ir::range col_slicing = list_operand_strict_sync(
+                    operands_[2], args, name_, codename_);
+
+                return hpx::make_ready_future(
+                    ir::slice(target, row_slicing, col_slicing));
+            }
+            else
+            {
+                return hpx::make_ready_future(
+                    ir::slice(target, row_slicing));
+            }
+        }
+
         return hpx::make_ready_future(extract_ref_value(target));
     }
 

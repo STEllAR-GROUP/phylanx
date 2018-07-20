@@ -13,6 +13,7 @@
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
+#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
@@ -21,6 +22,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <initializer_list>
 #include <iosfwd>
 #include <map>
@@ -1036,7 +1038,8 @@ namespace phylanx { namespace execution_tree
         struct list_operand
         {
             template <typename... Ts>
-            hpx::future<ir::range> operator()(Ts&&... ts) const
+            hpx::future<ir::range> operator()(
+                Ts&&... ts) const
             {
                 return execution_tree::list_operand(std::forward<Ts>(ts)...);
             }
@@ -1077,13 +1080,20 @@ namespace phylanx { namespace execution_tree
         struct list_operand_strict
         {
             template <typename... Ts>
-            hpx::future<ir::range> operator()(Ts&&... ts) const
+            hpx::future<ir::range> operator()(
+                Ts&&... ts) const
             {
                 return execution_tree::list_operand_strict(
                     std::forward<Ts>(ts)...);
             }
         };
     }
+
+    PHYLANX_EXPORT ir::range list_operand_strict_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -1095,12 +1105,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T, typename F, typename ... Ts>
         auto map_operands(std::vector<T> const& in, F && f, Ts && ... ts)
         ->  std::vector<decltype(
-                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-            )>
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
         {
             std::vector<decltype(
-                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-            )> out;
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
             out.reserve(in.size());
 
             for (auto const& d : in)
@@ -1113,12 +1123,51 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T, typename F, typename ... Ts>
         auto map_operands(std::vector<T> && in, F && f, Ts && ... ts)
         ->  std::vector<decltype(
-                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-            )>
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
         {
             std::vector<decltype(
-                hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
-            )> out;
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
+            out.reserve(in.size());
+
+            for (auto && d : in)
+            {
+                out.push_back(
+                    hpx::util::invoke(f, std::move(d), std::ref(ts)...));
+            }
+            return out;
+        }
+
+        // Invoke the given function on all items in the input vector, while
+        // returning another vector holding the respective results.
+        template <typename T, typename F, typename ... Ts>
+        auto map_operands_sv(std::vector<T> const& in, F && f, Ts && ... ts)
+        ->  util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
+        {
+            util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
+            out.reserve(in.size());
+
+            for (auto const& d : in)
+            {
+                out.push_back(hpx::util::invoke(f, d, std::ref(ts)...));
+            }
+            return out;
+        }
+
+        template <typename T, typename F, typename ... Ts>
+        auto map_operands_sv(std::vector<T> && in, F && f, Ts && ... ts)
+        ->  util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
+        {
+            util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
             out.reserve(in.size());
 
             for (auto && d : in)
