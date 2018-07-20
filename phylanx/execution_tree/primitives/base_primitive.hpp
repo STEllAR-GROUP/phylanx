@@ -141,6 +141,16 @@ namespace phylanx { namespace execution_tree
         PHYLANX_EXPORT void store(hpx::launch::sync_policy,
             primitive_argument_type);
 
+        PHYLANX_EXPORT hpx::future<void> store_set_1d(
+            ir::node_data<double>, std::vector<int64_t>);
+        PHYLANX_EXPORT void store_set_1d(hpx::launch::sync_policy,
+            ir::node_data<double>, std::vector<int64_t>);
+
+        PHYLANX_EXPORT hpx::future<void> store_set_2d(
+            ir::node_data<double>, std::vector<int64_t>, std::vector<int64_t>);
+        PHYLANX_EXPORT void store_set_2d(hpx::launch::sync_policy,
+            ir::node_data<double>, std::vector<int64_t>, std::vector<int64_t>);
+
         PHYLANX_EXPORT hpx::future<topology> expression_topology(
             std::set<std::string>&& functions) const;
         PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
