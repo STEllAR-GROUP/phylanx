@@ -122,7 +122,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::create_list_row_set",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "Set will produce empty result, please check your "
                     "parameters",
                     name_, codename_));
@@ -136,7 +136,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
             "row_set_operation::row_set_0d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "use store operation for setting value to a variable",
                 name_, codename_));
     }
@@ -153,7 +153,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "can not store matrix in a vector", name_,
                     codename_));
         }
@@ -163,7 +163,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "argument 'step' can not be zero", name_,
                     codename_));
         }
@@ -174,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "argument 'start' or 'stop' are not valid", name_,
                     codename_));
         }
@@ -200,7 +200,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "size mismatch, please check your parameters or set vector",
                     name_, codename_));
         }
@@ -223,7 +223,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "argument 'step' can not be zero", name_,
                     codename_));
         }
@@ -234,7 +234,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "argument 'row_start' or 'row_stop' are not valid",
                     name_, codename_));
         }
@@ -267,7 +267,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
                     "row_set_operation::row_set2d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "size of set vector does not match the number "
                         "of columns in the input matrix",
                         name_, codename_));
@@ -294,7 +294,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "matrix sizes dont match", name_, codename_));
         }
         blaze::DynamicMatrix<double> temp(data);
@@ -311,7 +311,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "row_set_operation::row_set_operation",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the row_set_operation primitive requires "
                     "five arguments",
                     name_, codename_));
@@ -330,7 +330,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "row_set_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the row_set_operation primitive requires "
                     "that the arguments given by the operands "
                     "array are valid",
@@ -356,7 +356,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "row_set_operation::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "left hand side operand has "
                                 "unsupported "
                                 "number of dimensions",

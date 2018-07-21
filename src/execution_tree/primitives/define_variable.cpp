@@ -72,16 +72,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    void define_variable::store(primitive_argument_type&& val)
+    void define_variable::store(std::vector<primitive_argument_type>&& vals)
     {
         if (!valid(operands_[1]))
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::store",
-                execution_tree::generate_error_message(
+                generate_error_message(
                     "the variable associated with this define has not been "
-                        "initialized yet",
-                    name_, codename_));
+                        "initialized yet"));
+        }
+        if (vals.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "define_variable::store",
+                generate_error_message(
+                    "the right hand side expression is not valid"));
         }
 
         primitive* p = util::get_if<primitive>(&operands_[1]);
@@ -89,12 +95,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::store",
-                execution_tree::generate_error_message(
+                generate_error_message(
                     "the variable associated with this define has not been "
-                        "properly initialized",
-                    name_, codename_));
+                        "properly initialized"));
         }
-        p->store(hpx::launch::sync, std::move(val));
+
+        p->store(hpx::launch::sync, std::move(vals[0]));
     }
 
     topology define_variable::expression_topology(
@@ -110,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "define_variable::expression_topology",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "expression represented by the variable was not "
                         "initialized yet",
                     name_, codename_));

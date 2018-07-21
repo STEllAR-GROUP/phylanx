@@ -48,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "file_write_csv::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "couldn't open file: " + filename,
                     name_, codename_));
         }
@@ -104,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::"
                     "file_write_csv",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the file_write primitive requires exactly two "
                         "operands",
                     name_, codename_));
@@ -115,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::"
                     "file_write_csv",
-                execution_tree::generate_error_message("the file_write primitive "
+                util::generate_error_message("the file_write primitive "
                     "requires that the given operands are valid",
                     name_, codename_));
         }

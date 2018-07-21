@@ -116,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::extract_dimensions",
-            phylanx::execution_tree::generate_error_message(
+            phylanx::util::generate_error_message(
                 "primitive_argument_type does not hold a dimensionality "
                     "description",
                 name, codename));
@@ -198,7 +198,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "extract_distribution_parameters",
-            phylanx::execution_tree::generate_error_message(
+            phylanx::util::generate_error_message(
                 "primitive_argument_type does not hold a distribution "
                     "parameters description",
                 name, codename));
@@ -461,7 +461,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize0d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "attempting to use an unknown random number "
                             "distribution: " + std::get<0>(params),
                         name, codename));
@@ -478,7 +478,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize1d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "attempting to use an unknown random number "
                             "distribution: " + std::get<0>(params),
                         name, codename));
@@ -496,7 +496,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize2d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "attempting to use an unknown random number "
                             "distribution: " + std::get<0>(params),
                         name, codename));
@@ -527,7 +527,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the random primitive requires at most one operand",
                     name_, codename_));
         }
@@ -537,7 +537,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the random primitive requires that the arguments "
                         "given by the operands array are valid",
                     name_, codename_));
@@ -581,7 +581,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                         "left hand side operand has unsupported "
                                 "number of dimensions",
                             this_->name_, this_->codename_));
@@ -668,7 +668,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::set_seed",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the set_seed function requires exactly one operand",
                     name, codename));
         }
@@ -677,7 +677,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::set_seed",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the set_seed function requires that the arguments "
                         "given by the operands array are valid",
                     name, codename));

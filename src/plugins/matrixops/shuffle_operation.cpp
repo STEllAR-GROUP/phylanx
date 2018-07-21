@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "shuffle_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the shuffle_operation primitive requires "
                         "exactly one operand",
                     name_, codename_));
@@ -120,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "shuffle_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the shuffle_operation primitive requires that "
                         "the argument is valid",
                     name_, codename_));
@@ -143,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "shuffle_operation::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "operand has an unsupported number of "
                                     "dimensions. Only possible values are: "
                                     "1 or 2.",

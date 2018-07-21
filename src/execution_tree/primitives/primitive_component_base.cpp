@@ -115,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // store_action
-    void primitive_component_base::store(primitive_argument_type&&)
+    void primitive_component_base::store(std::vector<primitive_argument_type>&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
@@ -123,29 +123,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "store function should only be called for the primitives that "
                 "support it (e.g. variables)"));
-    }
-
-    void primitive_component_base::store_set_1d(
-        phylanx::ir::node_data<double>&&, std::vector<int64_t>&&)
-    {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::"
-            "store_set_1d",
-            generate_error_message("store_set_1d function should only be "
-                                   "called for the primitives that "
-                                   "support it (e.g. variables)"));
-    }
-
-    void primitive_component_base::store_set_2d(
-        phylanx::ir::node_data<double>&&, std::vector<int64_t>&&,
-        std::vector<int64_t>&&)
-    {
-        HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::primitives::primitive_component_base::"
-            "store_set_1d",
-            generate_error_message("store_set_2d function should only be "
-                                   "called for the primitives that "
-                                   "support it (e.g. variables)"));
     }
 
     // extract_topology_action
@@ -198,7 +175,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     std::string primitive_component_base::generate_error_message(
         std::string const& msg) const
     {
-        return execution_tree::generate_error_message(msg, name_, codename_);
+        return util::generate_error_message(msg, name_, codename_);
     }
 
     std::int64_t primitive_component_base::get_eval_count(bool reset) const
@@ -271,63 +248,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return policy;
     }
 }}}
-
-namespace phylanx { namespace execution_tree
-{
-    std::string generate_error_message(std::string const& msg,
-        compiler::primitive_name_parts const& parts,
-        std::string const& codename)
-    {
-        return generate_error_message(msg,
-            compiler::compose_primitive_name(parts), codename);
-    }
-
-    std::string generate_error_message(std::string const& msg,
-        std::string const& name, std::string const& codename)
-    {
-        if (!name.empty())
-        {
-            compiler::primitive_name_parts parts;
-
-            if (compiler::parse_primitive_name(name, parts))
-            {
-                std::string line_col;
-                if (parts.tag1 != -1 && parts.tag2 != -1)
-                {
-                    line_col = hpx::util::format(
-                        "(" PHYLANX_FORMAT_SPEC(1) ", "
-                            PHYLANX_FORMAT_SPEC(2) ")",
-                        parts.tag1, parts.tag2);
-                }
-
-                if (!parts.instance.empty())
-                {
-                    return hpx::util::format(
-                        PHYLANX_FORMAT_SPEC(1) PHYLANX_FORMAT_SPEC(2)
-                            ": " PHYLANX_FORMAT_SPEC(3)
-                            "$"  PHYLANX_FORMAT_SPEC(4)
-                            ":: " PHYLANX_FORMAT_SPEC(5),
-                        codename.empty() ? "<unknown>" : codename, line_col,
-                        parts.primitive, parts.instance, msg);
-                }
-
-                return hpx::util::format(
-                    PHYLANX_FORMAT_SPEC(1) PHYLANX_FORMAT_SPEC(2)
-                        ": " PHYLANX_FORMAT_SPEC(3)
-                        ":: " PHYLANX_FORMAT_SPEC(4),
-                    codename.empty() ? "<unknown>" : codename, line_col,
-                    parts.primitive, msg);
-            }
-
-            return hpx::util::format(
-                PHYLANX_FORMAT_SPEC(1)
-                    ": "  PHYLANX_FORMAT_SPEC(2)
-                    ":: " PHYLANX_FORMAT_SPEC(3),
-                codename.empty() ? "<unknown>" : codename, name, msg);
-        }
-
-        return hpx::util::format(
-            PHYLANX_FORMAT_SPEC(1) ": "  PHYLANX_FORMAT_SPEC(2),
-            codename.empty() ? "<unknown>" : codename, msg);
-    }
-}}

@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "parallel_block_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the parallel_block_operation primitive "
                         "requires at least one argument",
                     name_, codename_));

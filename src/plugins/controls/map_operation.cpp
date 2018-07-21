@@ -82,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "detail::map_1_vector::call",
-                                execution_tree::generate_error_message(
+                                util::generate_error_message(
                                     "the invoked lambda returned an unexpected "
                                     "type ("
                                     "should be a scalar value)",
@@ -167,7 +167,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "detail::map_1_matrix::call",
-                                execution_tree::generate_error_message(
+                                util::generate_error_message(
                                     "the invoked lambda returned an unexpected "
                                     "type (should be a vector value)",
                                     name, codename));
@@ -329,7 +329,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "detail::extract_numeric_value_dimension",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "all numeric arguments must have the same shape",
                             name, codename));
                 }

@@ -38,6 +38,18 @@ int main(int argc, char* argv[])
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
+            slice(a, 2)
+        ))", "3");
+
+    test_slice_operation(
+        R"(block(
+            define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
+            slice(a, list(2))
+        ))", "3");
+
+    test_slice_operation(
+        R"(block(
+            define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
             slice(a, list(2, 2))
         ))", "list()");
 

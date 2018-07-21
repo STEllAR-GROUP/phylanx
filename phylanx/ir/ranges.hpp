@@ -37,82 +37,89 @@ namespace phylanx { namespace ir
     {
         explicit slicing_indices(
                 std::int64_t start = 0, bool single_value = true)
-          : slice_{start, 0, 0}
+          : start_(start), stop_(0), step_(0)
           , single_value_(single_value)
         {}
 
         slicing_indices(std::int64_t start, std::int64_t stop, std::int64_t step)
-          : slice_{start, stop, step}
+          : start_(start), stop_(stop), step_(step)
           , single_value_(false)
         {}
 
         void start(std::int64_t val)
         {
-            slice_[0] = val;
+            start_ = val;
         }
         void start(std::int64_t val, bool single_value)
         {
             single_value_ = single_value;
-            slice_[0] = val;
+            start_ = val;
         }
         std::int64_t start() const
         {
-            return slice_[0];
+            return start_;
         }
 
         void stop(std::int64_t val)
         {
-            slice_[1] = val;
+            stop_ = val;
         }
         void stop(std::int64_t val, bool single_value)
         {
             single_value_ = single_value;
-            slice_[1] = val;
+            stop_ = val;
         }
         std::int64_t stop() const
         {
-            return single_value_ ? slice_[0] + 1 : slice_[1];
+            return single_value_ ? start_ + 1 : stop_;
         }
 
         void step(std::int64_t val)
         {
-            slice_[2] = val;
+            step_ = val;
         }
         void step(std::int64_t val, bool single_value)
         {
             single_value_ = single_value;
-            slice_[2] = val;
+            step_ = val;
         }
         std::int64_t step() const
         {
-            return single_value_ ? 1ll : slice_[2];
+            return single_value_ ? 1ll : step_;
         }
 
         bool single_value() const
         {
             return single_value_;
         }
+        void single_value(bool single_value)
+        {
+            single_value_ = single_value;
+        }
 
         std::int64_t span() const
         {
-            return slice_[2] > 0 ? slice_[1] - slice_[0] : slice_[0] - slice_[1];
+            return step_ > 0 ? stop_ - start_ : start_ - stop_;
         }
 
     private:
-        friend bool operator==(
+        friend PHYLANX_EXPORT bool operator==(
             slicing_indices const& lhs, slicing_indices const& rhs);
-        friend bool operator!=(
+        friend PHYLANX_EXPORT bool operator!=(
             slicing_indices const& lhs, slicing_indices const& rhs);
 
-        std::array<std::int64_t, 3> slice_;     // start/stop/step
-        bool single_value_;                     // ignore stop/step
+        std::int64_t start_;        // start/stop/step
+        std::int64_t stop_;        // start/stop/step
+        std::int64_t step_;        // start/stop/step
+        bool single_value_;         // ignore stop/step
     };
 
     inline bool operator==(
         slicing_indices const& lhs, slicing_indices const& rhs)
     {
         return lhs.single_value_ == rhs.single_value_ &&
-            lhs.slice_ == rhs.slice_;
+            lhs.start_ == rhs.start_ && lhs.stop_ == rhs.stop_ &&
+            lhs.step_ == rhs.step_;
     }
 
     inline bool operator!=(
@@ -238,19 +245,24 @@ namespace phylanx { namespace ir
 
         bool empty() const;
 
+        bool is_args() const;
         args_type& args();
         args_type const& args() const;
 
+        bool is_args_ref() const;
+        arg_pair_type& args_ref();
+        arg_pair_type const& args_ref() const;
+
         args_type copy() const;
 
+        bool is_ref() const;
         range ref() const;
 
-        bool is_ref() const;
-
-        std::size_t index() const { return data_.index(); }
-
+        bool is_xrange() const;
         int_range_type& xrange();
         int_range_type const& xrange() const;
+
+        std::size_t index() const { return data_.index(); }
 
         //////////////////////////////////////////////////////////////////////////
         range()
@@ -293,13 +305,14 @@ namespace phylanx { namespace ir
         {
         }
 
-        friend bool operator==(range const&, range const&);
-        friend bool operator!=(range const&, range const&);
+    private:
+        friend PHYLANX_EXPORT bool operator==(range const&, range const&);
+        friend PHYLANX_EXPORT bool operator!=(range const&, range const&);
 
+        friend class hpx::serialization::access;
         void serialize(hpx::serialization::output_archive& ar, unsigned);
         void serialize(hpx::serialization::input_archive& ar, unsigned);
 
-    private:
         range_type data_;
     };
 }}

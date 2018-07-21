@@ -35,6 +35,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& name, std::string const& codename)
         : primitive_component_base(std::move(operands), name, codename, true)
     {
+        // operands_[0] is expected to be the actual variable, operands_[1] and
+        // operands_[2] are optional slicing arguments
+
         if (operands_.empty() || !valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -43,10 +46,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the access_variable primitive requires at least one "
                     "operand"));
         }
+        if (operands_.size() > 3)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_variable::access_variable",
+                generate_error_message(
+                    "the access_variable primitive requires at most three "
+                    "operands"));
+        }
 
         if (valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
+
+            // FIXME: allow for the slicing parameters to be a result of
+            //        evaluating expressions
+            if (operands_.size() > 1)
+            {
+                if (!is_list_operand_strict(operands_[1]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "access_variable::access_variable",
+                        generate_error_message(
+                            "the row-slicing construct associated with the "
+                            "variable must be represented as a range"));
+                }
+            }
+
+            if (operands_.size() > 2)
+            {
+                if (!is_list_operand_strict(operands_[2]))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "access_variable::access_variable",
+                        generate_error_message(
+                            "the column-slicing construct associated with the "
+                            "variable must be represented as a range"));
+                }
+            }
         }
 
         // try to bind to the variable object locally
@@ -64,51 +101,65 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& params,
         eval_mode mode) const
     {
+        // handle slicing, we can replace the params with our slicing
+        // parameter as variable evaluation can't depend on those anyways
+        if (operands_.size() == 2 || operands_.size() == 3)
+        {
+            std::vector<primitive_argument_type> args;
+            for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+            {
+                args.emplace_back(extract_ref_value(*it));
+            }
+
+            if (target_)
+            {
+                return target_->eval(std::move(args),
+                    eval_mode(mode | eval_dont_wrap_functions));
+            }
+
+            return value_operand(operands_[0], std::move(args), name_,
+                codename_, eval_mode(mode | eval_dont_wrap_functions));
+        }
+
+        // no slicing parameters given, access variable directly
         if (target_)
         {
             return target_->eval(
-                params, eval_mode(mode | eval_dont_wrap_functions));
+                noargs, eval_mode(mode | eval_dont_wrap_functions));
         }
 
-        return value_operand(operands_[0], params, name_, codename_,
+        return value_operand(operands_[0], noargs, name_, codename_,
             eval_mode(mode | eval_dont_wrap_functions));
     }
 
-    void access_variable::store(primitive_argument_type&& val)
+    void access_variable::store(std::vector<primitive_argument_type>&& vals)
     {
+        if (vals.size() != 1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_variable::store",
+                generate_error_message(
+                    "invoking store with slicing parameters is not supported"));
+        }
+
+        // handle slicing, simply append the slicing parameters to the end of
+        // the argument list
+        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+        {
+            vals.emplace_back(extract_ref_value(*it));
+        }
+
         if (target_)
         {
-            target_->store(std::move(val));
+            target_->store(std::move(vals));
         }
         else
         {
             primitive* p = util::get_if<primitive>(&operands_[0]);
             if (p != nullptr)
             {
-                p->store(hpx::launch::sync, std::move(val));
+                p->store(hpx::launch::sync, std::move(vals));
             }
-        }
-    }
-
-    void access_variable::store_set_1d(
-        phylanx::ir::node_data<double>&& data, std::vector<int64_t>&& list)
-    {
-        primitive* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            p->store_set_1d(
-                hpx::launch::sync, std::move(data), std::move(list));
-        }
-    }
-
-    void access_variable::store_set_2d(phylanx::ir::node_data<double>&& data,
-        std::vector<int64_t>&& list_row, std::vector<int64_t>&& list_col)
-    {
-        primitive* p = util::get_if<primitive>(&operands_[0]);
-        if (p != nullptr)
-        {
-            p->store_set_2d(hpx::launch::sync, std::move(data),
-                std::move(list_row), std::move(list_col));
         }
     }
 

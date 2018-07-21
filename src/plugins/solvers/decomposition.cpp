@@ -108,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "decomposition::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the decomposition  primitive "
                     "requires exactly one operands ",
                     name_, codename_));
@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "decomposition_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the decomposition primitive requires "
                     "that the argument given by the operands "
                     "array is valid",
@@ -134,7 +134,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "decomposition_operation::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "the decomposition primitive "
                                 "requires the operand to be a matrix ",
                                 this_->name_, this_->codename_));

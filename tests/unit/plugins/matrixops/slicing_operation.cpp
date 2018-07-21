@@ -57,6 +57,34 @@ void test_slicing_operation_1d()
     HPX_TEST_EQ(result[1], 4);
 }
 
+void test_slicing_operation_1d_start()
+{
+    std::string const code = R"(block(
+        define(a, hstack(1,2,3,4,5,6,7,8)),
+        slice(a, list(2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 3);
+}
+
+void test_slicing_operation_1d_start_negative()
+{
+    std::string const code = R"(block(
+        define(a, hstack(1,2,3,4,5,6,7,8)),
+        slice(a, list(-2))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 7);
+}
+
 void test_slicing_operation_1d_step()
 {
     std::string const code = R"(block(
@@ -167,7 +195,7 @@ void test_slicing_operation_1d_single()
     HPX_TEST_EQ(result[0], 3);
 }
 
-void test_slicing_operation_1d_single_negetive()
+void test_slicing_operation_1d_single_negative()
 {
     std::string const code = R"(block(
         define(a, hstack(1,2,3,4,5,6,7,8)),
@@ -438,6 +466,8 @@ int main(int argc, char* argv[])
     test_slicing_operation_0d();
 
     test_slicing_operation_1d();
+    test_slicing_operation_1d_start();
+    test_slicing_operation_1d_start_negative();
     test_slicing_operation_1d_step();
     test_slicing_operation_1d_neg_step();
 
@@ -446,7 +476,7 @@ int main(int argc, char* argv[])
     test_slicing_operation_1d_negative_index_zero_start();
     test_slicing_operation_1d_negative_index_neg_step();
     test_slicing_operation_1d_single();
-    test_slicing_operation_1d_single_negetive();
+    test_slicing_operation_1d_single_negative();
 
     test_slicing_operation_2d_value();
     test_slicing_operation_2d_single_row();

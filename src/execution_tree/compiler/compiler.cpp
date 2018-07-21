@@ -429,12 +429,12 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         // handle slice(), this has to be transformed into a immediate slicing
         // on the first argument
-        function handle_slice(
-            std::multimap<std::string, ast::expression>& placeholders,
-            ast::tagged const& slice_id)
-        {
-            return function{};
-        }
+//         function handle_slice(
+//             std::multimap<std::string, ast::expression>& placeholders,
+//             ast::tagged const& slice_id)
+//         {
+//             return function{};
+//         }
 
         function handle_variable_reference(std::string name,
             ast::expression const& expr)
@@ -605,16 +605,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         }
                     }
 
-                    // Handle slice(_1, _2) or slice(_1, _2, _3)
-                    if (function_name == "slice")
-                    {
-                        std::multimap<std::string, ast::expression> placeholders;
-                        if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
-                                ast::detail::on_placeholder_match{placeholders}))
-                        {
-                            return handle_slice(placeholders, id);
-                        }
-                    }
+//                     // Handle slice(_1, __2)
+//                     if (function_name == "slice")
+//                     {
+//                         std::multimap<std::string, ast::expression> placeholders;
+//                         if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
+//                                 ast::detail::on_placeholder_match{placeholders}))
+//                         {
+//                             return handle_slice(placeholders, id);
+//                         }
+//                     }
 
                     while (cit != patterns_.end() && (*cit).first == function_name)
                     {

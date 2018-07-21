@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmax::argmax0d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "operand axis must be a scalar", name_,
                         codename_));
             }
@@ -63,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmax::argmax0d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "operand axis can only between -1 and 0 for "
                         "an a operand that is 0d",
                         name_, codename_));
@@ -84,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmax::argmax1d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "operand axis must be a scalar", name_,
                         codename_));
             }
@@ -94,7 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmax::argmax1d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "operand axis can only between -1 and 0 for "
                         "an a operand that is 1d",
                         name_, codename_));
@@ -108,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmax::argmax1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "attempt to get argmax of an empty sequence",
                     name_, codename_));
         }
@@ -194,7 +194,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmax::argmax2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "attempt to get argmax of an empty sequence",
                     name_, codename_));
         }
@@ -211,7 +211,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmax::argmax2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "operand axis must be a scalar", name_, codename_));
         }
 
@@ -221,7 +221,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmax::argmax2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "operand axis can only between -2 and 1 for an a "
                     "operand that is 2d",
                     name_, codename_));
@@ -242,7 +242,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmax::argmax2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "operand a has an invalid number of "
                     "dimensions",
                     name_, codename_));
@@ -257,7 +257,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmax::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the argmax primitive requires exactly one or two "
                         "operands",
                     name_, codename_));
@@ -269,7 +269,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmax::eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the argmax primitive requires that the "
                         "arguments given by the operands array are "
                         "valid",
@@ -297,7 +297,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "argmax::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "operand a has an invalid "
                             "number of dimensions",
                         this_->name_, this_->codename_));

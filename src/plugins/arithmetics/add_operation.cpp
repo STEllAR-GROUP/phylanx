@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add0d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
@@ -127,7 +127,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add0d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
@@ -216,7 +216,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "add_operation::add1d1d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "the dimensions of the operands do not match",
                 name_, codename_));
     }
@@ -230,7 +230,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "add_operation::add1d1d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the dimensions of the operands do not match",
                         name_, codename_));
             }
@@ -322,7 +322,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "add_operation::add1d2d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "vector size does not match number of matrix columns",
                 name_, codename_));
     }
@@ -346,7 +346,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
@@ -364,7 +364,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
@@ -455,7 +455,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "add_operation::add2d1d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "vector size does not match either the number of matrix "
                 "columns nor rows.",
                 name_, codename_));
@@ -787,7 +787,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "add_operation::add2d2d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "the dimensions of the operands do not match",
                 name_, codename_));
     }
@@ -801,7 +801,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "add_operation::add2d2d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the dimensions of the operands do not match",
                         name_, codename_));
             }
@@ -841,7 +841,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of dimensions",
                     name_, codename_));
         }
@@ -858,7 +858,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_operation::add2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of dimensions",
                     name_, codename_));
         }

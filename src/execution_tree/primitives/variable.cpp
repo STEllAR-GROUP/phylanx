@@ -48,9 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename, true)
       , value_set_(false)
     {
-        // operands_[0] is expected to be the actual variable, operands_[1] and
-        // operands_[2] are optional slicing arguments
-        if (operands_.size() > 3)
+        // operands_[0] is expected to be the actual variable
+        if (operands_.size() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "variable::variable",
@@ -61,37 +60,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (!operands_.empty())
         {
+            // the first argument is the expression the variable should be
+            // bound to
             operands_[0] = extract_copy_value(std::move(operands_[0]));
             value_set_ = true;
-
-            if (operands_.size() > 1)
-            {
-                if (!is_list_operand_strict(operands_[1]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "variable::variable",
-                        generate_error_message(
-                            "the row-slicing construct associated with the "
-                            "variable must be represented as a range"));
-                }
-            }
-
-            if (operands_.size() > 2)
-            {
-                if (!is_list_operand_strict(operands_[2]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "variable::variable",
-                        generate_error_message(
-                            "the column-slicing construct associated with the "
-                            "variable must be represented as a range"));
-                }
-            }
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
+        std::vector<primitive_argument_type> const& operands,
+        std::vector<primitive_argument_type> const& args, eval_mode mode) const
     {
         if (!value_set_ && !valid(bound_value_))
         {
@@ -103,33 +82,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type const& target =
-            valid(bound_value_) ? bound_value_ : operands_[0];
+            valid(bound_value_) ? bound_value_ : operands[0];
 
-        if (operands_.size() > 1)
+        // if given, args[0] and args[1] are optional slicing arguments
+        if (!args.empty() && !(mode & eval_dont_evaluate_partials))
         {
-            // handle row-slicing
-            ir::range row_slicing =
-                list_operand_strict_sync(operands_[1], args, name_, codename_);
-
-            if (operands_.size() > 2)
+            if (args.size() > 1)
             {
-                // handle column-slicing
-                ir::range col_slicing = list_operand_strict_sync(
-                    operands_[2], args, name_, codename_);
-
-                return hpx::make_ready_future(
-                    ir::slice(target, row_slicing, col_slicing));
+                // handle row/column-slicing
+                return hpx::make_ready_future(slice(target, args[1], args[2]));
             }
             else
             {
-                return hpx::make_ready_future(
-                    ir::slice(target, row_slicing));
+                // handle row-slicing
+                return hpx::make_ready_future(slice(target, args[1]));
             }
         }
 
         return hpx::make_ready_future(extract_ref_value(target));
     }
 
+    hpx::future<primitive_argument_type> variable::eval(
+        std::vector<primitive_argument_type> const& args, eval_mode mode) const
+    {
+        if (this->no_operands())
+        {
+            return eval(args, noargs, mode);
+        }
+        return eval(this->operands(), args, mode);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
     bool variable::bind(std::vector<primitive_argument_type> const& args) const
     {
         if (!value_set_)
@@ -154,119 +137,58 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void variable::store(primitive_argument_type&& data)
+    void variable::store(std::vector<primitive_argument_type>&& data)
     {
+        // data[0] is the new value to store in this variable
+        // data[1] and data[2] (optional) are interpreted as slicing arguments
+        if (data.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::bind",
+                generate_error_message(
+                    "the right hand side expression is not valid"));
+        }
+
         if (!value_set_ || !valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(data));
+            if (data.size() > 1)
+            {
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "variable::bind",
+                    generate_error_message(
+                        "the initial expression a variable is bound to is "
+                        "not allowed to have slicing parameters"));
+            }
+
+            operands_[0] = extract_copy_value(std::move(data[0]));
             value_set_ = true;
         }
         else
         {
-            bound_value_ = extract_copy_value(std::move(data));
-        }
-    }
-
-    void variable::store_set_1d(
-        ir::node_data<double>&& data_to_set, std::vector<int64_t>&& list)
-    {
-        auto input_vector = extract_numeric_value(bound_value_).vector();
-        std::size_t value_dimnum = data_to_set.num_dimensions();
-
-        auto sv = blaze::elements(input_vector, list);
-
-        if (value_dimnum == 0)
-        {
-            blaze::DynamicVector<double> temp(sv.size(), data_to_set.scalar());
-            sv = temp;
-        }
-        else
-        {
-            auto temp = data_to_set.vector();
-
-            if (sv.size() != temp.size())
+            switch (data.size())
             {
-                std::ostringstream msg;
-                msg << "Size mismatch, " << sv.size() << " != " << temp.size()
-                    << ", please check your parameters or set vector";
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                    "store_operation::set1d",
-                    execution_tree::generate_error_message(
-                        msg.str(), name_, codename_));
+            case 1:
+                bound_value_ = extract_copy_value(std::move(data[0]));
+                return;
+
+            case 2:
+                bound_value_ =
+                    slice(std::move(bound_value_), data[1], std::move(data[0]));
+                return;
+
+            case 3:
+                bound_value_ = slice(std::move(bound_value_), data[1], data[2],
+                    std::move(data[0]));
+                return;
+
+            default:
+                break;
             }
 
-            sv = temp;
-        }
-    }
-
-    void variable::store_set_2d(ir::node_data<double>&& data_to_set,
-        std::vector<int64_t>&& list_row, std::vector<int64_t>&& list_col)
-    {
-        auto matrix_data = extract_numeric_value(bound_value_).matrix();
-        std::size_t value_dimnum = data_to_set.num_dimensions();
-        auto sm_row = blaze::rows(matrix_data, list_row);
-        auto sm = blaze::columns(sm_row, list_col);
-
-        if (value_dimnum == 0)
-        {
-            blaze::DynamicMatrix<double> data(
-                sm.rows(), sm.columns(), data_to_set.scalar());
-            sm = data;
-        }
-        else
-        {
-            if (value_dimnum == 1)
-            {
-                auto input_vector = data_to_set.vector();
-                auto data = blaze::trans(input_vector);
-                std::size_t data_size = data.size();
-                std::size_t num_cols = sm.columns();
-                std::size_t num_rows = sm.rows();
-                blaze::DynamicMatrix<double> temp(sm.rows(), sm.columns());
-
-                if (data_size != num_cols)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                        "store_operation::set2d",
-                        execution_tree::generate_error_message(
-                            "size of set vector does not match the number "
-                            "of columns in the input matrix",
-                            name_, codename_));
-                }
-
-                for (std::size_t j = 0; j < num_rows; j++)
-                {
-                    blaze::row(temp, j) = data;
-                }
-
-                sm = temp;
-            }
-            else
-            {
-                auto data = data_to_set.matrix();
-                std::size_t data_rows = data.rows();
-                std::size_t data_cols = data.columns();
-                std::size_t num_cols = sm.columns();
-                std::size_t num_rows = sm.rows();
-                if (data_rows != num_rows || data_cols != num_cols)
-                {
-                    std::ostringstream msg;
-                    msg << "matrix sizes don't match: ";
-                    msg << " data.shape()==[" << data.rows() << ","
-                        << data.columns() << "]";
-                    msg << " sm.shape()==[" << sm.rows() << "," << sm.columns()
-                        << "]";
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                        "store_operation::set2d",
-                        execution_tree::generate_error_message(
-                            msg.str(), name_, codename_));
-                }
-                blaze::DynamicMatrix<double> temp(data);
-                sm = temp;
-            }
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::bind",
+                generate_error_message(
+                    "there can be at most two slicing arguments"));
         }
     }
 

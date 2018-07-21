@@ -37,10 +37,6 @@ HPX_REGISTER_ACTION(primitive_component_type::eval_action,
     phylanx_primitive_eval_action)
 HPX_REGISTER_ACTION(primitive_component_type::store_action,
     phylanx_primitive_store_action)
-HPX_REGISTER_ACTION(primitive_component_type::store_set_1d_action,
-    phylanx_primitive_store_set_1d_action)
-HPX_REGISTER_ACTION(primitive_component_type::store_set_2d_action,
-    phylanx_primitive_store_set_2d_action)
 HPX_REGISTER_ACTION(primitive_component_type::expression_topology_action,
     phylanx_primitive_expression_topology_action)
 HPX_REGISTER_ACTION(primitive_component_type::bind_action,
@@ -124,22 +120,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // store_action
-    void primitive_component::store(primitive_argument_type&& arg)
+    void primitive_component::store(std::vector<primitive_argument_type>&& args)
     {
-        primitive_->store(std::move(arg));
-    }
-
-    void primitive_component::store_set_1d(
-        ir::node_data<double>&& data, std::vector<int64_t>&& list)
-    {
-        primitive_->store_set_1d(std::move(data), std::move(list));
-    }
-
-    void primitive_component::store_set_2d(ir::node_data<double>&& data,
-        std::vector<int64_t>&& list_row, std::vector<int64_t>&& list_col)
-    {
-        primitive_->store_set_2d(
-            std::move(data), std::move(list_row), std::move(list_col));
+        primitive_->store(std::move(args));
     }
 
     // extract_topology_action

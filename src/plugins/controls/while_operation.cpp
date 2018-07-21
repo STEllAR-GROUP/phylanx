@@ -48,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::while_operation::"
                         "while_operation",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the while_operation primitive requires exactly two "
                             "arguments",
                         that_->name_, that_->codename_));
@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::while_operation::"
                         "while_operation",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the while_operation primitive requires that the "
                             "arguments  by the operands array are valid",
                         that_->name_, that_->codename_));

@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // lhs_order == 1 && rhs_order != 2
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot0d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                     "dimensions",
                     name_, codename_));
@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -131,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -150,7 +150,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -184,7 +184,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -205,7 +205,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -223,7 +223,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -242,7 +242,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dot_operation primitive requires exactly "
                         "two operands",
                     name_, codename_));
@@ -252,7 +252,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dot_operation primitive requires that the "
                         "arguments given by the operands array are "
                         "valid",
@@ -279,7 +279,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "left hand side operand has unsupported "
                                 "number of dimensions",
                             this_->name_, this_->codename_));

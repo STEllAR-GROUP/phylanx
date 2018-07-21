@@ -102,7 +102,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::car",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the car_cdr_operation primitive requires exactly "
                         "one non-empty list-operand",
                     name_, codename_));
@@ -119,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::cdr",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the car_cdr_operation primitive requires exactly "
                         "one non-empty list-operand",
                     name_, codename_));
@@ -149,7 +149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the car_cdr_operation primitive requires exactly "
                         "one (list-) operand",
                     name_, codename_));
@@ -159,7 +159,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the car_cdr_operation primitive requires that the "
                         "arguments given by the operands array "
                         "are valid",

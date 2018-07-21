@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linearmatrix::linmatrix",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "linearmatrix primitive requires five "
                         "arguments.",
                     name_, codename_));
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "detail::linearmatrix",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the size of matrix in dimension x must at "
                         "least be one.",
                     name_, codename_));
@@ -73,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "detail::linearmatrix",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the size of matrix in dimension y must at "
                         "least be one.",
                     name_, codename_));
@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "linearmatrix",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the linearmatrix primitive requires exactly "
                         "five arguments.",
                     name_, codename_));
@@ -113,7 +113,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "linearmatrix::eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "at least one of the arguments passed to "
                             "linearmatrix is not valid.",
                         name_, codename_));

@@ -29,12 +29,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<slicing_operation>
     {
     protected:
-        using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
-        using storage0d_type = typename arg_type::storage0d_type;
-        using storage1d_type = typename arg_type::storage1d_type;
-        using storage2d_type = typename arg_type::storage2d_type;
-
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& operands,
             std::vector<primitive_argument_type> const& args) const;
@@ -48,16 +42,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         * @brief Slicing Primitive
         *
         * This primitive returns a slice of the original data.
-        * @param operands Vector of phylanx node data objects of
-        * size either five or seven
         *
         * If used inside PhySL:
         *
-        *      slice (input, '(row_start, row_stop, row_steps(optional))
-        *                , '(col_start, col_stop, col_steps(optional))
-        *          )
+        *      slice (input,
+        *           list(row_start, row_stop, row_steps),
+        *           list(col_start, col_stop, col_steps)
+        *      )
         *
-        *          input : Scalar, Vector or a Matrix
+        *      input: Scalar, Vector, Matrix, or a list
         *          row_start     : Starting index of the slice (row)
         *          row_stop      : Stopping index of the slice (row)
         *          row_steps     : Go from row_start to row_stop in row_steps
@@ -68,11 +61,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         *  Quirks: In case the input is a vector, row_start, row_stop and row_steps
         *  determine the result. col_start, col_stop and col_step are ignored internally.
         *
-        *  Limitations: both row_steps and col_steps need to be provided or omitted.
-        *  Functionality for specifying only row_steps or col_steps is not present.
-        *
         *  Note: Indices and steps can have negative values and negative values
-        *  indicate direction, similar to python.
+        *        indicate direction, similar to python.
         */
 
         slicing_operation(std::vector<primitive_argument_type>&& operands,
@@ -83,46 +73,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_mode) const override;
 
     private:
-        std::vector<std::int64_t> create_list_slice(std::int64_t& start,
-            std::int64_t& stop, std::int64_t step,
-            std::size_t array_length) const;
-
-        primitive_argument_type slicing0d(arg_type&& arg) const;
-        primitive_argument_type slicing1d(arg_type&& arg,
-            ir::slicing_indices const& extracted_rows) const;
-        primitive_argument_type slicing2d(arg_type&& arg,
-            ir::slicing_indices const& extracted_rows,
-            ir::slicing_indices const& extracted_columns) const;
-
-        primitive_argument_type handle_numeric_operand(
-            util::small_vector<primitive_argument_type>&& args) const;
-        primitive_argument_type handle_list_operand(
-            util::small_vector<primitive_argument_type>&& args) const;
-
-        ir::slicing_indices extract_slicing_args_list(
-            util::small_vector<primitive_argument_type>&& args,
-            std::size_t size) const;
-        ir::slicing_indices extract_slicing_args_vector(
-            util::small_vector<primitive_argument_type>&& args,
-            std::size_t size) const;
-        void extract_slicing_args_matrix(
-            util::small_vector<primitive_argument_type>&& args,
-            ir::slicing_indices& extracted_rows,
-            ir::slicing_indices& extracted_columns, std::size_t rows,
-            std::size_t columns) const;
-
-        primitive_argument_type slice_list(ir::range&& list,
-            ir::slicing_indices const& columns) const;
-
-        ir::slicing_indices extract_slicing(
-            primitive_argument_type&& arg, std::size_t arg_size) const;
-
-        std::int64_t extract_integer_value(primitive_argument_type&& val,
-            std::int64_t default_value) const;
-
         static std::string extract_function_name(std::string const& name);
 
-        bool const column_slicing_;
+        bool max_two_arguments_;
     };
 
     inline primitive create_slicing_operation(hpx::id_type const& locality,

@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "sum_operation::sum0d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the sum_operation primitive requires operand axis to be "
                     "either 0 or -1 for scalar values.",
                     name_, codename_));
@@ -67,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "sum_operation::sum1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the sum_operation primitive requires operand axis to be "
                     "either 0 or -1 for vectors.",
                     name_, codename_));
@@ -100,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "sum_operation::sum1d",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the sum_operation primitive requires operand axis to be "
                         "between -2 and 1 for matrices.",
                         name_, codename_));
@@ -163,7 +163,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "sum_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the sum_operation primitive requires exactly one, two, or "
                     "three operands",
                     name_, codename_));
@@ -175,7 +175,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "sum_operation::eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the sum_operation primitive requires that the "
                         "arguments given by the operands array are "
                         "valid",
@@ -226,7 +226,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "sum_operation::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "operand a has an invalid "
                                 "number of dimensions",
                                 this_->name_, this_->codename_));

@@ -106,16 +106,16 @@ namespace phylanx { namespace ir
             {
                 int_range_type& p = util::get<0>(it_);
                 p.start(p.start() + p.step());
-                break;
+                return;
             }
 
         case 1:    // args_iterator_type
             ++util::get<1>(it_);
-            break;
+            return;
 
         case 2:    // args_const_iterator_type
             ++util::get<2>(it_);
-            break;
+            return;
 
         default:
             break;
@@ -187,16 +187,16 @@ namespace phylanx { namespace ir
             {
                 int_range_type& p = util::get<0>(it_);
                 p.start(p.start() - p.step());
-                break;
+                return;
             }
 
         case 1:    // args_iterator_type
             ++util::get<1>(it_);
-            break;
+            return;
 
         case 2:    // args_const_iterator_type
             ++util::get<2>(it_);
-            break;
+            return;
 
         default:
             break;
@@ -426,7 +426,29 @@ namespace phylanx { namespace ir
             return cv->get();
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::ir::range::args&()",
+            "phylanx::ir::range::args()",
+            "range object holds unsupported data type");
+    }
+
+    range::arg_pair_type& range::args_ref()
+    {
+        arg_pair_type* cv = util::get_if<arg_pair_type>(&data_);
+        if (cv != nullptr)
+            return *cv;
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::args_ref()",
+            "range object holds unsupported data type");
+    }
+
+    range::arg_pair_type const& range::args_ref() const
+    {
+        arg_pair_type const* cv = util::get_if<arg_pair_type>(&data_);
+        if (cv != nullptr)
+            return *cv;
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::args_ref()",
             "range object holds unsupported data type");
     }
 
@@ -523,6 +545,66 @@ namespace phylanx { namespace ir
             "range object holds unsupported data type");
     }
 
+    bool range::is_args() const
+    {
+        switch (data_.index())
+        {
+        case 0:                     // int_range_type
+            return false;
+
+        case 1: HPX_FALLTHROUGH;    // wrapped_args_type
+        case 2:                     // arg_pair_type
+            return true;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::is_args()",
+            "range object holds unsupported data type");
+    }
+
+    bool range::is_args_ref() const
+    {
+        switch (data_.index())
+        {
+        case 0: HPX_FALLTHROUGH;    // int_range_type
+        case 1:                     // wrapped_args_type
+            return false;
+
+        case 2:                     // arg_pair_type
+            return true;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::is_args_ref()",
+            "range object holds unsupported data type");
+    }
+
+    bool range::is_xrange() const
+    {
+        switch (data_.index())
+        {
+        case 0:                     // int_range_type
+            return true;
+
+        case 1: HPX_FALLTHROUGH;    // wrapped_args_type
+        case 2:                     // arg_pair_type
+            return false;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::range::is_xrange()",
+            "range object holds unsupported data type");
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     bool operator==(range const& lhs, range const& rhs)
     {
@@ -588,6 +670,7 @@ namespace phylanx { namespace ir
             }
 
         case 1:    // wrapped_args_type
+        case 2:    // arg_pair_type (serialized as wrapped_args_type)
             {
                 args_type m;
                 ar >> m;

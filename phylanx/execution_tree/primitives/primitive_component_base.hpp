@@ -51,11 +51,7 @@ namespace phylanx { namespace execution_tree
                 eval_mode mode) const;
 
             // store_action
-            virtual void store(primitive_argument_type&&);
-            virtual void store_set_1d(
-                phylanx::ir::node_data<double>&&, std::vector<int64_t>&&);
-            virtual void store_set_2d(phylanx::ir::node_data<double>&&,
-                std::vector<int64_t>&&, std::vector<int64_t>&&);
+            virtual void store(std::vector<primitive_argument_type>&&);
 
             // extract_topology_action
             virtual topology expression_topology(
@@ -156,13 +152,6 @@ namespace phylanx { namespace execution_tree
         hpx::id_type const& locality, std::string const& type,
         primitive_argument_type operand, std::string const& name = "",
         std::string const& codename = "<unknown>");
-
-    ///////////////////////////////////////////////////////////////////////////
-    PHYLANX_EXPORT std::string generate_error_message(std::string const& msg,
-        std::string const& name = "", std::string const& codename = "");
-    PHYLANX_EXPORT std::string generate_error_message(std::string const& msg,
-        compiler::primitive_name_parts const& parts,
-        std::string const& codename = "");
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename Primitive>

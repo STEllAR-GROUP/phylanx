@@ -12,14 +12,14 @@
 
 #include <hpx/lcos/future.hpp>
 
-#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class access_variable : public primitive_component_base
+    class access_variable
+      : public primitive_component_base
     {
     public:
         static match_pattern_type const match_data;
@@ -29,12 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         access_variable(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
-        void store(primitive_argument_type&& val) override;
-        void store_set_1d(phylanx::ir::node_data<double>&& data,
-            std::vector<int64_t>&& list) override;
-        void store_set_2d(phylanx::ir::node_data<double>&& data,
-            std::vector<int64_t>&& list_row,
-            std::vector<int64_t>&& list_col) override;
+        void store(std::vector<primitive_argument_type>&& val) override;
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params,

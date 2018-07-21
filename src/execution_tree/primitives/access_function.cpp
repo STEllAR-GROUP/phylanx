@@ -83,12 +83,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    void access_function::store(primitive_argument_type&& val)
+    void access_function::store(std::vector<primitive_argument_type>&& vals)
     {
         primitive* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            p->store(hpx::launch::sync, std::move(val));
+            p->store(hpx::launch::sync, std::move(vals));
         }
     }
 

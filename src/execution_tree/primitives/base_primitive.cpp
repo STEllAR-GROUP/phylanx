@@ -13,6 +13,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/include/actions.hpp>
@@ -188,59 +189,41 @@ namespace phylanx { namespace execution_tree
         return eval(mode).get();
     }
 
-    hpx::future<void> primitive::store(primitive_argument_type data)
+    hpx::future<void> primitive::store(
+        std::vector<primitive_argument_type>&& data)
     {
         using action_type = primitives::primitive_component::store_action;
         return hpx::async(
             action_type(), this->base_type::get_id(), std::move(data));
     }
 
+    hpx::future<void> primitive::store(
+        primitive_argument_type&& data)
+    {
+        using action_type = primitives::primitive_component::store_action;
+        std::vector<primitive_argument_type> args;
+        args.emplace_back(std::move(data));
+        return hpx::async(
+            action_type(), this->base_type::get_id(), std::move(args));
+    }
+
     void primitive::store(hpx::launch::sync_policy,
-        primitive_argument_type data)
+        std::vector<primitive_argument_type>&& data)
     {
         using action_type = primitives::primitive_component::store_action;
         action_type()(this->base_type::get_id(), std::move(data));
     }
 
-    ///////////////////////////////////////////////////////////////////////
-    hpx::future<void> primitive::store_set_1d(
-        ir::node_data<double> data, std::vector<int64_t> list)
+    void primitive::store(hpx::launch::sync_policy,
+        primitive_argument_type&& data)
     {
-        using action_type =
-            primitives::primitive_component::store_set_1d_action;
-        return hpx::async(action_type(), this->base_type::get_id(),
-            std::move(data), std::move(list));
+        using action_type = primitives::primitive_component::store_action;
+        std::vector<primitive_argument_type> args;
+        args.emplace_back(std::move(data));
+        action_type()(this->base_type::get_id(), std::move(args));
     }
 
-    void primitive::store_set_1d(hpx::launch::sync_policy,
-        ir::node_data<double> data, std::vector<int64_t> list)
-    {
-        using action_type =
-            primitives::primitive_component::store_set_1d_action;
-        action_type()(
-            this->base_type::get_id(), std::move(data), std::move(list));
-    }
-
-    hpx::future<void> primitive::store_set_2d(ir::node_data<double> data,
-        std::vector<int64_t> list_row, std::vector<int64_t> list_col)
-    {
-        using action_type =
-            primitives::primitive_component::store_set_2d_action;
-        return hpx::async(action_type(), this->base_type::get_id(),
-            std::move(data), std::move(list_row), std::move(list_col));
-    }
-
-    void primitive::store_set_2d(hpx::launch::sync_policy,
-        ir::node_data<double> data, std::vector<int64_t> list_row,
-        std::vector<int64_t> list_col)
-    {
-        using action_type =
-            primitives::primitive_component::store_set_2d_action;
-        action_type()(this->base_type::get_id(), std::move(data),
-            std::move(list_row), std::move(list_col));
-    }
     /////////////////////////////////////////////////////////////////////////
-
     hpx::future<topology> primitive::expression_topology(
         std::set<std::string>&& functions) const
     {
@@ -439,7 +422,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -487,7 +470,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_copy_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -545,7 +528,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_ref_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -573,7 +556,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -631,7 +614,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -659,7 +642,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -702,7 +685,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_literal_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a literal value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -776,7 +759,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_literal_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a literal value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -817,7 +800,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_literal_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a literal value type "
                     "(type held: '" + type + "')",
                 name, codename));
@@ -884,7 +867,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -913,7 +896,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -958,7 +941,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -987,7 +970,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1074,7 +1057,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value_dimension",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1120,7 +1103,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_numeric_value_dimensions",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a numeric "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1150,7 +1133,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_data",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1178,7 +1161,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_data",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1245,7 +1228,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_integer_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold an integer "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1291,7 +1274,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_integer_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold an integer "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1343,7 +1326,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_scalar_integer_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold an integer "
                 "value type (type held: '" +
                     type + "')",
@@ -1396,7 +1379,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_scalar_integer_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold an integer "
                 "value type (type held: '" +
                     type + "')",
@@ -1462,7 +1445,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_scalar_integer_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold an integer "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1506,7 +1489,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_scalar_integer_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold an integer "
                 "value type (type held: '" +
                     type + "')",
@@ -1549,7 +1532,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "phylanx::execution_tree::extract_integer_value_strict",
-                            generate_error_message(
+                            util::generate_error_message(
                                     "primitive_argument_type does not hold an integer "
                                     "value type (type held: '" + type + "')",
                                     name, codename));
@@ -1591,7 +1574,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "phylanx::execution_tree::extract_integer_value_strict",
-                            generate_error_message(
+                            util::generate_error_message(
                                     "primitive_argument_type does not hold an integer "
                                     "value type (type held: '" +
                                     type + "')",
@@ -1659,7 +1642,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1688,7 +1671,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1734,7 +1717,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1763,7 +1746,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_boolean_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1814,7 +1797,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_scalar_boolean_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1863,7 +1846,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_scalar_boolean_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1945,7 +1928,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_string_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a string "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -1986,7 +1969,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_string_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a string "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -2042,7 +2025,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_ast_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -2077,7 +2060,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_ast_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -2148,7 +2131,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_list_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -2198,7 +2181,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_list_value",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -2266,7 +2249,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_list_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a list "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -2313,7 +2296,7 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_list_value_strict",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a list "
                     "value type (type held: '" + type + "')",
                 name, codename));
@@ -2349,7 +2332,7 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_primitive",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_value_type does not hold a primitive",
                 name, codename));
     }
@@ -2364,7 +2347,7 @@ namespace phylanx { namespace execution_tree
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_primitive",
-            generate_error_message(
+            util::generate_error_message(
                 "primitive_value_type does not hold a primitive",
                 parts, codename));
     }

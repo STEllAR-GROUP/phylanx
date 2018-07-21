@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the filter_operation primitive requires exactly "
                         "two operands",
                     name_, codename_));
@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the filter_operation primitive requires that the "
                         "arguments given by the operands array "
                         "are valid",
@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the first argument to map must be an invocable "
                     "object", name_, codename_));
         }
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "filter_operation::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the first argument to filter must be an invocable "
                             "object", this_->name_, this_->codename_));
                 }
