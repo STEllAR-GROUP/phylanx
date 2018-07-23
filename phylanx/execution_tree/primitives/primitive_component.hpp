@@ -49,12 +49,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         }
 
+        // eval_action
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params,
             eval_mode mode) const;
 
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval_single(
+            primitive_argument_type && param, eval_mode mode) const;
+
         // store_action
         PHYLANX_EXPORT void store(std::vector<primitive_argument_type>&&);
+
+        PHYLANX_EXPORT void store_single(primitive_argument_type&&);
 
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(
@@ -68,12 +74,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, eval, eval_action);
         HPX_DEFINE_COMPONENT_ACTION(
+            primitive_component, eval_single, eval_single_action);
+        HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, expression_topology,
             expression_topology_action);
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
             primitive_component, bind, bind_action);
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, store, store_action);
+        HPX_DEFINE_COMPONENT_ACTION(
+            primitive_component, store_single, store_single_action);
 
         // access data for performance counter
         PHYLANX_EXPORT std::int64_t get_eval_count(bool reset) const;
@@ -94,8 +104,14 @@ HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::eval_action,
     phylanx_primitive_eval_action);
 HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::primitive_component::eval_single_action,
+    phylanx_primitive_eval_single_action);
+HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::store_action,
     phylanx_primitive_store_action);
+HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::primitive_component::store_single_action,
+    phylanx_primitive_store_single_action);
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::
         primitive_component::expression_topology_action,

@@ -1023,19 +1023,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 2)
         {
             // special case for 2 operands
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](primitive_argument_type&& lhs,
-                        primitive_argument_type&& rhs)
+            return hpx::dataflow(hpx::launch::sync,
+                [this_](hpx::future<primitive_argument_type>&& lhs,
+                        hpx::future<primitive_argument_type>&& rhs)
                 -> primitive_argument_type
                 {
-                    if (is_list_operand_strict(lhs))
+                    auto && lhs_val = lhs.get();
+                    if (is_list_operand_strict(lhs_val))
                     {
                         return this_->handle_list_operands(
-                            std::move(lhs), std::move(rhs));
+                            std::move(lhs_val), rhs.get());
                     }
                     return this_->handle_numeric_operands(
-                        std::move(lhs), std::move(rhs));
-                }),
+                        std::move(lhs_val), rhs.get());
+                },
                 value_operand(operands[0], args, name_, codename_),
                 value_operand(operands[1], args, name_, codename_));
         }

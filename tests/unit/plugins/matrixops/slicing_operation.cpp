@@ -41,7 +41,6 @@ void test_slicing_operation_0d()
     HPX_TEST_EQ(result[0], 42.0);
 }
 
-
 void test_slicing_operation_1d()
 {
     std::string const code = R"(block(

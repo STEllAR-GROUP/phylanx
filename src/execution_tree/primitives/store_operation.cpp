@@ -53,8 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> store_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode) const
     {
         std::size_t operands_size = operands_.size();
         if (operands_size < 2 || operands_size > 4)
@@ -91,48 +90,106 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands_size == 2)
         {
-            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](primitive_argument_type const& target,
-                        primitive_argument_type&& val)
-                ->  primitive_argument_type
-                {
-                    primitive_operand(target, this_->name_, this_->codename_)
-                        .store(hpx::launch::sync, std::move(val));
-                    return primitive_argument_type{};
-                }),
-                operands[0], value_operand(operands[1], args, name_, codename_));
+            return value_operand(operands_[1], args, name_, codename_)
+                .then(hpx::launch::sync,
+                    [this_, lhs = extract_ref_value(operands_[0])](
+                            hpx::future<primitive_argument_type>&& val)
+                    ->  primitive_argument_type
+                    {
+                        primitive_operand(lhs, this_->name_, this_->codename_)
+                            .store(hpx::launch::sync, val.get());
+                        return primitive_argument_type{};
+                    });
         }
 
         std::vector<primitive_argument_type> params;
-        params.reserve(operands.size() - 1);
-        for (auto it = operands.begin() + 1; it != operands.end(); ++it)
+        params.reserve(operands_size - 1);
+        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
             params.emplace_back(std::move(*it));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type const& target,
+            [this_, lhs = extract_ref_value(operands_[0])](
                     std::vector<primitive_argument_type>&& args)
             ->  primitive_argument_type
             {
-                primitive_operand(target, this_->name_, this_->codename_)
+                primitive_operand(lhs, this_->name_, this_->codename_)
                     .store(hpx::launch::sync, std::move(args));
-
                 return primitive_argument_type{};
             }),
-            operands[0], detail::map_operands(std::move(params),
+            detail::map_operands(std::move(params),
                 functional::value_operand{}, args, name_, codename_));
     }
 
-    //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> store_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_argument_type&& arg, eval_mode) const
     {
-        if (this->no_operands())
+        std::size_t operands_size = operands_.size();
+        if (operands_size < 2 || operands_size > 4)
         {
-            return eval(args, noargs);
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "store_operation::eval",
+                generate_error_message(
+                    "the store_operation primitive requires either "
+                        "two, three, or four operands"));
         }
-        return eval(this->operands(), args);
+
+        for (std::size_t i = 0; i < operands_size; ++i)
+        {
+            if (!valid(operands_[i]))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "store_operation::store_operation",
+                    generate_error_message(
+                        "the store_operation primitive requires that "
+                        "the arguments given by the operands array is valid"));
+            }
+        }
+
+        if (!is_primitive_operand(operands_[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "store_operation::store_operation",
+                generate_error_message(
+                    "the first argument of the store primitive must "
+                        "refer to a another primitive and can't be a "
+                        "literal value"));
+        }
+
+        auto this_ = this->shared_from_this();
+        if (operands_size == 2)
+        {
+            return value_operand(operands_[1], std::move(arg), name_, codename_)
+                .then(hpx::launch::sync,
+                    [this_, lhs = extract_ref_value(operands_[0])](
+                            hpx::future<primitive_argument_type>&& val)
+                    ->  primitive_argument_type
+                    {
+                        primitive_operand(lhs, this_->name_, this_->codename_)
+                            .store(hpx::launch::sync, val.get());
+                        return primitive_argument_type{};
+                    });
+        }
+
+        std::vector<primitive_argument_type> params;
+        params.reserve(operands_size - 1);
+        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+        {
+            params.emplace_back(std::move(*it));
+        }
+
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_, lhs = extract_ref_value(operands_[0])](
+                    std::vector<primitive_argument_type>&& args)
+            ->  primitive_argument_type
+            {
+                primitive_operand(lhs, this_->name_, this_->codename_)
+                    .store(hpx::launch::sync, std::move(args));
+                return primitive_argument_type{};
+            }),
+            detail::map_operands(std::move(params),
+                functional::value_operand{}, std::move(arg), name_, codename_));
     }
 }}}
 

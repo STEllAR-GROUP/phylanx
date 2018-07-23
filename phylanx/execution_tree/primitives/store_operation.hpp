@@ -31,12 +31,11 @@ namespace phylanx {namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            std::vector<primitive_argument_type> const& args,
+            eval_mode) const override;
 
-    protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_argument_type&& arg, eval_mode mode) const override;
     };
 
     PHYLANX_EXPORT primitive create_store_operation(

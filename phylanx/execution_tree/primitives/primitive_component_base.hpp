@@ -50,8 +50,13 @@ namespace phylanx { namespace execution_tree
                 std::vector<primitive_argument_type> const& params,
                 eval_mode mode) const;
 
+            virtual hpx::future<primitive_argument_type> eval(
+                primitive_argument_type && param, eval_mode mode) const;
+
             // store_action
             virtual void store(std::vector<primitive_argument_type>&&);
+
+            virtual void store(primitive_argument_type&&);
 
             // extract_topology_action
             virtual topology expression_topology(
@@ -69,6 +74,9 @@ namespace phylanx { namespace execution_tree
             hpx::future<primitive_argument_type> do_eval(
                 std::vector<primitive_argument_type> const& params,
                 eval_mode mode) const;
+
+            hpx::future<primitive_argument_type> do_eval(
+                primitive_argument_type && param, eval_mode mode) const;
 
             virtual hpx::future<primitive_argument_type> eval(
                 std::vector<primitive_argument_type> const& params) const;

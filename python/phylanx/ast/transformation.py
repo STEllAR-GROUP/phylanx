@@ -556,9 +556,9 @@ class PhySL:
             if func_nom == 'prange':
                 ret = "parallel_map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
             else:
-                ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+                ret = "for_each%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
         else:
-            ret = "map%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
+            ret = "for_each%s(lambda%s(" % (symbol_info, func_nom_symbol_info)
 
         ret += self.recompile(a.target) + ', block('
 

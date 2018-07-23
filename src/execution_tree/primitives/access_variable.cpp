@@ -38,52 +38,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // operands_[0] is expected to be the actual variable, operands_[1] and
         // operands_[2] are optional slicing arguments
 
-        if (operands_.empty() || !valid(operands_[0]))
+        if (operands_.empty() || operands_.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "access_variable::access_variable",
                 generate_error_message(
                     "the access_variable primitive requires at least one "
-                    "operand"));
-        }
-        if (operands_.size() > 3)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "access_variable::access_variable",
-                generate_error_message(
-                    "the access_variable primitive requires at most three "
-                    "operands"));
+                    "and at most three operands"));
         }
 
         if (valid(operands_[0]))
         {
             operands_[0] = extract_copy_value(std::move(operands_[0]));
-
-            // FIXME: allow for the slicing parameters to be a result of
-            //        evaluating expressions
-            if (operands_.size() > 1)
-            {
-                if (!is_list_operand_strict(operands_[1]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "access_variable::access_variable",
-                        generate_error_message(
-                            "the row-slicing construct associated with the "
-                            "variable must be represented as a range"));
-                }
-            }
-
-            if (operands_.size() > 2)
-            {
-                if (!is_list_operand_strict(operands_[2]))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "access_variable::access_variable",
-                        generate_error_message(
-                            "the column-slicing construct associated with the "
-                            "variable must be represented as a range"));
-                }
-            }
         }
 
         // try to bind to the variable object locally
@@ -103,33 +69,63 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         // handle slicing, we can replace the params with our slicing
         // parameter as variable evaluation can't depend on those anyways
-        if (operands_.size() == 2 || operands_.size() == 3)
+        mode = eval_mode(mode | eval_dont_wrap_functions);
+        switch (operands_.size())
         {
-            std::vector<primitive_argument_type> args;
-            for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+        case 2:
             {
-                args.emplace_back(extract_ref_value(*it));
+                // one slicing parameter
+                auto this_ = this->shared_from_this();
+                return value_operand(operands_[1], params, name_, codename_)
+                    .then(hpx::launch::sync,
+                        [this_, mode](hpx::future<primitive_argument_type>&& rows)
+                        -> hpx::future<primitive_argument_type>
+                        {
+                            if (this_->target_)
+                            {
+                                return this_->target_->eval_single(
+                                    rows.get(), mode);
+                            }
+                            return value_operand(this_->operands_[0],
+                                rows.get(), this_->name_, this_->codename_,
+                                mode);
+                        });
             }
 
-            if (target_)
+        case 3:
             {
-                return target_->eval(std::move(args),
-                    eval_mode(mode | eval_dont_wrap_functions));
+                // two slicing parameters
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::launch::sync,
+                    [this_, mode](hpx::future<primitive_argument_type>&& rows,
+                            hpx::future<primitive_argument_type>&& columns)
+                    -> hpx::future<primitive_argument_type>
+                    {
+                        std::vector<primitive_argument_type> args;
+                        args.reserve(2);
+                        args.emplace_back(rows.get());
+                        args.emplace_back(columns.get());
+                        if (this_->target_)
+                        {
+                            return this_->target_->eval(std::move(args), mode);
+                        }
+                        return value_operand(this_->operands_[0],
+                            std::move(args), this_->name_, this_->codename_, mode);
+                    },
+                    value_operand(operands_[1], params, name_, codename_),
+                    value_operand(operands_[2], params, name_, codename_));
             }
 
-            return value_operand(operands_[0], std::move(args), name_,
-                codename_, eval_mode(mode | eval_dont_wrap_functions));
+        default:
+            break;
         }
 
         // no slicing parameters given, access variable directly
         if (target_)
         {
-            return target_->eval(
-                noargs, eval_mode(mode | eval_dont_wrap_functions));
+            return target_->eval(noargs, mode);
         }
-
-        return value_operand(operands_[0], noargs, name_, codename_,
-            eval_mode(mode | eval_dont_wrap_functions));
+        return value_operand(operands_[0], noargs, name_, codename_, mode);
     }
 
     void access_variable::store(std::vector<primitive_argument_type>&& vals)
@@ -159,6 +155,52 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (p != nullptr)
             {
                 p->store(hpx::launch::sync, std::move(vals));
+            }
+        }
+    }
+
+    void access_variable::store(primitive_argument_type&& val)
+    {
+        if (operands_.size() > 1)
+        {
+            // handle slicing, simply append the slicing parameters to the end of
+            // the argument list
+            std::vector<primitive_argument_type> vals;
+            vals.reserve(operands_.size());
+            vals.emplace_back(std::move(val));
+
+            for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+            {
+                vals.emplace_back(extract_ref_value(*it));
+            }
+
+            if (target_)
+            {
+                target_->store(std::move(vals));
+            }
+            else
+            {
+                primitive* p = util::get_if<primitive>(&operands_[0]);
+                if (p != nullptr)
+                {
+                    p->store(hpx::launch::sync, std::move(vals));
+                }
+            }
+        }
+        else
+        {
+            // no slicing parameters given, simply dispatch request
+            if (target_)
+            {
+                target_->store_single(std::move(val));
+            }
+            else
+            {
+                primitive* p = util::get_if<primitive>(&operands_[0]);
+                if (p != nullptr)
+                {
+                    p->store(hpx::launch::sync, std::move(val));
+                }
             }
         }
     }

@@ -23,9 +23,10 @@ std::string const randstr = R"(
 std::string const codestr = R"(
     define(run, y, k, block(
         define(x, constant(0.0, k)),
+        define(local_y, y),
         define(z, 0),
-        map(
-            lambda(i, store(z, slice(x, slice(y, i)) + 1)),
+        for_each(
+            lambda(i, store(z, slice(x, slice(local_y, i)) + 1)),
             range(k)
         )
     ))

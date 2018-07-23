@@ -97,6 +97,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             state->set_on_completed(keep_alive(std::move(timer)));
         }
+
+        return f;
+    }
+
+    hpx::future<primitive_argument_type> primitive_component_base::do_eval(
+        primitive_argument_type&& param, eval_mode mode) const
+    {
+#if defined(HPX_HAVE_APEX)
+        hpx::util::annotate_function annotate(eval_name_.c_str());
+#endif
+
+        // perform measurements only when needed
+        bool enable_timer = execute_directly_ == -1;
+
+        util::scoped_timer<std::int64_t> timer(eval_duration_, enable_timer);
+        if (enable_timer)
+        {
+            ++eval_count_;
+        }
+
+        auto f = this->eval(std::move(param), mode);
+
+        if (enable_timer && !f.is_ready())
+        {
+            using shared_state_ptr =
+                typename hpx::traits::detail::shared_state_ptr_for<
+                    decltype(f)>::type;
+            shared_state_ptr const& state =
+                hpx::traits::future_access<decltype(f)>::get_shared_state(f);
+
+            state->set_on_completed(keep_alive(std::move(timer)));
+        }
+
         return f;
     }
 
@@ -114,6 +147,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return this->eval(params);
     }
 
+    hpx::future<primitive_argument_type> primitive_component_base::eval(
+        primitive_argument_type && param, eval_mode mode) const
+    {
+        std::vector<primitive_argument_type> params;
+        params.emplace_back(std::move(param));
+        return this->eval(params, mode);
+    }
+
     // store_action
     void primitive_component_base::store(std::vector<primitive_argument_type>&&)
     {
@@ -123,6 +164,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "store function should only be called for the primitives that "
                 "support it (e.g. variables)"));
+    }
+
+    void primitive_component_base::store(primitive_argument_type&& param)
+    {
+        std::vector<primitive_argument_type> params;
+        params.emplace_back(std::move(param));
+        return this->store(std::move(params));
     }
 
     // extract_topology_action

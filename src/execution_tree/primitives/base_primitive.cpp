@@ -17,7 +17,9 @@
 #include <phylanx/util/repr_manip.hpp>
 
 #include <hpx/include/actions.hpp>
+#include <hpx/include/async.hpp>
 #include <hpx/include/components.hpp>
+#include <hpx/include/sync.hpp>
 #include <hpx/runtime/launch_policy.hpp>
 #include <hpx/util/logging.hpp>
 
@@ -133,28 +135,29 @@ namespace phylanx { namespace execution_tree
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        hpx::future<hpx::future<primitive_argument_type>> f =
-            hpx::async(action_type(), this->base_type::get_id(), params, mode);
-        if (f.is_ready())
-        {
-            return detail::lazy_trace("eval", *this, f.get());
-        }
-        return detail::lazy_trace(
-            "eval", *this, hpx::future<primitive_argument_type>(std::move(f)));
+        hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+            hpx::unwrap_result(this->base_type::get_id()), params, mode);
+        return detail::lazy_trace("eval", *this, std::move(f));
     }
     hpx::future<primitive_argument_type> primitive::eval(
         std::vector<primitive_argument_type>&& params,
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        hpx::future<hpx::future<primitive_argument_type>> f = hpx::async(
-            action_type(), this->base_type::get_id(), std::move(params), mode);
-        if (f.is_ready())
-        {
-            return detail::lazy_trace("eval", *this, f.get());
-        }
-        return detail::lazy_trace(
-            "eval", *this, hpx::future<primitive_argument_type>(std::move(f)));
+        hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+            hpx::unwrap_result(this->base_type::get_id()), std::move(params),
+            mode);
+        return detail::lazy_trace("eval", *this, std::move(f));
+    }
+
+    hpx::future<primitive_argument_type> primitive::eval(
+        primitive_argument_type && param, eval_mode mode) const
+    {
+        using action_type = primitives::primitive_component::eval_single_action;
+        hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+            hpx::unwrap_result(this->base_type::get_id()), std::move(param),
+            mode);
+        return detail::lazy_trace("eval", *this, std::move(f));
     }
 
     hpx::future<primitive_argument_type> primitive::eval(
@@ -169,8 +172,9 @@ namespace phylanx { namespace execution_tree
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        hpx::future<primitive_argument_type> f =
-            action_type()(this->base_type::get_id(), params, mode);
+        hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+            hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
+            std::move(params), mode);
         return detail::trace("eval", *this, f.get());
     }
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
@@ -178,49 +182,60 @@ namespace phylanx { namespace execution_tree
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        hpx::future<primitive_argument_type> f =
-            action_type()(this->base_type::get_id(), std::move(params), mode);
+        hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+            hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
+            std::move(params), mode);
+        return detail::trace("eval", *this, f.get());
+    }
+
+    primitive_argument_type primitive::eval(hpx::launch::sync_policy,
+        primitive_argument_type && param, eval_mode mode) const
+    {
+        using action_type = primitives::primitive_component::eval_single_action;
+        hpx::future<primitive_argument_type> f = hpx::async<action_type>(
+            hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
+            std::move(param), mode);
         return detail::trace("eval", *this, f.get());
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
         eval_mode mode) const
     {
-        return eval(mode).get();
+        using action_type = primitives::primitive_component::eval_action;
+        static std::vector<primitive_argument_type> params;
+        hpx::future<primitive_argument_type> f = hpx::sync<action_type>(
+            this->base_type::get_id(), std::move(params), mode);
+        return detail::trace("eval", *this, f.get());
     }
 
     hpx::future<void> primitive::store(
         std::vector<primitive_argument_type>&& data)
     {
         using action_type = primitives::primitive_component::store_action;
-        return hpx::async(
-            action_type(), this->base_type::get_id(), std::move(data));
+        return hpx::async<action_type>(
+            this->base_type::get_id(), std::move(data));
     }
 
     hpx::future<void> primitive::store(
         primitive_argument_type&& data)
     {
-        using action_type = primitives::primitive_component::store_action;
-        std::vector<primitive_argument_type> args;
-        args.emplace_back(std::move(data));
-        return hpx::async(
-            action_type(), this->base_type::get_id(), std::move(args));
+        using action_type = primitives::primitive_component::store_single_action;
+        return hpx::async<action_type>(
+            this->base_type::get_id(), std::move(data));
     }
 
     void primitive::store(hpx::launch::sync_policy,
         std::vector<primitive_argument_type>&& data)
     {
         using action_type = primitives::primitive_component::store_action;
-        action_type()(this->base_type::get_id(), std::move(data));
+        hpx::sync<action_type>(this->base_type::get_id(), std::move(data));
     }
 
     void primitive::store(hpx::launch::sync_policy,
         primitive_argument_type&& data)
     {
-        using action_type = primitives::primitive_component::store_action;
-        std::vector<primitive_argument_type> args;
-        args.emplace_back(std::move(data));
-        action_type()(this->base_type::get_id(), std::move(args));
+        using action_type = primitives::primitive_component::store_single_action;
+        hpx::sync<action_type>(this->base_type::get_id(), std::move(data));
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -244,21 +259,22 @@ namespace phylanx { namespace execution_tree
             expression_topology_action;
 
         hpx::future<topology> f =
-            hpx::async(action_type(), this->base_type::get_id(),
+            hpx::async<action_type>(this->base_type::get_id(),
                 std::move(functions), std::move(resolve_children));
 
         return f.then(hpx::launch::sync,
-            [this_name](hpx::future<topology> && f)
+            [this_name](hpx::future<topology> && f) mutable -> topology
             {
                 topology && t = f.get();
                 if (t.name_.empty())
                 {
-                    t.name_ = this_name;
-                    return t;
+                    t.name_ = std::move(this_name);
+                    return std::move(t);
                 }
+
                 std::vector<topology> children;
                 children.emplace_back(std::move(t));
-                return topology{std::move(children), this_name};
+                return topology{std::move(children), std::move(this_name)};
             });
     }
 
@@ -1608,6 +1624,9 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
+        case 0:     // nil
+            return ir::node_data<std::uint8_t>{std::uint8_t(0)};
+
         case 1:    // phylanx::ir::node_data<std::uint8_t>
             return util::get<1>(val);
 
@@ -1631,7 +1650,6 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-        case 0: HPX_FALLTHROUGH;    // nil
         case 3: HPX_FALLTHROUGH;    // string
         case 5: HPX_FALLTHROUGH;    // primitive
         case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
@@ -2488,6 +2506,66 @@ namespace phylanx { namespace execution_tree
         {
             hpx::future<primitive_argument_type> f =
                 p->eval(std::move(args), mode);
+            if (f.is_ready())
+            {
+                return f;
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_value(f.get(), name, codename);
+                });
+        }
+
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(std::move(val), name, codename));
+        }
+        return hpx::make_ready_future(std::move(val));
+    }
+
+    hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type const& val, primitive_argument_type const& arg,
+        std::string const& name, std::string const& codename,
+        eval_mode mode)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f =
+                p->eval(extract_ref_value(arg), mode);
+            if (f.is_ready())
+            {
+                return f;
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_value(f.get(), name, codename);
+                });
+        }
+
+        if (valid(val))
+        {
+            return hpx::make_ready_future(
+                extract_ref_value(val, name, codename));
+        }
+        return hpx::make_ready_future(val);
+    }
+
+    hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type&& val, primitive_argument_type const& arg,
+        std::string const& name, std::string const& codename,
+        eval_mode mode)
+    {
+        primitive* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f =
+                p->eval(extract_ref_value(arg), mode);
             if (f.is_ready())
             {
                 return f;

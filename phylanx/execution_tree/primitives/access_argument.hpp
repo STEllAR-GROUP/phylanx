@@ -11,12 +11,15 @@
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class access_argument : public primitive_component_base
+    class access_argument
+      : public primitive_component_base
+      , public std::enable_shared_from_this<access_argument>
     {
     public:
         static match_pattern_type const match_data;

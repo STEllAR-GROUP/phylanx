@@ -69,7 +69,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable::eval(
-        std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args, eval_mode mode) const
     {
         if (!value_set_ && !valid(bound_value_))
@@ -82,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type const& target =
-            valid(bound_value_) ? bound_value_ : operands[0];
+            valid(bound_value_) ? bound_value_ : operands_[0];
 
         // if given, args[0] and args[1] are optional slicing arguments
         if (!args.empty() && !(mode & eval_dont_evaluate_partials))
@@ -90,26 +89,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (args.size() > 1)
             {
                 // handle row/column-slicing
-                return hpx::make_ready_future(slice(target, args[1], args[2]));
+                return hpx::make_ready_future(slice(target, args[0], args[1]));
             }
-            else
-            {
-                // handle row-slicing
-                return hpx::make_ready_future(slice(target, args[1]));
-            }
+
+            // handle row-slicing
+            return hpx::make_ready_future(slice(target, args[0]));
         }
 
         return hpx::make_ready_future(extract_ref_value(target));
     }
 
     hpx::future<primitive_argument_type> variable::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode mode) const
+        primitive_argument_type && arg, eval_mode mode) const
     {
-        if (this->no_operands())
+        if (!value_set_ && !valid(bound_value_))
         {
-            return eval(args, noargs, mode);
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::eval",
+                generate_error_message(
+                    "the expression representing the variable target "
+                    "has not been initialized"));
         }
-        return eval(this->operands(), args, mode);
+
+        primitive_argument_type const& target =
+            valid(bound_value_) ? bound_value_ : operands_[0];
+
+        // if given, args[0] and args[1] are optional slicing arguments
+        if (valid(arg) && !(mode & eval_dont_evaluate_partials))
+        {
+            // handle row-slicing
+            return hpx::make_ready_future(slice(target, arg));
+        }
+
+        return hpx::make_ready_future(extract_ref_value(target));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -189,6 +201,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "variable::bind",
                 generate_error_message(
                     "there can be at most two slicing arguments"));
+        }
+    }
+
+    void variable::store(primitive_argument_type&& data)
+    {
+        // data is the new value to store in this variable
+        if (!value_set_ || !valid(operands_[0]))
+        {
+            operands_[0] = extract_copy_value(std::move(data));
+            value_set_ = true;
+        }
+        else
+        {
+            bound_value_ = extract_copy_value(std::move(data));
         }
     }
 

@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -20,6 +21,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     class access_variable
       : public primitive_component_base
+      , public std::enable_shared_from_this<access_variable>
     {
     public:
         static match_pattern_type const match_data;
@@ -30,6 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         void store(std::vector<primitive_argument_type>&& val) override;
+        void store(primitive_argument_type&& val) override;
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params,

@@ -35,20 +35,17 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     std::vector<match_pattern_type> const slicing_operation::match_data =
     {
         hpx::util::make_tuple("slice",
-            std::vector<std::string>{
-                "slice(_1)", "slice(_1, _2)", "slice(_1,_2,_3)"},
+            std::vector<std::string>{"slice(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>),
 
         hpx::util::make_tuple("slice_row",
-            std::vector<std::string>{
-                "slice_row(_1)", "slice_row(_1, _2)"},
+            std::vector<std::string>{"slice_row(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>),
 
         hpx::util::make_tuple("slice_column",
-            std::vector<std::string>{
-                "slice_column(_1)", "slice_column(_1, _2)"},
+            std::vector<std::string>{"slice_column(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>)
     };

@@ -45,9 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type map_operation::map_1_scalar(
         primitive const* p, primitive_argument_type&& arg) const
     {
-        std::vector<primitive_argument_type> args;
-        args.push_back(std::move(arg));
-        return p->eval(hpx::launch::sync, std::move(args));
+        return p->eval(hpx::launch::sync, std::move(arg));
     }
 
     namespace detail
@@ -68,10 +66,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t i = 0;
                 for (auto && val : vec)
                 {
-                    std::vector<primitive_argument_type> args(
-                        1, primitive_argument_type{std::move(val)});
-
-                    auto r = p->eval(hpx::launch::sync, std::move(args));
+                    auto r = p->eval(hpx::launch::sync,
+                        primitive_argument_type{std::move(val)});
 
                     if (valid(r))
                     {
@@ -153,10 +149,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (std::size_t i = 0; i != m.rows(); ++i)
                 {
                     vector_type row{blaze::trans(blaze::row(m, i))};
-                    std::vector<primitive_argument_type> args(
-                        1, primitive_argument_type{std::move(row)});
 
-                    auto r = p->eval(hpx::launch::sync, std::move(args));
+                    auto r = p->eval(hpx::launch::sync,
+                        primitive_argument_type{std::move(row)});
 
                     if (valid(r))
                     {
@@ -250,10 +245,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     for (auto && elem : list)
                     {
                         // Evaluate function for each of the argument sets
-                        std::vector<primitive_argument_type> args;
-                        args.emplace_back(std::move(elem));
                         result.push_back(
-                            p->eval(hpx::launch::sync, std::move(args)));
+                            p->eval(hpx::launch::sync, std::move(elem)));
                     }
 
                     return primitive_argument_type{std::move(result)};
