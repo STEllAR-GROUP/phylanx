@@ -17,109 +17,82 @@
 #include <string>
 #include <vector>
 
-///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    hpx::future<primitive_argument_type> locality_id(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
-        std::string const&, std::string const&);
-}}}
+std::string code_init = R"(
+    define(A, [[0.652203, 0.0732265, 0.338468, 0.839202, 0.619816, 0.592239, 0.710799, 0.281528, 0.629435, 0.431353, 0.493469, 0.0825134, 0.996225, 0.531895, 0.507684, 0.150857], [0.0118147, 0.424782, 0.942532, 0.525737, 0.0741196, 0.37752, 0.757049, 0.26948, 0.945261, 0.870577, 0.155248, 0.564266, 0.320317, 0.785055, 0.940066, 0.545988], [0.644365, 0.148553, 0.636416, 0.161481, 0.476188, 0.978674, 0.628571, 0.909508, 0.538312, 0.938594, 0.793226, 0.93299, 0.148886, 0.981628, 0.874685, 0.827658], [0.280075, 0.800635, 0.245858, 0.177501, 0.400795, 0.0369941, 0.200851, 0.4314, 0.442097, 0.515935, 0.144156, 0.584479, 0.298979, 0.543459, 0.064575, 0.809875], [0.0442949, 0.0487815, 0.584637, 0.276495, 0.336514, 0.340055, 0.432518, 0.102825, 0.318519, 0.412998, 0.806479, 0.549276, 0.0239231, 0.41092, 0.0901895, 0.990781], [0.633192, 0.617936, 0.346334, 0.731922, 0.212214, 0.148222, 0.864074, 0.406786, 0.140489, 0.874344, 0.663676, 0.111333, 0.0674106, 0.0470704, 0.381697, 0.771493], [0.211421, 0.21899, 0.835554, 0.892097, 0.820363, 0.856551, 0.376583, 0.524615, 0.785855, 0.5399, 0.642084, 0.890323, 0.19983, 0.870137, 0.642435, 0.0962366], [0.270336, 0.0228056, 0.362074, 0.701384, 0.945235, 0.953045, 0.217976, 0.699972, 0.0178521, 0.716817, 0.916331, 0.221166, 0.33746, 0.694322, 0.701697, 0.158614], [0.444779, 0.560131, 0.252551, 0.26713, 0.612697, 0.978476, 0.594054, 0.70825, 0.0361649, 0.595535, 0.479936, 0.248514, 0.110824, 0.829179, 0.739567, 0.761393], [0.598366, 0.00139772, 0.880427, 0.430341, 0.298013, 0.747141, 0.645372, 0.505301, 0.0385316, 0.930948, 0.164537, 0.403499, 0.7696, 0.905321, 0.419558, 0.053733], [0.284467, 0.758969, 0.820232, 0.624956, 0.613286, 0.0827356, 0.139717, 0.950137, 0.185188, 0.333571, 0.865006, 0.568344, 0.709847, 0.814993, 0.769636, 0.593736], [0.0986299, 0.845964, 0.865737, 0.242525, 0.720299, 0.21827, 0.167957, 0.363517, 0.770756, 0.875172, 0.0819302, 0.650221, 0.634744, 0.22977, 0.52378, 0.631804], [0.890751, 0.420956, 0.210144, 0.508865, 0.674154, 0.376759, 0.924467, 0.369439, 0.705694, 0.825234, 0.659176, 0.692164, 0.398259, 0.0120252, 0.269643, 0.104501], [0.64052, 0.990139, 0.324105, 0.384502, 0.946358, 0.65814, 0.371285, 0.597365, 0.905249, 0.262364, 0.646098, 0.0388031, 0.843533, 0.81022, 0.491254, 0.776605], [0.203168, 0.651683, 0.924004, 0.262076, 0.263826, 0.869416, 0.561566, 0.364262, 0.822547, 0.111811, 0.74084, 0.864688, 0.494562, 0.953393, 0.411806, 0.0637213], [0.360707, 0.614623, 0.20895, 0.295765, 0.915765, 0.347604, 0.584451, 0.174289, 0.100293, 0.332233, 0.976395, 0.729119, 0.602375, 0.869004, 0.178279, 0.380422]])
+    define(B, [[0.619729, 0.490113, 0.971276, 0.853421, 0.838145, 0.193618, 0.15667, 0.927167, 0.595976, 0.585291, 0.874173, 0.510702, 0.861698, 0.11027, 0.656505, 0.98965], [0.637878, 0.908212, 0.598402, 0.670789, 0.693995, 0.610036, 0.639368, 0.274361, 0.0908507, 0.49508, 0.977782, 0.21428, 0.280683, 0.16995, 0.951256, 0.00644995], [0.106506, 0.283875, 0.470871, 0.124111, 0.866248, 0.681448, 0.214229, 0.388391, 0.441637, 0.779907, 0.882477, 0.740812, 0.163534, 0.555318, 0.126158, 0.144752], [0.363651, 0.114348, 0.128909, 0.465176, 0.792394, 0.395089, 0.920142, 0.578543, 0.931097, 0.0998832, 0.730217, 0.325867, 0.505917, 0.131528, 0.766166, 0.441272], [0.887934, 0.576567, 0.000796659, 0.264159, 0.940049, 0.946849, 0.649147, 0.218096, 0.510303, 0.418673, 0.938959, 0.263669, 0.858587, 0.278441, 0.434056, 0.173673], [0.69008, 0.0123204, 0.936754, 0.23988, 0.832506, 0.000836817, 0.715789, 0.609081, 0.909017, 0.307958, 0.0383374, 0.65046, 0.167052, 0.200303, 0.353509, 0.134282], [0.671969, 0.68976, 0.193434, 0.43478, 0.200451, 0.951514, 0.62571, 0.0571947, 0.161651, 0.327586, 0.516798, 0.446738, 0.646187, 0.659687, 0.90497, 0.828792], [0.927117, 0.226629, 0.399815, 0.531338, 0.131636, 0.899969, 0.269593, 0.665872, 0.407548, 0.719596, 0.316753, 0.587543, 0.987056, 0.64575, 0.320667, 0.981521], [0.499301, 0.944282, 0.386146, 0.461353, 0.548091, 0.991595, 0.327523, 0.298919, 0.391825, 0.93085, 0.0146939, 0.854224, 0.305555, 0.638751, 0.695095, 0.0533892], [0.155123, 0.130809, 0.300456, 0.88202, 0.718724, 0.988619, 0.538842, 0.234676, 0.517878, 0.599763, 0.850238, 0.996518, 0.343803, 0.078768, 0.818136, 0.333107], [0.252806, 0.558746, 0.4993, 0.440316, 0.959525, 0.141027, 0.620137, 0.60627, 0.21357, 0.404891, 0.671772, 0.285724, 0.435325, 0.198259, 0.936605, 0.509321], [0.930325, 0.254933, 0.482055, 0.118228, 0.740707, 0.0158811, 0.393486, 0.123992, 0.788703, 0.752972, 0.756706, 0.236828, 0.0899, 0.0647054, 0.269027, 0.485283], [0.879829, 0.730734, 0.563124, 0.974088, 0.515278, 0.58936, 0.038287, 0.372845, 0.81072, 0.296606, 0.139791, 0.230693, 0.433812, 0.769575, 0.84015, 0.513388], [0.601991, 0.717216, 0.14373, 0.418746, 0.809131, 0.663516, 0.994147, 0.868301, 0.784779, 0.436341, 0.785942, 0.0950047, 0.406082, 0.295555, 0.547763, 0.230338], [0.132187, 0.62284, 0.242995, 0.506371, 0.468099, 0.647098, 0.720426, 0.797326, 0.598602, 0.757853, 0.462228, 0.646641, 0.0501786, 0.148183, 0.972989, 0.500011], [0.196316, 0.157318, 0.779749, 0.616385, 0.0831789, 0.435173, 0.912124, 0.734778, 0.0792439, 0.711981, 0.264715, 0.0897415, 0.218984, 0.983136, 0.840844, 0.451555]])
 
-HPX_PLAIN_ACTION(
-    phylanx::execution_tree::primitives::locality_id, locality_id_action);
+    define(rowsA, shape(A, 0))
+    define(columnsA, shape(A, 1))
+    define(A11, slice(A, list(0, (rowsA / 2)), list(0, (columnsA / 2))))
+    define(A12, slice(A, list(0, (rowsA / 2)), list((columnsA / 2), columnsA)))
+    define(A21, slice(A, list((rowsA / 2), rowsA), list(0, (columnsA / 2))))
+    define(A22, slice(A, list((rowsA / 2), rowsA), list((columnsA / 2), columnsA)))
+    define(rowsB, shape(B, 0))
+    define(columnsB, shape(B, 1))
+    define(B11, slice(B, list(0, (rowsB / 2)), list(0, (columnsB / 2))))
+    define(B12, slice(B, list(0, (rowsB / 2)), list((columnsB / 2), columnsB)))
+    define(B21, slice(B, list((rowsB / 2), rowsB), list(0, (columnsB / 2))))
+    define(B22, slice(B, list((rowsB / 2), rowsB), list((columnsB / 2), columnsB)))
+)";
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
-    match_pattern_type const locality_id_match_data =
-    {
-        hpx::util::make_tuple(
-            "locality_id", std::vector<std::string>{"locality_id()"},
-            &create_generic_function<locality_id_action>,
-            &create_primitive<generic_function<locality_id_action>>)
-    };
+std::string code_1 = R"(
+    define(P1, hstack(
+        ((A11 * B11) + (A12 * B21)),
+        ((A11 * B12) + (A12 * B22))
+    ))
+)";
 
-    hpx::future<primitive_argument_type> locality_id(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
-        std::string const&, std::string const&)
-    {
-        std::int64_t locality_ =
-            hpx::naming::get_locality_id_from_id(hpx::find_here());
-        return hpx::make_ready_future(primitive_argument_type(locality_));
-    }
-}}}
+std::string code_2 = R"(
+    define(P2, hstack(
+        ((A21 * B11) + (A22 * B21)),
+        ((A21 * B12) + (A22 * B22))
+    ))
+)";
 
-///////////////////////////////////////////////////////////////////////////////
-bool is_locality_0 = false;
-
-std::string code1 = "block(define(a, 1), a)";
-std::string code2 = R"(block(
-    define(fx, arg0, block(
-        debug(arg0 + 4),
-        debug(42)
-    )),
-    fx
-))";
+std::string code_reduce = R"(
+    vstack(P1, P2)
+)";
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::compiler::function compile(
-    std::string const& codestr, std::uint32_t locality_id)
+    std::string const& codestr, phylanx::execution_tree::compiler::function_list& snippets, phylanx::execution_tree::compiler::environment& env)
 {
-    phylanx::execution_tree::compiler::function_list snippets;
-    phylanx::execution_tree::compiler::environment env =
-        phylanx::execution_tree::compiler::default_environment(
-            hpx::naming::get_id_from_locality_id(locality_id));
-
     auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
     return code.run();
 }
 
-void test_remote_run_on(std::uint32_t there)
+void test_remote_run(std::uint32_t here, std::uint32_t there)
 {
-    auto et = compile("debug(locality_id())", there);
-    et();
-}
+    phylanx::execution_tree::compiler::function_list snippets;
+    phylanx::execution_tree::compiler::environment env =
+        phylanx::execution_tree::compiler::default_environment(
+            hpx::naming::get_id_from_locality_id(here));
 
-void test_remote_run_chain(std::uint32_t here, std::uint32_t there)
-{
-    auto et1 = compile(code1, here);
+    auto et_init = compile(code_init,  snippets, env);
+    auto r_init = et_init();
+
+    auto et1 = compile(code_1, snippets, env);
+    auto et2 = compile(code_2, snippets, env);
+
     auto r1 = et1();
-    HPX_TEST_EQ(phylanx::execution_tree::extract_integer_value(r1)[0], 1);
+    auto r2 = et2();
 
-    auto et2 = compile(code2, there);
-    et2(r1);
+    auto et_reduce = compile(code_reduce, snippets, env);
+    et_reduce();
 }
 
 int hpx_main(int argc, char* argv[])
 {
     HPX_TEST(hpx::get_num_localities(hpx::launch::sync) >= 2);
 
-    is_locality_0 = hpx::naming::get_locality_id_from_id(hpx::find_here()) == 0;
-
-    test_remote_run_on(0);
-    test_remote_run_on(1);
-    test_remote_run_chain(0, 0);
-    test_remote_run_chain(0, 1);
-    test_remote_run_chain(1, 0);
-    test_remote_run_chain(1, 1);
+    test_remote_run(0, 0);
 
     return hpx::finalize();
 }
 
 int main(int argc, char* argv[])
 {
-    phylanx::execution_tree::register_pattern("locality_id_action",
-        phylanx::execution_tree::primitives::locality_id_match_data);
-
     HPX_TEST_EQ(hpx::init(argc, argv), 0);
-
-    if (is_locality_0)
-    {
-        std::stringstream const& strm = hpx::get_consolestream();
-        HPX_TEST_EQ(
-            strm.str(), std::string("0\n1\n5\n42\n5\n42\n5\n42\n5\n42\n"));
-    }
 
     return hpx::util::report_errors();
 }
