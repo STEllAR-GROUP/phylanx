@@ -91,8 +91,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_EXPORT std::int64_t get_direct_execution(bool reset) const;
 
         // decide whether to execute eval directly
-        PHYLANX_EXPORT static hpx::launch select_direct_execution(eval_action,
-            hpx::launch policy, hpx::naming::address_type lva);
+        PHYLANX_EXPORT static hpx::launch select_direct_execution(
+            eval_action, hpx::launch policy, hpx::naming::address_type lva);
+        PHYLANX_EXPORT static hpx::launch select_direct_execution(
+            eval_single_action, hpx::launch policy,
+            hpx::naming::address_type lva);
 
     private:
         std::shared_ptr<primitive_component_base> primitive_;

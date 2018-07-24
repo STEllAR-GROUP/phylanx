@@ -6,6 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/access_variable.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
+#include <phylanx/util/future_or_value.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -97,14 +98,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // two slicing parameters
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::launch::sync,
-                    [this_, mode](hpx::future<primitive_argument_type>&& rows,
-                            hpx::future<primitive_argument_type>&& columns)
+                    [this_, mode](
+                        util::future_or_value<primitive_argument_type>&& rows,
+                        util::future_or_value<primitive_argument_type>&& cols)
                     -> hpx::future<primitive_argument_type>
                     {
                         std::vector<primitive_argument_type> args;
                         args.reserve(2);
                         args.emplace_back(rows.get());
-                        args.emplace_back(columns.get());
+                        args.emplace_back(cols.get());
                         if (this_->target_)
                         {
                             return this_->target_->eval(std::move(args), mode);
@@ -112,8 +114,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return value_operand(this_->operands_[0],
                             std::move(args), this_->name_, this_->codename_, mode);
                     },
-                    value_operand(operands_[1], params, name_, codename_),
-                    value_operand(operands_[2], params, name_, codename_));
+                    value_operand_fov(operands_[1], params, name_, codename_),
+                    value_operand_fov(operands_[2], params, name_, codename_));
             }
 
         default:

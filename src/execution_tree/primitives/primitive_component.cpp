@@ -188,6 +188,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = hpx::get_lva<primitive_component>::call(lva);
         return this_->primitive_->select_direct_eval_execution(policy);
     }
+
+    hpx::launch primitive_component::select_direct_execution(
+        primitive_component::eval_single_action, hpx::launch policy,
+        hpx::naming::address_type lva)
+    {
+        auto this_ = hpx::get_lva<primitive_component>::call(lva);
+        return this_->primitive_->select_direct_eval_execution(policy);
+    }
 }}}
 
 namespace phylanx { namespace execution_tree

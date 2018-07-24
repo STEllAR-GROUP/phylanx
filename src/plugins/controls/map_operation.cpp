@@ -219,10 +219,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& args) const
     {
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func,
-                primitive_argument_type&& arg) -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync,
+            [this_](util::future_or_value<primitive_argument_type>&& f,
+                    util::future_or_value<primitive_argument_type>&& l)
+            -> primitive_argument_type
             {
+                auto && bound_func = f.get();
+                auto && arg = l.get();
+
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -278,10 +282,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     this_->generate_error_message(
                         "the second argument to map must be an iterable "
                             "object (a list or a numeric type)"));
-            }),
-            value_operand(operands[0], args, name_, codename_,
+            },
+            value_operand_fov(operands[0], args, name_, codename_,
                 eval_dont_evaluate_lambdas),
-            value_operand(operands[1], args, name_, codename_));
+            value_operand_fov(operands[1], args, name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////

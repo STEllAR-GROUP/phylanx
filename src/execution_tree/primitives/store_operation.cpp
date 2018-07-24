@@ -8,6 +8,7 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/future_or_value.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -90,10 +91,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands_size == 2)
         {
-            return value_operand(operands_[1], args, name_, codename_)
+            return value_operand_fov(operands_[1], args, name_, codename_)
                 .then(hpx::launch::sync,
                     [this_, lhs = extract_ref_value(operands_[0])](
-                            hpx::future<primitive_argument_type>&& val)
+                        util::future_or_value<primitive_argument_type>&& val)
                     ->  primitive_argument_type
                     {
                         primitive_operand(lhs, this_->name_, this_->codename_)
@@ -160,10 +161,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         if (operands_size == 2)
         {
-            return value_operand(operands_[1], std::move(arg), name_, codename_)
+            return value_operand_fov(
+                    operands_[1], std::move(arg), name_, codename_)
                 .then(hpx::launch::sync,
                     [this_, lhs = extract_ref_value(operands_[0])](
-                            hpx::future<primitive_argument_type>&& val)
+                        util::future_or_value<primitive_argument_type>&& val)
                     ->  primitive_argument_type
                     {
                         primitive_operand(lhs, this_->name_, this_->codename_)

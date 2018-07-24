@@ -6,6 +6,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/controls/for_each.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/util/future_or_value.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -75,8 +76,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            [this_](hpx::future<primitive_argument_type>&& f,
-                    hpx::future<ir::range>&& list)
+            [this_](util::future_or_value<primitive_argument_type>&& f,
+                    util::future_or_value<ir::range>&& list)
             -> primitive_argument_type
             {
                 auto && bound_func = f.get();
@@ -105,9 +106,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return primitive_argument_type{};
             },
-            value_operand(operands_[0], args, name_, codename_,
+            value_operand_fov(operands_[0], args, name_, codename_,
                 eval_dont_evaluate_lambdas),
-            list_operand(operands_[1], args, name_, codename_));
+            list_operand_fov(operands_[1], args, name_, codename_));
     }
 
     // Start iteration over given for_each statement
