@@ -77,9 +77,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // one slicing parameter
                 auto this_ = this->shared_from_this();
-                return value_operand(operands_[1], params, name_, codename_)
+                return value_operand_fov(operands_[1], params, name_, codename_)
                     .then(hpx::launch::sync,
-                        [this_, mode](hpx::future<primitive_argument_type>&& rows)
+                        [this_, mode](
+                            util::future_or_value<primitive_argument_type>&& rows)
                         -> hpx::future<primitive_argument_type>
                         {
                             if (this_->target_)
@@ -130,7 +131,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return value_operand(operands_[0], noargs, name_, codename_, mode);
     }
 
-    void access_variable::store(std::vector<primitive_argument_type>&& vals)
+    void access_variable::store(std::vector<primitive_argument_type>&& vals,
+            std::vector<primitive_argument_type>&& params)
     {
         if (vals.size() != 1)
         {
@@ -149,19 +151,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (target_)
         {
-            target_->store(std::move(vals));
+            target_->store(std::move(vals), std::move(params));
         }
         else
         {
             primitive* p = util::get_if<primitive>(&operands_[0]);
             if (p != nullptr)
             {
-                p->store(hpx::launch::sync, std::move(vals));
+                p->store(hpx::launch::sync, std::move(vals), std::move(params));
             }
         }
     }
 
-    void access_variable::store(primitive_argument_type&& val)
+    void access_variable::store(primitive_argument_type&& val,
+        std::vector<primitive_argument_type>&& params)
     {
         if (operands_.size() > 1)
         {
@@ -178,14 +181,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             if (target_)
             {
-                target_->store(std::move(vals));
+                target_->store(std::move(vals), std::move(params));
             }
             else
             {
                 primitive* p = util::get_if<primitive>(&operands_[0]);
                 if (p != nullptr)
                 {
-                    p->store(hpx::launch::sync, std::move(vals));
+                    p->store(
+                        hpx::launch::sync, std::move(vals), std::move(params));
                 }
             }
         }
@@ -194,14 +198,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // no slicing parameters given, simply dispatch request
             if (target_)
             {
-                target_->store_single(std::move(val));
+                target_->store_single(std::move(val), std::move(params));
             }
             else
             {
                 primitive* p = util::get_if<primitive>(&operands_[0]);
                 if (p != nullptr)
                 {
-                    p->store(hpx::launch::sync, std::move(val));
+                    p->store(
+                        hpx::launch::sync, std::move(val), std::move(params));
                 }
             }
         }

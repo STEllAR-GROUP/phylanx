@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const store_operation::match_data =
     {
         hpx::util::make_tuple("store",
-            std::vector<std::string>{"store(_1, __2)"},
+            std::vector<std::string>{"store(_1, _2)"},
             &create_store_operation, &create_primitive<store_operation>)
     };
 
@@ -56,26 +56,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> store_operation::eval(
         std::vector<primitive_argument_type> const& args, eval_mode) const
     {
-        std::size_t operands_size = operands_.size();
-        if (operands_size < 2 || operands_size > 4)
+        if (operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "store_operation::eval",
                 generate_error_message(
-                    "the store_operation primitive requires either "
-                        "two, three, or four operands"));
+                    "the store_operation primitive requires exactly "
+                        "two operands"));
         }
 
-        for (std::size_t i = 0; i < operands_size; ++i)
+        if (!valid(operands_[0]) || !valid(operands_[1]))
         {
-            if (!valid(operands_[i]))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "store_operation::store_operation",
-                    generate_error_message(
-                        "the store_operation primitive requires that "
-                        "the arguments given by the operands array is valid"));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "store_operation::store_operation",
+                generate_error_message(
+                    "the store_operation primitive requires that "
+                    "the arguments given by the operands array is valid"));
         }
 
         if (!is_primitive_operand(operands_[0]))
@@ -89,63 +85,51 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        if (operands_size == 2)
-        {
-            return value_operand_fov(operands_[1], args, name_, codename_)
-                .then(hpx::launch::sync,
-                    [this_, lhs = extract_ref_value(operands_[0])](
-                        util::future_or_value<primitive_argument_type>&& val)
-                    ->  primitive_argument_type
-                    {
-                        primitive_operand(lhs, this_->name_, this_->codename_)
-                            .store(hpx::launch::sync, val.get());
-                        return primitive_argument_type{};
-                    });
-        }
 
         std::vector<primitive_argument_type> params;
-        params.reserve(operands_size - 1);
-        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
+        if (!args.empty())
         {
-            params.emplace_back(std::move(*it));
+            params.reserve(args.size());
+            for (auto const& arg : args)
+            {
+                params.emplace_back(extract_ref_value(arg));
+            }
         }
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_, lhs = extract_ref_value(operands_[0])](
-                    std::vector<primitive_argument_type>&& args)
+        auto f = value_operand_fov(operands_[1], params, name_, codename_);
+        return f.then(hpx::launch::sync,
+            [
+                this_, lhs = extract_ref_value(operands_[0]),
+                args = std::move(params)
+            ]
+            (util::future_or_value<primitive_argument_type>&& val) mutable
             ->  primitive_argument_type
             {
                 primitive_operand(lhs, this_->name_, this_->codename_)
-                    .store(hpx::launch::sync, std::move(args));
+                    .store(hpx::launch::sync, val.get(), std::move(args));
                 return primitive_argument_type{};
-            }),
-            detail::map_operands(std::move(params),
-                functional::value_operand{}, args, name_, codename_));
+            });
     }
 
     hpx::future<primitive_argument_type> store_operation::eval(
         primitive_argument_type&& arg, eval_mode) const
     {
-        std::size_t operands_size = operands_.size();
-        if (operands_size < 2 || operands_size > 4)
+        if (operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "store_operation::eval",
                 generate_error_message(
-                    "the store_operation primitive requires either "
-                        "two, three, or four operands"));
+                    "the store_operation primitive requires exactly "
+                        "two  operands"));
         }
 
-        for (std::size_t i = 0; i < operands_size; ++i)
+        if (!valid(operands_[0]) || !valid(operands_[1]))
         {
-            if (!valid(operands_[i]))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "store_operation::store_operation",
-                    generate_error_message(
-                        "the store_operation primitive requires that "
-                        "the arguments given by the operands array is valid"));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "store_operation::store_operation",
+                generate_error_message(
+                    "the store_operation primitive requires that "
+                    "the arguments given by the operands array is valid"));
         }
 
         if (!is_primitive_operand(operands_[0]))
@@ -159,39 +143,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        if (operands_size == 2)
-        {
-            return value_operand_fov(
-                    operands_[1], std::move(arg), name_, codename_)
-                .then(hpx::launch::sync,
-                    [this_, lhs = extract_ref_value(operands_[0])](
-                        util::future_or_value<primitive_argument_type>&& val)
-                    ->  primitive_argument_type
-                    {
-                        primitive_operand(lhs, this_->name_, this_->codename_)
-                            .store(hpx::launch::sync, val.get());
-                        return primitive_argument_type{};
-                    });
-        }
 
         std::vector<primitive_argument_type> params;
-        params.reserve(operands_size - 1);
-        for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
-        {
-            params.emplace_back(std::move(*it));
-        }
+        params.emplace_back(extract_ref_value(arg));
 
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_, lhs = extract_ref_value(operands_[0])](
-                    std::vector<primitive_argument_type>&& args)
-            ->  primitive_argument_type
-            {
-                primitive_operand(lhs, this_->name_, this_->codename_)
-                    .store(hpx::launch::sync, std::move(args));
-                return primitive_argument_type{};
-            }),
-            detail::map_operands(std::move(params),
-                functional::value_operand{}, std::move(arg), name_, codename_));
+        return value_operand_fov(operands_[1], std::move(arg), name_, codename_)
+            .then(hpx::launch::sync,
+                [
+                    this_, lhs = extract_ref_value(operands_[0]),
+                    args = std::move(params)
+                ]
+                (util::future_or_value<primitive_argument_type>&& val) mutable
+                -> primitive_argument_type
+                {
+                    primitive_operand(lhs, this_->name_, this_->codename_)
+                        .store(hpx::launch::sync, val.get(), std::move(args));
+                    return primitive_argument_type{};
+                });
     }
 }}}
 

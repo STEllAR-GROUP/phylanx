@@ -14,8 +14,6 @@
 #include <hpx/traits/acquire_future.hpp>
 #include <hpx/traits/future_traits.hpp>
 #include <hpx/traits/is_future.hpp>
-#include <hpx/traits/is_launch_policy.hpp>
-#include <hpx/util/lazy_enable_if.hpp>
 #include <hpx/util/steady_clock.hpp>
 
 #include <type_traits>
@@ -119,41 +117,32 @@ namespace phylanx { namespace util
             : hpx::lcos::detail::future_then_dispatch<future_or_value, F>
         {};
 
-        template <typename Policy, typename F>
-        typename hpx::util::lazy_enable_if<
-            hpx::traits::is_launch_policy<
-                typename std::decay<Policy>::type
-            >::value,
-            hpx::traits::future_then_result<future_or_value, F>
-        >::type
-        then(Policy && policy, F && f)
+        template <typename F>
+        typename hpx::traits::future_then_result<future_or_value, F>::type
+        then(hpx::launch policy, F && f)
         {
             if (data_.index() == 1)
             {
-                using result_type = decltype(
-                    future_then_dispatch<typename std::decay<Policy>::type>::
-                        call(std::declval<future_or_value&&>(),
-                            std::forward<Policy>(policy), std::forward<F>(f)));
-
                 if (!get_shared_state())
                 {
                     HPX_THROW_EXCEPTION(hpx::no_state,
                         "future_or_value<T>::then",
                         "this future_or_value has no valid shared state");
+
+                    using result_type =
+                        typename hpx::traits::future_then_result<
+                            future_or_value, F>::type;
+
                     return result_type();
                 }
 
-                return future_then_dispatch<typename std::decay<Policy>::type>::
-                    call(std::move(util::get<1>(data_)),
-                        std::forward<Policy>(policy), std::forward<F>(f));
+                return future_then_dispatch<hpx::launch>::call(
+                    std::move(util::get<1>(data_)), policy, std::forward<F>(f));
             }
 
-            return hpx::async(
-                std::forward<Policy>(policy),
-                [](T&& val) { return std::move(val); },
+            return hpx::async(policy, [](T&& val) { return std::move(val); },
                 std::move(util::get<0>(data_)));
         }
-
 
     private:
         template <typename Future>

@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> for_each::eval(
         std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode mode) const
     {
         if (operands.size() != 2)
         {
@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            [this_](util::future_or_value<primitive_argument_type>&& f,
+            [this_, mode](util::future_or_value<primitive_argument_type>&& f,
                     util::future_or_value<ir::range>&& list)
             -> primitive_argument_type
             {
@@ -97,8 +97,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // range
                 for (auto && e : list.get())
                 {
-                    auto r = p->eval(hpx::launch::sync, std::move(e));
-                    if (extract_boolean_value(r, this_->name_, this_->codename_))
+                    auto r = p->eval(hpx::launch::sync, std::move(e), mode);
+                    if (extract_boolean_value(
+                            r, this_->name_, this_->codename_))
                     {
                         break;      // stop, if requested
                     }
@@ -113,12 +114,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for_each statement
     hpx::future<primitive_argument_type> for_each::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode mode) const
     {
         if (operands_.empty())
         {
-            return eval(args, noargs);
+            return eval(args, noargs, mode);
         }
-        return eval(operands_, args);
+        return eval(operands_, args, mode);
     }
 }}}

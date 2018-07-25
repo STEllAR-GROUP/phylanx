@@ -99,6 +99,10 @@ namespace phylanx { namespace ir
 
         std::int64_t span() const
         {
+            if (single_value_)
+            {
+                return 1;
+            }
             return step_ > 0 ? stop_ - start_ : start_ - stop_;
         }
 

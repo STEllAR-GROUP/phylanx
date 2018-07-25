@@ -126,18 +126,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_dont_wrap_functions);
     }
 
-    void target_reference::store(std::vector<primitive_argument_type>&& data)
+    void target_reference::store(std::vector<primitive_argument_type>&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         if (target_)
         {
-            target_->store(std::move(data));
+            target_->store(std::move(data), std::move(params));
         }
         else
         {
             primitive* p = util::get_if<primitive>(&operands_[0]);
             if (p != nullptr)
             {
-                p->store(std::move(data));
+                p->store(std::move(data), std::move(params));
             }
         }
     }

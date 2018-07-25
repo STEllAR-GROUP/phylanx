@@ -20,7 +20,7 @@ std::string const randstr = R"(
     call
 )";
 
-std::string const codestr = R"(
+std::string const bench1 = R"(
     define(run, y, k, block(
         define(x, constant(0.0, k)),
         define(local_y, y),
@@ -33,9 +33,42 @@ std::string const codestr = R"(
     run
 )";
 
+std::string const bench2 = R"(
+    define(run, y, k, block(
+        define(x, constant(0.0, k)),
+        define(local_y, y),
+        for_each(
+            lambda(i, block(
+                define(idx, slice(local_y, i)),
+                store(slice(x, idx), slice(x, idx) + 1)
+            )),
+            range(k)
+        )
+    ))
+    run
+)";
+
 #define ARRAY_SIZE 100000ll
 
 ///////////////////////////////////////////////////////////////////////////////
+template <typename Data>
+void benchmark(std::string const& name,
+    phylanx::execution_tree::compiler::function_list& snippets,
+    std::string const& codestr, Data const& y)
+{
+    auto const& code = phylanx::execution_tree::compile(codestr, snippets);
+    auto bench = code.run();
+
+
+    std::uint64_t t = hpx::util::high_resolution_clock::now();
+
+    bench(y, ARRAY_SIZE);
+
+    t = hpx::util::high_resolution_clock::now() - t;
+
+    std::cout << name << ": " << (t / 1e6) << " ms.\n";
+}
+
 int main(int argc, char* argv[])
 {
     phylanx::execution_tree::compiler::function_list snippets;
@@ -43,20 +76,11 @@ int main(int argc, char* argv[])
     auto const& rand_code = phylanx::execution_tree::compile(randstr, snippets);
     auto rand = rand_code.run();
 
-    auto const& code = phylanx::execution_tree::compile(codestr, snippets);
-    auto bench = code.run();
+    auto y = rand(ARRAY_SIZE);
 
-    {
-        auto y = rand(ARRAY_SIZE);
+    benchmark("bench1", snippets, bench1, y);
+    benchmark("bench2", snippets, bench2, y);
 
-        std::uint64_t t = hpx::util::high_resolution_clock::now();
-
-        bench(std::move(y), ARRAY_SIZE);
-
-        t = hpx::util::high_resolution_clock::now() - t;
-
-        std::cout << "elapsed time: " << (t / 1e6) << " ms.\n";
-    }
     return 0;
 }
 

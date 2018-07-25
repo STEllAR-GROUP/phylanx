@@ -156,7 +156,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // store_action
-    void primitive_component_base::store(std::vector<primitive_argument_type>&&)
+    void primitive_component_base::store(std::vector<primitive_argument_type>&&,
+        std::vector<primitive_argument_type>&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
@@ -166,11 +167,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "support it (e.g. variables)"));
     }
 
-    void primitive_component_base::store(primitive_argument_type&& param)
+    void primitive_component_base::store(primitive_argument_type&& param,
+        std::vector<primitive_argument_type>&& params)
     {
-        std::vector<primitive_argument_type> params;
-        params.emplace_back(std::move(param));
-        return this->store(std::move(params));
+        std::vector<primitive_argument_type> args;
+        args.emplace_back(std::move(param));
+        return this->store(std::move(args), std::move(params));
     }
 
     // extract_topology_action

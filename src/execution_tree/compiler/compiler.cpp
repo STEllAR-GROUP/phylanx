@@ -295,8 +295,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             auto p = primitive_operand(f.arg_, lambda_name, name_);
 
-            p.store(
-                hpx::launch::sync, std::move(compile_body(args, body).arg_));
+            p.store(hpx::launch::sync,
+                std::move(compile_body(args, body).arg_), {});
 
             return f;
         }
@@ -386,7 +386,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     }, variable_name};
 
                 auto var = primitive_operand(f.arg_, variable_name, name_);
-                var.store(hpx::launch::sync, std::move(body_f.arg_));
+                var.store(hpx::launch::sync, std::move(body_f.arg_), {});
             }
             else
             {
@@ -409,7 +409,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 auto var = primitive_operand(f.arg_, variable_name, name_);
                 var.store(hpx::launch::sync,
-                    std::move(compile_lambda(args, body, id).arg_));
+                    std::move(compile_lambda(args, body, id).arg_), {});
             }
 
             // the define-variable object is invoked whenever a define() is

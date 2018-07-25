@@ -95,7 +95,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
     }
 
-    void lambda::store(std::vector<primitive_argument_type>&& data)
+    void lambda::store(std::vector<primitive_argument_type>&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         if (valid(operands_[0]))
         {
@@ -111,6 +112,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lambda::store",
                 generate_error_message(
                     "the right hand side expression is not valid"));
+        }
+        if (!params.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "lambda::store",
+                generate_error_message(
+                    "store shouldn't be called with dynamic arguments"));
         }
 
         // initialize the lambda's body

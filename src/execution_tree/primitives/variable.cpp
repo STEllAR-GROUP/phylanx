@@ -149,7 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void variable::store(std::vector<primitive_argument_type>&& data)
+    void variable::store(std::vector<primitive_argument_type>&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         // data[0] is the new value to store in this variable
         // data[1] and data[2] (optional) are interpreted as slicing arguments
@@ -184,14 +185,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return;
 
             case 2:
-                bound_value_ =
-                    slice(std::move(bound_value_), data[1], std::move(data[0]));
+                bound_value_ = slice(std::move(bound_value_),
+                    value_operand_sync(
+                        data[1], std::move(params), name_, codename_),
+                    std::move(data[0]));
                 return;
 
             case 3:
-                bound_value_ = slice(std::move(bound_value_), data[1], data[2],
-                    std::move(data[0]));
-                return;
+                {
+                    auto data1 =
+                        value_operand_sync(data[1], params, name_, codename_);
+                    bound_value_ = slice(std::move(bound_value_), data1,
+                        value_operand_sync(
+                            data[2], std::move(params), name_, codename_),
+                        std::move(data[0]));
+                    return;
+                }
 
             default:
                 break;
@@ -204,7 +213,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    void variable::store(primitive_argument_type&& data)
+    void variable::store(primitive_argument_type&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         // data is the new value to store in this variable
         if (!value_set_ || !valid(operands_[0]))

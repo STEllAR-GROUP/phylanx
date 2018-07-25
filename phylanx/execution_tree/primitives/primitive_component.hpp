@@ -58,9 +58,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type && param, eval_mode mode) const;
 
         // store_action
-        PHYLANX_EXPORT void store(std::vector<primitive_argument_type>&&);
+        PHYLANX_EXPORT void store(std::vector<primitive_argument_type>&&,
+            std::vector<primitive_argument_type>&&);
 
-        PHYLANX_EXPORT void store_single(primitive_argument_type&&);
+        PHYLANX_EXPORT void store_single(primitive_argument_type&&,
+            std::vector<primitive_argument_type>&&);
 
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(

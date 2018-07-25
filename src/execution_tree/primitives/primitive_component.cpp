@@ -139,14 +139,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // store_action
-    void primitive_component::store(std::vector<primitive_argument_type>&& args)
+    void primitive_component::store(std::vector<primitive_argument_type>&& args,
+        std::vector<primitive_argument_type>&& params)
     {
-        primitive_->store(std::move(args));
+        primitive_->store(std::move(args), std::move(params));
     }
 
-    void primitive_component::store_single(primitive_argument_type&& arg)
+    void primitive_component::store_single(primitive_argument_type&& arg,
+        std::vector<primitive_argument_type>&& params)
     {
-        primitive_->store(std::move(arg));
+        primitive_->store(std::move(arg), std::move(params));
     }
 
     // extract_topology_action

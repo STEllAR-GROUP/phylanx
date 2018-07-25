@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         access_function(std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename);
 
-        void store(std::vector<primitive_argument_type>&& val) override;
+        void store(std::vector<primitive_argument_type>&& val,
+            std::vector<primitive_argument_type>&& params) override;
 
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params,

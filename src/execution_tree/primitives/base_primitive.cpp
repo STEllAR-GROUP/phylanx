@@ -211,33 +211,38 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<void> primitive::store(
-        std::vector<primitive_argument_type>&& data)
+        std::vector<primitive_argument_type>&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         using action_type = primitives::primitive_component::store_action;
         return hpx::async<action_type>(
-            this->base_type::get_id(), std::move(data));
+            this->base_type::get_id(), std::move(data), std::move(params));
     }
 
-    hpx::future<void> primitive::store(
-        primitive_argument_type&& data)
+    hpx::future<void> primitive::store(primitive_argument_type&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         using action_type = primitives::primitive_component::store_single_action;
         return hpx::async<action_type>(
-            this->base_type::get_id(), std::move(data));
+            this->base_type::get_id(), std::move(data), std::move(params));
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type>&& data)
+        std::vector<primitive_argument_type>&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         using action_type = primitives::primitive_component::store_action;
-        hpx::sync<action_type>(this->base_type::get_id(), std::move(data));
+        hpx::sync<action_type>(
+            this->base_type::get_id(), std::move(data), std::move(params));
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        primitive_argument_type&& data)
+        primitive_argument_type&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         using action_type = primitives::primitive_component::store_single_action;
-        hpx::sync<action_type>(this->base_type::get_id(), std::move(data));
+        hpx::sync<action_type>(
+            this->base_type::get_id(), std::move(data), std::move(params));
     }
 
     /////////////////////////////////////////////////////////////////////////

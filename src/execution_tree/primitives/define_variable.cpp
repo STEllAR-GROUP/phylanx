@@ -72,7 +72,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    void define_variable::store(std::vector<primitive_argument_type>&& vals)
+    void define_variable::store(std::vector<primitive_argument_type>&& vals,
+        std::vector<primitive_argument_type>&& params)
     {
         if (!valid(operands_[1]))
         {
@@ -100,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "properly initialized"));
         }
 
-        p->store(hpx::launch::sync, std::move(vals[0]));
+        p->store(hpx::launch::sync, std::move(vals[0]), std::move(params));
     }
 
     topology define_variable::expression_topology(

@@ -107,6 +107,29 @@ namespace phylanx { namespace execution_tree
         ir::slicing_indices const& rows, ir::slicing_indices const& columns,
         F const& f, std::string const& name, std::string const& codename)
     {
+#if defined(_DEBUG)
+        std::size_t numrows = input_matrix.rows();
+        if (rows.start() >= numrows || rows.span() >= numrows ||
+            rows.stop() > numrows)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slicing2d",
+                util::generate_error_message(
+                    "cannot extract the requested matrix elements",
+                    name, codename));
+        }
+        std::size_t numcols = input_matrix.columns();
+        if (columns.start() >= numcols || columns.span() >= numcols ||
+            columns.stop() > numcols)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slicing1d",
+                util::generate_error_message(
+                    "cannot extract the requested matrix elements",
+                    name, codename));
+        }
+#endif
+
         std::int64_t row_start = rows.start();
         std::int64_t row_stop = rows.stop();
         std::int64_t row_step = rows.step();

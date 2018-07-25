@@ -54,9 +54,11 @@ namespace phylanx { namespace execution_tree
                 primitive_argument_type && param, eval_mode mode) const;
 
             // store_action
-            virtual void store(std::vector<primitive_argument_type>&&);
+            virtual void store(std::vector<primitive_argument_type>&&,
+                std::vector<primitive_argument_type>&&);
 
-            virtual void store(primitive_argument_type&&);
+            virtual void store(primitive_argument_type&&,
+                std::vector<primitive_argument_type>&&);
 
             // extract_topology_action
             virtual topology expression_topology(

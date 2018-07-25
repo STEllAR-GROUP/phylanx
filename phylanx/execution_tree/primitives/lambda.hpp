@@ -38,7 +38,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<primitive_argument_type> const& params,
             eval_mode mode) const override;
 
-        void store(std::vector<primitive_argument_type>&& data) override;
+        void store(std::vector<primitive_argument_type>&& data,
+            std::vector<primitive_argument_type>&& params) override;
     };
 }}}
 

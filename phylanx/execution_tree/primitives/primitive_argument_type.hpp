@@ -135,12 +135,16 @@ namespace phylanx { namespace execution_tree
             std::vector<primitive_argument_type> const& args,
             eval_mode mode = eval_default) const;
 
-        PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type&&);
+        PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type&&,
+            std::vector<primitive_argument_type>&&);
         PHYLANX_EXPORT hpx::future<void> store(
+            std::vector<primitive_argument_type>&&,
             std::vector<primitive_argument_type>&&);
         PHYLANX_EXPORT void store(hpx::launch::sync_policy,
-            primitive_argument_type&&);
+            primitive_argument_type&&,
+            std::vector<primitive_argument_type>&&);
         PHYLANX_EXPORT void store(hpx::launch::sync_policy,
+            std::vector<primitive_argument_type>&&,
             std::vector<primitive_argument_type>&&);
 
         PHYLANX_EXPORT hpx::future<topology> expression_topology(
