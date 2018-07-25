@@ -30,7 +30,6 @@ namespace phylanx { namespace execution_tree
     ir::node_data<T> slice0d(T data, ir::slicing_indices const& indices,
         F const& f, std::string const& name, std::string const& codename)
     {
-#if defined(_DEBUG)
         if (indices.start() != 0 || indices.span() != 1 || indices.step() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -40,7 +39,6 @@ namespace phylanx { namespace execution_tree
                     "scalar",
                     name, codename));
         }
-#endif
         return ir::node_data<T>{f.scalar(data)};
     }
 
@@ -51,9 +49,8 @@ namespace phylanx { namespace execution_tree
         Vector&& data, ir::slicing_indices const& indices, F const& f,
         std::string const& name, std::string const& codename)
     {
-#if defined(_DEBUG)
         std::size_t size = data.size();
-        if (indices.start() >= size || indices.span() >= size ||
+        if (indices.start() >= size || indices.span() > size ||
             indices.stop() > size)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -63,7 +60,6 @@ namespace phylanx { namespace execution_tree
                     "vector",
                     name, codename));
         }
-#endif
 
         // handle single argument slicing parameters
         std::int64_t start = indices.start();
@@ -107,9 +103,8 @@ namespace phylanx { namespace execution_tree
         ir::slicing_indices const& rows, ir::slicing_indices const& columns,
         F const& f, std::string const& name, std::string const& codename)
     {
-#if defined(_DEBUG)
         std::size_t numrows = input_matrix.rows();
-        if (rows.start() >= numrows || rows.span() >= numrows ||
+        if (rows.start() >= numrows || rows.span() > numrows ||
             rows.stop() > numrows)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -119,7 +114,7 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
         std::size_t numcols = input_matrix.columns();
-        if (columns.start() >= numcols || columns.span() >= numcols ||
+        if (columns.start() >= numcols || columns.span() > numcols ||
             columns.stop() > numcols)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -128,7 +123,6 @@ namespace phylanx { namespace execution_tree
                     "cannot extract the requested matrix elements",
                     name, codename));
         }
-#endif
 
         std::int64_t row_start = rows.start();
         std::int64_t row_stop = rows.stop();
