@@ -44,6 +44,11 @@ int main(int argc, char* argv[])
     test_append_operation("append( make_list(1, 2), 42 )", "list(1, 2, 42)");
     test_append_operation("append( make_list(1, 2), hstack(3, 42) )",
         "list(1, 2, hstack(3, 42))");
+    test_append_operation("append( make_list(vstack(hstack(1, 2), hstack(3, "
+                          "4)), vstack(hstack(5, 6), hstack(7, 8))), "
+                          "vstack(hstack(42, 42), hstack(42, 42)) )",
+        "list(vstack(hstack(1, 2), hstack(3, 4)), vstack(hstack(5, 6), "
+        "hstack(7, 8)), vstack(hstack(42, 42), hstack(42, 42)))");
 
     return hpx::util::report_errors();
 }
