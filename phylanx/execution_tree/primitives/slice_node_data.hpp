@@ -10,6 +10,8 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
 
+#include <string>
+
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////

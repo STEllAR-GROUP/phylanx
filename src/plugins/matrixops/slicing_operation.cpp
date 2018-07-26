@@ -16,6 +16,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <algorithm>
 #include <array>
@@ -55,12 +56,17 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
             std::vector<primitive_argument_type>&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , max_two_arguments_(false)
+      , slice_rows_(false)
+      , slice_columns_(false)
     {
         auto func_name = extract_function_name(name_);
-        if (func_name == "slice_column" || func_name == "slice_row")
+        if (func_name == "slice_row")
         {
-            max_two_arguments_ = true;
+            slice_rows_ = true;
+        }
+        else if (func_name == "slice_column")
+        {
+            slice_columns_ = true;
         }
     }
 
@@ -95,7 +101,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                         "either one, two or three arguments"));
         }
 
-        if (max_two_arguments_ && operands.size() > 2)
+        if ((slice_rows_ || slice_columns_) && operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
@@ -125,8 +131,23 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                     return std::move(args[0]);
 
                 case 2:
-                    return slice(
-                        args[0], args[1], this_->name_, this_->codename_);
+                    {
+                        if (this_->slice_rows_)
+                        {
+                            return slice(args[0], args[1], this_->name_,
+                                this_->codename_);
+                        }
+                        else if (this_->slice_columns_)
+                        {
+                            return slice(args[0], {}, args[1], this_->name_,
+                                this_->codename_);
+                        }
+                        else
+                        {
+                            return slice(args[0], args[1], this_->name_,
+                                this_->codename_);
+                        }
+                    }
 
                 case 3:
                     return slice(args[0], args[1], args[2], this_->name_,

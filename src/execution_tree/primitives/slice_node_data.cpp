@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include <blaze/Math.h>
@@ -229,7 +230,7 @@ namespace phylanx { namespace execution_tree
             auto sm = blaze::submatrix(input_matrix, row_start, 0ll,
                 row_stop - row_start, num_matrix_cols);
 
-            auto result = blaze::rows(sm,
+            auto result = blaze::columns(sm,
                 util::slicing_helpers::create_list_slice(
                     col_start, col_stop, col_step));
 
@@ -342,9 +343,29 @@ namespace phylanx { namespace execution_tree
                     detail::slice_identity<T>{}, name, codename);
             }
 
-        case 0: HPX_FALLTHROUGH;
         case 1: HPX_FALLTHROUGH;
-        case 3: HPX_FALLTHROUGH;
+        case 3:
+            {
+                auto v = data.vector();
+                if (valid(rows))
+                {
+                    HPX_ASSERT(!valid(columns));
+                    return slice1d<T>(v,
+                        util::slicing_helpers::extract_slicing(rows, v.size()),
+                        detail::slice_identity<T>{}, name, codename);
+                }
+
+                if (valid(columns))
+                {
+                    HPX_ASSERT(!valid(rows));
+                    return slice1d<T>(v,
+                        util::slicing_helpers::extract_slicing(columns, v.size()),
+                        detail::slice_identity<T>{}, name, codename);
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;
         default:
             break;
         }
@@ -550,9 +571,30 @@ namespace phylanx { namespace execution_tree
                     detail::slice_assign<T>{value}, name, codename);
             }
 
-        case 0: HPX_FALLTHROUGH;
         case 1: HPX_FALLTHROUGH;
-        case 3: HPX_FALLTHROUGH;
+        case 3:
+            {
+                auto v = data.vector();
+                std::size_t size = v.size();
+                if (valid(rows))
+                {
+                    HPX_ASSERT(!valid(columns));
+                    return slice1d<T>(std::move(v),
+                        util::slicing_helpers::extract_slicing(rows, size),
+                        detail::slice_assign<T>{value}, name, codename);
+                }
+
+                if (valid(columns))
+                {
+                    HPX_ASSERT(!valid(rows));
+                    return slice1d<T>(std::move(v),
+                        util::slicing_helpers::extract_slicing(columns, size),
+                        detail::slice_assign<T>{value}, name, codename);
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;
         default:
             break;
         }

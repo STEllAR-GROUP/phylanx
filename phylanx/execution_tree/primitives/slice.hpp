@@ -11,6 +11,8 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/ranges.hpp>
 
+#include <string>
+
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////

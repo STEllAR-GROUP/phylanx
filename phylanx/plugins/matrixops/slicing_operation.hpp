@@ -75,7 +75,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         static std::string extract_function_name(std::string const& name);
 
-        bool max_two_arguments_;
+        bool slice_rows_;
+        bool slice_columns_;
     };
 
     inline primitive create_slicing_operation(hpx::id_type const& locality,

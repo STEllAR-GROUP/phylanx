@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -227,23 +228,23 @@ namespace phylanx { namespace execution_tree
         {
         }
         explicit primitive_argument_type(
-            blaze::DynamicVector<std::int64_t> const& val)
+                blaze::DynamicVector<std::int64_t> const& val)
           : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
         {
         }
         explicit primitive_argument_type(
-            blaze::DynamicVector<std::int64_t>&& val)
+                blaze::DynamicVector<std::int64_t>&& val)
           : argument_value_type{
                 phylanx::ir::node_data<std::int64_t>{std::move(val)}}
         {
         }
         explicit primitive_argument_type(
-            blaze::DynamicMatrix<std::int64_t> const& val)
+                blaze::DynamicMatrix<std::int64_t> const& val)
           : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
         {
         }
         explicit primitive_argument_type(
-            blaze::DynamicMatrix<std::int64_t>&& val)
+                blaze::DynamicMatrix<std::int64_t>&& val)
           : argument_value_type{
                 phylanx::ir::node_data<std::int64_t>{std::move(val)}}
         {

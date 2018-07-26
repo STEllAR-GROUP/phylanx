@@ -18,6 +18,8 @@
 
 #include <type_traits>
 
+#include <boost/intrusive_ptr.hpp>
+
 namespace phylanx { namespace util
 {
     template <typename T>
@@ -140,7 +142,11 @@ namespace phylanx { namespace util
                     std::move(util::get<1>(data_)), policy, std::forward<F>(f));
             }
 
-            return hpx::async(policy, [](T&& val) { return std::move(val); },
+            return hpx::async(policy,
+                [f = std::forward<F>(f)](T&& val) mutable
+                {
+                    return std::forward<F>(f)(std::move(val));
+                },
                 std::move(util::get<0>(data_)));
         }
 

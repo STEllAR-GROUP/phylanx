@@ -11,6 +11,7 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -52,7 +53,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
 
         if (step > 0)
         {
-            result.reserve((std::max)(0ll, stop - start));
+            result.reserve((std::max)(std::int64_t(0), stop - start));
             for(std::int64_t i = start; i < stop; i += step)
             {
                 result.push_back(i);
@@ -60,7 +61,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
         }
         else if (step < 0)
         {
-            result.reserve((std::max)(0ll, start - stop));
+            result.reserve((std::max)(std::int64_t(0), start - stop));
             for(std::int64_t i = start; i > stop; i += step)
             {
                 result.push_back(i);
@@ -92,11 +93,20 @@ namespace phylanx { namespace util { namespace slicing_helpers
             }
 
             std::size_t size = arg_list.size();
-            if (size == 0 || size > 3)
+            if (size > 3)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::util::slicing_helpers::extract_slicing",
-                    "too little or too many indicies given");
+                    "too many indicies given");
+            }
+
+            if (size == 0)
+            {
+                // an empty argument list means return all of the argument
+                indices.start(0, false);
+                indices.stop(arg_size);
+                indices.step(1);
+                return indices;
             }
 
             auto it = arg_list.begin();

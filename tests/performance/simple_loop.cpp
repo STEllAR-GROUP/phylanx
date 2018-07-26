@@ -11,6 +11,7 @@
 #include <hpx/include/util.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <string>
 
@@ -48,7 +49,7 @@ std::string const bench2 = R"(
     run
 )";
 
-#define ARRAY_SIZE 100000ll
+#define ARRAY_SIZE std::int64_t(100000)
 
 ///////////////////////////////////////////////////////////////////////////////
 template <typename Data>
