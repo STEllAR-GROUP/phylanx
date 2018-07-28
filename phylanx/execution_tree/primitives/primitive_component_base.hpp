@@ -88,6 +88,8 @@ namespace phylanx { namespace execution_tree
             std::int64_t get_eval_duration(bool reset) const;
             std::int64_t get_direct_execution(bool reset) const;
 
+            void enable_measurements();
+
             // decide whether to execute eval directly
             hpx::launch select_direct_eval_execution(hpx::launch policy) const;
 
@@ -120,6 +122,7 @@ namespace phylanx { namespace execution_tree
             mutable std::int64_t eval_count_;
             mutable std::int64_t eval_duration_;
             mutable std::int64_t execute_directly_;
+            bool measurements_enabled_;
 
 #if defined(HPX_HAVE_APEX)
             std::string eval_name_;

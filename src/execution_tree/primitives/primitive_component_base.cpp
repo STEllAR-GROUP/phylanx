@@ -36,9 +36,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : operands_(std::move(params))
       , name_(name)
       , codename_(codename)
-      , execute_directly_(eval_direct ? 1 : -1)
       , eval_count_(0ll)
       , eval_duration_(0ll)
+      , execute_directly_(eval_direct ? 1 : -1)
+      , measurements_enabled_(false)
     {
 #if defined(HPX_HAVE_APEX)
         eval_name_ = name_ + "::eval";
@@ -77,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
 
         // perform measurements only when needed
-        bool enable_timer = execute_directly_ == -1;
+        bool enable_timer = measurements_enabled_ || (execute_directly_ == -1);
 
         util::scoped_timer<std::int64_t> timer(eval_duration_, enable_timer);
         if (enable_timer)
@@ -109,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
 
         // perform measurements only when needed
-        bool enable_timer = execute_directly_ == -1;
+        bool enable_timer = measurements_enabled_ || (execute_directly_ == -1);
 
         util::scoped_timer<std::int64_t> timer(eval_duration_, enable_timer);
         if (enable_timer)
@@ -243,6 +244,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::util::get_and_reset_value(execute_directly_, reset);
     }
 
+    void primitive_component_base::enable_measurements()
+    {
+        measurements_enabled_ = true;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // decide whether to execute eval directly
     bool primitive_component_base::get_sync_execution()
@@ -267,7 +273,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-        if (eval_count_ > 5)
+        if ((eval_count_ != 0 && measurements_enabled_) || (eval_count_ > 5))
         {
             // check whether execution status needs to be changed (with some
             // hysteresis)

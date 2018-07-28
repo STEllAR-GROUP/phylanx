@@ -144,6 +144,8 @@ namespace phylanx { namespace performance_counters
                     phylanx::execution_tree::compiler::parse_primitive_name(
                         value.first);
 
+                instance->enable_measurements();
+
                 // Consider the reset flag
                 if (reset)
                 {
@@ -161,9 +163,10 @@ namespace phylanx { namespace performance_counters
 
             instances_.clear();
             instances_.reserve(entries.size());
-            for (auto const& value : instances_sorted)
+
+            for (auto && value : instances_sorted)
             {
-                instances_.push_back(value.second);
+                instances_.emplace_back(std::move(value.second));
             }
 
             first_init_ = true;

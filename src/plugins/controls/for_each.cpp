@@ -74,6 +74,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "invocable object", name_, codename_));
         }
 
+        mode = eval_mode(mode & ~eval_dont_wrap_functions);
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             [this_, mode](util::future_or_value<primitive_argument_type>&& f,

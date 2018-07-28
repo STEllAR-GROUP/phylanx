@@ -333,6 +333,7 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
 
     // Re-init all performance counters to guarantee correct measurement
     // results if those are requested on the command line.
+    phylanx::util::enable_measurements();
     hpx::reinit_active_counters();
 
     // Evaluate user code using the read data
@@ -354,28 +355,13 @@ void print_performance_counter_data_csv(std::ostream& os)
     // CSV Header
     os << "primitive_instance,display_name,count,time,eval_direct\n";
 
-    // List of existing primitive instances
-    std::vector<std::string> existing_primitive_instances;
-
-    // Retrieve all primitive instances
-    for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
-    {
-        existing_primitive_instances.push_back(entry.first);
-    }
-
     // Print performance data
-    std::vector<std::string> const counter_names{
-        "count/eval", "time/eval", "eval_direct"
-    };
-
-    for (auto const& entry : phylanx::util::retrieve_counter_data(
-             existing_primitive_instances, counter_names))
+    for (auto const& entry : phylanx::util::retrieve_counter_data())
     {
         os << "\"" << entry.first << "\",\""
-                  << phylanx::execution_tree::compiler::primitive_display_name(
-                         entry.first)
-                  << "\"";
+           << phylanx::execution_tree::compiler::primitive_display_name(
+                  entry.first)
+           << "\"";
         for (auto const& counter_value : entry.second)
         {
             os << "," << counter_value;

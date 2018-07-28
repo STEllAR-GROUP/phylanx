@@ -5,6 +5,8 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/algorithms/lra.hpp>
+#include <phylanx/util/detail/add_simd.hpp>
+#include <phylanx/util/detail/div_simd.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
@@ -42,73 +44,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail
-    {
-        struct add_simd
-        {
-        public:
-            explicit add_simd(double scalar)
-                : scalar_(scalar)
-            {
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-                ->  decltype(a + std::declval<double>())
-            {
-                return a + scalar_;
-            }
-
-            template <typename T>
-            static constexpr bool simdEnabled()
-            {
-                return blaze::HasSIMDAdd<T, double>::value;
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-            {
-                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-                return a + blaze::set(scalar_);
-            }
-
-        private:
-            double scalar_;
-        };
-
-        struct div0dnd_simd
-        {
-        public:
-            explicit div0dnd_simd(double scalar)
-                : scalar_(scalar)
-            {
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE auto operator()(T const& a) const
-            ->  decltype(std::declval<double>() / a)
-            {
-                return scalar_ / a;
-            }
-
-            template <typename T>
-            static constexpr bool simdEnabled()
-            {
-                return blaze::HasSIMDDiv<T, double>::value;
-            }
-
-            template <typename T>
-            BLAZE_ALWAYS_INLINE decltype(auto) load(T const& a) const
-            {
-                BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-                return blaze::set(scalar_) / a;
-            }
-
-        private:
-            double scalar_;
-        };
-    }
-
     primitive_argument_type lra::calculate_lra(
         std::vector<primitive_argument_type> && args) const
     {
@@ -177,9 +112,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
 
             // pred = 1.0 / (1.0 + exp(-dot(x, weights)))
-            vector_type pred = blaze::map(
-                blaze::map(blaze::exp(-(x * weights)), detail::add_simd(1.0)),
-                detail::div0dnd_simd(1.0));
+            auto pred = blaze::map(
+                blaze::map(blaze::exp(-(x * weights)),
+                    util::detail::addnd0d_simd(1.0)),
+                util::detail::div0dnd_simd(1.0));
 
             weights = weights - (alpha * (transx * (pred - y)));
         }

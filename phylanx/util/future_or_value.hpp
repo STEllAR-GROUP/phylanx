@@ -17,6 +17,7 @@
 #include <hpx/util/steady_clock.hpp>
 
 #include <type_traits>
+#include <utility>
 
 #include <boost/intrusive_ptr.hpp>
 

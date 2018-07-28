@@ -421,17 +421,19 @@ void test_use_builtin_function_ind()
         )[0]);
 }
 
+/// <image url="$(ItemDir)/images/compiler_test_define_curry_function.dot.png" />
+//
 void test_define_curry_function()
 {
-    char const* exprstr1 = R"(
+    char const* exprstr1 = R"(block(
         define(f1, arg0,
             block(
                 define(f2, arg1, arg0 + arg1),
                 f2
             )
-        )
+        ),
         f1
-    )";
+    ))";
 
     auto expr1 = phylanx::ast::generate_ast(exprstr1);
 

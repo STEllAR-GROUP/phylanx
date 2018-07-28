@@ -92,6 +92,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_EXPORT std::int64_t get_eval_duration(bool reset) const;
         PHYLANX_EXPORT std::int64_t get_direct_execution(bool reset) const;
 
+        PHYLANX_EXPORT void enable_measurements();
+
         // decide whether to execute eval directly
         PHYLANX_EXPORT static hpx::launch select_direct_execution(
             eval_action, hpx::launch policy, hpx::naming::address_type lva);
