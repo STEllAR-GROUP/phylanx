@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "transpose_operation::transpose_operation",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the transpose_operation primitive requires"
                         "exactly one operand",
                     name, codename));
@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "transpose_operation::transpose_operation",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the transpose_operation primitive requires "
                         "that the arguments given by the operands "
                         "array is valid",
@@ -84,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "transpose_operation::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "left hand side operand has unsupported "
                                 "number of dimensions",
                             name, codename));

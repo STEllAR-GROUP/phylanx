@@ -84,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_minus_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the unary_minus_operation primitive requires "
                         "exactly one operand",
                     name_, codename_));
@@ -94,7 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_minus_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the unary_minus_operation primitive requires "
                         "that the argument given by the operands "
                         "array is valid",
@@ -120,7 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "unary_minus_operation::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "operand has unsupported number of "
                                 "dimensions",
                             this_->name_, this_->codename_));

@@ -5,11 +5,13 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/access_argument.hpp>
+#include <phylanx/execution_tree/primitives/slice.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -44,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> access_argument::eval(
-        std::vector<primitive_argument_type> const& params) const
+        std::vector<primitive_argument_type> const& params, eval_mode) const
     {
         if (argnum_ >= params.size())
         {

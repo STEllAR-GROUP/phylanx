@@ -6,10 +6,10 @@
 
 set(tests
     eval
-    set_operation
     for
     make_array
     map_numpy
+    set_operation
    )
 
 foreach(test ${tests})

@@ -11,6 +11,7 @@
 #include <phylanx/plugins/controls/filter_operation.hpp>
 #include <phylanx/plugins/controls/fold_left_operation.hpp>
 #include <phylanx/plugins/controls/fold_right_operation.hpp>
+#include <phylanx/plugins/controls/for_each.hpp>
 #include <phylanx/plugins/controls/for_operation.hpp>
 #include <phylanx/plugins/controls/if_conditional.hpp>
 #include <phylanx/plugins/controls/map_operation.hpp>

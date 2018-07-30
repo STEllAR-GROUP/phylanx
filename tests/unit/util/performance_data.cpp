@@ -47,20 +47,20 @@ std::map<std::string, std::size_t> expected_counts =
     { "/phylanx/__add$0/0$12$30", 8 },
     { "/phylanx/__add$1/0$16$33", 8 },
     { "/phylanx/__lt$0/0$10$17", 9 },
-    { "/phylanx/access-variable$0$fib_test/0$22$5", 0 },
-    { "/phylanx/access-variable$0$step/0$10$17", 0 },
-    { "/phylanx/access-variable$0$temp/0$13$27", 0 },
-    { "/phylanx/access-variable$0$x/0$12$30", 0 },
-    { "/phylanx/access-variable$0$y/0$12$34", 0 },
-    { "/phylanx/access-variable$0$z/0$12$27", 0 },
-    { "/phylanx/access-variable$1$step/0$16$27", 8 },
-    { "/phylanx/access-variable$1$temp/0$15$30", 8 },
-    { "/phylanx/access-variable$1$x/0$15$27", 8 },
-    { "/phylanx/access-variable$1$y/0$13$33", 8 },
-    { "/phylanx/access-variable$1$z/0$14$30", 8 },
-    { "/phylanx/access-variable$2$step/0$16$33", 1 },
-    { "/phylanx/access-variable$2$y/0$14$27", 1 },
-    { "/phylanx/access-variable$2$z/0$19$13", 1 },
+    { "/phylanx/access-variable$0$step/0$10$17", 9 },
+    { "/phylanx/access-variable$1$z/0$12$27", 0 },
+    { "/phylanx/access-variable$10$step/0$16$27", 0 },
+    { "/phylanx/access-variable$11$step/0$16$33", 8 },
+    { "/phylanx/access-variable$12$z/0$19$13", 1 },
+    { "/phylanx/access-variable$13$fib_test/0$22$5", 1 },
+    { "/phylanx/access-variable$2$x/0$12$30", 8 },
+    { "/phylanx/access-variable$3$y/0$12$34", 8 },
+    { "/phylanx/access-variable$4$temp/0$13$27", 0 },
+    { "/phylanx/access-variable$5$y/0$13$33", 8 },
+    { "/phylanx/access-variable$6$y/0$14$27", 0 },
+    { "/phylanx/access-variable$7$z/0$14$30", 8 },
+    { "/phylanx/access-variable$8$x/0$15$27", 0 },
+    { "/phylanx/access-variable$9$temp/0$15$30", 8 },
     { "/phylanx/block$0/0$1$1", 1 },
     { "/phylanx/block$1/0$3$9", 1 },
     { "/phylanx/block$2/0$11$17", 8 },
@@ -95,25 +95,19 @@ int main()
 
     auto const& code = phylanx::execution_tree::compile(
         phylanx::ast::generate_ast(fib_code), snippets);
+
+    // enable collection of performance data, return list of existing primitives
+    std::vector<std::string> existing_primitive_instances =
+        phylanx::util::enable_measurements();
+
     auto const fibonacci = code.run();
 
     // Evaluate Fibonacci using the read data
     auto const result = fibonacci();
 
-    // List of existing primitive instances
-    std::vector<std::string> existing_primitive_instances;
-
-    // Retrieve all primitive instances
-    for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
-    {
-        existing_primitive_instances.push_back(entry.first);
-    }
-
     for (auto const& entry :
         phylanx::util::retrieve_counter_data(existing_primitive_instances,
-            performance_counter_name_last_part,
-            hpx::find_here()))
+            performance_counter_name_last_part))
     {
         auto expected_value = expected_counts[entry.first];
 

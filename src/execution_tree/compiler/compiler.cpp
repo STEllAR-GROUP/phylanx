@@ -25,6 +25,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <list>
@@ -266,12 +267,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             environment env(&env_, args.size());
             for (std::size_t i = 0; i != args.size(); ++i)
             {
-                access_argument arg(default_locality_);
-
                 HPX_ASSERT(ast::detail::is_identifier(args[i]));
                 env.define(ast::detail::identifier_name(args[i]),
-                    hpx::util::bind(arg, i + base_arg_num,
-                        hpx::util::placeholders::_2, name_));
+                    access_argument(i + base_arg_num, default_locality_));
             }
             return compile(
                 name_, body, snippets_, env, patterns_, default_locality_);
@@ -297,8 +295,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             auto p = primitive_operand(f.arg_, lambda_name, name_);
 
-            p.store(
-                hpx::launch::sync, std::move(compile_body(args, body).arg_));
+            p.store(hpx::launch::sync,
+                std::move(compile_body(args, body).arg_), {});
 
             return f;
         }
@@ -388,7 +386,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     }, variable_name};
 
                 auto var = primitive_operand(f.arg_, variable_name, name_);
-                var.store(hpx::launch::sync, std::move(body_f.arg_));
+                var.store(hpx::launch::sync, std::move(body_f.arg_), {});
             }
             else
             {
@@ -411,7 +409,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 auto var = primitive_operand(f.arg_, variable_name, name_);
                 var.store(hpx::launch::sync,
-                    std::move(compile_lambda(args, body, id).arg_));
+                    std::move(compile_lambda(args, body, id).arg_), {});
             }
 
             // the define-variable object is invoked whenever a define() is
@@ -425,6 +423,91 @@ namespace phylanx { namespace execution_tree { namespace compiler
             function variable_ref = f;      // copy f as we need to move it
             return define_operation{default_locality_}(
                 std::move(variable_ref.arg_), std::move(name_parts), name_);
+        }
+
+        bool handle_sliced_variable_reference(std::string name,
+            ast::expression const& expr, std::list<function>&& elements,
+            function& result)
+        {
+            ast::tagged id = ast::detail::tagged_id(expr);
+
+            primitive_name_parts name_parts(
+                name, 0ull, id.id, id.col, snippets_.compile_id_ - 1);
+
+            if (compiled_function* cf = env_.find(name))
+            {
+                // make sure the target can handle slicing directly
+                auto at = cf->target<access_target>();
+                if (at == nullptr || at->target_name_ != "access-variable")
+                {
+//                     if (cf->target<access_argument>() == nullptr)
+                    {
+                        return false;
+                    }
+                }
+
+                if (at != nullptr)
+                {
+                    name_parts.sequence_number =
+                        snippets_.sequence_numbers_[at->target_name_]++;
+                }
+
+                result = (*cf)(std::move(elements), std::move(name_parts), name_);
+                return true;
+            }
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::compiler::handle_variable",
+                generate_error_message(
+                    "couldn't find variable '" + name + "' in symbol table",
+                    name_, id));
+        }
+
+        // handle slice(), this has to be transformed into a immediate slicing
+        // on the first argument
+        bool handle_slice(
+            std::multimap<std::string, ast::expression>& placeholders,
+            ast::tagged const& slice_id, function& result)
+        {
+            //  _1 represents the expression to slice
+            using iterator =
+                typename std::multimap<std::string, ast::expression>::iterator;
+            std::pair<iterator, iterator> p1 = placeholders.equal_range("_1");
+
+            // we don't know how to handle a missing slicing target
+            if (p1.first == p1.second ||
+                !ast::detail::is_identifier(p1.first->second))
+            {
+                return false;
+            }
+
+            // __2 represents (up to two) slicing arguments
+            std::pair<iterator, iterator> pargs =
+                placeholders.equal_range("__2");
+
+            // handle only cases with one of two slicing arguments
+            std::size_t numargs = std::distance(pargs.first, pargs.second);
+            if (numargs == 0 || numargs > 2)
+            {
+                return false;
+            }
+
+            // now compile arguments
+            std::list<function> args;
+            {
+                environment env(&env_);
+                for (iterator it = pargs.first; it != pargs.second; ++it)
+                {
+                    args.emplace_back(compile(name_, it->second,
+                        snippets_, env, patterns_, default_locality_));
+                }
+            }
+
+            // compile the target expression, make sure slicing parameters are
+            // passed through to the access-variable object
+            return handle_sliced_variable_reference(
+                ast::detail::identifier_name(p1.first->second),
+                p1.first->second, std::move(args), result);
         }
 
         function handle_variable_reference(std::string name,
@@ -485,7 +568,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // distinguish func() from invoke(func)
                 if (argexprs.empty())
                 {
-                    fargs.push_back(primitive_argument_type{});
+                    fargs.emplace_back();
                 }
                 else
                 {
@@ -536,8 +619,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // distinguish func() from invoke(func)
                 if (placeholders.empty())
                 {
-                    args.push_back(function{
-                        ast::nil{}, compose_primitive_name(name_parts)});
+                    args.emplace_back(
+                        ast::nil{}, compose_primitive_name(name_parts));
                 }
                 else
                 {
@@ -596,6 +679,27 @@ namespace phylanx { namespace execution_tree { namespace compiler
                         }
                     }
 
+                    // Handle slice(_1, __2)
+                    if (function_name == "slice")
+                    {
+                        std::multimap<std::string, ast::expression> placeholders;
+                        if (ast::match_ast(expr, hpx::util::get<1>((*cit).second),
+                                ast::detail::on_placeholder_match{placeholders}))
+                        {
+                            function slice_result;
+                            if (handle_slice(placeholders, id, slice_result))
+                            {
+                                // handle only special case where sliced
+                                // expression is a variable
+                                return slice_result;
+                            }
+
+                            // fall through to normal processing for all other
+                            // cases
+                        }
+                    }
+
+                    // handle all non-special functions
                     while (cit != patterns_.end() && (*cit).first == function_name)
                     {
                         std::multimap<std::string, ast::expression> placeholders;
@@ -646,7 +750,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 {
                     return literal_value(primitive_argument_type{true});
                 }
-                return handle_variable_reference(name, expr);
+                return handle_variable_reference(std::move(name), expr);
             }
 
             // ... or a function call

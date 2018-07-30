@@ -128,7 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal0d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -172,7 +172,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal1d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -210,7 +210,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal1d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -269,7 +269,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -316,7 +316,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal2d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -365,7 +365,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal2d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -414,7 +414,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -440,7 +440,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::greater_equal_all",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side operand has unsupported number of "
                         "dimensions",
                     name_, codename_));
@@ -454,7 +454,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     greater_equal_.name_, greater_equal_.codename_));
@@ -466,7 +466,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     greater_equal_.name_, greater_equal_.codename_));
@@ -477,7 +477,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     greater_equal_.name_, greater_equal_.codename_));
@@ -488,7 +488,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     greater_equal_.name_, greater_equal_.codename_));
@@ -498,7 +498,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     greater_equal_.name_, greater_equal_.codename_));
@@ -520,7 +520,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     greater_equal_.name_, greater_equal_.codename_));
@@ -610,7 +610,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be compared",
                     greater_equal_.name_, greater_equal_.codename_));
         }
@@ -634,7 +634,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the greater_equal primitive requires two or three "
                         "operands",
                     name_, codename_));
@@ -645,7 +645,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the greater_equal primitive requires that the "
                         "arguments given by the operands array are valid",
                     name_, codename_));

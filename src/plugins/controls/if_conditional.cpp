@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "if_conditional::if_conditional",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the if_conditional primitive requires three "
                     "operands",
                     name_, codename_));
@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "if_conditional::if_conditional",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the if_conditional primitive requires that the "
                     "arguments given by the operands array "
                     "is valid",

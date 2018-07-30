@@ -78,9 +78,9 @@ char const* const als_explicit = R"(
                         block(
                                 if(enable_output,
                                         block(
-                                                cout("iteration ",k),
-                                                cout("X: ",X),
-                                                cout("Y: ",Y)
+                                                cout("iteration ",k,u) //,
+//                                                cout("X: ",X),
+//                                                cout("Y: ",Y)
                                         )
                                 ),
                             store(conf_u, slice_row(conf, u)),
@@ -288,28 +288,17 @@ void print_instrumentation(char const* const name, int compile_id,
               << "\n\n";
 }
 
-void print_performance_counter_data_csv()
+void print_performance_counter_data_csv(
+    std::vector<std::string> const& existing_primitive_instances)
 {
     std::cout << std::endl << "Primitive Performance Counter Data in CSV:";
 
     // CSV Header
     std::cout << "\nprimitive_instance,display_name,count,time,eval_direct\n";
 
-    // List of existing primitive instances
-    std::vector<std::string> existing_primitive_instances;
-
-    // Retrieve all primitive instances
-    for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
-    {
-        existing_primitive_instances.push_back(entry.first);
-    }
-
     // Print performance data
     for (auto const& entry :
-        phylanx::util::retrieve_counter_data(existing_primitive_instances,
-            std::vector<std::string>{"count/eval", "time/eval", "eval_direct"},
-            hpx::find_here()))
+        phylanx::util::retrieve_counter_data(existing_primitive_instances))
     {
         std::cout << "\"" << entry.first << "\",\""
                   << phylanx::execution_tree::compiler::primitive_display_name(
@@ -337,10 +326,14 @@ int hpx_main(boost::program_options::variables_map& vm)
     phylanx::execution_tree::compiler::function_list snippets;
     auto const& code_read_x =
         phylanx::execution_tree::compile("read_x", read_x_code, snippets);
-    auto read_x = code_read_x.run();
 
     auto const& code_als = phylanx::execution_tree::compile(
         vm.count("direct") != 0 ? als_direct : als_explicit, snippets);
+
+    // Enable collection of performance data for all existing primitives
+    auto primitives = phylanx::util::enable_measurements();
+
+    auto read_x = code_read_x.run();
     auto als = code_als.run();
 
     // Print instrumentation information, if enabled
@@ -381,7 +374,7 @@ int hpx_main(boost::program_options::variables_map& vm)
     // Print performance counter data in CSV
     if (vm.count("instrument") != 0)
     {
-        print_performance_counter_data_csv();
+        print_performance_counter_data_csv(primitives);
     }
 
     // Make sure all counters are properly initialized, don't reset current

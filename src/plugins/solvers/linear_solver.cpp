@@ -139,7 +139,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "this linear_solver primitive "
                     "requires exactly three operands",
                     name_, codename_));
@@ -154,7 +154,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "this linear_solver primitive "
                     "requires exactly two operands",
                     name_, codename_));
@@ -171,7 +171,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the linear_solver primitive "
                     "requires exactly two operands",
                     name_, codename_));
@@ -182,7 +182,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the linear_solver primitive requires "
                     "that the arguments given by the operands "
                     "array are valid",
@@ -202,7 +202,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "linear_solver::eval",
-                                execution_tree::generate_error_message(
+                                util::generate_error_message(
                                     "the linear_solver primitive "
                                     "requires "
                                     "that first operand to be a matrix and "
@@ -214,7 +214,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "linear_solver::eval",
-                                execution_tree::generate_error_message(
+                                util::generate_error_message(
                                     "the linear_solver primitive "
                                     "requires "
                                     "that third argument to be either 'L' "
@@ -237,7 +237,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "linear_solver_operation::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "the linear_solver_operation primitive "
                                 "requires "
                                 "that first operand to be a matrix and "

@@ -125,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less0d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -169,7 +169,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less1d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -207,7 +207,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less1d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -263,7 +263,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -310,7 +310,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less2d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -359,7 +359,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less2d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dimensions of the operands do not match",
                     name_, codename_));
         }
@@ -405,7 +405,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -431,7 +431,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::less_all",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side operand has unsupported number of "
                         "dimensions",
                     name_, codename_));
@@ -445,7 +445,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     less_.name_, less_.codename_));
@@ -457,7 +457,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     less_.name_, less_.codename_));
@@ -468,7 +468,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     less_.name_, less_.codename_));
@@ -479,7 +479,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     less_.name_, less_.codename_));
@@ -489,7 +489,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     less_.name_, less_.codename_));
@@ -511,7 +511,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     less_.name_, less_.codename_));
@@ -600,7 +600,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be compared",
                     less_.name_, less_.codename_));
         }
@@ -623,7 +623,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the less primitive requires exactly two or three "
                         "operands",
                     name_, codename_));
@@ -634,7 +634,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "less::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the less primitive requires that the "
                         "arguments given by the operands array are valid",
                     name_, codename_));

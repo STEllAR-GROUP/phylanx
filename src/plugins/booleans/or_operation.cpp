@@ -97,7 +97,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation0d",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the operands have incompatible number of "
                                 "dimensions",
                             name_, codename_));
@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation1d1d",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -163,7 +163,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation1d2d",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -209,7 +209,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation1d",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the operands have incompatible number of "
                                 "dimensions",
                             name_, codename_));
@@ -248,7 +248,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation2d1d",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -286,7 +286,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation2d2d",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the dimensions of the operands do not match",
                             name_, codename_));
                 }
@@ -324,7 +324,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_operation2d",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "the operands have incompatible number of "
                                 "dimensions",
                             name_, codename_));
@@ -350,7 +350,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "or_operation::or_all",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "left hand side operand has unsupported number of "
                                 "dimensions",
                             name_, codename_));
@@ -364,7 +364,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side are incompatible "
                         "and can't be compared",
                     or_.name_, or_.codename_));
@@ -376,7 +376,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be "
                         "compared",
                     or_.name_, or_.codename_));
@@ -388,7 +388,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be "
                         "compared",
                     or_.name_, or_.codename_));
@@ -399,7 +399,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be "
                         "compared",
                     or_.name_, or_.codename_));
@@ -410,7 +410,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be "
                         "compared",
                     or_.name_, or_.codename_));
@@ -428,7 +428,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be "
                         "compared",
                     or_.name_, or_.codename_));
@@ -438,7 +438,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be "
                         "compared",
                     or_.name_, or_.codename_));
@@ -449,7 +449,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "left hand side and right hand side can't be "
                         "compared",
                     or_.name_, or_.codename_));
@@ -509,7 +509,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the or_operation primitive requires exactly "
                         "two operands",
                     name_, codename_));
@@ -519,7 +519,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "or_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the or_operation primitive requires that the "
                         "arguments given by the operands array "
                         "are valid",

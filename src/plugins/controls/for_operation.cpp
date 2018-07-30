@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::for_operation::"
                         "eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the for_operation primitive requires exactly "
                             "four arguments",
                         that->name_, that->codename_));
@@ -58,7 +58,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::for_operation::"
                         "eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the for_operation primitive requires that the "
                             "arguments given by the operands array are "
                             "valid",

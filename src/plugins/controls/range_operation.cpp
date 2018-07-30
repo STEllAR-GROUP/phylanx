@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "range_operation::generate_range",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "range_operation needs at most three operands",
                 name_, codename_));
     }
@@ -78,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "range_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the range_operation primitive requires exactly one, two, "
                         "or three operands",
                     name_, codename_));
@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "range_operation::eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the range_operation primitive requires that the "
                             "arguments given by the operands array are valid",
                         name_, codename_));

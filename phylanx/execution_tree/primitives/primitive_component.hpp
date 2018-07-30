@@ -49,16 +49,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         }
 
+        // eval_action
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& params,
             eval_mode mode) const;
 
+        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval_single(
+            primitive_argument_type && param, eval_mode mode) const;
+
         // store_action
-        PHYLANX_EXPORT void store(primitive_argument_type&&);
-        PHYLANX_EXPORT void store_set_1d(
-            phylanx::ir::node_data<double>&&, std::vector<int64_t>&&);
-        PHYLANX_EXPORT void store_set_2d(phylanx::ir::node_data<double>&&,
-            std::vector<int64_t>&&, std::vector<int64_t>&&);
+        PHYLANX_EXPORT void store(std::vector<primitive_argument_type>&&,
+            std::vector<primitive_argument_type>&&);
+
+        PHYLANX_EXPORT void store_single(primitive_argument_type&&,
+            std::vector<primitive_argument_type>&&);
 
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(
@@ -72,6 +76,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, eval, eval_action);
         HPX_DEFINE_COMPONENT_ACTION(
+            primitive_component, eval_single, eval_single_action);
+        HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, expression_topology,
             expression_topology_action);
         HPX_DEFINE_COMPONENT_DIRECT_ACTION(
@@ -79,18 +85,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, store, store_action);
         HPX_DEFINE_COMPONENT_ACTION(
-            primitive_component, store_set_1d, store_set_1d_action);
-        HPX_DEFINE_COMPONENT_ACTION(
-            primitive_component, store_set_2d, store_set_2d_action);
+            primitive_component, store_single, store_single_action);
 
         // access data for performance counter
         PHYLANX_EXPORT std::int64_t get_eval_count(bool reset) const;
         PHYLANX_EXPORT std::int64_t get_eval_duration(bool reset) const;
         PHYLANX_EXPORT std::int64_t get_direct_execution(bool reset) const;
 
+        PHYLANX_EXPORT void enable_measurements();
+
         // decide whether to execute eval directly
-        PHYLANX_EXPORT static hpx::launch select_direct_execution(eval_action,
-            hpx::launch policy, hpx::naming::address_type lva);
+        PHYLANX_EXPORT static hpx::launch select_direct_execution(
+            eval_action, hpx::launch policy, hpx::naming::address_type lva);
+        PHYLANX_EXPORT static hpx::launch select_direct_execution(
+            eval_single_action, hpx::launch policy,
+            hpx::naming::address_type lva);
 
     private:
         std::shared_ptr<primitive_component_base> primitive_;
@@ -102,14 +111,14 @@ HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::eval_action,
     phylanx_primitive_eval_action);
 HPX_REGISTER_ACTION_DECLARATION(
+    phylanx::execution_tree::primitives::primitive_component::eval_single_action,
+    phylanx_primitive_eval_single_action);
+HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::primitive_component::store_action,
     phylanx_primitive_store_action);
 HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::execution_tree::primitives::primitive_component::store_set_1d_action,
-    phylanx_primitive_store_set_1d_action);
-HPX_REGISTER_ACTION_DECLARATION(
-    phylanx::execution_tree::primitives::primitive_component::store_set_2d_action,
-    phylanx_primitive_store_set_2d_action);
+    phylanx::execution_tree::primitives::primitive_component::store_single_action,
+    phylanx_primitive_store_single_action);
 HPX_REGISTER_ACTION_DECLARATION(
     phylanx::execution_tree::primitives::
         primitive_component::expression_topology_action,

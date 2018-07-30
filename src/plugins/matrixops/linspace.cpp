@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "detail::linspace1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the linspace primitive requires at least one "
                     "interval",
                     name_, codename_));
@@ -78,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::linspace",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the linspace primitive requires exactly three "
                     "arguments.",
                     name_, codename_));
@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "linspace::eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "at least one of the arguments passed to "
                         "linspace is not valid.",
                         name_, codename_));

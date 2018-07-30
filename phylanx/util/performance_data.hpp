@@ -18,6 +18,31 @@
 
 namespace phylanx { namespace util
 {
+    /// Enable the collection of performance data for the given list of
+    /// primitives.
+    ///
+    /// \param primitive_instances The primitives for which performance counter
+    ///                 data is required
+    ///
+    /// \note This has to be called after compilation of a PhySL code block and
+    ///       before its execution.
+    ///
+    /// \returns The list of primitives for which the collection of performance
+    ///          data was enabled
+    ///
+    PHYLANX_EXPORT std::vector<std::string> enable_measurements(
+        std::map<std::string, hpx::id_type> const& primitive_instances);
+
+    /// Enable the collection of performance data for all existing primitives.
+    ///
+    /// \note This has to be called after compilation of a PhySL code block and
+    ///       before its execution.
+    ///
+    /// \returns The list of primitives for which the collection of performance
+    ///          data was enabled
+    ///
+    PHYLANX_EXPORT std::vector<std::string> enable_measurements();
+
     /// Retrieve specified performance counter data for the selected primitives
     ///
     /// \param primitive_instances The primitives for which performance counter
@@ -39,5 +64,38 @@ namespace phylanx { namespace util
     retrieve_counter_data(std::vector<std::string> const& primitive_instances,
         std::vector<std::string> const& counter_name_last_parts,
         hpx::id_type const& locality_id = hpx::find_here());
+
+    /// Retrieve all performance counter data for the selected primitives
+    ///
+    /// \param primitive_instances The primitives for which performance counter
+    ///                 data is required
+    /// \param locality_id The locality the performance counter data is going
+    ///                 to be queried from
+    ///
+    /// \return a std::map containing key/value pairs of primitive
+    ///         instances (names)/performance counter values
+    ///
+    /// \note primitive_instances are not verified
+    ///
+    /// \exception hpx::exception
+    ///
+    PHYLANX_EXPORT std::map<std::string, std::vector<std::int64_t>>
+    retrieve_counter_data(std::vector<std::string> const& primitive_instances,
+        hpx::id_type const& locality_id = hpx::find_here());
+
+    /// Retrieve all performance counter data for all primitives
+    ///
+    /// \param locality_id The locality the performance counter data is going
+    ///                 to be queried from
+    ///
+    /// \return a std::map containing key/value pairs of primitive
+    ///         instances (names)/performance counter values
+    ///
+    /// \note primitive_instances are not verified
+    ///
+    /// \exception hpx::exception
+    ///
+    PHYLANX_EXPORT std::map<std::string, std::vector<std::int64_t>>
+    retrieve_counter_data(hpx::id_type const& locality_id = hpx::find_here());
 }}
 #endif

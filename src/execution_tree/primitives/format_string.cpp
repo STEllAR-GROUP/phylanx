@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/format_string.hpp>
+#include <phylanx/util/generate_error_message.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
@@ -45,7 +46,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %c expects to convert from "
                         "a value that is convertible to a 'char'"));
             }
@@ -58,7 +59,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %hhd expects to convert from "
                         "a value that is convertible to a 'signed char'"));
             }
@@ -71,7 +72,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %hd expects to convert from "
                         "a value that is convertible to a 'short'"));
             }
@@ -84,7 +85,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %lld expects to convert from "
                         "a value that is convertible to a 'long long'"));
             }
@@ -97,7 +98,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %ld expects to convert from "
                         "a value that is convertible to a 'long'"));
             }
@@ -110,7 +111,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %d expects to convert from "
                         "a value that is convertible to an 'int'"));
             }
@@ -123,7 +124,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %hhu expects to convert from "
                         "a value that is convertible to an 'unsigned char'"));
             }
@@ -136,7 +137,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %hu expects to convert from "
                         "a value that is convertible to an 'unsigned "
                         "short'"));
@@ -150,7 +151,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %llu expects to convert from "
                         "a value that is convertible to an 'unsigned long "
                         "long'"));
@@ -164,7 +165,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %lu expects to convert from "
                         "a value that is convertible to an 'unsigned "
                         "long'"));
@@ -178,7 +179,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %u expects to convert from "
                         "a value that is convertible to an 'unsigned "
                         "int'"));
@@ -192,7 +193,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %Lf expects to convert from "
                         "a value that is convertible to a 'long double'"));
             }
@@ -205,7 +206,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %lf expects to convert from "
                         "a value that is convertible to a 'double'"));
             }
@@ -218,7 +219,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    generate_error_message(
+                    util::generate_error_message(
                         "the format specifier %f expects to convert from "
                         "a value that is convertible to a 'float'"));
             }
@@ -229,7 +230,7 @@ namespace phylanx { namespace execution_tree
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "format_string::format_value",
-                generate_error_message(
+                util::generate_error_message(
                     "invalid format specifier: " + spec.to_string()));
         }
     }

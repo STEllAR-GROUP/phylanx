@@ -35,12 +35,12 @@ typedef phylanx::execution_tree::primitives::primitive_component
 
 HPX_REGISTER_ACTION(primitive_component_type::eval_action,
     phylanx_primitive_eval_action)
+HPX_REGISTER_ACTION(primitive_component_type::eval_single_action,
+    phylanx_primitive_eval_single_action)
 HPX_REGISTER_ACTION(primitive_component_type::store_action,
     phylanx_primitive_store_action)
-HPX_REGISTER_ACTION(primitive_component_type::store_set_1d_action,
-    phylanx_primitive_store_set_1d_action)
-HPX_REGISTER_ACTION(primitive_component_type::store_set_2d_action,
-    phylanx_primitive_store_set_2d_action)
+HPX_REGISTER_ACTION(primitive_component_type::store_single_action,
+    phylanx_primitive_store_single_action)
 HPX_REGISTER_ACTION(primitive_component_type::expression_topology_action,
     phylanx_primitive_expression_topology_action)
 HPX_REGISTER_ACTION(primitive_component_type::bind_action,
@@ -123,23 +123,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_->do_eval(params, mode);
     }
 
+    hpx::future<primitive_argument_type> primitive_component::eval_single(
+        primitive_argument_type && param, eval_mode mode) const
+    {
+        if ((mode & eval_dont_evaluate_partials) &&
+            primitive_->operands_.empty())
+        {
+            // return a client referring to this component as the evaluation
+            // result
+            primitive this_{this->get_id()};
+            return hpx::make_ready_future(
+                primitive_argument_type{std::move(this_)});
+        }
+        return primitive_->do_eval(std::move(param), mode);
+    }
+
     // store_action
-    void primitive_component::store(primitive_argument_type&& arg)
+    void primitive_component::store(std::vector<primitive_argument_type>&& args,
+        std::vector<primitive_argument_type>&& params)
     {
-        primitive_->store(std::move(arg));
+        primitive_->store(std::move(args), std::move(params));
     }
 
-    void primitive_component::store_set_1d(
-        ir::node_data<double>&& data, std::vector<int64_t>&& list)
+    void primitive_component::store_single(primitive_argument_type&& arg,
+        std::vector<primitive_argument_type>&& params)
     {
-        primitive_->store_set_1d(std::move(data), std::move(list));
-    }
-
-    void primitive_component::store_set_2d(ir::node_data<double>&& data,
-        std::vector<int64_t>&& list_row, std::vector<int64_t>&& list_col)
-    {
-        primitive_->store_set_2d(
-            std::move(data), std::move(list_row), std::move(list_col));
+        primitive_->store(std::move(arg), std::move(params));
     }
 
     // extract_topology_action
@@ -174,8 +183,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_->get_direct_execution(reset);
     }
 
+    void primitive_component::enable_measurements()
+    {
+        primitive_->enable_measurements();
+    }
+
     hpx::launch primitive_component::select_direct_execution(
         primitive_component::eval_action, hpx::launch policy,
+        hpx::naming::address_type lva)
+    {
+        auto this_ = hpx::get_lva<primitive_component>::call(lva);
+        return this_->primitive_->select_direct_eval_execution(policy);
+    }
+
+    hpx::launch primitive_component::select_direct_execution(
+        primitive_component::eval_single_action, hpx::launch policy,
         hpx::naming::address_type lva)
     {
         auto this_ = hpx::get_lva<primitive_component>::call(lva);

@@ -53,6 +53,10 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     auto const& code = phylanx::execution_tree::compile(
         "fib", phylanx::ast::generate_ast(fib_code), snippets);
+
+    // Enable collection of performance data for all existing primitives
+    auto existing_primitive_instances = phylanx::util::enable_measurements();
+
     auto const fibonacci = code.run();
 
     // Fibonacci arguments
@@ -64,21 +68,9 @@ int hpx_main(boost::program_options::variables_map& vm)
     // CSV Header
     std::cout << "primitive_instance,display_name,count,time,eval_directs\n";
 
-    // List of existing primitive instances
-    std::vector<std::string> existing_primitive_instances;
-
-    // Retrieve all primitive instances
-    for (auto const& entry :
-        hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"))
-    {
-        existing_primitive_instances.push_back(entry.first);
-    }
-
     // Print performance data
     for (auto const& entry :
-        phylanx::util::retrieve_counter_data(existing_primitive_instances,
-            std::vector<std::string>{"count/eval", "time/eval", "eval_direct"},
-            hpx::find_here()))
+        phylanx::util::retrieve_counter_data(existing_primitive_instances))
     {
         std::cout << "\"" << entry.first << "\",\""
                   << phylanx::execution_tree::compiler::primitive_display_name(

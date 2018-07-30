@@ -14,22 +14,30 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace util {
-  namespace slicing_helpers
-  {
-
-    std::int64_t extract_integer_value(
+namespace phylanx { namespace util { namespace slicing_helpers
+{
+    ///////////////////////////////////////////////////////////////////////////
+    // extract a single integer from the given node_data instance
+    PHYLANX_EXPORT std::int64_t extract_integer(
         execution_tree::primitive_argument_type const& val,
-        std::int64_t default_value);
+        std::int64_t default_value, std::string const& name = "",
+        std::string const& codename = "<unknown>");
 
-    std::vector<std::int64_t> extract_slicing(
-        execution_tree::primitive_argument_type&& arg,
-        std::size_t arg_size);
+    ///////////////////////////////////////////////////////////////////////////
+    // generate a list of indices to extract from a given vector
+    PHYLANX_EXPORT std::vector<std::int64_t> create_list_slice(
+        std::int64_t start, std::int64_t stop, std::int64_t step);
 
-  }
-}}
+    ///////////////////////////////////////////////////////////////////////////
+    // extract a list of indices that correspond to the given slicing parameters
+    PHYLANX_EXPORT ir::slicing_indices extract_slicing(
+        execution_tree::primitive_argument_type const& arg,
+        std::size_t arg_size, std::string const& name = "",
+        std::string const& codename = "<unknown>");
+}}}
 
 #endif //PHYLANX_SLICING_HELPERS_HPP

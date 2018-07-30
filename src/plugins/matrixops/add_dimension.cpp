@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "add_dimension::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the add_dimension primitive requires exactly one operand",
                     name_, codename_));
         }
@@ -73,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "add_dimension::eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "the add_dimension primitive requires that the "
                             "arguments given by the operands array are "
                             "valid",
@@ -94,7 +94,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "add_dimension::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "operand a has an invalid "
                             "number of dimensions",
                             this_->name_, this_->codename_));

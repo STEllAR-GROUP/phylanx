@@ -36,76 +36,45 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    void block_operation::next(std::size_t i,
-        std::vector<primitive_argument_type> && args,
-        hpx::lcos::local::promise<primitive_argument_type> && result) const
-    {
-        // skip statements that don't return anything
-        while (i != operands_.size() && !valid(operands_[i]))
-        {
-            if (i == operands_.size() - 1)
-            {
-                result.set_value(primitive_argument_type{});
-            }
-            ++i;
-        }
-
-        if (i == operands_.size())
-            return;
-
-        auto this_ = this->shared_from_this();
-        auto f = value_operand(operands_[i], args, name_, codename_);
-        f.then(
-            hpx::launch::sync,
-            [this_, i, args = std::move(args), result = std::move(result)](
-                hpx::future<primitive_argument_type>&& step) mutable -> void
-            {
-                try
-                {
-                    // the value of the last step is returned
-                    if (i == this_->operands_.size() - 1)
-                    {
-                        result.set_value(step.get());
-                        return;
-                    }
-
-                    step.get();    // rethrow exception
-
-                    // trigger next step
-                    this_->next(i + 1, std::move(args), std::move(result));
-                }
-                catch (...)
-                {
-                    result.set_exception(std::current_exception());
-                }
-            });
-    }
-
     hpx::future<primitive_argument_type> block_operation::eval(
         std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> args) const
+        std::vector<primitive_argument_type> args, eval_mode mode) const
     {
         // Empty blocks are allowed (Issue #278)
         if (this->no_operands())
         {
-            return hpx::make_ready_future(primitive_argument_type{ast::nil{}});
+            return hpx::make_ready_future(primitive_argument_type{});
         }
-        hpx::lcos::local::promise<primitive_argument_type> result;
-        auto f = result.get_future();
-        next(0, std::move(args), std::move(result));    // trigger first step
+
+        mode = eval_mode(mode & ~eval_dont_wrap_functions);
+
+        hpx::future<primitive_argument_type> f;
+
+        std::size_t size = operands_.size();
+        for (std::size_t i = 0; i != size; ++i)
+        {
+            if (i == size - 1)
+            {
+                f = value_operand(operands_[i], args, name_, codename_, mode);
+            }
+            else
+            {
+                value_operand_sync(operands_[i], args, name_, codename_, mode);
+            }
+        }
+
         return f;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-
+    ///////////////////////////////////////////////////////////////////////////
     // start iteration over given block statement
     hpx::future<primitive_argument_type> block_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode mode) const
     {
         if (this->no_operands())
         {
-            return eval(args, noargs);
+            return eval(args, noargs, mode);
         }
-        return eval(this->operands(), args);
+        return eval(this->operands(), args, mode);
     }
 }}}
