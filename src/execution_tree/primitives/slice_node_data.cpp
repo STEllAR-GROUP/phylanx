@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree
                     "scalar",
                     name, codename));
         }
-        return ir::node_data<T>{f.scalar(data)};
+        return f.scalar(data, data);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree
         // handle single value slicing result
         if (indices.single_value())
         {
-            return ir::node_data<T>{f.scalar(data[start])};
+            return f.scalar(data, data[start]);
         }
 
         std::int64_t stop = indices.stop();
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree
         {
             HPX_ASSERT(stop > start);
             auto sv = blaze::subvector(data, start, stop - start);
-            return ir::node_data<T>{f.vector(std::move(sv))};
+            return f.vector(data, std::move(sv));
         }
 
         // most general case, pick arbitrary elements
@@ -95,7 +95,7 @@ namespace phylanx { namespace execution_tree
         auto sv = blaze::elements(
             data, util::slicing_helpers::create_list_slice(start, stop, step));
 
-        return ir::node_data<T>{f.vector(std::move(sv))};
+        return f.vector(data, std::move(sv));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ namespace phylanx { namespace execution_tree
             // handle single value slicing result
             if (columns.single_value())
             {
-                return ir::node_data<T>{f.scalar(row[col_start])};
+                return f.scalar(input_matrix, row[col_start]);
             }
 
             // extract a consecutive sub-vector (sub-row)
@@ -170,7 +170,7 @@ namespace phylanx { namespace execution_tree
                 HPX_ASSERT(col_stop > col_start);
                 auto sv =
                     blaze::subvector(row, col_start, col_stop - col_start);
-                return ir::node_data<T>{f.trans_vector(std::move(sv))};
+                return f.trans_vector(input_matrix, std::move(sv));
             }
 
             // general case, pick arbitrary elements from selected row
@@ -178,7 +178,7 @@ namespace phylanx { namespace execution_tree
                 util::slicing_helpers::create_list_slice(
                     col_start, col_stop, col_step));
 
-            return ir::node_data<T>{f.trans_vector(std::move(sv))};
+            return f.trans_vector(input_matrix, std::move(sv));
         }
         else if (columns.single_value())
         {
@@ -191,7 +191,7 @@ namespace phylanx { namespace execution_tree
                 HPX_ASSERT(row_stop > row_start);
                 auto sv =
                     blaze::subvector(col, row_start, row_stop - row_start);
-                return ir::node_data<T>{f.vector(std::move(sv))};
+                return f.vector(input_matrix, std::move(sv));
             }
 
             // general case, pick arbitrary elements from selected column
@@ -199,7 +199,7 @@ namespace phylanx { namespace execution_tree
                 util::slicing_helpers::create_list_slice(
                     row_start, row_stop, row_step));
 
-            return ir::node_data<T>{f.vector(std::move(sv))};
+            return f.vector(input_matrix, std::move(sv));
         }
 
         // extract various sub-matrices of the given matrix
@@ -212,7 +212,7 @@ namespace phylanx { namespace execution_tree
                 HPX_ASSERT(row_stop > row_start);
                 auto result = blaze::submatrix(input_matrix, row_start,
                     col_start, row_stop - row_start, col_stop - col_start);
-                return ir::node_data<T>{f.matrix(std::move(result))};
+                return f.matrix(input_matrix, std::move(result));
             }
 
             auto sm = blaze::submatrix(input_matrix, 0ll, col_start,
@@ -222,7 +222,7 @@ namespace phylanx { namespace execution_tree
                 util::slicing_helpers::create_list_slice(
                     row_start, row_stop, row_step));
 
-            return ir::node_data<T>{f.matrix(std::move(result))};
+            return f.matrix(input_matrix, std::move(result));
         }
         else if (row_step == 1)
         {
@@ -235,7 +235,7 @@ namespace phylanx { namespace execution_tree
                 util::slicing_helpers::create_list_slice(
                     col_start, col_stop, col_step));
 
-            return ir::node_data<T>{f.matrix(std::move(result))};
+            return f.matrix(input_matrix, std::move(result));
         }
 
         // general case, pick arbitrary elements from matrix
@@ -247,7 +247,7 @@ namespace phylanx { namespace execution_tree
             util::slicing_helpers::create_list_slice(
                 col_start, col_stop, col_step));
 
-        return ir::node_data<T>{f.matrix(std::move(result))};
+        return f.matrix(input_matrix, std::move(result));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -257,29 +257,31 @@ namespace phylanx { namespace execution_tree
         template <typename T>
         struct slice_identity
         {
-            template <typename Scalar>
-            T const& scalar(Scalar const& value) const
+            template <typename Data, typename Scalar>
+            ir::node_data<T> scalar(Data const&, Scalar const& value) const
             {
-                return value;
+                return ir::node_data<T>{value};
             }
 
-            template <typename View>
-            blaze::DynamicVector<T> vector(View&& view) const
+            template <typename Data, typename View>
+            ir::node_data<T> vector(Data const&, View&& view) const
             {
-                return blaze::DynamicVector<T>{std::forward<View>(view)};
+                return ir::node_data<T>{
+                    blaze::DynamicVector<T>{std::forward<View>(view)}};
             }
 
-            template <typename View>
-            blaze::DynamicVector<T> trans_vector(View&& view) const
+            template <typename Data, typename View>
+            ir::node_data<T> trans_vector(Data const&, View&& view) const
             {
-                return blaze::DynamicVector<T>{
-                    blaze::trans(std::forward<View>(view))};
+                return ir::node_data<T>{blaze::DynamicVector<T>{
+                    blaze::trans(std::forward<View>(view))}};
             }
 
-            template <typename View>
-            blaze::DynamicMatrix<T> matrix(View&& view) const
+            template <typename Data, typename View>
+            ir::node_data<T> matrix(Data const&, View&& view) const
             {
-                return blaze::DynamicMatrix<T>{std::forward<View>(view)};
+                return ir::node_data<T>{
+                    blaze::DynamicMatrix<T>{std::forward<View>(view)}};
             }
         };
     }
@@ -454,15 +456,15 @@ namespace phylanx { namespace execution_tree
         {
             ir::node_data<T>& rhs_;
 
-            template <typename Scalar>
-            T scalar(Scalar value) const
+            template <typename Data, typename Scalar>
+            ir::node_data<T> scalar(Data& data, Scalar& value) const
             {
                 value = rhs_.scalar();
-                return std::move(value);
+                return ir::node_data<T>{std::move(data)};
             }
 
-            template <typename View>
-            blaze::DynamicVector<T> vector(View&& view) const
+            template <typename Data, typename View>
+            ir::node_data<T> vector(Data& data, View&& view) const
             {
                 std::size_t size = view.size();
                 auto v = rhs_.vector();
@@ -473,11 +475,11 @@ namespace phylanx { namespace execution_tree
                 {
                     view[i] = v[i];
                 }
-                return blaze::DynamicVector<T>{std::forward<View>(view)};
+                return ir::node_data<T>{std::move(data)};
             }
 
-            template <typename View>
-            blaze::DynamicVector<T> trans_vector(View&& view) const
+            template <typename Data, typename View>
+            ir::node_data<T> trans_vector(Data& data, View&& view) const
             {
                 std::size_t size = view.size();
                 auto v = rhs_.vector();
@@ -489,19 +491,18 @@ namespace phylanx { namespace execution_tree
                 {
                     view[i] = tv[i];
                 }
-                return blaze::DynamicVector<T>(
-                    blaze::trans(std::forward<View>(view)));
+                return ir::node_data<T>{std::move(data)};
             }
 
-            template <typename View>
-            blaze::DynamicMatrix<T> matrix(View&& view) const
+            template <typename Data, typename View>
+            ir::node_data<T> matrix(Data& data, View&& view) const
             {
                 auto m = rhs_.matrix();
 
                 check_matrix_sizes(view, m);
 
                 view = m;
-                return blaze::DynamicMatrix<T>{std::forward<View>(view)};
+                return ir::node_data<T>{std::move(data)};
             }
         };
     }
@@ -522,7 +523,16 @@ namespace phylanx { namespace execution_tree
         case 1: HPX_FALLTHROUGH;
         case 3:
             {
-                auto v = data.vector();
+                if (data.is_ref())
+                {
+                    auto v = data.vector();
+                    std::size_t size = v.size();
+                    return slice1d<T>(std::move(v),
+                        util::slicing_helpers::extract_slicing(indices, size),
+                        detail::slice_assign<T>{value}, name, codename);
+                }
+
+                auto& v = data.vector_non_ref();
                 std::size_t size = v.size();
                 return slice1d<T>(std::move(v),
                     util::slicing_helpers::extract_slicing(indices, size),
@@ -532,9 +542,21 @@ namespace phylanx { namespace execution_tree
         case 2: HPX_FALLTHROUGH;
         case 4:
             {
-                auto m = data.matrix();
+                if (data.is_ref())
+                {
+                    auto m = data.matrix();
+                    std::size_t rows = m.rows();
+                    ir::slicing_indices columns{
+                        0ll, std::int64_t(m.columns()), 1ll};
+                    return slice2d<T>(std::move(m),
+                        util::slicing_helpers::extract_slicing(indices, rows),
+                        columns, detail::slice_assign<T>{value}, name, codename);
+                }
+
+                auto& m = data.matrix_non_ref();
                 std::size_t rows = m.rows();
-                ir::slicing_indices columns{0ll, std::int64_t(m.columns()), 1ll};
+                ir::slicing_indices columns{
+                    0ll, std::int64_t(m.columns()), 1ll};
                 return slice2d<T>(std::move(m),
                     util::slicing_helpers::extract_slicing(indices, rows),
                     columns, detail::slice_assign<T>{value}, name, codename);
@@ -563,7 +585,18 @@ namespace phylanx { namespace execution_tree
         case 2: HPX_FALLTHROUGH;
         case 4:
             {
-                auto m = data.matrix();
+                if (data.is_ref())
+                {
+                    auto m = data.matrix();
+                    std::size_t numrows = m.rows();
+                    std::size_t numcols = m.columns();
+                    return slice2d<T>(std::move(m),
+                        util::slicing_helpers::extract_slicing(rows, numrows),
+                        util::slicing_helpers::extract_slicing(columns, numcols),
+                        detail::slice_assign<T>{value}, name, codename);
+                }
+
+                auto& m = data.matrix_non_ref();
                 std::size_t numrows = m.rows();
                 std::size_t numcols = m.columns();
                 return slice2d<T>(std::move(m),
@@ -575,22 +608,45 @@ namespace phylanx { namespace execution_tree
         case 1: HPX_FALLTHROUGH;
         case 3:
             {
-                auto v = data.vector();
-                std::size_t size = v.size();
-                if (valid(rows))
+                if (data.is_ref())
                 {
-                    HPX_ASSERT(!valid(columns));
-                    return slice1d<T>(std::move(v),
-                        util::slicing_helpers::extract_slicing(rows, size),
-                        detail::slice_assign<T>{value}, name, codename);
-                }
+                    auto v = data.vector();
+                    std::size_t size = v.size();
+                    if (valid(rows))
+                    {
+                        HPX_ASSERT(!valid(columns));
+                        return slice1d<T>(std::move(v),
+                            util::slicing_helpers::extract_slicing(rows, size),
+                            detail::slice_assign<T>{value}, name, codename);
+                    }
 
-                if (valid(columns))
+                    if (valid(columns))
+                    {
+                        HPX_ASSERT(!valid(rows));
+                        return slice1d<T>(std::move(v),
+                            util::slicing_helpers::extract_slicing(columns, size),
+                            detail::slice_assign<T>{value}, name, codename);
+                    }
+                }
+                else
                 {
-                    HPX_ASSERT(!valid(rows));
-                    return slice1d<T>(std::move(v),
-                        util::slicing_helpers::extract_slicing(columns, size),
-                        detail::slice_assign<T>{value}, name, codename);
+                    auto& v = data.vector_non_ref();
+                    std::size_t size = v.size();
+                    if (valid(rows))
+                    {
+                        HPX_ASSERT(!valid(columns));
+                        return slice1d<T>(std::move(v),
+                            util::slicing_helpers::extract_slicing(rows, size),
+                            detail::slice_assign<T>{value}, name, codename);
+                    }
+
+                    if (valid(columns))
+                    {
+                        HPX_ASSERT(!valid(rows));
+                        return slice1d<T>(std::move(v),
+                            util::slicing_helpers::extract_slicing(columns, size),
+                            detail::slice_assign<T>{value}, name, codename);
+                    }
                 }
             }
             break;

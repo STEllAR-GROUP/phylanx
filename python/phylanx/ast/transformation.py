@@ -304,50 +304,45 @@ class PhySL:
             indexv_nm = indexv.__class__.__name__
             if indexv_nm == "Slice":
                 # Assign when the subscript is a slice, e.g. a[lo:hi] = ...
-                s += "set("
+                s += "store%s(slice%s(" % (symbol_info, symbol_info)
                 s += self.recompile(vname)
-                s += ", "
+                s += ", list("
                 if indexv.lower is None:
-                    s += "0,"
+                    s += "nil,"
                 else:
                     s += self.recompile(indexv.lower) + ","
                 if indexv.upper is None:
-                    s += "0,"
+                    s += "nil,"
                 else:
                     s += self.recompile(indexv.upper) + ","
-                s += "1,"
-                s += "0, 0, 0, "
+                s += "nil)), "
                 s += self.recompile(args[1])
                 s += ")"
             elif indexv_nm == "Index":
                 # Assign when the subscript is a value, e.g. a[i] = ... or a[i,j] = ...
-                s += "set("
+                s += "store%s(slice%s(" % (symbol_info, symbol_info)
                 s += self.recompile(vname)
                 s += ", "
                 indexs = get_node(indexv, num=0)
                 if not is_node(indexs, "Tuple"):
-                    s += self.recompile(indexs) + ","
+                    s += self.recompile(indexs)
                 else:
-                    s += self.recompile(get_node(indexs, num=0)) + ", "
-                s += "0, 0, "
-                if not is_node(indexs, "Tuple"):
-                    s += "0, "
-                else:
-                    s += self.recompile(get_node(indexs, num=1)) + ", "
-                s += "0, 0, "
-                s += self.recompile(args[1])
+                    s += self.recompile(get_node(indexs, num=0))
+                    s += ", " + self.recompile(get_node(indexs, num=1))
+
+                s += "), " + self.recompile(args[1])
                 s += ")"
             elif indexv_nm == "ExtSlice":
                 # Assign when the subscript is an extended
                 # slice, e.g. a[x1:x2,y1:y2] = ...
                 slice1 = get_node(indexv, num=0)
                 slice2 = get_node(indexv, num=1)
-                s += "set("
+                s += "store%s(slice%s(" % (symbol_info, symbol_info)
                 s += self.recompile(vname)
-                s += ","
+                s += ", list("
 
                 if slice1.lower is None:
-                    s += "0, "
+                    s += "nil, "
                 else:
                     s += self.recompile(slice1.lower) + ", "
 
@@ -355,10 +350,10 @@ class PhySL:
                     s += "nil, "
                 else:
                     s += self.recompile(slice1.upper) + ", "
-                s += "1, "
+                s += "nil), list("
 
                 if slice2.lower is None:
-                    s += "0, "
+                    s += "nil, "
                 else:
                     s += self.recompile(slice2.lower) + ", "
 
@@ -367,7 +362,7 @@ class PhySL:
                 else:
                     s += self.recompile(slice2.upper) + ", "
 
-                s += "1, "
+                s += "nil)), "
 
                 s += self.recompile(args[1])
                 s += ")"
