@@ -28,10 +28,12 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const append_operation::match_data = {
+    match_pattern_type const append_operation::match_data =
+    {
         hpx::util::make_tuple("append",
             std::vector<std::string>{"append(_1, _2)"},
-            &create_append_operation, &create_primitive<append_operation>)};
+            &create_append_operation, &create_primitive<append_operation>)
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     append_operation::append_operation(
@@ -67,9 +69,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::append_operation::eval",
-                execution_tree::generate_error_message(
-                    "append_operation accepts exactly two arguments", name_,
-                    codename_));
+                generate_error_message(
+                    "append_operation accepts exactly two arguments"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
@@ -77,22 +78,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "append_operation::eval",
                 generate_error_message(
                     "the append_operation primitive requires that the "
-                    "arguments "
-                    "given by the operands array are valid"));
+                    "arguments given by the operands array are valid"));
         }
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
                 [this_](primitive_argument_type&& lhs,
-                    primitive_argument_type&& rhs) -> primitive_argument_type {
+                    primitive_argument_type&& rhs) -> primitive_argument_type
+                {
                     if (is_list_operand_strict(lhs))
                     {
                         return this_->handle_list_operands(
                             std::move(lhs), std::move(rhs));
                     }
+
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::append_operation:"
-                        ":eval",
+                        "phylanx::execution_tree::primitives::"
+                            "append_operation::eval",
                         this_->generate_error_message(
                             "append_operation accepts a list "
                             "value as its lhs operand only"));
@@ -102,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> append_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode) const
     {
         if (this->no_operands())
         {
