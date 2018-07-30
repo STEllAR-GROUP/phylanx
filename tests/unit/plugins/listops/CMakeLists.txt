@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    append_operation
     car_cdr_operation
     len_operation
    )
@@ -28,4 +29,3 @@ foreach(test ${tests})
   add_phylanx_pseudo_dependencies(tests.unit.plugins.listops.${test} ${test}_test_exe)
 
 endforeach()
-
