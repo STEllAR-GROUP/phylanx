@@ -34,6 +34,8 @@ void test_append_operation(std::string const& code,
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
+    test_append_operation("append( make_list(1, 42), 3 )", "list(1, 42, 3)");
+
     test_append_operation("append( make_list(1, 42), make_list(3, 4) )",
         "list(1, 42, list(3, 4))");
     test_append_operation("append( make_list(), make_list() )", "list(list())");
