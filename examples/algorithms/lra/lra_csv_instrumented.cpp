@@ -304,18 +304,19 @@ int hpx_main(boost::program_options::variables_map& vm)
     }
 
     // Compile the given code
-    phylanx::execution_tree::compiler::function_list snippets;
-
+    phylanx::execution_tree::compiler::function_list snippets_read_x;
     auto const& code_read_x = phylanx::execution_tree::compile(
-        "read_x", phylanx::ast::generate_ast(read_x_code), snippets);
+        "read_x", phylanx::ast::generate_ast(read_x_code), snippets_read_x);
 
+    phylanx::execution_tree::compiler::function_list snippets_read_y;
     auto const& code_read_y = phylanx::execution_tree::compile(
-        "read_y", phylanx::ast::generate_ast(read_y_code), snippets);
+        "read_y", phylanx::ast::generate_ast(read_y_code), snippets_read_y);
 
+    phylanx::execution_tree::compiler::function_list snippets_lra;
     auto const& code_lra = phylanx::execution_tree::compile("lra",
         phylanx::ast::generate_ast(
             vm.count("direct") != 0 ? lra_code_direct : lra_code),
-        snippets);
+        snippets_lra);
 
     // Enable collection of performance data for all existing primitives
     auto primitives = phylanx::util::enable_measurements();
