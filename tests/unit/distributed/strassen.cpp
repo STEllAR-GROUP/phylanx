@@ -5,12 +5,15 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/execution_tree/primitives/generic_function.hpp>
+#include <phylanx/ir/node_data.hpp>
 #include <phylanx/phylanx.hpp>
 #include <phylanx/plugins/plugin_factory.hpp>
 
 #include <hpx/hpx_init.hpp>
 #include <hpx/include/iostreams.hpp>
 #include <hpx/util/lightweight_test.hpp>
+
+#include <blaze/Math.h>
 
 #include <cstdint>
 #include <sstream>
@@ -53,9 +56,9 @@ std::string code_reduce = R"(
     vstack(P1, P2)
 )";
 
-///////////////////////////////////////////////////////////////////////////////
-phylanx::execution_tree::compiler::function compile(
-    std::string const& codestr, phylanx::execution_tree::compiler::function_list& snippets, phylanx::execution_tree::compiler::environment& env)
+phylanx::execution_tree::compiler::function compile(std::string const& codestr,
+    phylanx::execution_tree::compiler::function_list& snippets,
+    phylanx::execution_tree::compiler::environment& env)
 {
     auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
     return code.run();
@@ -69,7 +72,7 @@ void test_remote_run(std::uint32_t here, std::uint32_t there)
             hpx::naming::get_id_from_locality_id(here));
 
     auto et_init = compile(code_init,  snippets, env);
-    auto r_init = et_init();
+    auto r_init = et_init.run();
 
     auto et1 = compile(code_1, snippets, env);
     auto et2 = compile(code_2, snippets, env);
@@ -78,7 +81,9 @@ void test_remote_run(std::uint32_t here, std::uint32_t there)
     auto r2 = et2();
 
     auto et_reduce = compile(code_reduce, snippets, env);
-    et_reduce();
+
+    auto const actual =
+        phylanx::execution_tree::extract_numeric_value(et_reduce());
 }
 
 int hpx_main(int argc, char* argv[])
