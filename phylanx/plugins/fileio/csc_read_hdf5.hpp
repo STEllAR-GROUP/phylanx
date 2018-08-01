@@ -4,8 +4,8 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #pragma once
-#ifndef __CSCHDF5WRITE__
-#define __CSCHDF5WRITE__
+#ifndef __CSCHDF5READ__
+#define __CSCHDF5READ__
 
 #include <phylanx/config.hpp>
 
