@@ -526,6 +526,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     greater_equal_.name_, greater_equal_.codename_));
         }
 
+        primitive_argument_type operator()(ir::dictionary&&, ir::dictionary&&) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "greater_equal::eval",
+                util::generate_error_message(
+                    "left hand side and right hand side are incompatible "
+                    "and can't be compared",
+                    greater_equal_.name_, greater_equal_.codename_));
+        }
+
         primitive_argument_type operator()(
             ir::node_data<double>&& lhs, ir::node_data<std::int64_t>&& rhs) const
         {

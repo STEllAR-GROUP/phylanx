@@ -55,7 +55,8 @@ namespace phylanx { namespace execution_tree
             "phylanx::ir::node_data<double>",
             "phylanx::execution_tree::primitive",
             "std::vector<phylanx::ast::expression>",
-            "phylanx::ir::range"
+            "phylanx::ir::range",
+            "phylanx::ir::dictionary"
         };
 
         static char const* const get_primitive_argument_type_name(std::size_t index)
