@@ -117,11 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if(dims > 0 && dims < 3)
         {
             auto matrix = val.matrix();
-            HighFive::DataSet dataSet =
-                outfile.createDataSet<double>(
-                    dataset_name, HighFive::DataSpace(dims));
-
-            serialize(outfile, dataset_name, matrix);
+            serialize(filename, dataset_name, matrix);
         }
     }
 
