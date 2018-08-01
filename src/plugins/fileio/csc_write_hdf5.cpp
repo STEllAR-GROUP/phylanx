@@ -33,12 +33,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
 
     template<typename ValueType, bool SO>
-    void writeDataSpace(HighFive::File & file
+    void serialize(HighFive::File & file
        , std::string const& hdf5_group_name
        , blaze::CompressedMatrix<ValueType, SO> const& data);
 
     template<typename ValueType>
-    void writeDataSpace(HighFive::File & file
+    void serialize(HighFive::File & file
         , std::string const& hdf5_group_name
         , blaze::CompressedMatrix<ValueType, blaze::columnMajor> const& data) {
 
@@ -121,7 +121,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 outfile.createDataSet<double>(
                     dataset_name, HighFive::DataSpace(dims));
 
-            writeDataSpace(outfile, dataset_name, matrix);
+            serialize(outfile, dataset_name, matrix);
         }
     }
 
