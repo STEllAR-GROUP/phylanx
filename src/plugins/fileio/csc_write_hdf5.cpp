@@ -128,9 +128,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() != 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::csc_write_hdf5",
+                "phylanx::execution_tree::primitives::csc_write_hdf5::csc_write_hdf5",
                 util::generate_error_message(
-                    "the file_write primitive requires exactly three operands",
+                    "the csc_write_hdf5 primitive requires exactly three operands",
                     name_, codename_));
         }
 
@@ -138,9 +138,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             !valid(operands[2]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::csc_write_hdf5",
+                "phylanx::execution_tree::primitives::csc_write_hdf5::csc_write_hdf5",
                 util::generate_error_message(
-                    "the file_write primitive requires that the given operands "
+                    "the csc_write_hdf5 primitive requires that the given operands "
                     "are valid",
                     name_, codename_));
         }
