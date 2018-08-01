@@ -48,14 +48,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type dot_operation::dot0d1d(
         operand_type&& lhs, operand_type&& rhs) const
     {
-        rhs = rhs.vector() * lhs.scalar();
+        if (rhs.is_ref())
+        {
+            rhs = rhs.vector() * lhs.scalar();
+        }
+        else
+        {
+            rhs.vector() *= lhs.scalar();
+        }
+
         return primitive_argument_type{std::move(rhs)};
     }
 
     primitive_argument_type dot_operation::dot0d2d(
         operand_type&& lhs, operand_type&& rhs) const
     {
-        rhs = rhs.matrix() * lhs.scalar();
+        if (rhs.is_ref())
+        {
+            rhs = rhs.matrix() * lhs.scalar();
+        }
+        else
+        {
+            rhs.matrix() *= lhs.scalar();
+        }
+
         return primitive_argument_type{std::move(rhs)};
     }
 
@@ -120,7 +136,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type dot_operation::dot1d0d(
         operand_type&& lhs, operand_type&& rhs) const
     {
-        lhs = lhs.vector() * rhs.scalar();
+        if (lhs.is_ref())
+        {
+            lhs = lhs.vector() * rhs.scalar();
+        }
+        else
+        {
+            lhs.vector() *= rhs.scalar();
+        }
+
         return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
     }
 
@@ -291,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // implement 'dot' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> dot_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode) const
     {
         if (this->no_operands())
         {
