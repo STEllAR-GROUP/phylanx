@@ -48,11 +48,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const desc("csc");
 
         std::string const fmtkey("h5sparse_format");
-        Attribute fmt = grp.getAttribute< std::string >(fmtkey, DataSpace::From(desc));
-        std:string smat_fmt;
+        Attribute fmt = grp.getAttribute(fmtkey);
+        std::string smat_fmt;
         fmt.read(smat_fmt);
 
-        if(!smat_fmt.equals(desc)) {
+        if(smat_fmt.compare(desc) == 0) {
            //TODO: how does error handling work?
         }
 
@@ -101,83 +101,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     }
 
-    void csc_read_hdf5::read_to_file_hdf5(ir::node_data<double> const& val,
-        std::string const& filename, std::string const& dataset_name) const
-    {
-        HighFive::File infile(filename, HighFive::File::ReadOnly);
-
-        auto const dims = val.num_dimensions();
-        if(dims > 0 && dims < 3)
-        {
-            blaze::DynamicMatrix<double, blaze::columnMajor> matrix;
-            marshal(infile, dataset_name, matrix);
-        }
-        // TODO: error handling?
-    }
-
     hpx::future<primitive_argument_type> csc_read_hdf5::eval(
-        std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.size() != 3)
+        if (operands_.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read::csc_read_hdf5",
+                "phylanx::execution_tree::primitives::file_read_hdf5::eval",
                 util::generate_error_message(
-                    "the csc_read_hdf5 primitive requires exactly three operands",
+                    "the file_read_hdf5 primitive requires exactly two "
+                        "literal arguments",
                     name_, codename_));
         }
 
-        if (!valid(operands[0]) || !valid(operands[1]) ||
-            !valid(operands[2]))
+        if (!valid(operands_[0]) || !valid(operands_[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::csc_read_hdf5::csc_read_hdf5",
+                "phylanx::execution_tree::primitives::file_read_hdf5::eval",
                 util::generate_error_message(
-                    "the csc_read_hdf5 primitive requires that the given operands "
-                    "are valid",
+                    "the file_read_hdf5 primitive requires that the given "
+                        "operand is valid",
                     name_, codename_));
         }
 
         std::string filename =
-            string_operand_sync(operands[0], args, name_, codename_);
-        std::string dataset_name =
-            string_operand_sync(operands[1], args, name_, codename_);
+            string_operand_sync(operands_[0], args, name_, codename_);
+        std::string datasetName =
+            string_operand_sync(operands_[1], args, name_, codename_);
 
-        auto this_ = this->shared_from_this();
-        return numeric_operand(operands[2], args, name_, codename_)
-            .then(hpx::launch::sync, hpx::util::unwrapping(
-                [this_, filename = std::move(filename),
-                    dataset_name = std::move(dataset_name)](
-                    ir::node_data<double>&& val) -> primitive_argument_type
-                {
-                    if (!valid(val))
-                    {
-                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "csc_read_hdf5::eval",
-                            util::generate_error_message(
-                                "the csc_read_hdf5 primitive requires that "
-                                "the argument value given by the operand is "
-                                "non-empty",
-                                this_->name_, this_->codename_));
-                    }
+        HighFive::File infile(filename, HighFive::File::ReadOnly);
+        // matrix
+        blaze::CompressedMatrix<double, blaze::columnMajor> matrix;
+        marshal(infile, datasetName, matrix);
 
-                    this_->write_to_file_hdf5(val, std::move(filename),
-                        std::move(dataset_name));
-                    return primitive_argument_type(std::move(val));
-                }));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // write data to given file in hdf5 format and return content
-    hpx::future<primitive_argument_type> csc_read_hdf5::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+        return hpx::make_ready_future(primitive_argument_type{
+            ir::node_data< blaze::CompressedMatrix<double, blaze::columnMajor> >{std::move(matrix)}});
+        };
     }
 }}}
 
