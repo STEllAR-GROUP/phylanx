@@ -258,7 +258,7 @@ class PhySL:
         """class AugAssign(target, op, value)"""
 
         symbol = get_symbol_info(node, 'store')
-        op = self.apply_rule(node.op)
+        op = get_symbol_info(node, self.apply_rule(node.op))
         target = self.apply_rule(node.target)
         value = self.apply_rule(node.value)
 
@@ -270,7 +270,6 @@ class PhySL:
         op = get_symbol_info(node, self.apply_rule(node.op))
         left = self.apply_rule(node.left)
         right = self.apply_rule(node.right)
-
         return [op, (left, right)]
 
     def _BoolOp(self, node):
@@ -297,8 +296,9 @@ class PhySL:
             args = args[0][1]
         elif 'zeros' in symbol:
             symbol = symbol.replace('zeros', 'constant')
+            op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
-                return [symbol, ('0', ['list', args])]
+                return [symbol, ('0', [op, args])]
             else:
                 return [symbol, ('0', args)]
         return [symbol, args]
@@ -427,7 +427,8 @@ class PhySL:
         iteration_space[0] = iteration_space[0].replace('prange', 'range')
         body = self.block(node.body)
         # orelse = self.block(node.orelse)
-        return [symbol, (['lambda', (target, body)], iteration_space)]
+        op = get_symbol_info(node, 'lambda')
+        return [symbol, ([op, (target, body)], iteration_space)]
         # return [symbol, (target, iteration_space, body, orelse)]
 
     def _FunctionDef(self, node):
@@ -666,7 +667,7 @@ class PhySL:
         if isinstance(node.op, ast.UAdd):
             return [(operand,)]
 
-        op = self.apply_rule(node.op)
+        op = get_symbol_info(node, self.apply_rule(node.op))
         return [op, (operand,)]
 
     def _USub(self, node):
