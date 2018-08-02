@@ -63,7 +63,7 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
                 tmp_a = alpha + local_topic_counts
                 tmp_b = beta + current_token_topic_counts
                 tmp_c = betaSum + tokens_per_topic
-                topic_term_scores = tmp_a * (tmp_b / tmp_c )
+                topic_term_scores = tmp_a * (tmp_b / tmp_c)
 
                 sum_ = sum(topic_term_scores)
 
