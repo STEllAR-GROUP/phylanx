@@ -19,6 +19,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(fold_left_operation_plugin,
     phylanx::execution_tree::primitives::fold_left_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(fold_right_operation_plugin,
     phylanx::execution_tree::primitives::fold_right_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(for_each_plugin,
+    phylanx::execution_tree::primitives::for_each::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(for_operation_plugin,
     phylanx::execution_tree::primitives::for_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(if_conditional_plugin,

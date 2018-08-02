@@ -95,7 +95,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
     }
 
-    void lambda::store(primitive_argument_type&& data)
+    void lambda::store(std::vector<primitive_argument_type>&& data,
+        std::vector<primitive_argument_type>&& params)
     {
         if (valid(operands_[0]))
         {
@@ -105,9 +106,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the expression representing the function target "
                         "has already been initialized"));
         }
+        if (data.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "lambda::store",
+                generate_error_message(
+                    "the right hand side expression is not valid"));
+        }
+        if (!params.empty())
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "lambda::store",
+                generate_error_message(
+                    "store shouldn't be called with dynamic arguments"));
+        }
 
         // initialize the lambda's body
-        operands_[0] = extract_copy_value(std::move(data));
+        operands_[0] = extract_copy_value(std::move(data[0]));
     }
 
     topology lambda::expression_topology(std::set<std::string>&& functions,

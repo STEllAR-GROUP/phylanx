@@ -92,7 +92,8 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
                 hpx::threads::run_as_hpx_thread(
                     [&]() {
                         using namespace phylanx::execution_tree;
-                        p.store(hpx::launch::sync, primitive_argument_type{d});
+                        p.store(hpx::launch::sync,
+                            primitive_argument_type{d}, {});
                     });
             },
             "assign another value to variable")

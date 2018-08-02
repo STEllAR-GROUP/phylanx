@@ -92,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "constant::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the constant primitive requires "
                         "at least one and at most 2 operands",
                     name_, codename_));
@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "constant::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the constant primitive requires that the "
                     "arguments given by the operands array are valid",
                     name_, codename_));
@@ -121,7 +121,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "the first argument must be a literal "
                                     "scalar value",
                                 this_->name_, this_->codename_));
@@ -130,7 +130,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::extract_num_dimensions",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "the constant primitive requires "
                                     "for the shape not to be empty",
                                 this_->name_, this_->codename_));
@@ -139,7 +139,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::extract_num_dimensions",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "the constant primitive requires "
                                     "for the shape not to have more than "
                                     "two entries",
@@ -161,7 +161,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "left hand side operand has unsupported "
                                     "number of dimensions",
                                 this_->name_, this_->codename_));

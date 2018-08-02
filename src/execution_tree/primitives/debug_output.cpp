@@ -52,15 +52,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](args_type && args) -> primitive_argument_type
-        {
-            for (auto const& arg : args)
             {
-                hpx::consolestream << arg;
-            }
-            hpx::consolestream << std::endl;
+                for (auto const& arg : args)
+                {
+                    hpx::consolestream << arg;
+                }
+                hpx::consolestream << std::endl;
 
-            return {};
-        }),
+                return {};
+            }),
             detail::map_operands(
                 operands, functional::value_operand{}, args, name_, codename_));
     }

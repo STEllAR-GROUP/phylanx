@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the file_read primitive requires exactly one "
                         "literal argument",
                     name_, codename_));
@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the file_read primitive requires that the given "
                         "operand is valid",
                     name_, codename_));
@@ -70,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "couldn't open file: " + filename,
                     name_, codename_));
         }
@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "couldn't read expected number of bytes from file: " +
                         filename,
                     name_, codename_));

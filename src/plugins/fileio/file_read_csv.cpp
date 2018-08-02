@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::"
                     "eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the file_read_csv primitive requires exactly one "
                         "literal argument",
                     name_, codename_));
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::"
                     "eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the file_read_csv primitive requires that the given "
                         "operand is valid",
                     name_, codename_));
@@ -76,7 +76,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "couldn't open file: " + filename,
                     name_, codename_));
         }
@@ -112,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         HPX_THROW_EXCEPTION(hpx::invalid_data,
                             "phylanx::execution_tree::primitives::"
                                 "file_read_csv::eval",
-                            execution_tree::generate_error_message(
+                            util::generate_error_message(
                                 "wrong data format, different number of "
                                     "element in this row " +
                                     filename + ':' + std::to_string(n_rows),
@@ -126,7 +126,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::invalid_data,
                     "phylanx::execution_tree::primitives::file_read_csv::eval",
-                    execution_tree::generate_error_message(
+                    util::generate_error_message(
                         "wrong data format " + filename + ':' +
                             std::to_string(n_rows),
                         name_, codename_));

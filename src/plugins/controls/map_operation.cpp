@@ -45,9 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type map_operation::map_1_scalar(
         primitive const* p, primitive_argument_type&& arg) const
     {
-        std::vector<primitive_argument_type> args;
-        args.push_back(std::move(arg));
-        return p->eval(hpx::launch::sync, std::move(args));
+        return p->eval(hpx::launch::sync, std::move(arg));
     }
 
     namespace detail
@@ -68,10 +66,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::size_t i = 0;
                 for (auto && val : vec)
                 {
-                    std::vector<primitive_argument_type> args(
-                        1, primitive_argument_type{std::move(val)});
-
-                    auto r = p->eval(hpx::launch::sync, std::move(args));
+                    auto r = p->eval(hpx::launch::sync,
+                        primitive_argument_type{std::move(val)});
 
                     if (valid(r))
                     {
@@ -82,7 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "detail::map_1_vector::call",
-                                execution_tree::generate_error_message(
+                                util::generate_error_message(
                                     "the invoked lambda returned an unexpected "
                                     "type ("
                                     "should be a scalar value)",
@@ -153,10 +149,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (std::size_t i = 0; i != m.rows(); ++i)
                 {
                     vector_type row{blaze::trans(blaze::row(m, i))};
-                    std::vector<primitive_argument_type> args(
-                        1, primitive_argument_type{std::move(row)});
 
-                    auto r = p->eval(hpx::launch::sync, std::move(args));
+                    auto r = p->eval(hpx::launch::sync,
+                        primitive_argument_type{std::move(row)});
 
                     if (valid(r))
                     {
@@ -167,7 +162,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "detail::map_1_matrix::call",
-                                execution_tree::generate_error_message(
+                                util::generate_error_message(
                                     "the invoked lambda returned an unexpected "
                                     "type (should be a vector value)",
                                     name, codename));
@@ -224,10 +219,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& args) const
     {
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func,
-                primitive_argument_type&& arg) -> primitive_argument_type
+        return hpx::dataflow(hpx::launch::sync,
+            [this_](util::future_or_value<primitive_argument_type>&& f,
+                    util::future_or_value<primitive_argument_type>&& l)
+            -> primitive_argument_type
             {
+                auto && bound_func = f.get();
+                auto && arg = l.get();
+
                 primitive const* p = util::get_if<primitive>(&bound_func);
                 if (p == nullptr)
                 {
@@ -250,10 +249,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     for (auto && elem : list)
                     {
                         // Evaluate function for each of the argument sets
-                        std::vector<primitive_argument_type> args;
-                        args.emplace_back(std::move(elem));
                         result.push_back(
-                            p->eval(hpx::launch::sync, std::move(args)));
+                            p->eval(hpx::launch::sync, std::move(elem)));
                     }
 
                     return primitive_argument_type{std::move(result)};
@@ -285,10 +282,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     this_->generate_error_message(
                         "the second argument to map must be an iterable "
                             "object (a list or a numeric type)"));
-            }),
-            value_operand(operands[0], args, name_, codename_,
+            },
+            value_operand_fov(operands[0], args, name_, codename_,
                 eval_dont_evaluate_lambdas),
-            value_operand(operands[1], args, name_, codename_));
+            value_operand_fov(operands[1], args, name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -329,7 +326,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "detail::extract_numeric_value_dimension",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "all numeric arguments must have the same shape",
                             name, codename));
                 }

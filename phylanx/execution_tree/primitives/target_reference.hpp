@@ -12,6 +12,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -29,12 +30,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
+            std::vector<primitive_argument_type> const& params,
+            eval_mode) const override;
+        hpx::future<primitive_argument_type> eval(
+            primitive_argument_type && param, eval_mode) const override;
 
-        void store(primitive_argument_type&& data) override;
+        void store(std::vector<primitive_argument_type>&& data,
+            std::vector<primitive_argument_type>&& params) override;
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;
+
+    private:
+        std::shared_ptr<primitive_component> target_;
     };
 }}}
 

@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/format_string.hpp>
+#include <phylanx/util/generate_error_message.hpp>
 
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/lcos.hpp>
@@ -22,217 +23,215 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace hpx { namespace util
+namespace phylanx { namespace execution_tree
 {
-    namespace detail
+    // specialize formatting of primitive_argument_types
+    void format_value(std::ostream& os, boost::string_ref spec,
+        primitive_argument_type const& value)
     {
-        // specialize formatting of primitive_argument_types
-        void format_value(std::ostream& os, boost::string_ref spec,
-            phylanx::execution_tree::primitive_argument_type const& value)
+        using hpx::util::detail::type_specifier;
+
+        std::string fullspec("{:" + spec.to_string() + "}");
+        if (spec.empty())
         {
-            std::string fullspec("{:" + spec.to_string() + "}");
-            if (spec.empty())
-            {
-                os << value;
-            }
-            else if (spec.ends_with(type_specifier<char const*>::value()))
-            {
-                util::format_to(os, fullspec,
-                    phylanx::execution_tree::to_string(value).c_str());
-            }
-            else if (spec.ends_with(type_specifier<char>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %c expects to convert from "
-                            "a value that is convertible to a 'char'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<char>(extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<signed char>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %hhd expects to convert from "
-                            "a value that is convertible to a 'signed char'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<signed char>(extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<short>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %hd expects to convert from "
-                            "a value that is convertible to a 'short'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<short>(extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<long long>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %lld expects to convert from "
-                            "a value that is convertible to a 'long long'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<long long>(extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<long>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %ld expects to convert from "
-                            "a value that is convertible to a 'long'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<long>(extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<int>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %d expects to convert from "
-                            "a value that is convertible to an 'int'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<int>(extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<unsigned char>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %hhu expects to convert from "
-                            "a value that is convertible to an 'unsigned char'"));
-                }
-                util::format_to(os, fullspec, static_cast<unsigned char>(
-                    extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<unsigned short>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %hu expects to convert from "
-                            "a value that is convertible to an 'unsigned "
-                            "short'"));
-                }
-                util::format_to(os, fullspec, static_cast<unsigned short>(
-                    extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<unsigned long long>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %llu expects to convert from "
-                            "a value that is convertible to an 'unsigned long "
-                            "long'"));
-                }
-                util::format_to(os, fullspec, static_cast<unsigned long long>(
-                    extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<unsigned long>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %lu expects to convert from "
-                            "a value that is convertible to an 'unsigned "
-                            "long'"));
-                }
-                util::format_to(os, fullspec, static_cast<unsigned long>(
-                    extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<unsigned int>::value()))
-            {
-                if (!is_integer_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %u expects to convert from "
-                            "a value that is convertible to an 'unsigned "
-                            "int'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<unsigned int>(extract_integer_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<long double>::value()))
-            {
-                if (!is_numeric_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %Lf expects to convert from "
-                            "a value that is convertible to a 'long double'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<long double>(extract_numeric_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<double>::value()))
-            {
-                if (!is_numeric_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %lf expects to convert from "
-                            "a value that is convertible to a 'double'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<double>(extract_numeric_value(value)[0]));
-            }
-            else if (spec.ends_with(type_specifier<float>::value()))
-            {
-                if (!is_numeric_operand(value))
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "format_string::format_value",
-                        phylanx::execution_tree::generate_error_message(
-                            "the format specifier %f expects to convert from "
-                            "a value that is convertible to a 'float'"));
-                }
-                util::format_to(os, fullspec,
-                    static_cast<float>(extract_numeric_value(value)[0]));
-            }
-            else
+            os << value;
+        }
+        else if (spec.ends_with(type_specifier<char const*>::value()))
+        {
+            hpx::util::format_to(os, fullspec, to_string(value).c_str());
+        }
+        else if (spec.ends_with(type_specifier<char>::value()))
+        {
+            if (!is_integer_operand(value))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "format_string::format_value",
-                    phylanx::execution_tree::generate_error_message(
-                        "invalid format specifier: " + spec.to_string()));
+                    util::generate_error_message(
+                        "the format specifier %c expects to convert from "
+                        "a value that is convertible to a 'char'"));
             }
+            hpx::util::format_to(os, fullspec,
+                static_cast<char>(extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<signed char>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %hhd expects to convert from "
+                        "a value that is convertible to a 'signed char'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<signed char>(extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<short>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %hd expects to convert from "
+                        "a value that is convertible to a 'short'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<short>(extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<long long>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %lld expects to convert from "
+                        "a value that is convertible to a 'long long'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<long long>(extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<long>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %ld expects to convert from "
+                        "a value that is convertible to a 'long'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<long>(extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<int>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %d expects to convert from "
+                        "a value that is convertible to an 'int'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<int>(extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<unsigned char>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %hhu expects to convert from "
+                        "a value that is convertible to an 'unsigned char'"));
+            }
+            hpx::util::format_to(os, fullspec, static_cast<unsigned char>(
+                extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<unsigned short>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %hu expects to convert from "
+                        "a value that is convertible to an 'unsigned "
+                        "short'"));
+            }
+            hpx::util::format_to(os, fullspec, static_cast<unsigned short>(
+                extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<unsigned long long>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %llu expects to convert from "
+                        "a value that is convertible to an 'unsigned long "
+                        "long'"));
+            }
+            hpx::util::format_to(os, fullspec, static_cast<unsigned long long>(
+                extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<unsigned long>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %lu expects to convert from "
+                        "a value that is convertible to an 'unsigned "
+                        "long'"));
+            }
+            hpx::util::format_to(os, fullspec, static_cast<unsigned long>(
+                extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<unsigned int>::value()))
+        {
+            if (!is_integer_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %u expects to convert from "
+                        "a value that is convertible to an 'unsigned "
+                        "int'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<unsigned int>(extract_integer_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<long double>::value()))
+        {
+            if (!is_numeric_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %Lf expects to convert from "
+                        "a value that is convertible to a 'long double'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<long double>(extract_numeric_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<double>::value()))
+        {
+            if (!is_numeric_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %lf expects to convert from "
+                        "a value that is convertible to a 'double'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<double>(extract_numeric_value(value)[0]));
+        }
+        else if (spec.ends_with(type_specifier<float>::value()))
+        {
+            if (!is_numeric_operand(value))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "format_string::format_value",
+                    util::generate_error_message(
+                        "the format specifier %f expects to convert from "
+                        "a value that is convertible to a 'float'"));
+            }
+            hpx::util::format_to(os, fullspec,
+                static_cast<float>(extract_numeric_value(value)[0]));
+        }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "format_string::format_value",
+                util::generate_error_message(
+                    "invalid format specifier: " + spec.to_string()));
         }
     }
 }}

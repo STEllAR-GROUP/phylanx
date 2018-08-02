@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> args) const;
+            std::vector<primitive_argument_type> args, eval_mode mode) const;
 
     public:
         static match_pattern_type const match_data;
@@ -39,12 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
-
-    private:
-        void next(std::size_t i,
-            std::vector<primitive_argument_type>&& args,
-            hpx::lcos::local::promise<primitive_argument_type>&& result) const;
+            std::vector<primitive_argument_type> const& args,
+            eval_mode) const override;
     };
 
     inline primitive create_block_operation(hpx::id_type const& locality,

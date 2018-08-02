@@ -14,9 +14,10 @@ def shape(a, b):
 
 @Phylanx()
 def kernel(a, b):
-    for i in range(1, shape(a, 0) - 1):
-        a[i] = b[i + 1] + b[i - 1]
-    return a
+    local_a = a
+    for i in range(1, shape(local_a, 0) - 1):
+        local_a[i] = b[i + 1] + b[i - 1]
+    return local_a
 
 
 try:
@@ -44,8 +45,9 @@ assert np.all(bsum2[1:-1] == bsum)
 
 @Phylanx()
 def kernel2(a, b):
-    a[1:-1] = b[2:] + b[:-2]
-    return a
+    local_a = a
+    local_a[1:-1] = b[2:] + b[:-2]
+    return local_a
 
 
 bsum3 = kernel2(av, bv)
@@ -58,13 +60,14 @@ mb = np.linspace(1, 12, 12).reshape((3, 4))
 
 @Phylanx()
 def kernel3(a, b):
+    local_a = a
     for i in range(1, shape(a, 0) - 1):
         for j in range(1, shape(a, 1) - 1):
-            a[i, j] = b[i, j + 1] + b[i, j - 1]
+            local_a[i, j] = b[i, j + 1] + b[i, j - 1]
     for i in range(1, shape(a, 0) - 1):
         for j in range(1, shape(a, 1) - 1):
-            a[i, j] = a[i, j] + b[i + 1, j] + b[i - 1, j]
-    return a
+            local_a[i, j] = local_a[i, j] + b[i + 1, j] + b[i - 1, j]
+    return local_a
 
 
 mr2[1:-1, 1:-1] = mb[2:, 1:-1] + mb[:-2, 1:-1] + mb[1:-1, 2:] + mb[1:-1, :-2]
@@ -78,8 +81,9 @@ mb = np.linspace(1, 12, 12).reshape((3, 4))
 
 @Phylanx()
 def kernel4(a, b):
-    a[1:-1, 1:-1] = b[2:, 1:-1] + b[:-2, 1:-1] + b[1:-1, 2:] + b[1:-1, :-2]
-    return a
+    local_a = a
+    local_a[1:-1, 1:-1] = b[2:, 1:-1] + b[:-2, 1:-1] + b[1:-1, 2:] + b[1:-1, :-2]
+    return local_a
 
 
 mr2[1:-1, 1:-1] = mb[2:, 1:-1] + mb[:-2, 1:-1] + mb[1:-1, 2:] + mb[1:-1, :-2]

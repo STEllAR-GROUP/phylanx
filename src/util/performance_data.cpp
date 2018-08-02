@@ -4,19 +4,62 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/util/performance_data.hpp>
 
+#include <hpx/include/agas.hpp>
 #include <hpx/include/future.hpp>
 #include <hpx/include/performance_counters.hpp>
+#include <hpx/include/runtime.hpp>
+#include <hpx/include/lcos.hpp>
 
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace phylanx { namespace util
 {
+    ///////////////////////////////////////////////////////////////////////////
+    std::vector<std::string> enable_measurements(
+        std::map<std::string, hpx::id_type> const& primitive_instances)
+    {
+        using phylanx::execution_tree::primitives::primitive_component;
+
+        std::vector<std::string> result;
+        result.reserve(primitive_instances.size());
+
+        std::vector<hpx::future<std::shared_ptr<primitive_component>>> primitives;
+        primitives.reserve(primitive_instances.size());
+
+        for (auto const& entry : primitive_instances)
+        {
+            primitives.emplace_back(
+                hpx::get_ptr<primitive_component>(entry.second));
+            result.emplace_back(entry.first);
+        }
+
+        hpx::wait_all(primitives);
+
+        for (auto& f : primitives)
+        {
+            f.get()->enable_measurements();
+        }
+
+        return result;
+    }
+
+    std::vector<std::string> enable_measurements()
+    {
+        return enable_measurements(
+            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
         std::vector<std::string> const& primitive_instances,
         std::vector<std::string> const& counter_name_last_parts,
@@ -126,5 +169,34 @@ namespace phylanx { namespace util
         }
 
         return result;
+    }
+
+    std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
+        std::vector<std::string> const& primitive_instances,
+        hpx::naming::id_type const& locality_id)
+    {
+        std::vector<std::string> const counter_names{
+            "count/eval", "time/eval", "eval_direct"
+        };
+
+        return retrieve_counter_data(
+            primitive_instances, counter_names, locality_id);
+    }
+
+    std::map<std::string, std::vector<std::int64_t>> retrieve_counter_data(
+        hpx::naming::id_type const& locality_id)
+    {
+        auto entries =
+            hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*");
+
+        std::vector<std::string> primitive_instances;
+        primitive_instances.reserve(entries.size());
+
+        for (auto&& entry : entries)
+        {
+            primitive_instances.emplace_back(std::move(entry.first));
+        }
+
+        return retrieve_counter_data(primitive_instances, locality_id);
     }
 }}

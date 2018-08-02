@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::identity_nd",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "input should be a scalar",
                     name_, codename_));
         }
@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the identity primitive requires"
                         "at most one operand",
                     name_, codename_));
@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the identity primitive requires that the "
                         "arguments given by the operands array "
                         "are valid",

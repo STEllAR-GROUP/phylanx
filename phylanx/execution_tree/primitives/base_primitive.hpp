@@ -11,8 +11,12 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
+#include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
+#include <phylanx/util/future_or_value.hpp>
+#include <phylanx/util/generate_error_message.hpp>
+#include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
@@ -21,6 +25,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <initializer_list>
 #include <iosfwd>
 #include <map>
@@ -32,364 +37,6 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
-    namespace primitives
-    {
-        class primitive_component;
-    }
-
-    class primitive;
-
-    ///////////////////////////////////////////////////////////////////////////
-    struct topology
-    {
-        topology() = default;
-
-        topology(std::string name)
-          : name_(std::move(name))
-        {}
-
-        topology(std::vector<topology> names)
-          : children_(std::move(names))
-        {}
-
-        topology(std::vector<topology> names, std::string name)
-          : children_(std::move(names)), name_(std::move(name))
-        {}
-
-        template <typename Archive>
-        void serialize(Archive & ar, unsigned)
-        {
-            ar & children_ & name_;
-        }
-
-        std::vector<topology> children_;
-        std::string name_;
-    };
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Generate Newick tree (string) format from given tree topology
-    PHYLANX_EXPORT std::string newick_tree(
-        std::string const& name, topology const& t);
-
-    // Generate Dot tree (string) format from given tree topology
-    PHYLANX_EXPORT std::string dot_tree(
-        std::string const& name, topology const& t);
-
-    PHYLANX_EXPORT bool is_primitive_operand(
-        primitive_argument_type const& val);
-
-    ///////////////////////////////////////////////////////////////////////////
-    struct primitive_argument_type;
-
-    ///////////////////////////////////////////////////////////////////////////
-    enum eval_mode
-    {
-        eval_default = 0x00,                // always evaluate everything
-        eval_dont_wrap_functions = 0x01,    // don't wrap partially bound functions
-        eval_dont_evaluate_partials = 0x02, // don't evaluate partially bound functions
-        eval_dont_evaluate_lambdas = 0x04   // don't evaluate functions
-    };
-
-    class primitive
-      : public hpx::components::client_base<primitive,
-            primitives::primitive_component>
-    {
-    private:
-        using base_type = hpx::components::client_base<primitive,
-            primitives::primitive_component>;
-
-    public:
-        primitive() = default;
-
-        primitive(hpx::id_type && id)
-          : base_type(std::move(id))
-        {
-        }
-        primitive(hpx::future<hpx::id_type> && fid)
-          : base_type(std::move(fid))
-        {
-        }
-
-        PHYLANX_EXPORT primitive(
-            hpx::future<hpx::id_type>&& fid, std::string const& name);
-
-        primitive(primitive const&) = default;
-        primitive(primitive &&) = default;
-
-        primitive& operator=(primitive const&) = default;
-        primitive& operator=(primitive &&) = default;
-
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            eval_mode mode = eval_default) const;
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> && args,
-            eval_mode mode = eval_default) const;
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args,
-            eval_mode mode = eval_default) const;
-
-        PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
-            eval_mode mode = eval_default) const;
-        PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
-            std::vector<primitive_argument_type>&& args,
-            eval_mode mode = eval_default) const;
-        PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
-            std::vector<primitive_argument_type> const& args,
-            eval_mode mode = eval_default) const;
-
-        PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type);
-        PHYLANX_EXPORT void store(hpx::launch::sync_policy,
-            primitive_argument_type);
-
-        PHYLANX_EXPORT hpx::future<topology> expression_topology(
-            std::set<std::string>&& functions) const;
-        PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
-            std::set<std::string>&& functions) const;
-
-        PHYLANX_EXPORT hpx::future<topology> expression_topology(
-            std::set<std::string>&& functions,
-            std::set<std::string>&& resolve_children) const;
-        PHYLANX_EXPORT topology expression_topology(hpx::launch::sync_policy,
-            std::set<std::string>&& functions,
-            std::set<std::string>&& resolve_children) const;
-
-        PHYLANX_EXPORT bool bind(
-            std::vector<primitive_argument_type>&& args) const;
-        PHYLANX_EXPORT bool bind(
-            std::vector<primitive_argument_type> const& args) const;
-
-    public:
-        static bool enable_tracing;
-    };
-
-    ///////////////////////////////////////////////////////////////////////////
-    using argument_value_type =
-        phylanx::util::variant<
-            ast::nil
-          , phylanx::ir::node_data<std::uint8_t>
-          , phylanx::ir::node_data<std::int64_t>
-          , std::string
-          , phylanx::ir::node_data<double>
-          , primitive
-          , std::vector<ast::expression>
-          , ir::range
-        >;
-
-    PHYLANX_EXPORT primitive_argument_type extract_copy_value(
-        primitive_argument_type const& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
-    struct primitive_argument_type : argument_value_type
-    {
-        primitive_argument_type() = default;
-
-        primitive_argument_type(ast::nil val)
-          : argument_value_type{val}
-        {}
-
-        explicit primitive_argument_type(bool val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
-        {}
-        explicit primitive_argument_type(std::uint8_t val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
-        {}
-        explicit primitive_argument_type(
-                blaze::DynamicVector<std::uint8_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
-        {}
-        explicit primitive_argument_type(blaze::DynamicVector<std::uint8_t>&& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
-        {}
-        explicit primitive_argument_type(
-                blaze::DynamicMatrix<std::uint8_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
-        {}
-        explicit primitive_argument_type(blaze::DynamicMatrix<std::uint8_t>&& val)
-          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
-        {}
-        primitive_argument_type(phylanx::ir::node_data<std::uint8_t> const& val)
-          : argument_value_type{val}
-        {}
-
-        primitive_argument_type(phylanx::ir::node_data<std::uint8_t>&& val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        explicit primitive_argument_type(std::int64_t val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
-        {
-        }
-        explicit primitive_argument_type(
-            blaze::DynamicVector<std::int64_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
-        {
-        }
-        explicit primitive_argument_type(
-            blaze::DynamicVector<std::int64_t>&& val)
-          : argument_value_type{
-                phylanx::ir::node_data<std::int64_t>{std::move(val)}}
-        {
-        }
-        explicit primitive_argument_type(
-            blaze::DynamicMatrix<std::int64_t> const& val)
-          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
-        {
-        }
-        explicit primitive_argument_type(
-            blaze::DynamicMatrix<std::int64_t>&& val)
-          : argument_value_type{
-                phylanx::ir::node_data<std::int64_t>{std::move(val)}}
-        {
-        }
-
-        primitive_argument_type(phylanx::ir::node_data<std::int64_t> const& val)
-          : argument_value_type{val}
-        {
-        }
-        primitive_argument_type(phylanx::ir::node_data<std::int64_t>&& val)
-          : argument_value_type{std::move(val)}
-        {
-        }
-
-        primitive_argument_type(std::string const& val)
-          : argument_value_type{val}
-        {}
-        primitive_argument_type(std::string && val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        explicit primitive_argument_type(double val)
-          : argument_value_type{phylanx::ir::node_data<double>{val}}
-        {}
-        explicit primitive_argument_type(
-                blaze::DynamicVector<double> const& val)
-          : argument_value_type{phylanx::ir::node_data<double>{val}}
-        {}
-        explicit primitive_argument_type(blaze::DynamicVector<double>&& val)
-          : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
-        {}
-        explicit primitive_argument_type(
-                blaze::DynamicMatrix<double> const& val)
-          : argument_value_type{phylanx::ir::node_data<double>{val}}
-        {}
-        explicit primitive_argument_type(blaze::DynamicMatrix<double>&& val)
-          : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
-        {}
-
-        primitive_argument_type(phylanx::ir::node_data<double> const& val)
-          : argument_value_type{val}
-        {}
-        primitive_argument_type(phylanx::ir::node_data<double>&& val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        primitive_argument_type(primitive const& val)
-          : argument_value_type{val}
-        {}
-        primitive_argument_type(primitive && val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        primitive_argument_type(std::vector<ast::expression> const& val)
-          : argument_value_type{val}
-        {}
-        primitive_argument_type(std::vector<ast::expression>&& val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        explicit primitive_argument_type(
-            std::vector<primitive_argument_type> const& val)
-          : argument_value_type{ir::range{val}}
-        {}
-
-        explicit primitive_argument_type(
-            std::vector<primitive_argument_type>&& val)
-          : argument_value_type{ir::range{std::move(val)}}
-        {}
-
-        primitive_argument_type(ir::range const& val)
-          : argument_value_type{val}
-        {}
-        primitive_argument_type(ir::range&& val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        primitive_argument_type(argument_value_type const& val)
-          : argument_value_type{val}
-        {}
-        primitive_argument_type(argument_value_type&& val)
-          : argument_value_type{std::move(val)}
-        {}
-
-        inline primitive_argument_type run() const;
-
-        PHYLANX_EXPORT primitive_argument_type operator()() const;
-
-        PHYLANX_EXPORT primitive_argument_type
-        operator()(std::vector<primitive_argument_type> const& args) const;
-
-        PHYLANX_EXPORT primitive_argument_type
-        operator()(std::vector<primitive_argument_type> && args) const;
-
-        template <typename ... Ts>
-        primitive_argument_type operator()(Ts &&... ts) const
-        {
-            std::vector<primitive_argument_type> args;
-            args.reserve(sizeof...(Ts));
-
-            int const sequencer_[] = {
-                0, (args.emplace_back(
-                        extract_copy_value(primitive_argument_type{
-                            std::forward<Ts>(ts)
-                        })), 0)...
-            };
-            (void)sequencer_;
-
-            return (*this)(std::move(args));
-        }
-
-        explicit operator bool() const
-        {
-            return variant().index() != 0;
-        }
-
-        // workaround for problem in implementation of MSVC14.12
-        // variant::visit
-        argument_value_type& variant() { return *this; }
-        argument_value_type const& variant() const { return *this; }
-    };
-
-    // a argument is valid of its not nil{}
-    inline bool valid(primitive_argument_type const& val)
-    {
-        return bool(val);
-    }
-    inline bool valid(primitive_argument_type && val)
-    {
-        return bool(val);
-    }
-
-    inline bool operator==(primitive_argument_type const& lhs,
-        primitive_argument_type const& rhs)
-    {
-        return lhs.variant() == rhs.variant();
-    }
-    inline bool operator!=(primitive_argument_type const& lhs,
-        primitive_argument_type const& rhs)
-    {
-        return !(lhs == rhs);
-    }
-
-    PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
-        primitive_argument_type const&);
-
-    PHYLANX_EXPORT std::string to_string(primitive_argument_type const&);
-
-    PHYLANX_EXPORT std::ostream& operator<<(std::ostream& os,
-        primitive const&);
-
-    ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
         std::vector<primitive_argument_type> const& args,
@@ -411,6 +58,19 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type&& val,
         std::vector<primitive_argument_type>&& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+
+    PHYLANX_EXPORT primitive_argument_type value_operand_sync(
+        primitive_argument_type const& val,
+        primitive_argument_type&& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+    PHYLANX_EXPORT primitive_argument_type value_operand_sync(
+        primitive_argument_type&& val,
+        primitive_argument_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
         eval_mode mode = eval_default);
@@ -437,7 +97,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     inline primitive_argument_type primitive_argument_type::run() const
     {
-        return value_operand_sync(*this, {});
+        return value_operand_sync(*this, primitive_argument_type{});
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -860,6 +520,15 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "", std::string const& codename = "<unknown>",
         eval_mode mode = eval_default);
 
+    PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type const& val, primitive_argument_type const& arg,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+    PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
+        primitive_argument_type&& val, primitive_argument_type const& arg,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+
     namespace functional
     {
         struct value_operand
@@ -872,10 +541,56 @@ namespace phylanx { namespace execution_tree
         };
     }
 
-// was declared above
-//     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
-//         primitive_argument_type const& val,
-//         std::vector<primitive_argument_type> const& args);
+    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
+    value_operand_fov(primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
+    value_operand_fov(primitive_argument_type const& val,
+        std::vector<primitive_argument_type>&& args,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
+    value_operand_fov(primitive_argument_type&& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
+    value_operand_fov(primitive_argument_type&& val,
+        std::vector<primitive_argument_type>&& args,
+        std::string const& name = "", std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+
+    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
+    value_operand_fov(primitive_argument_type const& val,
+        primitive_argument_type const& arg, std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
+    value_operand_fov(primitive_argument_type&& val,
+        primitive_argument_type const& arg, std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_mode mode = eval_default);
+
+    namespace functional
+    {
+        struct value_operand_fov
+        {
+            template <typename... Ts>
+            util::future_or_value<primitive_argument_type> operator()(
+                Ts&&... ts) const
+            {
+                return execution_tree::value_operand_fov(
+                    std::forward<Ts>(ts)...);
+            }
+        };
+    }
+
+    // was declared above
+    //     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
+    //         primitive_argument_type const& val,
+    //         std::vector<primitive_argument_type> const& args);
 
     // Extract a primitive_argument_type from a primitive_argument_type (that
     // could be a primitive or a literal value).
@@ -1076,6 +791,49 @@ namespace phylanx { namespace execution_tree
             }
         };
     }
+
+    PHYLANX_EXPORT ir::range list_operand_strict_sync(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Extract a list from a primitive_argument_type (that
+    // could be a primitive or a literal value).
+    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
+        primitive_argument_type const& val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
+        primitive_argument_type && val,
+        std::vector<primitive_argument_type> && args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    namespace functional
+    {
+        struct list_operand_fov
+        {
+            template <typename... Ts>
+            util::future_or_value<ir::range> operator()(
+                Ts&&... ts) const
+            {
+                return execution_tree::list_operand(std::forward<Ts>(ts)...);
+            }
+        };
+    }
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -1086,32 +844,76 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // returning another vector holding the respective results.
         template <typename T, typename F, typename ... Ts>
         auto map_operands(std::vector<T> const& in, F && f, Ts && ... ts)
-        ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>(), ts...))>
+        ->  std::vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
         {
-            std::vector<
-                    decltype(hpx::util::invoke(f, std::declval<T>(), ts...))
-                > out;
+            std::vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
             out.reserve(in.size());
 
             for (auto const& d : in)
             {
-                out.push_back(hpx::util::invoke(f, d, ts...));
+                out.emplace_back(hpx::util::invoke(f, d, std::ref(ts)...));
             }
             return out;
         }
 
         template <typename T, typename F, typename ... Ts>
         auto map_operands(std::vector<T> && in, F && f, Ts && ... ts)
-        ->  std::vector<decltype(hpx::util::invoke(f, std::declval<T>(), ts...))>
+        ->  std::vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
         {
-            std::vector<
-                    decltype(hpx::util::invoke(f, std::declval<T>(), ts...))
-                > out;
+            std::vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
             out.reserve(in.size());
 
             for (auto && d : in)
             {
-                out.push_back(hpx::util::invoke(f, std::move(d), ts...));
+                out.emplace_back(
+                    hpx::util::invoke(f, std::move(d), std::ref(ts)...));
+            }
+            return out;
+        }
+
+        // Invoke the given function on all items in the input vector, while
+        // returning another vector holding the respective results.
+        template <typename T, typename F, typename ... Ts>
+        auto map_operands_sv(std::vector<T> const& in, F && f, Ts && ... ts)
+        ->  util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
+        {
+            util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
+            out.reserve(in.size());
+
+            for (auto const& d : in)
+            {
+                out.push_back(hpx::util::invoke(f, d, std::ref(ts)...));
+            }
+            return out;
+        }
+
+        template <typename T, typename F, typename ... Ts>
+        auto map_operands_sv(std::vector<T> && in, F && f, Ts && ... ts)
+        ->  util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )>
+        {
+            util::small_vector<decltype(
+                    hpx::util::invoke(f, std::declval<T>(), std::ref(ts)...)
+                )> out;
+            out.reserve(in.size());
+
+            for (auto && d : in)
+            {
+                out.push_back(
+                    hpx::util::invoke(f, std::move(d), std::ref(ts)...));
             }
             return out;
         }

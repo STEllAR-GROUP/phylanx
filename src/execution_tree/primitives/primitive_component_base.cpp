@@ -36,9 +36,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : operands_(std::move(params))
       , name_(name)
       , codename_(codename)
-      , execute_directly_(eval_direct ? 1 : -1)
       , eval_count_(0ll)
       , eval_duration_(0ll)
+      , execute_directly_(eval_direct ? 1 : -1)
+      , measurements_enabled_(false)
     {
 #if defined(HPX_HAVE_APEX)
         eval_name_ = name_ + "::eval";
@@ -76,11 +77,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::annotate_function annotate(eval_name_.c_str());
 #endif
 
-        util::scoped_timer<std::int64_t> timer(eval_duration_);
-        ++eval_count_;
+        // perform measurements only when needed
+        bool enable_timer = measurements_enabled_ || (execute_directly_ == -1);
+
+        util::scoped_timer<std::int64_t> timer(eval_duration_, enable_timer);
+        if (enable_timer)
+        {
+            ++eval_count_;
+        }
 
         auto f = this->eval(params, mode);
-        if (!f.is_ready())
+
+        if (enable_timer && !f.is_ready())
         {
             using shared_state_ptr =
                 typename hpx::traits::detail::shared_state_ptr_for<
@@ -90,6 +98,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             state->set_on_completed(keep_alive(std::move(timer)));
         }
+
+        return f;
+    }
+
+    hpx::future<primitive_argument_type> primitive_component_base::do_eval(
+        primitive_argument_type&& param, eval_mode mode) const
+    {
+#if defined(HPX_HAVE_APEX)
+        hpx::util::annotate_function annotate(eval_name_.c_str());
+#endif
+
+        // perform measurements only when needed
+        bool enable_timer = measurements_enabled_ || (execute_directly_ == -1);
+
+        util::scoped_timer<std::int64_t> timer(eval_duration_, enable_timer);
+        if (enable_timer)
+        {
+            ++eval_count_;
+        }
+
+        auto f = this->eval(std::move(param), mode);
+
+        if (enable_timer && !f.is_ready())
+        {
+            using shared_state_ptr =
+                typename hpx::traits::detail::shared_state_ptr_for<
+                    decltype(f)>::type;
+            shared_state_ptr const& state =
+                hpx::traits::future_access<decltype(f)>::get_shared_state(f);
+
+            state->set_on_completed(keep_alive(std::move(timer)));
+        }
+
         return f;
     }
 
@@ -107,8 +148,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return this->eval(params);
     }
 
+    hpx::future<primitive_argument_type> primitive_component_base::eval(
+        primitive_argument_type && param, eval_mode mode) const
+    {
+        std::vector<primitive_argument_type> params;
+        params.emplace_back(std::move(param));
+        return this->eval(params, mode);
+    }
+
     // store_action
-    void primitive_component_base::store(primitive_argument_type&&)
+    void primitive_component_base::store(std::vector<primitive_argument_type>&&,
+        std::vector<primitive_argument_type>&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
@@ -116,6 +166,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "store function should only be called for the primitives that "
                 "support it (e.g. variables)"));
+    }
+
+    void primitive_component_base::store(primitive_argument_type&& param,
+        std::vector<primitive_argument_type>&& params)
+    {
+        std::vector<primitive_argument_type> args;
+        args.emplace_back(std::move(param));
+        return this->store(std::move(args), std::move(params));
     }
 
     // extract_topology_action
@@ -168,7 +226,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     std::string primitive_component_base::generate_error_message(
         std::string const& msg) const
     {
-        return execution_tree::generate_error_message(msg, name_, codename_);
+        return util::generate_error_message(msg, name_, codename_);
     }
 
     std::int64_t primitive_component_base::get_eval_count(bool reset) const
@@ -184,6 +242,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     std::int64_t primitive_component_base::get_direct_execution(bool reset) const
     {
         return hpx::util::get_and_reset_value(execute_directly_, reset);
+    }
+
+    void primitive_component_base::enable_measurements()
+    {
+        measurements_enabled_ = true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -210,18 +273,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-        if (eval_count_ != 0)
+        if ((eval_count_ != 0 && measurements_enabled_) || (eval_count_ > 5))
         {
             // check whether execution status needs to be changed (with some
             // hysteresis)
             std::int64_t exec_time = (eval_duration_ / eval_count_);
-            if (exec_time > 300000)
+            if (exec_time > 500000)
             {
                 execute_directly_ = 0;
             }
-            else if (exec_time < 150000)
+            else if (exec_time < 350000)
             {
                 execute_directly_ = 1;
+            }
+            else
+            {
+                execute_directly_ = -1;
             }
         }
 
@@ -237,63 +304,3 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return policy;
     }
 }}}
-
-namespace phylanx { namespace execution_tree
-{
-    std::string generate_error_message(std::string const& msg,
-        compiler::primitive_name_parts const& parts,
-        std::string const& codename)
-    {
-        return generate_error_message(msg,
-            compiler::compose_primitive_name(parts), codename);
-    }
-
-    std::string generate_error_message(std::string const& msg,
-        std::string const& name, std::string const& codename)
-    {
-        if (!name.empty())
-        {
-            compiler::primitive_name_parts parts;
-
-            if (compiler::parse_primitive_name(name, parts))
-            {
-                std::string line_col;
-                if (parts.tag1 != -1 && parts.tag2 != -1)
-                {
-                    line_col = hpx::util::format(
-                        "(" PHYLANX_FORMAT_SPEC(1) ", "
-                            PHYLANX_FORMAT_SPEC(2) ")",
-                        parts.tag1, parts.tag2);
-                }
-
-                if (!parts.instance.empty())
-                {
-                    return hpx::util::format(
-                        PHYLANX_FORMAT_SPEC(1) PHYLANX_FORMAT_SPEC(2)
-                            ": " PHYLANX_FORMAT_SPEC(3)
-                            "$"  PHYLANX_FORMAT_SPEC(4)
-                            ":: " PHYLANX_FORMAT_SPEC(5),
-                        codename.empty() ? "<unknown>" : codename, line_col,
-                        parts.primitive, parts.instance, msg);
-                }
-
-                return hpx::util::format(
-                    PHYLANX_FORMAT_SPEC(1) PHYLANX_FORMAT_SPEC(2)
-                        ": " PHYLANX_FORMAT_SPEC(3)
-                        ":: " PHYLANX_FORMAT_SPEC(4),
-                    codename.empty() ? "<unknown>" : codename, line_col,
-                    parts.primitive, msg);
-            }
-
-            return hpx::util::format(
-                PHYLANX_FORMAT_SPEC(1)
-                    ": "  PHYLANX_FORMAT_SPEC(2)
-                    ":: " PHYLANX_FORMAT_SPEC(3),
-                codename.empty() ? "<unknown>" : codename, name, msg);
-        }
-
-        return hpx::util::format(
-            PHYLANX_FORMAT_SPEC(1) ": "  PHYLANX_FORMAT_SPEC(2),
-            codename.empty() ? "<unknown>" : codename, msg);
-    }
-}}

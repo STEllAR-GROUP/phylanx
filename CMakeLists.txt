@@ -79,7 +79,7 @@ phylanx_detect_cpp_dialect()
 phylanx_option(
   PHYLANX_WITH_TESTS_BENCHMARKS BOOL
   "Enable or disable the compilation of benchmark tests"
-  OFF ADVANCED CATEGORY "Build")
+  ON ADVANCED CATEGORY "Build")
 
 phylanx_option(
   PHYLANX_WITH_TESTS_REGRESSIONS BOOL

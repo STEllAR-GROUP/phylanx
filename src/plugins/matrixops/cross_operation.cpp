@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "right hand side operand has unsupported number of "
                         "dimensions",
                     name_, codename_));
@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross1d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "operands have an invalid number of columns",
                 name_, codename_));
         }
@@ -171,7 +171,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "cross_operation::cross1d2d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "operand vectors have an invalid number of elements",
                 name_, codename_));
     }
@@ -190,7 +190,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "right hand side operand has unsupported number of "
                         "dimensions",
                     name_, codename_));
@@ -254,7 +254,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "cross_operation::cross2d1d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "operand vectors have an invalid number of elements",
                 name_, codename_));
     }
@@ -267,7 +267,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "operands have non-matching number of rows",
                     name_, codename_));
         }
@@ -352,7 +352,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "cross_operation::cross2d2d",
-            execution_tree::generate_error_message(
+            util::generate_error_message(
                 "operand vectors have an invalid number of elements",
                 name_, codename_));
     }
@@ -365,7 +365,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the cross_operation primitive requires exactly two "
                         "operands",
                     name_, codename_));
@@ -375,7 +375,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the cross_operation primitive requires that the "
                         "arguments given by the operands array are valid",
                     name_, codename_));
@@ -397,7 +397,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "cross_operation::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "left hand side operand has unsupported "
                                 "number of dimensions",
                             this_->name_, this_->codename_));

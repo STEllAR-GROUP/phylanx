@@ -67,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_not_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "operand has unsupported number of dimensions",
                     name_, codename_));
         }
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_not::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "operand has unsupported type",
                     that_.name_, that_.codename_));
         }
@@ -109,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_not_operation::unary_not_operation",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the unary_not_operation primitive requires "
                         "exactly one operand",
                     name_, codename_));
@@ -119,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "unary_not_operation::unary_not_operation",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the unary_not_operation primitive requires "
                         "that the argument given by the operands "
                         "array is valid",

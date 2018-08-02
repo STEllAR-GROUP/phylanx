@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_hdf5::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the file_read_hdf5 primitive requires exactly two "
                         "literal arguments",
                     name_, codename_));
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_hdf5::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the file_read_hdf5 primitive requires that the given "
                         "operand is valid",
                     name_, codename_));
@@ -111,7 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_hdf5::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the input file has incompatible number of dimensions",
                     name_, codename_));
         }

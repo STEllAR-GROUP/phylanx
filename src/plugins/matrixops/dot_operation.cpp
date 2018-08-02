@@ -48,14 +48,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type dot_operation::dot0d1d(
         operand_type&& lhs, operand_type&& rhs) const
     {
-        rhs = rhs.vector() * lhs.scalar();
+        if (rhs.is_ref())
+        {
+            rhs = rhs.vector() * lhs.scalar();
+        }
+        else
+        {
+            rhs.vector() *= lhs.scalar();
+        }
+
         return primitive_argument_type{std::move(rhs)};
     }
 
     primitive_argument_type dot_operation::dot0d2d(
         operand_type&& lhs, operand_type&& rhs) const
     {
-        rhs = rhs.matrix() * lhs.scalar();
+        if (rhs.is_ref())
+        {
+            rhs = rhs.matrix() * lhs.scalar();
+        }
+        else
+        {
+            rhs.matrix() *= lhs.scalar();
+        }
+
         return primitive_argument_type{std::move(rhs)};
     }
 
@@ -80,7 +96,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             // lhs_order == 1 && rhs_order != 2
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot0d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                     "dimensions",
                     name_, codename_));
@@ -110,7 +126,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -120,7 +136,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type dot_operation::dot1d0d(
         operand_type&& lhs, operand_type&& rhs) const
     {
-        lhs = lhs.vector() * rhs.scalar();
+        if (lhs.is_ref())
+        {
+            lhs = lhs.vector() * rhs.scalar();
+        }
+        else
+        {
+            lhs.vector() *= rhs.scalar();
+        }
+
         return primitive_argument_type{ir::node_data<double>{std::move(lhs)}};
     }
 
@@ -131,7 +155,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -150,7 +174,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -184,7 +208,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -205,7 +229,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d1d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -223,7 +247,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d2d",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the operands have incompatible number of "
                         "dimensions",
                     name_, codename_));
@@ -242,7 +266,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dot_operation primitive requires exactly "
                         "two operands",
                     name_, codename_));
@@ -252,7 +276,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
-                execution_tree::generate_error_message(
+                util::generate_error_message(
                     "the dot_operation primitive requires that the "
                         "arguments given by the operands array are "
                         "valid",
@@ -279,7 +303,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "dot_operation::eval",
-                        execution_tree::generate_error_message(
+                        util::generate_error_message(
                             "left hand side operand has unsupported "
                                 "number of dimensions",
                             this_->name_, this_->codename_));
@@ -291,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // implement 'dot' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> dot_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        std::vector<primitive_argument_type> const& args, eval_mode) const
     {
         if (this->no_operands())
         {
