@@ -2397,7 +2397,15 @@ namespace phylanx { namespace execution_tree
     {
         if (is_primitive_operand(*this))
         {
-            return extract_copy_value(value_operand_sync(*this, args));
+            std::vector<primitive_argument_type> params;
+            params.reserve(args.size());
+            for (auto const& arg : args)
+            {
+                params.emplace_back(extract_ref_value(arg));
+            }
+
+            return extract_copy_value(
+                value_operand_sync(*this, std::move(params)));
         }
         return extract_ref_value(*this);
     }
@@ -2408,8 +2416,18 @@ namespace phylanx { namespace execution_tree
         if (is_primitive_operand(*this))
         {
             // evaluate the function itself
+            std::vector<primitive_argument_type> keep_alive(std::move(args));
+
+            // construct argument-pack to use for actual call
+            std::vector<primitive_argument_type> params;
+            params.reserve(keep_alive.size());
+            for (auto const& arg : keep_alive)
+            {
+                params.emplace_back(extract_ref_value(arg));
+            }
+
             return extract_copy_value(
-                value_operand_sync(*this, std::move(args)));
+                value_operand_sync(*this, std::move(params)));
         }
         return extract_ref_value(*this);
     }
