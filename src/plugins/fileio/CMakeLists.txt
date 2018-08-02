@@ -22,8 +22,10 @@ if(PHYLANX_WITH_HIGHFIVE)
   set(headers ${headers}
      "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_read_hdf5.hpp"
      "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/file_write_hdf5.hpp"
+     "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/csc_read_hdf5.hpp"
+     "${PROJECT_SOURCE_DIR}/phylanx/plugins/fileio/csc_write_hdf5.hpp"
     )
-  set(sources ${sources} "file_read_hdf5.cpp" "file_write_hdf5.cpp")
+  set(sources ${sources} "file_read_hdf5.cpp" "file_write_hdf5.cpp" "csc_read_hdf5.cpp" "csc_write_hdf5.cpp")
 endif()
 
 add_phylanx_primitive_plugin(fileio
