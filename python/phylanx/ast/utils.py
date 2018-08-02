@@ -9,39 +9,6 @@ import ast
 import re
 
 
-def physl_fmt(src, tag=4):
-    """Pretty print PhySL source code"""
-    # Remove line number info
-    src = re.sub(r'\$\d+', '', src)
-
-    # The regex below matches one of the following three
-    # things in order of priority:
-    # 1: a quoted string, with possible \" or \\ embedded
-    # 2: a set of balanced parenthesis
-    # 3: a single character
-    pat = re.compile(r'"(?:\\.|[^"\\])*"|\([^()]*\)|.')
-    indent = 0
-    tab = 4
-    for s in re.findall(pat, src):
-        if s in " \t\r\b\n":
-            pass
-        elif s == '(':
-            print(s)
-            indent += 1
-            print(" " * indent * tab, end="")
-        elif s == ')':
-            indent -= 1
-            print("", sep="")
-            print(" " * indent * tab, end="")
-            print(s, end="")
-        elif s == ',':
-            print(s)
-            print(" " * indent * tab, end="")
-        else:
-            print(s, end="", sep="")
-    print("", sep="")
-
-
 def dump_info(a, depth=0):
     "Print detailed information about an AST"
     nm = a.__class__.__name__
@@ -124,15 +91,3 @@ def dump_ast(node, annotate_fields=True, include_attributes=False,
     if not isinstance(node, ast.AST):
         raise TypeError('expected AST, got %r' % node.__class__.__name__)
     return _format(node)
-
-
-def print_physl(physl_src):
-    print(re.sub(r'\$\d+', '', physl_src))
-
-
-def full_node_name(a, name=''):
-    return '%s$%d$%d' % (name, a.lineno, a.col_offset)
-
-
-def full_name(a):
-    return full_node_name(a, a.name)

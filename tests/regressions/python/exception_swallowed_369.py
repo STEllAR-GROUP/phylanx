@@ -6,10 +6,10 @@
 # Fixing #369: Exception getting swallowed
 
 import numpy as np
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 
 
-@Phylanx()
+@Phylanx
 def addem(a, b):
     c = a + b
     print('c=', c)

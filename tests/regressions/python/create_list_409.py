@@ -6,13 +6,13 @@
 # Fixing #409: Cannot create lists of arbitrary objects
 
 import phylanx
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 
 
-@Phylanx()
+@Phylanx
 def f():
     return [1, [1]]
 
 
 assert f.__src__ == \
-    "define$13$0(f$13$0, make_list$14$11(1, make_list$14$15(1)))"
+    "define$13$0(f$13$0, list$14$11(1, list$14$15(1)))"

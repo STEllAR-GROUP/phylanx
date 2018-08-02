@@ -3,7 +3,7 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 import numpy as np
 
 
@@ -12,7 +12,7 @@ def shape(a, b):
     pass
 
 
-@Phylanx()
+@Phylanx
 def kernel(a, b):
     local_a = a
     for i in range(1, shape(local_a, 0) - 1):
@@ -26,7 +26,7 @@ try:
     class numpy:
         pass
 
-    @Phylanx()
+    @Phylanx
     def bad_kernel(a):
         return numpy.shape()
 
@@ -43,7 +43,7 @@ bsum2 = kernel(av, bv)
 assert np.all(bsum2[1:-1] == bsum)
 
 
-@Phylanx()
+@Phylanx
 def kernel2(a, b):
     local_a = a
     local_a[1:-1] = b[2:] + b[:-2]
@@ -58,7 +58,7 @@ mr2 = np.linspace(1, 12, 12).reshape((3, 4))
 mb = np.linspace(1, 12, 12).reshape((3, 4))
 
 
-@Phylanx()
+@Phylanx
 def kernel3(a, b):
     local_a = a
     for i in range(1, shape(a, 0) - 1):
@@ -79,7 +79,7 @@ mr2 = np.linspace(1, 12, 12).reshape((3, 4))
 mb = np.linspace(1, 12, 12).reshape((3, 4))
 
 
-@Phylanx()
+@Phylanx
 def kernel4(a, b):
     local_a = a
     local_a[1:-1, 1:-1] = b[2:, 1:-1] + b[:-2, 1:-1] + b[1:-1, 2:] + b[1:-1, :-2]
@@ -91,7 +91,7 @@ mr = kernel4(ma, mb)
 assert np.all(mr == mr2)
 
 
-@Phylanx()
+@Phylanx
 def kernel5(b):
     return b[2:, 1:-1] + b[:-2, 1:-1] + b[1:-1, 2:] + b[1:-1, :-2]
 

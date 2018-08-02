@@ -6,7 +6,7 @@
 
 # Fixing #407: @Phylanx decorator needs parentheses
 
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 from phylanx.exceptions import InvalidDecoratorArgumentError
 
 

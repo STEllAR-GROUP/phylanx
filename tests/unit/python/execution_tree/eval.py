@@ -6,7 +6,7 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 import numpy as np
 
 et = phylanx.execution_tree
@@ -47,7 +47,7 @@ def fib(n):
 
 
 assert fib.__src__ == \
-    'define$42$0(fib$42$0, n$42$8, if$43$4((n$43$7 < 2), n$44$15, (fib$46$15((n$46$19 - 1)) + fib$46$28((n$46$32 - 2)))))'  # noqa E501
+    'define$42$0(fib$42$0, n$42$8, if$43$4(__lt$43$7(n$43$7, 2), n$44$15, __add$46$15(fib$46$15(__sub$46$19(n$46$19, 1)), fib$46$28(__sub$46$32(n$46$32, 2)))))' # noqa E501
 assert "[" + fib.__src__ + "]" == str(fib.generate_ast())
 assert fib(10) == 55.0
 
@@ -118,7 +118,7 @@ def foo3():
 assert foo3() == 45
 
 
-@Phylanx()
+@Phylanx
 def foo4():
     return foo()
 
@@ -126,7 +126,7 @@ def foo4():
 assert foo4() == 3
 
 
-@Phylanx()
+@Phylanx
 def f1():
     a = [1, 2, 3, 4]
     return a[1]
@@ -135,7 +135,7 @@ def f1():
 assert f1() == 2
 
 
-@Phylanx()
+@Phylanx
 def f2():
     a = [1, 2, 3, 4]
     return a[1:3]
@@ -144,7 +144,7 @@ def f2():
 assert np.all(f2() == np.array([2, 3]))
 
 
-@Phylanx()
+@Phylanx
 def f3():
     a = [1, 2, 3, 4]
     return a[:-1]
@@ -155,7 +155,7 @@ assert np.all(f3() == np.array([1, 2, 3]))
 np_a = np.array([[1, 2], [3, 4]])
 
 
-@Phylanx()
+@Phylanx
 def f4(a):
     return a[1, 1]
 
@@ -165,7 +165,7 @@ assert f4(np_a) == 4.0
 np_a = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
 
-@Phylanx()
+@Phylanx
 def f5(a):
     return a[:2, 1:3]
 
@@ -177,7 +177,7 @@ b = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 np_b = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
 
-@Phylanx()
+@Phylanx
 def f6(b):
     return b[0:1, 0]
 
@@ -185,7 +185,7 @@ def f6(b):
 assert np.all(f6(np_b) == np.array(np_b[0:1, 0]))
 
 
-@Phylanx()
+@Phylanx
 def f7(b):
     c = b[0, 0:2]
     return c
