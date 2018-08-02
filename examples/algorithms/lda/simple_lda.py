@@ -11,12 +11,13 @@ from phylanx.ast import *
 import numpy as np
 from scipy.io import loadmat
 
+
 def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     from numpy import zeros, sum, argmax
     from numpy.random import random
 
     betaSum = W * beta
-    alpha /= T # NOTE: presents a float/int error
+    alpha /= T  # NOTE: presents a float/int error
 
     word_topic_count = zeros((W, T))
     doc_topic_count = zeros((D, T))
@@ -24,18 +25,18 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     word_doc_topic_mat = zeros((D, W), dtype=np.int)
 
     for j in range(N):
-        word_topic_count[ w[j], z[j] ] += 1.0
-        doc_topic_count[ d[j], z[j] ] += 1.0
-        doc_word_count[ d[j], w[j] ] += 1.0
+        word_topic_count[w[j], z[j]] += 1.0
+        doc_topic_count[d[j], z[j]] += 1.0
+        doc_word_count[d[j], w[j]] += 1.0
         word_doc_topic_mat[ d[j], w[j] ] = argmax(random(T))
 
     sum_ = 0.0
     tokens_per_topic = zeros(T)
     topic_term_scores = zeros(T)
-    #doc_topics = zeros((D, W))
+    # doc_topics = zeros((D, W))
 
     for t in range(T):
-        tokens_per_topic[t] = sum(word_topic_count[:,t])
+        tokens_per_topic[t] = sum(word_topic_count[:, t])
 
     old_topic = 0
     new_topic_ = -1
@@ -45,20 +46,22 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
         print("iteration\t%d" % (itr,))
         for d in range(D):
             if d % 100 == 0:
-                print("\tcurrent docs processed\t%d\ttotal documents to process %d" % (d,D))
-            topic_seq = word_doc_topic_mat[d,:] # ref var, maybe a view?
-            local_topic_counts = doc_topic_count[d,:] # ref var, maybe a view?
+                print("\tcurrent docs processed\t%d" % (d, ))
+                print("\ttotal documents to process\t%d" % (D, ))
+
+            topic_seq = word_doc_topic_mat[d, :]  # ref var, maybe a view?
+            local_topic_counts = doc_topic_count[d, :]  # ref var, maybe a view?
 
             for pos in range(W):
                 old_topic = topic_seq[pos]
-                current_token_topic_counts = word_topic_count[pos,:]
+                current_token_topic_counts = word_topic_count[pos, :]
 
                 local_topic_counts[old_topic] -= 1
                 tokens_per_topic[old_topic] -= 1
                 current_token_topic_counts[old_topic] -= 1
 
                 topic_term_scores = (alpha + local_topic_counts) * \
-                    ((beta + current_token_topic_counts) /
+                    ((beta + current_token_topic_counts) / \
                     (betaSum + tokens_per_topic))
 
                 sum_ = sum(topic_term_scores) 
@@ -78,6 +81,7 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     # TODO: add in print out of the trained/learned model
     return
 
+
 @Phylanx
 def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     betaSum = W * beta
@@ -89,10 +93,10 @@ def simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
     word_doc_topic_mat = constant(0.0, make_list(D, W))
 
     for j in range(N):
-        word_topic_count[ w[j], z[j] ] += 1.0
-        doc_topic_count[ d[j], z[j] ] += 1.0
-        doc_word_count[ d[j], w[j] ] += 1.0
-        word_doc_topic_mat[ d[j], w[j] ] = argmax(random(T))
+        word_topic_count[w[j], z[j]] += 1.0
+        doc_topic_count[d[j], z[j]] += 1.0
+        doc_word_count[d[j], w[j]] += 1.0
+        word_doc_topic_mat[d[j], w[j]] = argmax(random(T))
 
     sum_ = 0.0
     tokens_per_topic = constant(0.0, T)
