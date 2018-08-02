@@ -28,7 +28,7 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
         word_topic_count[w[j], z[j]] += 1.0
         doc_topic_count[d[j], z[j]] += 1.0
         doc_word_count[d[j], w[j]] += 1.0
-        word_doc_topic_mat[ d[j], w[j] ] = argmax(random(T))
+        word_doc_topic_mat[d[j], w[j]] = argmax(random(T))
 
     sum_ = 0.0
     tokens_per_topic = zeros(T)
@@ -60,11 +60,12 @@ def np_simple_lda(D, W, N, T, w, d, z, alpha, beta, iters):
                 tokens_per_topic[old_topic] -= 1
                 current_token_topic_counts[old_topic] -= 1
 
-                topic_term_scores = (alpha + local_topic_counts) * \
-                    ((beta + current_token_topic_counts) / \
-                    (betaSum + tokens_per_topic))
+                tmp_a = alpha + local_topic_counts
+                tmp_b = beta + current_token_topic_counts
+                tmp_c = betaSum + tokens_per_topic
+                topic_term_scores = tmp_a * (tmp_b / tmp_c )
 
-                sum_ = sum(topic_term_scores) 
+                sum_ = sum(topic_term_scores)
 
                 sample_ = random(10)[9] * sum_
 
