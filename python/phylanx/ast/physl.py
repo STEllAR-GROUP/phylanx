@@ -21,11 +21,16 @@ def primitive_name(method_name):
     """
 
     methods = {
+        "add": "__add",
         "array": "hstack",
         "det": "determinant",
         "diagonal": "diag",
+        "divide": "__div",
+        "multiply": "__mul",
+        "negative": "__minus",
         "print": "cout",
         "sqrt": "square_root",
+        "subtract": "__sub",
     }
 
     primitive_name = methods.get(method_name)
@@ -292,7 +297,15 @@ class PhySL:
 
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy.
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if 'hstack' in symbol and isinstance(args[0], list):
+            if args[0][1] and isinstance(args[0][1][0], list):
+                symbol = symbol.replace('hstack', 'vstack')
+                for i in range(len(args[0][1])):
+                    args[0][1][i][0] = args[0][1][i][0].replace('list', 'hstack')
+                    if isinstance(args[0][1][i][1][0], list):
+                        raise NotImplementedError(
+                            'Phylanx only supports 1 and 2 dimensional arrays.')
             args = args[0][1]
         elif 'zeros' in symbol:
             symbol = symbol.replace('zeros', 'constant')
@@ -301,6 +314,8 @@ class PhySL:
                 return [symbol, ('0', [op, args])]
             else:
                 return [symbol, ('0', args)]
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
         return [symbol, args]
 
     # def _ClassDef(self, node):
