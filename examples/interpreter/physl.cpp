@@ -391,13 +391,19 @@ void print_performance_profile(
     std::string const& newick_tree_file, std::string const& counter_file)
 {
     std::set<std::string> resolve_children;
-    for (auto const& f : snippets.program_.entry_points())
+    for (auto const& ep : snippets.program_.entry_points())
     {
-        resolve_children.insert(f.name_);
+        for (auto const& f : ep.functions())
+        {
+            resolve_children.insert(f.name_);
+        }
     }
-    for (auto const& f : snippets.program_.scratchpad())
+    for (auto const& p : snippets.program_.scratchpad())
     {
-        resolve_children.insert(f.name_);
+        for (auto const& f : p.second)
+        {
+            resolve_children.insert(f.name_);
+        }
     }
 
     auto const topology = snippets.program_.get_expression_topology(

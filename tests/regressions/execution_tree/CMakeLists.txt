@@ -5,6 +5,7 @@
 
 set(tests
     319_fold_right_copy_list
+    543_compile_twice
     allow_empty_blocks_278
     assign_variable_twice_491
     assign_wrong_variable_245
