@@ -7,6 +7,8 @@
 #define PHYLANX_EXECUTION_TREE_COMPILER_COMPONENT_HPP
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/node.hpp>
+#include <phylanx/execution_tree/compiler/compiler.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
@@ -14,6 +16,8 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/future.hpp>
 #include <hpx/include/util.hpp>
+
+#include <string>
 
 namespace phylanx { namespace execution_tree { namespace compiler
 {
@@ -25,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
         compiler_component() = default;
 
         // compile_action
-        PHYLANX_EXPORT hpx::future<primitive_argument_type> compile() const;
+        PHYLANX_EXPORT hpx::future<entry_point> compile(std::string const& name,
+            ast::expression const& expr) const;
 
         HPX_DEFINE_COMPONENT_ACTION(
             compiler_component, compile, compile_action);

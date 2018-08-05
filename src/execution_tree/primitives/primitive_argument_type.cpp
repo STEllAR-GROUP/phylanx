@@ -53,4 +53,17 @@ namespace phylanx { namespace execution_tree
     {
         ar & variables_;
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    void primitive_argument_type::serialize(
+        hpx::serialization::output_archive& ar, unsigned)
+    {
+        ar & variant();
+    }
+
+    void primitive_argument_type::serialize(
+        hpx::serialization::input_archive& ar, unsigned)
+    {
+        ar & variant();
+    }
 }}

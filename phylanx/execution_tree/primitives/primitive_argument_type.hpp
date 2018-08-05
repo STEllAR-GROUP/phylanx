@@ -13,9 +13,11 @@
 #include <phylanx/ir/dictionary.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
+#include <phylanx/util/variant.hpp>
 
-#include <hpx/include/runtime.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/runtime.hpp>
+#include <hpx/runtime/serialization/serialization_fwd.hpp>
 #include <hpx/runtime/serialization/serialization_fwd.hpp>
 #include <hpx/util/assert.hpp>
 #include <hpx/util/internal_allocator.hpp>
@@ -64,11 +66,15 @@ namespace phylanx { namespace execution_tree
           : children_(std::move(names)), name_(std::move(name))
         {}
 
+    private:
+        friend class hpx::serialization::access;
+
         PHYLANX_EXPORT void serialize(hpx::serialization::output_archive& ar,
             unsigned);
         PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
             unsigned);
 
+    public:
         std::vector<topology> children_;
         std::string name_;
     };
@@ -140,7 +146,7 @@ namespace phylanx { namespace execution_tree
         }
 
         explicit eval_context(eval_mode mode = eval_default)
-          : mode_(mode)
+            : mode_(mode)
           , variables_(std::allocate_shared<variable_frame>(alloc_))
         {}
 
@@ -586,6 +592,14 @@ namespace phylanx { namespace execution_tree
         // variant::visit
         argument_value_type& variant() noexcept { return *this; }
         argument_value_type const& variant() const noexcept { return *this; }
+
+    private:
+        friend class hpx::serialization::access;
+
+        PHYLANX_EXPORT void serialize(hpx::serialization::output_archive& ar,
+            unsigned);
+        PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
+            unsigned);
     };
 
     // a argument is valid of its not nil{}

@@ -11,6 +11,7 @@
 
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/launch_policy.hpp>
+#include <hpx/runtime/serialization/serialization_fwd.hpp>
 #include <hpx/util/assert.hpp>
 
 #include <array>
@@ -226,8 +227,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
                 int const sequencer_[] = {
                     0, (keep_alive.emplace_back(
-                        extract_copy_value(primitive_argument_type{
-                            std::forward<Ts>(ts)
+                            extract_copy_value(primitive_argument_type{
+                                std::forward<Ts>(ts)
                         }, name_)), 0)...
                 };
                 (void)sequencer_;
@@ -315,6 +316,14 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
         primitive_argument_type arg_;
         std::string name_;
+
+    private:
+        friend class hpx::serialization::access;
+
+        PHYLANX_EXPORT void serialize(hpx::serialization::output_archive& ar,
+            unsigned);
+        PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
+            unsigned);
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -343,7 +352,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 if (it == last)
                 {
                     return it->run(ctx);
-                }
+        }
                 it->run(ctx);
             }
             return primitive_argument_type{};
@@ -371,7 +380,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::move(functions), std::move(resolve_children));
         }
 
-        std::string name_;          // the name of this entry point
+        std::string name_;      // the name of this entry point
         std::list<function> code_;  // the functions representing this
     };
 
@@ -395,7 +404,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 if (it == last)
                 {
                     return it->run(ctx);
-                }
+        }
                 it->run(ctx);
             }
             return primitive_argument_type{};
@@ -465,7 +474,16 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 std::move(functions), std::move(resolve_children));
         }
 
+
     private:
+        friend class hpx::serialization::access;
+
+        PHYLANX_EXPORT void serialize(hpx::serialization::output_archive& ar,
+            unsigned);
+        PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
+            unsigned);
+
+        entry_points_type code_;
         std::map<std::string, std::list<function>> scratchpad_;
         std::list<compiler::entry_point> entrypoints_;
     };
