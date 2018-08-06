@@ -27,7 +27,7 @@ void test_any_operation_0d_true()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(true, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(true, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_0d_false()
@@ -44,7 +44,7 @@ void test_any_operation_0d_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_0d_double_true()
@@ -61,7 +61,7 @@ void test_any_operation_0d_double_true()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_0d_double_false()
@@ -78,7 +78,7 @@ void test_any_operation_0d_double_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d()
@@ -99,7 +99,7 @@ void test_any_operation_1d()
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
     HPX_TEST_EQ(
-        v.nonZeros() != 0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+        v.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d_false()
@@ -117,7 +117,7 @@ void test_any_operation_1d_false()
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d_double()
@@ -138,7 +138,7 @@ void test_any_operation_1d_double()
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
     HPX_TEST_EQ(
-        v.nonZeros() != 0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+        v.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d_double_false()
@@ -156,7 +156,7 @@ void test_any_operation_1d_double_false()
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d_numpy_false()
@@ -175,7 +175,7 @@ void test_any_operation_1d_numpy_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d_numpy_true()
@@ -194,7 +194,7 @@ void test_any_operation_1d_numpy_true()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d_double_numpy_false()
@@ -213,7 +213,7 @@ void test_any_operation_1d_double_numpy_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_1d_double_numpy_true()
@@ -232,7 +232,7 @@ void test_any_operation_1d_double_numpy_true()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d()
@@ -253,7 +253,7 @@ void test_any_operation_2d()
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
     HPX_TEST_EQ(
-        m.nonZeros() != 0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+        m.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d_false()
@@ -272,7 +272,7 @@ void test_any_operation_2d_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d_double()
@@ -293,7 +293,7 @@ void test_any_operation_2d_double()
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
     HPX_TEST_EQ(
-        m.nonZeros() != 0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+        m.nonZeros() != 0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d_double_false()
@@ -312,7 +312,7 @@ void test_any_operation_2d_double_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d_numpy_false()
@@ -332,7 +332,7 @@ void test_any_operation_2d_numpy_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d_numpy_true()
@@ -351,7 +351,7 @@ void test_any_operation_2d_numpy_true()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d_double_numpy_false()
@@ -370,7 +370,7 @@ void test_any_operation_2d_double_numpy_false()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_any_operation_2d_double_numpy_true()
@@ -389,7 +389,7 @@ void test_any_operation_2d_double_numpy_true()
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 int main(int argc, char* argv[])

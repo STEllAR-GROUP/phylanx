@@ -375,11 +375,11 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
-    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value(
+    PHYLANX_EXPORT std::uint8_t extract_boolean_value_scalar(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value(
+    PHYLANX_EXPORT std::uint8_t extract_boolean_value_scalar(
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");

@@ -33,7 +33,6 @@ set(tests
     set_operation
     shuffle_operation
     slicing_operation
-    square_root_operation
     sum_operation
     transpose_operation
     vstack_operation

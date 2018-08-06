@@ -77,9 +77,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 is_integer_operand_strict(arg) ||
                 is_numeric_operand_strict(arg))
             {
+                std::size_t dim = extract_numeric_value_dimension(arg);
                 auto val = extract_numeric_value_dimensions(std::move(arg));
-                return primitive_argument_type{ir::node_data<std::int64_t>{
-                    static_cast<std::int64_t>(val[0])}};
+                switch (dim)
+                {
+                case 0:
+                    return primitive_argument_type{ir::node_data<std::int64_t>{
+                        static_cast<std::int64_t>(1)}};
+
+                case 1:
+                    return primitive_argument_type{ir::node_data<std::int64_t>{
+                        static_cast<std::int64_t>(val[1])}};
+
+                case 2:
+                    return primitive_argument_type{ir::node_data<std::int64_t>{
+                        static_cast<std::int64_t>(val[0])}};
+
+                default:
+                    break;
+                }
             }
 
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

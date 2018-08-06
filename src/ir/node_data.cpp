@@ -122,13 +122,13 @@ namespace phylanx { namespace ir
     template <typename T>
     node_data<T>::node_data(dimensions_type const& dims)
     {
-        if (dims[1] != 1)
+        if (dims[0] != 1)
         {
             data_ = storage2d_type(dims[0], dims[1]);
         }
-        else if (dims[0] != 1)
+        else if (dims[1] != 1)
         {
-            data_ = storage1d_type(dims[0]);
+            data_ = storage1d_type(dims[1]);
         }
         else
         {
@@ -139,13 +139,13 @@ namespace phylanx { namespace ir
     template <typename T>
     node_data<T>::node_data(dimensions_type const& dims, T default_value)
     {
-        if (dims[1] != 1)
+        if (dims[0] != 1)
         {
             data_ = storage2d_type(dims[0], dims[1], default_value);
         }
-        else if (dims[0] != 1)
+        else if (dims[1] != 1)
         {
-            data_ = storage1d_type(dims[0], default_value);
+            data_ = storage1d_type(dims[1], default_value);
         }
         else
         {
@@ -488,7 +488,7 @@ namespace phylanx { namespace ir
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            return vector()[indicies[0]];
+            return vector()[indicies[1]];
 
         case 2: HPX_FALLTHROUGH;
         case 4:
@@ -513,7 +513,7 @@ namespace phylanx { namespace ir
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            return vector()[index1];
+            return vector()[index2];
 
         case 2: HPX_FALLTHROUGH;
         case 4:
@@ -568,7 +568,7 @@ namespace phylanx { namespace ir
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            return vector()[indicies[0]];
+            return vector()[indicies[1]];
 
         case 2: HPX_FALLTHROUGH;
         case 4:
@@ -687,8 +687,30 @@ namespace phylanx { namespace ir
         return *m;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    typename node_data<T>::storage2d_type node_data<T>::matrix_copy() const
+    typename node_data<T>::storage2d_type node_data<T>::matrix_copy() &
+    {
+        custom_storage2d_type* cm =
+            util::get_if<custom_storage2d_type>(&data_);
+        if (cm != nullptr)
+        {
+            return storage2d_type{*cm};
+        }
+
+        storage2d_type* m = util::get_if<storage2d_type>(&data_);
+        if (m != nullptr)
+        {
+            return *m;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::matrix_copy()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    typename node_data<T>::storage2d_type node_data<T>::matrix_copy() const&
     {
         custom_storage2d_type const* cm =
             util::get_if<custom_storage2d_type>(&data_);
@@ -704,10 +726,53 @@ namespace phylanx { namespace ir
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::ir::node_data<T>::matrix()",
+            "phylanx::ir::node_data<T>::matrix_copy()",
             "node_data object holds unsupported data type");
     }
 
+    template <typename T>
+    typename node_data<T>::storage2d_type node_data<T>::matrix_copy() &&
+    {
+        custom_storage2d_type* cm =
+            util::get_if<custom_storage2d_type>(&data_);
+        if (cm != nullptr)
+        {
+            return storage2d_type{*cm};
+        }
+
+        storage2d_type* m = util::get_if<storage2d_type>(&data_);
+        if (m != nullptr)
+        {
+            return std::move(*m);
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::matrix_copy()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    typename node_data<T>::storage2d_type node_data<T>::matrix_copy() const&&
+    {
+        custom_storage2d_type const* cm =
+            util::get_if<custom_storage2d_type>(&data_);
+        if (cm != nullptr)
+        {
+            return storage2d_type{*cm};
+        }
+
+        storage2d_type const* m = util::get_if<storage2d_type>(&data_);
+        if (m != nullptr)
+        {
+            return *m;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::matrix_copy()",
+            "node_data object holds unsupported data type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     typename node_data<T>::custom_storage2d_type node_data<T>::matrix() &
     {
@@ -810,8 +875,30 @@ namespace phylanx { namespace ir
         return *v;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    typename node_data<T>::storage1d_type node_data<T>::vector_copy() const
+    typename node_data<T>::storage1d_type node_data<T>::vector_copy() &
+    {
+        custom_storage1d_type* cv =
+            util::get_if<custom_storage1d_type>(&data_);
+        if (cv != nullptr)
+        {
+            return storage1d_type{*cv};
+        }
+
+        storage1d_type* v = util::get_if<storage1d_type>(&data_);
+        if (v != nullptr)
+        {
+            return *v;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::vector_copy()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    typename node_data<T>::storage1d_type node_data<T>::vector_copy() const&
     {
         custom_storage1d_type const* cv =
             util::get_if<custom_storage1d_type>(&data_);
@@ -827,10 +914,53 @@ namespace phylanx { namespace ir
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::ir::node_data<T>::vector()",
+            "phylanx::ir::node_data<T>::vector_copy()",
             "node_data object holds unsupported data type");
     }
 
+    template <typename T>
+    typename node_data<T>::storage1d_type node_data<T>::vector_copy() &&
+    {
+        custom_storage1d_type* cv =
+            util::get_if<custom_storage1d_type>(&data_);
+        if (cv != nullptr)
+        {
+            return storage1d_type{*cv};
+        }
+
+        storage1d_type* v = util::get_if<storage1d_type>(&data_);
+        if (v != nullptr)
+        {
+            return std::move(*v);
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::vector_copy()",
+            "node_data object holds unsupported data type");
+    }
+
+    template <typename T>
+    typename node_data<T>::storage1d_type node_data<T>::vector_copy() const &&
+    {
+        custom_storage1d_type const* cv =
+            util::get_if<custom_storage1d_type>(&data_);
+        if (cv != nullptr)
+        {
+            return storage1d_type{*cv};
+        }
+
+        storage1d_type const* v = util::get_if<storage1d_type>(&data_);
+        if (v != nullptr)
+        {
+            return *v;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::ir::node_data<T>::vector_copy()",
+            "node_data object holds unsupported data type");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     typename node_data<T>::custom_storage1d_type node_data<T>::vector() &
     {
@@ -968,7 +1098,7 @@ namespace phylanx { namespace ir
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            return dimensions_type{vector().size(), 1ul};
+            return dimensions_type{1ul, vector().size()};
 
         case 2: HPX_FALLTHROUGH;
         case 4:

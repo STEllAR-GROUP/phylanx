@@ -73,8 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return util::get<1>(val).dimensions();
 
         case 2:    // std::uint64_t
-            return std::array<std::size_t, 2>{
-                std::size_t(util::get<2>(val)[0]), 1ull};
+            return util::get<2>(val).dimensions();
 
         case 4:    // phylanx::ir::node_data<double>
             return util::get<4>(val).dimensions();
@@ -507,11 +506,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///////////////////////////////////////////////////////////////////////
         inline int num_dimensions(std::array<std::size_t, 2> const& dims)
         {
-            if (dims[1] != 1)
+            if (dims[0] != 1)
             {
                 return 2;
             }
-            if (dims[0] != 1)
+            if (dims[1] != 1)
             {
                 return 1;
             }
@@ -573,7 +572,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->random0d(std::move(params));
 
                 case 1:
-                    return this_->random1d(dims[0], std::move(params));
+                    return this_->random1d(dims[1], std::move(params));
 
                 case 2:
                     return this_->random2d(dims, std::move(params));

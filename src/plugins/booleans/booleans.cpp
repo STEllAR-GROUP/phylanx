@@ -27,7 +27,11 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(less_equal_plugin,
     phylanx::execution_tree::primitives::less_equal::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(not_equal_plugin,
     phylanx::execution_tree::primitives::not_equal::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(nonzero_plugin,
+    phylanx::execution_tree::primitives::nonzero_where::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(or_operation_plugin,
     phylanx::execution_tree::primitives::or_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(unary_not_operation_plugin,
     phylanx::execution_tree::primitives::unary_not_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(where_plugin,
+    phylanx::execution_tree::primitives::nonzero_where::match_data[1]);
