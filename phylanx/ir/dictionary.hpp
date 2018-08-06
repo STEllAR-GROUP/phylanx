@@ -14,6 +14,8 @@
 
 #include <unordered_map>
 
+#include <cstddef>
+
 namespace phylanx { namespace execution_tree {
     struct primitive_argument_type;
 }}

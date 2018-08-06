@@ -12,6 +12,9 @@
 
 #include <phylanx/ir/dictionary.hpp>
 
+#include <string>
+#include <cstdint>
+
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
     std::string const& codestr)
