@@ -332,7 +332,6 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{std::move(val)}
         {}
 
-
         primitive_argument_type(argument_value_type const& val)
           : argument_value_type{val}
         {}

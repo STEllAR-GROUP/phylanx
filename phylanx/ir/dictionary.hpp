@@ -10,11 +10,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/util/variant.hpp>
 
-#include <hpx/include/serialization.hpp>
-
-#include <unordered_map>
-
 #include <cstddef>
+#include <functional>
+#include <unordered_map>
 
 namespace phylanx { namespace execution_tree {
     struct primitive_argument_type;

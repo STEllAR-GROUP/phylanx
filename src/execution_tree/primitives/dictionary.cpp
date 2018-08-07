@@ -5,7 +5,9 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/dictionary.hpp>
+#include <phylanx/util/variant.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -19,15 +21,9 @@
 #include <utility>
 #include <vector>
 
-#include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
-#include <phylanx/util/variant.hpp>
 #include <boost/functional/hash.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx { namespace execution_tree { namespace primitives {
-
-}}}
-
 namespace std {
     std::size_t hash<phylanx::util::recursive_wrapper<
         phylanx::execution_tree::primitive_argument_type>>::
@@ -40,7 +36,7 @@ namespace std {
         case 0:    // ast::nil
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::ir::dictionary",
-                "unsupported nil data type");
+                "cannot hash nil data type");
 
         case 1:    // phylanx::ir::node_data<std::uint8_t>
         {
@@ -49,14 +45,14 @@ namespace std {
             switch (val_temp.num_dimensions())
             {
             case 0:
-                boost::hash<uint8_t> hash_uint8_t;
-                return hash_uint8_t(val_temp[0]);
+                boost::hash<std::uint8_t> hash_uint8_t;
+                return hash_uint8_t(std::move(val_temp[0]));
             case 1:
                 HPX_FALLTHROUGH;
             case 2:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::ir::dictionary",
-                    "unsupported none 0-dimension node data type");
+                    "cannot hash none 0-dimension node data type");
             }
         }
 
@@ -67,14 +63,14 @@ namespace std {
             switch (val_temp.num_dimensions())
             {
             case 0:
-                boost::hash<__int64_t> hash_int64_t;
-                return hash_int64_t(val_temp[0]);
+                boost::hash<std::int64_t> hash_int64_t;
+                return hash_int64_t(std::move(val_temp[0]));
             case 1:
                 HPX_FALLTHROUGH;
             case 2:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::ir::dictionary",
-                    "unsupported none 0-dimension node data type");
+                    "cannot hash none 0-dimension node data type");
             }
         }
 
@@ -82,7 +78,7 @@ namespace std {
         {
             std::string val_temp = phylanx::util::get<3>(val);
             boost::hash<std::string> hash_string;
-            return hash_string(val_temp);
+            return hash_string(std::move(val_temp));
         }
 
         case 4:    // phylanx::ir::node_data<double>
@@ -93,48 +89,50 @@ namespace std {
             {
             case 0:
                 boost::hash<double> hash_double;
-                return hash_double(val_temp[0]);
+                return hash_double(std::move(val_temp[0]));
             case 1:
                 HPX_FALLTHROUGH;
             case 2:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::ir::dictionary",
-                    "unsupported none 0-dimension node data type");
+                    "cannot hash none 0-dimension node data type");
             }
         }
 
         case 5:    // primitive
         {
-            hash hash_primitive;
-            return hash_primitive(val);
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::ir::dictionary",
+                "cannot hash primitive data type");
         }
 
         case 6:    // std::vector<ast::expression>
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::ir::dictionary",
-                "unsupported std::vector<ast::expression> data type");
+                "cannot hash std::vector<ast::expression> data type");
         }
 
         case 7:    // ir::range
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::ir::dictionary",
-                "unsupported ir::range data type");
+                "cannot hash ir::range data type");
         }
 
         case 8:    // phylanx::ir::dictionary
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::ir::dictionary",
-                "unsupported dictionary data type");
+                "cannot hash dictionary data type");
         }
+
         default:
             break;
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::ir::dictionary",
-            "unsupported data type");
+            "dictionary's key object holds unhashable data type");
     }
 }
