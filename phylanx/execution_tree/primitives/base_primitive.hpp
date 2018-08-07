@@ -211,6 +211,7 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT bool is_numeric_operand_strict(
         primitive_argument_type const& val);
 
+    ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT std::size_t extract_numeric_value_dimension(
         primitive_argument_type const& val,
         std::string const& name = "",
@@ -221,6 +222,7 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a ir::node_data<std::uint8_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<std::uint8_t> extract_boolean_data(
@@ -234,52 +236,6 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_boolean_data_operand(
         primitive_argument_type const& val);
-
-    template <typename T>
-    ir::node_data<T> extract_node_data(
-        primitive_argument_type const& val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
-    template <>
-    inline ir::node_data<double> extract_node_data(
-        primitive_argument_type const& val,
-        std::string const& name,
-        std::string const& codename)
-    {
-        return extract_numeric_value(val, name, codename);
-    }
-    template <>
-    inline ir::node_data<std::uint8_t> extract_node_data(
-        primitive_argument_type const& val,
-        std::string const& name,
-        std::string const& codename)
-    {
-        return extract_boolean_data(val, name, codename);
-    }
-
-    template <typename T>
-    ir::node_data<T> extract_node_data(
-        primitive_argument_type && val,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
-    template <>
-    inline ir::node_data<double> extract_node_data(
-        primitive_argument_type && val,
-        std::string const& name,
-        std::string const& codename)
-    {
-        return extract_numeric_value(std::move(val), name, codename);
-    }
-    template <>
-    inline ir::node_data<std::uint8_t> extract_node_data(
-        primitive_argument_type && val,
-        std::string const& name,
-        std::string const& codename)
-    {
-        return extract_boolean_data(std::move(val), name, codename);
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a ir::node_data<std::int64_t> type from a given primitive_argument_type,
@@ -432,6 +388,69 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT bool is_boolean_operand_strict(
         primitive_argument_type const& val);
 
+    template <typename T>
+    ir::node_data<T> extract_node_data(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline ir::node_data<double> extract_node_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_numeric_value(val, name, codename);
+    }
+    template <>
+    inline ir::node_data<std::int64_t> extract_node_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_integer_value(val, name, codename);
+    }
+    template <>
+    inline ir::node_data<std::uint8_t> extract_node_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_boolean_value(val, name, codename);
+    }
+
+    template <typename T>
+    ir::node_data<T> extract_node_data(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline ir::node_data<double> extract_node_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_numeric_value(std::move(val), name, codename);
+    }
+    template <>
+    inline ir::node_data<std::int64_t> extract_node_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_integer_value(std::move(val), name, codename);
+    }
+    template <>
+    inline ir::node_data<std::uint8_t> extract_node_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_boolean_value(std::move(val), name, codename);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Extract a std::string type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT std::string extract_string_value(
