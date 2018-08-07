@@ -7,9 +7,11 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ast/detail/is_literal_value.hpp>
+#include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
+#include <phylanx/execution_tree/primitives/slicing_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
-#include <phylanx/util/slicing_helpers.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -18,8 +20,40 @@
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace util { namespace slicing_helpers
+namespace phylanx { namespace execution_tree
 {
+    ///////////////////////////////////////////////////////////////////////////
+    bool is_valid_slicing_parameter(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
+    {
+        return !valid(val) || is_integer_operand(val) ||
+            is_list_operand_strict(val);
+    }
+
+    bool is_tuple_of_indices(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
+    {
+        if (!is_list_operand_strict(val))
+        {
+            return false;
+        }
+
+        auto&& args = extract_list_value_strict(val, name, codename);
+        if (args.size() == 1)
+        {
+            return is_valid_slicing_parameter(*args.begin(), name, codename);
+        }
+        else if (args.size() == 2)
+        {
+            auto it = args.begin();
+            if (is_valid_slicing_parameter(*it, name, codename))
+            {
+                return is_valid_slicing_parameter(*++it, name, codename);
+            }
+        }
+        return false;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // extract a single integer from the given node_data instance
     std::int64_t extract_integer(
@@ -82,7 +116,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
 
         // Extract the list or the single integer index
         // from second argument (row-> start, stop, step)
-        if (execution_tree::is_list_operand_strict(arg))
+        if (is_list_operand_strict(arg))
         {
             auto arg_list =
                 execution_tree::extract_list_value(arg, name, codename);
@@ -96,8 +130,8 @@ namespace phylanx { namespace util { namespace slicing_helpers
             if (size > 3)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::util::slicing_helpers::extract_slicing",
-                    "too many indicies given");
+                    "phylanx::execution_tree::primitives::extract_slicing",
+                    "too many indices given");
             }
 
             if (size == 0)
@@ -168,7 +202,7 @@ namespace phylanx { namespace util { namespace slicing_helpers
             indices.stop(arg_size);
             indices.step(1);
         }
-        else
+        else if (is_integer_operand(arg))
         {
             // allow for the slicing parameters to be a single integer
             indices.start(extract_integer(arg, 0, name, codename), true);
@@ -178,7 +212,13 @@ namespace phylanx { namespace util { namespace slicing_helpers
                 indices.start(arg_size + indices.start());
             }
         }
+        else
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::extract_slicing",
+                "invalid data specified for slicing parameter");
+        }
 
         return indices;
     }
-}}}
+}}

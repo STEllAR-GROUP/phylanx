@@ -27,7 +27,7 @@ std::string const bench1 = R"(
         define(local_y, y),
         define(z, 0),
         for_each(
-            lambda(i, store(z, slice(x, slice(local_y, i)) + 1)),
+            lambda(i, store(z, slice(x, slice(local_y, i, nil)) + 1, nil)),
             range(k)
         )
     ))
@@ -40,8 +40,8 @@ std::string const bench2 = R"(
         define(local_y, y),
         for_each(
             lambda(i, block(
-                define(idx, slice(local_y, i)),
-                store(slice(x, idx), slice(x, idx) + 1)
+                define(idx, slice(local_y, i, nil)),
+                store(slice(x, idx, nil), slice(x, idx, nil) + 1)
             )),
             range(k)
         )

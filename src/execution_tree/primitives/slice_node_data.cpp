@@ -6,9 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/slice_node_data.hpp>
+#include <phylanx/execution_tree/primitives/slicing_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
-#include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/exception.hpp>
 #include <hpx/util/assert.hpp>
@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree
         }
 
         auto sv = blaze::elements(
-            data, util::slicing_helpers::create_list_slice(start, stop, step));
+            data, execution_tree::create_list_slice(start, stop, step));
 
         return f.vector(data, std::move(sv));
     }
@@ -175,7 +175,7 @@ namespace phylanx { namespace execution_tree
 
             // general case, pick arbitrary elements from selected row
             auto sv = blaze::elements(row,
-                util::slicing_helpers::create_list_slice(
+                execution_tree::create_list_slice(
                     col_start, col_stop, col_step));
 
             return f.trans_vector(input_matrix, std::move(sv));
@@ -196,7 +196,7 @@ namespace phylanx { namespace execution_tree
 
             // general case, pick arbitrary elements from selected column
             auto sv = blaze::elements(col,
-                util::slicing_helpers::create_list_slice(
+                execution_tree::create_list_slice(
                     row_start, row_stop, row_step));
 
             return f.vector(input_matrix, std::move(sv));
@@ -219,7 +219,7 @@ namespace phylanx { namespace execution_tree
                 num_matrix_rows, col_stop - col_start);
 
             auto result = blaze::rows(sm,
-                util::slicing_helpers::create_list_slice(
+                execution_tree::create_list_slice(
                     row_start, row_stop, row_step));
 
             return f.matrix(input_matrix, std::move(result));
@@ -232,7 +232,7 @@ namespace phylanx { namespace execution_tree
                 row_stop - row_start, num_matrix_cols);
 
             auto result = blaze::columns(sm,
-                util::slicing_helpers::create_list_slice(
+                execution_tree::create_list_slice(
                     col_start, col_stop, col_step));
 
             return f.matrix(input_matrix, std::move(result));
@@ -240,11 +240,11 @@ namespace phylanx { namespace execution_tree
 
         // general case, pick arbitrary elements from matrix
         auto sm = blaze::rows(input_matrix,
-            util::slicing_helpers::create_list_slice(
+            execution_tree::create_list_slice(
                 row_start, row_stop, row_step));
 
         auto result = blaze::columns(sm,
-            util::slicing_helpers::create_list_slice(
+            execution_tree::create_list_slice(
                 col_start, col_stop, col_step));
 
         return f.matrix(input_matrix, std::move(result));
@@ -295,7 +295,7 @@ namespace phylanx { namespace execution_tree
         {
         case 0:
             return slice0d(data.scalar(),
-                util::slicing_helpers::extract_slicing(indices, 1),
+                execution_tree::extract_slicing(indices, 1),
                 detail::slice_identity<T>{}, name, codename);
 
         case 1: HPX_FALLTHROUGH;
@@ -303,7 +303,7 @@ namespace phylanx { namespace execution_tree
             {
                 auto v = data.vector();
                 return slice1d<T>(v,
-                    util::slicing_helpers::extract_slicing(indices, v.size()),
+                    execution_tree::extract_slicing(indices, v.size()),
                     detail::slice_identity<T>{}, name, codename);
             }
 
@@ -313,7 +313,7 @@ namespace phylanx { namespace execution_tree
                 auto m = data.matrix();
                 ir::slicing_indices columns{0ll, std::int64_t(m.columns()), 1ll};
                 return slice2d<T>(m,
-                    util::slicing_helpers::extract_slicing(indices, m.rows()),
+                    execution_tree::extract_slicing(indices, m.rows()),
                     columns, detail::slice_identity<T>{}, name, codename);
             }
 
@@ -341,8 +341,8 @@ namespace phylanx { namespace execution_tree
             {
                 auto m = data.matrix();
                 return slice2d<T>(m,
-                    util::slicing_helpers::extract_slicing(rows, m.rows()),
-                    util::slicing_helpers::extract_slicing(columns, m.columns()),
+                    execution_tree::extract_slicing(rows, m.rows()),
+                    execution_tree::extract_slicing(columns, m.columns()),
                     detail::slice_identity<T>{}, name, codename);
             }
 
@@ -354,7 +354,7 @@ namespace phylanx { namespace execution_tree
                 {
                     HPX_ASSERT(!valid(columns));
                     return slice1d<T>(v,
-                        util::slicing_helpers::extract_slicing(rows, v.size()),
+                        execution_tree::extract_slicing(rows, v.size()),
                         detail::slice_identity<T>{}, name, codename);
                 }
 
@@ -362,7 +362,7 @@ namespace phylanx { namespace execution_tree
                 {
                     HPX_ASSERT(!valid(rows));
                     return slice1d<T>(v,
-                        util::slicing_helpers::extract_slicing(columns, v.size()),
+                        execution_tree::extract_slicing(columns, v.size()),
                         detail::slice_identity<T>{}, name, codename);
                 }
             }
@@ -517,7 +517,7 @@ namespace phylanx { namespace execution_tree
         {
         case 0:
             return slice0d(data.scalar(),
-                util::slicing_helpers::extract_slicing(indices, 1),
+                execution_tree::extract_slicing(indices, 1),
                 detail::slice_assign<T>{value}, name, codename);
 
         case 1: HPX_FALLTHROUGH;
@@ -528,14 +528,14 @@ namespace phylanx { namespace execution_tree
                     auto v = data.vector();
                     std::size_t size = v.size();
                     return slice1d<T>(std::move(v),
-                        util::slicing_helpers::extract_slicing(indices, size),
+                        execution_tree::extract_slicing(indices, size),
                         detail::slice_assign<T>{value}, name, codename);
                 }
 
                 auto& v = data.vector_non_ref();
                 std::size_t size = v.size();
                 return slice1d<T>(std::move(v),
-                    util::slicing_helpers::extract_slicing(indices, size),
+                    execution_tree::extract_slicing(indices, size),
                     detail::slice_assign<T>{value}, name, codename);
             }
 
@@ -549,7 +549,7 @@ namespace phylanx { namespace execution_tree
                     ir::slicing_indices columns{
                         0ll, std::int64_t(m.columns()), 1ll};
                     return slice2d<T>(std::move(m),
-                        util::slicing_helpers::extract_slicing(indices, rows),
+                        execution_tree::extract_slicing(indices, rows),
                         columns, detail::slice_assign<T>{value}, name, codename);
                 }
 
@@ -558,7 +558,7 @@ namespace phylanx { namespace execution_tree
                 ir::slicing_indices columns{
                     0ll, std::int64_t(m.columns()), 1ll};
                 return slice2d<T>(std::move(m),
-                    util::slicing_helpers::extract_slicing(indices, rows),
+                    execution_tree::extract_slicing(indices, rows),
                     columns, detail::slice_assign<T>{value}, name, codename);
             }
 
@@ -591,8 +591,8 @@ namespace phylanx { namespace execution_tree
                     std::size_t numrows = m.rows();
                     std::size_t numcols = m.columns();
                     return slice2d<T>(std::move(m),
-                        util::slicing_helpers::extract_slicing(rows, numrows),
-                        util::slicing_helpers::extract_slicing(columns, numcols),
+                        execution_tree::extract_slicing(rows, numrows),
+                        execution_tree::extract_slicing(columns, numcols),
                         detail::slice_assign<T>{value}, name, codename);
                 }
 
@@ -600,8 +600,8 @@ namespace phylanx { namespace execution_tree
                 std::size_t numrows = m.rows();
                 std::size_t numcols = m.columns();
                 return slice2d<T>(std::move(m),
-                    util::slicing_helpers::extract_slicing(rows, numrows),
-                    util::slicing_helpers::extract_slicing(columns, numcols),
+                    execution_tree::extract_slicing(rows, numrows),
+                    execution_tree::extract_slicing(columns, numcols),
                     detail::slice_assign<T>{value}, name, codename);
             }
 
@@ -616,7 +616,7 @@ namespace phylanx { namespace execution_tree
                     {
                         HPX_ASSERT(!valid(columns));
                         return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(rows, size),
+                            execution_tree::extract_slicing(rows, size),
                             detail::slice_assign<T>{value}, name, codename);
                     }
 
@@ -624,7 +624,7 @@ namespace phylanx { namespace execution_tree
                     {
                         HPX_ASSERT(!valid(rows));
                         return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(columns, size),
+                            execution_tree::extract_slicing(columns, size),
                             detail::slice_assign<T>{value}, name, codename);
                     }
                 }
@@ -636,7 +636,7 @@ namespace phylanx { namespace execution_tree
                     {
                         HPX_ASSERT(!valid(columns));
                         return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(rows, size),
+                            execution_tree::extract_slicing(rows, size),
                             detail::slice_assign<T>{value}, name, codename);
                     }
 
@@ -644,7 +644,7 @@ namespace phylanx { namespace execution_tree
                     {
                         HPX_ASSERT(!valid(rows));
                         return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(columns, size),
+                            execution_tree::extract_slicing(columns, size),
                             detail::slice_assign<T>{value}, name, codename);
                     }
                 }

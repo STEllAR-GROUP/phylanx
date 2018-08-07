@@ -38,73 +38,73 @@ int main(int argc, char* argv[])
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, 2)
+            slice(a, 2, nil)
         ))", "3");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(2))
+            slice(a, list(2), nil)
         ))", "3");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(2, 2))
+            slice(a, list(2, 2), nil)
         ))", "list()");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(2, 4))
+            slice(a, list(2, 4), nil)
         ))", "list(3, 4)");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(2, 6, 2))
+            slice(a, list(2, 6, 2), nil)
         ))", "list(3, 5)");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(6, 2, -2))
+            slice(a, list(6, 2, -2), nil)
         ))", "list(7, 5)");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(-6, -2))
+            slice(a, list(-6, -2), nil)
         ))", "list(3, 4, 5, 6)");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(-6, -5))
+            slice(a, list(-6, -5), nil)
         ))", "list(3)");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(0, -1))
+            slice(a, list(0, -1), nil)
         ))", "list(1, 2, 3, 4, 5, 6, 7)");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, list(-2, -6, -2))
+            slice(a, list(-2, -6, -2), nil)
         ))", "list(7, 5)");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, 2)
+            slice(a, 2, nil)
         ))", "3");
 
     test_slice_operation(
         R"(block(
             define(a, list(1, 2, 3, 4, 5, 6, 7, 8)),
-            slice(a, -2)
+            slice(a, -2, nil)
         ))", "7");
 
     return hpx::util::report_errors();

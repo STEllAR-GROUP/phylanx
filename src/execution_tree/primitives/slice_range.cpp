@@ -6,9 +6,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/slice_range.hpp>
+#include <phylanx/execution_tree/primitives/slicing_helpers.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/generate_error_message.hpp>
-#include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/exception.hpp>
 #include <hpx/util/assert.hpp>
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree
 
         // list of indices to extract
         std::vector<std::int64_t> index_list =
-            util::slicing_helpers::create_list_slice(start, stop, step);
+            execution_tree::create_list_slice(start, stop, step);
 
         std::vector<primitive_argument_type> result;
         result.reserve(index_list.size());
@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree
         std::string const& codename)
     {
         return slice_list(data,
-            util::slicing_helpers::extract_slicing(indices, data.size()), name,
+            execution_tree::extract_slicing(indices, data.size()), name,
             codename);
     }
 

@@ -115,14 +115,14 @@ class PhySL:
         symbol_info = full_node_name(a)
         s = 'slice%s(%s,' % (symbol_info, self.recompile(a.value))
         if isinstance(a.slice, ast.Index):
-            s += '%s)' % self.recompile(a.slice.value)
+            s += '%s, nil)' % self.recompile(a.slice.value)
             return s
         elif isinstance(a.slice, ast.Slice):
             s += self.recompile(a.slice)
-            return s + ')'
+            return s + ', nil)'
         else:
             s += self.recompile(a.slice)
-            return s + ')'
+            return s + ', nil)'
 
     def _Slice(self, a, allowreturn=False):
         if a.lower is None:
@@ -133,7 +133,7 @@ class PhySL:
             aupp = "nil"
         else:
             aupp = self.recompile(a.upper)
-        s = 'list(%s, %s' % (alow, aupp)
+        s = 'range(%s, %s' % (alow, aupp)
         if a.step:
             s += ', %s)' % self.recompile(a.step)
         else:
@@ -230,7 +230,7 @@ class PhySL:
                 print(self.fglobals)
                 raise Exception("package name '%s' does not exist" % pkg_name)
             if func_name == "zeros" and len(a.args) == 1:
-                s += 'constant%s(0, make_list%s(' % (symbol_info, symbol_info)
+                s += 'constant%s(0, list%s(' % (symbol_info, symbol_info)
                 # The code below works the same for tuples and lists
                 args = [arg for arg in ast.iter_child_nodes(a.args[0])]
                 for i in range(len(args) - 1):
@@ -315,7 +315,7 @@ class PhySL:
                     s += "nil,"
                 else:
                     s += self.recompile(indexv.upper) + ","
-                s += "nil)), "
+                s += "nil), nil), "
                 s += self.recompile(args[1])
                 s += ")"
             elif indexv_nm == "Index":
@@ -326,6 +326,7 @@ class PhySL:
                 indexs = get_node(indexv, num=0)
                 if not is_node(indexs, "Tuple"):
                     s += self.recompile(indexs)
+                    s += ", nil"
                 else:
                     s += self.recompile(get_node(indexs, num=0))
                     s += ", " + self.recompile(get_node(indexs, num=1))
@@ -493,11 +494,11 @@ class PhySL:
 
     def _List(self, a, allowreturn=False):
         symbol_info = full_node_name(a)
-        ret = "make_list%s(" % symbol_info
+        ret = "list%s(" % symbol_info
         for arg in ast.iter_child_nodes(a):
             if arg.__class__.__name__ == "Load":
                 break
-            if ret != "make_list%s(" % symbol_info:
+            if ret != "list%s(" % symbol_info:
                 ret += ", "
             ret += self.recompile(arg)
         ret += ")"

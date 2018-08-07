@@ -18,8 +18,20 @@
 #include <utility>
 #include <vector>
 
-namespace phylanx { namespace util { namespace slicing_helpers
+namespace phylanx { namespace execution_tree
 {
+    ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT bool is_valid_xrange_parameter(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename);
+
+    PHYLANX_EXPORT bool is_valid_slicing_parameter(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename);
+
+    PHYLANX_EXPORT bool is_tuple_of_indices(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename);
+
     ///////////////////////////////////////////////////////////////////////////
     // extract a single integer from the given node_data instance
     PHYLANX_EXPORT std::int64_t extract_integer(
@@ -38,6 +50,6 @@ namespace phylanx { namespace util { namespace slicing_helpers
         execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name = "",
         std::string const& codename = "<unknown>");
-}}}
+}}
 
 #endif //PHYLANX_SLICING_HELPERS_HPP

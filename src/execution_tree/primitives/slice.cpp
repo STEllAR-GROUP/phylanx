@@ -8,6 +8,7 @@
 #include <phylanx/execution_tree/primitives/slice.hpp>
 #include <phylanx/execution_tree/primitives/slice_node_data.hpp>
 #include <phylanx/execution_tree/primitives/slice_range.hpp>
+#include <phylanx/execution_tree/primitives/slicing_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/generate_error_message.hpp>
@@ -25,29 +26,32 @@ namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
     // return a slice of the given primitive_argument_type instance
-    primitive_argument_type slice(primitive_argument_type const& data,
+    primitive_argument_type slice1d(primitive_argument_type const& data,
         primitive_argument_type const& indices, std::string const& name,
         std::string const& codename)
     {
         if (is_integer_operand_strict(data))
         {
-            return primitive_argument_type{slice(
-                extract_integer_value_strict(data), indices, name, codename)};
+            return primitive_argument_type{
+                slice(extract_integer_value_strict(data, name, codename),
+                    indices, name, codename)};
         }
         if (is_numeric_operand_strict(data))
         {
-            return primitive_argument_type{slice(
-                extract_numeric_value_strict(data), indices, name, codename)};
+            return primitive_argument_type{
+                slice(extract_numeric_value_strict(data, name, codename),
+                    indices, name, codename)};
         }
         if (is_boolean_operand_strict(data))
         {
-            return primitive_argument_type{slice(
-                extract_boolean_value_strict(data), indices, name, codename)};
+            return primitive_argument_type{
+                slice(extract_boolean_value_strict(data, name, codename),
+                    indices, name, codename)};
         }
         if (is_list_operand_strict(data))
         {
-            return slice(
-                extract_list_value_strict(data), indices, name, codename);
+            return slice(extract_list_value_strict(data, name, codename),
+                indices, name, codename);
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -58,6 +62,37 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type slice(primitive_argument_type const& data,
+        primitive_argument_type const& indices, std::string const& name,
+        std::string const& codename)
+    {
+        // the indices could be given as a tuple
+        if (is_tuple_of_indices(indices, name, codename))
+        {
+            auto&& args = extract_list_value_strict(indices, name, codename);
+            if (args.size() == 1)
+            {
+                return slice1d(data, *args.begin(), name, codename);
+            }
+            else if (args.size() == 2)
+            {
+                auto it = args.begin();
+                auto const& dim0 = *it;
+                return slice(data, dim0, *++it, name, codename);
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "phylanx::execution_tree::slice",
+                    util::generate_error_message(
+                        "indices object holds an unsupported number of "
+                        "dimensions", name, codename));
+            }
+        }
+
+        return slice1d(data, indices, name, codename);
+    }
+
+    primitive_argument_type slice(primitive_argument_type const& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, std::string const& name,
         std::string const& codename)
@@ -65,20 +100,20 @@ namespace phylanx { namespace execution_tree
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{
-                slice(extract_integer_value_strict(data), rows, columns,
-                    name, codename)};
+                slice(extract_integer_value_strict(data, name, codename), rows,
+                    columns, name, codename)};
         }
         if (is_numeric_operand_strict(data))
         {
             return primitive_argument_type{
-                slice(extract_numeric_value_strict(data), rows, columns,
-                    name, codename)};
+                slice(extract_numeric_value_strict(data, name, codename), rows,
+                    columns, name, codename)};
         }
         if (is_boolean_operand_strict(data))
         {
             return primitive_argument_type{
-                slice(extract_boolean_value_strict(data), rows, columns,
-                    name, codename)};
+                slice(extract_boolean_value_strict(data, name, codename), rows,
+                    columns, name, codename)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -90,32 +125,37 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given primitive_argument_type instance
-    primitive_argument_type slice(primitive_argument_type&& data,
+    primitive_argument_type slice1d(primitive_argument_type&& data,
         primitive_argument_type const& indices, primitive_argument_type&& value,
         std::string const& name, std::string const& codename)
     {
         if (is_integer_operand_strict(value))
         {
             return primitive_argument_type{slice(
-                extract_integer_value(std::move(data)), indices,
-                extract_integer_value_strict(std::move(value)), name, codename)};
+                extract_integer_value(std::move(data), name, codename), indices,
+                extract_integer_value_strict(std::move(value), name, codename),
+                name, codename)};
         }
         if (is_numeric_operand_strict(value))
         {
             return primitive_argument_type{slice(
-                extract_numeric_value(std::move(data)), indices,
-                extract_numeric_value_strict(std::move(value)), name, codename)};
+                extract_numeric_value(std::move(data), name, codename), indices,
+                extract_numeric_value_strict(std::move(value), name, codename),
+                name, codename)};
         }
         if (is_boolean_operand_strict(value))
         {
             return primitive_argument_type{slice(
-                extract_boolean_value(std::move(data)), indices,
-                extract_boolean_value_strict(std::move(value)), name, codename)};
+                extract_boolean_value(std::move(data), name, codename), indices,
+                extract_boolean_value_strict(std::move(value), name, codename),
+                name, codename)};
         }
         if (is_list_operand_strict(value))
         {
-            return slice(extract_list_value(std::move(data)), indices,
-                extract_list_value_strict(std::move(value)), name, codename);
+            return slice(extract_list_value(std::move(data), name, codename),
+                indices,
+                extract_list_value_strict(std::move(value), name, codename),
+                name, codename);
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -126,30 +166,68 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type slice(primitive_argument_type&& data,
+        primitive_argument_type const& indices, primitive_argument_type&& value,
+        std::string const& name, std::string const& codename)
+    {
+        // the indices could be given as a tuple
+        if (is_tuple_of_indices(indices, name, codename))
+        {
+            auto&& args = extract_list_value_strict(indices, name, codename);
+            if (args.size() == 1)
+            {
+                return slice1d(std::move(data), *args.begin(), std::move(value),
+                    name, codename);
+            }
+            else if (args.size() == 2)
+            {
+                auto it = args.begin();
+                auto const& dim0 = *it;
+                return slice(std::move(data), dim0, *++it, std::move(value),
+                    name, codename);
+            }
+            else
+            {
+                HPX_THROW_EXCEPTION(hpx::invalid_status,
+                    "phylanx::execution_tree::slice",
+                    util::generate_error_message(
+                        "indices object holds an unsupported number of "
+                        "dimensions",
+                        name, codename));
+            }
+        }
+
+        return slice1d(
+            std::move(data), indices, std::move(value), name, codename);
+    }
+
+    primitive_argument_type slice(primitive_argument_type&& data,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns, primitive_argument_type&& value,
         std::string const& name, std::string const& codename)
     {
         if (is_integer_operand_strict(value))
         {
-            return primitive_argument_type{
-                slice(extract_integer_value(std::move(data)), rows, columns,
-                    extract_integer_value_strict(std::move(value)), name,
-                    codename)};
+            return primitive_argument_type{slice(
+                extract_integer_value(std::move(data), name, codename), rows,
+                columns,
+                extract_integer_value_strict(std::move(value), name, codename),
+                name, codename)};
         }
         if (is_numeric_operand_strict(value))
         {
-            return primitive_argument_type{
-                slice(extract_numeric_value(std::move(data)), rows, columns,
-                    extract_numeric_value_strict(std::move(value)), name,
-                    codename)};
+            return primitive_argument_type{slice(
+                extract_numeric_value(std::move(data), name, codename), rows,
+                columns,
+                extract_numeric_value_strict(std::move(value), name, codename),
+                name, codename)};
         }
         if (is_boolean_operand_strict(value))
         {
-            return primitive_argument_type{
-                slice(extract_boolean_value(std::move(data)), rows, columns,
-                    extract_boolean_value_strict(std::move(value)), name,
-                    codename)};
+            return primitive_argument_type{slice(
+                extract_boolean_value(std::move(data), name, codename), rows,
+                columns,
+                extract_boolean_value_strict(std::move(value), name, codename),
+                name, codename)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,

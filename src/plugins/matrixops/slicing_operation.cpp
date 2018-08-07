@@ -7,9 +7,9 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/slice.hpp>
+#include <phylanx/execution_tree/primitives/slicing_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
-#include <phylanx/util/slicing_helpers.hpp>
 #include <phylanx/util/small_vector.hpp>
 
 #include <hpx/include/lcos.hpp>

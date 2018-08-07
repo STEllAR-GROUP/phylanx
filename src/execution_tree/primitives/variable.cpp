@@ -92,7 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return hpx::make_ready_future(slice(target, args[0], args[1]));
             }
 
-            // handle row-slicing
+            // handle row/tuple-slicing
             return hpx::make_ready_future(slice(target, args[0]));
         }
 
@@ -117,7 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // if given, args[0] and args[1] are optional slicing arguments
         if (valid(arg) && !(mode & eval_dont_evaluate_partials))
         {
-            // handle row-slicing
+            // handle row/tuple-slicing
             return hpx::make_ready_future(slice(target, arg));
         }
 
