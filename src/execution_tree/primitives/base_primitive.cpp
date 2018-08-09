@@ -26,6 +26,7 @@
 #include <hpx/util/logging.hpp>
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <set>
@@ -33,6 +34,8 @@
 #include <string>
 #include <vector>
 #include <utility>
+
+#include <boost/functional/hash.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree
@@ -55,7 +58,8 @@ namespace phylanx { namespace execution_tree
             "phylanx::ir::node_data<double>",
             "phylanx::execution_tree::primitive",
             "std::vector<phylanx::ast::expression>",
-            "phylanx::ir::range"
+            "phylanx::ir::range",
+            "phylanx::ir::dictionary"
         };
 
         static char const* const get_primitive_argument_type_name(std::size_t index)
@@ -4137,5 +4141,85 @@ namespace phylanx { namespace execution_tree
         str << value;
         return str.str();
     }
+
+    template <typename T>
+    std::size_t hash_node_data_zero_dim_value(phylanx::ir::node_data<T> const& val)
+    {
+        switch (val.num_dimensions())
+        {
+        case 0:    // phylanx::ir::node_data<std::int64_t> 0 dimension
+            boost::hash<T> hash_T;
+            return hash_T(std::move(val[0]));
+        case 1:    // phylanx::ir::node_data<std::int64_t> 1 dimension
+            HPX_FALLTHROUGH;
+        case 2:    // phylanx::ir::node_data<std::int64_t> 2 dimension
+            HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::hash_node_data_zero_dim_value)",
+            "holds unhashable node data dimensions");
+    }
 }}
 
+namespace std {
+    std::size_t hash<phylanx::util::recursive_wrapper<
+        phylanx::execution_tree::primitive_argument_type>>::
+    operator()(argument_type const& s) const noexcept
+    {
+        phylanx::execution_tree::primitive_argument_type const& val = s.get();
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+        {
+            return phylanx::execution_tree::hash_node_data_zero_dim_value(
+                phylanx::util::get<1>(val));
+        }
+
+        case 2:    // phylanx::ir::node_data<std::int64_t>
+        {
+            return phylanx::execution_tree::hash_node_data_zero_dim_value(
+                phylanx::util::get<2>(val));
+        }
+
+        case 3:    // std::string
+        {
+            boost::hash<std::string> hash_string;
+            return hash_string(phylanx::util::get<3>(val));
+        }
+
+        case 4:    // phylanx::ir::node_data<double>
+        {
+            return phylanx::execution_tree::hash_node_data_zero_dim_value(
+                phylanx::util::get<4>(val));
+        }
+        case 0:    // ast::nil
+            HPX_FALLTHROUGH;
+
+        case 5:    // primitive
+            HPX_FALLTHROUGH;
+
+        case 6:    // std::vector<ast::expression>
+            HPX_FALLTHROUGH;
+
+        case 7:    // ir::range
+            HPX_FALLTHROUGH;
+
+        case 8:    // phylanx::ir::dictionary
+            HPX_FALLTHROUGH;
+
+        default:
+            break;
+        }
+
+        std::string type(
+            phylanx::execution_tree::detail::get_primitive_argument_type_name(
+                val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::ir::dictionary",
+            phylanx::util::generate_error_message("holds unhashable data type"
+                                                  "(type held: '" +
+                type + "')"));
+    }
+}

@@ -7,7 +7,9 @@
 #define PHYLANX_PRIMITIVES_ARGUMENT_TYPE_JUL_23_2018_0149PM
 
 #include <phylanx/config.hpp>
+#include <phylanx/ast/node.hpp>
 #include <phylanx/util/variant.hpp>
+#include <phylanx/ir/dictionary.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 
@@ -180,6 +182,7 @@ namespace phylanx { namespace execution_tree
           , primitive
           , std::vector<ast::expression>
           , ir::range
+          , phylanx::ir::dictionary
         >;
 
     PHYLANX_EXPORT primitive_argument_type extract_copy_value(
@@ -319,6 +322,13 @@ namespace phylanx { namespace execution_tree
           : argument_value_type{val}
         {}
         primitive_argument_type(ir::range&& val)
+          : argument_value_type{std::move(val)}
+        {}
+
+        primitive_argument_type(ir::dictionary const& val)
+          : argument_value_type{val}
+        {}
+        primitive_argument_type(ir::dictionary&& val)
           : argument_value_type{std::move(val)}
         {}
 
