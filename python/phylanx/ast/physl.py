@@ -99,7 +99,6 @@ class PhySL:
         self.numpy_aliases = {'numpy'}
         self.wrapped_function = func
         self.fglobals = kwargs['fglobals']
-
         for key, val in self.fglobals.items():
             if type(val).__name__ == 'module' and val.__name__ == 'numpy':
                 self.numpy_aliases.add(key)
@@ -312,7 +311,7 @@ class PhySL:
         args = tuple(self.apply_rule(arg) for arg in node.args)
 
         # TODO: these are workarounds for the cases that Phylanx does not
-        # follow NumPy.
+        # follow NumPy functions' signatures.
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if 'hstack' in symbol and isinstance(args[0], list):
             if args[0][1] and isinstance(args[0][1][0], list):
@@ -424,7 +423,6 @@ class PhySL:
         """
 
         slicing = list(map(self.apply_rule, node.dims))
-
         return slicing
 
     def _For(self, node):
@@ -520,8 +518,13 @@ class PhySL:
 
         Simple subscripting with a single value.
         """
-        return self.apply_rule(node.value)
-        # return list(map(str, self.apply_rule(node.value)))
+
+        if isinstance(node.value, ast.Tuple):
+            op = 'list'
+            elements = tuple(map(self.apply_rule, node.value.elts))
+            return [op, (*elements, )]
+        else:
+            return self.apply_rule(node.value)
 
     def _Is(self, node):
         raise Exception("`Is` operator is not defined in Phylanx.")
@@ -674,11 +677,17 @@ class PhySL:
         if isinstance(node.value, ast.Subscript):
             value = _NestedSubscript(node.value)
             op = '%s' % get_symbol_info(node, 'slice')
+            slice_ = self.apply_rule(node.slice)
+            return [op, (value, slice_)]
         else:
             value = self.apply_rule(node.value)
             op = '%s' % get_symbol_info(node, 'slice')
-        slice_ = self.apply_rule(node.slice)
-        return [op, (value, slice_)]
+            slice_ = self.apply_rule(node.slice)
+            if isinstance(node.slice, ast.Index) and isinstance(slice_, str) \
+                or isinstance(node.slice, ast.Slice):
+                return [op, (value, slice_, 'nil')]
+            else:
+                return [op, (value, slice_)]
 
     def _Tuple(self, node):
         """class Tuple(elts, ctx)"""
