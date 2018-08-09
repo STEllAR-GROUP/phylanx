@@ -186,3 +186,20 @@ assert np_transpose.__src__ == \
 #     return np.vstack((np_x, np_y))
 #
 # assert (np_vstack(np_x, np_y) == np.vstack((np_x, np_y))).all
+
+
+try:
+
+    # Quiet Flake8
+    class abc:
+        pass
+
+    @Phylanx(debug=True)
+    def bad_kernel(a):
+        return abc.shape()
+
+    raise Exception(
+        "Should fail because abc.shape doesn't exist")
+
+except NotImplementedError as e:
+    pass

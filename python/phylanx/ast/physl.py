@@ -11,29 +11,30 @@ import inspect
 import phylanx.execution_tree
 from phylanx import compiler_state
 
+mapped_methods = {
+    "add": "__add",
+    "array": "hstack",
+    "det": "determinant",
+    "diagonal": "diag",
+    "divide": "__div",
+    "matmul": "__mul",
+    "multiply": "__mul",
+    "negative": "__minus",
+    "print": "cout",
+    "sqrt": "square_root",
+    "subtract": "__sub",
+}
+
 
 def primitive_name(method_name):
     """Given a method_name, returns the corresponding Phylanx primitive.
 
-    This primarily used for mapping NumPy methods to Phylanx primitives, but there are
-    also other functions in python that would map to primitives with different name in
-    Phylanx, e.g., `print` is mapped to `cout`.
+    This primarily used for mapping NumPy mapped_methods to Phylanx primitives,
+    but there are also other functions in python that would map to primitives
+    with different name in Phylanx, e.g., `print` is mapped to `cout`.
     """
 
-    methods = {
-        "add": "__add",
-        "array": "hstack",
-        "det": "determinant",
-        "diagonal": "diag",
-        "divide": "__div",
-        "multiply": "__mul",
-        "negative": "__minus",
-        "print": "cout",
-        "sqrt": "square_root",
-        "subtract": "__sub",
-    }
-
-    primitive_name = methods.get(method_name)
+    primitive_name = mapped_methods.get(method_name)
     if primitive_name is None:
         primitive_name = method_name
 
@@ -95,8 +96,13 @@ class PhySL:
 
     def __init__(self, func, tree, kwargs):
         self.defined = set()
+        self.numpy_aliases = {'numpy'}
         self.wrapped_function = func
         self.fglobals = kwargs['fglobals']
+
+        for key, val in self.fglobals.items():
+            if type(val).__name__ == 'module' and val.__name__ == 'numpy':
+                self.numpy_aliases.add(key)
 
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
@@ -121,8 +127,10 @@ class PhySL:
         phylanx.execution_tree.compile(self.__src__, PhySL.compiler_state)
 
     def generate_physl(self, ir):
-        if len(ir) == 2 and isinstance(ir[0], str) and isinstance(ir[1], tuple):
-            return ir[0] + '(' + ', '.join([self.generate_physl(i) for i in ir[1]]) + ')'
+        if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
+                ir[1], tuple):
+            return ir[0] + '(' + ', '.join(
+                [self.generate_physl(i) for i in ir[1]]) + ')'
         elif isinstance(ir, list):
             return ', '.join([self.generate_physl(i) for i in ir])
         elif isinstance(ir, tuple):
@@ -142,18 +150,19 @@ class PhySL:
         """Returns a map representation of a PhySL bolck."""
 
         if isinstance(node, list):
-                block = tuple(map(self.apply_rule, node))
-                if len(node) == 1:
-                    return block
-                else:
-                    return ['block', block]
+            block = tuple(map(self.apply_rule, node))
+            if len(node) == 1:
+                return block
+            else:
+                return ['block', block]
         else:
-            block = (self.apply_rule(node),)
+            block = (self.apply_rule(node), )
             return block
 
     def call(self, args):
         func_name = self.wrapped_function.__name__
-        return phylanx.execution_tree.eval(func_name, PhySL.compiler_state, *args)
+        return phylanx.execution_tree.eval(func_name, PhySL.compiler_state,
+                                           *args)
 
 # #############################################################################
 # Transducer rules
@@ -246,18 +255,25 @@ class PhySL:
 
         `value` is an AST node.
         `attr` is a bare string giving the name of the attribute.
-        Note:
-            In a sense value (`node.value`) specifies the name space of it's
-            attribute (`node.attr`). At this point Phylanx does not (exactly)
-            support such concept. For now, we quietly ignore all the values
-            and only consider the attribute.
         """
 
-        # Ignore the value for now. See the note above in the method's docstring.
-        # value = self.apply_rule(node.value)
+        method_name = get_symbol_info(node, primitive_name(node.attr))
 
-        attr = get_symbol_info(node, primitive_name(node.attr))
-        return attr
+        namespace = [node.attr]
+        current_node = node.value
+        while isinstance(current_node, ast.Attribute):
+            namespace.insert(0, current_node.attr)
+            current_node = current_node.value
+        namespace.insert(0, current_node.id)
+
+        if isinstance(current_node, ast.Name):
+            if namespace[0] in self.numpy_aliases:
+                return method_name
+            else:
+                attr = '.'.join(namespace)
+                raise NotImplementedError(
+                    'Phylanx does not support non-NumPy member functions.'
+                    'Cannot transform: %s' % attr)
 
     def _AugAssign(self, node):
         """class AugAssign(target, op, value)"""
@@ -302,10 +318,12 @@ class PhySL:
             if args[0][1] and isinstance(args[0][1][0], list):
                 symbol = symbol.replace('hstack', 'vstack')
                 for i in range(len(args[0][1])):
-                    args[0][1][i][0] = args[0][1][i][0].replace('list', 'hstack')
+                    args[0][1][i][0] = args[0][1][i][0].replace(
+                        'list', 'hstack')
                     if isinstance(args[0][1][i][1][0], list):
                         raise NotImplementedError(
-                            'Phylanx only supports 1 and 2 dimensional arrays.')
+                            'Phylanx only supports 1 and 2 dimensional arrays.'
+                        )
             args = args[0][1]
         elif 'zeros' in symbol:
             symbol = symbol.replace('zeros', 'constant')
@@ -638,10 +656,11 @@ class PhySL:
     def _Subscript(self, node):
         """class Subscript(value, slice, ctx)"""
 
-        def _HigherSubscript(node):
+        def _NestedSubscript(node):
             """Handles the subscripts of dimensions higher than 1"""
+
             if isinstance(node.value, ast.Subscript):
-                value = _HigherSubscript(node.value)
+                value = _NestedSubscript(node.value)
             else:
                 value = self.apply_rule(node.value)
             if isinstance(node.ctx, ast.Load):
@@ -653,10 +672,11 @@ class PhySL:
                 return [(value, [slice_])]
 
         if isinstance(node.value, ast.Subscript):
-            value = _HigherSubscript(node.value)
+            value = _NestedSubscript(node.value)
+            op = '%s' % get_symbol_info(node, 'slice')
         else:
             value = self.apply_rule(node.value)
-        op = '%s' % get_symbol_info(node, 'slice')
+            op = '%s' % get_symbol_info(node, 'slice')
         slice_ = self.apply_rule(node.slice)
         return [op, (value, slice_)]
 
@@ -671,6 +691,7 @@ class PhySL:
 
         TODO:
         Make sure we do not have the equivalent of this in PhySL. Otherwise, add support.
+        *** For now we never get here (see :func:_UnaryOp)
         """
 
         raise Exception("`UAdd` operation is not defined in PhySL.")
@@ -680,10 +701,10 @@ class PhySL:
 
         operand = self.apply_rule(node.operand)
         if isinstance(node.op, ast.UAdd):
-            return [(operand,)]
+            return [(operand, )]
 
         op = get_symbol_info(node, self.apply_rule(node.op))
-        return [op, (operand,)]
+        return [op, (operand, )]
 
     def _USub(self, node):
         """Leaf node, returning raw string of the 'negative' operation."""
@@ -702,5 +723,6 @@ class PhySL:
         test = self.block(node.test)
         body = self.block(node.body)
         return [symbol, (test, body)]
+
 
 # #############################################################################
