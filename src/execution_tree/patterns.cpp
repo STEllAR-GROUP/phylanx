@@ -12,6 +12,7 @@
 #include <vector>
 #include <set>
 #include <iostream>
+#include <map>
 
 namespace phylanx { namespace execution_tree
 {
