@@ -36,7 +36,7 @@ void test_shuffle_operation_1d()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_shuffle_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
@@ -80,7 +80,7 @@ void test_shuffle_operation_2d()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_shuffle_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();

@@ -26,7 +26,7 @@ void test_diag_operation_0d()
     phylanx::execution_tree::primitive diag =
         phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(data), std::move(k)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -51,7 +51,7 @@ void test_diag_operation_1d()
     phylanx::execution_tree::primitive diag =
         phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(vec), std::move(k)
             });
 
@@ -84,7 +84,7 @@ void test_diag_operation_1d_plus_one()
     phylanx::execution_tree::primitive diag =
         phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(vec), std::move(k)
             });
 
@@ -118,7 +118,7 @@ void test_diag_operation_1d_minus_one()
     phylanx::execution_tree::primitive diag =
         phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(vec), std::move(k)
             });
 
@@ -156,7 +156,7 @@ void test_diag_operation_2d()
     phylanx::execution_tree::primitive diag =
         phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(mat), std::move(k)
             });
 
@@ -189,7 +189,7 @@ void test_diag_operation_2d_plus_one()
     phylanx::execution_tree::primitive diag =
         phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(mat), std::move(k)
             });
 
@@ -222,7 +222,7 @@ void test_diag_operation_2d_minus_one()
     phylanx::execution_tree::primitive diag =
         phylanx::execution_tree::primitives::create_diag_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(mat), std::move(k)
             });
 

@@ -64,7 +64,7 @@ void test_define_operation(char const* expr, char const* name, double expected,
     auto f = def_f.run();     // bind the function
 
     // evaluate expression
-    std::vector<phylanx::execution_tree::primitive_argument_type> values;
+    phylanx::execution_tree::primitive_arguments_type values;
     for (double d : argvalues)
     {
         values.push_back(phylanx::ir::node_data<double>{d});

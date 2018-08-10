@@ -67,7 +67,7 @@ namespace pybind11 { namespace detail
     // specialize get_name for vector<primitive_argument_type> to avoid infinite recursion
     template <>
     inline PHYLANX_PYBIND_DESCR
-    get_name<std::vector<phylanx::execution_tree::primitive_argument_type>>()
+    get_name<phylanx::execution_tree::primitive_arguments_type>()
     {
 #if defined(_DEBUG)
         return _("List[_phylanxd.execution_tree.primitive_argument_type]");
@@ -821,8 +821,7 @@ namespace pybind11 { namespace detail
     class type_caster<phylanx::ir::range>
     {
     private:
-        using list_type =
-            std::vector<phylanx::execution_tree::primitive_argument_type>;
+        using list_type = phylanx::execution_tree::primitive_arguments_type;
 
         using list_caster_type = make_caster<list_type>;
         list_caster_type subcaster;

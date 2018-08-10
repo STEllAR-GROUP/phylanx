@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     call_function::call_function(
-            std::vector<primitive_argument_type>&& args,
+            primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> call_function::eval(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params) const
     {
         if (!valid(operands_[0]))
         {
@@ -62,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
-        std::vector<primitive_argument_type> fargs;
+        primitive_arguments_type fargs;
         fargs.reserve(operands_.size() - 1);
 
         // pass along pre-bound arguments
@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
                 [this_](primitive_argument_type&& func,
-                    std::vector<primitive_argument_type>&& args)
+                    primitive_arguments_type&& args)
                 {
                     return value_operand_sync(std::move(func),
                         std::move(args), this_->name_, this_->codename_);
@@ -87,8 +87,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 params, name_, codename_, eval_dont_evaluate_partials));
     }
 
-    void call_function::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void call_function::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (valid(operands_[0]))
         {

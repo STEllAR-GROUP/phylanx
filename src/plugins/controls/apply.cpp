@@ -30,13 +30,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    apply::apply(std::vector<primitive_argument_type>&& operands,
+    apply::apply(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> apply::eval(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params) const
     {
         if (operands_.size() != 2)
         {

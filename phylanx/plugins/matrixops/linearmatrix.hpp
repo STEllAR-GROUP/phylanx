@@ -26,30 +26,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
+        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
         using matrix_type = blaze::DynamicMatrix<double>;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
 
         linearmatrix() = default;
 
-        linearmatrix(std::vector<primitive_argument_type>&& args,
+        linearmatrix(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     private:
         primitive_argument_type linmatrix(args_type&& args) const;
     };
 
     inline primitive create_linearmatrix(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         static std::string type("linearmatrix");

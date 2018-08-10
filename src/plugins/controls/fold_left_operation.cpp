@@ -32,14 +32,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     fold_left_operation::fold_left_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> fold_left_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() != 3)
         {
@@ -91,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // sequentially evaluate all operations
                 for (auto&& elem : list)
                 {
-                    std::vector<primitive_argument_type> args(2);
+                    primitive_arguments_type args(2);
                     args[0] = std::move(initial);
                     args[1] = std::move(elem);
 
@@ -109,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> fold_left_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     dot_operation::dot_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -259,8 +259,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> dot_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() != 2)
         {
@@ -315,7 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // implement 'dot' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> dot_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

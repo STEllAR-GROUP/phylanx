@@ -22,7 +22,7 @@ void test_unary_minus_operation_0d()
     phylanx::execution_tree::primitive unary_minus =
         phylanx::execution_tree::primitives::create_unary_minus_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 
@@ -40,7 +40,7 @@ void test_unary_minus_operation_0d_lit()
     phylanx::execution_tree::primitive unary_minus =
         phylanx::execution_tree::primitives::create_unary_minus_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 
@@ -63,7 +63,7 @@ void test_unary_minus_operation_2d()
     phylanx::execution_tree::primitive unary_minus =
         phylanx::execution_tree::primitives::create_unary_minus_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 

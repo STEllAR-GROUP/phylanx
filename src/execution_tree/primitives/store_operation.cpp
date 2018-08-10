@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_store_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         static std::string type("store");
@@ -47,14 +47,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     store_operation::store_operation(
-            std::vector<primitive_argument_type> && operands,
+            primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> store_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (operands_.size() != 2)
         {
@@ -86,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
 
-        std::vector<primitive_argument_type> params;
+        primitive_arguments_type params;
         if (!args.empty())
         {
             params.reserve(args.size());
@@ -144,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
 
-        std::vector<primitive_argument_type> params;
+        primitive_arguments_type params;
         params.emplace_back(extract_ref_value(arg));
 
         return value_operand_fov(operands_[1], std::move(arg), name_, codename_)

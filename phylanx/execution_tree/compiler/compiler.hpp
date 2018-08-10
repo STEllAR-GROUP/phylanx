@@ -197,7 +197,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return function{
                 primitive_argument_type{
                     create_primitive_component(locality_, type,
-                        std::vector<primitive_argument_type>{}, name,
+                        primitive_arguments_type{}, name,
                         codename)},
                 name};
         }
@@ -239,7 +239,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     full_name};
             }
 
-            std::vector<primitive_argument_type> fargs;
+            primitive_arguments_type fargs;
             fargs.reserve(elements.size() + 1);
 
             fargs.push_back(primitive_argument_type{argnum_});
@@ -295,7 +295,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     full_name};
             }
 
-            std::vector<primitive_argument_type> fargs;
+            primitive_arguments_type fargs;
             fargs.reserve(elements.size() + 1);
 
             fargs.push_back(f_.get().arg_);
@@ -342,7 +342,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             name_parts.instance = std::move(name_parts.primitive);
             name_parts.primitive = "call-function";
 
-            std::vector<primitive_argument_type> fargs;
+            primitive_arguments_type fargs;
             fargs.reserve(elements.size() + 1);
 
             fargs.push_back(f_.get().arg_);

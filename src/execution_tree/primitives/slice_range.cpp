@@ -60,7 +60,7 @@ namespace phylanx { namespace execution_tree
         // handle case of consecutive elements to return
         if (indices.step() == 1)
         {
-            std::vector<primitive_argument_type> result;
+            primitive_arguments_type result;
             result.reserve(stop - start);
 
             if (list.is_ref())
@@ -83,7 +83,7 @@ namespace phylanx { namespace execution_tree
         std::vector<std::int64_t> index_list =
             util::slicing_helpers::create_list_slice(start, stop, step);
 
-        std::vector<primitive_argument_type> result;
+        primitive_arguments_type result;
         result.reserve(index_list.size());
 
         auto idx_it = index_list.begin();

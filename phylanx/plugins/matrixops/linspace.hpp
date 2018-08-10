@@ -35,12 +35,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
+        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
         using vector_type = blaze::DynamicVector<double>;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
@@ -60,18 +60,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         /// samples is less than 2.\n
         /// num_samples: number of samples in the sequence.
         ///
-        linspace(std::vector<primitive_argument_type>&& args,
+        linspace(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     private:
         primitive_argument_type linspace1d(args_type&& args) const;
     };
 
     inline primitive create_linspace(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

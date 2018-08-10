@@ -23,7 +23,7 @@ void test_unary_not_operation_0d_false()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -42,7 +42,7 @@ void test_unary_not_operation_0d_true()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -57,7 +57,7 @@ void test_unary_not_operation_0d_false_lit()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::ir::node_data<std::uint8_t>{false}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -72,7 +72,7 @@ void test_unary_not_operation_0d_true_lit()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::ir::node_data<std::uint8_t>{true}});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -94,7 +94,7 @@ void test_unary_not_operation_1d()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -117,7 +117,7 @@ void test_unary_not_operation_1d_lit()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -142,7 +142,7 @@ void test_unary_not_operation_1d_double()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -165,7 +165,7 @@ void test_unary_not_operation_1d_double_lit()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -190,7 +190,7 @@ void test_unary_not_operation_2d()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -213,7 +213,7 @@ void test_unary_not_operation_2d_lit()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -238,7 +238,7 @@ void test_unary_not_operation_2d_double()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -261,7 +261,7 @@ void test_unary_not_operation_2d_double_lit()
     phylanx::execution_tree::primitive unary_not =
         phylanx::execution_tree::primitives::create_unary_not_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =

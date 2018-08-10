@@ -28,22 +28,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
+        using operands_type =
+            std::vector<operand_type, arguments_allocator<operand_type>>;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
 
         mul_operation() = default;
 
-        mul_operation(std::vector<primitive_argument_type>&& operands,
+        mul_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     private:
         enum struct stretch_operand { neither, lhs, rhs };
@@ -103,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_mul_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

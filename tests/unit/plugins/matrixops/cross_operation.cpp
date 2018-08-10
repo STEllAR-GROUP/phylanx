@@ -33,7 +33,7 @@ void test_vector_cross_product()
     phylanx::execution_tree::primitive cross =
         phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)
             });
 
@@ -63,7 +63,7 @@ void test_one_vector_with_dimension_2()
     phylanx::execution_tree::primitive cross =
         phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs), std::move(rhs)
     });
 
@@ -93,7 +93,7 @@ void test_both_vectors_with_dimension_2()
     phylanx::execution_tree::primitive cross =
         phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs), std::move(rhs)
     });
 
@@ -123,7 +123,7 @@ void test_multiple_vector_cross_products()
     phylanx::execution_tree::primitive cross =
         phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs), std::move(rhs)
     });
 
@@ -154,7 +154,7 @@ void test_cross_product_1d2d()
     phylanx::execution_tree::primitive cross =
         phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs), std::move(rhs)
     });
 
@@ -184,7 +184,7 @@ void test_cross_product_2d1d()
     phylanx::execution_tree::primitive cross =
         phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs), std::move(rhs)
     });
 
@@ -215,7 +215,7 @@ void test_cross_product_vector_by_2col_matrix()
     phylanx::execution_tree::primitive cross =
         phylanx::execution_tree::primitives::create_cross_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs), std::move(rhs)
     });
 

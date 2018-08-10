@@ -26,7 +26,7 @@ void test_add_operation_0d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -46,7 +46,7 @@ void test_add_operation_0d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -71,7 +71,7 @@ void test_add_operation_0d1d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -96,7 +96,7 @@ void test_add_operation_0d1d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -123,7 +123,7 @@ void test_add_operation_0d2d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -148,7 +148,7 @@ void test_add_operation_0d2d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -176,7 +176,7 @@ void test_add_operation_1d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -201,7 +201,7 @@ void test_add_operation_1d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -227,7 +227,7 @@ void test_add_operation_1d0d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -252,7 +252,7 @@ void test_add_operation_1d0d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -282,7 +282,7 @@ void test_add_operation_1d2d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -313,7 +313,7 @@ void test_add_operation_1d2d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -344,7 +344,7 @@ void test_add_operation_2d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -369,7 +369,7 @@ void test_add_operation_2d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -395,7 +395,7 @@ void test_add_operation_2d0d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -420,7 +420,7 @@ void test_add_operation_2d0d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -450,7 +450,7 @@ void test_add_operation_2d1d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -481,7 +481,7 @@ void test_add_operation_2d1d_lit()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();

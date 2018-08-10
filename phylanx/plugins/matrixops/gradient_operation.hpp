@@ -26,11 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
         using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
+        using operands_type =
+            std::vector<operand_type, arguments_allocator<operand_type>>;
 
     public:
         static match_pattern_type const match_data;
@@ -52,11 +53,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
          *          axis  : Axis to perform gradient along (optional)
          */
 
-        gradient_operation(std::vector<primitive_argument_type>&& operands,
+        gradient_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
+            primitive_arguments_type const& params) const override;
 
     private:
         primitive_argument_type gradient0d(operands_type&& ops) const;
@@ -65,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_gradient_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

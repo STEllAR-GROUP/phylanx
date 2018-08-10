@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename Action>
     primitive create_generic_function(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name)
     {
         return create_primitive_component(locality,
@@ -36,15 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename Action>
     generic_function<Action>::generic_function(
-            std::vector<primitive_argument_type>&& operands)
+            primitive_arguments_type&& operands)
       : primitive_component_base(std::move(operands))
     {}
 
     template <typename Action>
     hpx::future<primitive_argument_type> generic_function<Action>::eval(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params) const
     {
-        std::vector<primitive_argument_type> fargs;
+        primitive_arguments_type fargs;
         fargs.reserve(operands_.size());
 
         for (auto const& operand : operands_)

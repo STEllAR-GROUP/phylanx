@@ -26,22 +26,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<primitive_argument_type>;
+        using operands_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
 
         greater() = default;
 
-        greater(std::vector<primitive_argument_type>&& operands,
+        greater(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     private:
         struct visit_greater;
@@ -88,7 +88,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_greater(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

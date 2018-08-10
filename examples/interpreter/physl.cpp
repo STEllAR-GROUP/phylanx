@@ -117,12 +117,12 @@ void dump_physl_code(std::vector<phylanx::ast::expression> const& ast,
     }
 }
 
-std::vector<phylanx::execution_tree::primitive_argument_type>
+phylanx::execution_tree::primitive_arguments_type
 read_arguments(std::vector<std::string> const& args,
     phylanx::execution_tree::compiler::function_list& snippets,
     phylanx::execution_tree::compiler::environment& env)
 {
-    std::vector<phylanx::execution_tree::primitive_argument_type> result(
+    phylanx::execution_tree::primitive_arguments_type result(
         args.size());
 
     std::transform(

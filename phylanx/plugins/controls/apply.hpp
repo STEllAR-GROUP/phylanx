@@ -26,15 +26,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         apply() = default;
 
-        apply(std::vector<primitive_argument_type>&& operands,
+        apply(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
+            primitive_arguments_type const& params) const override;
     };
 
     inline primitive create_apply(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

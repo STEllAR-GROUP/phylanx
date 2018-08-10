@@ -60,9 +60,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::int64_t tag2_ = -1, std::int64_t compile_id_ = -1)
           : primitive(primitive_)
           , sequence_number(sequence_number_)
+          , compile_id(compile_id_)
           , tag1(tag1_)
           , tag2(tag2_)
-          , compile_id(compile_id_)
         {}
 
         std::string primitive;
