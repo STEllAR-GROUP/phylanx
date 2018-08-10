@@ -29,7 +29,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const als::match_data = {hpx::util::make_tuple("als",
         std::vector<std::string>{
             "als(_1, _2, _3, _4, _5, _6)", "als(_1, _2, _3, _4, _5)"},
-        &create_als, &create_primitive<als>)};
+        &create_als, &create_primitive<als>,
+        "synopsis: als(a1,a2,a3,a4,a5)\n"
+        "synopsis: als(a1,a2,a3,a4,a5,a6)\n"
+        "The als algorithm...TODODOC"
+        )};
 
     ///////////////////////////////////////////////////////////////////////////
     als::als(std::vector<primitive_argument_type> && operands,

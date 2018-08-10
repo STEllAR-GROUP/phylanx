@@ -32,7 +32,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("__div",
             std::vector<std::string>{"_1 / __2", "__div(_1, __2)"},
-            &create_div_operation, &create_primitive<div_operation>)
+            &create_div_operation, &create_primitive<div_operation>,
+            "synopsis: div(x0,x1)\n"
+            "Divide x0 by x1 and return the result as a real number.")
     };
 
     ///////////////////////////////////////////////////////////////////////////

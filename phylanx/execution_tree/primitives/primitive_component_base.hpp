@@ -143,7 +143,7 @@ namespace phylanx { namespace execution_tree
 
     using match_pattern_type = hpx::util::tuple<std::string,
         std::vector<std::string>, factory_function_type,
-        primitive_factory_function_type>;
+        primitive_factory_function_type, std::string="">;
 
     using pattern_list =
         std::vector<hpx::util::tuple<std::string, match_pattern_type>>;

@@ -35,7 +35,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("string",
             std::vector<std::string>{"string(__1)"},
-            &create_string_output, &create_primitive<string_output>)
+            &create_string_output, &create_primitive<string_output>,
+            "synopsis: string(arg)\n"
+            "Create a string representation for value `arg`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

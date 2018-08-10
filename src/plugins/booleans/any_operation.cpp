@@ -25,7 +25,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const any_operation::match_data = {
         hpx::util::make_tuple("any", std::vector<std::string>{"any(_1)"},
-            &create_any_operation, &create_primitive<any_operation>)};
+            &create_any_operation, &create_primitive<any_operation>,
+            "synopsis: any(arg)\n"
+            "Determine whether any of the values in the array or matrix `arg` evaluate to true."
+            )};
 
     ///////////////////////////////////////////////////////////////////////////
     any_operation::any_operation(std::vector<primitive_argument_type> && args,

@@ -34,7 +34,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lra(_1, _2, _3, _4, _5)",
                 "lra(_1, _2, _3, _4)"
             },
-            &create_lra, &create_primitive<lra>)
+            &create_lra, &create_primitive<lra>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

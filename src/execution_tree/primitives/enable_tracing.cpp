@@ -33,7 +33,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("enable_tracing",
             std::vector<std::string>{"enable_tracing(_1)"},
-            &create_enable_tracing, &create_primitive<enable_tracing>)
+            &create_enable_tracing, &create_primitive<enable_tracing>,
+            "synopsis: enable_tracing(b)\n"
+            "Sets the internal enable tracing variable which may be used "
+            "by tools such as APEX to gather tracing data."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

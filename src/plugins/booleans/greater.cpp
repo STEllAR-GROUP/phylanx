@@ -25,13 +25,52 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    struct DocStr {
+        std::string syn, desc;
+        std::vector<std::tuple<std::string,std::string,std::string>> examples;
+        DocStr() {}
+        DocStr& synopsis(std::string syn_) {
+            syn = syn_;
+            return *this;
+        }
+        DocStr& description(std::string desc_) {
+            desc = desc_;
+            return *this;
+        }
+        DocStr& example(std::string desc,std::string code,std::string result) {
+            examples.push_back(std::tuple(desc,code,result));
+        }
+        operator std::string() { 
+            std::string m = "synopsis: "+syn+"\n\n"+desc;
+            if(examples.size() > 0) {
+                if(examples.size()==1)
+                    m += "\n\nExample:\n";
+                else
+                    m += "\n\nExamples:\n";
+                for(auto e : examples) {
+                    m += "Example Description:\n";
+                    m += std::get<0>(e);
+                    m += "Code:\n";
+                    m += std::get<1>(e);
+                    m += "Results:\n";
+                    m += std::get<2>(e);
+                }
+            }
+            return m;
+        }
+    };
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const greater::match_data =
     {
         hpx::util::make_tuple("__gt",
             std::vector<std::string>{
                 "_1 > _2", "__gt(_1, _2)", "__gt(_1, _2, _3)"},
-            &create_greater, &create_primitive<greater>)
+            &create_greater, &create_primitive<greater>,
+            DocStr()
+                .synopsis("__gt(a1,a2)")
+                .description("Returns true of `a1` is greater than `a2`, "
+                             "otherwise it returns false.")
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

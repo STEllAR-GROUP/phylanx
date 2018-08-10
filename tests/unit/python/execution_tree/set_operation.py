@@ -6,6 +6,10 @@
 from phylanx.ast import Phylanx
 import numpy as np
 
+@Phylanx
+def enable():
+    enable_tracing(true)
+enable()
 
 # This function is never called, it just makes Flake 8 quiet
 def shape(a, b):

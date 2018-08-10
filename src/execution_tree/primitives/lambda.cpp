@@ -27,7 +27,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
-            nullptr, &create_primitive<lambda>)
+            nullptr, &create_primitive<lambda>,
+            "synopsis: lambda(body)\n"
+            "synopsis: lambda(x0, body)\n"
+            "synopsis: lambda(x0, x1, ..., body)\n"
+            "The last argument `body` is the body of the function, the preceeding "
+            "arguments (`x0`, `x1`, etc.) are all arguments to the lambda function."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

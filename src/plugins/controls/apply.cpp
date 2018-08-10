@@ -26,7 +26,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("apply",
             std::vector<std::string>{"apply(_1, _2)"},
-            &create_apply, &create_primitive<apply>)
+            &create_apply, &create_primitive<apply>,
+            "synopsis: apply(f,r)\n"
+            "Unpack the values in a list and pass them to a function.\n"
+            "The argument `f` is the name of a previously defined function, "
+            "and `r` is a range, a value to apply it to.\n"
+            "\n"
+            "Example(s):\n"
+            "\n"
+            "  define(v, make_list(1, 2, 3))\n"
+            "  apply(lambda(x, y, z, x + y + z), v)\n"
+            "Result: 6"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

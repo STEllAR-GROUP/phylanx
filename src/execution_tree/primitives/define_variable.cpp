@@ -26,21 +26,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive<define_variable>)
+            nullptr, &create_primitive<define_variable>, nullptr)
     };
 
     match_pattern_type const define_variable::match_data_define =
     {
         hpx::util::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
-            nullptr, nullptr)
+            nullptr, nullptr,
+            "synopsis: define(var,value)\n"
+            "synopsis: define(fname,x0,body)\n"
+            "synopsis: define(fname,x0,x1,...,body)\n"
+            "Define a variable `var` which has value `value` or, "
+            "equivalently, define a function `fname` with arguments "
+            "`x0`, `x1`, etc. which evalues to `body`. "
+            "Note that `define(var,lambda(val))` is the same as "
+            "`define(var,value)` and `define(fname,lambda(x0,body))` "
+            "is the same as `define(fname,x0,body)`."
+            )
     };
 
     match_pattern_type const define_variable::match_data_lambda =
     {
         hpx::util::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
-            nullptr, nullptr)
+            nullptr, nullptr, 
+            "synopsis: lambda(body)\n"
+            "synopsis: lambda(x0, body)\n"
+            "synopsis: lambda(x0, x1, ..., body)\n"
+            "The last argument `body` is the body of the function, the preceeding "
+            "arguments (`x0`, `x1`, etc.) are all arguments to the lambda function."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
