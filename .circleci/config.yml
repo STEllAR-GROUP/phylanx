@@ -254,11 +254,11 @@ jobs:
         steps:
             - <<: *attach_phylanx_tree
             - run:
-                name: Build tests.unit.{execution_tree,ast,algorithm}
-                command: cmake --build . -- -j2 tests.unit.{execution_tree,ast,algorithm}
+                name: Build tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
+                command: cmake --build . -- -j2 tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
             - run:
-                name: Run tests.unit.{execution_tree,ast,algorithm}
-                command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(execution_tree|ast|algorithm)'
+                name: Run tests.unit.{execution_tree,ast,algorithm,primitives}
+                command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(execution_tree|ast|algorithm|primitives)'
             - <<: *convert_xml
             - store_test_results:
                 path: tests.unit.group_1
