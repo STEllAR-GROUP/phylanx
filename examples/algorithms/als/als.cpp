@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
         boost::program_options::value<std::int64_t>()->default_value(10),
         "number of iterations (default: 10.0)")("factors,f",
         boost::program_options::value<std::int64_t>()->default_value(3),
-        "number of factors (default: 10)")("alpha,a",
+        "number of factors (default: 3)")("alpha,a",
         boost::program_options::value<double>()->default_value(40),
         "alpha (default: 40)")("regularization,r",
         boost::program_options::value<double>()->default_value(0.1),
