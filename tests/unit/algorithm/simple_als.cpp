@@ -32,7 +32,8 @@ char const* const als_test = R"(
     define(enable_output, 0)
     define(result_cpp, als(ratings, regularization, num_factors, iterations,
             alpha, enable_output))
-    define(als_physl, ratings, regularization, num_factors, iterations, alpha, enable_output,
+    define(als_physl, ratings, regularization, num_factors, iterations, alpha,
+        enable_output,
             block(
                 define(num_users, shape(ratings, 0)),
                 define(num_items, shape(ratings, 1)),
@@ -79,7 +80,8 @@ char const* const als_test = R"(
                                 store(c_u, diag(conf_u)),
                                 store(p_u, __ne(conf_u,0.0,true)),
                                 store(A, dot(dot(transpose(Y),c_u),Y)+ YtY),
-                                store(b, dot(dot(transpose(Y),(c_u + I_i)),transpose(p_u))),
+                                store(b, dot(dot(transpose(Y),(c_u + I_i)),
+                                    transpose(p_u))),
                                 set_row(X,u,u+1,1,dot(inverse(A),b)),
                                 store(u, u+1)
                             )
@@ -91,7 +93,8 @@ char const* const als_test = R"(
                                 store(c_i, diag(conf_i)),
                                 store(p_i, __ne(conf_i,0.0,true)),
                                 store(A, dot(dot(transpose(X),c_i),X) + XtX),
-                                store(b, dot(dot(transpose(X),(c_i + I_u)),transpose(p_i))),
+                                store(b, dot(dot(transpose(X),(c_i + I_u)),
+                                    transpose(p_i))),
                                 set_row(Y,i,i+1,1,dot(inverse(A),b)),
                                 store(i, i+1)
                             )
@@ -103,8 +106,8 @@ char const* const als_test = R"(
                 make_list(X, Y)
             )
         )
-    define(result_physl, als_physl(ratings, regularization, num_factors, iterations, alpha,
-            enable_output))
+    define(result_physl, als_physl(ratings, regularization, num_factors, iterations,
+        alpha, enable_output))
     define(result_expected,'([[-0.867185, 0.240093, -1.62405],
             [-0.257688, 0.735767, 0.968469], [0.0100641, 0.96555, -0.543022],
             [-0.868835, 0.24055, -1.62714], [0.22776, 0.157143, 1.77557],
