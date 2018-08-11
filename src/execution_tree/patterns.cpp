@@ -12,6 +12,7 @@
 #include <vector>
 #include <set>
 #include <iostream>
+#include <map>
 
 namespace phylanx { namespace execution_tree
 {
@@ -20,20 +21,21 @@ namespace phylanx { namespace execution_tree
 
     void show_patterns()
     {
-        std::set<std::string> printed;
-        for(auto p : registered_patterns)
+        std::map<std::string,std::set<std::string>> found;
+        for(auto p : get_all_known_patterns())
         {
-            std::string pattern_name = p.first;
-            std::vector<std::string> patterns = hpx::util::get<1>(p.second);
-            auto f = printed.find(pattern_name);
-            if(f == printed.end())
+            std::string pat = hpx::util::get<0>(p);
+            for(auto pat2 : hpx::util::get<1>(hpx::util::get<1>(p)))
             {
-                std::cout << "pattern: " << pattern_name << std::endl;
-                for(auto pat : patterns)
-                {
-                    std::cout << "  matches: " << pat << std::endl;
-                }
-                printed.insert(pattern_name);
+                found[pat].insert(pat2);
+            }
+        }
+        for(auto p = found.begin();p != found.end();++p)
+        {
+            std::cout << "pattern: " << p->first << std::endl;
+            for(auto p2 : p->second)
+            {
+                std::cout << "  matches: " << p2 << std::endl;
             }
         }
     }
