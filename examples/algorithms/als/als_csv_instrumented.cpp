@@ -78,9 +78,9 @@ char const* const als_explicit = R"(
                         block(
                                 if(enable_output,
                                         block(
-                                                cout("iteration ",k,u) //,
-//                                                cout("X: ",X),
-//                                                cout("Y: ",Y)
+                                                cout("iteration ",k,u),
+                                                cout("X: ",X),
+                                                cout("Y: ",Y)
                                         )
                                 ),
                             store(conf_u, slice_row(conf, u)),
@@ -114,7 +114,7 @@ char const* const als_explicit = R"(
     als_explicit
 )";
 
-std::string const als_direct = R"(b
+std::string const als_direct = R"(
     //
     // Alternating Least squares algorithm (ALS) (direct implementation)
     //

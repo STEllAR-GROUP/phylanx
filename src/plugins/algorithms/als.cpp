@@ -95,9 +95,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         matrix_type X(num_users, num_factors);
         matrix_type Y(num_items, num_factors);
 
+        matrix_type XtX(num_factors, num_factors);
+        matrix_type YtY(num_factors, num_factors);
+
         std::uint32_t seed_ = 0;
         std::mt19937 rng_{seed_};
-        std::uniform_real_distribution<double> dist;
+        std::normal_distribution<double> dist;
 
         for (std::size_t row = 0; row != blaze::rows(X); ++row)
         {
@@ -115,14 +118,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        auto I_f = blaze::IdentityMatrix<double>(num_factors);
-        auto I_i = blaze::IdentityMatrix<double>(num_items);
-        auto I_u = blaze::IdentityMatrix<double>(num_users);
+        blaze::IdentityMatrix<double> I_f(num_factors);
+        blaze::IdentityMatrix<double> I_i(num_items);
+        blaze::IdentityMatrix<double> I_u(num_users);
+
+        blaze::DynamicMatrix<double> c_u(num_items, num_items, 0);
+        blaze::DynamicMatrix<double> c_i(num_users, num_users, 0);
 
         for (std::int64_t step = 0; step < iterations; ++step)
         {
-            matrix_type YtY = (blaze::trans(Y) * Y) + regularization * I_f;
-            matrix_type XtX = (blaze::trans(X) * X) + regularization * I_f;
+            YtY = (blaze::trans(Y) * Y) + regularization * I_f;
+            XtX = (blaze::trans(X) * X) + regularization * I_f;
 
             if (enable_output)
             {
@@ -132,32 +138,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             for (std::int64_t u = 0; u < num_users; u++)
             {
-                vector_type conf_u = blaze::trans(blaze::row(conf, u));
-                blaze::DynamicMatrix<double> c_u(
-                    conf_u.size(), conf_u.size(), 0);
-                blaze::Band<blaze::DynamicMatrix<double>> diag =
-                    blaze::band(c_u, 0);
+                auto conf_u = blaze::trans(blaze::row(conf, u));
+                auto diag = blaze::band(c_u, 0);
                 diag = conf_u;
-                vector_type p_u;
-                p_u = blaze::map(conf_u, [&](double x) { return (x != 0.0); });
-                matrix_type A = (blaze::trans(Y) * c_u) * Y + YtY;
-                vector_type b = (blaze::trans(Y) * (c_u + I_i)) * (p_u);
+                auto p_u =
+                    blaze::map(conf_u, [&](double x) { return (x != 0.0); });
+                auto A = (blaze::trans(Y) * c_u) * Y + YtY;
+                auto b = (blaze::trans(Y) * (c_u + I_i)) * (p_u);
                 auto row_x = blaze::row(X, u);
                 row_x = (trans(b) * blaze::inv(A));
             }
 
             for (std::int64_t i = 0; i < num_items; i++)
             {
-                vector_type conf_i = blaze::column(conf, i);
-                blaze::DynamicMatrix<double> c_i(
-                    conf_i.size(), conf_i.size(), 0);
-                blaze::Band<blaze::DynamicMatrix<double>> diag =
-                    blaze::band(c_i, 0);
+                auto conf_i = blaze::column(conf, i);
+                auto diag = blaze::band(c_i, 0);
                 diag = conf_i;
-                vector_type p_i;
-                p_i = blaze::map(conf_i, [&](double x) { return (x != 0.0); });
-                matrix_type A = (blaze::trans(X) * c_i) * X + XtX;
-                vector_type b = (blaze::trans(X) * (c_i + I_u)) * (p_i);
+                auto p_i =
+                    blaze::map(conf_i, [&](double x) { return (x != 0.0); });
+                auto A = (blaze::trans(X) * c_i) * X + XtX;
+                auto b = (blaze::trans(X) * (c_i + I_u)) * (p_i);
                 auto row_y = blaze::row(Y, i);
                 row_y = (trans(b) * blaze::inv(A));
             }
