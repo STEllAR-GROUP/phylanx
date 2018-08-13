@@ -6,6 +6,7 @@
 set(tests
     append_operation
     car_cdr_operation
+    dictionary_operation
     len_operation
    )
 

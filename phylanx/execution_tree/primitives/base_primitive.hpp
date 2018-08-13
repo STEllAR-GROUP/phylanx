@@ -136,6 +136,14 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+        PHYLANX_EXPORT ir::dictionary extract_dict_value(
+                primitive_argument_type const& val,
+                std::string const& name = "",
+                std::string const& codename = "<unknown>");
+        PHYLANX_EXPORT ir::dictionary extract_dict_value(
+                primitive_argument_type && val,
+                std::string const& name = "",
+                std::string const& codename = "<unknown>");
     template <typename T>
     primitive_argument_type extract_ref_value(ir::node_data<T> const& val)
     {
