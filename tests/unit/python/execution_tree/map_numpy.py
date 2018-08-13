@@ -187,19 +187,22 @@ assert np_transpose.__src__ == \
 #
 # assert (np_vstack(np_x, np_y) == np.vstack((np_x, np_y))).all
 
-
+# Please note that even if class::abc did have member function `shape` this code
+# would not have worked as, at this point, Phylanx does not support not support
+# any member function other than limited list of NumPy functions.
+# TODO: This test does not belong here and must be move to more appropriate
+# test!
 try:
 
     # Quiet Flake8
     class abc:
         pass
 
-    @Phylanx(debug=True)
+    @Phylanx
     def bad_kernel(a):
         return abc.shape()
 
-    raise Exception(
-        "Should fail because abc.shape doesn't exist")
+    raise Exception("Should fail because abc.shape doesn't exist")
 
 except NotImplementedError as e:
     pass

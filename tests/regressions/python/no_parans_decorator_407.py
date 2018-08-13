@@ -32,6 +32,7 @@ def d():
 
 raised = False
 try:
+
     @Phylanx("PhySL")
     def e():
         return 0

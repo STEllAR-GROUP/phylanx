@@ -66,7 +66,8 @@ mb = np.linspace(1, 12, 12).reshape((3, 4))
 @Phylanx
 def kernel4(a, b):
     local_a = a
-    local_a[1:-1, 1:-1] = b[2:, 1:-1] + b[:-2, 1:-1] + b[1:-1, 2:] + b[1:-1, :-2]
+    local_a[1:-1, 1:-1] = \
+        b[2:, 1:-1] + b[:-2, 1:-1] + b[1:-1, 2:] + b[1:-1, :-2]
     return local_a
 
 

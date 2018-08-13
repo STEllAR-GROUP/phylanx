@@ -17,7 +17,7 @@ from phylanx.util import prange
 import numpy as np
 
 
-@Phylanx(debug=True)
+@Phylanx
 def test_prange_list():
 
     # TODO: originaly just a list which does not work.

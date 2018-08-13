@@ -13,4 +13,4 @@ def zero_dim_array(input_para):
 
 
 a = np.array(123456)
-assert((a == zero_dim_array(a)).all())
+assert ((a == zero_dim_array(a)).all())

@@ -27,5 +27,5 @@ def f2(x):
     return local_x
 
 
-assert(f2(1) == 2)
-assert(f2(1) == 2)
+assert (f2(1) == 2)
+assert (f2(1) == 2)

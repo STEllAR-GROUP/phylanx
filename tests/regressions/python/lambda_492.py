@@ -8,8 +8,8 @@ from phylanx import Phylanx
 
 @Phylanx
 def foo():
-    f = lambda a: a     # noqa: E731
+    f = lambda a: a  # noqa: E731
     f(42)
 
 
-assert(foo() == 42)
+assert (foo() == 42)

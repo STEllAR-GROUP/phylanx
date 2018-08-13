@@ -7,7 +7,7 @@ from phylanx import Phylanx
 import numpy as np
 
 
-@Phylanx(debug=True)
+@Phylanx
 def foo(x):
     local_x = x
     result = []
@@ -16,5 +16,5 @@ def foo(x):
     return result
 
 
-a = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
-assert(foo(a) == [7, 8, 5, 6, 3, 4])
+a = [[1, 2], [3, 4], [5, 6], [7, 8]]
+assert (foo(a) == [7, 8, 5, 6, 3, 4])

@@ -12,7 +12,8 @@ import numpy as np
 et = phylanx.execution_tree
 cs = phylanx.compiler_state()
 
-fib10 = et.eval("""
+fib10 = et.eval(
+    """
 block(
     define(fib,n,
     if(n<2,n,
@@ -21,7 +22,8 @@ block(
 
 assert fib10 == 55.0
 
-sum10 = et.eval("""
+sum10 = et.eval(
+    """
 block(
     define(sum10,
         block(
@@ -192,7 +194,6 @@ def f7(b):
 
 
 assert np.all(f7(np_b) == np.array(b[0, 0:2]))
-
 
 # @Phylanx(debug=True)
 # def f8():

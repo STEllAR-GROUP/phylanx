@@ -16,4 +16,4 @@ def test_empty_array_1(a, b):
 a = np.array([1, 2, 3])
 b = np.array([4, 5])
 c = test_empty_array_1(a, b)
-assert(c.size == 0)
+assert (c.size == 0)

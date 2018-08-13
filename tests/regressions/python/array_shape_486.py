@@ -12,4 +12,4 @@ def phlyanx_array_shape(a):
     return np.shape(a)
 
 
-assert([3, 1] == phlyanx_array_shape(np.array([[1], [1], [0]])))
+assert ([3, 1] == phlyanx_array_shape(np.array([[1], [1], [0]])))
