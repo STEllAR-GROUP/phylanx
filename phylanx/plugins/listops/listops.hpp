@@ -8,6 +8,7 @@
 
 #include <phylanx/plugins/listops/append_operation.hpp>
 #include <phylanx/plugins/listops/car_cdr_operation.hpp>
+#include <phylanx/plugins/listops/dictionary_operation.hpp>
 #include <phylanx/plugins/listops/len_operation.hpp>
 #include <phylanx/plugins/listops/make_list.hpp>
 
