@@ -421,7 +421,6 @@ class PhySL:
         Advanced slicing.
         `dims` holds a list of `Slice` and `Index` nodes.
         """
-
         slicing = list(map(self.apply_rule, node.dims))
         return slicing
 
@@ -447,6 +446,9 @@ class PhySL:
         }
 
         target = self.apply_rule(node.target)
+        # TODO: **MAP**
+        # target_name = target.split('$', 1)[0]
+        # self.defined.add(target_name)
         iteration_space = self.apply_rule(node.iter)
 
         # extract the type of the iteration space- used as the lookup key in
@@ -519,12 +521,14 @@ class PhySL:
         Simple subscripting with a single value.
         """
 
-        if isinstance(node.value, ast.Tuple):
-            op = 'list'
-            elements = tuple(map(self.apply_rule, node.value.elts))
-            return [op, (*elements, )]
-        else:
-            return self.apply_rule(node.value)
+        # TODO: **SLICING**
+        # if isinstance(node.value, ast.Tuple):
+        #     op = 'list'
+        #     elements = tuple(map(self.apply_rule, node.value.elts))
+        #     return [op, (*elements, )]
+        # else:
+        #     return self.apply_rule(node.value)
+        return self.apply_rule(node.value)
 
     def _Is(self, node):
         raise Exception("`Is` operator is not defined in Phylanx.")
@@ -663,31 +667,35 @@ class PhySL:
             """Handles the subscripts of dimensions higher than 1"""
 
             if isinstance(node.value, ast.Subscript):
-                value = _NestedSubscript(node.value)
+                raise NotImplementedError(
+                    'Phylanx only supports 1 and 2 dimensional arrays.')
+                # value = _NestedSubscript(node.value)
             else:
+                op = '%s' % get_symbol_info(node, 'slice')
                 value = self.apply_rule(node.value)
-            if isinstance(node.ctx, ast.Load):
-                slice_ = self.apply_rule(node.slice)
-                return [value, [slice_]]
+                op = '%s' % get_symbol_info(node, 'slice')
+                # if isinstance(node.ctx, ast.Load):
+                # slice_ = self.apply_rule(node.slice)
+                # return [value, [slice_]]
 
-            if isinstance(node.ctx, ast.Store):
+                # if isinstance(node.ctx, ast.Store):
                 slice_ = self.apply_rule(node.slice)
-                return [(value, [slice_])]
+                return [op, (value, [slice_])]
 
+        op = '%s' % get_symbol_info(node, 'slice')
+        slice_ = self.apply_rule(node.slice)
         if isinstance(node.value, ast.Subscript):
             value = _NestedSubscript(node.value)
-            op = '%s' % get_symbol_info(node, 'slice')
-            slice_ = self.apply_rule(node.slice)
             return [op, (value, slice_)]
         else:
             value = self.apply_rule(node.value)
-            op = '%s' % get_symbol_info(node, 'slice')
-            slice_ = self.apply_rule(node.slice)
-            if isinstance(node.slice, ast.Index) and isinstance(slice_, str) \
-                or isinstance(node.slice, ast.Slice):
-                return [op, (value, slice_, 'nil')]
-            else:
-                return [op, (value, slice_)]
+        # TODO: **SLICING**
+        #     if isinstance(node.slice, ast.Index) and isinstance(slice_, str) \
+        #         or isinstance(node.slice, ast.Slice):
+        #         # return [op, (value, slice_, 'nil')]
+        #     else:
+        #         return [op, (value, slice_)]
+        return [op, (value, slice_)]
 
     def _Tuple(self, node):
         """class Tuple(elts, ctx)"""
