@@ -34,7 +34,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_sub_operation, &create_primitive<sub_operation>,
             "synopsis: __sub(x0,x1)\n"
             "synopsis: __sub(x0,x1,x2...)\n"
-            "Subtract all arguments `x1`, `x2`, etc. from `x0` and return the result."
+            "Subtract all arguments `x1`, `x2`, etc. from `x0` and return the result. "
+            "TODODOC"
             )
     };
 

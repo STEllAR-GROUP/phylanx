@@ -29,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("square_root",
             std::vector<std::string>{"square_root(_1, _2)"},
             &create_square_root_operation,
-            &create_primitive<square_root_operation>)
+            &create_primitive<square_root_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

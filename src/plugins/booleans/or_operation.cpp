@@ -38,6 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "`b` : a boolean expression\n"
             "*Return Value:*\n"
             "The logical or of `a` and `b`.\n"
+            "TODODOC"
             )
     };
 

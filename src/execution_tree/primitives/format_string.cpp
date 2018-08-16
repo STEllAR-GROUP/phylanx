@@ -258,7 +258,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "synopsis: format(s,arg0)\n"
             "synopsis: format(s,arg0,arg1,...)\n"
             "Substitute for '{}' in s with the values of arg0, arg1, etc. "
-            "and return the result.")
+            "and return the result. "
+            "TODODOC"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

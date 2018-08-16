@@ -37,7 +37,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"string(__1)"},
             &create_string_output, &create_primitive<string_output>,
             "synopsis: string(arg)\n"
-            "Create a string representation for value `arg`."
+            "Create a string representation for value `arg`. "
+            "TODODOC"
             )
     };
 

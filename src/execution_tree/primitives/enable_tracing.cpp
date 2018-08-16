@@ -36,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_enable_tracing, &create_primitive<enable_tracing>,
             "synopsis: enable_tracing(b)\n"
             "Sets the internal enable tracing variable which may be used "
-            "by tools such as APEX to gather tracing data."
+            "by tools such as APEX to gather tracing data. "
+            "TODODOC"
             )
     };
 

@@ -27,7 +27,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("any", std::vector<std::string>{"any(_1)"},
             &create_any_operation, &create_primitive<any_operation>,
             "synopsis: any(arg)\n"
-            "Determine whether any of the values in the array or matrix `arg` evaluate to true."
+            "Determine whether any of the values in the array or matrix `arg` evaluate to true. "
+            "TODODOC"
             )};
 
     ///////////////////////////////////////////////////////////////////////////

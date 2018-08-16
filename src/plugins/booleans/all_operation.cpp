@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_all_operation, &create_primitive<all_operation>,
             "synopsis: all(arg)\n"
             "The all function takes a matrix and vector and determins whether "
-            "all of its elements evaluate to true.")};
+            "all of its elements evaluate to true. "
+            "TODODOC")};
 
     ///////////////////////////////////////////////////////////////////////////
     all_operation::all_operation(std::vector<primitive_argument_type> && args,

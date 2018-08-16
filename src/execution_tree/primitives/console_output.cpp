@@ -38,7 +38,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_console_output, &create_primitive<console_output>,
             "synopsis: cout(x,...)\n"
             "Sends a string representation of the argument x and any "
-            "following output to the terminal, i.e. stdout.")
+            "following output to the terminal, i.e. stdout. "
+            "TODODOC"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

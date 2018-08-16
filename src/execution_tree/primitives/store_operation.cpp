@@ -46,6 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "synopsis: store(var, value)\n"
             "Update the definition of variable `var` with value `value`. "
             "Note that the variable should first be created with define. "
+            "TODODOC"
             )
     };
 

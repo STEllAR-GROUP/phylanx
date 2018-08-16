@@ -34,7 +34,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_add_operation, &create_primitive<add_operation>,
             "synopsis: __add(x0,x1)\n"
             "synopsis: __add(x0,x1,x2,..)\n"
-            "Return the sum of all arguments.")
+            "Return the sum of all arguments. "
+            "TODODOC"
+            )
     };
 
     //////////////////////////////////////////////////////////////////////////

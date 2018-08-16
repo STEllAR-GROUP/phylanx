@@ -34,6 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    `a` : a boolean expression\n"
             "Return Value:\n"
             "    The opposite of `a`\n"
+            "TODODOC"
             )
     };
 

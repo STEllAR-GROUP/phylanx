@@ -34,6 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "            to be evaluated in parallel.\n"
             "*Return Value:*\n"
             "The last statement in the list `arg0...`\n"
+            "TODODOC"
             )
     };
 

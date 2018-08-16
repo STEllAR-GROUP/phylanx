@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "synopsis: __lt(a,b,as_double)\n"
             "Returns true if `a` is less than `b`. "
             "If `as_double` is true, the types are converted "
-            "to double before comparing."
+            "to double before comparing. "
             "TODODOC")
     };
 

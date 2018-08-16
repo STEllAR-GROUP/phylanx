@@ -40,7 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "``\n"
             "  map(lambda(x, x + 1), make_list(1, 2, 3))\n"
             "``\n"
-            "Produces `[2.0, 3.0, 4.0]`.")
+            "Produces `[2.0, 3.0, 4.0]`. "
+            "TODO")
     };
 
     ///////////////////////////////////////////////////////////////////////////

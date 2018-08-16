@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         &create_als, &create_primitive<als>,
         "synopsis: als(a1,a2,a3,a4,a5)\n"
         "synopsis: als(a1,a2,a3,a4,a5,a6)\n"
-        "The als algorithm...TODODOC"
+        "The als algorithm... TODODOC"
         )};
 
     ///////////////////////////////////////////////////////////////////////////

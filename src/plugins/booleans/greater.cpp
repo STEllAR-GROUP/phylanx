@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "synopsis: __gt(a1,a2)\n"
                 "synopsis: __gt(a1,a2,a3)\n"
                 "Returns true of `a1` is greater than `a2`, "
-                "otherwise it returns false."
+                "otherwise it returns false. "
                 "TODODOC"
             )
     };

@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "synopsis: if(cond, then, else)\n"
             "This primitive implements the `if` control flow statement. "
             "If `cond` evaluates to true, execute the block of code named "
-            "`then`. Otherwise, execute the `else` block.")
+            "`then`. Otherwise, execute the `else` block. "
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

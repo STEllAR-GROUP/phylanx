@@ -35,7 +35,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_mul_operation, &create_primitive<mul_operation>,
             "synopsis: mul(x0,x1)\n"
             "synopsis: mul(x0,x1,...)\n"
-            "This function returns the product of all arguments."
+            "This function returns the product of all arguments. "
+            "TODODOC"
             )
     };
 

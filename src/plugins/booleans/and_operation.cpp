@@ -182,7 +182,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_and_operation, &create_primitive<and_operation>,
             "synopsis: __and(x0,x1)\n"
             "synopsis: __and(x0,x1,x2,...)\n"
-            "Perform a logical and of all arguments and return the result."
+            "Perform a logical and of all arguments and return the result. "
+            "TODODOC"
             )
     };
 

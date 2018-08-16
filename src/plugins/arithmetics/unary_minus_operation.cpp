@@ -32,7 +32,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_unary_minus_operation,
             &create_primitive<unary_minus_operation>,
             "synopsis: __minus(arg)\n"
-            "This function returns the negative of its argument `arg`.")
+            "This function returns the negative of its argument `arg`. "
+            "TODODOC"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

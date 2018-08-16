@@ -36,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "  define(v, make_list(1, 2, 3))\n"
             "  apply(lambda(x, y, z, x + y + z), v)\n"
-            "Result: 6"
+            "Result: 6 "
+            "TODODOC"
             )
     };
 

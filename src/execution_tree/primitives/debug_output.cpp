@@ -38,7 +38,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_debug_output, &create_primitive<debug_output>,
             "synopsis: debug(x,...)\n"
             "Send a string representation of x and the following arguments "
-            "to the terminal, i.e. to stderr.")
+            "to the terminal, i.e. to stderr. "
+            "TODODOC"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

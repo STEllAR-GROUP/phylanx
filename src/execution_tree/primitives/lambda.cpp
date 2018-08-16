@@ -32,7 +32,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "synopsis: lambda(x0, body)\n"
             "synopsis: lambda(x0, x1, ..., body)\n"
             "The last argument `body` is the body of the function, the preceeding "
-            "arguments (`x0`, `x1`, etc.) are all arguments to the lambda function."
+            "arguments (`x0`, `x1`, etc.) are all arguments to the lambda function. "
+            "TODODOC"
             )
     };
 

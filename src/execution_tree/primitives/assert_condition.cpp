@@ -40,7 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_assert_condition, &create_primitive<assert_condition>,
             "synopsis: assert(cond)\n"
             "If condition `cond` is true or non-zer, do nothing. "
-            "If it is false or zero, throw an assertion error.")
+            "If it is false or zero, throw an assertion error. "
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

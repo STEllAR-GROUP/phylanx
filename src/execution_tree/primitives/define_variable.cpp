@@ -26,7 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive<define_variable>, nullptr)
+            nullptr, &create_primitive<define_variable>, "TODODOC")
     };
 
     match_pattern_type const define_variable::match_data_define =
@@ -43,6 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "Note that `define(var,lambda(val))` is the same as "
             "`define(var,value)` and `define(fname,lambda(x0,body))` "
             "is the same as `define(fname,x0,body)`."
+            "TODOC"
             )
     };
 
