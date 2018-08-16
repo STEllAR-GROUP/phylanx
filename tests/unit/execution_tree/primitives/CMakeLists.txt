@@ -6,6 +6,7 @@
 set(tests
     assert_condition
     define_operation
+    dictionary
     format_string
     invoke_operation
     literal_value

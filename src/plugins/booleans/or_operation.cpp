@@ -452,6 +452,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type operator()(
+            ir::dictionary&& lhs, ir::dictionary&& rhs) const
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::eval",
+                util::generate_error_message(
+                    "left hand side and right hand side can't be "
+                    "compared",
+                    or_.name_, or_.codename_));
+        }
+
+        primitive_argument_type operator()(
             std::string lhs, std::string rhs) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
