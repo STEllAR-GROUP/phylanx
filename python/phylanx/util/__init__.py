@@ -9,3 +9,11 @@ try:
 
 except Exception:
     from _phylanxd.util import *
+
+def phyhelp(fname):
+    def dummy():
+        "docstring"
+        pass
+    dummy.__doc__ = phyhelpex(fname)
+    dummy.__name__ = fname
+    help(dummy)

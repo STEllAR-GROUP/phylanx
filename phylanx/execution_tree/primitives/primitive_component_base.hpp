@@ -153,6 +153,7 @@ namespace phylanx { namespace execution_tree
         std::string const&, match_pattern_type const& pattern);
 
     PHYLANX_EXPORT void show_patterns();
+    PHYLANX_EXPORT std::string find_help(const std::string& s);
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive create_primitive_component(

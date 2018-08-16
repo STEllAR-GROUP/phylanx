@@ -40,6 +40,23 @@ namespace phylanx { namespace execution_tree
         }
     }
 
+    std::string find_help(const std::string& s)
+    {
+        for(auto p : get_all_known_patterns())
+        {
+            std::string pat = hpx::util::get<0>(p);
+            std::string help = hpx::util::get<4>(hpx::util::get<1>(p));
+            if(pat == s)
+                return help;
+            for(auto pat2 : hpx::util::get<1>(hpx::util::get<1>(p)))
+            {
+                if(pat2 == s)
+                    return help;
+            }
+        }
+        return "No help available.";
+    }
+
     void register_pattern(
         std::string const& name, match_pattern_type const& pattern)
     {
