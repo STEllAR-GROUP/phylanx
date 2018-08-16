@@ -36,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("random",
             std::vector<std::string>{"random(_1)", "random(_1, _2)"},
-            &create_random, &create_primitive<random>)
+            &create_random, &create_primitive<random>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -647,7 +648,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple(
             "set_seed", std::vector<std::string>{"set_seed(_1)"},
             &create_generic_function<set_seed_action>,
-            &create_primitive<generic_function<set_seed_action>>)
+            &create_primitive<generic_function<set_seed_action>>,
+            "TODODOC")
     };
 
     match_pattern_type const get_seed_match_data =
@@ -655,7 +657,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple(
             "get_seed", std::vector<std::string>{"get_seed()"},
             &create_generic_function<get_seed_action>,
-            &create_primitive<generic_function<get_seed_action>>)
+            &create_primitive<generic_function<get_seed_action>>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -33,7 +33,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{
                 "range(_1)", "range(_1, _2)", "range(_1, _2, _3)"
             },
-            &create_range_operation, &create_primitive<range_operation>)
+            &create_range_operation, &create_primitive<range_operation>,
+            "TODODOC"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -29,7 +29,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__eq",
             std::vector<std::string>{
                 "_1 == _2", "__eq(_1, _2)", "__eq(_1, _2, _3)"},
-            &create_equal, &create_primitive<equal>)
+            &create_equal, &create_primitive<equal>,
+            "synopsis: __eq(_1, _2)\n"
+            "synopsis: __eq(_1, _2, _3)\n"
+            "When called with two arguments, this function "
+            "determines whether arguments 1 and 2 are equal."
+            "If called with three, the third argument is a boolean "
+            "TODODOC"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("__not",
             std::vector<std::string>{"!_1", "__not(_1)"},
-            &create_unary_not_operation, &create_primitive<unary_not_operation>)
+            &create_unary_not_operation, &create_primitive<unary_not_operation>,
+            "synopsis: __not(a)\n"
+            "Arguments:\n"
+            "    `a` : a boolean expression\n"
+            "Return Value:\n"
+            "    The opposite of `a`\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

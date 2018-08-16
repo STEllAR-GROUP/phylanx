@@ -27,7 +27,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("parallel_map",
             std::vector<std::string>{"parallel_map(_1, __2)"},
             &create_parallel_map_operation,
-            &create_primitive<parallel_map_operation>)
+            &create_primitive<parallel_map_operation>,
+            "synopsis: paralle_map(func,list)\n"
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

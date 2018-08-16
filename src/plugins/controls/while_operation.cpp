@@ -26,7 +26,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("while",
             std::vector<std::string>{"while(_1, _2)"},
-            &create_while_operation, &create_primitive<while_operation>)
+            &create_while_operation, &create_primitive<while_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

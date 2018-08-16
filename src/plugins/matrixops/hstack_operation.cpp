@@ -29,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("hstack",
             std::vector<std::string>{"hstack(__1)"},
-            &create_hstack_operation, &create_primitive<hstack_operation>)
+            &create_hstack_operation, &create_primitive<hstack_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

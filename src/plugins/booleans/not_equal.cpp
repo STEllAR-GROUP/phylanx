@@ -30,7 +30,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__ne",
             std::vector<std::string>{
                 "_1 != _2", "__ne(_1, _2)", "__ne(_1, _2, _3)"},
-            &create_not_equal, &create_primitive<not_equal>)
+            &create_not_equal, &create_primitive<not_equal>,
+            "synopsis: __ne(a,b)\n"
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

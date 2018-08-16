@@ -27,7 +27,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("dot",
             std::vector<std::string>{"dot(_1, _2)"},
-            &create_dot_operation, &create_primitive<dot_operation>)
+            &create_dot_operation, &create_primitive<dot_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -29,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("file_write",
             std::vector<std::string>{"file_write(_1, _2)"},
-            &create_file_write, &create_primitive<file_write>)
+            &create_file_write, &create_primitive<file_write>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("file_read",
             std::vector<std::string>{"file_read(_1)"},
-            &create_file_read, &create_primitive<file_read>)
+            &create_file_read, &create_primitive<file_read>,
+            "synopsis: file_read(fname)\n"
+            "Reads the contents of the file and returns it. TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

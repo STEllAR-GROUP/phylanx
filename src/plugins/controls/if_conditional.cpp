@@ -28,7 +28,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("if",
             std::vector<std::string>{"if(_1, _2, _3)", "if(_1, _2)"},
-            &create_if_conditional, &create_primitive<if_conditional>)
+            &create_if_conditional, &create_primitive<if_conditional>,
+            "synopsis: if(cond, then)\n"
+            "synopsis: if(cond, then, else)\n"
+            "This primitive implements the `if` control flow statement. "
+            "If `cond` evaluates to true, execute the block of code named "
+            "`then`. Otherwise, execute the `else` block.")
     };
 
     ///////////////////////////////////////////////////////////////////////////

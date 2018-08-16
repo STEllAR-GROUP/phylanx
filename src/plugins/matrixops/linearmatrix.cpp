@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("linearmatrix",
             std::vector<std::string>{"linearmatrix(_1, _2, _3, _4, _5)"},
-            &create_linearmatrix, &create_primitive<linearmatrix>)
+            &create_linearmatrix, &create_primitive<linearmatrix>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

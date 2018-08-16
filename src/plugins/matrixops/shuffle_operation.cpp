@@ -70,7 +70,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("shuffle",
             std::vector<std::string>{"shuffle(_1)"},
-            &create_shuffle_operation, &create_primitive<shuffle_operation>)
+            &create_shuffle_operation, &create_primitive<shuffle_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

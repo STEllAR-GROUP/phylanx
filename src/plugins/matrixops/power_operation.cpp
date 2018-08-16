@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("power",
             std::vector<std::string>{"power(_1, _2)"},
-            &create_power_operation, &create_primitive<power_operation>)
+            &create_power_operation, &create_primitive<power_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

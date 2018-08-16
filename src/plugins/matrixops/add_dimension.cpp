@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("add_dim",
         std::vector<std::string>{"add_dim(_1)"},
-        &create_add_dimension, &create_primitive<add_dimension>)
+        &create_add_dimension, &create_primitive<add_dimension>,
+        "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

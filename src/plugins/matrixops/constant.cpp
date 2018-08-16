@@ -54,7 +54,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("constant",
             std::vector<std::string>{"constant(_1, _2)", "constant(_1)"},
-            &create_constant, &create_primitive<constant>)
+            &create_constant, &create_primitive<constant>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

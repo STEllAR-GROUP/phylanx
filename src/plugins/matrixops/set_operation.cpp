@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple(
             "set", std::vector<std::string>{"set(_1,_2,_3,_4,_5,_6,_7,_8)"},
-            &create_set_operation, &create_primitive<set_operation>)
+            &create_set_operation, &create_primitive<set_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

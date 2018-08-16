@@ -29,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("identity",
             std::vector<std::string>{"identity(_1)"},
-            &create_identity, &create_primitive<identity>)
+            &create_identity, &create_primitive<identity>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

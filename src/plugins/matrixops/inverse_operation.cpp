@@ -27,7 +27,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("inverse",
             std::vector<std::string>{"inverse(_1)"},
-            &create_inverse_operation, &create_primitive<inverse_operation>)
+            &create_inverse_operation, &create_primitive<inverse_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

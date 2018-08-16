@@ -27,7 +27,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("fold_left",
             std::vector<std::string>{"fold_left(_1, _2, _3)"},
             &create_fold_left_operation,
-            &create_primitive<fold_left_operation>)
+            &create_primitive<fold_left_operation>,
+            "synopsis: fold_left(a,b,c)\n"
+            "TODODOC"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

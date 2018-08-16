@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("cross",
             std::vector<std::string>{"cross(_1, _2)"},
-            &create_cross_operation, &create_primitive<cross_operation>)
+            &create_cross_operation, &create_primitive<cross_operation>,
+            "TODODOC")
     };
 
     cross_operation::cross_operation(

@@ -26,7 +26,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("filter",
             std::vector<std::string>{"filter(_1, _2)"},
-            &create_filter_operation, &create_primitive<filter_operation>)
+            &create_filter_operation, &create_primitive<filter_operation>,
+            "synopsis: filter(x0,x1)\n"
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

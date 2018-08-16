@@ -34,7 +34,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("mean",
             std::vector<std::string>{"mean(_1, _2)", "mean(_1)"},
             &create_mean_operation,
-            &create_primitive<mean_operation>)
+            &create_primitive<mean_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("for_each",
             std::vector<std::string>{"for_each(_1, _2)"},
-            &create_for_each, &create_primitive<for_each>)
+            &create_for_each, &create_primitive<for_each>,
+            "synopsis: for_each(iter,body)\n"
+            "Variable `iter` contains a list or iterator, `body` contains a "
+            "statement to be evaluated for each value in `iter`."
+        )
     };
 
     ///////////////////////////////////////////////////////////////////////////

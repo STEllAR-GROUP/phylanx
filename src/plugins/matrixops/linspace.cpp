@@ -26,7 +26,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("linspace",
             std::vector<std::string>{"linspace(_1, _2, _3)"},
-            &create_linspace, &create_primitive<linspace>)
+            &create_linspace, &create_primitive<linspace>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

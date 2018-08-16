@@ -29,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("determinant",
             std::vector<std::string>{"determinant(_1)"},
-            &create_determinant, &create_primitive<determinant>)
+            &create_determinant, &create_primitive<determinant>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__le",
             std::vector<std::string>{
                 "_1 <= _2", "__le(_1, _2)", "__le(_1, _2, _3)"},
-            &create_less_equal, &create_primitive<less_equal>)
+            &create_less_equal, &create_primitive<less_equal>,
+            "synopsis: __le(a,b)\n"
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

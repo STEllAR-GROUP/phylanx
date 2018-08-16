@@ -32,7 +32,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("append",
             std::vector<std::string>{"append(_1, _2)"},
-            &create_append_operation, &create_primitive<append_operation>)
+            &create_append_operation, &create_primitive<append_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////

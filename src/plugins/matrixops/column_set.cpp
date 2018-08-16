@@ -32,7 +32,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("set_column",
             std::vector<std::string>{"set_column(_1, _2, _3, _4, _5)"},
             &create_column_set_operation,
-            &create_primitive<column_set_operation>)};
+            &create_primitive<column_set_operation>,
+            "TODODOC")};
 
     ///////////////////////////////////////////////////////////////////////////
     column_set_operation::column_set_operation(
