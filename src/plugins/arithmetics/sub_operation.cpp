@@ -32,10 +32,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__sub",
             std::vector<std::string>{"_1 - __2", "__sub(_1, __2)"},
             &create_sub_operation, &create_primitive<sub_operation>,
-            "synopsis: __sub(x0,x1)\n"
-            "synopsis: __sub(x0,x1,x2...)\n"
-            "Subtract all arguments `x1`, `x2`, etc. from `x0` and return the result. "
-            "TODODOC"
+            "a,b\n"
+            "Args:\n"
+            "\n"
+            "    a (float) : The value to subtract from.\n"
+            "    b (float) : The value to subtract.\n"
+            "\n"
+            "Return:\n"
+            "\n"
+            "    a - b\n"
             )
     };
 

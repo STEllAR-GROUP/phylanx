@@ -30,9 +30,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::string>{
             "als(_1, _2, _3, _4, _5, _6)", "als(_1, _2, _3, _4, _5)"},
         &create_als, &create_primitive<als>,
-        "synopsis: als(a1,a2,a3,a4,a5)\n"
-        "synopsis: als(a1,a2,a3,a4,a5,a6)\n"
-        "The als algorithm... TODODOC"
+        "a1,a2,a3,a4,a5\n"
+        "Args:\n"
+        "   ratings (matrix) :\n"
+        "   alpha (float) :\n"
+        "   a3\n"
+        "   a4\n"
+        "TODODOC"
         )};
 
     ///////////////////////////////////////////////////////////////////////////
