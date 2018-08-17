@@ -42,9 +42,9 @@ namespace phylanx { namespace bindings
         static pybind11::object import_phylanx()
         {
 #if defined(_DEBUG)
-            return pybind11::module::import("_phylanxd");
+            return pybind11::module::import("phylanx._phylanxd");
 #else
-            return pybind11::module::import("_phylanx");
+            return pybind11::module::import("phylanx._phylanx");
 #endif
         }
 

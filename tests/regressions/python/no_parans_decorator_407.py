@@ -6,7 +6,7 @@
 
 # Fixing #407: @Phylanx decorator needs parentheses
 
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 from phylanx.exceptions import InvalidDecoratorArgumentError
 
 
@@ -32,6 +32,7 @@ def d():
 
 raised = False
 try:
+
     @Phylanx("PhySL")
     def e():
         return 0

@@ -4,6 +4,8 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    522_multidimension_np_arrays
+    530_augmented_assignment_indexed_lhs
     array_len_494
     array_shape_486
     broadcasting_rules_410

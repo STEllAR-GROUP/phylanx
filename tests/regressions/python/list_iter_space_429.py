@@ -5,11 +5,10 @@
 
 # Fixing #429: Cannot iterate over Python lists
 
-import phylanx
-from phylanx.ast import *
+from phylanx import Phylanx
 
 
-@Phylanx(debug=True)
+@Phylanx
 def f1():
     a = 0
     for i in [1]:
@@ -20,7 +19,7 @@ def f1():
 assert f1() == 0
 
 
-@Phylanx(debug=True)
+@Phylanx
 def f2():
     a = 0
     for i in [1, 2, 3]:

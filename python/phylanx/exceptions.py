@@ -7,3 +7,13 @@
 
 class InvalidDecoratorArgumentError(Exception):
     pass
+
+
+class RuntimeNotInitializedError(Exception):
+    """PhylanxSession must be initialized before using the Phylanx decorator."""
+    pass
+
+
+class RuntimeAlreadyInitializedError(Exception):
+    """PhylanxSession can initialized only once."""
+    pass

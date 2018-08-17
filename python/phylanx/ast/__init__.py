@@ -4,9 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 try:
-    from _phylanx.ast import *
+    from phylanx._phylanx.ast import *
 
 except Exception:
-    from _phylanxd.ast import *
-
-from .transformation import *
+    from phylanx._phylanxd.ast import *

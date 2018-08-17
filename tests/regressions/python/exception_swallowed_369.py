@@ -6,10 +6,10 @@
 # Fixing #369: Exception getting swallowed
 
 import numpy as np
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 
 
-@Phylanx()
+@Phylanx
 def addem(a, b):
     c = a + b
     print('c=', c)
@@ -24,8 +24,7 @@ except Exception as e:
     expected = \
         '<unknown>(14, 8): __add:: the dimensions of the ' + \
         'operands do not match: HPX(bad_parameter)'
-    assert(str(e) == expected)
+    assert (str(e) == expected)
     exception_thrown = True
 
-
-assert(exception_thrown)
+assert (exception_thrown)
