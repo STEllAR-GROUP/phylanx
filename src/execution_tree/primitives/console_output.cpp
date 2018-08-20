@@ -36,10 +36,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("cout",
             std::vector<std::string>{"cout(__1)"},
             &create_console_output, &create_primitive<console_output>,
-            "synopsis: cout(x,...)\n"
-            "Sends a string representation of the argument x and any "
-            "following output to the terminal, i.e. stdout. "
-            "TODODOC"
+            "args\n"
+            "Args:\n"
+            "\n"
+            "    *args (list of variables) : print a string representation "
+            "                                of the variables to stdout."
+            "\n"
+            "Results:\n"
             )
     };
 

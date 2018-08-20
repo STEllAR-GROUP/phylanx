@@ -32,11 +32,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{
                 "_1 > _2", "__gt(_1, _2)", "__gt(_1, _2, _3)"},
             &create_greater, &create_primitive<greater>,
-                "synopsis: __gt(a1,a2)\n"
-                "synopsis: __gt(a1,a2,a3)\n"
-                "Returns true of `a1` is greater than `a2`, "
-                "otherwise it returns false. "
-                "TODODOC"
+                "arg1,arg2,arg3\n"
+                "Args:\n"
+                "\n"
+                "    arg1 (number) : A value to compare\n"
+                "    arg2 (number) : Another value to compare\n"
+                "    arg3 (boolean,optional) : whether to use a\n"
+                "                           numeric return value.\n"
+                "\n"
+                "Returns:\n"
+                "\n"
+                "    if arg3 is true\n"
+                "      return 1 if arg1 > arg2, 0 otherwise.\n"
+                "    else\n"
+                "      return True if arg1 > arg2, False otherwise.\n"
             )
     };
 

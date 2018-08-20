@@ -34,16 +34,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
             nullptr, nullptr,
-            "synopsis: define(var,value)\n"
-            "synopsis: define(fname,x0,body)\n"
-            "synopsis: define(fname,x0,x1,...,body)\n"
-            "Define a variable `var` which has value `value` or, "
-            "equivalently, define a function `fname` with arguments "
-            "`x0`, `x1`, etc. which evalues to `body`. "
-            "Note that `define(var,lambda(val))` is the same as "
-            "`define(var,value)` and `define(fname,lambda(x0,body))` "
-            "is the same as `define(fname,x0,body)`."
-            "TODOC"
+            "name,args,body\n"
+            "Args:\n"
+            "\n"
+            "    name (string) : name of symbol to define\n"
+            "    args (optional,list of symbols) : if  present, "
+            "                         this defines a function.\n"
+            "    body (expression) : value to bind to symbol `name` "
+            "                      or body of lambda function.\n"
+            "\n"
+            "Results:\n"
             )
     };
 

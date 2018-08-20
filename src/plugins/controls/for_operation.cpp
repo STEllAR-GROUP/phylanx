@@ -26,22 +26,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("for",
             std::vector<std::string>{"for(_1, _2, _3, _4)"},
             &create_for_operation, &create_primitive<for_operation>,
-            "synopsis: for(defs,cond,incr,body)\n"
-            "The for loop is implemented in a similar fashion to "
-            "the C-langauge. The first argument, `defs` defines variables "
-            "that exist within the scope of the loop. The second `cond` "
-            "is a condition that must be true for the loop to continue. "
-            "The third, `incr` is a statement to execute to advance the "
-            "loop. Finally, `body` contains the work done by the loop.\n"
+            "init,cond,reinit,body\n"
+            "Args:\n"
+            "    init (statements) : initialize loop variables\n"
+            "    cond (expression) : boolean expression, if true the loop continues\n"
+            "    reinit (statements) : update variables evaluated by `cond`\n"
+            "    body (statements) : code to execute as the body of the loop\n"
             "\n"
-            "Example:\n"
-            "``"
-            "  for(\n"
-            "    define(a,1), a<10, store(a,a+1),\n"
-            "    cout(a)\n"
-            ")\n"
-            "`` "
-            "TODODOC"
+            "Results:\n"
             )
     };
 

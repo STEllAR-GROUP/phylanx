@@ -36,10 +36,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("debug",
             std::vector<std::string>{"debug(__1)"},
             &create_debug_output, &create_primitive<debug_output>,
-            "synopsis: debug(x,...)\n"
-            "Send a string representation of x and the following arguments "
-            "to the terminal, i.e. to stderr. "
-            "TODODOC"
+            "args\n"
+            "Args:\n"
+            "\n"
+            "    *args (list of variables) : print a string representation "
+            "                                of the variables to stderr."
+            "\n"
+            "Results:\n"
             )
     };
 

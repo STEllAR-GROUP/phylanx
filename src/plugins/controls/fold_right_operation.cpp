@@ -28,8 +28,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"fold_right(_1, _2, _3)"},
             &create_fold_right_operation,
             &create_primitive<fold_right_operation>,
-            "synopsis: fold_right(a,b,c)\n"
-            "TODODOC")
+            "fun,ini,range\n"
+            "\n"
+            "Args:\n"
+            "\n"
+            "    fun (function) : a function that takes a two float arguments\n"
+            "                     and returns a float argument\n"
+            "    ini (float) : an initial value\n"
+            "    range (iterator) : a list or iterator\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "    This function is equivalent to the Python code:\n"
+            "\n"
+            "  def fr(f,i,r):\n"
+            "      c = i\n"
+            "      for n in r:\n"
+            "          c = f(n,c)\n"
+            "      return c\n"
+            "\n"
+            "Example(s):\n"
+            "\n"
+            "  @Phylanx\n"
+            "  def foo():\n"
+            "      v=fold_right(lambda a,b:2*a-b,3,[1,2,3])\n"
+            "      print(v)\n"
+            "  foo()\n"
+            "\n"
+            "Result:\n"
+            "  1"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
