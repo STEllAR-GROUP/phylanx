@@ -32,10 +32,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__add",
             std::vector<std::string>{"_1 + __2", "__add(_1, __2)"},
             &create_add_operation, &create_primitive<add_operation>,
-            "synopsis: __add(x0,x1)\n"
-            "synopsis: __add(x0,x1,x2,..)\n"
-            "Return the sum of all arguments. "
-            "TODODOC"
+            "x0,x1\n"
+            "Args:\n"
+            "\n"
+            "     x0 (number): An addend\n"
+            "    *x1 (number list): A list of one or more addends.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The sum of all addends.\n"
             )
     };
 

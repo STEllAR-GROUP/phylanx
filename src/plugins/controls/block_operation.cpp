@@ -26,9 +26,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("block",
             std::vector<std::string>{"block(__1)"},
             &create_block_operation, &create_primitive<block_operation>,
-            "synopsis: block(arg0, arg1, ...)\n"
-            "Each of the arguments to block is evaluated in sequence. "
-            "TODODOC")
+            "stmt\n"
+            "Args:\n"
+            "\n"
+            "    *stmt (statement list) :  a list of statements.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The value of the last statement."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
