@@ -7,7 +7,7 @@
 
 import phylanx
 from phylanx import execution_tree as et
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 
 cs = phylanx.compiler_state()
 
@@ -28,4 +28,4 @@ def foo(n):
     return mul2(n)  # noqa: F821
 
 
-assert(6.0 == foo(3))
+assert (6.0 == foo(3))

@@ -3,8 +3,6 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-try:
-    from phylanx._phylanx.execution_tree import *
-
-except Exception:
-    from phylanx._phylanxd.execution_tree import *
+from .core import *
+from .core.config import *
+from .ast.transducer import Phylanx

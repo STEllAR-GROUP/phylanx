@@ -30,7 +30,7 @@ try:
     os.environ['PATH'] = add_to_environ(phylanx_bindir, pathenv)
     os.environ['PATH'] = add_to_environ(hpx_bindir, os.environ['PATH'])
 
-    from _phylanx import *
+    from phylanx._phylanx import *
 
 except Exception:
 
@@ -45,7 +45,7 @@ except Exception:
         os.environ['PATH'] = add_to_environ(phylanx_bindir, pathenv)
         os.environ['PATH'] = add_to_environ(hpx_bindir, os.environ['PATH'])
 
-        from _phylanxd import *
+        from phylanx._phylanxd import *
 
     except Exception as e:
 
@@ -57,6 +57,4 @@ except Exception:
 
         sys.exit(1)
 
-
-# load and initialize the HPX runtime
 init_hpx_runtime()

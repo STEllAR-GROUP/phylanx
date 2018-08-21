@@ -5,10 +5,10 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 try:
-    from _phylanx.util import *
+    from phylanx._phylanx.util import *
 
 except Exception:
-    from _phylanxd.util import *
+    from phylanx._phylanxd.util import *
 
 def phyhelp(fname):
     """Python help function. When called it with the name of

@@ -13,7 +13,7 @@ if (PYTHON_EXECUTABLE)
   set(SETUP_PY_IN "${PROJECT_SOURCE_DIR}/cmake/templates/setup.py.in")
   set(INIT_PY_IN "${PROJECT_SOURCE_DIR}/cmake/templates/__init__.py.in")
 
-  set(INIT_PY ${CMAKE_CURRENT_SOURCE_DIR}/phylanx/__init__.py)
+  set(INIT_PY ${CMAKE_CURRENT_SOURCE_DIR}/phylanx/core/__init__.py)
   set(SETUP_PY ${CMAKE_CURRENT_BINARY_DIR}/setup)
 
   set(DEPS ${INIT_PY})

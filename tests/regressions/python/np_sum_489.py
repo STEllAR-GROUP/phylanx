@@ -6,7 +6,7 @@
 
 # Fixing #489: @Phylanx np.sum needs be written in transformation.py
 
-from phylanx.ast import *
+from phylanx import Phylanx
 import numpy as np
 
 

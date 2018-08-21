@@ -4,9 +4,11 @@
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 import phylanx
+from phylanx import Phylanx
+
 import numpy as np
-from phylanx.ast import Phylanx
 
 # Create a vector
 x0 = 0
@@ -61,7 +63,6 @@ def mk1():
 assert np.all(np.array((3, 2, 4)) == mk1())
 
 
-@Phylanx
 def mk2():
     return np.array([3, 2, 4])
 

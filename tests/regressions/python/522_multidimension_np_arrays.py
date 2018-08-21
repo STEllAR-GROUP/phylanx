@@ -1,3 +1,4 @@
+#  Copyright (c) 2018 R. Tohid
 #  Copyright (c) 2018 Weile Wei
 #
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -8,12 +9,9 @@ import numpy as np
 
 
 @Phylanx
-def test_empty_array_1(a, b):
-    c = np.array([])
-    return c
+def foo():
+    x = np.array([[1, 1]])
+    return x
 
 
-a = np.array([1, 2, 3])
-b = np.array([4, 5])
-c = test_empty_array_1(a, b)
-assert (c.size == 0)
+assert (np.array([[1, 1]]) == foo()).any()

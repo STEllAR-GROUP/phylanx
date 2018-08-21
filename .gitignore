@@ -6,7 +6,7 @@
 # Files
 # =====
 *.pyc
-/python/phylanx/__init__.py
+/python/phylanx/core/__init__.py
 
 # Directories
 # ===========
