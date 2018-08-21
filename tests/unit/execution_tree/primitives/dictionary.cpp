@@ -12,6 +12,7 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,10 +75,36 @@ void test_hash_operation()
             std::string("Question of Life, Universe, and Everything")}));
 }
 
+void test_dict_print_function()
+{
+    phylanx::ir::dictionary u;
+
+    auto key_1 = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<std::int64_t>(42)};
+    auto val_1 = phylanx::execution_tree::primitive_argument_type{
+        std::string("Question of Life, Universe, and Everything")};
+
+    auto key_2 = phylanx::execution_tree::primitive_argument_type{
+        std::string("Question?")};
+    auto val_2 = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<double>(42.0)};
+
+    u[key_1] = val_1;
+    u[key_2] = val_2;
+
+    std::ostringstream stream;
+    stream << u;
+    const std::string str = stream.str();
+
+    HPX_TEST_EQ(str,
+        "dict{Question?: 42, 42: Question of Life, Universe, and Everything}");
+}
+
 int main(int argc, char* argv[])
 {
     test_dictionary_object();
     test_hash_operation();
+    test_dict_print_function();
 
     return hpx::util::report_errors();
 }
