@@ -34,7 +34,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("argmax",
             std::vector<std::string>{"argmax(_1, _2)", "argmax(_1)"},
             &create_argmax, &create_primitive<argmax>,
-            "TODODOC")
+            "a,axis\n"
+            "Args:\n"
+            "\n"
+            "   a (list) : a list of values\n"
+            "   axis (optional, int): which axis of a to use\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The index of the maximum value."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

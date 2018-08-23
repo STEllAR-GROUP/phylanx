@@ -71,7 +71,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("shuffle",
             std::vector<std::string>{"shuffle(_1)"},
             &create_shuffle_operation, &create_primitive<shuffle_operation>,
-            "TODODOC")
+            "args\n"
+            "Args:\n"
+            "\n"
+            "    args (list) : a list of values\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A shuffled version of the list. Note that `args` itself will be "
+            "shuffled by this call."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

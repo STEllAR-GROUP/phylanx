@@ -31,9 +31,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"-_1", "__minus(_1)"},
             &create_unary_minus_operation,
             &create_primitive<unary_minus_operation>,
-            "synopsis: __minus(arg)\n"
-            "This function returns the negative of its argument `arg`. "
-            "TODODOC"
+            "arg\n"
+            "Args:\n"
+            "\n"
+            "    arg (number) : a numeric value\n"
+            "\n"
+            "Results:\n"
+            "\n"
+            "The negative of the value arg."
             )
     };
 

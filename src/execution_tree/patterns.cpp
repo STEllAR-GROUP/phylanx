@@ -50,7 +50,14 @@ namespace phylanx { namespace execution_tree
                 return help;
             for(auto pat2 : hpx::util::get<1>(hpx::util::get<1>(p)))
             {
-                if(pat2 == s)
+                std::string p = pat2;
+                for(int i=0;i<p.size();i++) {
+                    if(p[i] == '(') {
+                        p.resize(i);
+                        break;
+                    }
+                }
+                if(p == s)
                     return help;
             }
         }

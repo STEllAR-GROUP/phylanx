@@ -32,15 +32,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("map",
             std::vector<std::string>{"map(_1, __2)"},
             &create_map_operation, &create_primitive<map_operation>,
-            "synopsis: map(func, listv)\n"
-            "Evaluate the function `func` for each item in list `list` "
-            "and return the result as a new list.\n"
+            "func, listv\n"
             "\n"
-            "Example:\n"
-            "``\n"
-            "cout(map(lambda(a,a*a),[1,2,3]))\n"  
-            "``\n"
-            "Produces `[2.0, 3.0, 4.0]`.\n"
+            "Args:\n"
+            "\n"
+            "    func (function) : a function that takes one argument\n"
+            "    listv (iterator) : a set of values\n"
+            "\n"
+            "Results:\n"
+            "\n"
+            "A new list created by applying the function `func` to each \n"
+            "item in list `listv`.\n"
             )
     };
 

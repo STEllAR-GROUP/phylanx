@@ -180,10 +180,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__and",
             std::vector<std::string>{"_1 && __2", "__and(_1, __2)"},
             &create_and_operation, &create_primitive<and_operation>,
-            "synopsis: __and(x0,x1)\n"
-            "synopsis: __and(x0,x1,x2,...)\n"
-            "Perform a logical and of all arguments and return the result. "
-            "TODODOC"
+            "a,b\n"
+            "Args:\n"
+            "\n"
+            "    a (boolean) : a boolean argument\n"
+            "    b (boolean) : a boolean argument\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The logical and of `a` and `b`."
             )
     };
 

@@ -33,8 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "Results:\n"
             "\n"
-            "    True if all values in the matrix/vector are nonzero,\n"
-            "    False otherwise.\n"
+            "True if all values in the matrix/vector are nonzero,\n"
+            "False otherwise.\n"
             )};
 
     ///////////////////////////////////////////////////////////////////////////
