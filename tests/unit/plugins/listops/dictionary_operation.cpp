@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 //////////////////////////////////////////////////////////////////////////
@@ -53,7 +54,7 @@ void test_dict_operation()
     phylanx::execution_tree::primitive_argument_type temp = dict.eval().get();
 
     phylanx::ir::dictionary f =
-        phylanx::execution_tree::extract_dict_value(temp);
+        phylanx::execution_tree::extract_dictionary_value(temp);
 
     char const* const code_1 = "'('(1, 2), '(3, 4))";
 
@@ -70,7 +71,7 @@ void test_dict_operation()
     phylanx::execution_tree::primitive_argument_type temp_1 = dict.eval().get();
 
     phylanx::ir::dictionary f_1 =
-        phylanx::execution_tree::extract_dict_value(temp_1);
+        phylanx::execution_tree::extract_dictionary_value(temp_1);
 
     HPX_TEST_EQ(f, f_1);
 }
@@ -92,7 +93,7 @@ void test_dict_empty_operation()
     phylanx::execution_tree::primitive_argument_type temp = dict.eval().get();
 
     phylanx::ir::dictionary f =
-        phylanx::execution_tree::extract_dict_value(temp);
+        phylanx::execution_tree::extract_dictionary_value(temp);
 }
 
 void test_dict_key()
@@ -113,7 +114,7 @@ void test_dict_key()
     phylanx::execution_tree::primitive_argument_type temp = dict.eval().get();
 
     phylanx::ir::dictionary f =
-        phylanx::execution_tree::extract_dict_value(temp);
+        phylanx::execution_tree::extract_dictionary_value(temp);
 
     HPX_TEST_EQ(f[phylanx::execution_tree::primitive_argument_type{
                     phylanx::ir::node_data<std::int64_t>(42)}],
