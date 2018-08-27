@@ -48,15 +48,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (args_list.size() == 0)
         {
-<<<<<<< HEAD
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dictionary_operation::eval",
                 util::generate_error_message(
                     "the dict_operation primitive requires at least one non-empty list",
                     name_, codename_));
-=======
-            return (primitive_argument_type(dict));
->>>>>>> updating dictionary operation
         }
 
         for (auto it = args_list.begin(); it != args_list.end(); ++it)
@@ -71,13 +67,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                                  "two parameters for key-value",
                         name_, codename_));
             }
-<<<<<<< HEAD
             auto const& key_value = phylanx::execution_tree::extract_list_value(*it);
             dict[key_value.args()[0]] = key_value.args()[1];
-=======
-            dict[phylanx::execution_tree::extract_list_value(*it).args()[0]] =
-                phylanx::execution_tree::extract_list_value(*it).args()[1];
->>>>>>> updating dictionary operation
         }
 
         return (primitive_argument_type(dict));
@@ -93,11 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dictionary_operation::eval",
                 util::generate_error_message(
-<<<<<<< HEAD
-                    "the dict_operation primitive requires at least one argument",
-=======
                     "the dict_operation primitive requires at least one list",
->>>>>>> updating dictionary operation
                     name_, codename_));
         }
 
