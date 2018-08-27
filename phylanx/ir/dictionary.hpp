@@ -34,7 +34,7 @@ namespace std {
         using argument_type = phylanx::util::recursive_wrapper<
             phylanx::execution_tree::primitive_argument_type>;
         using result_type = std::size_t;
-        result_type operator()(argument_type const& s) const noexcept;
+        PHYLANX_EXPORT result_type operator()(argument_type const& s) const noexcept;
     };
 }
 
