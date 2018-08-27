@@ -28,16 +28,53 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
 ///////////////////////////////////////////////////////////////////////////////
-#define PHYLANX_LIN_MATCH_DATA(name)                                           \
+#define PHYLANX_LIN_MATCH_DATA(name,doc)                                       \
     hpx::util::make_tuple(name,                                                \
         std::vector<std::string>{name "(_1, _2)", name "(_1, _2, _3)"},        \
-        &create_linear_solver, &create_primitive<linear_solver>,"TODODOC")     \
+        &create_linear_solver, &create_primitive<linear_solver>,doc)     \
     /**/
 
     std::vector<match_pattern_type> const linear_solver::match_data = {
-        PHYLANX_LIN_MATCH_DATA("linear_solver_lu"),
-        PHYLANX_LIN_MATCH_DATA("linear_solver_ldlt"),
-        PHYLANX_LIN_MATCH_DATA("linear_solver_cholesky")};
+        PHYLANX_LIN_MATCH_DATA("linear_solver_lu",
+        "A,b\n"
+        "Args:\n"
+        "\n"
+        "    A (matrix) : a matrix\n"
+        "    b (vector) : a vector\n"
+        "\n"
+        "Returns:\n"
+        "\n"
+        "A matrix x such that A x = b.\n"
+        ),
+        PHYLANX_LIN_MATCH_DATA("linear_solver_ldlt",
+        "A,b,uplo\n"
+        "Args:\n"
+        "\n"
+        "    A (matrix) : a matrix\n"
+        "    b (vector) : a vector\n"
+        "    uplo (string) : either 'L' or 'U'\n"
+        "\n"
+        "Returns:\n"
+        "\n"
+        "A matrix x such that A x = b. If uplo = 'L', solve "
+        "A as a lower triangular matrix, otherwise as an upper "
+        "triangular matrix."
+        ),
+        PHYLANX_LIN_MATCH_DATA("linear_solver_cholesky",
+        "A,b,uplo\n"
+        "Args:\n"
+        "\n"
+        "    A (matrix) : a matrix\n"
+        "    b (vector) : a vector\n"
+        "    uplo (string) : either 'L' or 'U'\n"
+        "\n"
+        "Returns:\n"
+        "\n"
+        "A matrix x such that A x = b, solved using the "
+        "Cholesky (LLH) decomposition. If uplo = 'L', solve "
+        "A as a lower triangular matrix, otherwise as an upper "
+        "triangular matrix."
+        )};
 
 #undef PHYLANX_LIN_MATCH_DATA
 

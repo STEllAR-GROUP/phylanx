@@ -30,7 +30,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("vstack",
             std::vector<std::string>{"vstack(__1)"},
             &create_vstack_operation, &create_primitive<vstack_operation>,
-            "TODODOC")
+            "args\n"
+            "Args:\n"
+            "\n"
+            "  *args (list of number) : a list of numbers\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "An N by 1 matrix of numbeers, where N is the quantity "
+            "of numbers in `args`.")
     };
 
     ///////////////////////////////////////////////////////////////////////////
