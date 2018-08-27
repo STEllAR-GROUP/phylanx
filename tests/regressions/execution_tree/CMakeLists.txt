@@ -20,6 +20,7 @@ set(tests
     shape1d_357
     shape_2nd_argument_406
     slicing_nil_358
+    slicing_reverse_step_550
     support_nil_314
     vector_of_variables_244
     replace_names_374
