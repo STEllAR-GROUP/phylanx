@@ -37,7 +37,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("random",
             std::vector<std::string>{"random(_1)", "random(_1, _2)"},
             &create_random, &create_primitive<random>,
-            "TODODOC")
+            "size,distribution\n"
+            "Args:\n"
+            "\n"
+            "    size (int) : the size of the array of random numbers\n"
+            "    distribution (optional, string or list) : the name of the "
+            "    distribution, or a list that begins with the name and is "
+            "    followed by up to two numeric parameters."
+            "\n"
+            "Returns:\n"
+            "\n"
+            "An array of random numbers.")
     };
 
     ///////////////////////////////////////////////////////////////////////////
