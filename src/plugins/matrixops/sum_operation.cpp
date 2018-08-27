@@ -35,7 +35,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("sum",
         std::vector<std::string>{"sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)"},
         &create_sum_operation, &create_primitive<sum_operation>,
-        "TODODOC")
+        "v,a1,a2\n"
+        "Args:\n"
+        "\n"
+        "    v (vector or matrix) : a vector or matrix\n"
+        "    a1 (optional, integer): a axis to sum along\n"
+        "    a2 (optional, integer): a second axis to sum along\n"
+        "\n"
+        "Returns:\n"
+        "\n"
+        "The sum of all values along the specified axes.")
     };
 
     ///////////////////////////////////////////////////////////////////////////

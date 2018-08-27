@@ -29,12 +29,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("list",
             std::vector<std::string>{"list(__1)"},
             &create_make_list, &create_primitive<make_list>,
-            "TODODOC"),
+            "args\n"
+            "Args:\n"
+            "\n"
+            "  *args (list of values): a list of values\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A Phylanx list populated by the values supplied."
+            ),
 
         hpx::util::make_tuple("make_list",
             std::vector<std::string>{"make_list(__1)"},
             &create_make_list, &create_primitive<make_list>,
-            "TODODOC")
+            "args\n"
+            "Args:\n"
+            "\n"
+            "  *args (list of values): a list of values\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A Phylanx list populated by the values supplied."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
