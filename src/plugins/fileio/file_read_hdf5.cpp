@@ -33,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("file_read_hdf5",
             std::vector<std::string>{"file_read_hdf5(_1, _2)"},
-            &create_file_read_hdf5, &create_primitive<file_read_hdf5>)
+            &create_file_read_hdf5, &create_primitive<file_read_hdf5>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////
