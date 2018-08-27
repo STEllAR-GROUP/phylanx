@@ -460,12 +460,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
+                std::ostringstream msg;
+                msg << "attempting to use an unknown random number "
+                            "distribution: " << std::get<0>(params) << ". ";
+                msg << "Known distributions are";
+                std::string tween = ": ";
+                for(it = distributions.begin(); it != distributions.end(); ++it) {
+                    msg << tween;
+                    msg << it->first;
+                    tween = ", ";
+                }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize0d",
                     util::generate_error_message(
-                        "attempting to use an unknown random number "
-                            "distribution: " + std::get<0>(params),
-                        name, codename));
+                            msg.str(), name, codename));
             }
             return (it->second)(params, name, codename)->call0d();
         }
@@ -477,12 +485,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
+                std::ostringstream msg;
+                msg << "attempting to use an unknown random number "
+                            "distribution: " << std::get<0>(params) << ". ";
+                msg << "Known distributions are";
+                std::string tween = ": ";
+                for(it = distributions.begin(); it != distributions.end(); ++it) {
+                    msg << tween;
+                    msg << it->first;
+                    tween = ", ";
+                }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize1d",
                     util::generate_error_message(
-                        "attempting to use an unknown random number "
-                            "distribution: " + std::get<0>(params),
-                        name, codename));
+                        msg.str(), name, codename));
             }
             return (it->second)(params, name, codename)->call1d(dim);
         }
@@ -495,12 +511,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto it = distributions.find(std::get<0>(params));
             if (it == distributions.end())
             {
+                std::ostringstream msg;
+                msg << "attempting to use an unknown random number "
+                            "distribution: " << std::get<0>(params) << ". ";
+                msg << "Known distributions are";
+                std::string tween = ": ";
+                for(it = distributions.begin(); it != distributions.end(); ++it) {
+                    msg << tween;
+                    msg << it->first;
+                    tween = ", ";
+                }
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "random::randomize2d",
                     util::generate_error_message(
-                        "attempting to use an unknown random number "
-                            "distribution: " + std::get<0>(params),
-                        name, codename));
+                        msg.str(), name, codename));
             }
             return (it->second)(params, name, codename)->call2d(dims);
         }
