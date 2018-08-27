@@ -26,7 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive<define_variable>, "TODODOC")
+            nullptr, &create_primitive<define_variable>, "Internal")
     };
 
     match_pattern_type const define_variable::match_data_define =
@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
-            nullptr, nullptr, 
+            nullptr, nullptr,
             "args,body\n"
             "Args:\n"
             "\n"

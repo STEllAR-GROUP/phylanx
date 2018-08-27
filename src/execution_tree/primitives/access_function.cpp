@@ -26,7 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("access-function",
             std::vector<std::string>{},
             nullptr, &create_primitive<access_function>,
-            "TODODOC")
+            "Internal")
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -39,8 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive<variable>, 
-            "TODODOC"
+            nullptr, &create_primitive<variable>,
+            "Internal"
             )
     };
 

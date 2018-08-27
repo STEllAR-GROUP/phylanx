@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("call-function",
             std::vector<std::string>{},
             nullptr, &create_primitive<call_function>,
-            "TODODOC")
+            "Internal")
     };
 
     ///////////////////////////////////////////////////////////////////////////
