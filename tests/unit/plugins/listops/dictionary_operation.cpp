@@ -39,99 +39,25 @@ void test_dictionary_operation(std::string const& code,
 
 void test_dict_operation()
 {
-    char const* const code = "list(list(1, 2), list(3, 4))";
+    char const* const code_1 =
+        "dict(list(list(42, \"Question of Life, Universe, and Everything\"), "
+        "list(\"Question?\", 42.0)))";
 
-    phylanx::ir::range key_value =
-        phylanx::execution_tree::extract_list_value(compile_and_run(code));
+    char const* const code_2 =
+        "dict(list(list(42, \"Question of Life, Universe, and Everything\"), "
+        "list(\"Question?\", 42.0)))";
 
-    phylanx::execution_tree::primitive dict =
-        phylanx::execution_tree::primitives::create_dict_operation(
-            hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::range(key_value)})});
-
-    phylanx::execution_tree::primitive_argument_type temp = dict.eval().get();
-
-    phylanx::ir::dictionary f =
-        phylanx::execution_tree::extract_dictionary_value(temp);
-
-    char const* const code_1 = "list(list(1, 2), list(3, 4))";
-
-    phylanx::ir::range key_value_1 =
-        phylanx::execution_tree::extract_list_value(compile_and_run(code_1));
-
-    phylanx::execution_tree::primitive dict_1 =
-        phylanx::execution_tree::primitives::create_dict_operation(
-            hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
-                std::move(phylanx::execution_tree::primitive_argument_type{
-                    phylanx::ir::range(key_value_1)})});
-
-    phylanx::execution_tree::primitive_argument_type temp_1 = dict.eval().get();
-
-    phylanx::ir::dictionary f_1 =
-        phylanx::execution_tree::extract_dictionary_value(temp_1);
-
-    HPX_TEST_EQ(f, f_1);
+    HPX_TEST_EQ(compile_and_run(code_1), compile_and_run(code_2));
 }
 
-void test_dict_empty_list_operation()
+void test_dict_empty_operation(std::string const& code)
 {
-    char const* const code = "list()";
-
-    phylanx::ir::range key_value =
-        phylanx::execution_tree::extract_list_value(compile_and_run(code));
-
     bool exception_thrown = false;
     try
     {
         // Must throw an exception
-        phylanx::execution_tree::primitive dict =
-            phylanx::execution_tree::primitives::create_dict_operation(
-                hpx::find_here(),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    std::move(phylanx::execution_tree::primitive_argument_type{
-                        phylanx::ir::range(key_value)})});
+        compile_and_run(code);
 
-        phylanx::execution_tree::primitive_argument_type temp =
-            dict.eval().get();
-
-        phylanx::ir::dictionary f =
-            phylanx::execution_tree::extract_dictionary_value(temp);
-        HPX_TEST(false);
-    }
-    catch (std::exception const&)
-    {
-        exception_thrown = true;
-    }
-
-    HPX_TEST(exception_thrown);
-}
-
-void test_dict_empty_arg_operation()
-{
-    char const* const code = "";
-
-    phylanx::ir::range key_value =
-        phylanx::execution_tree::extract_list_value(compile_and_run(code));
-
-    bool exception_thrown = false;
-    try
-    {
-        // Must throw an exception
-        phylanx::execution_tree::primitive dict =
-            phylanx::execution_tree::primitives::create_dict_operation(
-                hpx::find_here(),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
-                    std::move(phylanx::execution_tree::primitive_argument_type{
-                        phylanx::ir::range(key_value)})});
-
-        phylanx::execution_tree::primitive_argument_type temp =
-            dict.eval().get();
-
-        phylanx::ir::dictionary f =
-            phylanx::execution_tree::extract_dictionary_value(temp);
         HPX_TEST(false);
     }
     catch (std::exception const&)
@@ -179,8 +105,8 @@ void test_dict_key()
 int main(int argc, char* argv[])
 {
     test_dict_operation();
-    test_dict_empty_list_operation();
-    test_dict_empty_arg_operation();
+    test_dict_empty_operation("dict()");
+    test_dict_empty_operation("dict(list())");
     test_dict_key();
     return hpx::util::report_errors();
 }
