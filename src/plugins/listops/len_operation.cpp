@@ -33,7 +33,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("len",
             std::vector<std::string>{"len(_1)"},
             &create_len_operation, &create_primitive<len_operation>,
-            "TODODOC")
+            "li\n"
+            "Args:\n"
+            "\n"
+            "    li (object) : a list, vector, or matrix\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The size of the given object."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

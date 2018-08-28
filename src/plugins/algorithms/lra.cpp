@@ -35,7 +35,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lra(_1, _2, _3, _4)"
             },
             &create_lra, &create_primitive<lra>,
-            "TODODOC")
+            "dloc,row_start,row_stop,col_start,col_stop,alpha,iters,enable_output\n"
+            "Args:\n"
+            "\n"
+            "    dloc (string) : filepath or data_csv : The location of the csv file\n"
+            "    row_start (int): The row of the csv file from which we start reading "
+            " the data\n"
+            "    row_stop (int): The row of the csv file up to which we read the data\n"
+            "    col_start (int): The column of the csv file from which we start reading "
+            "the data\n"
+            "    col_stop (int): The column of the csv file up to which we read the data\n"
+            "    alpha (float): It is the learning rate\n"
+            "    iters (int): The number of iterations\n"
+            "    enable_output (boolean): If enabled, prints out the step number and "
+            "weights during each iteration\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The Calculated weights"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

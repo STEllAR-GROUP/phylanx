@@ -28,7 +28,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("shape",
             std::vector<std::string>{"shape(_1, _2)", "shape(_1)"},
             &create_extract_shape, &create_primitive<extract_shape>,
-            "TODODOC")
+            "m,dim\n"
+            "Args:\n"
+            "\n"
+            "    m (object): a vector or matrix\n"
+            "    dim (optional, int): the dimension to get the size of\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "Without the optional argument, it returns a list of integers "
+            "corresponding to the size of each dimension of the vector or "
+            "matrix. If the optional `dim` argument is supplied, then the "
+            "size for that dimension is returned as an integer."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

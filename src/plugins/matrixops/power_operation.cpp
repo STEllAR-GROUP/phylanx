@@ -29,7 +29,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("power",
             std::vector<std::string>{"power(_1, _2)"},
             &create_power_operation, &create_primitive<power_operation>,
-            "TODODOC")
+            "base,pow\n"
+            "Args:\n"
+            "\n"
+            "    base (float) : the base of the exponent\n"
+            "    pow (float) : the power of the exponent\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The value `base`**`pow`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

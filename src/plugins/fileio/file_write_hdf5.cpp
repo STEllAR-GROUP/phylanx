@@ -36,7 +36,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("file_write_hdf5",
             std::vector<std::string>{"file_write_hdf5(_1, _2, _3)"},
             &create_file_write_hdf5, &create_primitive<file_write_hdf5>,
-            "TODODOC")
+            "fname,dsetname,data\n"
+            "Args:\n"
+            "\n"
+            "    fname (string) : a file name\n"
+            "    dsetname (string) : a dataset name\n"
+            "    data (matrix or vector) : a data set\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "Zero on success."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

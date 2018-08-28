@@ -28,7 +28,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("transpose",
             std::vector<std::string>{"transpose(_1)"},
             &create_transpose_operation, &create_primitive<transpose_operation>,
-            "TODODOC")
+            "m\n"
+            "Args:\n"
+            "\n"
+            "    m (matrix) : a matrix\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The transpose of `m`.")
     };
 
     ///////////////////////////////////////////////////////////////////////////

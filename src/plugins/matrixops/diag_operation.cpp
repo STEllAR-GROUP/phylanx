@@ -31,7 +31,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("diag",
             std::vector<std::string>{"diag(_1)", "diag(_1, _2)"},
             &create_diag_operation, &create_primitive<diag_operation>,
-            "TODODOC")
+            "m\n"
+            "Args:\n"
+            "\n"
+            "    m (matrix) : a square matrix\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A vector created from the diagonal elements of `m`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

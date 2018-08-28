@@ -683,7 +683,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "set_seed", std::vector<std::string>{"set_seed(_1)"},
             &create_generic_function<set_seed_action>,
             &create_primitive<generic_function<set_seed_action>>,
-            "TODODOC")
+            "seed\n"
+            "Args:\n"
+            "\n"
+            "    seed (int) : the seed of a random number generator"
+            "\n"
+            "Returns:"
+            )
     };
 
     match_pattern_type const get_seed_match_data =
@@ -692,7 +698,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "get_seed", std::vector<std::string>{"get_seed()"},
             &create_generic_function<get_seed_action>,
             &create_primitive<generic_function<get_seed_action>>,
-            "TODODOC")
+            "\n"
+            "Args:\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The seed used to generate random numbers.")
     };
 
     ///////////////////////////////////////////////////////////////////////////
