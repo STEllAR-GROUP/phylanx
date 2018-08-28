@@ -57,9 +57,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (auto it = args_list.begin(); it != args_list.end(); ++it)
         {
-            if (phylanx::execution_tree::extract_list_value(*it)
-                    .args()
-                    .size() != 2)
+            auto const& key_value = phylanx::execution_tree::extract_list_value(*it);
+
+            if (key_value.args().size() != 2)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "dictionary_operation::generate_dict",
@@ -67,11 +67,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                                  "two parameters for key-value",
                         name_, codename_));
             }
-            auto const& key_value = phylanx::execution_tree::extract_list_value(*it);
             dict[key_value.args()[0]] = key_value.args()[1];
         }
 
-        return (primitive_argument_type(dict));
+        return primitive_argument_type(dict);
     }
 
     //////////////////////////////////////////////////////////////////////////
