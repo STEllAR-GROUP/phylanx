@@ -34,7 +34,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"set_row(_1, _2, _3, _4, _5)"},
             &create_row_set_operation,
             &create_primitive<row_set_operation>,
-            "TODODOC")
+            "v,start,stop,step,val\n"
+            "Args:\n"
+            "\n"
+            "    v (array) : the array to set values in\n"
+            "    start (int) : the start index\n"
+            "    stop (int) : the stop index\n"
+            "    step (int) : the step size\n"
+            "    val (number) : the value to substitute\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "0 on success. However, the contents of v are modified at "
+            "the indices described by `start`, `stop`, and `step`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

@@ -33,7 +33,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"gradient(_1, _2)", "gradient(_1)"},
             &create_gradient_operation,
             &create_primitive<gradient_operation>,
-            "TODODOC")
+            "m,axis\n"
+            "Args:\n"
+            "\n"
+            "    m (vector or matrix) : values to take the gradient of\n"
+            "    axis (optional, integer) : the axis along whic to take\n"
+            "                    the gradient.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The numerical gradient, i.e., differences of adjacent values "
+            "along the specified axis."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
