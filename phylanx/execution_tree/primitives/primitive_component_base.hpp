@@ -22,6 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
 namespace phylanx { namespace execution_tree
 {
