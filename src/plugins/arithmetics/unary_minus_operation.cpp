@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "    arg (number) : a numeric value\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "The negative of the value arg."
             )

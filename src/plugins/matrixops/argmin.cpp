@@ -36,6 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"argmin(_1, _2)", "argmin(_1)"},
             &create_argmin, &create_primitive<argmin>,
             "ar,axis\n"
+            "Args:\n"
             "\n"
             "    ar (array) : a vector or matrix\n"
             "    axis (optional, int) : the axis along which to find the min\n"

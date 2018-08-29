@@ -30,9 +30,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_primitive<parallel_block_operation>,
             "*arg\n"
             "Args:\n"
-            "*args (list) : a list of zero or more statements\n"
+            "\n"
+            "    *args (list) : a list of zero or more statements\n"
             "            to be evaluated in parallel.\n"
-            "Return:\n"
+            "Returns:\n"
             "\n"
             "The last statement in the list `args`.\n"
             )

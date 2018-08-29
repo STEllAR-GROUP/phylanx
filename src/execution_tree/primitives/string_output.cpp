@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "    *args (object list) : any objects\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "A string created by concatenating the string "
             "representations of the objects in `args`."

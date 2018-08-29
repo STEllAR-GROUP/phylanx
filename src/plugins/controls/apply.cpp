@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    range(iter) : an iterator with at least as many values \n"
             "                  as function `func` has arguments.\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "The return value of function `func` when called with the \n"
             "arguments supplied by `range`."

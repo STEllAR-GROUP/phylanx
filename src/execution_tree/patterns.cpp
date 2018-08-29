@@ -21,6 +21,20 @@ namespace phylanx { namespace execution_tree
 
     void show_patterns()
     {
+        std::cout << "patterns: " << std::endl;
+        for(auto i : list_patterns())
+        {
+            std::cout << "pattern: " << i.first << std::endl;
+            for(auto s : i.second)
+            {
+                std::cout << "  matches: " << s << std::endl;
+            }
+        }
+    }
+
+    std::map<std::string,std::vector<std::string>> list_patterns()
+    {
+        std::map<std::string,std::vector<std::string>> result;
         std::map<std::string,std::set<std::string>> found;
         for(auto p : get_all_known_patterns())
         {
@@ -32,12 +46,12 @@ namespace phylanx { namespace execution_tree
         }
         for(auto p = found.begin();p != found.end();++p)
         {
-            std::cout << "pattern: " << p->first << std::endl;
             for(auto p2 : p->second)
             {
-                std::cout << "  matches: " << p2 << std::endl;
+                result[p->first].push_back(p2);
             }
         }
+        return result;
     }
 
     std::string find_help(const std::string& s)

@@ -28,12 +28,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_for_operation, &create_primitive<for_operation>,
             "init,cond,reinit,body\n"
             "Args:\n"
+            "\n"
             "    init (statements) : initialize loop variables\n"
             "    cond (expression) : boolean expression, if true the loop continues\n"
             "    reinit (statements) : update variables evaluated by `cond`\n"
             "    body (statements) : code to execute as the body of the loop\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             )
     };
 

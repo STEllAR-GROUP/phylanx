@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    a (float) : The value to subtract from.\n"
             "    b (float) : The value to subtract.\n"
             "\n"
-            "Return:\n"
+            "Returns:\n"
             "\n"
             "    a - b\n"
             )

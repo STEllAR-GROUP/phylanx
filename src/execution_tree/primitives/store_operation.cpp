@@ -43,15 +43,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("store",
             std::vector<std::string>{"store(_1, _2)"},
             &create_store_operation, &create_primitive<store_operation>,
-            "var, value\n"
+            "var,value\n"
             "Update the definition of variable `var` with value `value`. "
-            "This primitive is used to implement the assignment operator."
-            "Note that the variable should first be created with define. "
+            "This primitive is used to implement the assignment operator. "
+            "Note that the variable should first be created with define.\n"
+            "Args:\n"
             "\n"
             "    var (symbol) : a variable to be defined\n"
             "    value (expression) : a value to assign\n"
             "\n"
-            "Results:"
+            "Returns:"
             )
     };
 

@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    func (function): a function that takes one argument\n"
             "    range (iter): an iterator\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "None.\n"
             "\n"

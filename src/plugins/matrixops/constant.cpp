@@ -56,13 +56,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"constant(_1, _2)", "constant(_1)"},
             &create_constant, &create_primitive<constant>,
             "arg1,arg2\n"
-            "\n"
             "Args:\n"
+            "\n"
             "    arg1 (float): a constant value\n"
             "    arg2 (int, optional): the number of values\n"
             "\n"
             "Returns:\n"
-            "    An array of size arg2 with each element equal to arg1.\n")
+            "\n"
+            "An array of size arg2 with each element equal to arg1.\n")
     };
 
     ///////////////////////////////////////////////////////////////////////////

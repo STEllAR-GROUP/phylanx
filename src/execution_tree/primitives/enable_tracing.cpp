@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "    eon (boolean) : set to true/false to enable/disable tracing."
             "\n"
-            "Results:\n"
+            "Returns:\n"
             )
     };
 

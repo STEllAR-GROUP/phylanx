@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    end (optional,number) : an ending value\n"
             "    step (optional,number) : a step size\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "An iterator of values less than `end` where the values "
             "are equal to `start+step*n` where n is 0, 1, 2, ... "

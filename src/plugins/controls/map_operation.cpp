@@ -39,7 +39,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    func (function) : a function that takes one argument\n"
             "    listv (iterator) : a set of values\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "A new list created by applying the function `func` to each \n"
             "item in list `listv`.\n"

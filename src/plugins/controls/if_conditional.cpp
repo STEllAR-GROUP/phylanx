@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    thenf (statement) : a statement\n"
             "    elsef (statement) : a statement\n"
             "\n"
-            "Results:"
+            "Returns:"
             )
     };
 

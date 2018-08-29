@@ -261,7 +261,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    s (string) : a format string\n"
             "    *args (arg list) : a list of arguments\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "A formatted string, with each `{}` in s replaced by \n"
             "a value from `*args`.")

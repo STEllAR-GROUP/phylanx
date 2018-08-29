@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "Args:\n"
             "\n"
             "    cond (boolean expression) : if not true, raise an AssertionError\n"
-            "Results:\n"
+            "Returns:\n"
             )
     };
 

@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    *args (list of variables) : print a string representation "
             "                                of the variables to stdout."
             "\n"
-            "Results:\n"
+            "Returns:\n"
             )
     };
 

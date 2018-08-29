@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"count_nonzero(_1)"},
             &create_count_nonzero_operation,
             &create_primitive<count_nonzero_operation>,
-            "ar\n",
+            "ar\n"
             "Args:\n"
             "\n"
             "    ar (array) : a numeric array of values\n"

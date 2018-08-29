@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "    arg (matrix or vector of numbers) : the input values\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             "\n"
             "True if all values in the matrix/vector are nonzero,\n"
             "False otherwise.\n"

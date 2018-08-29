@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    body (expression) : value to bind to symbol `name` "
             "                      or body of lambda function.\n"
             "\n"
-            "Results:\n"
+            "Returns:\n"
             )
     };
 
