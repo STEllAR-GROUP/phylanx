@@ -298,32 +298,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 0:
             {
-                auto rhs_val = extract_value_matrix<R>(
-                    std::move(rhs), sizes[0], sizes[1], name_, codename_);
-                auto rhs_matrix = rhs_val.matrix();
+                auto rhs_val = extract_value_scalar<R>(
+                    std::move(rhs), name_, codename_).scalar();
 
                 return primitive_argument_type{
                     extract_value_matrix<R>(std::move(lhs),
                         [&](T val, std::size_t row, std::size_t column)
                         {
-                            return op.at(row, column) ?
-                                val : rhs_matrix(row, column);
+                            return op.at(row, column) ? val : rhs_val;
                         },
                         sizes[0], sizes[1], name_, codename_)};
             }
 
         case 1:
             {
-                auto rhs_val = extract_value_matrix<R>(
-                    std::move(rhs), sizes[0], sizes[1], name_, codename_);
-                auto rhs_matrix = rhs_val.matrix();
+                auto rhs_val = extract_value_vector<R>(
+                    std::move(rhs), sizes[1], name_, codename_);
+                auto rhs_vector = rhs_val.vector();
 
                 return primitive_argument_type{
                     extract_value_matrix<R>(std::move(lhs),
                         [&](T val, std::size_t row, std::size_t column)
                         {
-                            return op.at(row, column) ?
-                                val : rhs_matrix(row, column);
+                            return op.at(row, column) ? val : rhs_vector[column];
                         },
                         sizes[0], sizes[1], name_, codename_)};
             }

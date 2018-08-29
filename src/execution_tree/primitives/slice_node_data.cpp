@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/slice_node_data.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
@@ -91,8 +92,9 @@ namespace phylanx { namespace execution_tree
                     "step can not be zero", name, codename));
         }
 
-        auto sv = blaze::elements(
-            data, util::slicing_helpers::create_list_slice(start, stop, step));
+        auto element_indices =
+            util::slicing_helpers::create_list_slice(start, stop, step);
+        auto sv = blaze::elements(data, element_indices);
 
         return f.vector(data, std::move(sv));
     }
@@ -171,9 +173,9 @@ namespace phylanx { namespace execution_tree
             }
 
             // general case, pick arbitrary elements from selected row
-            auto sv = blaze::elements(row,
-                util::slicing_helpers::create_list_slice(
-                    col_start, col_stop, col_step));
+            auto indices = util::slicing_helpers::create_list_slice(
+                col_start, col_stop, col_step);
+            auto sv = blaze::elements(row, indices);
 
             return f.trans_vector(input_matrix, std::move(sv));
         }
@@ -192,9 +194,9 @@ namespace phylanx { namespace execution_tree
             }
 
             // general case, pick arbitrary elements from selected column
-            auto sv = blaze::elements(col,
-                util::slicing_helpers::create_list_slice(
-                    row_start, row_stop, row_step));
+            auto indices = util::slicing_helpers::create_list_slice(
+                row_start, row_stop, row_step);
+            auto sv = blaze::elements(col, indices);
 
             return f.vector(input_matrix, std::move(sv));
         }
@@ -215,9 +217,9 @@ namespace phylanx { namespace execution_tree
             auto sm = blaze::submatrix(input_matrix, 0ll, col_start,
                 num_matrix_rows, col_stop - col_start);
 
-            auto result = blaze::rows(sm,
-                util::slicing_helpers::create_list_slice(
-                    row_start, row_stop, row_step));
+            auto indices = util::slicing_helpers::create_list_slice(
+                row_start, row_stop, row_step);
+            auto result = blaze::rows(sm, indices);
 
             return f.matrix(input_matrix, std::move(result));
         }
@@ -228,21 +230,21 @@ namespace phylanx { namespace execution_tree
             auto sm = blaze::submatrix(input_matrix, row_start, 0ll,
                 row_stop - row_start, num_matrix_cols);
 
-            auto result = blaze::columns(sm,
-                util::slicing_helpers::create_list_slice(
-                    col_start, col_stop, col_step));
+            auto indices = util::slicing_helpers::create_list_slice(
+                col_start, col_stop, col_step);
+            auto result = blaze::columns(sm, indices);
 
             return f.matrix(input_matrix, std::move(result));
         }
 
         // general case, pick arbitrary elements from matrix
-        auto sm = blaze::rows(input_matrix,
-            util::slicing_helpers::create_list_slice(
-                row_start, row_stop, row_step));
+        auto row_indices = util::slicing_helpers::create_list_slice(
+            row_start, row_stop, row_step);
+        auto sm = blaze::rows(input_matrix, row_indices);
 
-        auto result = blaze::columns(sm,
-            util::slicing_helpers::create_list_slice(
-                col_start, col_stop, col_step));
+        auto column_indices = util::slicing_helpers::create_list_slice(
+            col_start, col_stop, col_step);
+        auto result = blaze::columns(sm, column_indices);
 
         return f.matrix(input_matrix, std::move(result));
     }
@@ -449,7 +451,7 @@ namespace phylanx { namespace execution_tree
         }
 
         template <typename T>
-        struct slice_assign
+        struct slice_assign_scalar
         {
             ir::node_data<T>& rhs_;
 
@@ -457,6 +459,53 @@ namespace phylanx { namespace execution_tree
             ir::node_data<T> scalar(Data& data, Scalar& value) const
             {
                 value = rhs_.scalar();
+                return ir::node_data<T>{std::move(data)};
+            }
+
+            template <typename Data, typename View>
+            ir::node_data<T> vector(Data& data, View&& view) const
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::slice_assign_scalar<T>",
+                    "cannot assign a scalar to a vector");
+                return ir::node_data<T>{};
+            }
+
+            template <typename Data, typename View>
+            ir::node_data<T> trans_vector(Data& data, View&& view) const
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::slice_assign_scalar<T>",
+                    "cannot assign a scalar to a vector");
+                return ir::node_data<T>{};
+            }
+
+            template <typename Data, typename View>
+            ir::node_data<T> matrix(Data& data, View&& view) const
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::slice_assign_scalar<T>",
+                    "cannot assign a scalar to a matrix");
+                return ir::node_data<T>{};
+            }
+        };
+
+        template <typename T>
+        struct slice_assign_vector
+        {
+            ir::node_data<T>& rhs_;
+
+            template <typename Data, typename Scalar>
+            ir::node_data<T> scalar(Data& data, Scalar& value) const
+            {
+                if (rhs_.size() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::detail::slice_assign_vector<T>",
+                        "cannot assign a vector to a scalar");
+                }
+
+                value = rhs_.vector()[0];
                 return ir::node_data<T>{std::move(data)};
             }
 
@@ -494,6 +543,82 @@ namespace phylanx { namespace execution_tree
             template <typename Data, typename View>
             ir::node_data<T> matrix(Data& data, View&& view) const
             {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::detail::slice_assign_vector<T>",
+                    "cannot assign a vector to a vector");
+                return ir::node_data<T>{std::move(data)};
+            }
+        };
+
+        template <typename T>
+        struct slice_assign_matrix
+        {
+            ir::node_data<T>& rhs_;
+
+            template <typename Data, typename Scalar>
+            ir::node_data<T> scalar(Data& data, Scalar& value) const
+            {
+                auto m = rhs_.matrix();
+                if (m.rows() != 1 || m.columns() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::detail::slice_assign_matrix<T>",
+                        "cannot assign a matrix to a scalar");
+                }
+                value = m(0, 0);
+                return ir::node_data<T>{std::move(data)};
+            }
+
+            template <typename Data, typename View>
+            ir::node_data<T> vector(Data& data, View&& view) const
+            {
+                auto m = rhs_.matrix();
+                if (m.columns() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::detail::slice_assign_matrix<T>",
+                        "cannot assign a matrix to a vector");
+                }
+
+                std::size_t size = view.size();
+                auto v = blaze::column(m, 0);
+
+                check_vector_sizes(view, v);
+
+                for (std::size_t i = 0; i != size; ++i)
+                {
+                    view[i] = v[i];
+                }
+                return ir::node_data<T>{std::move(data)};
+            }
+
+            template <typename Data, typename View>
+            ir::node_data<T> trans_vector(Data& data, View&& view) const
+            {
+                auto m = rhs_.matrix();
+                if (m.rows() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::detail::slice_assign_matrix<T>",
+                        "cannot assign a matrix to a vector");
+                }
+
+                std::size_t size = view.size();
+                auto v = blaze::row(m, 0);
+
+                check_vector_sizes(view, v);
+
+                auto tv = blaze::trans(v);
+                for (std::size_t i = 0; i != size; ++i)
+                {
+                    view[i] = tv[i];
+                }
+                return ir::node_data<T>{std::move(data)};
+            }
+
+            template <typename Data, typename View>
+            ir::node_data<T> matrix(Data& data, View&& view) const
+            {
                 auto m = rhs_.matrix();
 
                 check_matrix_sizes(view, m);
@@ -505,6 +630,129 @@ namespace phylanx { namespace execution_tree
     }
 
     template <typename T>
+    ir::node_data<T> slice1d_slice0d(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<T>&& value, std::string const& name,
+        std::string const& codename)
+    {
+        switch (value.num_dimensions())
+        {
+        case 0:
+            {
+                typename ir::node_data<T>::storage0d_type result;
+                extract_value_scalar(result, std::move(value), name, codename);
+
+                ir::node_data<T> rhs(std::move(result));
+                return slice0d(data.scalar(),
+                    util::slicing_helpers::extract_slicing(indices, 1),
+                    detail::slice_assign_scalar<T>{rhs}, name, codename);
+            }
+
+        case 1: HPX_FALLTHROUGH;
+        case 2: HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice1d_slice0d",
+            util::generate_error_message(
+                "source ir::node_data object holds unsupported data type", name,
+                codename));
+    }
+
+    template <typename T>
+    ir::node_data<T> slice1d_slice1d(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<T>&& value, std::string const& name,
+        std::string const& codename)
+    {
+        switch (value.num_dimensions())
+        {
+        case 0: HPX_FALLTHROUGH;
+        case 1:
+            {
+                auto v = data.vector();
+                std::size_t size = v.size();
+
+                auto vector_slice =
+                    util::slicing_helpers::extract_slicing(indices, size);
+
+                typename ir::node_data<T>::storage1d_type result;
+                extract_value_vector(result, std::move(value),
+                    vector_slice.size(), name, codename);
+
+                ir::node_data<T> rhs(std::move(result));
+                if (data.is_ref())
+                {
+                    return slice1d<T>(std::move(v), vector_slice,
+                        detail::slice_assign_vector<T>{rhs}, name, codename);
+                }
+
+                return slice1d<T>(data.vector_non_ref(), vector_slice,
+                    detail::slice_assign_vector<T>{rhs}, name, codename);
+            }
+
+        case 2: HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice1d_slice1d",
+            util::generate_error_message(
+                "source ir::node_data object holds unsupported data type", name,
+                codename));
+    }
+
+    template <typename T>
+    ir::node_data<T> slice1d_slice2d(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& indices,
+        ir::node_data<T>&& value, std::string const& name,
+        std::string const& codename)
+    {
+        switch (value.num_dimensions())
+        {
+        case 0: HPX_FALLTHROUGH;
+        case 1: HPX_FALLTHROUGH;
+        case 2:
+            {
+                auto m = data.matrix();
+                std::size_t rows = m.rows();
+                std::size_t columns = m.columns();
+
+                auto vector_slice =
+                    util::slicing_helpers::extract_slicing(indices, rows);
+
+                typename ir::node_data<T>::storage2d_type result;
+                extract_value_matrix(result, std::move(value),
+                    vector_slice.size(), columns, name, codename);
+
+                ir::node_data<T> rhs(std::move(result));
+                if (data.is_ref())
+                {
+                    return slice2d<T>(std::move(m), vector_slice,
+                        ir::slicing_indices{0ll, std::int64_t(columns), 1ll},
+                        detail::slice_assign_matrix<T>{rhs}, name, codename);
+                }
+
+                return slice2d<T>(data.matrix_non_ref(), vector_slice,
+                    ir::slicing_indices{0ll, std::int64_t(columns), 1ll},
+                    detail::slice_assign_matrix<T>{rhs}, name, codename);
+            }
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice1d_slice2d",
+            util::generate_error_message(
+                "source ir::node_data object holds unsupported data type", name,
+                codename));
+    }
+
+    template <typename T>
     ir::node_data<T> slice(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name,
@@ -513,51 +761,18 @@ namespace phylanx { namespace execution_tree
         switch (data.index())
         {
         case 0:
-            return slice0d(data.scalar(),
-                util::slicing_helpers::extract_slicing(indices, 1),
-                detail::slice_assign<T>{value}, name, codename);
+            return slice1d_slice0d(std::move(data), indices, std::move(value),
+                name, codename);
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            {
-                if (data.is_ref())
-                {
-                    auto v = data.vector();
-                    std::size_t size = v.size();
-                    return slice1d<T>(std::move(v),
-                        util::slicing_helpers::extract_slicing(indices, size),
-                        detail::slice_assign<T>{value}, name, codename);
-                }
-
-                auto& v = data.vector_non_ref();
-                std::size_t size = v.size();
-                return slice1d<T>(std::move(v),
-                    util::slicing_helpers::extract_slicing(indices, size),
-                    detail::slice_assign<T>{value}, name, codename);
-            }
+            return slice1d_slice1d(std::move(data), indices, std::move(value),
+                name, codename);
 
         case 2: HPX_FALLTHROUGH;
         case 4:
-            {
-                if (data.is_ref())
-                {
-                    auto m = data.matrix();
-                    std::size_t rows = m.rows();
-                    ir::slicing_indices columns{
-                        0ll, std::int64_t(m.columns()), 1ll};
-                    return slice2d<T>(std::move(m),
-                        util::slicing_helpers::extract_slicing(indices, rows),
-                        columns, detail::slice_assign<T>{value}, name, codename);
-                }
-
-                auto& m = data.matrix_non_ref();
-                std::size_t rows = m.rows();
-                ir::slicing_indices columns{
-                    0ll, std::int64_t(m.columns()), 1ll};
-                return slice2d<T>(std::move(m),
-                    util::slicing_helpers::extract_slicing(indices, rows),
-                    columns, detail::slice_assign<T>{value}, name, codename);
-            }
+            return slice1d_slice2d(std::move(data), indices, std::move(value),
+                name, codename);
 
         default:
             break;
@@ -570,6 +785,130 @@ namespace phylanx { namespace execution_tree
                 codename));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    ir::node_data<T> slice2d_slice1d(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        ir::node_data<T>&& value, std::string const& name,
+        std::string const& codename)
+    {
+        switch (value.num_dimensions())
+        {
+        case 0: HPX_FALLTHROUGH;
+        case 1:
+            {
+                auto v = data.vector();
+                std::size_t size = v.size();
+
+                auto vector_slice =
+                    util::slicing_helpers::extract_slicing(rows, size);
+
+                typename ir::node_data<T>::storage1d_type result;
+                extract_value_vector(result, std::move(value),
+                    vector_slice.size(), name, codename);
+
+                ir::node_data<T> rhs(std::move(result));
+                if (data.is_ref())
+                {
+                    if (valid(rows))
+                    {
+                        HPX_ASSERT(!valid(columns));
+                        return slice1d<T>(std::move(v), vector_slice,
+                            detail::slice_assign_vector<T>{rhs}, name,
+                            codename);
+                    }
+
+                    if (valid(columns))
+                    {
+                        HPX_ASSERT(!valid(rows));
+                        return slice1d<T>(std::move(v), vector_slice,
+                            detail::slice_assign_vector<T>{rhs}, name,
+                            codename);
+                    }
+                }
+                else
+                {
+                    if (valid(rows))
+                    {
+                        HPX_ASSERT(!valid(columns));
+                        return slice1d<T>(data.vector_non_ref(), vector_slice,
+                            detail::slice_assign_vector<T>{rhs}, name,
+                            codename);
+                    }
+
+                    if (valid(columns))
+                    {
+                        HPX_ASSERT(!valid(rows));
+                        return slice1d<T>(data.vector_non_ref(), vector_slice,
+                            detail::slice_assign_vector<T>{rhs}, name,
+                            codename);
+                    }
+                }
+            }
+            break;
+
+        case 2: HPX_FALLTHROUGH;
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice2d_slice1d",
+            util::generate_error_message(
+                "source ir::node_data object holds unsupported data type", name,
+                codename));
+    }
+
+    template <typename T>
+    ir::node_data<T> slice2d_slice2d(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        ir::node_data<T>&& value, std::string const& name,
+        std::string const& codename)
+    {
+        switch (value.num_dimensions())
+        {
+        case 0: HPX_FALLTHROUGH;
+        case 1: HPX_FALLTHROUGH;
+        case 2:
+            {
+                auto m = data.matrix();
+                std::size_t numrows = m.rows();
+                std::size_t numcols = m.columns();
+
+                auto row_slice =
+                    util::slicing_helpers::extract_slicing(rows, numrows);
+                auto col_slice =
+                    util::slicing_helpers::extract_slicing(columns, numcols);
+
+                typename ir::node_data<T>::storage2d_type result;
+                extract_value_matrix(result, std::move(value), row_slice.size(),
+                    col_slice.size(), name, codename);
+
+                ir::node_data<T> rhs(std::move(result));
+                if (data.is_ref())
+                {
+                    return slice2d<T>(std::move(m), row_slice, col_slice,
+                        detail::slice_assign_matrix<T>{rhs}, name, codename);
+                }
+
+                return slice2d<T>(data.matrix_non_ref(), row_slice, col_slice,
+                    detail::slice_assign_matrix<T>{rhs}, name, codename);
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice2d_slice2d",
+            util::generate_error_message(
+                "source ir::node_data object holds unsupported data type", name,
+                codename));
+    }
+
     template <typename T>
     ir::node_data<T> slice(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& rows,
@@ -579,74 +918,15 @@ namespace phylanx { namespace execution_tree
     {
         switch (data.index())
         {
-        case 2: HPX_FALLTHROUGH;
-        case 4:
-            {
-                if (data.is_ref())
-                {
-                    auto m = data.matrix();
-                    std::size_t numrows = m.rows();
-                    std::size_t numcols = m.columns();
-                    return slice2d<T>(std::move(m),
-                        util::slicing_helpers::extract_slicing(rows, numrows),
-                        util::slicing_helpers::extract_slicing(columns, numcols),
-                        detail::slice_assign<T>{value}, name, codename);
-                }
-
-                auto& m = data.matrix_non_ref();
-                std::size_t numrows = m.rows();
-                std::size_t numcols = m.columns();
-                return slice2d<T>(std::move(m),
-                    util::slicing_helpers::extract_slicing(rows, numrows),
-                    util::slicing_helpers::extract_slicing(columns, numcols),
-                    detail::slice_assign<T>{value}, name, codename);
-            }
-
         case 1: HPX_FALLTHROUGH;
         case 3:
-            {
-                if (data.is_ref())
-                {
-                    auto v = data.vector();
-                    std::size_t size = v.size();
-                    if (valid(rows))
-                    {
-                        HPX_ASSERT(!valid(columns));
-                        return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(rows, size),
-                            detail::slice_assign<T>{value}, name, codename);
-                    }
+            return slice2d_slice1d(std::move(data), rows, columns,
+                std::move(value), name, codename);
 
-                    if (valid(columns))
-                    {
-                        HPX_ASSERT(!valid(rows));
-                        return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(columns, size),
-                            detail::slice_assign<T>{value}, name, codename);
-                    }
-                }
-                else
-                {
-                    auto& v = data.vector_non_ref();
-                    std::size_t size = v.size();
-                    if (valid(rows))
-                    {
-                        HPX_ASSERT(!valid(columns));
-                        return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(rows, size),
-                            detail::slice_assign<T>{value}, name, codename);
-                    }
-
-                    if (valid(columns))
-                    {
-                        HPX_ASSERT(!valid(rows));
-                        return slice1d<T>(std::move(v),
-                            util::slicing_helpers::extract_slicing(columns, size),
-                            detail::slice_assign<T>{value}, name, codename);
-                    }
-                }
-            }
-            break;
+        case 2: HPX_FALLTHROUGH;
+        case 4:
+            return slice2d_slice2d(std::move(data), rows, columns,
+                std::move(value), name, codename);
 
         case 0: HPX_FALLTHROUGH;
         default:

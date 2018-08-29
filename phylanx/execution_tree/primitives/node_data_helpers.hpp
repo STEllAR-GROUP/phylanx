@@ -136,26 +136,71 @@ namespace phylanx { namespace execution_tree
         std::string const& codename);
 
     ///////////////////////////////////////////////////////////////////////////
-    // Return argument as a scalar, apply given function to value before
-    // returning
-    template <typename T, typename Arg, typename F,
-        typename Enable = typename std::enable_if<std::is_same<
-            typename std::decay<Arg>::type, primitive_argument_type
-        >::value>::type>
-    ir::node_data<T>
-    extract_value_scalar(Arg&& val, F&& f, std::string const& name,
+    // in-place versions of above functions
+    template <typename T>
+    void extract_value_scalar(
+        typename ir::node_data<T>::storage0d_type& result,
+        ir::node_data<T>&& rhs, std::string const& name,
+        std::string const& codename);
+
+    template <typename T>
+    void extract_value_vector(
+        typename ir::node_data<T>::storage1d_type& result,
+        ir::node_data<T>&& val, std::size_t size, std::string const& name,
+        std::string const& codename);
+
+    template <typename T>
+    void extract_value_matrix(
+        typename ir::node_data<T>::storage2d_type& result,
+        ir::node_data<T>&& rhs, std::size_t rows, std::size_t columns,
+        std::string const& name, std::string const& codename);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Return argument as a scalar in place of existing storage,
+    // apply given function to value before returning
+    template <typename T, typename F>
+    void extract_value_scalar(typename ir::node_data<T>::storage0d_type& result,
+        ir::node_data<T>&& rhs, F&& f, std::string const& name,
         std::string const& codename)
     {
-        ir::node_data<T> result =
-            extract_node_data<T>(std::forward<Arg>(val), name, codename);
-
-        switch (result.num_dimensions())
+        switch (rhs.num_dimensions())
         {
         case 0:
-            return ir::node_data<T>{f(result.scalar())};
+            result = f(rhs.scalar());
+            return;
 
-        case 1: HPX_FALLTHROUGH;
-        case 2: HPX_FALLTHROUGH;
+        case 1:
+            {
+                auto v = rhs.vector();
+                if (v.size() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_scalar",
+                        util::generate_error_message(
+                            "cannot broadcast a vector of size larger than one "
+                            "into a scalar",
+                            name, codename));
+                }
+                result = f(v[0]);
+                return;
+            }
+
+        case 2:
+            {
+                auto m = rhs.matrix();
+                if (m.rows() != 1 || m.columns() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_scalar",
+                        util::generate_error_message(
+                            "cannot broadcast a matrix of size larger than one "
+                            "by one into a scalar",
+                            name, codename));
+                }
+                result = f(m(0, 0));
+                return;
+            }
+
         default:
             break;
         }
@@ -169,47 +214,50 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Return argument as a vector, scalars are properly broadcast, apply given
+    // Return argument as a vector in place of existing storage,
+    // scalars are properly broadcast, apply given
     // function to all elements of the vector before returning
-    template <typename T, typename Arg, typename F,
-        typename Enable = typename std::enable_if<std::is_same<
-            typename std::decay<Arg>::type, primitive_argument_type
-        >::value>::type>
-    ir::node_data<T>
-    extract_value_vector(Arg&& val, F&& f, std::size_t size,
+    template <typename T, typename F>
+    void extract_value_vector(typename ir::node_data<T>::storage1d_type& result,
+        ir::node_data<T>&& rhs, F&& f, std::size_t size,
         std::string const& name, std::string const& codename)
     {
         using storage1d_type = typename ir::node_data<T>::storage1d_type;
 
-        ir::node_data<T> && arg =
-            extract_node_data<T>(std::forward<Arg>(val), name, codename);
-
-        switch (arg.num_dimensions())
+        switch (rhs.num_dimensions())
         {
         case 0:
             {
-                storage1d_type result(size);
+                if (result.size() != size)
+                {
+                    result.resize(size);
+                }
+
                 for (std::size_t i = 0; i != size; ++i)
                 {
-                    result[i] = f(arg.scalar(), i);
+                    result[i] = f(rhs.scalar(), i);
                 }
-                return ir::node_data<T>{std::move(result)};
+                return;
             }
 
         case 1:
             {
-                // vectors of size one can be broadcast into any other vector
-                if (arg.size() == 1)
+                if (result.size() != size)
                 {
-                    storage1d_type result(size);
-                    for (std::size_t i = 0; i != size; ++i)
-                    {
-                        result[i] = f(arg[0], i);
-                    }
-                    return ir::node_data<T>{std::move(result)};
+                    result.resize(size);
                 }
 
-                if (size != arg.size())
+                // vectors of size one can be broadcast into any other vector
+                if (rhs.size() == 1)
+                {
+                    for (std::size_t i = 0; i != size; ++i)
+                    {
+                        result[i] = f(rhs[0], i);
+                    }
+                    return;
+                }
+
+                if (size != rhs.size())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_vector",
@@ -219,24 +267,62 @@ namespace phylanx { namespace execution_tree
                             name, codename));
                 }
 
-                if (arg.is_ref())
-                {
-                    storage1d_type result(size);
-                    for (std::size_t i = 0; i != size; ++i)
-                    {
-                        result[i] = f(arg[i], i);
-                    }
-                    return ir::node_data<T>{std::move(result)};
-                }
-
                 for (std::size_t i = 0; i != size; ++i)
                 {
-                    arg[i] = f(arg[i], i);
+                    result[i] = f(rhs[i], i);
                 }
-                return ir::node_data<T>{std::move(arg)};
+                return;
             }
 
-        case 2: HPX_FALLTHROUGH;
+        case 2:
+            {
+                if (result.size() != size)
+                {
+                    result.resize(size);
+                }
+
+                // matrices of size one can be broadcast into any vector
+                if (rhs.size() == 1)
+                {
+                    for (std::size_t i = 0; i != size; ++i)
+                    {
+                        result[i] = f(rhs[0], i);
+                    }
+                    return;
+                }
+
+                // matrices with one column can be broadcast into any vector
+                // with the same number of elements
+                if (rhs.dimension(0) == 1 && size == rhs.dimension(1))
+                {
+                    auto row = blaze::row(rhs.matrix(), 0);
+                    for (std::size_t i = 0; i != size; ++i)
+                    {
+                        result[i] = f(row[i], i);
+                    }
+                    return;
+                }
+
+                // matrices with one row can be broadcast into any vector
+                // with the same number of elements
+                if (rhs.dimension(1) == 1 && size == rhs.dimension(0))
+                {
+                    auto column = blaze::column(rhs.matrix(), 0);
+                    for (std::size_t i = 0; i != size; ++i)
+                    {
+                        result[i] = f(column[i], i);
+                    }
+                    return;
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::extract_value_vector",
+                    util::generate_error_message(
+                        "cannot broadcast a matrix of arbitrary size into "
+                        "a vector",
+                        name, codename));
+            }
+
         default:
             break;
         }
@@ -250,53 +336,57 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Return argument as a matrix, scalars and vectors are properly broadcast,
+    // Return argument as a matrix in place of existing storage,
+    // scalars and vectors are properly broadcast,
     // apply given function to all elements of the matrix before returning
-    template <typename T, typename Arg, typename F,
-        typename Enable = typename std::enable_if<std::is_same<
-            typename std::decay<Arg>::type, primitive_argument_type
-        >::value>::type>
-    ir::node_data<T>
-    extract_value_matrix(Arg&& val, F&& f, std::size_t rows, std::size_t columns,
+    template <typename T, typename F>
+    void extract_value_matrix(typename ir::node_data<T>::storage2d_type& result,
+        ir::node_data<T>&& rhs, F&& f, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename)
     {
         using storage1d_type = typename ir::node_data<T>::storage1d_type;
         using storage2d_type = typename ir::node_data<T>::storage2d_type;
 
-        ir::node_data<T> arg = extract_node_data<T>(val, name, codename);
-
-        switch (arg.num_dimensions())
+        switch (rhs.num_dimensions())
         {
         case 0:
             {
-                storage2d_type result(rows, columns);
+                if (result.rows() != rows || result.columns() != columns)
+                {
+                    result.resize(rows, columns);
+                }
+
                 for (std::size_t i = 0; i != rows; ++i)
                 {
                     for (std::size_t j = 0; j != columns; ++j)
                     {
-                        result(i, j) = f(arg.scalar(), i, j);
+                        result(i, j) = f(rhs.scalar(), i, j);
                     }
                 }
-                return ir::node_data<T>{std::move(result)};
+                return;
             }
 
         case 1:
             {
-                // vectors of size one can be broadcast into any matrix
-                if (arg.size() == 1)
+                if (result.rows() != rows || result.columns() != columns)
                 {
-                    storage2d_type result(rows, columns);
+                    result.resize(rows, columns);
+                }
+
+                // vectors of size one can be broadcast into any matrix
+                if (rhs.size() == 1)
+                {
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
                         {
-                            result(i, j) = f(arg[0], i, j);
+                            result(i, j) = f(rhs[0], i, j);
                         }
                     }
-                    return ir::node_data<T>{std::move(result)};
+                    return;
                 }
 
-                if (columns != arg.size())
+                if (columns != rhs.size())
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_matrix",
@@ -306,39 +396,41 @@ namespace phylanx { namespace execution_tree
                             name, codename));
                 }
 
-                storage2d_type result(rows, columns);
                 for (std::size_t i = 0; i != rows; ++i)
                 {
                     for (std::size_t j = 0; j != columns; ++j)
                     {
-                        result(i, j) = f(arg[j], i, j);
+                        result(i, j) = f(rhs[j], i, j);
                     }
                 }
-                return ir::node_data<T>{std::move(result)};
+                return;
             }
 
         case 2:
             {
-                // matrices of size one can be broadcast into any other matrix
-                if (arg.size() == 1)
+                if (result.rows() != rows || result.columns() != columns)
                 {
-                    storage2d_type result(rows, columns);
+                    result.resize(rows, columns);
+                }
+
+                // matrices of size one can be broadcast into any other matrix
+                if (rhs.size() == 1)
+                {
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
                         {
-                            result(i, j) = f(arg[0], i, j);
+                            result(i, j) = f(rhs[0], i, j);
                         }
                     }
-                    return ir::node_data<T>{std::move(result)};
+                    return;
                 }
 
                 // matrices with one column can be broadcast into any other
                 // matrix with the same number of columns
-                if (arg.dimension(0) == 1 && columns == arg.dimension(1))
+                if (rhs.dimension(0) == 1 && columns == rhs.dimension(1))
                 {
-                    storage2d_type result(rows, columns);
-                    auto row = blaze::row(arg.matrix(), 0);
+                    auto row = blaze::row(rhs.matrix(), 0);
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
@@ -346,15 +438,14 @@ namespace phylanx { namespace execution_tree
                             result(i, j) = f(row[j], i, j);
                         }
                     }
-                    return ir::node_data<T>{std::move(result)};
+                    return;
                 }
 
                 // matrices with one row can be broadcast into any other
                 // matrix with the same number of rows
-                if (arg.dimension(1) == 1 && rows == arg.dimension(0))
+                if (rhs.dimension(1) == 1 && rows == rhs.dimension(0))
                 {
-                    storage2d_type result(rows, columns);
-                    auto column = blaze::column(arg.matrix(), 0);
+                    auto column = blaze::column(rhs.matrix(), 0);
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
@@ -362,10 +453,10 @@ namespace phylanx { namespace execution_tree
                             result(i, j) = f(column[i], i, j);
                         }
                     }
-                    return ir::node_data<T>{std::move(result)};
+                    return;
                 }
 
-                if (rows != arg.dimension(0) || columns != arg.dimension(1))
+                if (rows != rhs.dimension(0) || columns != rhs.dimension(1))
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_matrix",
@@ -375,27 +466,14 @@ namespace phylanx { namespace execution_tree
                             name, codename));
                 }
 
-                if (arg.is_ref())
-                {
-                    storage2d_type result(rows, columns);
-                    for (std::size_t i = 0; i != rows; ++i)
-                    {
-                        for (std::size_t j = 0; j != columns; ++j)
-                        {
-                            result(i, j) = f(arg.at(i, j), i, j);
-                        }
-                    }
-                    return ir::node_data<T>{std::move(result)};
-                }
-
                 for (std::size_t i = 0; i != rows; ++i)
                 {
                     for (std::size_t j = 0; j != columns; ++j)
                     {
-                        arg.at(i, j) = f(arg.at(i, j), i, j);
+                        result(i, j) = f(rhs.at(i, j), i, j);
                     }
                 }
-                return ir::node_data<T>{std::move(arg)};
+                return;
             }
 
         default:
@@ -408,6 +486,58 @@ namespace phylanx { namespace execution_tree
                 "primitive_argument_type does not hold a numeric "
                     "value type",
                 name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Return argument as a scalar, apply given function to value before
+    // returning
+    template <typename T, typename Arg, typename F,
+        typename Enable = typename std::enable_if<std::is_same<
+            typename std::decay<Arg>::type, primitive_argument_type
+        >::value>::type>
+    ir::node_data<T> extract_value_scalar(Arg&& arg, F&& f,
+        std::string const& name, std::string const& codename)
+    {
+        typename ir::node_data<T>::storage0d_type result;
+        extract_value_scalar(result,
+            extract_node_data<T>(std::forward<Arg>(arg), name, codename),
+            std::forward<F>(f), name, codename);
+        return ir::node_data<T>{std::move(result)};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Return argument as a vector, scalars are properly broadcast, apply given
+    // function to all elements of the vector before returning
+    template <typename T, typename Arg, typename F,
+        typename Enable = typename std::enable_if<std::is_same<
+            typename std::decay<Arg>::type, primitive_argument_type
+        >::value>::type>
+    ir::node_data<T> extract_value_vector(Arg&& arg, F&& f, std::size_t size,
+            std::string const& name, std::string const& codename)
+    {
+        typename ir::node_data<T>::storage1d_type result;
+        extract_value_vector(result,
+            extract_node_data<T>(std::forward<Arg>(arg), name, codename),
+            std::forward<F>(f), size, name, codename);
+        return ir::node_data<T>{std::move(result)};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Return argument as a matrix, scalars and vectors are properly broadcast,
+    // apply given function to all elements of the matrix before returning
+    template <typename T, typename Arg, typename F,
+        typename Enable = typename std::enable_if<std::is_same<
+            typename std::decay<Arg>::type, primitive_argument_type
+        >::value>::type>
+    ir::node_data<T> extract_value_matrix(Arg&& arg, F&& f,
+        std::size_t rows, std::size_t columns, std::string const& name,
+        std::string const& codename)
+    {
+        typename ir::node_data<T>::storage2d_type result;
+        extract_value_matrix(result,
+            extract_node_data<T>(std::forward<Arg>(arg), name, codename),
+            std::forward<F>(f), rows, columns, name, codename);
+        return ir::node_data<T>{std::move(result)};
     }
 }}
 
