@@ -35,7 +35,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("argmin",
             std::vector<std::string>{"argmin(_1, _2)", "argmin(_1)"},
             &create_argmin, &create_primitive<argmin>,
-            "TODODOC")
+            "ar,axis\n"
+            "\n"
+            "    ar (array) : a vector or matrix\n"
+            "    axis (optional, int) : the axis along which to find the min\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The index of the minimum value in the array. If an axis is "
+            "specified, a vector of minima along the axis is returned."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
