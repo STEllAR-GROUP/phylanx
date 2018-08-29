@@ -10,6 +10,7 @@ set(tests
     make_array
     map_numpy
     set_operation
+    check_docs
    )
 
 foreach(test ${tests})

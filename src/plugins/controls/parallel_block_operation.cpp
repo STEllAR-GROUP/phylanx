@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"parallel_block(__1)"},
             &create_parallel_block_operation,
             &create_primitive<parallel_block_operation>,
-            "*arg\n"
+            "*args\n"
             "Args:\n"
             "\n"
             "    *args (list) : a list of zero or more statements\n"

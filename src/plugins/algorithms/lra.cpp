@@ -35,20 +35,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lra(_1, _2, _3, _4)"
             },
             &create_lra, &create_primitive<lra>,
-            "dloc,row_start,row_stop,col_start,col_stop,alpha,iters,enable_output\n"
+            "x,y,alpha,iters,enable_output\n"
             "Args:\n"
             "\n"
-            "    dloc (string) : filepath or data_csv : The location of the csv file\n"
-            "    row_start (int): The row of the csv file from which we start reading "
-            " the data\n"
-            "    row_stop (int): The row of the csv file up to which we read the data\n"
-            "    col_start (int): The column of the csv file from which we start reading "
+            "    x (matrix) : a matrix\n"
+            "    y (vector) : a vector\n"
             "the data\n"
-            "    col_stop (int): The column of the csv file up to which we read the data\n"
             "    alpha (float): It is the learning rate\n"
             "    iters (int): The number of iterations\n"
-            "    enable_output (boolean): If enabled, prints out the step number and "
-            "weights during each iteration\n"
+            "    enable_output (optional, boolean): If enabled, prints out the step "
+            "number and weights during each iteration\n"
             "\n"
             "Returns:\n"
             "\n"
@@ -102,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lra::eval",
                 generate_error_message(
                     "the lra algorithm primitive requires for the second "
-                    "argument ('alpha') to represent a vector"));
+                    "argument ('alpha') the learning rate"));
         }
         auto alpha = arg3.scalar();
 

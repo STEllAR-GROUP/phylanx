@@ -10,6 +10,7 @@ try:
 except Exception:
     from phylanx._phylanxd.util import *
 
+
 def phyhelp(fname):
     """Python help function. When called it with the name of
 a Phylanx primitive or plugin it prints the associated
