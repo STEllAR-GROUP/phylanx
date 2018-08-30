@@ -614,6 +614,11 @@ class PhySL:
 
         return '__or'
 
+    def _Pass(self, node):
+        """Empty function."""
+
+        return 'nil'
+
     def _Pow(self, node):
         """Leaf node, returning raw string of the 'power' operation."""
 

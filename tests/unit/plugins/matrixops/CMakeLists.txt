@@ -10,6 +10,7 @@ set(tests
     column_set
     column_slicing
     constant
+    count_nonzero
     determinant
     diag_operation
     dot_operation

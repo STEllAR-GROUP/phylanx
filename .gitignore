@@ -10,10 +10,9 @@
 
 # Directories
 # ===========
-build/
-.idea/
-.vscode/
-cmake-build-debug/
-cmake-build-release/
-cmake-build-relwithdebinfo/
 /.vs
+.idea/
+build*/
+.vscode/
+cmake-build-*
+phylanx.egg-info/
