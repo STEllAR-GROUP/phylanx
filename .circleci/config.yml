@@ -144,7 +144,7 @@ jobs:
             # Run the code
             - run:
                 name: Check the formatting of Phylanx's Python files
-                command: python3 tools/check_help.py --output-file=/artifacts/phylanx_help_report.txt .
+                command: python3 tools/check_help.py > /artifacts/phylanx_help_report.txt
             - store_artifacts:
                 path: /artifacts
             # Code Format Check JUnit Reports
