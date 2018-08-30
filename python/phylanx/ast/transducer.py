@@ -22,9 +22,13 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
             :function:f the decorated funtion.
             """
+            valid_kwargs = ['debug', 'target', 'compiler_state']
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
             self.backend = self.get_backend(kwargs.get('target'))
+            for key in kwargs.keys():
+                if key not in valid_kwargs:
+                    raise NotImplementedError("Uknown Phylanx argument '%s'." % key)
 
             # Obtain global environment if the object is a function.
             if inspect.isclass(f):
