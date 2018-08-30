@@ -9,6 +9,7 @@ set(tests
     530_augmented_assignment_indexed_lhs
     array_len_494
     array_shape_486
+    array_subscript_403
     broadcasting_rules_410
     create_list_409
     empty_list_509
@@ -18,6 +19,7 @@ set(tests
     lambda_492
     list_iteration_524
     list_iter_space_429
+    list_slice_assign_528
     name_constants_411
     no_parans_decorator_407
     np_sum_489
