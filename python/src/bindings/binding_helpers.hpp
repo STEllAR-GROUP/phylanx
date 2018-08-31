@@ -153,7 +153,8 @@ namespace phylanx { namespace bindings
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    inline void expression_compiler(std::string xexpr_str, compiler_state& c)
+    inline void expression_compiler(std::string const& file_name, std::string xexpr_str,
+        compiler_state& c)
     {
         pybind11::gil_scoped_release release;       // release GIL
 
@@ -161,7 +162,7 @@ namespace phylanx { namespace bindings
             [&]() -> void
             {
                 phylanx::execution_tree::compile(
-                    phylanx::ast::generate_ast(xexpr_str), c.eval_snippets,
+                    file_name, phylanx::ast::generate_ast(xexpr_str), c.eval_snippets,
                     c.eval_env);
             });
     };

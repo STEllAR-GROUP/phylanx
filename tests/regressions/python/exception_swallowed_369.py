@@ -22,9 +22,9 @@ try:
 
 except Exception as e:
     expected = \
-        '<unknown>(14, 8): __add:: the dimensions of the ' + \
+        'exception_swallowed_369.py(14, 8): __add:: the dimensions of the ' + \
         'operands do not match: HPX(bad_parameter)'
-    assert (str(e) == expected)
+    assert (str(e).endswith(expected))
     exception_thrown = True
 
 assert (exception_thrown)
