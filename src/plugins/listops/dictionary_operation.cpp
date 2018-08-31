@@ -43,17 +43,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         phylanx::ir::dictionary dict;
 
+        if (args.size() == 0)
+            return primitive_argument_type(dict);
+
         ir::range args_list =
             extract_list_value_strict(std::move(args[0]), name_, codename_);
 
         if (args_list.size() == 0)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dictionary_operation::eval",
-                util::generate_error_message(
-                    "the dict_operation primitive requires at least one non-empty list",
-                    name_, codename_));
-        }
+            return primitive_argument_type(dict);
 
         for (auto it = args_list.begin(); it != args_list.end(); ++it)
         {
@@ -78,15 +75,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<primitive_argument_type> const& operands,
         std::vector<primitive_argument_type> const& args) const
     {
-        if (operands.empty())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "dictionary_operation::eval",
-                util::generate_error_message(
-                    "the dict_operation primitive requires at least one list",
-                    name_, codename_));
-        }
-
         for (auto const& i : operands)
         {
             if (!valid(i))

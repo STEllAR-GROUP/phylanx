@@ -50,24 +50,6 @@ void test_dict_operation()
     HPX_TEST_EQ(compile_and_run(code_1), compile_and_run(code_2));
 }
 
-void test_dict_empty_operation(std::string const& code)
-{
-    bool exception_thrown = false;
-    try
-    {
-        // Must throw an exception
-        compile_and_run(code);
-
-        HPX_TEST(false);
-    }
-    catch (std::exception const&)
-    {
-        exception_thrown = true;
-    }
-
-    HPX_TEST(exception_thrown);
-}
-
 void test_dict_key()
 {
     char const* const code = "list(list(42, \"Question of Life, Universe, and "
@@ -102,11 +84,19 @@ void test_dict_key()
             phylanx::ir::node_data<double>(42.0)});
 }
 
+void test_dict_empty_operation(std::string const& code)
+{
+    phylanx::ir::dictionary dict;
+    HPX_TEST_EQ(dict, compile_and_run(code));
+}
+
 int main(int argc, char* argv[])
 {
     test_dict_operation();
-    test_dict_empty_operation("dict()");
-    test_dict_empty_operation("dict(list())");
     test_dict_key();
+
+    test_dict_empty_operation("dict(list())");
+    test_dict_empty_operation("dict()");
+
     return hpx::util::report_errors();
 }
