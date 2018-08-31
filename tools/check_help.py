@@ -13,9 +13,12 @@ all = phylist()
 
 errors_found = False
 
+
 def add_err(e):
+    global errors_found
     errors_found = True
     return e
+
 
 for p in all:
     for m in all[p]:
@@ -65,7 +68,9 @@ for p in all:
             argdefs = g.group(0)
             for argname in argnames:
                 if not re.search(r"\n    [* ]?" + argname + r" ?\(", argdefs):
-                    err = add_err("Missing definition or improper indentation for arg: '%s' in '%s'" % (argname,n))
+                    err = add_err(
+                        "Missing definition or improper indentation " +
+                        "for arg: '%s' in '%s'" % (argname, n))
 
         # Get the count of the args in the docstring
         argli2 = re.findall(r'\w+', first)
@@ -73,7 +78,8 @@ for p in all:
 
         # Check that there's an Args: section
         if not re.search(r'\nArgs:\n\n', h):
-            err = add_err("Missing 'Args:' section or 'Args:' not followed by a blank line in '%s'" % n)
+            err = add_err("Missing 'Args:' section or 'Args:' not followed " +
+                          "by a blank line in '%s'" % n)
 
         # Check that there's a Returns: section
         if not re.search(r'\nReturns:', h):
