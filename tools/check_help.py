@@ -3,20 +3,22 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+from xml.sax.saxutils import escape
 from phylanx.util import *
-import re
+import re, io
 
 argcount = {}
 
 # Get the list of all primitives/plugins
 all = phylist()
 
-errors_found = False
+errors_found = 0
+output = io.StringIO()
 
 
 def add_err(e):
     global errors_found
-    errors_found = True
+    errors_found += 1
     return e
 
 
@@ -42,6 +44,9 @@ for p in all:
 
         # The the phylanx help string for the function
         h = phyhelpex(n)
+
+        if re.search(r'@Deprecated@', h):
+            continue
 
         # Initialize the argcount data structure
         if n not in argcount:
@@ -87,10 +92,8 @@ for p in all:
 
         # Print error
         if err:
-            if not re.search(r'@Deprecated@', h):
-                print("=" * 50)
-                print("Error:", err)
-                print(p, m, h)
+            print("Error:", err, file=output)
+            print(p, m, h, file=output)
 
 # Check for arg count mismatches
 for a in argcount:
@@ -100,12 +103,26 @@ for a in argcount:
     if re.search(r"@Deprecated@", v["help"]):
         continue
     if v["max"] not in v["patterns"]:
-        print("=" * 50)
-        print("Error: argument / pattern mismatch")
-        print(a, v["max"], v["patterns"])
-        print(v["help"])
+        print("Error: argument / pattern mismatch", file=output)
+        print(a, v["max"], v["patterns"], file=output)
+        print(v["help"], file=output)
 
-if errors_found:
+print("""<?xml version="1.0" ?>
+<testsuites>
+    <testsuite errors="{errs}" failures="{errs}" name="my test suite" tests="1">
+        <testcase classname="help" name="check_help" time="0">
+            <system-out>
+            </system-out>
+            <system-err>
+                {text}
+            </system-err>
+        </testcase>
+    </testsuite>
+</testsuites>""".format(errs=errors_found, text=escape(output.getvalue())))
+
+output.close()
+
+if errors_found == 0:
     exit(0)
 else:
     exit(2)
