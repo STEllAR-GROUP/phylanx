@@ -16,6 +16,8 @@
 
 #include <cstdint>
 #include <vector>
+#include <map>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 // expose util submodule

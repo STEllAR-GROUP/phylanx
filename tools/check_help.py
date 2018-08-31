@@ -11,6 +11,12 @@ argcount = {}
 # Get the list of all primitives/plugins
 all = phylist()
 
+errors_found = False
+
+def add_err(e):
+    errors_found = True
+    return e
+
 for p in all:
     for m in all[p]:
 
@@ -54,12 +60,12 @@ for p in all:
         # are documented individually.
         g = re.search(r'\nArgs:.*Returns:', h, re.DOTALL)
         if not g:
-            err = "Cannot find arg definition region"
+            err = add_err("Cannot find arg definition region for '%s'" % n)
         else:
             argdefs = g.group(0)
             for argname in argnames:
                 if not re.search(r"\n    [* ]?" + argname + r" ?\(", argdefs):
-                    err = "Missing definition or improper indentation for arg: " + argname
+                    err = add_err("Missing definition or improper indentation for arg: '%s' in '%s'" % (argname,n))
 
         # Get the count of the args in the docstring
         argli2 = re.findall(r'\w+', first)
@@ -67,11 +73,11 @@ for p in all:
 
         # Check that there's an Args: section
         if not re.search(r'\nArgs:\n\n', h):
-            err = "Missing 'Args:' section or 'Args:' not followed by a blank line"
+            err = add_err("Missing 'Args:' section or 'Args:' not followed by a blank line in '%s'" % n)
 
         # Check that there's a Returns: section
         if not re.search(r'\nReturns:', h):
-            err = "Missing 'Returns:' section"
+            err = add_err("Missing 'Returns:' section in '%s'" % n)
 
         # Print error
         if err:
@@ -92,3 +98,8 @@ for a in argcount:
         print("Error: argument / pattern mismatch")
         print(a, v["max"], v["patterns"])
         print(v["help"])
+
+if errors_found:
+    exit(0)
+else:
+    exit(2)
