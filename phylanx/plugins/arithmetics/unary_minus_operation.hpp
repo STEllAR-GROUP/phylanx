@@ -29,19 +29,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using operands_type = std::vector<operand_type>;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
 
         unary_minus_operation() = default;
 
-        unary_minus_operation(std::vector<primitive_argument_type>&& operands,
+        unary_minus_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
+            primitive_arguments_type const& params) const override;
 
     private:
         primitive_argument_type neg0d(operand_type&& op) const;
@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     inline primitive create_unary_minus_operation(
         hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

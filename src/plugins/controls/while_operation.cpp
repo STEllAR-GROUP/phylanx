@@ -31,14 +31,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     while_operation::while_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     struct while_operation::iteration : std::enable_shared_from_this<iteration>
     {
-        iteration(std::vector<primitive_argument_type> const& args,
+        iteration(primitive_arguments_type const& args,
             std::shared_ptr<while_operation const> that)
           : that_(that), args_(args)
         {
@@ -102,14 +102,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
     private:
-        std::vector<primitive_argument_type> args_;
+        primitive_arguments_type args_;
         primitive_argument_type result_;
         std::shared_ptr<while_operation const> that_;
     };
 
     // Start iteration over given while statement
     hpx::future<primitive_argument_type> while_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

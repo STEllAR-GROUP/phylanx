@@ -32,23 +32,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
         using val_type = double;
         using arg_type = ir::node_data<val_type>;
-        using args_type = std::vector<arg_type>;
+        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
 
     public:
         static match_pattern_type const match_data;
 
         argmax() = default;
 
-        argmax(std::vector<primitive_argument_type>&& operands,
+        argmax(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     private:
         primitive_argument_type argmax0d(args_type && args) const;
@@ -60,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_argmax(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

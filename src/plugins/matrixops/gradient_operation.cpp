@@ -37,14 +37,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     gradient_operation::gradient_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     using arg_type = ir::node_data<double>;
-    using args_type = std::vector<arg_type>;
+    using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
     using storage1d_type = typename arg_type::storage1d_type;
     using storage2d_type = typename arg_type::storage2d_type;
 
@@ -172,7 +172,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
             }
-            return primitive_argument_type{std::vector<primitive_argument_type>{
+            return primitive_argument_type{primitive_arguments_type{
                 primitive_argument_type{
                     ir::node_data<double>{storage2d_type{std::move(gradient)}}},
                 primitive_argument_type{ir::node_data<double>{
@@ -181,8 +181,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> gradient_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -246,7 +246,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> gradient_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

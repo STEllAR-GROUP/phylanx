@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    lambda::lambda(std::vector<primitive_argument_type>&& args,
+    lambda::lambda(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lambda::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_mode mode) const
     {
         if (!valid(operands_[0]))
         {
@@ -67,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (!args.empty())
             {
-                std::vector<primitive_argument_type> fargs;
+                primitive_arguments_type fargs;
                 fargs.reserve(args.size() + 1);
 
                 fargs.push_back(extract_ref_value(operands_[0]));
@@ -95,8 +95,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
     }
 
-    void lambda::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void lambda::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (valid(operands_[0]))
         {

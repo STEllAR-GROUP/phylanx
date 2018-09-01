@@ -25,7 +25,7 @@ void test_0d()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -52,7 +52,7 @@ void test_0d_keep_dims_true()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1), std::move(arg2)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -79,7 +79,7 @@ void test_0d_keep_dims_false()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1), std::move(arg2)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -101,7 +101,7 @@ void test_1d()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -129,7 +129,7 @@ void test_1d_keep_dims_true()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1), std::move(arg2)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -157,7 +157,7 @@ void test_1d_keep_dims_false()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1), std::move(arg2)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -179,7 +179,7 @@ void test_2d()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -204,7 +204,7 @@ void test_2d_axis0()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -229,7 +229,7 @@ void test_2d_axis1()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -257,7 +257,7 @@ void test_2d_keep_dims_true()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1), std::move(arg2)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -285,7 +285,7 @@ void test_2d_keep_dims_false()
     phylanx::execution_tree::primitive sum =
         phylanx::execution_tree::primitives::create_sum_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(arg0), std::move(arg1), std::move(arg2)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =

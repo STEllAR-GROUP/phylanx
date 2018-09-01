@@ -24,7 +24,7 @@ void test_square_root_operation_0d()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_square_root_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = add.eval();
@@ -45,7 +45,7 @@ void test_square_root_operation_1d()
     phylanx::execution_tree::primitive square_root =
         phylanx::execution_tree::primitives::create_square_root_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 
@@ -69,7 +69,7 @@ void test_square_root_operation_2d()
     phylanx::execution_tree::primitive square_root =
         phylanx::execution_tree::primitives::create_square_root_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 

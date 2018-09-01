@@ -183,11 +183,9 @@ namespace phylanx { namespace bindings
                     xexpr, c.eval_snippets, c.eval_env);
                 auto x = code_x.run();
 
-                std::vector<phylanx::execution_tree::primitive_argument_type>
-                    keep_alive;
+                phylanx::execution_tree::primitive_arguments_type keep_alive;
                 keep_alive.reserve(args.size());
-                std::vector<phylanx::execution_tree::primitive_argument_type>
-                    fargs;
+                phylanx::execution_tree::primitive_arguments_type fargs;
                 fargs.reserve(args.size());
 
                 for (auto const& item : args)

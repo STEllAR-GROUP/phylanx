@@ -41,7 +41,7 @@ void test_row_set_operation_1d()
     phylanx::execution_tree::primitive row_set =
         phylanx::execution_tree::primitives::create_row_set_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 input_vector, std::move(row_start), std::move(row_stop),
                 std::move(step_row), std::move(row_set_vector)});
 
@@ -86,7 +86,7 @@ void test_row_set_operation_1d_negative_step()
     phylanx::execution_tree::primitive row_set =
         phylanx::execution_tree::primitives::create_row_set_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 input_vector, std::move(row_start), std::move(row_stop),
                 std::move(step_row), std::move(row_set_vector)});
 
@@ -138,7 +138,7 @@ void test_row_set_operation_2d()
     phylanx::execution_tree::primitive row_set =
         phylanx::execution_tree::primitives::create_row_set_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 input_matrix, std::move(row_start), std::move(row_stop),
                 std::move(step_row), std::move(row_set_matrix)});
 
@@ -194,7 +194,7 @@ void test_row_set_operation_2d_vector_input()
     phylanx::execution_tree::primitive row_set =
         phylanx::execution_tree::primitives::create_row_set_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 input_matrix, std::move(row_start), std::move(row_stop),
                 std::move(step_row), std::move(row_set_vector)});
 
@@ -251,7 +251,7 @@ void test_row_set_operation_2d_negetive_step()
     phylanx::execution_tree::primitive row_set =
         phylanx::execution_tree::primitives::create_row_set_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 input_matrix, std::move(row_start), std::move(row_stop),
                 std::move(step_row), std::move(row_set_matrix)});
 

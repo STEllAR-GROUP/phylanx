@@ -21,7 +21,7 @@ void test_identity()
     phylanx::execution_tree::primitive identity =
         phylanx::execution_tree::primitives::create_identity(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =

@@ -22,7 +22,7 @@ void test_random_0d()
     phylanx::execution_tree::primitive const_ =
         phylanx::execution_tree::primitives::create_random(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(dim)
             });
 
@@ -46,7 +46,7 @@ void test_random_1d()
     phylanx::execution_tree::primitive const_ =
         phylanx::execution_tree::primitives::create_random(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(dim)
             });
 
@@ -71,7 +71,7 @@ void test_random_2d()
     phylanx::execution_tree::primitive const_ =
         phylanx::execution_tree::primitives::create_random(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(dim)
             });
 

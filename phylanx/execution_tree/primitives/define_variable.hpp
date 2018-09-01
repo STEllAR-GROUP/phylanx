@@ -33,16 +33,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         define_variable() = default;
 
-        define_variable(std::vector<primitive_argument_type>&& operands,
+        define_variable(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
-        void store(std::vector<primitive_argument_type>&& val,
-            std::vector<primitive_argument_type>&& params) override;
+        void store(primitive_arguments_type&& val,
+            primitive_arguments_type&& params) override;
 
         // return the topology for this variable definition
         topology expression_topology(std::set<std::string>&& functions,

@@ -89,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /////////////////////////////////////////////////////////////////////////
     std::shared_ptr<primitive_component_base>
     primitive_component::create_primitive(std::string const& type,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename)
     {
         auto const& factories = detail::get_factories();
@@ -108,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component::eval(
-        std::vector<primitive_argument_type> const& params,
+        primitive_arguments_type const& params,
         eval_mode mode) const
     {
         if ((mode & eval_dont_evaluate_partials) &&
@@ -139,14 +139,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // store_action
-    void primitive_component::store(std::vector<primitive_argument_type>&& args,
-        std::vector<primitive_argument_type>&& params)
+    void primitive_component::store(primitive_arguments_type&& args,
+        primitive_arguments_type&& params)
     {
         primitive_->store(std::move(args), std::move(params));
     }
 
     void primitive_component::store_single(primitive_argument_type&& arg,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         primitive_->store(std::move(arg), std::move(params));
     }
@@ -162,7 +162,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component::bind(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params) const
     {
         return primitive_->bind(params);
     }
@@ -209,7 +209,7 @@ namespace phylanx { namespace execution_tree
 {
     primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         return primitive{
@@ -223,7 +223,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type operand, std::string const& name,
         std::string const& codename)
     {
-        std::vector<primitive_argument_type> operands;
+        primitive_arguments_type operands;
         operands.emplace_back(std::move(operand));
 
         return primitive{

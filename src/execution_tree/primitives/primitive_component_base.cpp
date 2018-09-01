@@ -27,10 +27,10 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<primitive_argument_type> primitive_component_base::noargs{};
+    primitive_arguments_type primitive_component_base::noargs{};
 
     primitive_component_base::primitive_component_base(
-            std::vector<primitive_argument_type>&& params,
+            primitive_arguments_type&& params,
             std::string const& name, std::string const& codename,
             bool eval_direct)
       : operands_(std::move(params))
@@ -70,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        std::vector<primitive_argument_type> const& params,
+        primitive_arguments_type const& params,
         eval_mode mode) const
     {
 #if defined(HPX_HAVE_APEX)
@@ -136,13 +136,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component_base::eval(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params) const
     {
         return this->eval(params, eval_default);
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::eval(
-        std::vector<primitive_argument_type> const& params,
+        primitive_arguments_type const& params,
         eval_mode mode) const
     {
         return this->eval(params);
@@ -151,14 +151,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         primitive_argument_type && param, eval_mode mode) const
     {
-        std::vector<primitive_argument_type> params;
+        primitive_arguments_type params;
         params.emplace_back(std::move(param));
         return this->eval(params, mode);
     }
 
     // store_action
-    void primitive_component_base::store(std::vector<primitive_argument_type>&&,
-        std::vector<primitive_argument_type>&&)
+    void primitive_component_base::store(primitive_arguments_type&&,
+        primitive_arguments_type&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
@@ -169,9 +169,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void primitive_component_base::store(primitive_argument_type&& param,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
-        std::vector<primitive_argument_type> args;
+        primitive_arguments_type args;
         args.emplace_back(std::move(param));
         return this->store(std::move(args), std::move(params));
     }
@@ -212,7 +212,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component_base::bind(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params) const
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::"

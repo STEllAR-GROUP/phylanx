@@ -21,7 +21,7 @@ void test_transpose_operation_0d()
     phylanx::execution_tree::primitive transpose =
         phylanx::execution_tree::primitives::create_transpose_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -38,7 +38,7 @@ void test_transpose_operation_0d_lit()
     phylanx::execution_tree::primitive transpose =
         phylanx::execution_tree::primitives::create_transpose_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -60,7 +60,7 @@ void test_transpose_operation_1d()
     phylanx::execution_tree::primitive transpose =
         phylanx::execution_tree::primitives::create_transpose_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -82,7 +82,7 @@ void test_transpose_operation_1d_lit()
     phylanx::execution_tree::primitive transpose =
         phylanx::execution_tree::primitives::create_transpose_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -106,7 +106,7 @@ void test_transpose_operation_2d()
     phylanx::execution_tree::primitive transpose =
         phylanx::execution_tree::primitives::create_transpose_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -128,7 +128,7 @@ void test_transpose_operation_2d_lit()
     phylanx::execution_tree::primitive transpose =
         phylanx::execution_tree::primitives::create_transpose_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =

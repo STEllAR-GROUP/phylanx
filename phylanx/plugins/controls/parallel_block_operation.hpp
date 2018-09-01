@@ -26,8 +26,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
@@ -35,16 +35,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         parallel_block_operation() = default;
 
         parallel_block_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
     };
 
     inline primitive create_parallel_block_operation(
         hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

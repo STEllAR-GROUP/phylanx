@@ -31,14 +31,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
 
     block_operation::block_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> block_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> args, eval_mode mode) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type args, eval_mode mode) const
     {
         // Empty blocks are allowed (Issue #278)
         if (this->no_operands())
@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     // start iteration over given block statement
     hpx::future<primitive_argument_type> block_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_mode mode) const
     {
         if (this->no_operands())
         {

@@ -25,8 +25,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
@@ -40,19 +40,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         /// \param args Is a (possibly empty) list of any values to be
         ///             concatenated into a PhySL list in order.
         ///
-        als(std::vector<primitive_argument_type>&& operands,
+        als(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
+            primitive_arguments_type const& params) const override;
 
     protected:
         primitive_argument_type calculate_als(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
     };
 
     inline primitive create_als(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

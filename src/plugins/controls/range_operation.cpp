@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     range_operation::range_operation(
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -71,8 +71,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> range_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.empty() || operands.size() > 3)
         {
@@ -99,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](args_type&& args) -> primitive_argument_type
+            [this_](auto&& args) -> primitive_argument_type
             {
                 return this_->generate_range(std::move(args));
             }),
@@ -109,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> range_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

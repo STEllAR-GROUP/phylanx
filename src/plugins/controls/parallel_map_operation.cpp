@@ -32,14 +32,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     parallel_map_operation::parallel_map_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> parallel_map_operation::map_1(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
@@ -57,19 +57,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 // Concurrently evaluate all operations
-                std::vector<hpx::future<primitive_argument_type>> result;
+                std::vector<hpx::future<primitive_argument_type>,
+                    arguments_allocator<hpx::future<primitive_argument_type>>>
+                    result;
                 result.reserve(list.size());
 
                 for (auto && elem : list)
                 {
                     // Evaluate function for each of the argument sets
-                    std::vector<primitive_argument_type> args;
+                    primitive_arguments_type args;
                     args.emplace_back(std::move(elem));
                     result.push_back(p->eval(std::move(args)));
                 }
 
                 return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                    [](std::vector<primitive_argument_type>&& result)
+                    [](primitive_arguments_type&& result)
                     -> primitive_argument_type
                     {
                         return primitive_argument_type{std::move(result)};
@@ -82,18 +84,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::map_n(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         // all remaining operands have to be lists
-        std::vector<primitive_argument_type> lists;
+        primitive_arguments_type lists;
+        lists.reserve(operands.size() - 1);
+
         std::copy(operands.begin() + 1, operands.end(),
             std::back_inserter(lists));
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                std::vector<ir::range>&& lists)
+                std::vector<ir::range, arguments_allocator<ir::range>>&& lists)
             ->  hpx::future<primitive_argument_type>
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -122,7 +126,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // Concurrently evaluate all operations
                 std::size_t numlists = lists.size();
 
-                std::vector<ir::range_iterator> iters;
+                std::vector<ir::range_iterator,
+                    arguments_allocator<ir::range_iterator>> iters;
                 iters.reserve(numlists);
 
                 for (auto const& j : lists)
@@ -130,12 +135,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     iters.push_back(j.begin());
                 }
 
-                std::vector<hpx::future<primitive_argument_type>> result;
+                std::vector<hpx::future<primitive_argument_type>,
+                    arguments_allocator<hpx::future<primitive_argument_type>>>
+                    result;
                 result.reserve(size);
 
                 for (std::size_t i = 0; i != size; ++i)
                 {
-                    std::vector<primitive_argument_type> args;
+                    primitive_arguments_type args;
                     args.reserve(numlists);
 
                     // Each invocation has its own argument set
@@ -149,7 +156,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                    [](std::vector<primitive_argument_type>&& result)
+                    [](primitive_arguments_type&& result)
                     -> primitive_argument_type
                     {
                         return primitive_argument_type{std::move(result)};
@@ -165,8 +172,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() < 2)
         {
@@ -215,7 +222,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> parallel_map_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

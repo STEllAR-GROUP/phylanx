@@ -28,16 +28,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         car_cdr_operation() = default;
 
-        car_cdr_operation(std::vector<primitive_argument_type>&& operands,
+        car_cdr_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
         primitive_argument_type car(primitive_argument_type&& arg) const;
         primitive_argument_type cdr(primitive_argument_type&& arg) const;
@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_car_cdr_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

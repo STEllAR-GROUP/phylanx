@@ -119,7 +119,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
     ///////////////////////////////////////////////////////////////////////////
     linear_solver::linear_solver(
-        std::vector<primitive_argument_type> && operands,
+        primitive_arguments_type && operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -164,8 +164,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> linear_solver::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() != 2 && operands.size() != 3)
         {
@@ -254,7 +254,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> linear_solver::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             &create_all_operation, &create_primitive<all_operation>)};
 
     ///////////////////////////////////////////////////////////////////////////
-    all_operation::all_operation(std::vector<primitive_argument_type> && args,
+    all_operation::all_operation(primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -80,8 +80,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> all_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.empty() || operands.size() > 1)
         {
@@ -132,7 +132,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> all_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

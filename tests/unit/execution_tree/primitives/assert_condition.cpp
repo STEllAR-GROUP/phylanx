@@ -14,7 +14,7 @@
 #include <vector>
 
 using arg_type = phylanx::execution_tree::primitive_argument_type;
-using args_type = std::vector<phylanx::execution_tree::primitive_argument_type>;
+using args_type = phylanx::execution_tree::primitive_arguments_type;
 
 void test_assert_true()
 {

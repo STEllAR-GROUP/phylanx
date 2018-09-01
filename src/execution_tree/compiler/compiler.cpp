@@ -557,7 +557,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     id.id, id.col, snippets_.compile_id_ - 1);
                 name_parts.instance = std::move(name);
 
-                std::vector<primitive_argument_type> fargs;
+                primitive_arguments_type fargs;
                 fargs.reserve(argexprs.size() + 1);
 
                 fargs.push_back(

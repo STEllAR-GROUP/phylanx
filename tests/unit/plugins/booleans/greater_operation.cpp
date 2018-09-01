@@ -27,7 +27,7 @@ void test_greater_operation_0d_true()
     phylanx::execution_tree::primitive greater;
     greater = phylanx::execution_tree::primitives::create_greater(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -51,7 +51,7 @@ void test_greater_operation_0d_true_return_double()
     phylanx::execution_tree::primitive greater;
     greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -75,7 +75,7 @@ void test_greater_operation_0d_false()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -97,7 +97,7 @@ void test_greater_operation_0d_lit_true()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -119,7 +119,7 @@ void test_greater_operation_0d_lit_false()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -146,7 +146,7 @@ void test_greater_operation_0d1d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -174,7 +174,7 @@ void test_greater_operation_0d1d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -203,7 +203,7 @@ void test_greater_operation_0d1d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -232,7 +232,7 @@ void test_greater_operation_0d1d_return_bool()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(false)});
 
@@ -262,7 +262,7 @@ void test_greater_operation_0d2d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -290,7 +290,7 @@ void test_greater_operation_0d2d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -319,7 +319,7 @@ void test_greater_operation_0d2d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -350,7 +350,7 @@ void test_greater_operation_1d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -379,7 +379,7 @@ void test_greater_operation_1d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -409,7 +409,7 @@ void test_greater_operation_1d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -439,7 +439,7 @@ void test_greater_operation_1d0d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -467,7 +467,7 @@ void test_greater_operation_1d0d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -496,7 +496,7 @@ void test_greater_operation_1d0d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -529,7 +529,7 @@ void test_greater_operation_1d2d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -564,7 +564,7 @@ void test_greater_operation_1d2d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -600,7 +600,7 @@ void test_greater_operation_1d2d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -635,7 +635,7 @@ void test_greater_operation_2d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -664,7 +664,7 @@ void test_greater_operation_2d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -694,7 +694,7 @@ void test_greater_operation_2d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -724,7 +724,7 @@ void test_greater_operation_2d0d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -752,7 +752,7 @@ void test_greater_operation_2d0d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -781,7 +781,7 @@ void test_greater_operation_2d0d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 
@@ -814,7 +814,7 @@ void test_greater_operation_2d1d()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -848,7 +848,7 @@ void test_greater_operation_2d1d_lit()
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f = greater.eval().get();
@@ -883,7 +883,7 @@ void test_greater_operation_2d1d_return_double()
 
     phylanx::execution_tree::primitive greater =
         phylanx::execution_tree::primitives::create_greater(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs),
                 phylanx::ir::node_data<std::uint8_t>(true)});
 

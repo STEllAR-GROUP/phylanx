@@ -31,14 +31,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     filter_operation::filter_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> filter_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() != 2)
         {
@@ -89,12 +89,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // sequentially evaluate all operations
                 std::size_t size = list.size();
 
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(size);
 
                 for (auto && curr : list)
                 {
-                    std::vector<primitive_argument_type> arg(1, curr);
+                    primitive_arguments_type arg(1, curr);
                     if (boolean_operand_sync(bound_func, std::move(arg),
                             this_->name_, this_->codename_))
                     {
@@ -111,7 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> filter_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

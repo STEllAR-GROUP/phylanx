@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    variable::variable(std::vector<primitive_argument_type>&& operands,
+    variable::variable(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
       , value_set_(false)
@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_mode mode) const
     {
         if (!value_set_ && !valid(bound_value_))
         {
@@ -125,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     //////////////////////////////////////////////////////////////////////////
-    bool variable::bind(std::vector<primitive_argument_type> const& args) const
+    bool variable::bind(primitive_arguments_type const& args) const
     {
         if (!value_set_)
         {
@@ -149,8 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void variable::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void variable::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         // data[0] is the new value to store in this variable
         // data[1] and data[2] (optional) are interpreted as slicing arguments
@@ -218,7 +218,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void variable::store(primitive_argument_type&& data,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         // data is the new value to store in this variable
         if (!value_set_ || !valid(operands_[0]))

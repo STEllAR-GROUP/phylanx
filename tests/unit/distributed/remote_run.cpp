@@ -21,8 +21,8 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     hpx::future<primitive_argument_type> locality_id(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
         std::string const&, std::string const&);
 }}}
 
@@ -40,8 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     hpx::future<primitive_argument_type> locality_id(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
         std::string const&, std::string const&)
     {
         std::int64_t locality_ =

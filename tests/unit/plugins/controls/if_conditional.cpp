@@ -37,7 +37,7 @@ void test_if_conditional_t1()
     phylanx::execution_tree::primitive if_prim =
         phylanx::execution_tree::primitives::create_if_conditional(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(cond), std::move(true_case), std::move(false_case)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -62,7 +62,7 @@ void test_if_conditional_t2()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(add_lhs), std::move(add_rhs)});
 
     // Create subtration expression
@@ -78,7 +78,7 @@ void test_if_conditional_t2()
     phylanx::execution_tree::primitive sub =
         phylanx::execution_tree::primitives::create_sub_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(sub_lhs), std::move(sub_rhs)});
 
     // Create conditional
@@ -89,7 +89,7 @@ void test_if_conditional_t2()
     phylanx::execution_tree::primitive if_prim =
         phylanx::execution_tree::primitives::create_if_conditional(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(cond), std::move(add), std::move(sub)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -115,7 +115,7 @@ void test_if_conditional_t3()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(add_lhs), std::move(add_rhs)});
 
     // Create subtration expression
@@ -130,7 +130,7 @@ void test_if_conditional_t3()
     phylanx::execution_tree::primitive sub =
         phylanx::execution_tree::primitives::create_sub_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(sub_lhs), std::move(sub_rhs)});
 
     // Create conditional expression
@@ -144,13 +144,13 @@ void test_if_conditional_t3()
 
     phylanx::execution_tree::primitive equal =
         phylanx::execution_tree::primitives::create_equal(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive if_prim =
         phylanx::execution_tree::primitives::create_if_conditional(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(equal), std::move(add), std::move(sub)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -175,7 +175,7 @@ void test_if_conditional_t4()
     phylanx::execution_tree::primitive if_prim =
         phylanx::execution_tree::primitives::create_if_conditional(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(cond), std::move(true_case)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -204,13 +204,13 @@ void test_if_conditional_t5()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(add_lhs), std::move(add_rhs)});
 
     phylanx::execution_tree::primitive if_prim =
         phylanx::execution_tree::primitives::create_if_conditional(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(cond), std::move(add)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -239,13 +239,13 @@ void test_if_conditional_t6()
     phylanx::execution_tree::primitive add =
         phylanx::execution_tree::primitives::create_add_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(add_lhs), std::move(add_rhs)});
 
     phylanx::execution_tree::primitive if_prim =
         phylanx::execution_tree::primitives::create_if_conditional(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(cond), std::move(add)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
