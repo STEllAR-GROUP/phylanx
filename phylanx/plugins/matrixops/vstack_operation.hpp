@@ -43,15 +43,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         template <typename T>
         primitive_argument_type vstack0d_helper(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
         primitive_argument_type vstack0d(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
 
         template <typename T>
         primitive_argument_type vstack1d2d_helper(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
         primitive_argument_type vstack1d2d(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
     };
 
     inline primitive create_vstack_operation(hpx::id_type const& locality,

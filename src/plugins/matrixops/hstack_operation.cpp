@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     std::size_t hstack_operation::get_vecsize(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         std::size_t vec_size = 0;
 
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type hstack_operation::hstack0d1d_helper(
-        std::vector<primitive_argument_type>&& args) const
+        primitive_arguments_type&& args) const
     {
         blaze::DynamicVector<T> result(get_vecsize(args));
 
@@ -104,7 +104,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type hstack_operation::hstack0d1d(
-        std::vector<primitive_argument_type>&& args) const
+        primitive_arguments_type&& args) const
     {
         switch (extract_common_type(args))
         {
@@ -133,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type hstack_operation::hstack2d_helper(
-        std::vector<primitive_argument_type>&& args) const
+        primitive_arguments_type&& args) const
     {
         std::size_t args_size = args.size();
 
@@ -193,7 +193,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type hstack_operation::hstack2d(
-        std::vector<primitive_argument_type>&& args) const
+        primitive_arguments_type&& args) const
     {
         switch (extract_common_type(args))
         {
@@ -253,7 +253,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type>&& args)
+            [this_](primitive_arguments_type&& args)
             -> primitive_argument_type
             {
                 std::size_t matrix_dims = extract_numeric_value_dimension(

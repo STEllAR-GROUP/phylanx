@@ -48,10 +48,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::set<std::string>&& resolve_children) const override;
 
     protected:
-        void store1dslice(std::vector<primitive_argument_type>&& data,
-            std::vector<primitive_argument_type>&& params);
-        void store2dslice(std::vector<primitive_argument_type>&& data,
-            std::vector<primitive_argument_type>&& params);
+        void store1dslice(primitive_arguments_type&& data,
+            primitive_arguments_type&& params);
+        void store2dslice(primitive_arguments_type&& data,
+            primitive_arguments_type&& params);
 
     private:
         mutable primitive_argument_type bound_value_;

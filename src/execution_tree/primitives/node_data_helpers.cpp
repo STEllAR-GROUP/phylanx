@@ -41,7 +41,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     node_data_type extract_common_type(
-        std::vector<primitive_argument_type> const& args)
+        primitive_arguments_type const& args)
     {
         node_data_type result = node_data_type_bool;
         for (auto const& arg : args)
@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     std::size_t extract_largest_dimension(
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         std::size_t result = 0;
@@ -257,7 +257,8 @@ namespace phylanx { namespace execution_tree
                 // with the same number of elements
                 if (rhs.dimension(0) == 1 && size == rhs.dimension(1))
                 {
-                    result = blaze::trans(blaze::row(rhs.matrix(), 0));
+                    auto m = rhs.matrix();
+                    result = blaze::trans(blaze::row(m, 0));
                     return;
                 }
 
@@ -265,7 +266,8 @@ namespace phylanx { namespace execution_tree
                 // with the same number of elements
                 if (rhs.dimension(1) == 1 && size == rhs.dimension(0))
                 {
-                    result = blaze::column(rhs.matrix(), 0);
+                    auto m = rhs.matrix();
+                    result = blaze::column(m, 0);
                     return;
                 }
 
@@ -393,7 +395,8 @@ namespace phylanx { namespace execution_tree
                 if (rhs.dimension(0) == 1 && columns == rhs.dimension(1))
                 {
                     result.resize(rows, columns);
-                    auto row = blaze::row(rhs.matrix(), 0);
+                    auto m = rhs.matrix();
+                    auto row = blaze::row(m, 0);
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         blaze::row(result, i) = row;
@@ -406,7 +409,8 @@ namespace phylanx { namespace execution_tree
                 if (rhs.dimension(1) == 1 && rows == rhs.dimension(0))
                 {
                     result.resize(rows, columns);
-                    auto column = blaze::column(rhs.matrix(), 0);
+                    auto m = rhs.matrix();
+                    auto column = blaze::column(m, 0);
                     for (std::size_t i = 0; i != columns; ++i)
                     {
                         blaze::column(result, i) = column;

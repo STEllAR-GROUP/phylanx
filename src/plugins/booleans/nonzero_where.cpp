@@ -56,7 +56,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     nonzero_where::nonzero_where(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , nonzero_(false)
@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 storage1d_type indices(
                     op.scalar() != T(0) ? 1 : 0, std::int64_t(0));
 
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(1);
                 result.emplace_back(std::move(indices));
                 return primitive_argument_type{std::move(result)};
@@ -111,7 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices.resize(count);
                 indices.shrinkToFit();
 
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(1);
                 result.emplace_back(std::move(indices));
                 return primitive_argument_type{std::move(result)};
@@ -142,7 +142,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 indices_column.resize(count);
                 indices_column.shrinkToFit();
 
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(2);
                 result.emplace_back(std::move(indices_row));
                 result.emplace_back(std::move(indices_column));
@@ -430,8 +430,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     hpx::future<primitive_argument_type> nonzero_where::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (nonzero_ && operands.size() != 1)
         {
@@ -505,7 +505,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> nonzero_where::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

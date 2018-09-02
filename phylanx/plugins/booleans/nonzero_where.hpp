@@ -27,19 +27,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static std::vector<match_pattern_type> const match_data;
 
         nonzero_where() = default;
 
-        nonzero_where(std::vector<primitive_argument_type>&& operands,
+        nonzero_where(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params,
+            primitive_arguments_type const& params,
             eval_mode) const override;
 
     private:
@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     inline primitive create_nonzero(
         hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(
@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     inline primitive create_where(
         hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

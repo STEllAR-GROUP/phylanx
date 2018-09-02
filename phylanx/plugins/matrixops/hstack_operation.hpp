@@ -43,19 +43,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         std::size_t get_vecsize(
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& args) const;
 
         template <typename T>
         primitive_argument_type hstack0d1d_helper(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
         primitive_argument_type hstack0d1d(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
 
         template <typename T>
         primitive_argument_type hstack2d_helper(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
         primitive_argument_type hstack2d(
-            std::vector<primitive_argument_type>&& args) const;
+            primitive_arguments_type&& args) const;
     };
 
     inline primitive create_hstack_operation(hpx::id_type const& locality,

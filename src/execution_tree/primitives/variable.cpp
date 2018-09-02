@@ -149,7 +149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void variable::store1dslice(std::vector<primitive_argument_type>&& data,
+    void variable::store1dslice(primitive_arguments_type&& data,
         primitive_arguments_type&& params)
     {
         if (!valid(bound_value_))
@@ -168,7 +168,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bound_value_ = std::move(result);
     }
 
-    void variable::store2dslice(std::vector<primitive_argument_type>&& data,
+    void variable::store2dslice(primitive_arguments_type&& data,
         primitive_arguments_type&& params)
     {
         if (!valid(bound_value_))
@@ -189,7 +189,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bound_value_ = std::move(result);
     }
 
-    void variable::store(std::vector<primitive_argument_type>&& data,
+    void variable::store(primitive_arguments_type&& data,
         primitive_arguments_type&& params)
     {
         // data[0] is the new value to store in this variable

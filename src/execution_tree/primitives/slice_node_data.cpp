@@ -53,7 +53,8 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& codename)
     {
         std::size_t size = data.size();
-        if (indices.start() >= size || indices.span() > size)
+        if (indices.start() >= std::int64_t(size) ||
+            indices.span() > std::int64_t(size))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slicing1d",
@@ -107,7 +108,8 @@ namespace phylanx { namespace execution_tree
         F const& f, std::string const& name, std::string const& codename)
     {
         std::size_t numrows = input_matrix.rows();
-        if (rows.start() >= numrows || rows.span() > numrows)
+        if (rows.start() >= std::int64_t(numrows) ||
+            rows.span() > std::int64_t(numrows))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slicing2d",
@@ -116,7 +118,8 @@ namespace phylanx { namespace execution_tree
                     name, codename));
         }
         std::size_t numcols = input_matrix.columns();
-        if (columns.start() >= numcols || columns.span() > numcols)
+        if (columns.start() >= std::int64_t(numcols) ||
+            columns.span() > std::int64_t(numcols))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slicing2d",

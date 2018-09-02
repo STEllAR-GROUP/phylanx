@@ -163,7 +163,7 @@ namespace phylanx { namespace execution_tree
         {
             if (list.is_ref())
             {
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(list.size());
 
                 std::copy(list.begin(), list.end(), std::back_inserter(result));
@@ -184,11 +184,11 @@ namespace phylanx { namespace execution_tree
         // handle case of consecutive elements to modify
         if (indices.step() == 1)
         {
-            std::vector<primitive_argument_type> result;
+            primitive_arguments_type result;
 
             if (list.is_ref())
             {
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(list.size());
 
                 std::copy(list.begin(), list.end(), std::back_inserter(result));
@@ -212,7 +212,7 @@ namespace phylanx { namespace execution_tree
 //         std::vector<std::int64_t> index_list =
 //             util::slicing_helpers::create_list_slice(start, stop, step);
 //
-//         std::vector<primitive_argument_type> result;
+//         primitive_arguments_type result;
 //         result.reserve(list.size());
 //
 //         auto idx_it = index_list.begin();
