@@ -13,8 +13,10 @@ set(tests
     less_equal_operation
     less_operation
     not_equal_operation
+    nonzero_operation
     or_operation
     unary_not_operation
+    where_operation
    )
 
 foreach(test ${tests})

@@ -63,12 +63,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (rhs.is_ref())
         {
             rhs = blaze::map(rhs.vector(),
-                [&](double x) { return (x < lhs.scalar()); });
+                [&](T x) { return (x < lhs.scalar()); });
         }
         else
         {
             rhs.vector() = blaze::map(rhs.vector(),
-                [&](double x) { return (x < lhs.scalar()); });
+                [&](T x) { return (x < lhs.scalar()); });
         }
 
         if (type_double)
@@ -89,12 +89,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (rhs.is_ref())
         {
             rhs = blaze::map(rhs.matrix(),
-                [&](double x) { return (x < lhs.scalar()); });
+                [&](T x) { return (x < lhs.scalar()); });
         }
         else
         {
             rhs.matrix() = blaze::map(rhs.matrix(),
-                [&](double x) { return (x < lhs.scalar()); });
+                [&](T x) { return (x < lhs.scalar()); });
         }
 
         if (type_double)
@@ -141,12 +141,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (lhs.is_ref())
         {
             lhs = blaze::map(lhs.vector(),
-                [&](double x) { return (x < rhs.scalar()); });
+                [&](T x) { return (x < rhs.scalar()); });
         }
         else
         {
             lhs.vector() = blaze::map(lhs.vector(),
-                [&](double x) { return (x < rhs.scalar()); });
+                [&](T x) { return (x < rhs.scalar()); });
         }
 
         if (type_double)
@@ -179,12 +179,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (lhs.is_ref())
         {
             lhs = blaze::map(lhs.vector(), rhs.vector(),
-                [&](double x, double y) { return (x < y); });
+                [&](T x, T y) { return (x < y); });
         }
         else
         {
             lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
-                [&](double x, double y) { return (x < y); });
+                [&](T x, T y) { return (x < y); });
         }
 
         if (type_double)
@@ -218,10 +218,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
 
-            for (size_t i = 0UL; i != cm.rows(); i++)
+            for (size_t i = 0UL; i != cm.rows(); ++i)
+            {
                 blaze::row(m, i) = blaze::map(blaze::row(cm, i),
                     blaze::trans(cv),
-                    [](double x, double y) { return x < y; });
+                    [](T x, T y) { return x < y; });
+            }
+
             if (type_double)
             {
                 return primitive_argument_type(
@@ -231,10 +234,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{std::move(m)});
         }
 
-        for (size_t i = 0UL; i != cm.rows(); i++)
+        for (size_t i = 0UL; i != cm.rows(); ++i)
+        {
             blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
                 blaze::trans(cv),
-                [](double x, double y) { return x < y; });
+                [](T x, T y) { return x < y; });
+        }
+
         if (type_double)
         {
             return primitive_argument_type(
@@ -282,12 +288,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (lhs.is_ref())
         {
             lhs = blaze::map(lhs.matrix(),
-                [&](double x) { return (x < rhs.scalar()); });
+                [&](T x) { return (x < rhs.scalar()); });
         }
         else
         {
             lhs.matrix() = blaze::map(lhs.matrix(),
-                [&](double x) { return (x < rhs.scalar()); });
+                [&](T x) { return (x < rhs.scalar()); });
         }
 
         if (type_double)
@@ -321,10 +327,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             blaze::DynamicMatrix<double> m{cm.rows(), cm.columns()};
 
-            for (size_t i = 0UL; i != cm.rows(); i++)
+            for (size_t i = 0UL; i != cm.rows(); ++i)
+            {
                 blaze::row(m, i) = blaze::map(blaze::row(cm, i),
                     blaze::trans(cv),
-                    [](double x, double y) { return x < y; });
+                    [](T x, T y) { return x < y; });
+            }
+
             if (type_double)
             {
                 return primitive_argument_type(
@@ -334,10 +343,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{std::move(m)});
         }
 
-        for (size_t i = 0UL; i != cm.rows(); i++)
+        for (size_t i = 0UL; i != cm.rows(); ++i)
+        {
             blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
                 blaze::trans(cv),
-                [](double x, double y) { return x < y; });
+                [](T x, T y) { return x < y; });
+        }
 
         if (type_double)
         {
@@ -369,12 +380,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (lhs.is_ref())
         {
             lhs = blaze::map(lhs.matrix(), rhs.matrix(),
-                [&](double x, double y) { return (x < y); });
+                [&](T x, T y) { return (x < y); });
         }
         else
         {
             lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
-                [&](double x, double y) { return (x < y); });
+                [&](T x, T y) { return (x < y); });
         }
 
         if (type_double)
@@ -622,7 +633,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         less const& less_;
-        bool type_double_ = false;
+        bool type_double_;
     };
 
     hpx::future<primitive_argument_type> less::eval(
@@ -651,28 +662,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        if (operands.size() == 3 &&
-            phylanx::execution_tree::extract_scalar_boolean_value(operands[2]))
-        {
-            return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping([this_](primitive_argument_type&& op1,
-                                          primitive_argument_type&& op2)
-                                          -> primitive_argument_type {
-                    return primitive_argument_type(
-                        util::visit(visit_less{*this_, true},
-                            std::move(op1.variant()),
-                            std::move(op2.variant())));
-                }),
-                literal_operand(operands[0], args, name_, codename_),
-                literal_operand(operands[1], args, name_, codename_));
-        }
+        bool return_double = (operands.size() == 3 &&
+            phylanx::execution_tree::extract_boolean_value_scalar(operands[2]));
+
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& op1,
+            [this_, return_double](primitive_argument_type&& op1,
                     primitive_argument_type&& op2)
             ->  primitive_argument_type
             {
                 return primitive_argument_type(
-                    util::visit(visit_less{*this_},
+                    util::visit(visit_less{*this_, return_double},
                         std::move(op1.variant()),
                         std::move(op2.variant())));
             }),
@@ -683,7 +682,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     // Implement '<' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> less::eval(
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

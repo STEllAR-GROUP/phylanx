@@ -307,19 +307,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename)
         {
             std::size_t dimension = 0;
-            std::array<std::size_t, 2> dimensions;
 
             for (auto const& arg : args)
             {
                 std::size_t dim =
                     extract_numeric_value_dimension(arg, name, codename);
-                std::array<std::size_t, 2> dims =
-                    extract_numeric_value_dimensions(arg, name, codename);
 
                 if (dimension == 0)
                 {
                     dimension = dim;
-                    dimensions = dims;
                 }
 
                 if (dim != dimension)

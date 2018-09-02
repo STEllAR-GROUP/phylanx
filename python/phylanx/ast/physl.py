@@ -21,7 +21,6 @@ mapped_methods = {
     "multiply": "__mul",
     "negative": "__minus",
     "print": "cout",
-    "sqrt": "square_root",
     "subtract": "__sub",
 }
 

@@ -1,4 +1,4 @@
- // Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 // Copyright (c) 2017 Parsa Amini
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -262,7 +262,11 @@ namespace phylanx { namespace ir
 
         storage2d_type& matrix_non_ref();
         storage2d_type const& matrix_non_ref() const;
-        storage2d_type matrix_copy() const;
+
+        storage2d_type matrix_copy() &;
+        storage2d_type matrix_copy() const&;
+        storage2d_type matrix_copy() &&;
+        storage2d_type matrix_copy() const&&;
 
         custom_storage2d_type matrix() &;
         custom_storage2d_type matrix() const&;
@@ -271,7 +275,11 @@ namespace phylanx { namespace ir
 
         storage1d_type& vector_non_ref();
         storage1d_type const& vector_non_ref() const;
-        storage1d_type vector_copy() const;
+
+        storage1d_type vector_copy() &;
+        storage1d_type vector_copy() const&;
+        storage1d_type vector_copy() &&;
+        storage1d_type vector_copy() const&&;
 
         custom_storage1d_type vector() &;
         custom_storage1d_type vector() const&;

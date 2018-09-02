@@ -37,7 +37,7 @@ void test_decomposition_lu_PhySL()
     auto const& code = phylanx::execution_tree::compile(lu_code, snippets);
     auto f = code.run();
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value_scalar(f()), 1);
 }
 
 void test_decomposition(std::string const& func_name)

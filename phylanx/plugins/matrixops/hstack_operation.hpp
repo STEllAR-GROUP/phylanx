@@ -30,11 +30,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args) const;
 
-        using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-        using storage1d_type = typename arg_type::storage1d_type;
-        using storage2d_type = typename arg_type::storage2d_type;
-
     public:
         static match_pattern_type const match_data;
 
@@ -44,12 +39,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& params) const override;
+            primitive_arguments_type const& params, eval_mode) const override;
 
     private:
-        std::size_t get_vecsize(args_type& args) const;
-        primitive_argument_type hstack0d1d(args_type&& args) const;
-        primitive_argument_type hstack2d(args_type&& args) const;
+        std::size_t get_vecsize(
+            primitive_arguments_type const& args) const;
+
+        template <typename T>
+        primitive_argument_type hstack0d1d_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type hstack0d1d(
+            primitive_arguments_type&& args) const;
+
+        template <typename T>
+        primitive_argument_type hstack2d_helper(
+            primitive_arguments_type&& args) const;
+        primitive_argument_type hstack2d(
+            primitive_arguments_type&& args) const;
     };
 
     inline primitive create_hstack_operation(hpx::id_type const& locality,

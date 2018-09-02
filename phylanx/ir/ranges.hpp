@@ -113,9 +113,24 @@ namespace phylanx { namespace ir
         {
             if (single_value_)
             {
-                return 1;
+                return 1ll;
             }
             return step_ > 0 ? stop_ - start_ : start_ - stop_;
+        }
+
+        std::int64_t size() const
+        {
+            if (single_value_)
+            {
+                return 1ll;
+            }
+
+            if (step_ > 0)
+            {
+                return (stop_ - start_ + step_ - 1ll) / step_;
+            }
+
+            return (start_ - stop_ - step_ - 1ll) / -step_;
         }
 
     private:

@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/hstack_operation.hpp>
 
@@ -12,7 +13,9 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
+#include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -40,117 +43,180 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-
-    std::size_t hstack_operation::get_vecsize(args_type& args) const
+    std::size_t hstack_operation::get_vecsize(
+        primitive_arguments_type const& args) const
     {
         std::size_t vec_size = 0;
-        std::size_t num_dims = 0;
 
-        for (std::size_t i = 0; i < args.size(); ++i)
+        for (std::size_t i = 0; i != args.size(); ++i)
         {
-            num_dims = args[i].num_dimensions();
+            std::size_t num_dims =
+                extract_numeric_value_dimension(args[i], name_, codename_);
+
             if (num_dims != 0 && num_dims != 1)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                    "hstack_operation::is_stackable",
+                        "hstack_operation::get_vecsize",
                     util::generate_error_message(
-                        "the hstack_operation primitive requires the input "
-                        "be either a vector or a scalar for 0d/1d stacking",
+                        "for 0d/1d stacking, the hstack_operation primitive "
+                        "requires the input be either a vector or a scalar",
                         name_, codename_));
             }
+
             if (num_dims == 0)
             {
-                vec_size = vec_size + 1;
+                ++vec_size;
             }
             else
             {
-                vec_size = vec_size + args[i].size();
+                vec_size += extract_numeric_value_dimensions(args[i])[1];
             }
         }
 
         return vec_size;
     }
 
-    primitive_argument_type hstack_operation::hstack0d1d(args_type&& args) const
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type hstack_operation::hstack0d1d_helper(
+        primitive_arguments_type&& args) const
     {
-        std::size_t vec_size = get_vecsize(args);
-        std::size_t num_d = 0;
-        blaze::DynamicVector<double> temp(vec_size);
-        auto iter = temp.begin();
+        blaze::DynamicVector<T> result(get_vecsize(args));
 
-        for (std::size_t i = 0; i < args.size(); ++i)
+        auto iter = result.begin();
+        for (auto && arg : args)
         {
-            num_d = args[i].num_dimensions();
+            auto && val = extract_node_data<T>(std::move(arg));
+            std::size_t num_d = val.num_dimensions();
             if (num_d == 0)
             {
-                *iter++ = args[i].scalar();
+                *iter++ = val.scalar();
             }
             else
             {
-                std::copy(
-                    args[i].vector().begin(), args[i].vector().end(), iter);
-                iter += args[i].size();
+                std::copy(val.vector().begin(), val.vector().end(), iter);
+                iter += val.size();
             }
         }
 
-        return primitive_argument_type{
-            ir::node_data<double>{storage1d_type{std::move(temp)}}};
+        return primitive_argument_type{ir::node_data<T>{std::move(result)}};
     }
 
-    primitive_argument_type hstack_operation::hstack2d(args_type&& args) const
+    primitive_argument_type hstack_operation::hstack0d1d(
+        primitive_arguments_type&& args) const
     {
-        auto args_size = args.size();
-        auto total_cols = args[0].dimension(1);
+        switch (extract_common_type(args))
+        {
+        case node_data_type_bool:
+            return hstack0d1d_helper<std::uint8_t>(std::move(args));
 
-        for (std::size_t i = 0; i < args_size; ++i)
-        {
-            if (args[i].num_dimensions() != 2)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "phylanx::execution_tree::primitives::"
-                    "hstack_operation::hstack2d",
-                    util::generate_error_message(
-                        "the hstack_operation primitive requires all the "
-                        "inputs be a matrix for 2d stacking",
-                        name_,
-                        codename_));
-            }
+        case node_data_type_int64:
+            return hstack0d1d_helper<std::int64_t>(std::move(args));
+
+        case node_data_type_double:
+            return hstack0d1d_helper<double>(std::move(args));
+
+        default:
+            break;
         }
-        for (std::size_t i = 1; i < args_size; ++i)
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "hstack_operation::hstack0d1d",
+            util::generate_error_message(
+                "the hstack_operation primitive requires for all arguments to "
+                    "be numeric data types",
+                name_, codename_));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type hstack_operation::hstack2d_helper(
+        primitive_arguments_type&& args) const
+    {
+        std::size_t args_size = args.size();
+
+        std::array<std::size_t, 2> prevdim =
+            extract_numeric_value_dimensions(args[0], name_, codename_);
+        std::size_t total_cols = 0;
+
+        for (std::size_t i = 0; i != args_size; ++i)
         {
-            if (args[i - 1].dimension(0) != args[i].dimension(0))
+            if (extract_numeric_value_dimension(args[i], name_, codename_) != 2)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
-                    "hstack_operation::hstack_operation",
+                        "hstack_operation::hstack2d_helper",
                     util::generate_error_message(
-                        "the hstack_operation primitive requires the "
-                        "number of rows be equal for all matrix "
-                        "being stacked",
+                        "for 2d stacking, the hstack_operation primitive "
+                            "requires all the inputs be a matrices",
                         name_, codename_));
             }
 
-            total_cols += args[i].dimension(1);
-        }
+            std::array<std::size_t, 2> dim =
+                extract_numeric_value_dimensions(args[i], name_, codename_);
 
-        blaze::DynamicMatrix<double> temp(args[0].dimension(0), total_cols);
-
-        auto step = 0;
-
-        for (std::size_t i = 0; i < args_size; ++i)
-        {
-            auto num_cols = args[i].dimension(1);
-            for (std::size_t j = 0; j < num_cols; ++j)
+            if (i != 0 && prevdim[0] != dim[0])
             {
-                blaze::column(temp, j + step) =
-                    blaze::column(args[i].matrix(), j);
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::primitives::"
+                        "hstack_operation::hstack2d_helper",
+                    util::generate_error_message(
+                        "the hstack_operation primitive requires the "
+                            "number of rows to be equal for all matrices "
+                            "being stacked",
+                        name_, codename_));
             }
-            step = step + num_cols;
+
+            total_cols += dim[1];
+            prevdim = dim;
         }
 
-        return primitive_argument_type{
-            ir::node_data<double>{storage2d_type{std::move(temp)}}};
+        blaze::DynamicMatrix<T> result(prevdim[0], total_cols);
+
+        std::size_t step = 0;
+        for (auto && arg : args)
+        {
+            auto && val = extract_node_data<T>(std::move(arg));
+
+            std::size_t num_cols = val.dimension(1);
+            for (std::size_t j = 0; j != num_cols; ++j)
+            {
+                blaze::column(result, j + step) = blaze::column(val.matrix(), j);
+            }
+
+            step += num_cols;
+        }
+
+        return primitive_argument_type{ir::node_data<T>{std::move(result)}};
+    }
+
+    primitive_argument_type hstack_operation::hstack2d(
+        primitive_arguments_type&& args) const
+    {
+        switch (extract_common_type(args))
+        {
+        case node_data_type_bool:
+            return hstack2d_helper<std::uint8_t>(std::move(args));
+
+        case node_data_type_int64:
+            return hstack2d_helper<std::int64_t>(std::move(args));
+
+        case node_data_type_double:
+            return hstack2d_helper<double>(std::move(args));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "hstack_operation::hstack2d",
+            util::generate_error_message(
+                "the hstack_operation primitive requires for all arguments to "
+                "be numeric data types",
+                name_, codename_));
     }
 
     hpx::future<primitive_argument_type> hstack_operation::eval(
@@ -160,8 +226,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.empty())
         {
             // hstack() without arguments returns an empty 1D vector
+            using storage1d_type = ir::node_data<std::int64_t>::storage1d_type;
             return hpx::make_ready_future(primitive_argument_type{
-                ir::node_data<double>{storage1d_type(0)}});
+                ir::node_data<std::int64_t>{storage1d_type(0)}});
         }
 
         bool arguments_valid = true;
@@ -186,14 +253,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](args_type&& args) -> primitive_argument_type
+            [this_](primitive_arguments_type&& args)
+            -> primitive_argument_type
             {
-                std::size_t matrix_dims = args[0].num_dimensions();
+                std::size_t matrix_dims = extract_numeric_value_dimension(
+                    args[0], this_->name_, this_->codename_);
                 switch (matrix_dims)
                 {
-                case 0:
-                    HPX_FALLTHROUGH;
-
+                case 0: HPX_FALLTHROUGH;
                 case 1:
                     return this_->hstack0d1d(std::move(args));
 
@@ -210,13 +277,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }),
             detail::map_operands(
-                operands, functional::numeric_operand{}, args,
+                operands, functional::value_operand{}, args,
                 name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> hstack_operation::eval(
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

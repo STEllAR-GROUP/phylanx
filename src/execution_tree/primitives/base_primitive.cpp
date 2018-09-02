@@ -1782,7 +1782,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::uint8_t extract_scalar_boolean_value(
+    std::uint8_t extract_boolean_value_scalar(
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
@@ -1825,14 +1825,14 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_scalar_boolean_value",
+            "phylanx::execution_tree::extract_boolean_value_scalar",
             util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
     }
 
-    std::uint8_t extract_scalar_boolean_value(primitive_argument_type && val,
+    std::uint8_t extract_boolean_value_scalar(primitive_argument_type && val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -1874,7 +1874,7 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_scalar_boolean_value",
+            "phylanx::execution_tree::extract_boolean_value_scalar",
             util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
@@ -3441,19 +3441,19 @@ namespace phylanx { namespace execution_tree
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
-                    extract_scalar_boolean_value(f.get(), name, codename));
+                    extract_boolean_value_scalar(f.get(), name, codename));
             }
 
             return f.then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_scalar_boolean_value(f.get(), name, codename);
+                    return extract_boolean_value_scalar(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
         return hpx::make_ready_future(
-            extract_scalar_boolean_value(val, name, codename));
+            extract_boolean_value_scalar(val, name, codename));
     }
 
     std::uint8_t boolean_operand_sync(primitive_argument_type const& val,
@@ -3463,12 +3463,12 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_scalar_boolean_value(
+            return extract_boolean_value_scalar(
                 p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_scalar_boolean_value(val, name, codename);
+        return extract_boolean_value_scalar(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////

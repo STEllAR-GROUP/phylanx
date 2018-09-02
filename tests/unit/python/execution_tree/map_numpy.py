@@ -168,7 +168,7 @@ def np_sqrt(x):
 
 assert (np_sqrt(a) == np.sqrt(a)).all
 assert np_sqrt.__src__ == \
-    'define$165$0(np_sqrt$165$0, x$165$12, square_root$166$11(x$166$19))'
+    'define$165$0(np_sqrt$165$0, x$165$12, sqrt$166$11(x$166$19))'
 
 
 @Phylanx

@@ -31,7 +31,6 @@
 #include <phylanx/plugins/matrixops/set_operation.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
-#include <phylanx/plugins/matrixops/square_root_operation.hpp>
 #include <phylanx/plugins/matrixops/sum_operation.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
 #include <phylanx/plugins/matrixops/vstack_operation.hpp>

@@ -95,12 +95,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name, codename));
     }
 
-    primitive_argument_type transpose_operation::transpose0d1d(operands_type&& ops) const
+    primitive_argument_type transpose_operation::transpose0d1d(
+        operands_type&& ops) const
     {
         return primitive_argument_type{std::move(ops[0])};       // no-op
     }
 
-    primitive_argument_type transpose_operation::transpose2d(operands_type && ops) const
+    primitive_argument_type transpose_operation::transpose2d(
+        operands_type&& ops) const
     {
         if (ops[0].is_ref())
         {
