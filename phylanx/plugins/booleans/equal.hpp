@@ -28,7 +28,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args) const;
 
-        using operand_type = ir::node_data<double>;
         using operands_type = primitive_arguments_type;
 
     public:
@@ -47,43 +46,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         template <typename T>
         primitive_argument_type equal0d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal0d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal0d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal1d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal1d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal1d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal2d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal2d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal2d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type equal_all(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
     };
 
     inline primitive create_equal(hpx::id_type const& locality,

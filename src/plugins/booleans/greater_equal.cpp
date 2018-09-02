@@ -43,12 +43,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type greater_equal::greater_equal0d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(ir::node_data<double>{
-                (lhs.scalar() >= rhs.scalar()) ? 1.0 : 0.0});
+            return primitive_argument_type(ir::node_data<T>{
+                (lhs.scalar() >= rhs.scalar()) ? T(1) : T(0)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{lhs.scalar() >= rhs.scalar()});
@@ -56,7 +57,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal0d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -71,10 +73,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](T x) { return (x >= lhs.scalar()); });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                ir::node_data<double>{std::move(rhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(rhs)});
@@ -82,7 +83,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal0d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -97,10 +99,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](T x) { return (x >= lhs.scalar()); });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                ir::node_data<double>{std::move(rhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(rhs)});
@@ -108,22 +109,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 0:
             return greater_equal0d0d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         case 1:
             return greater_equal0d1d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         case 2:
             return greater_equal0d2d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -137,7 +139,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal1d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         // TODO: SIMD functionality should be added, blaze implementation
         // is not currently available
@@ -152,10 +155,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](T x) { return (x >= rhs.scalar()); });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                ir::node_data<double>{std::move(lhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
@@ -163,7 +165,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal1d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -190,10 +193,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](T x, T y) { return (x >= y); });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                    ir::node_data<double>{std::move(lhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
@@ -201,7 +203,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal1d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         auto cv = lhs.vector();
         auto cm = rhs.matrix();
@@ -228,10 +231,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](T x, T y) { return x >= y; });
             }
 
-            if (type_double)
+            if (propagate_type)
             {
-                return primitive_argument_type(
-                    ir::node_data<double>{std::move(m)});
+                return primitive_argument_type(ir::node_data<T>{std::move(m)});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{std::move(m)});
@@ -244,10 +246,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [](T x, T y) { return x >= y; });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                    ir::node_data<double>{std::move(rhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(rhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(rhs)});
@@ -255,22 +256,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 0:
             return greater_equal1d0d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         case 1:
             return greater_equal1d1d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         case 2:
             return greater_equal1d2d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -284,7 +286,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal2d0d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         std::size_t lhs_size = lhs.dimension(0);
         std::size_t rhs_size = rhs.dimension(0);
@@ -302,10 +305,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](T x) { return (x >= rhs.scalar()); });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                    ir::node_data<double>{std::move(lhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
@@ -313,7 +315,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal2d1d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         auto cv = rhs.vector();
         auto cm = lhs.matrix();
@@ -340,10 +343,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     [](T x, T y) { return x >= y; });
             }
 
-            if (type_double)
+            if (propagate_type)
             {
-                return primitive_argument_type(
-                        ir::node_data<double>{std::move(m)});
+                return primitive_argument_type(ir::node_data<T>{std::move(m)});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{std::move(m)});
@@ -356,10 +358,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [](T x, T y) { return x >= y; });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                    ir::node_data<double>{std::move(lhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
@@ -367,7 +368,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal2d2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         auto lhs_size = lhs.dimensions();
         auto rhs_size = rhs.dimensions();
@@ -394,10 +396,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 [&](T x, T y) { return (x >= y); });
         }
 
-        if (type_double)
+        if (propagate_type)
         {
-            return primitive_argument_type(
-                    ir::node_data<double>{std::move(lhs)});
+            return primitive_argument_type(ir::node_data<T>{std::move(lhs)});
         }
         return primitive_argument_type(
             ir::node_data<std::uint8_t>{std::move(lhs)});
@@ -405,22 +406,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal2d(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         std::size_t rhs_dims = rhs.num_dimensions();
         switch(rhs_dims)
         {
         case 0:
             return greater_equal2d0d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         case 1:
             return greater_equal2d1d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         case 2:
             return greater_equal2d2d(
-                std::move(lhs), std::move(rhs), type_double);
+                std::move(lhs), std::move(rhs), propagate_type);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -434,19 +436,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     template <typename T>
     primitive_argument_type greater_equal::greater_equal_all(
-        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs, bool type_double) const
+        ir::node_data<T>&& lhs, ir::node_data<T>&& rhs,
+        bool propagate_type) const
     {
         std::size_t lhs_dims = lhs.num_dimensions();
         switch (lhs_dims)
         {
         case 0:
-            return greater_equal0d(std::move(lhs), std::move(rhs), type_double);
+            return greater_equal0d(std::move(lhs), std::move(rhs), propagate_type);
 
         case 1:
-            return greater_equal1d(std::move(lhs), std::move(rhs), type_double);
+            return greater_equal1d(std::move(lhs), std::move(rhs), propagate_type);
 
         case 2:
-            return greater_equal2d(std::move(lhs), std::move(rhs), type_double);
+            return greater_equal2d(std::move(lhs), std::move(rhs), propagate_type);
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -518,11 +521,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type operator()(T && lhs, T && rhs) const
         {
-            if (type_double_)
-            {
-                return primitive_argument_type(
-                    ir::node_data<double>{(lhs >= rhs) ? 1.0 : 0.0});
-            }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs >= rhs});
         }
@@ -537,7 +535,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     greater_equal_.name_, greater_equal_.codename_));
         }
 
-        primitive_argument_type operator()(ir::dictionary&&, ir::dictionary&&) const
+        primitive_argument_type operator()(
+            ir::dictionary&&, ir::dictionary&&) const
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "greater_equal::eval",
@@ -547,15 +546,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     greater_equal_.name_, greater_equal_.codename_));
         }
 
-        primitive_argument_type operator()(
-            ir::node_data<double>&& lhs, ir::node_data<std::int64_t>&& rhs) const
+        primitive_argument_type operator()(ir::node_data<double>&& lhs,
+            ir::node_data<std::int64_t>&& rhs) const
         {
             if (lhs.num_dimensions() != 0 || rhs.num_dimensions() != 0)
             {
-                return greater_equal_.greater_equal_all(
-                    std::move(lhs), operand_type(std::move(rhs)), type_double_);
+                return greater_equal_.greater_equal_all(std::move(lhs),
+                    ir::node_data<double>(std::move(rhs)), propagate_type_);
             }
-            if (type_double_)
+            if (propagate_type_)
             {
                 return primitive_argument_type(
                     ir::node_data<double>{(lhs[0] >= rhs[0]) ? 1.0 : 0.0});
@@ -564,15 +563,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{lhs[0] >= rhs[0]});
         }
 
-        primitive_argument_type operator()(
-            ir::node_data<std::int64_t>&& lhs, ir::node_data<double>&& rhs) const
+        primitive_argument_type operator()(ir::node_data<std::int64_t>&& lhs,
+            ir::node_data<double>&& rhs) const
         {
             if (lhs.num_dimensions() != 0 || rhs.num_dimensions() != 0)
             {
                 return greater_equal_.greater_equal_all(
-                    operand_type(std::move(lhs)), std::move(rhs), type_double_);
+                    ir::node_data<double>(std::move(lhs)), std::move(rhs),
+                    propagate_type_);
             }
-            if (type_double_)
+            if (propagate_type_)
             {
                 return primitive_argument_type(
                     ir::node_data<double>{(lhs[0] >= rhs[0]) ? 1.0 : 0.0});
@@ -581,49 +581,87 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 ir::node_data<std::uint8_t>{lhs[0] >= rhs[0]});
         }
 
-        primitive_argument_type operator()(
-            ir::node_data<std::uint8_t>&& lhs, ir::node_data<std::int64_t>&& rhs) const
+        primitive_argument_type operator()(ir::node_data<std::uint8_t>&& lhs,
+            ir::node_data<std::int64_t>&& rhs) const
         {
             if (lhs.num_dimensions() != 0 || rhs.num_dimensions() != 0)
             {
                 return greater_equal_.greater_equal_all(std::move(lhs),
                     ir::node_data<std::uint8_t>{
                         std::move(rhs) != ir::node_data<std::int64_t>(0)},
-                    type_double_);
+                    propagate_type_);
             }
-            if (type_double_)
+            if (propagate_type_)
             {
-                return primitive_argument_type(
-                    ir::node_data<double>{(lhs[0] >= rhs[0]) ? 1.0 : 0.0});
+                return primitive_argument_type(ir::node_data<std::int64_t>{
+                    (lhs[0] >= rhs[0]) ? 1 : 0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs[0] >= rhs[0]});
         }
 
-        primitive_argument_type operator()(
-            ir::node_data<std::int64_t>&& lhs, ir::node_data<std::uint8_t>&& rhs) const
+        primitive_argument_type operator()(ir::node_data<std::int64_t>&& lhs,
+            ir::node_data<std::uint8_t>&& rhs) const
         {
             if (lhs.num_dimensions() != 0 ||rhs.num_dimensions() != 0)
             {
                 return greater_equal_.greater_equal_all(
                     ir::node_data<std::uint8_t>{
                         std::move(lhs) != ir::node_data<std::int64_t>(0)},
-                    std::move(rhs), type_double_);
+                    std::move(rhs), propagate_type_);
             }
-            if (type_double_)
+            if (propagate_type_)
             {
-                return primitive_argument_type(
-                    ir::node_data<double>{(lhs[0] >= rhs[0]) ? 1.0 : 0.0});
+                return primitive_argument_type(ir::node_data<std::int64_t>{
+                    (lhs[0] >= rhs[0]) ? 1 : 0});
+            }
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{lhs[0] >= rhs[0]});
+        }
+
+        primitive_argument_type operator()(ir::node_data<std::uint8_t>&& lhs,
+            ir::node_data<double>&& rhs) const
+        {
+            if (lhs.num_dimensions() != 0 || rhs.num_dimensions() != 0)
+            {
+                return greater_equal_.greater_equal_all(std::move(lhs),
+                    ir::node_data<std::uint8_t>{
+                        std::move(rhs) != ir::node_data<double>(0)},
+                    propagate_type_);
+            }
+            if (propagate_type_)
+            {
+                return primitive_argument_type(ir::node_data<double>{
+                    (lhs[0] >= rhs[0]) ? 1.0 : 0.0});
+            }
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{lhs[0] >= rhs[0]});
+        }
+
+        primitive_argument_type operator()(ir::node_data<double>&& lhs,
+            ir::node_data<std::uint8_t>&& rhs) const
+        {
+            if (lhs.num_dimensions() != 0 ||rhs.num_dimensions() != 0)
+            {
+                return greater_equal_.greater_equal_all(
+                    ir::node_data<std::uint8_t>{
+                        std::move(lhs) != ir::node_data<double>(0)},
+                    std::move(rhs), propagate_type_);
+            }
+            if (propagate_type_)
+            {
+                return primitive_argument_type(ir::node_data<double>{
+                    (lhs[0] >= rhs[0]) ? 1.0 : 0.0});
             }
             return primitive_argument_type(
                 ir::node_data<std::uint8_t>{lhs[0] >= rhs[0]});
         }
 
         primitive_argument_type operator()(
-            operand_type&& lhs, operand_type&& rhs) const
+            ir::node_data<double>&& lhs, ir::node_data<double>&& rhs) const
         {
             return greater_equal_.greater_equal_all(
-                std::move(lhs), std::move(rhs), type_double_);
+                std::move(lhs), std::move(rhs), propagate_type_);
         }
 
         primitive_argument_type operator()(ir::node_data<std::uint8_t>&& lhs,
@@ -640,11 +678,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ir::node_data<std::int64_t>&& rhs) const
         {
             return greater_equal_.greater_equal_all(
-                std::move(lhs), std::move(rhs), type_double_);
+                std::move(lhs), std::move(rhs), propagate_type_);
         }
 
         greater_equal const& greater_equal_;
-        bool type_double_;
+        bool propagate_type_;
     };
 
     hpx::future<primitive_argument_type> greater_equal::eval(

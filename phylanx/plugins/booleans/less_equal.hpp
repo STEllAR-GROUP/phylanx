@@ -25,7 +25,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<less_equal>
     {
     protected:
-        using operand_type = ir::node_data<double>;
         using operands_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
@@ -48,43 +47,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         template <typename T>
         primitive_argument_type less_equal0d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal0d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal0d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal1d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal1d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal1d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal2d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal2d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal2d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type less_equal_all(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
     };
 
     inline primitive create_less_equal(hpx::id_type const& locality,

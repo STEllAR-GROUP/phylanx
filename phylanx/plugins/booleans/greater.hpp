@@ -25,7 +25,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<greater>
     {
     protected:
-        using operand_type = ir::node_data<double>;
         using operands_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
@@ -48,43 +47,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         template <typename T>
         primitive_argument_type greater0d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater0d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater0d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater1d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater1d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater1d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater2d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater2d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater2d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
         template <typename T>
         primitive_argument_type greater_all(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool type_double) const;
+            ir::node_data<T>&& rhs, bool propagate_type) const;
     };
 
     inline primitive create_greater(hpx::id_type const& locality,
