@@ -8,29 +8,24 @@
 #define PHYLANX_PRIMITIVES_NOT_EQUAL_OCT_07_2017_0212PM
 
 #include <phylanx/config.hpp>
-#include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
-#include <phylanx/ir/node_data.hpp>
+#include <phylanx/plugins/booleans/comparison.hpp>
 
-#include <hpx/lcos/future.hpp>
-
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class not_equal
-      : public primitive_component_base
-      , public std::enable_shared_from_this<not_equal>
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
     {
-    protected:
-        using operands_type = primitive_arguments_type;
+        struct not_equal_op;
+    }
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+    ///////////////////////////////////////////////////////////////////////////
+    class not_equal : public comparison<detail::not_equal_op>
+    {
+        using base_type = comparison<detail::not_equal_op>;
 
     public:
         static match_pattern_type const match_data;
@@ -39,52 +34,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         not_equal(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args, eval_mode) const override;
-
-    private:
-        struct visit_not_equal;
-
-        template <typename T>
-        primitive_argument_type not_equal0d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal0d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal0d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal1d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal1d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal1d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal2d0d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal2d1d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal2d2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal2d(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
-        template <typename T>
-        primitive_argument_type not_equal_all(ir::node_data<T>&& lhs,
-            ir::node_data<T>&& rhs, bool propagate_type) const;
     };
 
     inline primitive create_not_equal(hpx::id_type const& locality,
