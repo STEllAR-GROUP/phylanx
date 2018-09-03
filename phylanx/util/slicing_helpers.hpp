@@ -38,6 +38,11 @@ namespace phylanx { namespace util { namespace slicing_helpers
         execution_tree::primitive_argument_type const& arg,
         std::size_t arg_size, std::string const& name = "",
         std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT std::size_t slicing_size(
+        execution_tree::primitive_argument_type const& arg,
+        std::size_t arg_size, std::string const& name = "",
+        std::string const& codename = "<unknown>");
 }}}
 
 #endif //PHYLANX_SLICING_HELPERS_HPP

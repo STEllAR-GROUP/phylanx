@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    advanced_integer_slicing
     assert_condition
     define_operation
     dictionary

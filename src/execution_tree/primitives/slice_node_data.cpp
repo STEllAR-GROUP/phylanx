@@ -28,6 +28,37 @@
 namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
+    std::size_t slicing_size(
+        execution_tree::primitive_argument_type const& indices,
+        std::size_t arg_size, std::string const& name,
+        std::string const& codename)
+    {
+        if (is_list_operand_strict(indices))
+        {
+            // basic slicing and indexing
+            return util::slicing_helpers::slicing_size(
+                indices, arg_size, name, codename);
+        }
+
+        if (is_integer_operand_strict(indices))
+        {
+            // advanced indexing (integer array indexing)
+            return extract_numeric_value_dimensions(indices, name, codename)[1];
+        }
+
+        if (is_boolean_operand_strict(indices))
+        {
+            // advanced indexing (Boolean array indexing)
+            return extract_numeric_value_dimensions(indices, name, codename)[1];
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::slicing_size",
+            util::generate_error_message(
+                "unsupported indexing type", name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Extracting slice functionality
     template <typename T, typename F>
     ir::node_data<T> slice0d(T data, ir::slicing_indices const& indices,
@@ -98,6 +129,254 @@ namespace phylanx { namespace execution_tree
         auto sv = blaze::elements(data, element_indices);
 
         return f.vector(data, std::move(sv));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        std::int64_t check_index(std::int64_t index, std::size_t size,
+            std::string const& name, std::string const& codename)
+        {
+            if (index < 0)
+            {
+                index += size;
+            }
+
+            if (index < 0 || index >= std::int64_t(size))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::check_index",
+                    util::generate_error_message(
+                        "index out of range", name, codename));
+            }
+
+            return index;
+        }
+
+        // an advanced slicing index is a list with one or two integer array
+        // arguments
+
+        enum slicing_index_type
+        {
+            slicing_index_basic,
+            slicing_index_advanced_integer,
+            slicing_index_advanced_boolean
+        };
+
+        slicing_index_type is_advanced_slicing_index(
+            primitive_argument_type const& indices)
+        {
+            ir::range const& list = util::get<7>(indices);
+            if (list.size() == 1)
+            {
+                if (is_integer_operand_strict(*list.begin()))
+                {
+                    return slicing_index_advanced_integer;
+                }
+                if (is_boolean_operand_strict(*list.begin()))
+                {
+                    return slicing_index_advanced_boolean;
+                }
+            }
+            return slicing_index_basic;
+        }
+
+        primitive_argument_type extract_advanced_integer_index(
+            primitive_argument_type const& indices, std::string const& name,
+            std::string const& codename)
+        {
+            ir::range const& list = util::get<7>(indices);
+            return extract_integer_value_strict(*list.begin(), name, codename);
+        }
+
+        primitive_argument_type extract_advanced_boolean_index(
+            primitive_argument_type const& indices, std::string const& name,
+            std::string const& codename)
+        {
+            ir::range const& list = util::get<7>(indices);
+            return extract_boolean_value_strict(*list.begin(), name, codename);
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Vector, typename F>
+    ir::node_data<T> slice1d_advanced_integer_1d0d(Vector&& data,
+        ir::node_data<std::int64_t>&& indices, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        return f.scalar(data,
+            data[detail::check_index(indices[0], data.size(), name, codename)]);
+    }
+
+    template <typename T, typename Vector, typename F>
+    ir::node_data<T> slice1d_advanced_integer_1d1d(
+        Vector&& data, ir::node_data<std::int64_t> && indices, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        std::size_t data_size = data.size();
+        std::size_t index_size = indices.size();
+        for (std::size_t i = 0; i != index_size; ++i)
+        {
+            indices[i] =
+                detail::check_index(indices[i], data_size, name, codename);
+        }
+
+        auto index_list = indices.vector();
+        auto sv =
+            blaze::elements(data, index_list.data(), index_list.size());
+        return f.vector(data, std::move(sv));
+    }
+
+    template <typename T, typename Vector, typename F>
+    ir::node_data<T> slice1d_advanced_integer_1d2d(
+        Vector&& data, ir::node_data<std::int64_t> && indices, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        std::size_t data_size = data.size();
+        std::size_t index_size = indices.size();
+        for (std::size_t i = 0; i != index_size; ++i)
+        {
+            indices[i] =
+                detail::check_index(indices[i], data_size, name, codename);
+        }
+
+        // general case, pick arbitrary elements from matrix
+        auto index_matrix = indices.matrix();
+
+        typename ir::node_data<T>::storage2d_type result(
+            index_matrix.rows(), index_matrix.columns());
+
+        std::size_t index_rows = index_matrix.rows();
+        for (std::size_t row = 0; row != index_rows; ++row)
+        {
+            auto index_row = blaze::row(index_matrix, row);
+            blaze::row(result, row) = blaze::trans(
+                blaze::elements(data, index_row.data(), index_row.size()));
+        }
+
+        return f.matrix(result, result);
+    }
+
+    template <typename T, typename Vector, typename F>
+    ir::node_data<T> slice_advanced_integer_1d(
+        Vector&& data, ir::node_data<std::int64_t> && indices, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        switch (indices.index())
+        {
+        case 0:         // 0d index
+            return slice1d_advanced_integer_1d0d<T>(std::forward<Vector>(data),
+                std::move(indices), f, name, codename);
+
+        case 1: HPX_FALLTHROUGH;
+        case 3:         // 1d indexes
+            return slice1d_advanced_integer_1d1d<T>(std::forward<Vector>(data),
+                std::move(indices), f, name, codename);
+
+        case 2: HPX_FALLTHROUGH;
+        case 4:         // 2d indexes
+            return slice1d_advanced_integer_1d2d<T>(std::forward<Vector>(data),
+                std::move(indices), f, name, codename);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::slice_advanced_integer_1d",
+            util::generate_error_message(
+                "unexpected type for indices used for advanced integer array "
+                "indexing", name, codename));
+    }
+
+    template <typename T, typename Vector, typename F>
+    ir::node_data<T> slice_advanced_boolean_1d(
+        Vector&& data, ir::node_data<std::uint8_t> && indices, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        switch (indices.index())
+        {
+        case 0: HPX_FALLTHROUGH;        // 0d index
+        case 1: HPX_FALLTHROUGH;
+        case 3: HPX_FALLTHROUGH;        // 1d indexes
+        case 2: HPX_FALLTHROUGH;
+        case 4: HPX_FALLTHROUGH;        // 2d indexes
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::slice_advanced_boolean_1d",
+            util::generate_error_message(
+                "unexpected type for indices used for advanced integer array "
+                "indexing", name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Vector, typename F>
+    ir::node_data<T> slice1d(
+        Vector&& data, primitive_argument_type const& indices, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        if (is_list_operand_strict(indices))
+        {
+            detail::slicing_index_type t =
+                detail::is_advanced_slicing_index(indices);
+
+            if (t == detail::slicing_index_basic)
+            {
+                // basic slicing and indexing
+                std::size_t size = data.size();
+                return slice1d<T>(std::forward<Vector>(data),
+                    util::slicing_helpers::extract_slicing(indices, size),
+                    f, name, codename);
+            }
+
+            if (t == detail::slicing_index_advanced_integer)
+            {
+                // advanced indexing (integer array indexing)
+                auto integer_index = detail::extract_advanced_integer_index(
+                    indices, name, codename);
+
+                return slice_advanced_integer_1d<T>(std::forward<Vector>(data),
+                    extract_integer_value_strict(integer_index, name, codename),
+                    f, name, codename);
+            }
+
+            if (t == detail::slicing_index_advanced_boolean)
+            {
+                // advanced indexing (Boolean array indexing)
+                auto boolean_index = detail::extract_advanced_boolean_index(
+                    indices, name, codename);
+
+                return slice_advanced_boolean_1d<T>(std::forward<Vector>(data),
+                    extract_boolean_value_strict(boolean_index, name, codename),
+                    f, name, codename);
+            }
+        }
+        else
+        {
+            if (is_integer_operand_strict(indices))
+            {
+                // advanced indexing (integer array indexing)
+                return slice_advanced_integer_1d<T>(std::forward<Vector>(data),
+                    extract_integer_value_strict(indices, name, codename),
+                    f, name, codename);
+            }
+
+            if (is_boolean_operand_strict(indices))
+            {
+                // advanced indexing (Boolean array indexing)
+                return slice_advanced_boolean_1d<T>(std::forward<Vector>(data),
+                    extract_boolean_value_strict(indices, name, codename),
+                    f, name, codename);
+            }
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::slice1d",
+            util::generate_error_message(
+                "unsupported indexing type", name, codename));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -303,13 +582,8 @@ namespace phylanx { namespace execution_tree
 
         case 1: HPX_FALLTHROUGH;
         case 3:
-            {
-                auto v = data.vector();
-                return slice1d<T>(v,
-                    util::slicing_helpers::extract_slicing(
-                        indices, v.size(), name, codename),
-                    detail::slice_identity<T>{}, name, codename);
-            }
+            return slice1d<T>(data.vector(), indices,
+                detail::slice_identity<T>{}, name, codename);
 
         case 2: HPX_FALLTHROUGH;
         case 4:
@@ -360,19 +634,15 @@ namespace phylanx { namespace execution_tree
                 if (valid(rows))
                 {
                     HPX_ASSERT(!valid(columns));
-                    return slice1d<T>(v,
-                        util::slicing_helpers::extract_slicing(
-                            rows, v.size(), name, codename),
-                        detail::slice_identity<T>{}, name, codename);
+                    return slice1d<T>(
+                        v, rows, detail::slice_identity<T>{}, name, codename);
                 }
 
                 if (valid(columns))
                 {
                     HPX_ASSERT(!valid(rows));
-                    return slice1d<T>(v,
-                        util::slicing_helpers::extract_slicing(
-                            columns, v.size(), name, codename),
-                        detail::slice_identity<T>{}, name, codename);
+                    return slice1d<T>(v, columns, detail::slice_identity<T>{},
+                        name, codename);
                 }
             }
             break;
@@ -555,7 +825,7 @@ namespace phylanx { namespace execution_tree
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::detail::slice_assign_vector<T>",
-                    "cannot assign a vector to a vector");
+                    "cannot assign a vector to a matrix");
                 return ir::node_data<T>{std::move(data)};
             }
         };
@@ -684,23 +954,22 @@ namespace phylanx { namespace execution_tree
         case 1:
             {
                 auto v = data.vector();
-                std::size_t size = v.size();
 
-                auto vector_slice = util::slicing_helpers::extract_slicing(
-                    indices, size, name, codename);
+                std::size_t result_size =
+                    slicing_size(indices, v.size(), name, codename);
 
                 typename ir::node_data<T>::storage1d_type result;
                 extract_value_vector(result, std::move(value),
-                    vector_slice.size(), name, codename);
+                    result_size, name, codename);
 
                 ir::node_data<T> rhs(std::move(result));
                 if (data.is_ref())
                 {
-                    return slice1d<T>(std::move(v), vector_slice,
+                    return slice1d<T>(std::move(v), indices,
                         detail::slice_assign_vector<T>{rhs}, name, codename);
                 }
 
-                return slice1d<T>(data.vector_non_ref(), vector_slice,
+                return slice1d<T>(data.vector_non_ref(), indices,
                     detail::slice_assign_vector<T>{rhs}, name, codename);
             }
 
@@ -810,22 +1079,21 @@ namespace phylanx { namespace execution_tree
         case 1:
             {
                 auto v = data.vector();
-                std::size_t size = v.size();
-
-                auto vector_slice = util::slicing_helpers::extract_slicing(
-                    rows, size, name, codename);
-
-                typename ir::node_data<T>::storage1d_type result;
-                extract_value_vector(result, std::move(value),
-                    vector_slice.size(), name, codename);
-
-                ir::node_data<T> rhs(std::move(result));
                 if (data.is_ref())
                 {
                     if (valid(rows))
                     {
                         HPX_ASSERT(!valid(columns));
-                        return slice1d<T>(std::move(v), vector_slice,
+
+                        std::size_t result_size =
+                            slicing_size(rows, v.size(), name, codename);
+
+                        typename ir::node_data<T>::storage1d_type result;
+                        extract_value_vector(result, std::move(value),
+                            result_size, name, codename);
+
+                        ir::node_data<T> rhs(std::move(result));
+                        return slice1d<T>(std::move(v), rows,
                             detail::slice_assign_vector<T>{rhs}, name,
                             codename);
                     }
@@ -833,7 +1101,16 @@ namespace phylanx { namespace execution_tree
                     if (valid(columns))
                     {
                         HPX_ASSERT(!valid(rows));
-                        return slice1d<T>(std::move(v), vector_slice,
+
+                        std::size_t result_size =
+                            slicing_size(columns, v.size(), name, codename);
+
+                        typename ir::node_data<T>::storage1d_type result;
+                        extract_value_vector(result, std::move(value),
+                            result_size, name, codename);
+
+                        ir::node_data<T> rhs(std::move(result));
+                        return slice1d<T>(std::move(v), columns,
                             detail::slice_assign_vector<T>{rhs}, name,
                             codename);
                     }
@@ -843,7 +1120,16 @@ namespace phylanx { namespace execution_tree
                     if (valid(rows))
                     {
                         HPX_ASSERT(!valid(columns));
-                        return slice1d<T>(data.vector_non_ref(), vector_slice,
+
+                        std::size_t result_size =
+                            slicing_size(rows, v.size(), name, codename);
+
+                        typename ir::node_data<T>::storage1d_type result;
+                        extract_value_vector(result, std::move(value),
+                            result_size, name, codename);
+
+                        ir::node_data<T> rhs(std::move(result));
+                        return slice1d<T>(data.vector_non_ref(), rows,
                             detail::slice_assign_vector<T>{rhs}, name,
                             codename);
                     }
@@ -851,7 +1137,16 @@ namespace phylanx { namespace execution_tree
                     if (valid(columns))
                     {
                         HPX_ASSERT(!valid(rows));
-                        return slice1d<T>(data.vector_non_ref(), vector_slice,
+
+                        std::size_t result_size =
+                            slicing_size(columns, v.size(), name, codename);
+
+                        typename ir::node_data<T>::storage1d_type result;
+                        extract_value_vector(result, std::move(value),
+                            result_size, name, codename);
+
+                        ir::node_data<T> rhs(std::move(result));
+                        return slice1d<T>(data.vector_non_ref(), columns,
                             detail::slice_assign_vector<T>{rhs}, name,
                             codename);
                     }
