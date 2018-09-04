@@ -26,11 +26,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         access_argument() = default;
 
-        access_argument(std::vector<primitive_argument_type>&& args,
+        access_argument(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params,
+            primitive_arguments_type const& params,
             eval_mode) const override;
 
     private:

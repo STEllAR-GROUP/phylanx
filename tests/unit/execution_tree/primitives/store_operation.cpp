@@ -26,6 +26,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
     auto const& code = phylanx::execution_tree::compile(codestr, snippets, env);
     return code.run();
 }
+
 /////////////////////////////////////////////////////////////////////////////
 void test_store_operation()
 {
@@ -287,7 +288,7 @@ void test_set_single_value_to_vector_negative_dir()
     std::string const code = R"(block(
         define(a, hstack(0.052, 0.95, 0.55, 0.17, 0.85)),
         define(val, 0.42),
-        store(slice(a, 1, nil), val),
+        store(slice(a, -1, nil), val),
         a
     ))";
 
@@ -363,16 +364,16 @@ int main(int argc, char* argv[])
     test_set_operation_1d_single_negative_step();
 
     test_set_operation_2d();
-//     test_set_operation_2d_vector_input();
-//     test_set_operation_2d_vector_input_single_step();
-//     test_set_operation_2d_vector_input_negative_single_step();
+    test_set_operation_2d_vector_input();
+    test_set_operation_2d_vector_input_single_step();
+    test_set_operation_2d_vector_input_negative_single_step();
     test_set_operation_2d_negative_step();
-//     test_set_operation_2d_single_element_input();
+    test_set_operation_2d_single_element_input();
 
-//     test_set_single_value_to_vector();
-//     test_set_single_value_to_vector_negative_dir();
-//     test_set_single_value_to_matrix();
-//     test_set_single_value_to_matrix_negative_dir();
+    test_set_single_value_to_vector();
+    test_set_single_value_to_vector_negative_dir();
+    test_set_single_value_to_matrix();
+    test_set_single_value_to_matrix_negative_dir();
 
     return hpx::util::report_errors();
 }

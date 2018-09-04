@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     define_variable::define_variable(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> define_variable::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         // evaluate the expression bound to this name and store the value in
         // the associated variable
@@ -93,8 +93,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    void define_variable::store(std::vector<primitive_argument_type>&& vals,
-        std::vector<primitive_argument_type>&& params)
+    void define_variable::store(primitive_arguments_type&& vals,
+        primitive_arguments_type&& params)
     {
         if (!valid(operands_[1]))
         {

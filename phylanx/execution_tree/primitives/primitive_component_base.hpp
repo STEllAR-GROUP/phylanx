@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree
             primitive_component_base() = default;
 
             primitive_component_base(
-                std::vector<primitive_argument_type>&& params,
+                primitive_arguments_type&& params,
                 std::string const& name, std::string const& codename,
                 bool eval_direct = false);
 
@@ -48,18 +48,18 @@ namespace phylanx { namespace execution_tree
 
             // eval_action
             virtual hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& params,
+                primitive_arguments_type const& params,
                 eval_mode mode) const;
 
             virtual hpx::future<primitive_argument_type> eval(
                 primitive_argument_type && param, eval_mode mode) const;
 
             // store_action
-            virtual void store(std::vector<primitive_argument_type>&&,
-                std::vector<primitive_argument_type>&&);
+            virtual void store(primitive_arguments_type&&,
+                primitive_arguments_type&&);
 
             virtual void store(primitive_argument_type&&,
-                std::vector<primitive_argument_type>&&);
+                primitive_arguments_type&&);
 
             // extract_topology_action
             virtual topology expression_topology(
@@ -68,21 +68,21 @@ namespace phylanx { namespace execution_tree
 
             // bind_action
             virtual bool bind(
-                std::vector<primitive_argument_type> const& params) const;
+                primitive_arguments_type const& params) const;
 
         protected:
             friend class primitive_component;
 
             // helper functions to invoke eval functionalities
             hpx::future<primitive_argument_type> do_eval(
-                std::vector<primitive_argument_type> const& params,
+                primitive_arguments_type const& params,
                 eval_mode mode) const;
 
             hpx::future<primitive_argument_type> do_eval(
                 primitive_argument_type && param, eval_mode mode) const;
 
             virtual hpx::future<primitive_argument_type> eval(
-                std::vector<primitive_argument_type> const& params) const;
+                primitive_arguments_type const& params) const;
 
             // access data for performance counter
             std::int64_t get_eval_count(bool reset) const;
@@ -101,7 +101,7 @@ namespace phylanx { namespace execution_tree
             {
                 return operands_.empty();
             }
-            std::vector<primitive_argument_type> const& operands() const
+            primitive_arguments_type const& operands() const
             {
                 return operands_.empty() ||
                         (operands_.size() == 1 && !valid(operands_[0])) ?
@@ -113,8 +113,8 @@ namespace phylanx { namespace execution_tree
             static bool get_sync_execution();
 
         protected:
-            static std::vector<primitive_argument_type> noargs;
-            mutable std::vector<primitive_argument_type> operands_;
+            static primitive_arguments_type noargs;
+            mutable primitive_arguments_type operands_;
 
             std::string const name_;        // the unique name of this primitive
             std::string const codename_;    // the name of the original code source
@@ -134,12 +134,12 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Factory functions
     using factory_function_type = primitive (*)(
-        hpx::id_type const&, std::vector<primitive_argument_type>&&,
+        hpx::id_type const&, primitive_arguments_type&&,
         std::string const&, std::string const&);
 
     using primitive_factory_function_type =
         std::shared_ptr<primitives::primitive_component_base> (*)(
-            std::vector<primitive_argument_type>&&, std::string const&,
+            primitive_arguments_type&&, std::string const&,
             std::string const&);
 
     using match_pattern_type = hpx::util::tuple<std::string,
@@ -160,7 +160,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
@@ -172,7 +172,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     template <typename Primitive>
     std::shared_ptr<primitives::primitive_component_base>
-    create_primitive(std::vector<primitive_argument_type>&& args,
+    create_primitive(primitive_arguments_type&& args,
         std::string const& name, std::string const& codename)
     {
         return std::static_pointer_cast<primitives::primitive_component_base>(

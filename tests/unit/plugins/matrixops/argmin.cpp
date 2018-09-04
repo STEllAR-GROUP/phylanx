@@ -30,7 +30,7 @@ void test_argmin_0d()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_argmin(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs)
     });
 
@@ -55,7 +55,7 @@ void test_argmin_1d()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_argmin(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs)
     });
 
@@ -80,7 +80,7 @@ void test_argmin_2d_flat()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_argmin(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs)
     });
 
@@ -111,7 +111,8 @@ void test_argmin_2d_x_axis()
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_argmin(hpx::find_here(),
-            std::vector<arg_type>{std::move(lhs), std::move(rhs)});
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(lhs), std::move(rhs)});
 
     hpx::future<arg_type> f = p.eval();
 
@@ -139,7 +140,8 @@ void test_argmin_2d_y_axis()
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_argmin(hpx::find_here(),
-            std::vector<arg_type>{std::move(lhs), std::move(rhs)});
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(lhs), std::move(rhs)});
 
     hpx::future<arg_type> f = p.eval();
 

@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     access_variable::access_variable(
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
         : primitive_component_base(std::move(operands), name, codename, true)
     {
@@ -66,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
-        std::vector<primitive_argument_type> const& params,
+        primitive_arguments_type const& params,
         eval_mode mode) const
     {
         // handle slicing, we can replace the params with our slicing
@@ -105,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         util::future_or_value<primitive_argument_type>&& cols)
                     -> hpx::future<primitive_argument_type>
                     {
-                        std::vector<primitive_argument_type> args;
+                        primitive_arguments_type args;
                         args.reserve(2);
                         args.emplace_back(rows.get());
                         args.emplace_back(cols.get());
@@ -132,8 +132,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return value_operand(operands_[0], noargs, name_, codename_, mode);
     }
 
-    void access_variable::store(std::vector<primitive_argument_type>&& vals,
-            std::vector<primitive_argument_type>&& params)
+    void access_variable::store(primitive_arguments_type&& vals,
+            primitive_arguments_type&& params)
     {
         if (vals.size() != 1)
         {
@@ -165,13 +165,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void access_variable::store(primitive_argument_type&& val,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         if (operands_.size() > 1)
         {
             // handle slicing, simply append the slicing parameters to the end of
             // the argument list
-            std::vector<primitive_argument_type> vals;
+            primitive_arguments_type vals;
             vals.reserve(operands_.size());
             vals.emplace_back(std::move(val));
 

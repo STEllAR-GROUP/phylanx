@@ -22,12 +22,12 @@ void test_all_operation_0d_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_0d_false()
@@ -39,12 +39,12 @@ void test_all_operation_0d_false()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_0d_double_true()
@@ -56,12 +56,12 @@ void test_all_operation_0d_double_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_0d_double_false()
@@ -73,12 +73,12 @@ void test_all_operation_0d_double_false()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d_double()
@@ -93,13 +93,13 @@ void test_all_operation_1d_double()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
     HPX_TEST_EQ(v.nonZeros() == v.size(),
-        phylanx::execution_tree::extract_scalar_boolean_value(f));
+        phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d()
@@ -114,13 +114,13 @@ void test_all_operation_1d()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
     HPX_TEST_EQ(v.nonZeros() == v.size(),
-        phylanx::execution_tree::extract_scalar_boolean_value(f));
+        phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d_true()
@@ -135,12 +135,12 @@ void test_all_operation_1d_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d_double_true()
@@ -155,12 +155,12 @@ void test_all_operation_1d_double_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d_numpy_false()
@@ -174,12 +174,12 @@ void test_all_operation_1d_numpy_false()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d_numpy_true()
@@ -193,12 +193,12 @@ void test_all_operation_1d_numpy_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d_double_numpy_false()
@@ -212,12 +212,12 @@ void test_all_operation_1d_double_numpy_false()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_1d_double_numpy_true()
@@ -231,12 +231,12 @@ void test_all_operation_1d_double_numpy_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d()
@@ -251,13 +251,13 @@ void test_all_operation_2d()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
     HPX_TEST_EQ(m.nonZeros() == m.rows() * m.columns(),
-        phylanx::execution_tree::extract_scalar_boolean_value(f));
+        phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d_true()
@@ -272,12 +272,12 @@ void test_all_operation_2d_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d_double()
@@ -292,13 +292,13 @@ void test_all_operation_2d_double()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
     HPX_TEST_EQ(m.nonZeros() == m.rows() * m.columns(),
-        phylanx::execution_tree::extract_scalar_boolean_value(f));
+        phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d_double_true()
@@ -313,12 +313,12 @@ void test_all_operation_2d_double_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d_double_numpy_false()
@@ -332,12 +332,12 @@ void test_all_operation_2d_double_numpy_false()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d_double_numpy_true()
@@ -351,12 +351,12 @@ void test_all_operation_2d_double_numpy_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d_numpy_true()
@@ -370,12 +370,12 @@ void test_all_operation_2d_numpy_true()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(1, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(1, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 void test_all_operation_2d_numpy_false()
@@ -389,12 +389,12 @@ void test_all_operation_2d_numpy_false()
     phylanx::execution_tree::primitive all =
         phylanx::execution_tree::primitives::create_all_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = all.eval().get();
 
-    HPX_TEST_EQ(0, phylanx::execution_tree::extract_scalar_boolean_value(f));
+    HPX_TEST_EQ(0, phylanx::execution_tree::extract_boolean_value_scalar(f));
 }
 
 int main(int argc, char* argv[])

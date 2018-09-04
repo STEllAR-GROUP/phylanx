@@ -28,7 +28,7 @@ void vstack_operation_0d()
     phylanx::execution_tree::primitive vstack =
         phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{std::move(first)},
                 phylanx::execution_tree::primitive_argument_type{std::move(second)}
             });
@@ -62,7 +62,7 @@ void vstack_operation_1d()
     phylanx::execution_tree::primitive vstack =
         phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{std::move(first)},
                 phylanx::execution_tree::primitive_argument_type{std::move(second)}
             });
@@ -108,7 +108,7 @@ void vstack_operation_1d_2d_mix()
     phylanx::execution_tree::primitive vstack =
         phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{
                     std::move(first)},
                 phylanx::execution_tree::primitive_argument_type{
@@ -148,7 +148,7 @@ void vstack_operation_2d()
     phylanx::execution_tree::primitive vstack =
         phylanx::execution_tree::primitives::create_vstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{std::move(first)},
                 phylanx::execution_tree::primitive_argument_type{std::move(second)}
             });

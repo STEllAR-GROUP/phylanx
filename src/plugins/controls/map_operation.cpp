@@ -48,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     map_operation::map_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -227,8 +227,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> map_operation::map_1(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
@@ -255,7 +255,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::range&& list = extract_list_value_strict(
                         std::move(arg), this_->name_, this_->codename_);
 
-                    std::vector<primitive_argument_type> result;
+                    primitive_arguments_type result;
                     result.reserve(list.size());
 
                     for (auto && elem : list)
@@ -303,35 +303,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        bool all_list_operands(std::vector<primitive_argument_type> const& args)
+        bool all_list_operands(primitive_arguments_type const& args)
         {
             return std::all_of(args.begin(), args.end(), &is_list_operand_strict);
         }
 
         bool all_numeric_operands(
-            std::vector<primitive_argument_type> const& args)
+            primitive_arguments_type const& args)
         {
             return std::all_of(args.begin(), args.end(), &is_numeric_operand);
         }
 
         std::size_t extract_numeric_value_dimension(
-            std::vector<primitive_argument_type> const& args,
+            primitive_arguments_type const& args,
             std::string const& name, std::string const& codename)
         {
             std::size_t dimension = 0;
-            std::array<std::size_t, 2> dimensions;
 
             for (auto const& arg : args)
             {
                 std::size_t dim =
                     extract_numeric_value_dimension(arg, name, codename);
-                std::array<std::size_t, 2> dims =
-                    extract_numeric_value_dimensions(arg, name, codename);
 
                 if (dimension == 0)
                 {
                     dimension = dim;
-                    dimensions = dims;
                 }
 
                 if (dim != dimension)
@@ -349,7 +345,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type map_operation::map_n_lists(
-        primitive const* p, std::vector<primitive_argument_type>&& args) const
+        primitive const* p, primitive_arguments_type&& args) const
     {
         std::vector<ir::range> lists;
         lists.reserve(args.size());
@@ -384,12 +380,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             iters.push_back(j.begin());
         }
 
-        std::vector<primitive_argument_type> result;
+        primitive_arguments_type result;
         result.reserve(size);
 
         for (std::size_t i = 0; i != size; ++i)
         {
-            std::vector<primitive_argument_type> args;
+            primitive_arguments_type args;
             args.reserve(numlists);
 
             // Each invocation has its own argument set
@@ -406,13 +402,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type map_operation::map_n_scalar(primitive const* p,
-        std::vector<primitive_argument_type>&& args) const
+        primitive_arguments_type&& args) const
     {
         return p->eval(hpx::launch::sync, std::move(args));
     }
 
     primitive_argument_type map_operation::map_n_vector(primitive const* p,
-        std::vector<primitive_argument_type>&& args) const
+        primitive_arguments_type&& args) const
     {
         std::vector<ir::node_data<double>> values;
         values.reserve(args.size());
@@ -427,7 +423,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (std::size_t i = 0; i != size; ++i)
         {
-            std::vector<primitive_argument_type> params;
+            primitive_arguments_type params;
             params.reserve(args.size());
             for (std::size_t j = 0; j != args.size(); ++j)
             {
@@ -457,7 +453,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type map_operation::map_n_matrix(primitive const* p,
-        std::vector<primitive_argument_type>&& args) const
+        primitive_arguments_type&& args) const
     {
         std::vector<ir::node_data<double>> values;
         values.reserve(args.size());
@@ -473,7 +469,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for (std::size_t i = 0; i != m0.rows(); ++i)
         {
-            std::vector<primitive_argument_type> params;
+            primitive_arguments_type params;
             params.reserve(args.size());
             for (std::size_t j = 0; j != args.size(); ++j)
             {
@@ -508,18 +504,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> map_operation::map_n(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         // all remaining operands have to be lists
-        std::vector<primitive_argument_type> lists;
+        primitive_arguments_type lists;
         std::copy(operands.begin() + 1, operands.end(),
             std::back_inserter(lists));
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_](primitive_argument_type&& bound_func,
-                std::vector<primitive_argument_type>&& args)
+                primitive_arguments_type&& args)
             ->  primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -572,8 +568,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> map_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() < 2)
         {
@@ -622,7 +618,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> map_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

@@ -85,8 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return util::get<1>(val).dimensions();
 
         case 2:    // std::uint64_t
-            return std::array<std::size_t, 2>{
-                std::size_t(util::get<2>(val)[0]), 1ull};
+            return util::get<2>(val).dimensions();
 
         case 4:    // phylanx::ir::node_data<double>
             return util::get<4>(val).dimensions();
@@ -136,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<std::array<std::size_t, 2>> dimensions_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -218,7 +217,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<distribution_parameters_type> distribution_parameters_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -238,7 +237,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    random::random(std::vector<primitive_argument_type>&& operands,
+    random::random(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -543,11 +542,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///////////////////////////////////////////////////////////////////////
         inline int num_dimensions(std::array<std::size_t, 2> const& dims)
         {
-            if (dims[1] != 1)
+            if (dims[0] != 1)
             {
                 return 2;
             }
-            if (dims[0] != 1)
+            if (dims[1] != 1)
             {
                 return 1;
             }
@@ -556,8 +555,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> random::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -609,7 +608,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->random0d(std::move(params));
 
                 case 1:
-                    return this_->random1d(dims[0], std::move(params));
+                    return this_->random1d(dims[1], std::move(params));
 
                 case 2:
                     return this_->random2d(dims, std::move(params));
@@ -646,7 +645,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> random::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {
@@ -660,13 +659,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     hpx::future<primitive_argument_type> set_seed(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
+        primitive_arguments_type const&,
+        primitive_arguments_type const&,
         std::string const&, std::string const&);
 
     primitive_argument_type get_seed(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
+        primitive_arguments_type const&,
+        primitive_arguments_type const&,
         std::string const&, std::string const&);
 }}}
 
@@ -709,8 +708,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> set_seed(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         if (operands.empty() || operands.size() > 2)
@@ -742,8 +741,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type get_seed(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
+        primitive_arguments_type const&,
+        primitive_arguments_type const&,
         std::string const&, std::string const&)
     {
         return primitive_argument_type{

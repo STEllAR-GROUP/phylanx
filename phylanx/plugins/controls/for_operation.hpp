@@ -28,18 +28,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for_operation() = default;
 
-        for_operation(std::vector<primitive_argument_type>&& operands,
+        for_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     private:
         struct iteration_for;
     };
 
     inline primitive create_for_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

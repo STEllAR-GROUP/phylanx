@@ -39,7 +39,7 @@ void test_linmatrix()
     phylanx::execution_tree::primitive linearmatrix =
         phylanx::execution_tree::primitives::create_linearmatrix(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 move(nx), move(ny), move(base_value), move(dx), move(dy)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =

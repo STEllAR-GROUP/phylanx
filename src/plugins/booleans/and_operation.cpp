@@ -85,7 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operator()(
             T&& lhs, T&& rhs) const
         {
-            return primitive_argument_type(ir::node_data<std::uint8_t>{lhs && rhs});
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{lhs && rhs});
         }
 
         primitive_argument_type operator()(
@@ -159,8 +160,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 std::move(rhs));
         }
 
-        primitive_argument_type operator()(
-            and_operation::operand_type&& lhs, and_operation::operand_type&& rhs) const
+        primitive_argument_type operator()(and_operation::operand_type&& lhs,
+            and_operation::operand_type&& rhs) const
         {
             return and_.and_all(std::move(lhs), std::move(rhs));
         }
@@ -193,7 +194,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    and_operation::and_operation(std::vector<primitive_argument_type>&& operands,
+    and_operation::and_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -420,7 +421,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 blaze::row(m, i) = blaze::map(blaze::row(cm, i),
                     blaze::trans(cv),
                     [](bool x, bool y) { return x && y; });
-            return primitive_argument_type(ir::node_data<std::uint8_t>{std::move(m)});
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{std::move(m)});
         }
         for (size_t i = 0UL; i < cm.rows(); i++)
             blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
@@ -515,8 +517,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> and_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         // TODO: support for operands.size() > 2
         if (operands.size() != 2)
@@ -558,7 +560,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // implement '&&' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> and_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

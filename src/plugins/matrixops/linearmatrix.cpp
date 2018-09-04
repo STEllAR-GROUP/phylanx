@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    linearmatrix::linearmatrix(std::vector<primitive_argument_type>&& args,
+    linearmatrix::linearmatrix(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {}
@@ -107,8 +107,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> linearmatrix::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() != 5)
         {
@@ -147,7 +147,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> linearmatrix::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

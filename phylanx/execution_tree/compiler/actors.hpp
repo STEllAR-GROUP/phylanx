@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
     ///////////////////////////////////////////////////////////////////////////
     using result_type = primitive_argument_type;
     using argument_type = primitive_argument_type;
-    using arguments_type = std::vector<primitive_argument_type>;
+    using arguments_type = primitive_arguments_type;
 
     using stored_function =
         hpx::util::function_nonser<result_type(arguments_type&&)>;
@@ -114,7 +114,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (is_primitive_operand(arg_))
             {
                 return extract_copy_value(value_operand_sync(arg_,
-                    std::vector<primitive_argument_type>{}, name_));
+                    primitive_arguments_type{}, name_));
             }
             return extract_ref_value(arg_);
         }

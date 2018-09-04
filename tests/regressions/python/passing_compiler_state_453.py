@@ -20,7 +20,7 @@ define(mul2, n,
     )
 )
 """
-et.compile(src_mul2, cs)
+et.compile('passing_compiler_state_453.py', src_mul2, cs)
 
 
 @Phylanx(compiler_state=cs)

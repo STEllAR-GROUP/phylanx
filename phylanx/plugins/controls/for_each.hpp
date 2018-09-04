@@ -28,17 +28,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for_each() = default;
 
-        for_each(std::vector<primitive_argument_type>&& operands,
+        for_each(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args,
+            primitive_arguments_type const& args,
             eval_mode mode) const override;
 
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args,
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
             eval_mode mode) const;
 
     private:
@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_for_each(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

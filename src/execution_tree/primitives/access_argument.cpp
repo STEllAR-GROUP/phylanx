@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     access_argument::access_argument(
-            std::vector<primitive_argument_type>&& args,
+            primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename, true)
     {
@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> access_argument::eval(
-        std::vector<primitive_argument_type> const& params, eval_mode) const
+        primitive_arguments_type const& params, eval_mode) const
     {
         if (argnum_ >= params.size())
         {

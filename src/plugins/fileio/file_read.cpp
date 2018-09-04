@@ -41,14 +41,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    file_read::file_read(std::vector<primitive_argument_type>&& operands,
+    file_read::file_read(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     // read data from given file and return content
     hpx::future<primitive_argument_type> file_read::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (operands_.size() != 1)
         {

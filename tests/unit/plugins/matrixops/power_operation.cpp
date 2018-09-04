@@ -27,7 +27,7 @@ void test_power_operation_0d()
     phylanx::execution_tree::primitive power =
         phylanx::execution_tree::primitives::create_power_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{std::move(lhs)},
                 phylanx::execution_tree::primitive_argument_type{std::move(rhs)}
             });
@@ -56,7 +56,7 @@ void test_power_operation_1d()
     phylanx::execution_tree::primitive power =
         phylanx::execution_tree::primitives::create_power_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{std::move(lhs)},
                 phylanx::execution_tree::primitive_argument_type{std::move(rhs)}
             });
@@ -87,7 +87,7 @@ void test_power_operation_2d()
     phylanx::execution_tree::primitive power =
         phylanx::execution_tree::primitives::create_power_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{std::move(lhs)},
                 phylanx::execution_tree::primitive_argument_type{std::move(rhs)}
             });

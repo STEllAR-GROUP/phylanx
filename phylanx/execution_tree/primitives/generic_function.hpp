@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         generic_function() = default;
 
-        generic_function(std::vector<primitive_argument_type>&& operands,
+        generic_function(primitive_arguments_type&& operands,
                 std::string const& name, std::string const& codename)
           : primitive_component_base(std::move(operands), name, codename)
         {}
@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override
+            primitive_arguments_type const& args) const override
         {
             return hpx::async(
                 Action(), hpx::find_here(), operands_, args, name_, codename_);
@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Action>
     primitive create_generic_function(
         hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(locality,

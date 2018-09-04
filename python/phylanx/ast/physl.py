@@ -21,7 +21,6 @@ mapped_methods = {
     "multiply": "__mul",
     "negative": "__minus",
     "print": "cout",
-    "sqrt": "square_root",
     "subtract": "__sub",
 }
 
@@ -102,6 +101,7 @@ class PhySL:
         for key, val in self.fglobals.items():
             if type(val).__name__ == 'module' and val.__name__ == 'numpy':
                 self.numpy_aliases.add(key)
+        self.file_name = self.fglobals['__file__']
 
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
@@ -123,7 +123,7 @@ class PhySL:
         elif PhySL.compiler_state is None:
             PhySL.compiler_state = compiler_state()
 
-        phylanx.execution_tree.compile(self.__src__, PhySL.compiler_state)
+        phylanx.execution_tree.compile(self.file_name, self.__src__, PhySL.compiler_state)
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(

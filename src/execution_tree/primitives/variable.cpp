@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    variable::variable(std::vector<primitive_argument_type>&& operands,
+    variable::variable(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
       , value_set_(false)
@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_mode mode) const
     {
         if (!value_set_ && !valid(bound_value_))
         {
@@ -127,7 +127,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     //////////////////////////////////////////////////////////////////////////
-    bool variable::bind(std::vector<primitive_argument_type> const& args) const
+    bool variable::bind(primitive_arguments_type const& args) const
     {
         if (!value_set_)
         {
@@ -151,15 +151,55 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void variable::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void variable::store1dslice(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
+    {
+        if (!valid(bound_value_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::store1dslice",
+                generate_error_message(
+                    "in order for slicing to be possible a variable must have "
+                    "a value bound to it"));
+        }
+
+        auto result = slice(std::move(bound_value_),
+            value_operand_sync(
+                data[1], std::move(params), name_, codename_),
+            std::move(data[0]), name_, codename_);
+        bound_value_ = std::move(result);
+    }
+
+    void variable::store2dslice(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
+    {
+        if (!valid(bound_value_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::store2dslice",
+                generate_error_message(
+                    "in order for slicing to be possible a variable must have "
+                    "a value bound to it"));
+        }
+
+        auto data1 =
+            value_operand_sync(data[1], params, name_, codename_);
+        auto result = slice(std::move(bound_value_), data1,
+            value_operand_sync(
+                data[2], std::move(params), name_, codename_),
+            std::move(data[0]), name_, codename_);
+        bound_value_ = std::move(result);
+    }
+
+    void variable::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         // data[0] is the new value to store in this variable
         // data[1] and data[2] (optional) are interpreted as slicing arguments
         if (data.empty())
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "variable::bind",
+                "variable::store",
                 generate_error_message(
                     "the right hand side expression is not valid"));
         }
@@ -169,7 +209,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (data.size() > 1)
             {
                 HPX_THROW_EXCEPTION(hpx::invalid_status,
-                    "variable::bind",
+                    "variable::store",
                     generate_error_message(
                         "the initial expression a variable is bound to is "
                         "not allowed to have slicing parameters"));
@@ -187,40 +227,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return;
 
             case 2:
-                {
-                    auto result = slice(std::move(bound_value_),
-                        value_operand_sync(
-                            data[1], std::move(params), name_, codename_),
-                        std::move(data[0]));
-                    bound_value_ = std::move(result);
-                    return;
-                }
+                store1dslice(std::move(data), std::move(params));
+                return;
 
             case 3:
-                {
-                    auto data1 =
-                        value_operand_sync(data[1], params, name_, codename_);
-                    auto result = slice(std::move(bound_value_), data1,
-                        value_operand_sync(
-                            data[2], std::move(params), name_, codename_),
-                        std::move(data[0]));
-                    bound_value_ = std::move(result);
-                    return;
-                }
+                store2dslice(std::move(data), std::move(params));
+                return;
 
             default:
                 break;
             }
 
             HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "variable::bind",
+                "variable::store",
                 generate_error_message(
                     "there can be at most two slicing arguments"));
         }
     }
 
     void variable::store(primitive_argument_type&& data,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         // data is the new value to store in this variable
         if (!value_set_ || !valid(operands_[0]))

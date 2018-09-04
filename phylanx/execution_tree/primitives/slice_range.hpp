@@ -16,16 +16,16 @@ namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
     // extract a slice from the given range instance
-    PHYLANX_EXPORT primitive_argument_type slice(ir::range const& data,
+    PHYLANX_EXPORT primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     ///////////////////////////////////////////////////////////////////////////
-    // modify a slice of the given range instance
-    PHYLANX_EXPORT primitive_argument_type slice(ir::range&& data,
+    // modify a slice of the given list instance
+    PHYLANX_EXPORT primitive_argument_type slice_list(ir::range&& data,
         primitive_argument_type const& indices,
-        ir::range&& value, std::string const& name = "",
+        primitive_argument_type&& value, std::string const& name = "",
         std::string const& codename = "<unknown>");
 }}
 

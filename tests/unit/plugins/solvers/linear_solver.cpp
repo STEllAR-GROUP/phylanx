@@ -147,7 +147,7 @@ void test_linear_solver_lu(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)},
             func_name);
 
@@ -172,7 +172,7 @@ void test_linear_solver(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)},
             func_name);
 
@@ -201,7 +201,7 @@ void test_linear_solver_l(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs), std::move(ul)},
             func_name);
 
@@ -230,7 +230,7 @@ void test_linear_solver_u(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs), std::move(ul)},
             func_name);
 

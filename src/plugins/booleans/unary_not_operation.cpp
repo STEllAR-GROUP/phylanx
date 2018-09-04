@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     unary_not_operation::unary_not_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -101,6 +101,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type operator()(
+            ir::node_data<std::int64_t>&& ops) const
+        {
+            return that_.unary_not_all(std::move(ops));
+        }
+
+        primitive_argument_type operator()(
             ir::node_data<std::uint8_t>&& ops) const
         {
             return that_.unary_not_all(std::move(ops));
@@ -110,8 +116,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     hpx::future<primitive_argument_type> unary_not_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         //TODO: support for operands.size()>1
         if (operands.size() != 1)
@@ -136,15 +142,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_](
-                    operands_type&& ops) -> primitive_argument_type {
-                    return primitive_argument_type(
-                        util::visit(visit_unary_not{*this_},
-                            std::move(ops[0].variant())));
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_](operands_type&& ops) -> primitive_argument_type
+            {
+                return primitive_argument_type(
+                    util::visit(visit_unary_not{*this_},
+                        std::move(ops[0].variant())));
 
-                }),
+            }),
             detail::map_operands(
                 operands, functional::literal_operand{}, args,
                 name_, codename_));
@@ -153,7 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     // Implement unary '!' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> unary_not_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

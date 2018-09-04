@@ -99,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     car_cdr_operation::car_cdr_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , operation_(detail::generate_operation_code(name))
@@ -147,7 +147,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // create a copy of the vector excluding index 0
-        std::vector<primitive_argument_type> list_copy;
+        primitive_arguments_type list_copy;
         list_copy.reserve(list.size() - 1);
         auto it = list.begin();
         std::move(++it, list.end(), std::back_inserter(list_copy));
@@ -156,8 +156,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> car_cdr_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() != 1)
         {
@@ -210,7 +210,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> car_cdr_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

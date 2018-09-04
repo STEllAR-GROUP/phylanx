@@ -46,7 +46,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     add_operation::add_operation(
-            std::vector<primitive_argument_type> && operands,
+            primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -876,7 +876,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     void add_operation::append_element(
-        std::vector<primitive_argument_type>& result,
+        primitive_arguments_type& result,
         primitive_argument_type&& rhs) const
     {
         if (is_list_operand_strict(rhs))
@@ -913,7 +913,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type add_operation::handle_list_operands(
-        std::vector<primitive_argument_type>&& ops) const
+        primitive_arguments_type&& ops) const
     {
         auto it = ops.begin();
         auto end = ops.end();
@@ -968,7 +968,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type add_operation::handle_numeric_operands(
-        std::vector<primitive_argument_type>&& ops) const
+        primitive_arguments_type&& ops) const
     {
         args_type args;
         args.reserve(ops.size());
@@ -1002,8 +1002,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> add_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() < 2)
         {
@@ -1052,7 +1052,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type>&& ops)
+            [this_](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
                 if (is_list_operand_strict(ops[0]))
@@ -1069,7 +1069,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     // Implement '+' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> add_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     access_function::access_function(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
     {
@@ -52,14 +52,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_function::eval(
-        std::vector<primitive_argument_type> const& params,
+        primitive_arguments_type const& params,
         eval_mode mode) const
     {
         if (!(mode & eval_dont_wrap_functions) && !params.empty())
         {
             if (!params.empty())
             {
-                std::vector<primitive_argument_type> fargs;
+                primitive_arguments_type fargs;
                 fargs.reserve(params.size() + 1);
 
                 fargs.push_back(extract_ref_value(operands_[0]));
@@ -84,8 +84,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    void access_function::store(std::vector<primitive_argument_type>&& vals,
-        std::vector<primitive_argument_type>&& params)
+    void access_function::store(primitive_arguments_type&& vals,
+        primitive_arguments_type&& params)
     {
         primitive* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)

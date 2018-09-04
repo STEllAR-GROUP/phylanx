@@ -49,7 +49,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     sum_operation::sum_operation(
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -166,8 +166,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> sum_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.empty() || operands.size() > 3)
         {
@@ -196,7 +196,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](std::vector<primitive_argument_type>&& args)
+                [this_](primitive_arguments_type&& args)
                     -> primitive_argument_type
                 {
                     // Extract axis and keep_dims
@@ -215,7 +215,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         if (args.size() == 3)
                         {
                             keep_dims =
-                                execution_tree::extract_scalar_boolean_value(
+                                execution_tree::extract_boolean_value_scalar(
                                     args[2], this_->name_, this_->codename_);
                         }
                     }
@@ -247,7 +247,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> sum_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

@@ -37,7 +37,7 @@ void test_decomposition_lu_PhySL()
     auto const& code = phylanx::execution_tree::compile(lu_code, snippets);
     auto f = code.run();
 
-    HPX_TEST_EQ(phylanx::execution_tree::extract_scalar_boolean_value(f()), 1);
+    HPX_TEST_EQ(phylanx::execution_tree::extract_boolean_value_scalar(f()), 1);
 }
 
 void test_decomposition(std::string const& func_name)
@@ -49,7 +49,7 @@ void test_decomposition(std::string const& func_name)
     phylanx::execution_tree::primitive decomposition =
         phylanx::execution_tree::primitives::create_decomposition(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(m)},
             func_name);
 

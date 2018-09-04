@@ -137,7 +137,7 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> primitive::eval(
-        std::vector<primitive_argument_type> const& params,
+        primitive_arguments_type const& params,
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
@@ -146,7 +146,7 @@ namespace phylanx { namespace execution_tree
         return detail::lazy_trace("eval", *this, std::move(f));
     }
     hpx::future<primitive_argument_type> primitive::eval(
-        std::vector<primitive_argument_type>&& params,
+        primitive_arguments_type&& params,
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
@@ -169,12 +169,12 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> primitive::eval(
         eval_mode mode) const
     {
-        static std::vector<primitive_argument_type> params;
+        static primitive_arguments_type params;
         return eval(params, mode);
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type> const& params,
+        primitive_arguments_type const& params,
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
@@ -184,7 +184,7 @@ namespace phylanx { namespace execution_tree
         return detail::trace("eval", *this, f.get());
     }
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type>&& params,
+        primitive_arguments_type&& params,
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
@@ -208,15 +208,15 @@ namespace phylanx { namespace execution_tree
         eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
-        static std::vector<primitive_argument_type> params;
+        static primitive_arguments_type params;
         hpx::future<primitive_argument_type> f = hpx::sync<action_type>(
             this->base_type::get_id(), std::move(params), mode);
         return detail::trace("eval", *this, f.get());
     }
 
     hpx::future<void> primitive::store(
-        std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         using action_type = primitives::primitive_component::store_action;
         return hpx::async<action_type>(
@@ -224,7 +224,7 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<void> primitive::store(primitive_argument_type&& data,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         using action_type = primitives::primitive_component::store_single_action;
         return hpx::async<action_type>(
@@ -232,8 +232,8 @@ namespace phylanx { namespace execution_tree
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         using action_type = primitives::primitive_component::store_action;
         hpx::sync<action_type>(
@@ -242,7 +242,7 @@ namespace phylanx { namespace execution_tree
 
     void primitive::store(hpx::launch::sync_policy,
         primitive_argument_type&& data,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         using action_type = primitives::primitive_component::store_single_action;
         hpx::sync<action_type>(
@@ -304,13 +304,13 @@ namespace phylanx { namespace execution_tree
     }
 
     bool primitive::bind(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
             action_type()(this->base_type::get_id(), params));
     }
-    bool primitive::bind(std::vector<primitive_argument_type>&& params) const
+    bool primitive::bind(primitive_arguments_type&& params) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
@@ -1782,7 +1782,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::uint8_t extract_scalar_boolean_value(
+    std::uint8_t extract_boolean_value_scalar(
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
@@ -1825,14 +1825,14 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_scalar_boolean_value",
+            "phylanx::execution_tree::extract_boolean_value_scalar",
             util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
     }
 
-    std::uint8_t extract_scalar_boolean_value(primitive_argument_type && val,
+    std::uint8_t extract_boolean_value_scalar(primitive_argument_type && val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -1874,7 +1874,7 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_scalar_boolean_value",
+            "phylanx::execution_tree::extract_boolean_value_scalar",
             util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
@@ -2123,31 +2123,31 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<0>(val)}};
 
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<1>(val)}};
 
         case 2:     // ir::node_data<std::int64_t>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<2>(val)}};
 
         case 3:     // string
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<3>(val)}};
 
         case 4:     // phylanx::ir::node_data<double>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<4>(val)}};
 
         case 5:     // primitive
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<5>(val)}};
 
         case 6:     // std::vector<ast::expression>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<6>(val)}};
 
         case 7:     // phylanx::ir::range
@@ -2173,31 +2173,31 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 0:     // nil
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<0>(std::move(val))}};
 
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<1>(std::move(val))}};
 
         case 2:     // ir::node_data<std::int64_t>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<2>(std::move(val))}};
 
         case 3:     // string
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<3>(std::move(val))}};
 
         case 4:     // phylanx::ir::node_data<double>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<4>(std::move(val))}};
 
         case 5:     // primitive
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<5>(std::move(val))}};
 
         case 6:     // std::vector<ast::expression>
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<6>(std::move(val))}};
 
         case 7:     // phylanx::ir::range
@@ -2245,7 +2245,7 @@ namespace phylanx { namespace execution_tree
         {
         case 6:     // std::vector<ast::expression>
             {
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(util::get<6>(val).size());
                 for (auto const& v : util::get<6>(val))
                 {
@@ -2292,7 +2292,7 @@ namespace phylanx { namespace execution_tree
         {
         case 6:     // std::vector<ast::expression>
             {
-                std::vector<primitive_argument_type> result;
+                primitive_arguments_type result;
                 result.reserve(util::get<6>(val).size());
                 for (auto && v : util::get<6>(std::move(val)))
                 {
@@ -2397,11 +2397,11 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type primitive_argument_type::operator()(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (is_primitive_operand(*this))
         {
-            std::vector<primitive_argument_type> params;
+            primitive_arguments_type params;
             params.reserve(args.size());
             for (auto const& arg : args)
             {
@@ -2415,15 +2415,15 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type primitive_argument_type::operator()(
-        std::vector<primitive_argument_type> && args) const
+        primitive_arguments_type && args) const
     {
         if (is_primitive_operand(*this))
         {
             // evaluate the function itself
-            std::vector<primitive_argument_type> keep_alive(std::move(args));
+            primitive_arguments_type keep_alive(std::move(args));
 
             // construct argument-pack to use for actual call
-            std::vector<primitive_argument_type> params;
+            primitive_arguments_type params;
             params.reserve(keep_alive.size());
             for (auto const& arg : keep_alive)
             {
@@ -2439,7 +2439,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2468,7 +2468,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2498,7 +2498,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename,
         eval_mode mode)
     {
@@ -2528,7 +2528,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename, eval_mode mode)
     {
         primitive* p = util::get_if<primitive>(&val);
@@ -2619,7 +2619,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     util::future_or_value<primitive_argument_type> value_operand_fov(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2647,7 +2647,7 @@ namespace phylanx { namespace execution_tree
 
     util::future_or_value<primitive_argument_type> value_operand_fov(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2676,7 +2676,7 @@ namespace phylanx { namespace execution_tree
 
     util::future_or_value<primitive_argument_type> value_operand_fov(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename,
         eval_mode mode)
     {
@@ -2705,7 +2705,7 @@ namespace phylanx { namespace execution_tree
 
     util::future_or_value<primitive_argument_type> value_operand_fov(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename, eval_mode mode)
     {
         primitive* p = util::get_if<primitive>(&val);
@@ -2793,7 +2793,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename,
         eval_mode mode)
     {
@@ -2813,7 +2813,7 @@ namespace phylanx { namespace execution_tree
 
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2832,7 +2832,7 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type value_operand_sync(primitive_argument_type&& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename,
         eval_mode mode)
     {
@@ -2851,7 +2851,7 @@ namespace phylanx { namespace execution_tree
     }
 
     primitive_argument_type value_operand_sync(primitive_argument_type&& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename, eval_mode mode)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2910,7 +2910,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type value_operand_ref_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2930,7 +2930,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2957,7 +2957,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2984,7 +2984,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
@@ -3011,7 +3011,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3039,7 +3039,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type literal_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3056,7 +3056,7 @@ namespace phylanx { namespace execution_tree
     // Extract an integer value from a primitive_argument_type
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3083,7 +3083,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3110,7 +3110,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3137,7 +3137,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3165,7 +3165,7 @@ namespace phylanx { namespace execution_tree
     // Extract an integer value from a primitive_argument_type
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3194,7 +3194,7 @@ namespace phylanx { namespace execution_tree
     //make extract_shape.cpp error happy
     hpx::future<std::int64_t> scalar_integer_operand_strict(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3222,7 +3222,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3250,7 +3250,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3277,7 +3277,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type&& val,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3305,7 +3305,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3332,7 +3332,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3359,7 +3359,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
@@ -3386,7 +3386,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type && val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
     {
         primitive* p = util::get_if<primitive>(&val);
@@ -3414,7 +3414,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> numeric_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3431,7 +3431,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::uint8_t> boolean_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3441,40 +3441,40 @@ namespace phylanx { namespace execution_tree
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
-                    extract_scalar_boolean_value(f.get(), name, codename));
+                    extract_boolean_value_scalar(f.get(), name, codename));
             }
 
             return f.then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_scalar_boolean_value(f.get(), name, codename);
+                    return extract_boolean_value_scalar(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
         return hpx::make_ready_future(
-            extract_scalar_boolean_value(val, name, codename));
+            extract_boolean_value_scalar(val, name, codename));
     }
 
     std::uint8_t boolean_operand_sync(primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_scalar_boolean_value(
+            return extract_boolean_value_scalar(
                 p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_scalar_boolean_value(val, name, codename);
+        return extract_boolean_value_scalar(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::string> string_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3500,7 +3500,7 @@ namespace phylanx { namespace execution_tree
     }
 
     std::string string_operand_sync(primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3517,7 +3517,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::vector<ast::expression>> ast_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3543,7 +3543,7 @@ namespace phylanx { namespace execution_tree
 
     std::vector<ast::expression> ast_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3560,7 +3560,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3586,7 +3586,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3612,7 +3612,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string && codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3639,7 +3639,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string && codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3666,7 +3666,7 @@ namespace phylanx { namespace execution_tree
 
     ir::range list_operand_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3683,7 +3683,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<ir::range> list_operand_strict(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3710,7 +3710,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::range> list_operand_strict(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3737,7 +3737,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::range> list_operand_strict(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string && codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3764,7 +3764,7 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::range> list_operand_strict(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string && codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3792,7 +3792,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     ir::range list_operand_strict_sync(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3809,7 +3809,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     util::future_or_value<ir::range> list_operand_fov(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3834,7 +3834,7 @@ namespace phylanx { namespace execution_tree
 
     util::future_or_value<ir::range> list_operand_fov(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3859,7 +3859,7 @@ namespace phylanx { namespace execution_tree
 
     util::future_or_value<ir::range> list_operand_fov(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> const& args,
+        primitive_arguments_type const& args,
         std::string const& name, std::string && codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3884,7 +3884,7 @@ namespace phylanx { namespace execution_tree
 
     util::future_or_value<ir::range> list_operand_fov(
         primitive_argument_type const& val,
-        std::vector<primitive_argument_type> && args,
+        primitive_arguments_type && args,
         std::string const& name, std::string && codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -3932,7 +3932,7 @@ namespace phylanx { namespace execution_tree
         case 5:
             {
                 auto && v = util::get<5>(std::move(val)).get();
-                std::vector<primitive_argument_type> data;
+                primitive_arguments_type data;
                 data.reserve(v.size());
                 for (auto && value : std::move(v))
                 {

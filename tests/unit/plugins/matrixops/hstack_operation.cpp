@@ -26,7 +26,7 @@ void hstack_operation_0d()
     phylanx::execution_tree::primitive hstack =
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first), std::move(second)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -54,7 +54,7 @@ void hstack_operation_1d()
     phylanx::execution_tree::primitive hstack =
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first), std::move(second)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -85,7 +85,7 @@ void hstack_operation_2d()
     phylanx::execution_tree::primitive hstack =
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first), std::move(second)});
 
     blaze::DynamicMatrix<double> expected{{1, 2, 3, 11, 22},
@@ -122,7 +122,7 @@ void hstack_operation_0d_1d_1d_0d()
     phylanx::execution_tree::primitive hstack =
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first), std::move(firstvec), std::move(secondvec),
                 std::move(second)});
 
@@ -160,7 +160,7 @@ void hstack_operation_1d_0d_0d_1d()
     phylanx::execution_tree::primitive hstack =
         phylanx::execution_tree::primitives::create_hstack_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(firstvec), std::move(first), std::move(second),
                 std::move(secondvec)});
 

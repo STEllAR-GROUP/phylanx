@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     target_reference::target_reference(
-            std::vector<primitive_argument_type>&& args, std::string const& name,
+            primitive_arguments_type&& args, std::string const& name,
             std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -57,12 +57,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> target_reference::eval(
-        std::vector<primitive_argument_type> const& params, eval_mode) const
+        primitive_arguments_type const& params, eval_mode) const
     {
         if (operands_.size() > 1)
         {
             // the function has pre-bound arguments
-            std::vector<primitive_argument_type> fargs;
+            primitive_arguments_type fargs;
             fargs.reserve(operands_.size() - 1 + params.size());
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
@@ -99,7 +99,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands_.size() > 1)
         {
             // the function has pre-bound arguments
-            std::vector<primitive_argument_type> fargs;
+            primitive_arguments_type fargs;
             fargs.reserve(operands_.size());
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
@@ -127,8 +127,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             eval_dont_wrap_functions);
     }
 
-    void target_reference::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void target_reference::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (target_)
         {

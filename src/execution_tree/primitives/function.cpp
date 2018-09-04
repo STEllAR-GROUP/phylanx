@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    function::function(std::vector<primitive_argument_type>&& operands,
+    function::function(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
       , value_set_(false)
@@ -63,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> function::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (!value_set_)
         {
@@ -82,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return hpx::make_ready_future(extract_ref_value(operands_[0]));
     }
 
-    bool function::bind(std::vector<primitive_argument_type> const& args) const
+    bool function::bind(primitive_arguments_type const& args) const
     {
         if (!value_set_)
         {
@@ -95,8 +95,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void function::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void function::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (data.empty())
         {

@@ -26,22 +26,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<primitive_argument_type>;
+        using operands_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
     public:
         static match_pattern_type const match_data;
 
         less() = default;
 
-        less(std::vector<primitive_argument_type>&& operands,
+        less(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args, eval_mode) const override;
 
     private:
         template <typename T>
@@ -89,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_less(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

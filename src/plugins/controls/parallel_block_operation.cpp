@@ -41,14 +41,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     parallel_block_operation::parallel_block_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> parallel_block_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.empty())
         {
@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Evaluate condition of while statement
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type> && ops)
+            [this_](primitive_arguments_type && ops)
             ->  primitive_argument_type
             {
                 return ops.back();
@@ -77,7 +77,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     // Start iteration over given parallel-block statement
     hpx::future<primitive_argument_type> parallel_block_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

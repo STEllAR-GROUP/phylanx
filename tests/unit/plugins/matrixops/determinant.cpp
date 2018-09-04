@@ -22,7 +22,7 @@ void test_determinant_0d()
     phylanx::execution_tree::primitive inverse =
         phylanx::execution_tree::primitives::create_determinant(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -39,7 +39,7 @@ void test_determinant_0d_lit()
     phylanx::execution_tree::primitive inverse =
         phylanx::execution_tree::primitives::create_determinant(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 
@@ -62,7 +62,7 @@ void test_determinant_2d()
     phylanx::execution_tree::primitive determinant =
         phylanx::execution_tree::primitives::create_determinant(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 

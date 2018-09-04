@@ -22,7 +22,7 @@ void test_mean_operation_0d()
     phylanx::execution_tree::primitive mean =
         phylanx::execution_tree::primitives::create_mean_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -45,7 +45,7 @@ void test_mean_operation_1d()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
@@ -67,7 +67,7 @@ void test_mean_operation_2d_flat()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
@@ -96,7 +96,7 @@ void test_mean_operation_2d_x_axis()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
             hpx::find_here(),
-            std::vector<arg_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first), std::move(second)});
 
     hpx::future<arg_type> f = p.eval();
@@ -125,7 +125,7 @@ void test_mean_operation_2d_y_axis()
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_mean_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(first), std::move(second)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();

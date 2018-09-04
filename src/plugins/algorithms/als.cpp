@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         )};
 
     ///////////////////////////////////////////////////////////////////////////
-    als::als(std::vector<primitive_argument_type> && operands,
+    als::als(primitive_arguments_type && operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type als::calculate_als(
-        std::vector<primitive_argument_type> && args) const
+        primitive_arguments_type && args) const
     {
         // extract arguments
         auto arg1 = extract_numeric_value(args[0], name_, codename_);
@@ -184,7 +184,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type
         {
-            std::vector<primitive_argument_type>{
+            primitive_arguments_type{
                 ir::node_data<double>{std::move(X)},
                 ir::node_data<double>{std::move(Y)}}
         };
@@ -192,8 +192,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> als::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.size() != 5 && operands.size() != 6)
         {
@@ -225,7 +225,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](std::vector<primitive_argument_type>&& args)
+                [this_](primitive_arguments_type&& args)
                     -> primitive_argument_type {
                     return this_->calculate_als(std::move(args));
                 }),
@@ -234,7 +234,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> als::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     for_operation::for_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -77,8 +77,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         hpx::future<primitive_argument_type> init(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args)
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args)
         {
             this->args_ = args;
             auto this_ = this->shared_from_this();
@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> body(
             hpx::future<primitive_argument_type>&& cond)
         {
-            if (extract_scalar_boolean_value(
+            if (extract_boolean_value_scalar(
                     cond.get(), that_->name_, that_->codename_))
             {
                 // Evaluate body of for statement
@@ -145,14 +145,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
     private:
-        std::vector<primitive_argument_type> args_;
+        primitive_arguments_type args_;
         primitive_argument_type result_;
         std::shared_ptr<for_operation const> that_;
     };
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> for_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

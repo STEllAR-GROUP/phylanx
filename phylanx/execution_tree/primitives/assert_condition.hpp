@@ -31,22 +31,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         assert_condition() = default;
 
-        assert_condition(std::vector<primitive_argument_type>&& operands,
+        assert_condition(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+            primitive_arguments_type const& args) const override;
 
     private:
-        using operand_type = std::vector<primitive_argument_type>;
+        using operand_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
     };
 
     PHYLANX_EXPORT primitive create_assert_condition(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "");
 }}}
 

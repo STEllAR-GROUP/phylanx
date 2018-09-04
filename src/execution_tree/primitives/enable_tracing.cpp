@@ -21,7 +21,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_enable_tracing(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         static std::string type("enable_tracing");
@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     enable_tracing::enable_tracing(
-            std::vector<primitive_argument_type> && operands,
+            primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -53,8 +53,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args,
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
             std::string const& name, std::string const& codename)
         {
             if (operands.size() != 1)
@@ -84,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> enable_tracing::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args) const
     {
         if (this->no_operands())
         {

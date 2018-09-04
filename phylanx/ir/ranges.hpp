@@ -16,13 +16,25 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree
 {
+    ///////////////////////////////////////////////////////////////////////////
     struct primitive_argument_type;
+
+    using primitive_argument_allocator =
+        std::allocator<primitive_argument_type>;
+
+    template <typename T>
+    using arguments_allocator = typename std::allocator_traits<
+        primitive_argument_allocator>::template rebind_alloc<T>;
+
+    using primitive_arguments_type =
+        std::vector<primitive_argument_type, primitive_argument_allocator>;
 }}
 
 namespace phylanx { namespace ir
@@ -101,9 +113,24 @@ namespace phylanx { namespace ir
         {
             if (single_value_)
             {
-                return 1;
+                return 1ll;
             }
             return step_ > 0 ? stop_ - start_ : start_ - stop_;
+        }
+
+        std::int64_t size() const
+        {
+            if (single_value_)
+            {
+                return 1ll;
+            }
+
+            if (step_ > 0)
+            {
+                return (stop_ - start_ + step_ - 1ll) / step_;
+            }
+
+            return (start_ - stop_ - step_ - 1ll) / -step_;
         }
 
     private:
@@ -185,9 +212,9 @@ namespace phylanx { namespace ir
     private:
         using int_range_type = slicing_indices;
         using args_iterator_type =
-            std::vector<execution_tree::primitive_argument_type>::iterator;
+            execution_tree::primitive_arguments_type::iterator;
         using args_const_iterator_type =
-            std::vector<execution_tree::primitive_argument_type>::const_iterator;
+            execution_tree::primitive_arguments_type::const_iterator;
         using args_reverse_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::reverse_iterator;
         using args_reverse_const_iterator_type = std::vector<
@@ -231,7 +258,7 @@ namespace phylanx { namespace ir
     {
     private:
         using int_range_type = slicing_indices;
-        using args_type = std::vector<execution_tree::primitive_argument_type>;
+        using args_type = execution_tree::primitive_arguments_type;
         using wrapped_args_type = phylanx::util::recursive_wrapper<args_type>;
         using arg_pair_type = std::pair<range_iterator, range_iterator>;
         using range_type =

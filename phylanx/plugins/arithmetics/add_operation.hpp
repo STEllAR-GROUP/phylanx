@@ -29,22 +29,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args) const;
 
         using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
+        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
 
     public:
         static match_pattern_type const match_data;
 
         add_operation() = default;
 
-        add_operation(std::vector<primitive_argument_type>&& operands,
+        add_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args,
+            primitive_arguments_type const& args,
             eval_mode) const override;
 
     private:
@@ -97,16 +97,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
 
         primitive_argument_type handle_list_operands(
-            std::vector<primitive_argument_type>&& ops) const;
+            primitive_arguments_type&& ops) const;
         primitive_argument_type handle_numeric_operands(
-            std::vector<primitive_argument_type>&& ops) const;
+            primitive_arguments_type&& ops) const;
 
-        void append_element(std::vector<primitive_argument_type>& result,
+        void append_element(primitive_arguments_type& result,
             primitive_argument_type&& rhs) const;
     };
 
     inline primitive create_add_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

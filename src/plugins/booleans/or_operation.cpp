@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    or_operation::or_operation(std::vector<primitive_argument_type>&& operands,
+    or_operation::or_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -54,318 +54,318 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename T>
     primitive_argument_type or_operation::or_operation0d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (rhs.is_ref())
-                {
-                    rhs = blaze::map(rhs.vector(),
-                        [&](bool x) { return (x || lhs.scalar()); });
-                }
-                rhs.vector() = blaze::map(
-                    rhs.vector(), [&](bool x) { return (x || lhs.scalar()); });
+    {
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (rhs.is_ref())
+        {
+            rhs = blaze::map(rhs.vector(),
+                [&](bool x) { return (x || lhs.scalar()); });
+        }
+        rhs.vector() = blaze::map(
+            rhs.vector(), [&](bool x) { return (x || lhs.scalar()); });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(rhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(rhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation0d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (rhs.is_ref())
-                {
-                    rhs = blaze::map(rhs.matrix(),
-                        [&](bool x) { return (x || lhs.scalar()); });
-                }
-                rhs.matrix() = blaze::map(
-                    rhs.matrix(), [&](bool x) { return (x || lhs.scalar()); });
+    {
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (rhs.is_ref())
+        {
+            rhs = blaze::map(rhs.matrix(),
+                [&](bool x) { return (x || lhs.scalar()); });
+        }
+        rhs.matrix() = blaze::map(
+            rhs.matrix(), [&](bool x) { return (x || lhs.scalar()); });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(rhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(rhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation0d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                std::size_t rhs_dims = rhs.num_dimensions();
-                switch (rhs_dims)
-                {
-                case 0:
-                    return primitive_argument_type(
-                        ir::node_data<std::uint8_t>{lhs.scalar() || rhs.scalar()});
+    {
+        std::size_t rhs_dims = rhs.num_dimensions();
+        switch (rhs_dims)
+        {
+        case 0:
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{lhs.scalar() || rhs.scalar()});
 
-                case 1:
-                    return or_operation0d1d(std::move(lhs), std::move(rhs));
+        case 1:
+            return or_operation0d1d(std::move(lhs), std::move(rhs));
 
-                case 2:
-                    return or_operation0d2d(std::move(lhs), std::move(rhs));
+        case 2:
+            return or_operation0d2d(std::move(lhs), std::move(rhs));
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_operation0d",
-                        util::generate_error_message(
-                            "the operands have incompatible number of "
-                                "dimensions",
-                            name_, codename_));
-                }
-            }
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_operation0d",
+                util::generate_error_message(
+                    "the operands have incompatible number of "
+                        "dimensions",
+                    name_, codename_));
+        }
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation1d0d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (lhs.is_ref())
-                {
-                    lhs = blaze::map(lhs.vector(),
-                        [&](bool x) { return (x || rhs.scalar()); });
-                }
-                lhs.vector() = blaze::map(
-                    lhs.vector(), [&](bool x) { return (x || rhs.scalar()); });
+    {
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.vector(),
+                [&](bool x) { return (x || rhs.scalar()); });
+        }
+        lhs.vector() = blaze::map(
+            lhs.vector(), [&](bool x) { return (x || rhs.scalar()); });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(lhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation1d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                std::size_t lhs_size = lhs.dimension(0);
-                std::size_t rhs_size = rhs.dimension(0);
+    {
+        std::size_t lhs_size = lhs.dimension(0);
+        std::size_t rhs_size = rhs.dimension(0);
 
-                if (lhs_size != rhs_size)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_operation1d1d",
-                        util::generate_error_message(
-                            "the dimensions of the operands do not match",
-                            name_, codename_));
-                }
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_operation1d1d",
+                util::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
 
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (lhs.is_ref())
-                {
-                    lhs = blaze::map(lhs.vector(), rhs.vector(),
-                        [&](bool x, bool y) { return (x || y); });
-                }
-                lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
-                    [&](bool x, bool y) { return (x || y); });
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.vector(), rhs.vector(),
+                [&](bool x, bool y) { return (x || y); });
+        }
+        lhs.vector() = blaze::map(lhs.vector(), rhs.vector(),
+            [&](bool x, bool y) { return (x || y); });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(lhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation1d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                auto cv = lhs.vector();
-                auto cm = rhs.matrix();
+    {
+        auto cv = lhs.vector();
+        auto cm = rhs.matrix();
 
-                if (cv.size() != cm.columns())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_operation1d2d",
-                        util::generate_error_message(
-                            "the dimensions of the operands do not match",
-                            name_, codename_));
-                }
+        if (cv.size() != cm.columns())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_operation1d2d",
+                util::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
 
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (rhs.is_ref())
-                {
-                    blaze::DynamicMatrix<bool> m{cm.rows(), cm.columns()};
-                    for (size_t i = 0UL; i < cm.rows(); i++)
-                        blaze::row(m, i) = blaze::map(blaze::row(cm, i),
-                            blaze::trans(cv),
-                            [](bool x, bool y) { return x || y; });
-                    return primitive_argument_type(
-                        ir::node_data<std::uint8_t>{std::move(m)});
-                }
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (rhs.is_ref())
+        {
+            blaze::DynamicMatrix<bool> m{cm.rows(), cm.columns()};
+            for (size_t i = 0UL; i < cm.rows(); i++)
+                blaze::row(m, i) = blaze::map(blaze::row(cm, i),
+                    blaze::trans(cv),
+                    [](bool x, bool y) { return x || y; });
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{std::move(m)});
+        }
 
-                for (size_t i = 0UL; i < cm.rows(); i++)
-                    blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
-                        blaze::trans(cv),
-                        [](bool x, bool y) { return x || y; });
+        for (size_t i = 0UL; i < cm.rows(); i++)
+            blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
+                blaze::trans(cv),
+                [](bool x, bool y) { return x || y; });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(rhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(rhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                std::size_t rhs_dims = rhs.num_dimensions();
-                switch (rhs_dims)
-                {
-                case 0:
-                    return or_operation1d0d(std::move(lhs), std::move(rhs));
+    {
+        std::size_t rhs_dims = rhs.num_dimensions();
+        switch (rhs_dims)
+        {
+        case 0:
+            return or_operation1d0d(std::move(lhs), std::move(rhs));
 
-                case 1:
-                    return or_operation1d1d(std::move(lhs), std::move(rhs));
+        case 1:
+            return or_operation1d1d(std::move(lhs), std::move(rhs));
 
-                case 2:
-                    return or_operation1d2d(std::move(lhs), std::move(rhs));
+        case 2:
+            return or_operation1d2d(std::move(lhs), std::move(rhs));
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_operation1d",
-                        util::generate_error_message(
-                            "the operands have incompatible number of "
-                                "dimensions",
-                            name_, codename_));
-                }
-            }
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_operation1d",
+                util::generate_error_message(
+                    "the operands have incompatible number of "
+                        "dimensions",
+                    name_, codename_));
+        }
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation2d0d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                std::size_t lhs_size = lhs.dimension(0);
-                std::size_t rhs_size = rhs.dimension(0);
+    {
+        std::size_t lhs_size = lhs.dimension(0);
+        std::size_t rhs_size = rhs.dimension(0);
 
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (lhs.is_ref())
-                {
-                    lhs = blaze::map(lhs.matrix(),
-                        [&](double x) { return (x || rhs.scalar()); });
-                }
-                lhs.matrix() = blaze::map(lhs.matrix(),
-                    [&](double x) { return (x || rhs.scalar()); });
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.matrix(),
+                [&](double x) { return (x || rhs.scalar()); });
+        }
+        lhs.matrix() = blaze::map(lhs.matrix(),
+            [&](double x) { return (x || rhs.scalar()); });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(lhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation2d1d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                auto cv = rhs.vector();
-                auto cm = lhs.matrix();
+    {
+        auto cv = rhs.vector();
+        auto cm = lhs.matrix();
 
-                if (cv.size() != cm.columns())
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_operation2d1d",
-                        util::generate_error_message(
-                            "the dimensions of the operands do not match",
-                            name_, codename_));
-                }
+        if (cv.size() != cm.columns())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_operation2d1d",
+                util::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
 
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (lhs.is_ref())
-                {
-                    blaze::DynamicMatrix<bool> m{cm.rows(), cm.columns()};
-                    for (size_t i = 0UL; i < cm.rows(); i++)
-                        blaze::row(m, i) = blaze::map(blaze::row(cm, i),
-                            blaze::trans(cv),
-                            [](bool x, bool y) { return x || y; });
-                    return primitive_argument_type(
-                        ir::node_data<std::uint8_t>{std::move(m)});
-                }
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (lhs.is_ref())
+        {
+            blaze::DynamicMatrix<bool> m{cm.rows(), cm.columns()};
+            for (size_t i = 0UL; i < cm.rows(); i++)
+                blaze::row(m, i) = blaze::map(blaze::row(cm, i),
+                    blaze::trans(cv),
+                    [](bool x, bool y) { return x || y; });
+            return primitive_argument_type(
+                ir::node_data<std::uint8_t>{std::move(m)});
+        }
 
-                for (size_t i = 0UL; i < cm.rows(); i++)
-                    blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
-                        blaze::trans(cv),
-                        [](bool x, bool y) { return x || y; });
+        for (size_t i = 0UL; i < cm.rows(); i++)
+            blaze::row(cm, i) = blaze::map(blaze::row(cm, i),
+                blaze::trans(cv),
+                [](bool x, bool y) { return x || y; });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(lhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation2d2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                auto lhs_size = lhs.dimensions();
-                auto rhs_size = rhs.dimensions();
+    {
+        auto lhs_size = lhs.dimensions();
+        auto rhs_size = rhs.dimensions();
 
-                if (lhs_size != rhs_size)
-                {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_operation2d2d",
-                        util::generate_error_message(
-                            "the dimensions of the operands do not match",
-                            name_, codename_));
-                }
+        if (lhs_size != rhs_size)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_operation2d2d",
+                util::generate_error_message(
+                    "the dimensions of the operands do not match",
+                    name_, codename_));
+        }
 
-                // TODO: SIMD functionality should be added, blaze implementation
-                // is not currently available
-                if (lhs.is_ref())
-                {
-                    lhs = blaze::map(lhs.matrix(), rhs.matrix(),
-                        [&](bool x, bool y) { return (x || y); });
-                }
-                lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
-                    [&](bool x, bool y) { return (x || y); });
+        // TODO: SIMD functionality should be added, blaze implementation
+        // is not currently available
+        if (lhs.is_ref())
+        {
+            lhs = blaze::map(lhs.matrix(), rhs.matrix(),
+                [&](bool x, bool y) { return (x || y); });
+        }
+        lhs.matrix() = blaze::map(lhs.matrix(), rhs.matrix(),
+            [&](bool x, bool y) { return (x || y); });
 
-                return primitive_argument_type(
-                    ir::node_data<std::uint8_t>{std::move(lhs)});
-            }
+        return primitive_argument_type(
+            ir::node_data<std::uint8_t>{std::move(lhs)});
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_operation2d(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                std::size_t rhs_dims = rhs.num_dimensions();
-                switch (rhs_dims)
-                {
-                case 0:
-                    return or_operation2d0d(std::move(lhs), std::move(rhs));
+    {
+        std::size_t rhs_dims = rhs.num_dimensions();
+        switch (rhs_dims)
+        {
+        case 0:
+            return or_operation2d0d(std::move(lhs), std::move(rhs));
 
-                case 1:
-                    return or_operation2d1d(std::move(lhs), std::move(rhs));
+        case 1:
+            return or_operation2d1d(std::move(lhs), std::move(rhs));
 
-                case 2:
-                    return or_operation2d2d(std::move(lhs), std::move(rhs));
+        case 2:
+            return or_operation2d2d(std::move(lhs), std::move(rhs));
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_operation2d",
-                        util::generate_error_message(
-                            "the operands have incompatible number of "
-                                "dimensions",
-                            name_, codename_));
-                }
-            }
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_operation2d",
+                util::generate_error_message(
+                    "the operands have incompatible number of "
+                        "dimensions",
+                    name_, codename_));
+        }
+    }
 
     template <typename T>
     primitive_argument_type or_operation::or_all(
         ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const
-            {
-                std::size_t lhs_dims = lhs.num_dimensions();
-                switch (lhs_dims)
-                {
-                case 0:
-                    return or_operation0d(std::move(lhs), std::move(rhs));
+    {
+        std::size_t lhs_dims = lhs.num_dimensions();
+        switch (lhs_dims)
+        {
+        case 0:
+            return or_operation0d(std::move(lhs), std::move(rhs));
 
-                case 1:
-                    return or_operation1d(std::move(lhs), std::move(rhs));
+        case 1:
+            return or_operation1d(std::move(lhs), std::move(rhs));
 
-                case 2:
-                    return or_operation2d(std::move(lhs), std::move(rhs));
+        case 2:
+            return or_operation2d(std::move(lhs), std::move(rhs));
 
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "or_operation::or_all",
-                        util::generate_error_message(
-                            "left hand side operand has unsupported number of "
-                                "dimensions",
-                            name_, codename_));
-                }
-            }
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "or_operation::or_all",
+                util::generate_error_message(
+                    "left hand side operand has unsupported number of "
+                        "dimensions",
+                    name_, codename_));
+        }
+    }
 
     struct or_operation::visit_or_operation
     {
@@ -512,8 +512,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return or_.or_all(std::move(lhs), std::move(rhs));
         }
 
-        primitive_argument_type operator()(
-            ir::node_data<std::int64_t>&& lhs, ir::node_data<std::int64_t>&& rhs) const
+        primitive_argument_type operator()(ir::node_data<std::int64_t>&& lhs,
+            ir::node_data<std::int64_t>&& rhs) const
         {
             return or_.or_all(std::move(lhs), std::move(rhs));
         }
@@ -522,10 +522,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     hpx::future<primitive_argument_type> or_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
-        //TODO: support for operands.size()>2
+        // TODO: support for operands.size() > 2
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -566,7 +566,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     // Implement '||' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> or_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

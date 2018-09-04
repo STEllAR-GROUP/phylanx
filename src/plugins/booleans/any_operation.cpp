@@ -38,7 +38,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             )};
 
     ///////////////////////////////////////////////////////////////////////////
-    any_operation::any_operation(std::vector<primitive_argument_type> && args,
+    any_operation::any_operation(primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -48,7 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename T>
     primitive_argument_type any_operation::any0d(T&& arg) const
     {
-        return primitive_argument_type{ir::node_data<std::uint8_t>{arg.scalar() != 0}};
+        return primitive_argument_type{
+            ir::node_data<std::uint8_t>{arg.scalar() != 0}};
     }
 
     template <typename T>
@@ -92,8 +93,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> any_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args) const
     {
         if (operands.empty() || operands.size() > 1)
         {
@@ -142,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> any_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args, eval_mode) const
     {
         if (this->no_operands())
         {

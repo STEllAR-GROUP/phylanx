@@ -23,7 +23,7 @@ void test_constant_0d()
     phylanx::execution_tree::primitive const_ =
         phylanx::execution_tree::primitives::create_constant(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val)
             });
 
@@ -45,7 +45,7 @@ void test_constant_1d()
     phylanx::execution_tree::primitive const_ =
         phylanx::execution_tree::primitives::create_constant(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val), phylanx::ir::node_data<std::int64_t>(1007)
             });
 
@@ -69,7 +69,7 @@ void test_constant_2d()
 
     phylanx::execution_tree::primitive const_ =
         phylanx::execution_tree::primitives::create_constant(hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(val),
                 phylanx::execution_tree::primitive_argument_type{std::vector<
                     phylanx::execution_tree::primitive_argument_type>{
