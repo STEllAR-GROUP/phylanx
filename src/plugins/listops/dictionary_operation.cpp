@@ -44,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (args.size() == 0)
         {
             phylanx::ir::dictionary dict;
-            return primitive_argument_type(dict);
+            return primitive_argument_type(std::move(dict));
         }
 
         ir::range args_list =
@@ -53,7 +53,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (args_list.size() == 0)
         {
             phylanx::ir::dictionary dict;
-            return primitive_argument_type(dict);
+            return primitive_argument_type(std::move(dict));
         }
 
         phylanx::ir::dictionary dict;
@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             dict[key_value.args()[0]] = key_value.args()[1];
         }
-        return primitive_argument_type(dict);
+        return primitive_argument_type(std::move(dict));
     }
 
     //////////////////////////////////////////////////////////////////////////
