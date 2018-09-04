@@ -691,11 +691,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type operator()(ir::node_data<std::uint8_t>&& lhs,
             ir::node_data<std::uint8_t>&& rhs) const
         {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "comparison<Op>::eval",
-                util::generate_error_message(
-                    "left hand side and right hand side can't be compared",
-                    comparison_.name_, comparison_.codename_));
+            return comparison_.comparison_all(
+                std::move(lhs), std::move(rhs), propagate_type_);
         }
 
         primitive_argument_type operator()(ir::node_data<std::int64_t>&& lhs,
