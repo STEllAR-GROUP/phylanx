@@ -89,7 +89,7 @@ jobs:
             # Build all targets
             - run:
                 name: Build all targets
-                command: cmake --build build -- -j2 install
+                command: cmake --build build -- -j2
             # CTest to JUnit XML transformation sheet
             - run:
                 name: Download CTest XML to JUnit XML transformation stylesheet
@@ -144,7 +144,7 @@ jobs:
             # Run the code
             - run:
                 name: Check the formatting of Phylanx's Python files
-                command: python3 tools/check_help.py > /artifacts/phylanx_help_report.txt
+                command: python3 tools/check_help.py > /artifacts/phylanx_help_report.xml
             - store_artifacts:
                 path: /artifacts
             # Code Format Check JUnit Reports
@@ -335,7 +335,7 @@ workflows:
                     - build_test
             - check.help_format:
                 requires:
-                    - build_test
+                    - deploy_image
             - tests.regressions:
                 requires:
                     - build_test
