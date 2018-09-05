@@ -6,10 +6,15 @@
 from xml.sax.saxutils import escape
 import re
 import io
+from xml.dom import minidom
+from collections import namedtuple
+from sys import stdout
 
 from phylanx.util import *
 
 argcount = {}
+
+errors = []
 
 # Get the list of all primitives/plugins
 all = phylist()
@@ -94,8 +99,9 @@ for p in all:
 
         # Print error
         if err:
-            print("Error:", err, file=output)
-            print(p, m, h, file=output)
+            #print("Error:", err, file=output)
+            #print(p, m, h, file=output)
+            errors += [{"message": err+"\nhelp was="+h, "name":m}]
 
 # Check for arg count mismatches
 for a in argcount:
@@ -109,20 +115,53 @@ for a in argcount:
         print(a, v["max"], v["patterns"], file=output)
         print(v["help"], file=output)
 
-print("""<?xml version="1.0" ?>
-<testsuites>
-    <testsuite errors="{errs}" failures="{errs}" name="my test suite" tests="1">
-        <testcase classname="help" name="check_help" time="0">
-            <system-out>
-            </system-out>
-            <system-err>
-                {text}
-            </system-err>
-        </testcase>
-    </testsuite>
-</testsuites>""".format(errs=errors_found, text=escape(output.getvalue())))
+#print("""<?xml version="1.0" ?>
+#<testsuites>
+#    <testsuite errors="{errs}" failures="{errs}" name="my test suite" tests="1">
+#        <testcase classname="help" name="check_help" time="0">
+#            <system-out>
+#            </system-out>
+#            <system-err>
+#                {text}
+#            </system-err>
+#        </testcase>
+#    </testsuite>
+#</testsuites>""".format(errs=errors_found, text=escape(output.getvalue())))
 
-output.close()
+#errors = [output.getvalue()]
+#output.close()
+
+doc = minidom.Document()
+suite = doc.createElement('testsuite')
+doc.appendChild(suite)
+suite.setAttribute('name', 'check_help')
+suite.setAttribute('errors', str(len(errors)))
+suite.setAttribute('failures', '0')
+suite.setAttribute('tests', str(len(errors)))
+
+if len(errors) == 0:
+    case = doc.createElement('testcase')
+    case.setAttribute('name', 'check_help')
+    case.setAttribute('time', '')
+    suite.appendChild(case)
+
+for error in errors:
+    case = doc.createElement('testcase')
+    case.setAttribute('name', error["name"])
+    case.setAttribute('time', '')
+    suite.appendChild(case)
+
+    failure = doc.createElement('failure')
+    case.appendChild(failure)
+
+    failure.setAttribute('file', '<none>')
+    failure.setAttribute('message', error["message"])
+    failure.setAttribute('type', 0)
+    message = doc.createTextNode(error["message"])
+    failure.appendChild(message)
+
+doc.writexml(stdout,
+                    addindent='    ', newl='\n', encoding='utf-8')
 
 if errors_found == 0:
     exit(0)
