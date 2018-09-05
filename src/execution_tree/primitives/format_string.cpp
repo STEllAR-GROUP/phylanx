@@ -278,7 +278,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
-        if (operands_.empty())
+        if (operands.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "format_string::eval",
@@ -323,10 +323,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> format_string::eval(
         primitive_arguments_type const& args) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs);
         }
-        return eval(operands_, args);
+        return eval(this->operands(), args);
     }
 }}}

@@ -13,6 +13,8 @@ PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(add_dimension_plugin,
     phylanx::execution_tree::primitives::add_dimension::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(arange_plugin,
+    phylanx::execution_tree::primitives::arange::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
     argmax_plugin, phylanx::execution_tree::primitives::argmax::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(

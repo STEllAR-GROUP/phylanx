@@ -109,7 +109,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (args.size() == 5 && valid(args[4]))
         {
             enable_output =
-                extract_boolean_value_scalar(args[4], name_, codename_) != 0;
+                extract_scalar_boolean_value(args[4], name_, codename_) != 0;
         }
 
         using vector_type = ir::node_data<double>::storage1d_type;

@@ -7,6 +7,7 @@
 #define PHYLANX_PLUGINS_MATRIXOPS_PRIMITIVES_APR_09_2108_0946PM
 
 #include <phylanx/plugins/matrixops/add_dimension.hpp>
+#include <phylanx/plugins/matrixops/arange.hpp>
 #include <phylanx/plugins/matrixops/argmax.hpp>
 #include <phylanx/plugins/matrixops/argmin.hpp>
 #include <phylanx/plugins/matrixops/constant.hpp>

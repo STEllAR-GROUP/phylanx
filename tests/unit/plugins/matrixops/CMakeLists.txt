@@ -5,6 +5,7 @@
 
 set(tests
     add_dimension
+    arange
     argmin
     argmax
     column_slicing

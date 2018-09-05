@@ -207,6 +207,14 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT double extract_scalar_numeric_value(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT double extract_scalar_numeric_value(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
 
     PHYLANX_EXPORT ir::node_data<double> extract_numeric_value_strict(
         primitive_argument_type const& val,
@@ -385,11 +393,11 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
-    PHYLANX_EXPORT std::uint8_t extract_boolean_value_scalar(
+    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT std::uint8_t extract_boolean_value_scalar(
+    PHYLANX_EXPORT std::uint8_t extract_scalar_boolean_value(
         primitive_argument_type && val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
@@ -458,6 +466,69 @@ namespace phylanx { namespace execution_tree
         std::string const& codename)
     {
         return extract_boolean_value(std::move(val), name, codename);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    T extract_scalar_data(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline double extract_scalar_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_numeric_value(val, name, codename);
+    }
+    template <>
+    inline std::int64_t extract_scalar_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_integer_value(val, name, codename);
+    }
+    template <>
+    inline std::uint8_t extract_scalar_data(
+        primitive_argument_type const& val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_boolean_value(val, name, codename);
+    }
+
+    template <typename T>
+    T extract_scalar_data(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    template <>
+    inline double extract_scalar_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_numeric_value(std::move(val), name, codename);
+    }
+    template <>
+    inline std::int64_t extract_scalar_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_integer_value(std::move(val), name, codename);
+    }
+    template <>
+    inline std::uint8_t extract_scalar_data(
+        primitive_argument_type && val,
+        std::string const& name,
+        std::string const& codename)
+    {
+        return extract_scalar_boolean_value(std::move(val), name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -988,6 +988,112 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
+    double extract_scalar_numeric_value(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            if (util::get<1>(val).num_dimensions() == 0)
+                return double(util::get<1>(val)[0]);
+            break;
+
+        case 2:    // ir::node_data<std::int64_t>
+            if (util::get<2>(val).num_dimensions() == 0)
+                return double(util::get<2>(val)[0]);
+            break;
+
+        case 4:    // phylanx::ir::node_data<double>
+            if (util::get<4>(val).num_dimensions() == 0)
+                return util::get<4>(val)[0];
+            break;
+
+        case 6:    // std::vector<ast::expression>
+        {
+            auto const& exprs = util::get<6>(val);
+            if (exprs.size() == 1)
+            {
+                if (ast::detail::is_literal_value(exprs[0]))
+                {
+                    return to_primitive_numeric_type(
+                        ast::detail::literal_value(exprs[0]))[0];
+                }
+            }
+        }
+        break;
+
+        case 0:HPX_FALLTHROUGH;    // nil
+        case 3:HPX_FALLTHROUGH;    // string
+        case 5:HPX_FALLTHROUGH;    // primitive
+        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_numeric_value",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a floating point "
+                "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
+    double extract_scalar_numeric_value(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            if (util::get<1>(val).num_dimensions() == 0)
+                return double(util::get<1>(std::move(val))[0]);
+            break;
+
+        case 2:    // ir::node_data<std::int64_t>
+            if (util::get<2>(val).num_dimensions() == 0)
+                return double(util::get<2>(std::move(val))[0]);
+            break;
+
+        case 4:    // phylanx::ir::node_data<double>
+            if (util::get<4>(val).num_dimensions() == 0)
+                return util::get<4>(std::move(val))[0];
+            break;
+
+        case 6:    // std::vector<ast::expression>
+        {
+            auto&& exprs = util::get<6>(std::move(val));
+            if (exprs.size() == 1)
+            {
+                if (ast::detail::is_literal_value(exprs[0]))
+                {
+                    return to_primitive_numeric_type(
+                        ast::detail::literal_value(std::move(exprs[0])))[0];
+                }
+            }
+        }
+        break;
+
+        case 0:HPX_FALLTHROUGH;    // nil
+        case 3:HPX_FALLTHROUGH;    // string
+        case 5:HPX_FALLTHROUGH;    // primitive
+        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_scalar_numeric_value",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a floating point "
+                "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
     ir::node_data<double> extract_numeric_value_strict(
         primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
@@ -1818,7 +1924,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::uint8_t extract_boolean_value_scalar(
+    std::uint8_t extract_scalar_boolean_value(
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
@@ -1864,14 +1970,14 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_boolean_value_scalar",
+            "phylanx::execution_tree::extract_scalar_boolean_value",
             util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
                 name, codename));
     }
 
-    std::uint8_t extract_boolean_value_scalar(primitive_argument_type && val,
+    std::uint8_t extract_scalar_boolean_value(primitive_argument_type && val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -1916,7 +2022,7 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::extract_boolean_value_scalar",
+            "phylanx::execution_tree::extract_scalar_boolean_value",
             util::generate_error_message(
                 "primitive_argument_type does not hold a boolean "
                     "value type (type held: '" + type + "')",
@@ -3439,19 +3545,19 @@ namespace phylanx { namespace execution_tree
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
-                    extract_boolean_value_scalar(f.get(), name, codename));
+                    extract_scalar_boolean_value(f.get(), name, codename));
             }
 
             return f.then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type> && f)
                 {
-                    return extract_boolean_value_scalar(f.get(), name, codename);
+                    return extract_scalar_boolean_value(f.get(), name, codename);
                 });
         }
 
         HPX_ASSERT(valid(val));
         return hpx::make_ready_future(
-            extract_boolean_value_scalar(val, name, codename));
+            extract_scalar_boolean_value(val, name, codename));
     }
 
     std::uint8_t boolean_operand_sync(primitive_argument_type const& val,
@@ -3461,12 +3567,12 @@ namespace phylanx { namespace execution_tree
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return extract_boolean_value_scalar(
+            return extract_scalar_boolean_value(
                 p->eval(hpx::launch::sync, args), name, codename);
         }
 
         HPX_ASSERT(valid(val));
-        return extract_boolean_value_scalar(val, name, codename);
+        return extract_scalar_boolean_value(val, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
