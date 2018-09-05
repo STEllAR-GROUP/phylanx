@@ -335,7 +335,7 @@ workflows:
                     - build_test
             - check.help_format:
                 requires:
-                    - deploy_image
+                    - build_test
             - tests.regressions:
                 requires:
                     - build_test
