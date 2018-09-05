@@ -222,12 +222,26 @@ void test_integer_slicing_1d_2d()
         "hstack(vstack(42, 43, 42), vstack(42, 42, 43))");
 }
 
+// void test_integer_slicing_2d_0d()
+// {
+//     // direct array based indexing
+//     test_integer_slicing(
+//         "slice(hstack(vstack(42, 43)), 0, nil)", "hstack(42)");
+//     test_integer_slicing(
+//         "slice(hstack(vstack(42), vstack(43)), 0, nil)", "hstack(42, 43)");
+//
+//     test_integer_slicing(
+//         "slice(hstack(vstack(42, 43)), nil, 0)", "hstack(vstack(42))");
+// }
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     test_integer_slicing_1d_0d();   // use 0d value as index for 1d array
     test_integer_slicing_1d_1d();   // use 1d value as index for 1d array
     test_integer_slicing_1d_2d();   // use 2d value as index for 1d array
+
+//     test_integer_slicing_2d_0d();   // use 0d value as index for 2d array
 
     return hpx::util::report_errors();
 }

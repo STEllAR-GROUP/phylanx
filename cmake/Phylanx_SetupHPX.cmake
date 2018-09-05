@@ -25,7 +25,7 @@ macro(phylanx_setup_hpx)
       if(${__pos} EQUAL -1)
         phylanx_warn(
           "The configured CMAKE_BUILD_TYPE (${CMAKE_BUILD_TYPE}) is "
-          "different from the build type used for the found HPX"
+          "different from the build type used for the found HPX "
           "(HPX_BUILD_TYPE: ${HPX_BUILD_TYPE})")
       endif()
     endif()
@@ -41,9 +41,13 @@ macro(phylanx_setup_hpx)
     endif()
 
     # make sure that HPX is not configured with jemalloc
-    if(${HPX_WITH_MALLOC} STREQUAL "jemalloc")
+    if(NOT MSVC AND ("${HPX_WITH_MALLOC}" STREQUAL "jemalloc"))
         phylanx_warn(
-          "HPX is configured with: ${HPX_WITH_MALLOC}. Due to incompatibilities between the Python runtime and jemalloc, application execution will fail unless the jemalloc library is preloaded with LD_PRELOAD. For more reliable execution, we recommend reconfiguring HPX and Phylanx with TCMalloc")
+          "HPX is configured with: ${HPX_WITH_MALLOC}. Due to incompatibilities "
+          "between the Python runtime and jemalloc, application execution will "
+          "fail unless the jemalloc library is preloaded with LD_PRELOAD. For "
+          "more reliable execution, we recommend reconfiguring HPX and Phylanx "
+          "with TCMalloc")
     endif()
 
   else()

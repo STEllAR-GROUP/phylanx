@@ -76,6 +76,49 @@ namespace phylanx { namespace util { namespace slicing_helpers
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    ir::node_data<std::int64_t> create_list_slice(
+        ir::node_data<std::uint8_t> const& indices)
+    {
+        typename ir::node_data<std::int64_t>::storage1d_type result(
+            indices.size());
+
+        std::size_t count = 0;
+        for (std::size_t i = 0; i != indices.size(); ++i)
+        {
+            if (indices[i])
+            {
+                result[count++] = std::int64_t(i);
+            }
+        }
+        result.resize(count);
+        result.shrinkToFit();
+
+        return ir::node_data<std::int64_t>{std::move(result)};
+    }
+
+    ir::node_data<std::int64_t> create_list_slice(
+        bool indices, std::size_t size)
+    {
+        if (indices)
+        {
+            typename ir::node_data<std::int64_t>::storage1d_type result(size);
+
+            std::size_t count = 0;
+            for (std::size_t i = 0; i != size; ++i)
+            {
+                result[count++] = std::int64_t(i);
+            }
+            result.resize(count);
+            result.shrinkToFit();
+
+            return ir::node_data<std::int64_t>{std::move(result)};
+        }
+
+        return ir::node_data<std::int64_t>{
+            typename ir::node_data<std::int64_t>::storage1d_type(0)};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // extract a list of indices that correspond to the given slicing parameters
     ir::slicing_indices extract_slicing(
         execution_tree::primitive_argument_type const& arg,

@@ -73,7 +73,7 @@ void test_slicing_operation_1d_start()
 void test_slicing_operation_1d_start_negative()
 {
     std::string const code = R"(block(
-        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(a, hstack(1, 2, 3, 4, 5, 6, 7, 8)),
         slice(a, list(-2))
     ))";
 
@@ -238,7 +238,7 @@ void test_slicing_operation_2d_single_row()
         define(e, hstack(31,32,33,34,35,36,37,83)),
         define(f, hstack(311,132,313,134,135,136,137,318)),
         define(input, vstack(a,b,c,d,e,f)),
-        slice(input, 2, list(0,8))
+        slice(input, 2, list(0, 8))
     ))";
 
     auto result =
@@ -259,7 +259,7 @@ void test_slicing_operation_2d_single_row_v2()
         define(e, hstack(31,32,33,34,35,36,37,83)),
         define(f, hstack(311,132,313,134,135,136,137,318)),
         define(input, vstack(a,b,c,d,e,f)),
-        slice(input, list(0,6), 2)
+        slice(input, list(0, 6), 2)
     ))";
 
     auto result =
@@ -460,6 +460,36 @@ void test_slicing_operation_2d_negative_index_neg_step()
     HPX_TEST_EQ(result, expected);
 }
 
+void test_set_index_scalar()
+{
+    std::string const code = R"(block(
+        define(a, hstack(0.052, 0.95, 0.55)),
+        slice(a, 1)
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(0));
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 0.95);
+}
+
+void test_set_index_list()
+{
+    std::string const code = R"(block(
+        define(a, hstack(0.052, 0.95, 0.55)),
+        slice(a, list(1, 2, 1))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.num_dimensions(), std::size_t(1));
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 0.95);
+}
+
 int main(int argc, char* argv[])
 {
     test_slicing_operation_0d();
@@ -490,6 +520,9 @@ int main(int argc, char* argv[])
     test_slicing_operation_2d_single_slice_negative_index_v2();
     test_slicing_operation_2d_negative_index_zero_start();
     test_slicing_operation_2d_negative_index_neg_step();
+
+    test_set_index_scalar();
+    test_set_index_list();
 
     return hpx::util::report_errors();
 }
