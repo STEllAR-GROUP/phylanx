@@ -11,6 +11,8 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
+PHYLANX_REGISTER_PLUGIN_FACTORY(dict_operation_plugin,
+    phylanx::execution_tree::primitives::dict_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(list_plugin,
     phylanx::execution_tree::primitives::make_list::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(make_list_plugin,

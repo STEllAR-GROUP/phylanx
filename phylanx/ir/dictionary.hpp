@@ -18,7 +18,8 @@ namespace phylanx { namespace execution_tree {
     struct primitive_argument_type;
 }}
 
-namespace phylanx { namespace ir {
+namespace phylanx { namespace ir
+{
     using dictionary = std::unordered_map<
         phylanx::util::recursive_wrapper<
             phylanx::execution_tree::primitive_argument_type>,
