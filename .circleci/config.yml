@@ -144,7 +144,9 @@ jobs:
             # Run the code
             - run:
                 name: Check the formatting of Phylanx's Python files
-                command: python3 tools/check_help.py > /artifacts/phylanx_help_report.xml
+                environment:
+                    PYTHONPATH: "/phylanx/build/python/build/lib.linux-x86_64-3.5"
+                command: python3 tools/check_help.py > /code_format/phylanx_help_report.xml
             - store_artifacts:
                 path: /artifacts
             # Code Format Check JUnit Reports

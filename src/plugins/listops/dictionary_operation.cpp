@@ -29,7 +29,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("dict",
             std::vector<std::string>{"dict(__1)"},
-            &create_dict_operation, &create_primitive<dict_operation>)
+            &create_dict_operation, &create_primitive<dict_operation>,
+            "TODODOC")
     };
 
     ///////////////////////////////////////////////////////////////////////////
