@@ -6,9 +6,9 @@
 from xml.sax.saxutils import escape
 import re
 import io
-#import sys
+import sys
 
-#sys.path.insert(0, '/phylanx/build/python/build/lib.linux-x86_64-3.5')
+sys.path.insert(0, '/phylanx/build/python/build/lib.linux-x86_64-3.5')
 
 from phylanx.util import *
 
