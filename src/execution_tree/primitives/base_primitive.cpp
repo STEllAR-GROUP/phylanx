@@ -2205,8 +2205,9 @@ namespace phylanx { namespace execution_tree
             return util::get<7>(val);
 
         case 8:     // phylanx::ir::dictionary
-            return std::vector<primitive_argument_type>{
-                    primitive_argument_type{util::get<8>(val)}};
+            return primitive_arguments_type{
+                primitive_argument_type{util::get<8>(val)}};
+
         default:
             break;
         }
@@ -2258,8 +2259,9 @@ namespace phylanx { namespace execution_tree
             return util::get<7>(std::move(val));
 
         case 8:    // phylanx::ir::dictionary
-            return std::vector<primitive_argument_type>{
+            return primitive_arguments_type{
                 primitive_argument_type{util::get<8>(std::move(val))}};
+
         default:
             break;
         }
