@@ -99,9 +99,7 @@ for p in all:
 
         # Print error
         if err:
-            #print("Error:", err, file=output)
-            #print(p, m, h, file=output)
-            errors += [{"message": err+"\nhelp was="+h, "name":m}]
+            errors += [{"message": err + "\nhelp was=" + h, "name": m}]
 
 # Check for arg count mismatches
 for a in argcount:
@@ -114,22 +112,6 @@ for a in argcount:
         print("Error: argument / pattern mismatch", file=output)
         print(a, v["max"], v["patterns"], file=output)
         print(v["help"], file=output)
-
-#print("""<?xml version="1.0" ?>
-#<testsuites>
-#    <testsuite errors="{errs}" failures="{errs}" name="my test suite" tests="1">
-#        <testcase classname="help" name="check_help" time="0">
-#            <system-out>
-#            </system-out>
-#            <system-err>
-#                {text}
-#            </system-err>
-#        </testcase>
-#    </testsuite>
-#</testsuites>""".format(errs=errors_found, text=escape(output.getvalue())))
-
-#errors = [output.getvalue()]
-#output.close()
 
 doc = minidom.Document()
 suite = doc.createElement('testsuite')
@@ -160,8 +142,7 @@ for error in errors:
     message = doc.createTextNode(error["message"])
     failure.appendChild(message)
 
-doc.writexml(stdout,
-                    addindent='    ', newl='\n', encoding='utf-8')
+doc.writexml(stdout, addindent='    ', newl='\n', encoding='utf-8')
 
 if errors_found == 0:
     exit(0)

@@ -30,7 +30,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("dict",
             std::vector<std::string>{"dict(__1)"},
             &create_dict_operation, &create_primitive<dict_operation>,
-            "TODODOC")
+            "lili\n"
+            "Args:\n"
+            "\n"
+            "    lili (list of lists) : a list of 2-element lists\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The dict primitive returns a dictionary object constructed "
+            "from a list of 2-element lists. The 2-element lists provide "
+            "a key in the first element and a value in the second."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
