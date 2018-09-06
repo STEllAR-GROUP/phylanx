@@ -80,7 +80,7 @@ namespace phylanx { namespace execution_tree
         }
 
         // list of indices to extract
-        std::vector<std::int64_t> index_list =
+        auto index_list =
             util::slicing_helpers::create_list_slice(start, stop, step);
 
         primitive_arguments_type result;
