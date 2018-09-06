@@ -117,7 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const auto max_it = std::max_element(a.begin(), a.end());
 
         // Return max's index
-        return primitive_argument_type(std::distance(a.begin(), max_it));
+        return primitive_argument_type((std::int64_t)(std::distance(a.begin(), max_it)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
