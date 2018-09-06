@@ -11,6 +11,8 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
+#include <hpx/util/assert.hpp>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -46,17 +48,18 @@ namespace phylanx { namespace util { namespace slicing_helpers
 
     ///////////////////////////////////////////////////////////////////////////
     // generate a list of indices to extract from a given vector
-    std::vector<std::int64_t> create_list_slice(
+    std::vector<std::size_t> create_list_slice(
         std::int64_t start, std::int64_t stop, std::int64_t step)
     {
-        std::vector<std::int64_t> result;
+        std::vector<std::size_t> result;
 
         if (step > 0)
         {
             result.reserve((std::max)(std::int64_t(0), stop - start));
             for(std::int64_t i = start; i < stop; i += step)
             {
-                result.push_back(i);
+                HPX_ASSERT(i >= 0);
+                result.push_back(std::size_t(i));
             }
         }
         else if (step < 0)
@@ -64,7 +67,8 @@ namespace phylanx { namespace util { namespace slicing_helpers
             result.reserve((std::max)(std::int64_t(0), start - stop));
             for(std::int64_t i = start; i > stop; i += step)
             {
-                result.push_back(i);
+                HPX_ASSERT(i >= 0);
+                result.push_back(std::size_t(i));
             }
         }
 
