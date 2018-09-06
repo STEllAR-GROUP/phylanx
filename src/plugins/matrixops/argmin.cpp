@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         const auto min_it = std::min_element(a.begin(), a.end());
 
         // Return min's index
-        return primitive_argument_type(std::distance(a.begin(), min_it));
+        return primitive_argument_type((std::int64_t)(std::distance(a.begin(), min_it)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
