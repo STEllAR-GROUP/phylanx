@@ -8,6 +8,7 @@
 #define PHYLANX_IR_RANGES
 
 #include <phylanx/config.hpp>
+#include <phylanx/ir/dictionary.hpp>
 #include <phylanx/util/variant.hpp>
 
 #include <hpx/include/serialization.hpp>
@@ -19,6 +20,7 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <unordered_map>
 #include <vector>
 
 namespace phylanx { namespace execution_tree
@@ -172,8 +174,9 @@ namespace phylanx { namespace ir
             execution_tree::primitive_argument_type>::reverse_iterator;
         using args_const_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::const_reverse_iterator;
-        using iterator_type = util::variant<
-            int_range_type, args_iterator_type, args_const_iterator_type>;
+        using dict_key_iterator_type = phylanx::ir::dictionary::iterator;
+        using iterator_type = util::variant<int_range_type, args_iterator_type,
+            args_const_iterator_type, dict_key_iterator_type>;
 
     public:
         reverse_range_iterator(std::int64_t reverse_start, std::int64_t step)
@@ -187,6 +190,11 @@ namespace phylanx { namespace ir
         }
 
         reverse_range_iterator(args_const_iterator_type it)
+          : it_(it)
+        {
+        }
+
+        reverse_range_iterator(dict_key_iterator_type it)
           : it_(it)
         {
         }
@@ -219,10 +227,9 @@ namespace phylanx { namespace ir
             execution_tree::primitive_argument_type>::reverse_iterator;
         using args_reverse_const_iterator_type = std::vector<
             execution_tree::primitive_argument_type>::const_reverse_iterator;
-        using iterator_type = util::variant<
-            int_range_type,
-            args_iterator_type,
-            args_const_iterator_type>;
+        using dict_key_iterator_type = phylanx::ir::dictionary::iterator;
+        using iterator_type = util::variant<int_range_type, args_iterator_type,
+            args_const_iterator_type, dict_key_iterator_type>;
 
     public:
         range_iterator(std::int64_t start, std::int64_t step)
@@ -236,6 +243,11 @@ namespace phylanx { namespace ir
         }
 
         range_iterator(args_const_iterator_type it)
+          : it_(it)
+        {
+        }
+
+        range_iterator(dict_key_iterator_type it)
           : it_(it)
         {
         }
