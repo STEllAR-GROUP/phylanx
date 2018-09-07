@@ -38,6 +38,10 @@ namespace phylanx { namespace ir
             return reverse_range_iterator(
                 args_reverse_const_iterator_type(util::get<2>(it_)));
 
+        case 3:    // dict_key_iterator_type
+            return reverse_range_iterator(
+                dict_key_iterator_type(util::get<3>(it_)));
+
         default:
             break;
         }
@@ -60,6 +64,9 @@ namespace phylanx { namespace ir
 
         case 2:    // args_const_iterator_type
             return *(util::get<2>(it_));
+
+        case 3:    // dict_key_iterator_type
+            return util::get<3>(it_)->first.get();
 
         default:
             break;
@@ -89,6 +96,9 @@ namespace phylanx { namespace ir
         case 2:    // args_const_iterator_type
             return util::get<2>(it_) == util::get<2>(other.it_);
 
+        case 3:    // dict_key_iterator_type
+            return util::get<3>(it_) == util::get<3>(other.it_);
+
         default:
             break;
         }
@@ -117,6 +127,10 @@ namespace phylanx { namespace ir
             ++util::get<2>(it_);
             return;
 
+        case 3:    // dict_key_iterator_type
+            ++util::get<3>(it_);
+            return;
+
         default:
             break;
         }
@@ -141,6 +155,9 @@ namespace phylanx { namespace ir
 
         case 2:    // args_const_iterator_type
             return *(util::get<2>(it_));
+
+        case 3:    // dict_key_iterator_type
+            return util::get<3>(it_)->first.get();
 
         default:
             break;
@@ -170,6 +187,9 @@ namespace phylanx { namespace ir
         case 2:    // args_const_iterator_type
             return util::get<2>(it_) == util::get<2>(other.it_);
 
+        case 3:    // dict_key_iterator_type
+            return util::get<3>(it_) == util::get<3>(other.it_);
+
         default:
             break;
         }
@@ -196,6 +216,10 @@ namespace phylanx { namespace ir
 
         case 2:    // args_const_iterator_type
             ++util::get<2>(it_);
+            return;
+
+        case 3:    // dict_key_iterator_type
+            ++util::get<3>(it_);
             return;
 
         default:
@@ -366,7 +390,7 @@ namespace phylanx { namespace ir
             {
                 auto const& first = util::get<2>(data_).first;
                 auto const& second = util::get<2>(data_).second;
-                return std::distance(second, first);
+                return std::distance(first, second);
             }
 
         default:

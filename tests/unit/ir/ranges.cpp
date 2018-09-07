@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <vector>
 
 void test_int_iterator_inc()
@@ -97,6 +98,61 @@ void test_arg_pair_range()
     HPX_TEST_EQ(std::distance(std::next(r.begin()), r.end()), 2);
 }
 
+void test_dict_key_iterator_deref()
+{
+    using arg_t = phylanx::execution_tree::primitive_argument_type;
+    phylanx::ir::dictionary u;
+
+    auto key_1 = arg_t{phylanx::ir::node_data<std::int64_t>(1)};
+    auto val_1 = arg_t{phylanx::ir::node_data<std::int64_t>(2)};
+    auto key_2 = arg_t{phylanx::ir::node_data<std::int64_t>(3)};
+    auto val_2 = arg_t{phylanx::ir::node_data<std::int64_t>(4)};
+
+    u[key_1] = val_1;
+    u[key_2] = val_2;
+
+    phylanx::ir::range r(u.begin(), u.end());
+    phylanx::ir::range_iterator it(r.begin());
+
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(3));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(1));
+}
+
+void test_dict_key_iterator()
+{
+    using arg_t = phylanx::execution_tree::primitive_argument_type;
+    phylanx::ir::dictionary u;
+
+    auto key_1 = arg_t{phylanx::ir::node_data<std::int64_t>(1)};
+    auto val_1 = arg_t{phylanx::ir::node_data<std::int64_t>(5)};
+    auto key_2 = arg_t{phylanx::ir::node_data<std::int64_t>(2)};
+    auto val_2 = arg_t{phylanx::ir::node_data<std::int64_t>(6)};
+    auto key_3 = arg_t{phylanx::ir::node_data<std::int64_t>(3)};
+    auto val_3 = arg_t{phylanx::ir::node_data<std::int64_t>(7)};
+    auto key_4 = arg_t{phylanx::ir::node_data<std::int64_t>(4)};
+    auto val_4 = arg_t{phylanx::ir::node_data<std::int64_t>(8)};
+
+    u[key_1] = val_1;
+    u[key_2] = val_2;
+    u[key_3] = val_3;
+    u[key_4] = val_4;
+
+    phylanx::ir::range r(u.begin(), u.end());
+
+    std::vector<arg_t> expected{arg_t{phylanx::ir::node_data<std::int64_t>(1)},
+        arg_t{phylanx::ir::node_data<std::int64_t>(2)},
+        arg_t{phylanx::ir::node_data<std::int64_t>(3)},
+        arg_t{phylanx::ir::node_data<std::int64_t>(4)}};
+
+    for (phylanx::ir::range_iterator it = r.begin(); it != r.end(); ++it)
+    {
+        HPX_TEST(std::find(expected.begin(), expected.end(), *it++) !=
+            expected.end());
+    }
+
+    HPX_TEST_EQ(4, r.size());
+}
+
 void test_int_rev_iterator_inc()
 {
     phylanx::ir::reverse_range_iterator it(0, 1);
@@ -115,6 +171,26 @@ void test_int_rev_iterator_deref()
     phylanx::ir::reverse_range_iterator it(9, 6);
     HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(9));
     HPX_TEST_EQ(*it, phylanx::ir::node_data<std::int64_t>(3));
+}
+
+void test_dict_key_iterator_type_rev_deref()
+{
+    using arg_t = phylanx::execution_tree::primitive_argument_type;
+    phylanx::ir::dictionary u;
+
+    auto key_1 = arg_t{phylanx::ir::node_data<std::int64_t>(1)};
+    auto val_1 = arg_t{phylanx::ir::node_data<std::int64_t>(2)};
+    auto key_2 = arg_t{phylanx::ir::node_data<std::int64_t>(3)};
+    auto val_2 = arg_t{phylanx::ir::node_data<std::int64_t>(4)};
+
+    u[key_1] = val_1;
+    u[key_2] = val_2;
+
+    phylanx::ir::range r(u.begin(), u.end());
+    phylanx::ir::reverse_range_iterator it(r.rbegin());
+
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(1));
+    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(3));
 }
 
 void test_arg_type_rev_iterator()
@@ -194,9 +270,15 @@ int main(int argc, char* argv[])
     test_arg_type_range();
     test_arg_pair_range();
 
+    test_dict_key_iterator_deref();
+
+    test_dict_key_iterator();
+
     test_int_rev_iterator_inc();
     test_int_rev_iterator_equal();
     test_int_rev_iterator_deref();
+
+    test_dict_key_iterator_type_rev_deref();
 
     test_arg_type_rev_iterator();
 
