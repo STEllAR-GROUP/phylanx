@@ -32,7 +32,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("file_read_csv",
             std::vector<std::string>{"file_read_csv(_1)"},
-            &create_file_read_csv, &create_primitive<file_read_csv>)
+            &create_file_read_csv, &create_primitive<file_read_csv>,
+            "fname\n"
+            "Args:\n"
+            "\n"
+            "    fname (string) : file name\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "Returns a matrix representation of the contents of a "
+            "csv file."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

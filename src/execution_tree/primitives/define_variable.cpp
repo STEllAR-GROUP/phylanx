@@ -26,21 +26,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive<define_variable>)
+            nullptr, &create_primitive<define_variable>, "Internal")
     };
 
     match_pattern_type const define_variable::match_data_define =
     {
         hpx::util::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
-            nullptr, nullptr)
+            nullptr, nullptr,
+            "name,args,body\n"
+            "Args:\n"
+            "\n"
+            "    name (string) : name of symbol to define\n"
+            "    args (optional,list of symbols) : if  present, "
+            "                         this defines a function.\n"
+            "    body (expression) : value to bind to symbol `name` "
+            "                      or body of lambda function.\n"
+            "\n"
+            "Returns:\n"
+            )
     };
 
     match_pattern_type const define_variable::match_data_lambda =
     {
         hpx::util::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
-            nullptr, nullptr)
+            nullptr, nullptr,
+            "args,body\n"
+            "Args:\n"
+            "\n"
+            "    *args (argument list): the list of arguments\n"
+            "    body (statemt): the body of the lambda function\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A function object with the arguments and body specified."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

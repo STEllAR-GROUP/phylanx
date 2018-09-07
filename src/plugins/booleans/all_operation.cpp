@@ -25,7 +25,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const all_operation::match_data = {
         hpx::util::make_tuple("all", std::vector<std::string>{"all(_1)"},
-            &create_all_operation, &create_primitive<all_operation>)};
+            &create_all_operation, &create_primitive<all_operation>,
+            "arg\n"
+            "Args:\n"
+            "\n"
+            "    arg (matrix or vector of numbers) : the input values\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "True if all values in the matrix/vector are nonzero,\n"
+            "False otherwise.\n"
+            )};
 
     ///////////////////////////////////////////////////////////////////////////
     all_operation::all_operation(primitive_arguments_type && args,

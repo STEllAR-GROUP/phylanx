@@ -98,7 +98,7 @@ jobs:
                 root: /phylanx
                 paths:
                     - .
-    check_code_format:
+    check.code_format:
         <<: *docker_config
         working_directory: /phylanx
         steps:
@@ -128,6 +128,27 @@ jobs:
                 command: tools/inspect/inspect_to_junit.py /artifacts/phylanx_inspect_report.html >/code_format/phylanx_inspect.xml
                 when: always
             # Code Formatting Check Reports
+            - store_artifacts:
+                path: /artifacts
+            # Code Format Check JUnit Reports
+            - store_test_results:
+                path: /code_format
+    check.help_format:
+        <<: *docker_config
+        working_directory: /phylanx
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Create build directory, test and artifacts directories
+                command: mkdir -p /artifacts /code_format
+            # Run the code
+            - run:
+                name: Check the formatting of Phylanx's Python files
+                environment:
+                    PYTHONPATH: "/phylanx/build/python/build/lib.linux-x86_64-3.5"
+                command: |
+                    python3 tools/check_help/check_help.py > /code_format/phylanx_help_report.xml
+                    cp /code_format/phylanx_help_report.xml /artifacts/phylanx_help_report.txt
             - store_artifacts:
                 path: /artifacts
             # Code Format Check JUnit Reports
@@ -313,7 +334,10 @@ workflows:
         jobs:
             - build_test:
                 <<: *ignore_docs
-            - check_code_format:
+            - check.code_format:
+                requires:
+                    - build_test
+            - check.help_format:
                 requires:
                     - build_test
             - tests.regressions:
@@ -346,7 +370,7 @@ workflows:
             - deploy_image:
                 requires:
                     - build_test
-                    - check_code_format
+                    - check.code_format
                     - tests.regressions
                     - tests.unit.plugins.arithmetic
                     - tests.unit.plugins.booleans

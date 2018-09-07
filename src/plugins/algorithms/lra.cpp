@@ -34,7 +34,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lra(_1, _2, _3, _4, _5)",
                 "lra(_1, _2, _3, _4)"
             },
-            &create_lra, &create_primitive<lra>)
+            &create_lra, &create_primitive<lra>,
+            "x,y,alpha,iters,enable_output\n"
+            "Args:\n"
+            "\n"
+            "    x (matrix) : a matrix\n"
+            "    y (vector) : a vector\n"
+            "the data\n"
+            "    alpha (float): It is the learning rate\n"
+            "    iters (int): The number of iterations\n"
+            "    enable_output (optional, boolean): If enabled, prints out the step "
+            "number and weights during each iteration\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The Calculated weights"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -83,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lra::eval",
                 generate_error_message(
                     "the lra algorithm primitive requires for the second "
-                    "argument ('alpha') to represent a vector"));
+                    "argument ('alpha') the learning rate"));
         }
         auto alpha = arg3.scalar();
 

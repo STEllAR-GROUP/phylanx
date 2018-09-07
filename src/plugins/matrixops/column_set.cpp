@@ -32,7 +32,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("set_column",
             std::vector<std::string>{"set_column(_1, _2, _3, _4, _5)"},
             &create_column_set_operation,
-            &create_primitive<column_set_operation>)};
+            &create_primitive<column_set_operation>,
+            "v,start,stop,step,val\n"
+            "Args:\n"
+            "\n"
+            "    v (array) : the array to set values in\n"
+            "    start (int) : the start index\n"
+            "    stop (int) : the stop index\n"
+            "    step (int) : the step size\n"
+            "    val (number) : the value to substitute\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "0 on success. However, the contents of v are modified at "
+            "the indices described by `start`, `stop`, and `step`."
+            )};
 
     ///////////////////////////////////////////////////////////////////////////
     column_set_operation::column_set_operation(

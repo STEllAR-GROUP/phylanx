@@ -32,7 +32,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("__mul",
             std::vector<std::string>{"_1 * __2", "__mul(_1, __2)"},
-            &create_mul_operation, &create_primitive<mul_operation>)
+            &create_mul_operation, &create_primitive<mul_operation>,
+            "x0,x1\n"
+            "Args:\n"
+            "\n"
+            "     x0 (number): A factor\n"
+            "    *x1 (number list): A list of one or more factors.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The product of all factors.\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

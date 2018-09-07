@@ -28,7 +28,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("linearmatrix",
             std::vector<std::string>{"linearmatrix(_1, _2, _3, _4, _5)"},
-            &create_linearmatrix, &create_primitive<linearmatrix>)
+            &create_linearmatrix, &create_primitive<linearmatrix>,
+            "nx,ny,x0,dx,dy\n"
+            "Args:\n"
+            "\n"
+            "    nx (int) : number of rows\n"
+            "    ny (int) : number of columns\n"
+            "    x0 (float) : value of the 0,0 element\n"
+            "    dx (float) : increment in value in the x-direction\n"
+            "    dy (float) : increment in value in the x-direction\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A matrix of size `nx` by `ny` with values beginning at `x0` "
+            "and increasing by `dx` (or `dy`) as x (or y) is increased."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

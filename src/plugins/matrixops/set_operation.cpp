@@ -33,7 +33,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple(
             "set", std::vector<std::string>{"set(_1,_2,_3,_4,_5,_6,_7,_8)"},
-            &create_set_operation, &create_primitive<set_operation>)
+            &create_set_operation, &create_primitive<set_operation>,
+            "m,b1,e1,s1,b2,e2,s2,v\n"
+            "Args:\n"
+            "\n"
+            "    m (matrix) : a matrix of values\n"
+            "    b1 (int) : the start of a Python range\n"
+            "    e1 (int) : the end of a Python range\n"
+            "    s1 (int) : the step of a Python range\n"
+            "    b2 (int) : the start of a Python range\n"
+            "    e2 (int) : the end of a Python range\n"
+            "    s2 (int) : the step of a Python range\n"
+            "    v (number) : the value to set.\n"
+            "\n"
+            "Returns:\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

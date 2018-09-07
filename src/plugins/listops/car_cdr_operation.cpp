@@ -25,12 +25,26 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+
+
     ///////////////////////////////////////////////////////////////////////////
 #define PHYLANX_CAR_CDR_MATCH_DATA(name)                                       \
     hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
-        &create_car_cdr_operation, &create_primitive<car_cdr_operation>)       \
+        &create_car_cdr_operation, &create_primitive<car_cdr_operation>,       \
+        "li\n"                                                                 \
+        "Args:\n"                                                              \
+        "\n"                                                                   \
+        "    li (list) : a list\n"                                             \
+        "\n"                                                                   \
+        "Returns:\n"                                                           \
+        "\n"                                                                   \
+        "car returns the head of a list, e.g. car([1,2,3]) returns 1\n"        \
+        "cdr returns the tail of a list, e.g. cdr([1,2,3]) returns [2,3]\n"    \
+        "caar() is the same as car(car())\n"                                   \
+        "cadr() is the same as car(cdr())\n"                                   \
+        "etc."                                                                 \
+        )                                                                      \
 /**/
-
     std::vector<match_pattern_type> const car_cdr_operation::match_data =
     {
         PHYLANX_CAR_CDR_MATCH_DATA("car"),
