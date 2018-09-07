@@ -253,7 +253,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("format",
             std::vector<std::string>{"format(_1, __2)"},
-            &create_format_string, &create_primitive<format_string>)
+            &create_format_string, &create_primitive<format_string>,
+            "s,args\n"
+            "\n"
+            "Args:\n"
+            "\n"
+            "    s (string) : a format string\n"
+            "    *args (arg list) : a list of arguments\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A formatted string, with each `{}` in s replaced by \n"
+            "a value from `*args`.")
     };
 
     ///////////////////////////////////////////////////////////////////////////

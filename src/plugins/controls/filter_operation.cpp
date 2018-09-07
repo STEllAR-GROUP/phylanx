@@ -26,7 +26,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("filter",
             std::vector<std::string>{"filter(_1, _2)"},
-            &create_filter_operation, &create_primitive<filter_operation>)
+            &create_filter_operation, &create_primitive<filter_operation>,
+            "func,iter\n"
+            "\n"
+            "Args:\n"
+            "\n"
+            "    func (function) : a function that takes one arg and returns a boolean\n"
+            "    iter (iterator) : an iterator\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "filter applies `func` to each item in iter and creates a list consisting\n"
+            "of the values for which `func` evaluated to true.\n"
+            "\n"
+            "Example:\n"
+            "\n"
+            "    from phylanx.ast import Phylanx\n"
+            "\n"
+            "    @Phylanx\n"
+            "    def foo():\n"
+            "        print(filter(lambda a : a > 1,[1,2,3,4]))\n"
+            "\n"
+            "    foo()\n"
+            "\n"
+            "Prints [2,3,4]"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

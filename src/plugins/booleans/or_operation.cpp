@@ -34,7 +34,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("__or",
             std::vector<std::string>{"_1 || __2", "__or(_1, __2)"},
-            &create_or_operation, &create_primitive<or_operation>)
+            &create_or_operation, &create_primitive<or_operation>,
+            "a,b\n"
+            "Args:\n"
+            "\n"
+            "    a (boolean) : a boolean argument\n"
+            "    b (boolean) : a boolean argument\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The logical or of `a` and `b`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

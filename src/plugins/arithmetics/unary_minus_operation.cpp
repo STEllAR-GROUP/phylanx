@@ -30,7 +30,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__minus",
             std::vector<std::string>{"-_1", "__minus(_1)"},
             &create_unary_minus_operation,
-            &create_primitive<unary_minus_operation>)
+            &create_primitive<unary_minus_operation>,
+            "arg\n"
+            "Args:\n"
+            "\n"
+            "    arg (number) : a numeric value\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The negative of the value arg."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

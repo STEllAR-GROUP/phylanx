@@ -54,7 +54,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("constant",
             std::vector<std::string>{"constant(_1, _2)", "constant(_1)"},
-            &create_constant, &create_primitive<constant>)
+            &create_constant, &create_primitive<constant>,
+            "arg1,arg2\n"
+            "Args:\n"
+            "\n"
+            "    arg1 (float): a constant value\n"
+            "    arg2 (int, optional): the number of values\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "An array of size arg2 with each element equal to arg1.\n")
     };
 
     ///////////////////////////////////////////////////////////////////////////

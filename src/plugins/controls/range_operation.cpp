@@ -33,7 +33,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{
                 "range(_1)", "range(_1, _2)", "range(_1, _2, _3)"
             },
-            &create_range_operation, &create_primitive<range_operation>)
+            &create_range_operation, &create_primitive<range_operation>,
+            "start,end,step\n"
+            "Args:\n"
+            "\n"
+            "    start (number) : a starting value\n"
+            "    end (optional,number) : an ending value\n"
+            "    step (optional,number) : a step size\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "An iterator of values less than `end` where the values "
+            "are equal to `start+step*n` where n is 0, 1, 2, ... "
+            "This function works like the Python range function. "
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

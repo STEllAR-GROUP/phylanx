@@ -27,7 +27,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("parallel_block",
             std::vector<std::string>{"parallel_block(__1)"},
             &create_parallel_block_operation,
-            &create_primitive<parallel_block_operation>)
+            &create_primitive<parallel_block_operation>,
+            "*args\n"
+            "Args:\n"
+            "\n"
+            "    *args (list) : a list of zero or more statements\n"
+            "            to be evaluated in parallel.\n"
+            "Returns:\n"
+            "\n"
+            "The last statement in the list `args`.\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////

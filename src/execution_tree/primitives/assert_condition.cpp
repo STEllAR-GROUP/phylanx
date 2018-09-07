@@ -37,7 +37,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("assert",
             std::vector<std::string>{"assert(_1)"},
-            &create_assert_condition, &create_primitive<assert_condition>)
+            &create_assert_condition, &create_primitive<assert_condition>,
+            "cond\n"
+            "Args:\n"
+            "\n"
+            "    cond (boolean expression) : if not true, raise an AssertionError\n"
+            "Returns:\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
