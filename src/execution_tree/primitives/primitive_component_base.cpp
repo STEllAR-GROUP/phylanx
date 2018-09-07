@@ -267,22 +267,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::async;
         }
 
+        // get eval count and execution time of primitive lower and upper threshold 
+        // from command line
+        static std::size_t ec_threshold = std::stoul(
+            hpx::get_config_entry("phylanx.eval_count_threshold", "5"));
+        static std::size_t exec_upper_threshold =
+            std::stoul(hpx::get_config_entry(
+                "phylanx.exec_time_upper_threshold", "500000"));
+        static std::size_t exec_lower_threshold =
+            std::stoul(hpx::get_config_entry(
+                "phylanx.exec_time_lower_threshold", "350000"));
+
         // always execute synchronously, if requested
         if (get_sync_execution())
         {
             return hpx::launch::sync;
         }
 
-        if ((eval_count_ != 0 && measurements_enabled_) || (eval_count_ > 5))
+        if ((eval_count_ != 0 && measurements_enabled_) || (eval_count_ > ec_threshold))
         {
             // check whether execution status needs to be changed (with some
             // hysteresis)
             std::int64_t exec_time = (eval_duration_ / eval_count_);
-            if (exec_time > 500000)
+            if (exec_time > exec_upper_threshold)
             {
                 execute_directly_ = 0;
             }
-            else if (exec_time < 350000)
+            else if (exec_time < exec_lower_threshold)
             {
                 execute_directly_ = 1;
             }
