@@ -267,7 +267,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::async;
         }
 
-        // get eval count and execution time of primitive lower and upper threshold 
+        // get eval count and execution time of primitive lower and upper threshold
         // from command line
         static std::size_t ec_threshold = std::stoul(
             hpx::get_config_entry("phylanx.eval_count_threshold", "5"));
