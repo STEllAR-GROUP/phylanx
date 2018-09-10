@@ -24,7 +24,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("access-argument",
             std::vector<std::string>{},
-            nullptr, &create_primitive<access_argument>,"Internal")
+            nullptr, &create_primitive<access_argument>,
+            "Internal")
     };
 
     ///////////////////////////////////////////////////////////////////////////

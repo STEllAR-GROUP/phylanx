@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lra(_1, _2, _3, _4)"
             },
             &create_lra, &create_primitive<lra>,
-            "x,y,alpha,iters,enable_output\n"
+            "x, y, alpha, iters, enable_output\n"
             "Args:\n"
             "\n"
             "    x (matrix) : a matrix\n"

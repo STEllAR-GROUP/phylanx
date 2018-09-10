@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("while",
             std::vector<std::string>{"while(_1, _2)"},
             &create_while_operation, &create_primitive<while_operation>,
-            "cond,block\n"
+            "cond, block\n"
             "Args:\n"
             "\n"
             "    cond (boolean expression): if it evaluates to True,\n"
@@ -35,7 +35,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    block (statement) : code to execute as long as `cond`\n"
             "                        is true.\n"
             "\n"
-            "Returns:"
+            "Returns:\n"
+            "\n"
+            "  The value returned from the last iteration, `nil` otherwise."
             )
     };
 

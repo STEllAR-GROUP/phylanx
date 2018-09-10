@@ -44,17 +44,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("where",
             std::vector<std::string>{"where(_1)", "where(_1, _2, _3)"},
             &create_where, &create_primitive<nonzero_where>,
-            "cond,var,val\n"
+            "cond, var, val\n"
             "Args:\n"
             "\n"
             "    cond (boolean expression): a condition to apply\n"
-            "    var (matrix): a matrix\n"
-            "    val (float): a value to supply when cond is false\n"
+            "    var (matrix, optional): a matrix (used if cond is true)\n"
+            "    val (float, optional): a value to supply when cond is false\n"
             "\n"
             "Returns:\n"
             "\n"
             "A new matrix in which cells in matrix `var` that have values "
             "that do not match `cond` are replaced with value `val`."
+            "\n"
+            "Note:\n"
+            "\n"
+            "Either both of or none of `var` and `val` can be provided. If none "
+            "are provided, then `where` is equivalent to `nonzero`."
             )
     };
 

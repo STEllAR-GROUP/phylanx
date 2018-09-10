@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("linspace",
             std::vector<std::string>{"linspace(_1, _2, _3)"},
             &create_linspace, &create_primitive<linspace>,
-            "start,end,nelements\n"
+            "start, end, nelements\n"
             "Args:\n"
             "\n"
             "    start (number) : the start of the numeric range\n"

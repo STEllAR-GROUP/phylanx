@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("dot",
             std::vector<std::string>{"dot(_1, _2)"},
             &create_dot_operation, &create_primitive<dot_operation>,
-            "v1,v2\n"
+            "v1, v2\n"
             "Args:\n"
             "\n"
             "    v1 (vector) : a vector\n"
@@ -36,7 +36,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "Returns:\n"
             "\n"
-            "The dot product of vector v1 and v2."
+            "The dot product of vector `v1` and `v2`."
             )
     };
 

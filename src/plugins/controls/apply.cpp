@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("apply",
             std::vector<std::string>{"apply(_1, _2)"},
             &create_apply, &create_primitive<apply>,
-            "func,range\n"
+            "func, range\n"
             "Call function `func` one time using the values in `range` "
             "as the argument list.\n"
             "\n"

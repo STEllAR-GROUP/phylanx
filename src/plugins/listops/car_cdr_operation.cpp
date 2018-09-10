@@ -38,8 +38,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "\n"                                                                   \
         "Returns:\n"                                                           \
         "\n"                                                                   \
-        "car returns the head of a list, e.g. car([1,2,3]) returns 1\n"        \
-        "cdr returns the tail of a list, e.g. cdr([1,2,3]) returns [2,3]\n"    \
+        "car returns the head of a list, e.g. car([1 ,2, 3]) returns 1\n"      \
+        "cdr returns the tail of a list, e.g. cdr([1, 2, 3]) returns [2, 3]\n" \
         "caar() is the same as car(car())\n"                                   \
         "cadr() is the same as car(cdr())\n"                                   \
         "etc."                                                                 \

@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"set_column(_1, _2, _3, _4, _5)"},
             &create_column_set_operation,
             &create_primitive<column_set_operation>,
-            "v,start,stop,step,val\n"
+            "v, start, stop, step, val\n"
             "Args:\n"
             "\n"
             "    v (array) : the array to set values in\n"

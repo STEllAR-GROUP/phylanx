@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"parallel_map(_1, __2)"},
             &create_parallel_map_operation,
             &create_primitive<parallel_map_operation>,
-            "func,listv\n"
+            "func, listv\n"
             "Args:\n"
             "\n"
             "    func (function) : A function that takes a single argument\n"
@@ -41,9 +41,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "Examples:\n"
             "\n"
-            "   print(parallel_map(lambda a : a*a, [1,2,3]))\n"
+            "   print(parallel_map(lambda a : a * a, [1, 2, 3]))\n"
             "\n"
-            "Evaluates to [1,4,9]\n"
+            "Evaluates to [1, 4, 9]\n"
             )
     };
 

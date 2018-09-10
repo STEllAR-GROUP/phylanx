@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::vector<std::string>{
             "als(_1, _2, _3, _4, _5, _6)", "als(_1, _2, _3, _4, _5)"},
         &create_als, &create_primitive<als>,
-        "ratings,reg,num,iters,alpha,enable_output\n"
+        "ratings, reg, num, iters, alpha, enable_output\n"
         "Args:\n"
         "\n"
         "    ratings (matrix): the matrix representing user feedback over\n"

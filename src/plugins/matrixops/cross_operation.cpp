@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("cross",
             std::vector<std::string>{"cross(_1, _2)"},
             &create_cross_operation, &create_primitive<cross_operation>,
-            "v1,v2\n"
+            "v1, v2\n"
             "Args:\n"
             "\n"
             "    v1 (vector) : a vector\n"
@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "Returns:\n"
             "\n"
-            "The cross product of v1 and v2."
+            "The cross product of `v1` and `v2`."
             )
     };
 

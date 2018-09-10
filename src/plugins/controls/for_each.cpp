@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("for_each",
             std::vector<std::string>{"for_each(_1, _2)"},
             &create_for_each, &create_primitive<for_each>,
-            "func,range\n"
+            "func, range\n"
             "The for_each primitive calls a function `func` for \n"
             "each item in the iterator.\n"
             "Args:\n"
@@ -39,13 +39,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "Returns:\n"
             "\n"
-            "None.\n"
+            "  The value returned from the last iteration, `nil` otherwise.\n"
             "\n"
             "Examples:\n"
             "\n"
             "    @Phylanx\n"
             "    def foo():\n"
-            "        for_each(lambda a : print(a),[1,2])\n"
+            "        for_each(lambda a : print(a), [1, 2])\n"
             "    foo()\n"
             "\n"
             "Prints 1 and 2 on individual lines."
