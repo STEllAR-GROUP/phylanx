@@ -258,6 +258,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return sync_execution;
     }
 
+    // get eval count from command line
+    std::size_t primitive_component_base::get_ec_threshold()
+    {
+        static std::size_t ec_threshold = std::stoul(
+            hpx::get_config_entry("phylanx.eval_count_threshold", "5"));
+        return ec_threshold;
+    }
+
+    // get execution time upper threshold from command line
+    std::size_t primitive_component_base::get_exec_upper_threshold()
+    {
+        static std::size_t exec_upper_threshold =
+            std::stoul(hpx::get_config_entry(
+                "phylanx.exec_time_upper_threshold", "500000"));
+        return exec_upper_threshold;
+    }
+
+    // get execution time lower threshold from command line
+    std::size_t primitive_component_base::get_exec_lower_threshold()
+    {
+        static std::size_t exec_lower_threshold =
+            std::stoul(hpx::get_config_entry(
+                "phylanx.exec_time_lower_threshold", "350000"));
+        return exec_lower_threshold;
+    }
+
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
     {
@@ -267,33 +293,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::async;
         }
 
-        // get eval count and execution time of primitive lower and upper threshold
-        // from command line
-        static std::size_t ec_threshold = std::stoul(
-            hpx::get_config_entry("phylanx.eval_count_threshold", "5"));
-        static std::size_t exec_upper_threshold =
-            std::stoul(hpx::get_config_entry(
-                "phylanx.exec_time_upper_threshold", "500000"));
-        static std::size_t exec_lower_threshold =
-            std::stoul(hpx::get_config_entry(
-                "phylanx.exec_time_lower_threshold", "350000"));
-
         // always execute synchronously, if requested
         if (get_sync_execution())
         {
             return hpx::launch::sync;
         }
 
-        if ((eval_count_ != 0 && measurements_enabled_) || (eval_count_ > ec_threshold))
+        if ((eval_count_ != 0 && measurements_enabled_) ||
+            (eval_count_ > get_ec_threshold()))
         {
             // check whether execution status needs to be changed (with some
             // hysteresis)
             std::int64_t exec_time = (eval_duration_ / eval_count_);
-            if (exec_time > exec_upper_threshold)
+            if (exec_time > get_exec_upper_threshold())
             {
                 execute_directly_ = 0;
             }
-            else if (exec_time < exec_lower_threshold)
+            else if (exec_time < get_exec_lower_threshold())
             {
                 execute_directly_ = 1;
             }
