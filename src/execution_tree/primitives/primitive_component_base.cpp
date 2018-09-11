@@ -259,27 +259,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     // get eval count from command line
-    std::size_t primitive_component_base::get_ec_threshold()
+    std::int64_t primitive_component_base::get_ec_threshold()
     {
-        static std::size_t ec_threshold = std::stoul(
+        static std::int64_t ec_threshold = std::stol(
             hpx::get_config_entry("phylanx.eval_count_threshold", "5"));
         return ec_threshold;
     }
 
     // get execution time upper threshold from command line
-    std::size_t primitive_component_base::get_exec_upper_threshold()
+    std::int64_t primitive_component_base::get_exec_upper_threshold()
     {
-        static std::size_t exec_upper_threshold =
-            std::stoul(hpx::get_config_entry(
+        static std::int64_t exec_upper_threshold =
+            std::stol(hpx::get_config_entry(
                 "phylanx.exec_time_upper_threshold", "500000"));
         return exec_upper_threshold;
     }
 
     // get execution time lower threshold from command line
-    std::size_t primitive_component_base::get_exec_lower_threshold()
+    std::int64_t primitive_component_base::get_exec_lower_threshold()
     {
-        static std::size_t exec_lower_threshold =
-            std::stoul(hpx::get_config_entry(
+        static std::int64_t exec_lower_threshold =
+            std::stol(hpx::get_config_entry(
                 "phylanx.exec_time_lower_threshold", "350000"));
         return exec_lower_threshold;
     }
