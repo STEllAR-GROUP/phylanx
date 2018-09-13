@@ -116,8 +116,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             (util::future_or_value<primitive_argument_type>&& val) mutable
             ->  primitive_argument_type
             {
-                primitive_operand(lhs, this_->name_, this_->codename_)
-                    .store(hpx::launch::sync, val.get(), std::move(args));
+                auto p = primitive_operand(
+                    std::move(lhs), this_->name_, this_->codename_);
+
+                p.store(hpx::launch::sync, val.get(), std::move(args));
                 return primitive_argument_type{};
             });
     }
@@ -167,8 +169,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 (util::future_or_value<primitive_argument_type>&& val) mutable
                 -> primitive_argument_type
                 {
-                    primitive_operand(lhs, this_->name_, this_->codename_)
-                        .store(hpx::launch::sync, val.get(), std::move(args));
+                    auto p = primitive_operand(
+                        std::move(lhs), this_->name_, this_->codename_);
+
+                    p.store(hpx::launch::sync, val.get(), std::move(args));
                     return primitive_argument_type{};
                 });
     }

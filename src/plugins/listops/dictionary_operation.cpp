@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type dict_operation::generate_dict(
-        std::vector<ir::range>&& args) const
+        std::vector<ir::range, arguments_allocator<ir::range>>&& args) const
     {
         ir::range args_list =
             extract_list_value_strict(std::move(args[0]), name_, codename_);
@@ -128,7 +128,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](std::vector<ir::range>&& args)
+                [this_](
+                    std::vector<ir::range, arguments_allocator<ir::range>>&& args)
                 -> primitive_argument_type
                 {
                     return this_->generate_dict(std::move(args));

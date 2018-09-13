@@ -518,12 +518,20 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Extract a primitive from a given primitive_argument_type, throw
     // if it doesn't hold one.
-    PHYLANX_EXPORT primitive primitive_operand(
+    PHYLANX_EXPORT primitive const& primitive_operand(
         primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT primitive primitive_operand(
+    PHYLANX_EXPORT primitive const& primitive_operand(
         primitive_argument_type const& val,
+        compiler::primitive_name_parts const& parts,
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT primitive primitive_operand(
+        primitive_argument_type && val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+    PHYLANX_EXPORT primitive primitive_operand(
+        primitive_argument_type && val,
         compiler::primitive_name_parts const& parts,
         std::string const& codename = "<unknown>");
 

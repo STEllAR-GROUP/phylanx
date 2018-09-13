@@ -2496,7 +2496,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive primitive_operand(primitive_argument_type const& val,
+    primitive const& primitive_operand(primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2510,13 +2510,42 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    primitive primitive_operand(primitive_argument_type const& val,
+    primitive const& primitive_operand(primitive_argument_type const& val,
         compiler::primitive_name_parts const& parts,
         std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
             return *p;
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_primitive",
+            util::generate_error_message(
+                "primitive_value_type does not hold a primitive",
+                parts, codename));
+    }
+
+    primitive primitive_operand(primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
+    {
+        primitive* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+            return std::move(*p);
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_primitive",
+            util::generate_error_message(
+                "primitive_value_type does not hold a primitive",
+                name, codename));
+    }
+
+    primitive primitive_operand(primitive_argument_type && val,
+        compiler::primitive_name_parts const& parts,
+        std::string const& codename)
+    {
+        primitive* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+            return std::move(*p);
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_primitive",
