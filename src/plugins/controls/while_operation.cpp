@@ -85,10 +85,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return literal_operand(
                 that_->operands_[0], args_, that_->name_, that_->codename_)
                 .then(hpx::launch::sync,
-                    [this_](hpx::future<primitive_argument_type>&& cond)
-                            -> hpx::future<primitive_argument_type> {
-                    return this_->body(std::move(cond));
-                });
+                    [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& cond)
+                    -> hpx::future<primitive_argument_type>
+                    {
+                        return this_->body(std::move(cond));
+                    });
         }
 
         hpx::future<primitive_argument_type> body(
@@ -102,12 +104,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return literal_operand(
                     that_->operands_[1], args_, that_->name_, that_->codename_)
                     .then(hpx::launch::sync,
-                        [this_](hpx::future<primitive_argument_type>&&
-                                    result) mutable
-                        -> hpx::future<primitive_argument_type> {
-                        this_->result_ = result.get();
-                        return this_->loop();
-                    });
+                        [this_ = std::move(this_)](
+                            hpx::future<primitive_argument_type>&& result) mutable
+                        -> hpx::future<primitive_argument_type>
+                        {
+                            this_->result_ = result.get();
+                            return this_->loop();
+                        });
             }
 
             return hpx::make_ready_future(std::move(result_));

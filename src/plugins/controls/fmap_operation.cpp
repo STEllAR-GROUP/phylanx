@@ -232,8 +232,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            [this_](util::future_or_value<primitive_argument_type>&& f,
-                    util::future_or_value<primitive_argument_type>&& l)
+            [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& f,
+                    hpx::future<primitive_argument_type>&& l)
             -> primitive_argument_type
             {
                 auto && bound_func = f.get();
@@ -295,9 +296,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the second argument to fmap must be an iterable "
                             "object (a list or a numeric type)"));
             },
-            value_operand_fov(operands[0], args, name_, codename_,
+            value_operand(operands[0], args, name_, codename_,
                 eval_dont_evaluate_lambdas),
-            value_operand_fov(operands[1], args, name_, codename_));
+            value_operand(operands[1], args, name_, codename_));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -514,7 +515,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func,
+            [this_ = std::move(this_)](primitive_argument_type&& bound_func,
                 primitive_arguments_type&& args)
             ->  primitive_argument_type
             {

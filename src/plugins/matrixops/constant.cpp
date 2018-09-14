@@ -122,8 +122,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 2)
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](operand_type&& op0,
-                        ir::range&& op1)
+                [this_ = std::move(this_)](operand_type&& op0, ir::range&& op1)
                 ->  primitive_argument_type
                 {
                     if (op0.num_dimensions() != 0)

@@ -14,7 +14,6 @@
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
-#include <phylanx/util/future_or_value.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/small_vector.hpp>
 
@@ -579,52 +578,6 @@ namespace phylanx { namespace execution_tree
         };
     }
 
-    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
-    value_operand_fov(primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
-    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
-    value_operand_fov(primitive_argument_type const& val,
-        primitive_arguments_type&& args,
-        std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
-    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
-    value_operand_fov(primitive_argument_type&& val,
-        primitive_arguments_type const& args,
-        std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
-    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
-    value_operand_fov(primitive_argument_type&& val,
-        primitive_arguments_type&& args,
-        std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
-
-    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
-    value_operand_fov(primitive_argument_type const& val,
-        primitive_argument_type const& arg, std::string const& name = "",
-        std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
-    PHYLANX_EXPORT util::future_or_value<primitive_argument_type>
-    value_operand_fov(primitive_argument_type&& val,
-        primitive_argument_type const& arg, std::string const& name = "",
-        std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
-
-    namespace functional
-    {
-        struct value_operand_fov
-        {
-            template <typename... Ts>
-            util::future_or_value<primitive_argument_type> operator()(
-                Ts&&... ts) const
-            {
-                return execution_tree::value_operand_fov(
-                    std::forward<Ts>(ts)...);
-            }
-        };
-    }
-
     // was declared above
     //     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
     //         primitive_argument_type const& val,
@@ -835,43 +788,6 @@ namespace phylanx { namespace execution_tree
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Extract a list from a primitive_argument_type (that
-    // could be a primitive or a literal value).
-    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type && val,
-        primitive_arguments_type const& args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-    PHYLANX_EXPORT util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type && val,
-        primitive_arguments_type && args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>");
-
-    namespace functional
-    {
-        struct list_operand_fov
-        {
-            template <typename... Ts>
-            util::future_or_value<ir::range> operator()(
-                Ts&&... ts) const
-            {
-                return execution_tree::list_operand(std::forward<Ts>(ts)...);
-            }
-        };
-    }
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives

@@ -505,7 +505,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (nonzero_ || (where_ && operands.size() == 1))
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](primitive_argument_type&& op)
+                [this_ = std::move(this_)](primitive_argument_type&& op)
                 -> primitive_argument_type
                 {
                     return util::visit(visit_nonzero{*this_},
@@ -515,7 +515,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& cond,
+            [this_ = std::move(this_)](primitive_argument_type&& cond,
                 primitive_argument_type&& lhs, primitive_argument_type&& rhs)
             -> primitive_argument_type
             {

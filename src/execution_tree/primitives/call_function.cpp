@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](primitive_argument_type&& func,
+                [this_ = std::move(this_)](primitive_argument_type&& func,
                     primitive_arguments_type&& args)
                 {
                     return value_operand_sync(std::move(func),
