@@ -325,6 +325,9 @@ namespace phylanx { namespace ir
         case 2:    // arg_pair_type
             return util::get<2>(data_).second.invert();
 
+        case 3:    // dict_key_iterator_type
+            return util::get<3>(data_)->first.get();
+
         default:
             break;
         }
