@@ -182,7 +182,6 @@ namespace phylanx { namespace ir
 
         case 2:    // args_const_iterator_type
             return util::get<2>(it_) == util::get<2>(other.it_);
-
         default:
             break;
         }
