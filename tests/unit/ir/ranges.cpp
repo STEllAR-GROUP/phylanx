@@ -153,26 +153,6 @@ void test_int_rev_iterator_deref()
     HPX_TEST_EQ(*it, phylanx::ir::node_data<std::int64_t>(3));
 }
 
-void test_dict_key_iterator_type_rev_deref()
-{
-    using arg_t = phylanx::execution_tree::primitive_argument_type;
-    phylanx::ir::dictionary u;
-
-    auto key_1 = arg_t{phylanx::ir::node_data<std::int64_t>(1)};
-    auto val_1 = arg_t{phylanx::ir::node_data<std::int64_t>(2)};
-    auto key_2 = arg_t{phylanx::ir::node_data<std::int64_t>(3)};
-    auto val_2 = arg_t{phylanx::ir::node_data<std::int64_t>(4)};
-
-    u[key_1] = val_1;
-    u[key_2] = val_2;
-
-    phylanx::ir::range r(u.begin(), u.end());
-    phylanx::ir::reverse_range_iterator it(r.rbegin());
-
-    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(1));
-    HPX_TEST_EQ(*it++, phylanx::ir::node_data<std::int64_t>(3));
-}
-
 void test_arg_type_rev_iterator()
 {
     using arg_t = phylanx::execution_tree::primitive_argument_type;
@@ -255,8 +235,6 @@ int main(int argc, char* argv[])
     test_int_rev_iterator_inc();
     test_int_rev_iterator_equal();
     test_int_rev_iterator_deref();
-
-    test_dict_key_iterator_type_rev_deref();
 
     test_arg_type_rev_iterator();
 
