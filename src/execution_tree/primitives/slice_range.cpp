@@ -134,8 +134,9 @@ namespace phylanx { namespace execution_tree
     {
         std::size_t size = data.size();
         return slice_list(std::move(data),
-            util::slicing_helpers::extract_slicing(indices, size), name,
-            codename);
+            util::slicing_helpers::extract_slicing(
+                indices, size, name, codename),
+            name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -319,12 +320,14 @@ namespace phylanx { namespace execution_tree
         {
             ir::range rhs = extract_list_value_strict(value, name, codename);
             return slice_list(std::move(data),
-                util::slicing_helpers::extract_slicing(indices, size),
+                util::slicing_helpers::extract_slicing(
+                    indices, size, name, codename),
                 detail::slice_assign_list{rhs}, name, codename);
         }
 
         return slice_list(std::move(data),
-            util::slicing_helpers::extract_slicing(indices, size),
+            util::slicing_helpers::extract_slicing(
+                indices, size, name, codename),
             detail::slice_assign_value{value}, name, codename);
     }
 }}

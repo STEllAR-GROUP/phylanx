@@ -64,7 +64,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             // the first argument is the expression the variable should be
             // bound to
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
             value_set_ = true;
         }
     }
@@ -91,14 +92,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (args.size() > 1)
             {
                 // handle row/column-slicing
-                return hpx::make_ready_future(slice(target, args[0], args[1]));
+                return hpx::make_ready_future(
+                    slice(target, args[0], args[1], name_, codename_));
             }
 
             // handle row-slicing
-            return hpx::make_ready_future(slice(target, args[0]));
+            return hpx::make_ready_future(
+                slice(target, args[0], name_, codename_));
         }
 
-        return hpx::make_ready_future(extract_ref_value(target));
+        return hpx::make_ready_future(
+            extract_ref_value(target, name_, codename_));
     }
 
     hpx::future<primitive_argument_type> variable::eval(
@@ -120,10 +124,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (valid(arg) && !(mode & eval_dont_evaluate_partials))
         {
             // handle row-slicing
-            return hpx::make_ready_future(slice(target, arg));
+            return hpx::make_ready_future(
+                slice(target, std::move(arg), name_, codename_));
         }
 
-        return hpx::make_ready_future(extract_ref_value(target));
+        return hpx::make_ready_future(
+            extract_ref_value(target, name_, codename_));
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -141,11 +147,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            bound_value_ = extract_copy_value(p->eval(hpx::launch::sync, args));
+            bound_value_ = extract_copy_value(
+                p->eval(hpx::launch::sync, args), name_, codename_);
         }
         else
         {
-            bound_value_ = extract_ref_value(operands_[0]);
+            bound_value_ = extract_ref_value(operands_[0], name_, codename_);
         }
 
         return true;
@@ -165,7 +172,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto result = slice(std::move(bound_value_),
             value_operand_sync(
-                data[1], std::move(params), name_, codename_),
+                std::move(data[1]), std::move(params), name_, codename_),
             std::move(data[0]), name_, codename_);
         bound_value_ = std::move(result);
     }
@@ -215,7 +222,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "not allowed to have slicing parameters"));
             }
 
-            operands_[0] = extract_copy_value(std::move(data[0]));
+            operands_[0] =
+                extract_copy_value(std::move(data[0]), name_, codename_);
             value_set_ = true;
         }
         else
@@ -223,7 +231,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             switch (data.size())
             {
             case 1:
-                bound_value_ = extract_copy_value(std::move(data[0]));
+                bound_value_ =
+                    extract_copy_value(std::move(data[0]), name_, codename_);
                 return;
 
             case 2:
@@ -251,12 +260,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // data is the new value to store in this variable
         if (!value_set_ || !valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(data));
+            operands_[0] =
+                extract_copy_value(std::move(data), name_, codename_);
             value_set_ = true;
         }
         else
         {
-            bound_value_ = extract_copy_value(std::move(data));
+            bound_value_ =
+                extract_copy_value(std::move(data), name_, codename_);
         }
     }
 

@@ -50,7 +50,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
 
         // try to bind to the variable object locally
@@ -146,7 +147,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // the argument list
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
-            vals.emplace_back(extract_ref_value(*it));
+            vals.emplace_back(extract_ref_value(*it, name_, codename_));
         }
 
         if (target_)
@@ -176,7 +177,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
             {
-                vals.emplace_back(extract_ref_value(*it));
+                vals.emplace_back(extract_ref_value(*it, name_, codename_));
             }
 
             if (target_)

@@ -102,7 +102,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             params.reserve(args.size());
             for (auto const& arg : args)
             {
-                params.emplace_back(extract_ref_value(arg));
+                params.emplace_back(extract_ref_value(arg, name_, codename_));
             }
         }
 
@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return f.then(hpx::launch::sync,
             [
                 this_ = std::move(this_),
-                lhs = extract_ref_value(operands_[0]),
+                lhs = extract_ref_value(operands_[0], name_, codename_),
                 args = std::move(params)
             ]
             (hpx::future<primitive_argument_type>&& val) mutable
@@ -158,13 +158,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
 
         primitive_arguments_type params;
-        params.emplace_back(extract_ref_value(arg));
+        params.emplace_back(extract_ref_value(arg, name_, codename_));
 
         return value_operand(operands_[1], std::move(arg), name_, codename_)
             .then(hpx::launch::sync,
                 [
                     this_ = std::move(this_),
-                    lhs = extract_ref_value(operands_[0]),
+                    lhs = extract_ref_value(operands_[0], name_, codename_),
                     args = std::move(params)
                 ]
                 (hpx::future<primitive_argument_type>&& val) mutable

@@ -3,8 +3,6 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// Fixing #244: Can not create a list or a vector of previously defined variables
-
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>

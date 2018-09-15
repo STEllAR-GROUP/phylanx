@@ -46,7 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
     }
 
@@ -69,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // pass along pre-bound arguments
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
-            fargs.push_back(extract_ref_value(*it));
+            fargs.push_back(extract_ref_value(*it, name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
@@ -114,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "store shouldn't be called with dynamic arguments"));
         }
 
-        operands_[0] = extract_copy_value(std::move(data[0]));
+        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
     }
 
     topology call_function::expression_topology(

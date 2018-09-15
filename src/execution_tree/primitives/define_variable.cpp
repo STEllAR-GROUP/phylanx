@@ -91,7 +91,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
              p->bind(args);
         }
-        return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        return hpx::make_ready_future(
+            extract_ref_value(operands_[0], name_, codename_));
     }
 
     void define_variable::store(primitive_arguments_type&& vals,

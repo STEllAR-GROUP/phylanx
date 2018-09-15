@@ -57,7 +57,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
             value_set_ = true;
         }
     }
@@ -79,7 +80,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return p->eval(args);
         }
-        return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        return hpx::make_ready_future(
+            extract_ref_value(operands_[0], name_, codename_));
     }
 
     bool function::bind(primitive_arguments_type const& args) const
@@ -113,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "store shouldn't be called with dynamic arguments"));
         }
 
-        operands_[0] = extract_copy_value(std::move(data[0]));
+        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
         value_set_ = true;
     }
 

@@ -297,7 +297,8 @@ namespace phylanx { namespace execution_tree
         {
         case 0:
             return slice0d(data.scalar(),
-                util::slicing_helpers::extract_slicing(indices, 1),
+                util::slicing_helpers::extract_slicing(
+                    indices, 1, name, codename),
                 detail::slice_identity<T>{}, name, codename);
 
         case 1: HPX_FALLTHROUGH;
@@ -305,7 +306,8 @@ namespace phylanx { namespace execution_tree
             {
                 auto v = data.vector();
                 return slice1d<T>(v,
-                    util::slicing_helpers::extract_slicing(indices, v.size()),
+                    util::slicing_helpers::extract_slicing(
+                        indices, v.size(), name, codename),
                     detail::slice_identity<T>{}, name, codename);
             }
 
@@ -315,7 +317,8 @@ namespace phylanx { namespace execution_tree
                 auto m = data.matrix();
                 ir::slicing_indices columns{0ll, std::int64_t(m.columns()), 1ll};
                 return slice2d<T>(m,
-                    util::slicing_helpers::extract_slicing(indices, m.rows()),
+                    util::slicing_helpers::extract_slicing(
+                        indices, m.rows(), name, codename),
                     columns, detail::slice_identity<T>{}, name, codename);
             }
 
@@ -343,8 +346,10 @@ namespace phylanx { namespace execution_tree
             {
                 auto m = data.matrix();
                 return slice2d<T>(m,
-                    util::slicing_helpers::extract_slicing(rows, m.rows()),
-                    util::slicing_helpers::extract_slicing(columns, m.columns()),
+                    util::slicing_helpers::extract_slicing(
+                        rows, m.rows(), name, codename),
+                    util::slicing_helpers::extract_slicing(
+                        columns, m.columns(), name, codename),
                     detail::slice_identity<T>{}, name, codename);
             }
 
@@ -356,7 +361,8 @@ namespace phylanx { namespace execution_tree
                 {
                     HPX_ASSERT(!valid(columns));
                     return slice1d<T>(v,
-                        util::slicing_helpers::extract_slicing(rows, v.size()),
+                        util::slicing_helpers::extract_slicing(
+                            rows, v.size(), name, codename),
                         detail::slice_identity<T>{}, name, codename);
                 }
 
@@ -364,7 +370,8 @@ namespace phylanx { namespace execution_tree
                 {
                     HPX_ASSERT(!valid(rows));
                     return slice1d<T>(v,
-                        util::slicing_helpers::extract_slicing(columns, v.size()),
+                        util::slicing_helpers::extract_slicing(
+                            columns, v.size(), name, codename),
                         detail::slice_identity<T>{}, name, codename);
                 }
             }
@@ -647,7 +654,8 @@ namespace phylanx { namespace execution_tree
 
                 ir::node_data<T> rhs(std::move(result));
                 return slice0d(data.scalar(),
-                    util::slicing_helpers::extract_slicing(indices, 1),
+                    util::slicing_helpers::extract_slicing(
+                        indices, 1, name, codename),
                     detail::slice_assign_scalar<T>{rhs}, name, codename);
             }
 
@@ -678,8 +686,8 @@ namespace phylanx { namespace execution_tree
                 auto v = data.vector();
                 std::size_t size = v.size();
 
-                auto vector_slice =
-                    util::slicing_helpers::extract_slicing(indices, size);
+                auto vector_slice = util::slicing_helpers::extract_slicing(
+                    indices, size, name, codename);
 
                 typename ir::node_data<T>::storage1d_type result;
                 extract_value_vector(result, std::move(value),
@@ -724,8 +732,8 @@ namespace phylanx { namespace execution_tree
                 std::size_t rows = m.rows();
                 std::size_t columns = m.columns();
 
-                auto vector_slice =
-                    util::slicing_helpers::extract_slicing(indices, rows);
+                auto vector_slice = util::slicing_helpers::extract_slicing(
+                    indices, rows, name, codename);
 
                 typename ir::node_data<T>::storage2d_type result;
                 extract_value_matrix(result, std::move(value),
@@ -804,8 +812,8 @@ namespace phylanx { namespace execution_tree
                 auto v = data.vector();
                 std::size_t size = v.size();
 
-                auto vector_slice =
-                    util::slicing_helpers::extract_slicing(rows, size);
+                auto vector_slice = util::slicing_helpers::extract_slicing(
+                    rows, size, name, codename);
 
                 typename ir::node_data<T>::storage1d_type result;
                 extract_value_vector(result, std::move(value),
@@ -880,10 +888,10 @@ namespace phylanx { namespace execution_tree
                 std::size_t numrows = m.rows();
                 std::size_t numcols = m.columns();
 
-                auto row_slice =
-                    util::slicing_helpers::extract_slicing(rows, numrows);
-                auto col_slice =
-                    util::slicing_helpers::extract_slicing(columns, numcols);
+                auto row_slice = util::slicing_helpers::extract_slicing(
+                    rows, numrows, name, codename);
+                auto col_slice = util::slicing_helpers::extract_slicing(
+                    columns, numcols, name, codename);
 
                 typename ir::node_data<T>::storage2d_type result;
                 extract_value_matrix(result, std::move(value), row_slice.size(),

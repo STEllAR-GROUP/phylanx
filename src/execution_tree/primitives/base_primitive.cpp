@@ -2737,7 +2737,7 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg), mode);
+                p->eval(extract_ref_value(arg, name, codename), mode);
             if (f.is_ready())
             {
                 return f;
@@ -2767,7 +2767,7 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg), mode);
+                p->eval(extract_ref_value(arg, name, codename), mode);
             if (f.is_ready())
             {
                 return f;
