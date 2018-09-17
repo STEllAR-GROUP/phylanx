@@ -3,6 +3,7 @@
 //   Distributed under the Boost Software License, Version 1.0.0. (See accompanying
 //   file LICENSE_1_0.0.txt or copy at http://www.boost.org/LICENSE_1_0.0.txt)
 
+#include <phylanx/execution_tree/primitives/slice_node_data.hpp>
 #include <phylanx/phylanx.hpp>
 #include <hpx/hpx_init.hpp>
 
@@ -381,13 +382,27 @@ int hpx_main(boost::program_options::variables_map& vm)
     // counter values
     hpx::reinit_active_counters(false);
 
-    auto result_r = phylanx::execution_tree::extract_list_value(result);
-    auto it = result_r.begin();
-    std::cout << "X: \n"
-              << phylanx::execution_tree::extract_numeric_value(*it++)
-              << "\nY: \n"
-              << phylanx::execution_tree::extract_numeric_value(*it)
-              << std::endl;
+    phylanx::ir::node_data<double> result_xy =
+        phylanx::execution_tree::extract_numeric_value(result);
+    auto m = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<int64_t>{0}};
+    auto n = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<int64_t>{row_stop}};
+    auto k = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<int64_t>{row_stop + col_stop}};
+
+    std::cout
+        << "X: \n"
+        << phylanx::execution_tree::slice(result_xy,
+               phylanx::execution_tree::primitive_argument_type{std::vector<
+                   phylanx::execution_tree::primitive_argument_type>{m, n}},
+               {}, "", "<unknown>")
+        << "\nY: \n"
+        << phylanx::execution_tree::slice(result_xy,
+               phylanx::execution_tree::primitive_argument_type{std::vector<
+                   phylanx::execution_tree::primitive_argument_type>{n, k}},
+               {}, "", "<unknown>")
+        << std::endl;
     std::cout << "time: " << t.elapsed() << std::endl;
 
     return hpx::finalize();
