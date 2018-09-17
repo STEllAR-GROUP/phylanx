@@ -43,7 +43,7 @@ def closest_centroid(points, centroids):
 
 @Phylanx
 def move_centroids(points, closest, centroids):
-    return map(
+    return fmap(
         lambda k: mean(points * add_dim(closest == k), 1),
         range(shape(centroids, 0))
     )
