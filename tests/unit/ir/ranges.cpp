@@ -127,7 +127,7 @@ void test_dict_key_iterator()
     std::cout << std::distance(r.begin(), r.end());
     for (phylanx::ir::range_iterator it = r.begin(); it != r.end(); ++it)
     {
-        HPX_TEST(std::find(expected.begin(), expected.end(), *it++) !=
+        HPX_TEST(std::find(expected.begin(), expected.end(), *it) !=
             expected.end());
     }
 
