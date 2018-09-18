@@ -88,7 +88,7 @@ char const* const als_explicit = R"(
                             store(p_u, __ne(conf_u, 0.0, true)),
                             store(A, dot(dot(transpose(Y), c_u), Y)+ YtY),
                             store(b, dot(dot(transpose(Y),(c_u + I_i)), transpose(p_u))),
-                            set_row(X, u, u + 1, 1, dot(inverse(A), b)),
+                            store(slice(X, list(u, u + 1, 1),nil), dot(inverse(A), b)),
                             store(u, u + 1)
                         )
                     ),
@@ -100,7 +100,7 @@ char const* const als_explicit = R"(
                             store(p_i, __ne(conf_i, 0.0, true)),
                             store(A, dot(dot(transpose(X),c_i), X) + XtX),
                             store(b, dot(dot(transpose(X),(c_i + I_u)), transpose(p_i))),
-                            set_row(Y, i, i + 1, 1, dot(inverse(A), b)),
+                            store(slice(Y, list(i, i + 1, 1),nil), dot(inverse(A), b)),
                             store(i, i + 1)
                         )
                     ),

@@ -19,8 +19,6 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(
     argmin_plugin, phylanx::execution_tree::primitives::argmin::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(count_nonzero_operation_plugin,
     phylanx::execution_tree::primitives::count_nonzero_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(column_set_operation_plugin,
-    phylanx::execution_tree::primitives::column_set_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(column_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[2]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
@@ -53,12 +51,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(power_operation_plugin,
     phylanx::execution_tree::primitives::power_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
     random_plugin, phylanx::execution_tree::primitives::random::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(row_set_operation_plugin,
-    phylanx::execution_tree::primitives::row_set_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(row_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[1]);
-PHYLANX_REGISTER_PLUGIN_FACTORY(set_operation_plugin,
-    phylanx::execution_tree::primitives::set_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(shuffle_operation_plugin,
     phylanx::execution_tree::primitives::shuffle_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(slicing_operation_plugin,
@@ -69,7 +63,6 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(transpose_operation_plugin,
     phylanx::execution_tree::primitives::transpose_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(vstack_operation_plugin,
     phylanx::execution_tree::primitives::vstack_operation::match_data);
-
 PHYLANX_REGISTER_PLUGIN_FACTORY(get_seed,
     phylanx::execution_tree::primitives::get_seed_match_data,
     "get_seed_action");

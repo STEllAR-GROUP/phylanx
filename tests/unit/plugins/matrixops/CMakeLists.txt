@@ -7,7 +7,6 @@ set(tests
     add_dimension
     argmin
     argmax
-    column_set
     column_slicing
     constant
     count_nonzero
@@ -28,9 +27,7 @@ set(tests
     power_operation
     random
     random_distributions
-    row_set
     row_slicing
-    set_operation
     shuffle_operation
     slicing_operation
     sum_operation
