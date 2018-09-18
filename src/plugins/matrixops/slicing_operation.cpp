@@ -33,7 +33,7 @@
 namespace phylanx {namespace execution_tree {    namespace primitives {
 
     std::string docstr =
-        "v,ind\n"
+        "v, ind\n"
         "Args:\n"
         "\n"
         "    v (list) : a list to take a slice from\n"
@@ -44,7 +44,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
         "If `ind` is an integer, this operation returns an element of the "
         "list. If it is negative, indexing is done from the back of the list. "
         "Alternatively, `ind` may consist of a list of values which serve as "
-        "the start, stop, and (optionally) step of a Python range. In this "
+        "the `start`, `stop`, and (optionally) `step` of a Python range. In this "
         "case, the return value is a new list with the values of `v` described "
         "by the range.";
 

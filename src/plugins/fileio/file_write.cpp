@@ -30,7 +30,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("file_write",
             std::vector<std::string>{"file_write(_1, _2)"},
             &create_file_write, &create_primitive<file_write>,
-            "fname,obj\n"
+            "fname, obj\n"
             "Args:\n"
             "\n"
             "    fname (string): the file in which to save the data\n"

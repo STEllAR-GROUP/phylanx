@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("filter",
             std::vector<std::string>{"filter(_1, _2)"},
             &create_filter_operation, &create_primitive<filter_operation>,
-            "func,iter\n"
+            "func, iter\n"
             "\n"
             "Args:\n"
             "\n"
@@ -45,11 +45,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "    @Phylanx\n"
             "    def foo():\n"
-            "        print(filter(lambda a : a > 1,[1,2,3,4]))\n"
+            "        print(filter(lambda a : a > 1, [1, 2, 3, 4]))\n"
             "\n"
             "    foo()\n"
             "\n"
-            "Prints [2,3,4]"
+            "Prints [2, 3, 4]"
             )
     };
 

@@ -77,7 +77,10 @@ int main(int argc, char* argv[])
     auto const& rand_code = phylanx::execution_tree::compile(randstr, snippets);
     auto rand = rand_code.run();
 
-    auto y = rand(ARRAY_SIZE);
+    phylanx::execution_tree::primitive_arguments_type dims{
+        phylanx::execution_tree::primitive_argument_type(ARRAY_SIZE)};
+
+    auto y = rand(dims);
 
     benchmark("bench1", snippets, bench1, y);
     benchmark("bench2", snippets, bench2, y);

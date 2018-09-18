@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "            to be evaluated in parallel.\n"
             "Returns:\n"
             "\n"
-            "The last statement in the list `args`.\n"
+            "The result as returned from the last statement in the list `args`.\n"
             )
     };
 

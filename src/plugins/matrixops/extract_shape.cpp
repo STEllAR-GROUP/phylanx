@@ -28,7 +28,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("shape",
             std::vector<std::string>{"shape(_1, _2)", "shape(_1)"},
             &create_extract_shape, &create_primitive<extract_shape>,
-            "m,dim\n"
+            "m, dim\n"
             "Args:\n"
             "\n"
             "    m (object): a vector or matrix\n"

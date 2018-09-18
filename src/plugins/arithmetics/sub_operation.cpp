@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__sub",
             std::vector<std::string>{"_1 - __2", "__sub(_1, __2)"},
             &create_sub_operation, &create_primitive<sub_operation>,
-            "a,b\n"
+            "a, b\n"
             "Args:\n"
             "\n"
             "    a (float) : The value to subtract from.\n"

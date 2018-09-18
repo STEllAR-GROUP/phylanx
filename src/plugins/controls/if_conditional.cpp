@@ -29,18 +29,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("if",
             std::vector<std::string>{"if(_1, _2, _3)", "if(_1, _2)"},
             &create_if_conditional, &create_primitive<if_conditional>,
-            "cond,thenf,elsef\n"
+            "cond, thenf, elsef\n"
             "This primitive implements the if statement in Python.\n"
             "The statement `thenf` is evaluated if `cond` is True and \n"
             "the statement `elsef` is evaluated otherwise.\n"
             "\n"
             "Args:\n"
             "\n"
-            "    cond (boolean expression)  : a boolean expression\n"
+            "    cond (boolean expression) : a boolean expression\n"
             "    thenf (statement) : a statement\n"
-            "    elsef (statement) : a statement\n"
+            "    elsef (statement, optional) : a statement\n"
             "\n"
-            "Returns:"
+            "Returns:\n"
+            "\n"
+            "  The value returned by the statement that was executed, `nil` "
+            "  otherwise"
             )
     };
 

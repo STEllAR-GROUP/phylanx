@@ -111,6 +111,9 @@ namespace phylanx { namespace execution_tree
         protected:
             std::string generate_error_message(std::string const& msg) const;
             static bool get_sync_execution();
+            static std::int64_t get_ec_threshold();
+            static std::int64_t get_exec_upper_threshold();
+            static std::int64_t get_exec_lower_threshold();
 
         protected:
             static primitive_arguments_type noargs;

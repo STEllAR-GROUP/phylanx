@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"mean(_1, _2)", "mean(_1)"},
             &create_mean_operation,
             &create_primitive<mean_operation>,
-            "ar,axis\n"
+            "ar, axis\n"
             "Args:\n"
             "\n"
             "    ar (array) : an array of values\n"

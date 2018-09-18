@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{"gradient(_1, _2)", "gradient(_1)"},
             &create_gradient_operation,
             &create_primitive<gradient_operation>,
-            "m,axis\n"
+            "m, axis\n"
             "Args:\n"
             "\n"
             "    m (vector or matrix) : values to take the gradient of\n"

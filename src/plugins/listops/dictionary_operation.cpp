@@ -33,7 +33,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "lili\n"
             "Args:\n"
             "\n"
-            "    lili (list of lists) : a list of 2-element lists\n"
+            "    lili (list of lists, optional) : a list of 2-element lists\n"
             "\n"
             "Returns:\n"
             "\n"

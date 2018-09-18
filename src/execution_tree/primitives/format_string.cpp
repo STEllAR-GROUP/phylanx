@@ -259,7 +259,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "Args:\n"
             "\n"
             "    s (string) : a format string\n"
-            "    *args (arg list) : a list of arguments\n"
+            "    *args (arg list, optional) : a list of arguments\n"
             "\n"
             "Returns:\n"
             "\n"

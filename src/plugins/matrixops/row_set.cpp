@@ -32,9 +32,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("set_row",
             std::vector<std::string>{"set_row(_1, _2, _3, _4, _5)"},
-            &create_row_set_operation,
-            &create_primitive<row_set_operation>,
-            "v,start,stop,step,val\n"
+            &create_row_set_operation, &create_primitive<row_set_operation>,
+            "v, start, stop, step, val\n"
             "Args:\n"
             "\n"
             "    v (array) : the array to set values in\n"

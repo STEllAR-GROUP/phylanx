@@ -32,7 +32,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("__add",
             std::vector<std::string>{"_1 + __2", "__add(_1, __2)"},
             &create_add_operation, &create_primitive<add_operation>,
-            "x0,x1\n"
+            "x0, x1\n"
             "Args:\n"
             "\n"
             "     x0 (number): An addend\n"

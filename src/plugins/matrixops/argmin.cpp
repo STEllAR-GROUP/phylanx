@@ -35,7 +35,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("argmin",
             std::vector<std::string>{"argmin(_1, _2)", "argmin(_1)"},
             &create_argmin, &create_primitive<argmin>,
-            "ar,axis\n"
+            "ar, axis\n"
             "Args:\n"
             "\n"
             "    ar (array) : a vector or matrix\n"

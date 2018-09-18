@@ -37,12 +37,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{
                 "_1 >= _2", "__ge(_1, _2)", "__ge(_1, _2, _3)"},
             &create_greater_equal, &create_primitive<greater_equal>,
-                "arg1,arg2,arg3\n"
+                "arg1, arg2, arg3\n"
                 "Args:\n"
                 "\n"
                 "    arg1 (number) : A value to compare\n"
                 "    arg2 (number) : Another value to compare\n"
-                "    arg3 (boolean,optional) : whether to use a\n"
+                "    arg3 (boolean, optional) : whether to use a\n"
                 "                           numeric return value.\n"
                 "\n"
                 "Returns:\n"
