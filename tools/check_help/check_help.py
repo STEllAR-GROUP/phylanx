@@ -52,6 +52,13 @@ for p in all:
         # The the phylanx help string for the function
         h = phyhelpex(n)
 
+        # Strip off leading whitespace
+        g = re.search(r'^([ \t]*)Args:', h, re.MULTILINE)
+        if g:
+            wh = g.group(1)
+            h = re.sub(r'(^|\n)' + wh, r'\1', h)
+            h = re.sub(r'[ \t]+$', '', h, re.MULTILINE)
+
         if re.search(r'@Deprecated@', h):
             continue
 
@@ -69,6 +76,7 @@ for p in all:
 
         # The first line of the docstring has the arg names.
         first = h.splitlines()[0]
+        first = re.sub(r'^\s*\w+\((.*)\)\s*', r'\1', first)
         argnames = re.findall(r'\w+', first)
 
         # Find the section of the docstring where args
@@ -89,7 +97,7 @@ for p in all:
         argcount[n]["max"] = len(argli2)
 
         # Check that there's an Args: section
-        if not re.search(r'\nArgs:\n\n', h):
+        if not re.search(r'^Args:\n\n', h, re.MULTILINE):
             err = add_err("Missing 'Args:' section or 'Args:' not followed " +
                           "by a blank line in '%s'" % n)
 
