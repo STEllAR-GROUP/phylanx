@@ -4,8 +4,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_PRIMITIVES_DICT_KEY_OPERATION)
-#define PHYLANX_PRIMITIVES_DICT_KEY_OPERATION
+#if !defined(PHYLANX_PRIMITIVES_DICT_KEYS_OPERATION)
+#define PHYLANX_PRIMITIVES_DICT_KEYS_OPERATION
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
@@ -23,40 +23,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     /// \brief
     /// \param
-    class dict_key_operation
+    class dict_keys_operation
       : public primitive_component_base
-      , public std::enable_shared_from_this<dict_key_operation>
+      , public std::enable_shared_from_this<dict_keys_operation>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args) const;
 
-        using arg_type = phylanx::execution_tree::primitive_argument_type;
-        using args_type = std::vector<arg_type>;
-
     public:
         static match_pattern_type const match_data;
 
-        dict_key_operation() = default;
+        dict_keys_operation() = default;
 
-        dict_key_operation(primitive_arguments_type&& operands,
+        dict_keys_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& args) const override;
 
     private:
-        primitive_argument_type generate_dict_key(
-            std::vector<ir::range>&& args) const;
+        primitive_argument_type generate_dict_keys(
+            primitive_arguments_type && args) const;
     };
 
-    inline primitive create_dict_key_operation(hpx::id_type const& locality,
+    inline primitive create_dict_keys_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands, std::string const& name = "",
         std::string const& codename = "")
     {
         return create_primitive_component(
-            locality, "dict_key", std::move(operands), name, codename);
+            locality, "dict_keys", std::move(operands), name, codename);
     }
 }}}
 

@@ -124,7 +124,6 @@ void test_dict_key_iterator()
         arg_t{phylanx::ir::node_data<std::int64_t>(3)},
         arg_t{phylanx::ir::node_data<std::int64_t>(4)}};
 
-    std::cout << std::distance(r.begin(), r.end());
     for (phylanx::ir::range_iterator it = r.begin(); it != r.end(); ++it)
     {
         HPX_TEST(std::find(expected.begin(), expected.end(), *it) !=
