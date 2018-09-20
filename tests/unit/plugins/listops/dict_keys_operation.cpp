@@ -84,19 +84,30 @@ void test_dict_keys_operation(std::string const& code)
 //            phylanx::ir::node_data<double>(42.0)});
 //}
 //
-//void test_dict_empty_operation(std::string const& code)
-//{
-//    phylanx::ir::dictionary dict;
-//    HPX_TEST_EQ(dict, compile_and_run(code));
-//}
+void test_dict_keys_empty_operation(std::string const& code)
+{
+    bool exception_thrown = false;
+    try
+    {
+        // Must throw an exception
+        compile_and_run(code);
+        HPX_TEST(false);
+    }
+    catch (std::exception const&)
+    {
+        exception_thrown = true;
+    }
+    HPX_TEST(exception_thrown);
+}
 
 int main(int argc, char* argv[])
 {
-    test_dict_keys_operation("dict_keys(dict(list(list(1, 2))))");
+    //test_dict_keys_operation("dict_keys(dict(list(list(1, 2))))");
+    //test_dict_keys_operation("dict_keys()");
     //test_dict_key();
 
     //test_dict_empty_operation("dict(list(list(1, 2), list(3, 4)))");
-    //test_dict_empty_operation("dict()");
+    test_dict_keys_empty_operation("dict_keys()");
 
     return hpx::util::report_errors();
 }

@@ -115,13 +115,12 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
-        if (operands.size() > 1)
+        if (operands.size() > 1 || operands.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dict_keys_operation::eval",
                 util::generate_error_message(
-                    "the dict_keys primitive requires that the "
-                    "arguments given by the operands array are valid",
+                    "the dict_keys primitive accepts exactly one argument",
                     name_, codename_));
         }
 
@@ -131,14 +130,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 "dict_keys_operation::eval",
                 util::generate_error_message(
                     "the dict_keys primitive requires that the "
-                    "argument given by the operand is a valid list",
+                    "argument given by the operand is a valid dictionary object",
                     name_, codename_));
-        }
-
-        if (operands.empty())
-        {
-            return hpx::make_ready_future(
-                primitive_argument_type{ir::dictionary{}});
         }
 
         auto this_ = this->shared_from_this();
