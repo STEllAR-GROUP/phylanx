@@ -9,7 +9,6 @@
 #include <phylanx/plugins/matrixops/add_dimension.hpp>
 #include <phylanx/plugins/matrixops/argmax.hpp>
 #include <phylanx/plugins/matrixops/argmin.hpp>
-#include <phylanx/plugins/matrixops/column_set.hpp>
 #include <phylanx/plugins/matrixops/constant.hpp>
 #include <phylanx/plugins/matrixops/count_nonzero_operation.hpp>
 #include <phylanx/plugins/matrixops/cross_operation.hpp>
@@ -27,8 +26,6 @@
 #include <phylanx/plugins/matrixops/mean_operation.hpp>
 #include <phylanx/plugins/matrixops/power_operation.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
-#include <phylanx/plugins/matrixops/row_set.hpp>
-#include <phylanx/plugins/matrixops/set_operation.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
 #include <phylanx/plugins/matrixops/sum_operation.hpp>
