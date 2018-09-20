@@ -50,48 +50,64 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type dict_keys_operation::generate_dict_keys(
-        primitive_arguments_type && args) const
+        primitive_arguments_type&& args) const
     {
-        std::cout << "hahahhahaha" <<std::endl;
-            //ir::range args_list =
-            //    extract_list_value_strict(std::move(args[0]), name_, codename_);
+        //using arg_type = ir::dictionary;
+        auto args_dict =
+            extract_dictionary_value(std::move(args[0]), name_, codename_);
+        //if (is_dictionary_operand(args))
+        //{
+        //}
 
-            //if (args_list.empty())
-            //{
-            //    return primitive_argument_type{ir::dictionary{}};
-            //}
 
-            //phylanx::ir::dictionary dict;
-            //dict.reserve(args_list.size());
-            //for (auto it = args_list.begin(); it != args_list.end(); ++it)
-            //{
-            //    if (!is_list_operand(*it))
-            //    {
-            //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            //            "dictionary_operation::generate_dict",
-            //            util::generate_error_message(
-            //                "dict_operation expects a list of lists with exactly "
-            //                "elements each",
-            //                name_, codename_));
-            //    }
+        //phylanx::ir::range r(args_dict.begin(), args_dict.end());
 
-            //    auto&& element = extract_list_value(*it);
-            //    auto&& p = element.args();
+        //for (ir::rang_iterator it = args_dict.begin(); it != r.end(); ++it)
+        //{
+        //    std::cout << *it << std::endl;
+        //}
+        //std::cout << r.size() << std::endl;
+        std::cout << "========" << std::endl;
+        std::cout << "======== " << std::endl;
+        //ir::range args_list =
+        //    extract_list_value_strict(std::move(args[0]), name_, codename_);
 
-            //    if (p.size() != 2)
-            //    {
-            //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            //            "dictionary_operation::generate_dict",
-            //            util::generate_error_message(
-            //                "dict_operation needs exactly two values for each of "
-            //                "the key/value pairs",
-            //                name_, codename_));
-            //    }
+        //if (args_list.empty())
+        //{
+        //    return primitive_argument_type{ir::dictionary{}};
+        //}
 
-            //    dict[std::move(p[0])] = std::move(p[1]);
-            //}
-            return primitive_argument_type{
-                phylanx::ir::node_data<std::int64_t>(42)};
+        //phylanx::ir::dictionary dict;
+        //dict.reserve(args_list.size());
+        //for (auto it = args_list.begin(); it != args_list.end(); ++it)
+        //{
+        //    if (!is_list_operand(*it))
+        //    {
+        //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+        //            "dictionary_operation::generate_dict",
+        //            util::generate_error_message(
+        //                "dict_operation expects a list of lists with exactly "
+        //                "elements each",
+        //                name_, codename_));
+        //    }
+
+        //    auto&& element = extract_list_value(*it);
+        //    auto&& p = element.args();
+
+        //    if (p.size() != 2)
+        //    {
+        //        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+        //            "dictionary_operation::generate_dict",
+        //            util::generate_error_message(
+        //                "dict_operation needs exactly two values for each of "
+        //                "the key/value pairs",
+        //                name_, codename_));
+        //    }
+
+        //    dict[std::move(p[0])] = std::move(p[1]);
+        //}
+        return primitive_argument_type{
+            phylanx::ir::node_data<std::int64_t>(42)};
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -127,11 +143,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_](
-                    primitive_arguments_type && args) -> primitive_argument_type {
-                    return this_->generate_dict_keys(std::move(args));
-                }),
+            hpx::util::unwrapping([this_](primitive_arguments_type&& args)
+                                      -> primitive_argument_type {
+                return this_->generate_dict_keys(std::move(args));
+            }),
             detail::map_operands(
                 operands, functional::value_operand{}, args, name_, codename_));
     }

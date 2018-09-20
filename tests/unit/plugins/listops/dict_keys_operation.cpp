@@ -92,7 +92,7 @@ void test_dict_keys_operation(std::string const& code)
 
 int main(int argc, char* argv[])
 {
-    test_dict_keys_operation("dict_keys(dict(list(list(1, 2), list(3, 4))))");
+    test_dict_keys_operation("dict_keys(dict(list(list(1, 2))))");
     //test_dict_key();
 
     //test_dict_empty_operation("dict(list(list(1, 2), list(3, 4)))");
