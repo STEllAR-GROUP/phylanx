@@ -153,7 +153,7 @@ namespace phylanx { namespace ir
             return *(util::get<2>(it_));
 
         case 3:    // dict_key_iterator_type
-            return util::get<3>(it_)->first.get();
+            HPX_FALLTHROUGH;
 
         default:
             break;

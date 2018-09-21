@@ -30,18 +30,60 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void test_dict_keys_operation(std::string const& code)
+void test_dict_keys_operation()
 {
-    compile_and_run(code);
+    //char const* const code = R"(
+    //define(a, dict(list(list(1, 2), list(3, 4))))
+    //cout(a)
+    //define(b, dict_keys(a))
+    //cout(b)
+    //)";
+    //compile_and_run(code);
 
-    //auto temp =
-    //    phylanx::execution_tree::extract_list_value(compile_and_run(code));
-        //phylanx::execution_tree::extract_list_value(compile_and_run(code));
+    char const* const dict_keys_code = R"(block(
+    //
+    // Dictionary key iterators
+    //
+    define(dict_keys_foo, dict_object,
+        block(
+            cout(dict_object),
+            define(b, dict_keys(dict_object)),
+            cout(b)
+            )
+        ),
+    dict_keys_foo
+    ))";
 
+    phylanx::execution_tree::compiler::function_list snippets;
+    auto const& code =
+        phylanx::execution_tree::compile(dict_keys_code, snippets);
+    auto dict_keys_fun = code.run();
+
+    char const* const dict_code = "dict(list(list(1, 2), list(3, 4)))";
+    auto dict_object = compile_and_run(dict_code);
+
+    auto result =
+        phylanx::execution_tree::extract_list_value(dict_keys_fun(dict_object));
+
+    //auto temp = phylanx::execution_tree::extract_list_value(
+    //    compile_and_run(code));
+
+    //std::cout << temp.size() << std::endl;
     //for (phylanx::ir::range_iterator it = temp.begin(); it != temp.end(); ++it)
     //{
     //    std::cout << *it << std::endl;
     //}
+    //for (auto i = temp.begin(); i != temp.end(); ++i)
+    //{
+    //    std::cout << *i << "\n";
+    //}
+
+    //std::cout << temp.size();
+    //auto temp_1 = temp.copy();
+
+        //phylanx::execution_tree::extract_list_value(compile_and_run(code));
+
+
     //auto dict_keys_list = phylanx::execution_tree::extract_value();
     //auto dict_keys_list_temp =
     //    phylanx::execution_tree::extract_list_value(dict_keys_list);
@@ -87,7 +129,7 @@ void test_dict_keys_empt_arg_operation(std::string const& code)
 
 int main(int argc, char* argv[])
 {
-    test_dict_keys_operation("dict_keys(dict(list(list(1, 2), list(3, 4))))");
+    test_dict_keys_operation();
     test_dict_keys_empty_operation("dict_keys()");
     test_dict_keys_empt_arg_operation("dict_keys(dict())");
 

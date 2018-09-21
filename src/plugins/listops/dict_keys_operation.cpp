@@ -65,12 +65,12 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
 
         ir::range dict_list(args_dict.begin(), args_dict.end());
+
         for (ir::range_iterator it = dict_list.begin(); it != dict_list.end();
              ++it)
         {
             std::cout << *it << std::endl;
         }
-
         return primitive_argument_type{std::move(dict_list)};
     }
 
