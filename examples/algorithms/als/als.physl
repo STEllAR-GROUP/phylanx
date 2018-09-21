@@ -88,7 +88,7 @@ define(als, filepath, row_stop, col_stop, regularization, num_factors,
                 ),
                 store(i, 0),
                 store(k, k + 1))),
-                vstack(X, Y)
+                list(X, Y)
             )
     )
 )

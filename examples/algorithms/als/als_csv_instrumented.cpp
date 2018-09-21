@@ -108,7 +108,7 @@ char const* const als_explicit = R"(
                     store(k, k + 1)
                 )
             ),
-            vstack(X, Y)
+            list(X, Y)
         )
     )
     als_explicit
