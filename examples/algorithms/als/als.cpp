@@ -127,22 +127,36 @@ int hpx_main(boost::program_options::variables_map& vm)
     // Measure execution time
     hpx::util::high_resolution_timer t;
 
-    auto result = phylanx::execution_tree::extract_list_value(
+    auto result = phylanx::execution_tree::extract_numeric_value(
         als(R, regularization, num_factors, iterations, alpha, enable_output));
 
-    auto elapsed = t.elapsed();
+    std::cout << "time: " << t.elapsed() << std::endl;
 
-    auto it = result.begin();
     // Make sure all counters are properly initialized, don't reset current
     // counter values
     hpx::reinit_active_counters(false);
 
-    std::cout << "X: \n"
-              << phylanx::execution_tree::extract_numeric_value(*it++)
-              << "\nY: \n"
-              << phylanx::execution_tree::extract_numeric_value(*it)
-              << std::endl;
+    auto m = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<int64_t>{0}};
+    auto n = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<int64_t>{10}};
+    auto k = phylanx::execution_tree::primitive_argument_type{
+        phylanx::ir::node_data<int64_t>{15}};
 
+    std::cout
+        << "X: \n"
+        << phylanx::execution_tree::slice(
+               phylanx::execution_tree::extract_numeric_value(result),
+               phylanx::execution_tree::primitive_argument_type{std::vector<
+                   phylanx::execution_tree::primitive_argument_type>{m, n}},
+               {}, "", "<unknown>")
+        << "\nY: \n"
+        << phylanx::execution_tree::slice(
+               phylanx::execution_tree::extract_numeric_value(result),
+               phylanx::execution_tree::primitive_argument_type{std::vector<
+                   phylanx::execution_tree::primitive_argument_type>{n, k}},
+               {}, "", "<unknown>")
+        << std::endl;
     return hpx::finalize();
 }
 

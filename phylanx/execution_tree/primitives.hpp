@@ -19,6 +19,9 @@
 #include <phylanx/execution_tree/primitives/format_string.hpp>
 #include <phylanx/execution_tree/primitives/function.hpp>
 #include <phylanx/execution_tree/primitives/lambda.hpp>
+#include <phylanx/execution_tree/primitives/slice.hpp>
+#include <phylanx/execution_tree/primitives/slice_node_data.hpp>
+#include <phylanx/execution_tree/primitives/slice_range.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/execution_tree/primitives/string_output.hpp>
 #include <phylanx/execution_tree/primitives/target_reference.hpp>
