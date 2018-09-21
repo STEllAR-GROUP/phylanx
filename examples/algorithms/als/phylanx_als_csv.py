@@ -63,8 +63,7 @@ def ALS(ratings, regularization, num_factors, iterations, alpha, enable_output):
         u = 0
         i = 0
         k = k + 1
-    result = np.vstack((X, Y))
-    return result
+    return [X, Y]
 
 
 # test example
@@ -89,5 +88,5 @@ alpha = 40
 enable_output = False
 
 result = ALS(ratings, regularization, num_factors, iterations, alpha, enable_output)
-print(" X = ", result[0:np.shape(ratings)[0], :])
-print(" Y = ", result[0:np.shape(ratings)[1], :])
+print(" X = ", result[0])
+print(" Y = ", result[1])

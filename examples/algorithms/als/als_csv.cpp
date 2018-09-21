@@ -98,7 +98,7 @@ char const* const als_code = R"(
                     store(k, k + 1)
                 )
             ),
-            vstack(X, Y)
+            list(X, Y)
         )
     )
     als
