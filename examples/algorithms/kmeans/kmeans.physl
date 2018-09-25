@@ -43,7 +43,7 @@ define(closest_centroids, points, centroids, block(
 ))
 
 define(move_centroids, points, closest, centroids, block(
-    map(lambda(k, block(
+    fmap(lambda(k, block(
                 define(x, closest == k),
                 mean(points * add_dim(x), 1)
     )),
@@ -65,9 +65,9 @@ define(kmeans, points, k, iterations, block(
 
 define(program, iterations, block(
     define(points, vstack(
-        apply(vstack, map(lambda(x, random(2) * .75), range(150))) + [1., 0.],
-        apply(vstack, map(lambda(x, random(2) * .25), range(50))) + [-.5, .5],
-        apply(vstack, map(lambda(x, random(2) * .5), range(50))) + [-.5, -.5]
+        apply(vstack, fmap(lambda(x, random(2) * .75), range(150))) + [1., 0.],
+        apply(vstack, fmap(lambda(x, random(2) * .25), range(50))) + [-.5, .5],
+        apply(vstack, fmap(lambda(x, random(2) * .5), range(50))) + [-.5, -.5]
     )),
     define(k, 3),
     kmeans(points, k, iterations)

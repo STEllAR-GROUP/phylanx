@@ -19,7 +19,7 @@ std::string const codestr = R"(block(
         f,
         block(
             define(a, 0),
-            map(
+            fmap(
                 lambda(
                     i,
                     block(

@@ -14,7 +14,7 @@
 #include <phylanx/plugins/controls/for_each.hpp>
 #include <phylanx/plugins/controls/for_operation.hpp>
 #include <phylanx/plugins/controls/if_conditional.hpp>
-#include <phylanx/plugins/controls/map_operation.hpp>
+#include <phylanx/plugins/controls/fmap_operation.hpp>
 #include <phylanx/plugins/controls/parallel_block_operation.hpp>
 #include <phylanx/plugins/controls/parallel_map_operation.hpp>
 #include <phylanx/plugins/controls/range_operation.hpp>

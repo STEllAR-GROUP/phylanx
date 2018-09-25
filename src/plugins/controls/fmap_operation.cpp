@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/controls/map_operation.hpp>
+#include <phylanx/plugins/controls/fmap_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -27,11 +27,11 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const map_operation::match_data =
+    match_pattern_type const fmap_operation::match_data =
     {
-        hpx::util::make_tuple("map",
-            std::vector<std::string>{"map(_1, __2)"},
-            &create_map_operation, &create_primitive<map_operation>,
+        hpx::util::make_tuple("fmap",
+            std::vector<std::string>{"fmap(_1, __2)"},
+            &create_fmap_operation, &create_primitive<fmap_operation>,
             "func, listv\n"
             "\n"
             "Args:\n"
@@ -47,14 +47,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    map_operation::map_operation(
+    fmap_operation::fmap_operation(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type map_operation::map_1_scalar(
+    primitive_argument_type fmap_operation::fmap_1_scalar(
         primitive const* p, primitive_argument_type&& arg) const
     {
         return p->eval(hpx::launch::sync, std::move(arg));
@@ -63,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     namespace detail
     {
         template <typename T>
-        struct map_1_vector
+        struct fmap_1_vector
         {
             using vector_type = typename ir::node_data<T>::storage1d_type;
             using vector_view_type =
@@ -89,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         if (num_result.num_dimensions() != 0)
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "detail::map_1_vector::call",
+                                "detail::fmap_1_vector::call",
                                 util::generate_error_message(
                                     "the invoked lambda returned an unexpected "
                                     "type ("
@@ -106,7 +106,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    primitive_argument_type map_operation::map_1_vector(
+    primitive_argument_type fmap_operation::fmap_1_vector(
         primitive const* p, primitive_argument_type&& arg) const
     {
         if (is_numeric_operand(arg))
@@ -114,7 +114,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto v = extract_numeric_value(std::move(arg), name_, codename_);
             HPX_ASSERT(v.num_dimensions() == 1);
             return primitive_argument_type{
-                ir::node_data<double>{detail::map_1_vector<double>::call(
+                ir::node_data<double>{detail::fmap_1_vector<double>::call(
                     p, v.vector(), name_, codename_)}};
         }
 
@@ -123,7 +123,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto v = extract_integer_value(std::move(arg), name_, codename_);
             HPX_ASSERT(v.num_dimensions() == 1);
             return primitive_argument_type{ir::node_data<std::int64_t>{
-                detail::map_1_vector<std::int64_t>::call(
+                detail::fmap_1_vector<std::int64_t>::call(
                     p, v.vector(), name_, codename_)}};
         }
 
@@ -132,19 +132,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto v = extract_boolean_value(std::move(arg), name_, codename_);
             HPX_ASSERT(v.num_dimensions() == 1);
             return primitive_argument_type{ir::node_data<std::uint8_t>{
-                detail::map_1_vector<std::uint8_t>::call(
+                detail::fmap_1_vector<std::uint8_t>::call(
                     p, v.vector(), name_, codename_)}};
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "map_operation::map_1_vector",
+            "fmap_operation::fmap_1_vector",
             generate_error_message("unexpected numeric type"));
     }
 
     namespace detail
     {
         template <typename T>
-        struct map_1_matrix
+        struct fmap_1_matrix
         {
             using vector_type = typename ir::node_data<T>::storage1d_type;
 
@@ -173,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         if (num_result.num_dimensions() != 1)
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "detail::map_1_matrix::call",
+                                "detail::fmap_1_matrix::call",
                                 util::generate_error_message(
                                     "the invoked lambda returned an unexpected "
                                     "type (should be a vector value)",
@@ -190,7 +190,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         };
     }
 
-    primitive_argument_type map_operation::map_1_matrix(
+    primitive_argument_type fmap_operation::fmap_1_matrix(
         primitive const* p, primitive_argument_type&& arg) const
     {
         if (is_numeric_operand(arg))
@@ -198,7 +198,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto m = extract_numeric_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
             return primitive_argument_type{
-                ir::node_data<double>{detail::map_1_matrix<double>::call(
+                ir::node_data<double>{detail::fmap_1_matrix<double>::call(
                     p, m.matrix(), name_, codename_)}};
         }
 
@@ -207,7 +207,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto m = extract_integer_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
             return primitive_argument_type{ir::node_data<std::int64_t>{
-                detail::map_1_matrix<std::int64_t>::call(
+                detail::fmap_1_matrix<std::int64_t>::call(
                     p, m.matrix(), name_, codename_)}};
         }
 
@@ -216,17 +216,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto m = extract_boolean_value(std::move(arg), name_, codename_);
             HPX_ASSERT(m.num_dimensions() == 2);
             return primitive_argument_type{ir::node_data<std::uint8_t>{
-                detail::map_1_matrix<std::uint8_t>::call(
+                detail::fmap_1_matrix<std::uint8_t>::call(
                     p, m.matrix(), name_, codename_)}};
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "map_operation::map_1_matrix",
+            "fmap_operation::fmap_1_matrix",
             generate_error_message("unexpected numeric type"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> map_operation::map_1(
+    hpx::future<primitive_argument_type> fmap_operation::fmap_1(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
@@ -243,9 +243,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (p == nullptr)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "map_operation::eval",
+                        "fmap_operation::eval",
                         this_->generate_error_message(
-                            "the first argument to map must be an invocable "
+                            "the first argument to fmap must be an invocable "
                                 "object"));
                 }
 
@@ -276,13 +276,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (dim)
                     {
                     case 0:
-                        return this_->map_1_scalar(p, std::move(arg));
+                        return this_->fmap_1_scalar(p, std::move(arg));
 
                     case 1:
-                        return this_->map_1_vector(p, std::move(arg));
+                        return this_->fmap_1_vector(p, std::move(arg));
 
                     case 2:
-                        return this_->map_1_matrix(p, std::move(arg));
+                        return this_->fmap_1_matrix(p, std::move(arg));
 
                     default:
                         break;
@@ -290,9 +290,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "map_operation::map_1",
+                    "fmap_operation::fmap_1",
                     this_->generate_error_message(
-                        "the second argument to map must be an iterable "
+                        "the second argument to fmap must be an iterable "
                             "object (a list or a numeric type)"));
             },
             value_operand_fov(operands[0], args, name_, codename_,
@@ -344,7 +344,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    primitive_argument_type map_operation::map_n_lists(
+    primitive_argument_type fmap_operation::fmap_n_lists(
         primitive const* p, primitive_arguments_type&& args) const
     {
         std::vector<ir::range> lists;
@@ -363,7 +363,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             if (list.size() != size)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "map_operation::map_n_lists",
+                    "fmap_operation::fmap_n_lists",
                     generate_error_message(
                         "all list arguments must have the same length"));
             }
@@ -401,13 +401,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    primitive_argument_type map_operation::map_n_scalar(primitive const* p,
+    primitive_argument_type fmap_operation::fmap_n_scalar(primitive const* p,
         primitive_arguments_type&& args) const
     {
         return p->eval(hpx::launch::sync, std::move(args));
     }
 
-    primitive_argument_type map_operation::map_n_vector(primitive const* p,
+    primitive_argument_type fmap_operation::fmap_n_vector(primitive const* p,
         primitive_arguments_type&& args) const
     {
         std::vector<ir::node_data<double>> values;
@@ -439,7 +439,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (num_result.num_dimensions() != 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "map_operation::map_n_vector",
+                        "fmap_operation::fmap_n_vector",
                         generate_error_message(
                             "the invoked lambda returned an unexpected type ("
                             "should be a scalar value)"));
@@ -452,7 +452,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    primitive_argument_type map_operation::map_n_matrix(primitive const* p,
+    primitive_argument_type fmap_operation::fmap_n_matrix(primitive const* p,
         primitive_arguments_type&& args) const
     {
         std::vector<ir::node_data<double>> values;
@@ -489,7 +489,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (num_result.num_dimensions() != 1)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "map_operation::map_n_matrix",
+                        "fmap_operation::fmap_n_matrix",
                         generate_error_message(
                             "the invoked lambda returned an unexpected type ("
                             "should be a vector value)"));
@@ -503,7 +503,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> map_operation::map_n(
+    hpx::future<primitive_argument_type> fmap_operation::fmap_n(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
@@ -522,15 +522,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (p == nullptr)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "map_operation::eval",
+                        "fmap_operation::eval",
                         this_->generate_error_message(
-                            "the first argument to map must be an invocable "
+                            "the first argument to fmap must be an invocable "
                                 "object"));
                 }
 
                 if (detail::all_list_operands(args))
                 {
-                    return this_->map_n_lists(p, std::move(args));
+                    return this_->fmap_n_lists(p, std::move(args));
                 }
 
                 if (detail::all_numeric_operands(args))
@@ -541,13 +541,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     switch (dim)
                     {
                     case 0:
-                        return this_->map_n_scalar(p, std::move(args));
+                        return this_->fmap_n_scalar(p, std::move(args));
 
                     case 1:
-                        return this_->map_n_vector(p, std::move(args));
+                        return this_->fmap_n_vector(p, std::move(args));
 
                     case 2:
-                        return this_->map_n_matrix(p, std::move(args));
+                        return this_->fmap_n_matrix(p, std::move(args));
 
                     default:
                         break;
@@ -555,9 +555,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "map_operation::map_n",
+                    "fmap_operation::fmap_n",
                     this_->generate_error_message(
-                        "all but the first arguments to map must be "
+                        "all but the first arguments to fmap must be "
                             "compatible iterable objects (all lists or all "
                             "numeric)"));
             }),
@@ -567,16 +567,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 lists, functional::value_operand{}, args, name_, codename_));
     }
 
-    hpx::future<primitive_argument_type> map_operation::eval(
+    hpx::future<primitive_argument_type> fmap_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
         if (operands.size() < 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "map_operation::eval",
+                "fmap_operation::eval",
                 generate_error_message(
-                    "the map_operation primitive requires "
+                    "the fmap_operation primitive requires "
                         "at least two operands"));
         }
 
@@ -592,9 +592,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (!arguments_valid)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "map_operation::eval",
+                "fmap_operation::eval",
                 generate_error_message(
-                    "the map_operation primitive requires that the "
+                    "the fmap_operation primitive requires that the "
                         "arguments given by the operands array are valid"));
         }
 
@@ -602,22 +602,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (util::get_if<primitive>(&operands_[0]) == nullptr)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "map_operation::eval",
+                "fmap_operation::eval",
                 generate_error_message(
-                    "the first argument to map must be an invocable object"));
+                    "the first argument to fmap must be an invocable object"));
         }
 
         // handle common case separately
         if (operands.size() == 2)
         {
-            return map_1(operands, args);
+            return fmap_1(operands, args);
         }
 
-        return map_n(operands, args);
+        return fmap_n(operands, args);
     }
 
     // Start iteration over given for statement
-    hpx::future<primitive_argument_type> map_operation::eval(
+    hpx::future<primitive_argument_type> fmap_operation::eval(
         primitive_arguments_type const& args) const
     {
         if (this->no_operands())
