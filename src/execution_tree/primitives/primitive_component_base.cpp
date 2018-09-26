@@ -274,7 +274,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "phylanx.exec_time_upper_threshold",
 /* What's going on here?  Well, direct actions cause problems on POWER8
  * with Clang 5.0. That's because the call stack gets too deep.  Changing
- * this threshold to 0 will disable direct actions on that platform. 
+ * this threshold to 0 will disable direct actions on that platform.
  * There is also a github issue #584 that explains this in detail. */
 #if defined(__POWERPC__) && defined(__clang_version__)
                 "0"
