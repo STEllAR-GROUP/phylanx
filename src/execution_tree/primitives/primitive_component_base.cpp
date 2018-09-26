@@ -271,7 +271,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         static std::int64_t exec_upper_threshold =
             std::stol(hpx::get_config_entry(
-                "phylanx.exec_time_upper_threshold", "500000"));
+                "phylanx.exec_time_upper_threshold",
+/* What's going on here?  Well, direct actions cause problems on POWER8
+ * with Clang 5.0. That's because the call stack gets too deep.  Changing
+ * this threshold to 0 will disable direct actions on that platform. 
+ * There is also a github issue #584 that explains this in detail. */
+#if defined(__POWERPC__) && defined(__clang_version__)
+                "0"
+#else
+                "500000"
+#endif
+                ));
         return exec_upper_threshold;
     }
 
