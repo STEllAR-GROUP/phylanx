@@ -12,7 +12,7 @@
 
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/util/thread_allocator.hpp>
+#include <hpx/util/internal_allocator.hpp>
 
 #include <array>
 #include <cstddef>
@@ -27,7 +27,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     struct primitive_argument_type;
 
-    using primitive_argument_allocator = hpx::util::thread_allocator<>;
+    using primitive_argument_allocator = hpx::util::internal_allocator<>;
 //        std::allocator<primitive_argument_type>;
 
     template <typename T>
