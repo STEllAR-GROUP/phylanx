@@ -40,8 +40,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args) const override;
 
     private:
-        void write_to_file(primitive_argument_type const& val,
-            std::string const& filename) const;
+        hpx::future<primitive_argument_type> write_to_file(
+            primitive_argument_type&& val, std::string&& filename) const;
 
         std::string filename_;
         primitive_argument_type operand_;

@@ -13,9 +13,11 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <cstddef>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -72,38 +74,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         std::string filename =
             string_operand_sync(operands_[0], args, name_, codename_);
-        std::ifstream infile(filename.c_str(),
-            std::ios::binary | std::ios::in | std::ios::ate);
 
-        if (!infile.is_open())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read::eval",
-                util::generate_error_message(
-                    "couldn't open file: " + filename,
-                    name_, codename_));
-        }
+        auto this_ = this->shared_from_this();
+        return hpx::threads::run_as_os_thread(
+            [filename = std::move(filename), this_ = std::move(this_)]()
+            ->  primitive_argument_type
+            {
+                std::ifstream infile(filename.c_str(),
+                    std::ios::binary | std::ios::in | std::ios::ate);
 
-        std::streamsize count = infile.tellg();
-        infile.seekg(0);
+                if (!infile.is_open())
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::file_read::eval",
+                        this_->generate_error_message(
+                            "couldn't open file: " + filename));
+                }
 
-        std::vector<char> data;
-        data.resize(count);
+                std::streamsize count = infile.tellg();
+                infile.seekg(0);
 
-        if (!infile.read(data.data(), count))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read::eval",
-                util::generate_error_message(
-                    "couldn't read expected number of bytes from file: " +
-                        filename,
-                    name_, codename_));
-        }
+                std::vector<char> data;
+                data.resize(count);
 
-        // assume data in file is result of a serialized primitive_argument_type
-        primitive_argument_type val;
-        phylanx::util::unserialize(data, val);
+                if (!infile.read(data.data(), count))
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::file_read::eval",
+                        this_->generate_error_message(
+                            "couldn't read expected number of bytes from file: " +
+                            filename));
+                }
 
-        return hpx::make_ready_future(std::move(val));
+                // assume data in file is result of a serialized primitive_argument_type
+                primitive_argument_type val;
+                phylanx::util::unserialize(data, val);
+
+                return val;
+            });
     }
 }}}

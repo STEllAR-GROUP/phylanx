@@ -11,6 +11,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <cstddef>
 #include <fstream>
@@ -48,61 +49,70 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     }
 
-    void file_write_csv::write_to_file_csv(
-        ir::node_data<double> const& val, std::string const& filename) const
+    hpx::future<primitive_argument_type>  file_write_csv::write_to_file_csv(
+        ir::node_data<double> && val, std::string && filename) const
     {
-        std::ofstream outfile(
-            filename.c_str(), std::ios::out | std::ios::trunc);
-        if (!outfile.is_open())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "file_write_csv::eval",
-                util::generate_error_message(
-                    "couldn't open file: " + filename,
-                    name_, codename_));
-        }
-
-        outfile << std::setprecision(
-            std::numeric_limits<long double>::digits10 + 1);
-        outfile << std::scientific;
-
-        switch (val.num_dimensions())
-        {
-        case 0:
-            outfile << val.scalar() << '\n';
-            break;
-
-        case 1:
+        auto this_ = this->shared_from_this();
+        return hpx::threads::run_as_os_thread(
+            [this_ = std::move(this_)](
+                ir::node_data<double> && val, std::string && filename)
+            -> primitive_argument_type
             {
-                auto v = val.vector();
-                for (std::size_t i = 0UL; i != v.size(); ++i)
+                std::ofstream outfile(
+                    filename.c_str(), std::ios::out | std::ios::trunc);
+                if (!outfile.is_open())
                 {
-                    if (i != 0)
-                    {
-                        outfile << ',';
-                    }
-                    outfile << v[i];
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::"
+                        "file_write_csv::eval",
+                        this_->generate_error_message(
+                            "couldn't open file: " + filename));
                 }
-                outfile << '\n';
-            }
-            break;
 
-        case 2:
-            {
-                auto matrix = val.matrix();
-                for (std::size_t i = 0UL; i != matrix.rows(); ++i)
+                outfile << std::setprecision(
+                    std::numeric_limits<long double>::digits10 + 1);
+                outfile << std::scientific;
+
+                switch (val.num_dimensions())
                 {
-                    outfile << matrix(i, 0);
-                    for (std::size_t j = 1UL; j != matrix.columns(); ++j)
+                case 0:
+                    outfile << val.scalar() << '\n';
+                    break;
+
+                case 1:
                     {
-                        outfile << ',' << matrix(i, j);
+                        auto v = val.vector();
+                        for (std::size_t i = 0UL; i != v.size(); ++i)
+                        {
+                            if (i != 0)
+                            {
+                                outfile << ',';
+                            }
+                            outfile << v[i];
+                        }
+                        outfile << '\n';
                     }
-                    outfile << '\n';
+                    break;
+
+                case 2:
+                    {
+                        auto matrix = val.matrix();
+                        for (std::size_t i = 0UL; i != matrix.rows(); ++i)
+                        {
+                            outfile << matrix(i, 0);
+                            for (std::size_t j = 1UL; j != matrix.columns(); ++j)
+                            {
+                                outfile << ',' << matrix(i, j);
+                            }
+                            outfile << '\n';
+                        }
+                    }
+                    break;
                 }
-            }
-            break;
-        }
+
+                return primitive_argument_type{};
+            },
+            std::move(val), std::move(filename));
     }
 
     hpx::future<primitive_argument_type> file_write_csv::eval(
@@ -137,10 +147,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return numeric_operand(operands[1], args, name_, codename_)
             .then(hpx::launch::sync, hpx::util::unwrapping(
                 [this_ = std::move(this_), filename = std::move(filename)](
-                    ir::node_data<double> && val) ->  primitive_argument_type
+                        ir::node_data<double> && val) mutable
+                ->  hpx::future<primitive_argument_type>
                 {
-                    this_->write_to_file_csv(val, std::move(filename));
-                    return primitive_argument_type(std::move(val));
+                    return this_->write_to_file_csv(
+                        std::move(val), std::move(filename));
                 }));
     }
 

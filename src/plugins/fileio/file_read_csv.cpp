@@ -11,6 +11,7 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <boost/spirit/include/qi_char.hpp>
 #include <boost/spirit/include/qi_list.hpp>
@@ -20,6 +21,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -59,8 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands_.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_csv::"
-                    "eval",
+                "phylanx::execution_tree::primitives::file_read_csv::eval",
                 util::generate_error_message(
                     "the file_read_csv primitive requires exactly one "
                         "literal argument",
@@ -70,8 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (!valid(operands_[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_csv::"
-                    "eval",
+                "phylanx::execution_tree::primitives::file_read_csv::eval",
                 util::generate_error_message(
                     "the file_read_csv primitive requires that the given "
                         "operand is valid",
@@ -80,90 +80,96 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         std::string filename =
             string_operand_sync(operands_[0], args, name_, codename_);
-        std::ifstream infile(filename.c_str(), std::ios::in);
 
-        if (!infile.is_open())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_read_csv::eval",
-                util::generate_error_message(
-                    "couldn't open file: " + filename,
-                    name_, codename_));
-        }
-
-        std::string line;
-        bool header_parsed = false;
-        std::vector<double> matrix_array, current_line;
-        std::size_t n_rows = 0, n_cols = 0;
-        std::size_t before_readln = 0, after_readln = 0;
-
-        while (std::getline(infile, line))
-        {
-            before_readln = matrix_array.size();
-
-            auto begin_local = line.begin();
-            if (boost::spirit::qi::parse(begin_local, line.end(),
-                    boost::spirit::qi::double_ % ',', current_line))
+        auto this_ = this->shared_from_this();
+        return hpx::threads::run_as_os_thread(
+            [filename = std::move(filename), this_ = std::move(this_)]()
+            ->  primitive_argument_type
             {
-                if (begin_local == line.end() || header_parsed)
+                std::ifstream infile(filename.c_str(), std::ios::in);
+
+                if (!infile.is_open())
                 {
-                    header_parsed = true;
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::primitives::file_read_csv::eval",
+                        this_->generate_error_message(
+                            "couldn't open file: " + filename));
+                }
 
-                    matrix_array.insert(matrix_array.end(),
-                        current_line.begin(), current_line.end());
+                std::string line;
+                bool header_parsed = false;
+                std::vector<double> matrix_array, current_line;
+                std::size_t n_rows = 0, n_cols = 0;
+                std::size_t before_readln = 0, after_readln = 0;
 
-                    after_readln = matrix_array.size();
-                    if (n_rows == 0)
+                while (std::getline(infile, line))
+                {
+                    before_readln = matrix_array.size();
+
+                    auto begin_local = line.begin();
+                    if (boost::spirit::qi::parse(begin_local, line.end(),
+                            boost::spirit::qi::double_ % ',', current_line))
                     {
-                        n_cols = matrix_array.size();
+                        if (begin_local == line.end() || header_parsed)
+                        {
+                            header_parsed = true;
+
+                            matrix_array.insert(matrix_array.end(),
+                                current_line.begin(), current_line.end());
+
+                            after_readln = matrix_array.size();
+                            if (n_rows == 0)
+                            {
+                                n_cols = matrix_array.size();
+                            }
+                            else if (n_cols != (after_readln - before_readln))
+                            {
+                                HPX_THROW_EXCEPTION(hpx::invalid_data,
+                                    "phylanx::execution_tree::primitives::"
+                                    "file_read_csv::eval",
+                                    this_->generate_error_message(
+                                        "wrong data format, different number of "
+                                        "element in this row " + filename +
+                                        ':' + std::to_string(n_rows)));
+                            }
+                            n_rows++;
+                        }
+                        current_line.clear();
                     }
-                    else if (n_cols != (after_readln - before_readln))
+                    else
                     {
                         HPX_THROW_EXCEPTION(hpx::invalid_data,
                             "phylanx::execution_tree::primitives::"
                                 "file_read_csv::eval",
-                            util::generate_error_message(
-                                "wrong data format, different number of "
-                                    "element in this row " +
-                                    filename + ':' + std::to_string(n_rows),
-                                name_, codename_));
+                            this_->generate_error_message(
+                                "wrong data format " + filename + ':' +
+                                std::to_string(n_rows)));
                     }
-                    n_rows++;
                 }
-                current_line.clear();
-            }
-            else
-            {
-                HPX_THROW_EXCEPTION(hpx::invalid_data,
-                    "phylanx::execution_tree::primitives::file_read_csv::eval",
-                    util::generate_error_message(
-                        "wrong data format " + filename + ':' +
-                            std::to_string(n_rows),
-                        name_, codename_));
-            }
-        }
 
-        if (n_rows == 1)
-        {
-            if (n_cols == 1)
-            {
-                // scalar value
-                return hpx::make_ready_future(primitive_argument_type{
-                    ir::node_data<double>{matrix_array[0]}});
-            }
+                if (n_rows == 1)
+                {
+                    if (n_cols == 1)
+                    {
+                        // scalar value
+                        return primitive_argument_type{
+                            ir::node_data<double>{matrix_array[0]}};
+                    }
 
-            // vector
-            blaze::DynamicVector<double> vector(n_cols, matrix_array.data());
+                    // vector
+                    blaze::DynamicVector<double> vector(n_cols,
+                        matrix_array.data());
 
-            return hpx::make_ready_future(primitive_argument_type{
-                ir::node_data<double>{std::move(vector)}});
-        }
+                    return primitive_argument_type{
+                        ir::node_data<double>{std::move(vector)}};
+                }
 
-        // matrix
-        blaze::DynamicMatrix<double> matrix(
-            n_rows, n_cols, matrix_array.data());
+                // matrix
+                blaze::DynamicMatrix<double> matrix(
+                    n_rows, n_cols, matrix_array.data());
 
-        return hpx::make_ready_future(
-            primitive_argument_type{ir::node_data<double>{std::move(matrix)}});
+                return primitive_argument_type{
+                    ir::node_data<double>{std::move(matrix)}};
+            });
     }
 }}}
