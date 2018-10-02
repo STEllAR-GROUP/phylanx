@@ -13,6 +13,7 @@
 #include <hpx/exception.hpp>
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
+#include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <atomic>
 #include <cstddef>
@@ -1432,77 +1433,87 @@ namespace phylanx { namespace ir
     ///////////////////////////////////////////////////////////////////////////
     std::ostream& operator<<(std::ostream& out, node_data<double> const& nd)
     {
-        std::size_t dims = nd.num_dimensions();
-        switch (dims)
-        {
-        case 0:
-            out << nd[0];
-            break;
-
-        case 1: HPX_FALLTHROUGH;
-        case 3:
-            detail::print_array<double>(out, nd.vector(), nd.size());
-            break;
-
-        case 2: HPX_FALLTHROUGH;
-        case 4:
+        hpx::threads::run_as_os_thread(
+            [&]()
             {
-                out << "[";
-                auto data = nd.matrix();
-                for (std::size_t row = 0; row != data.rows(); ++row)
+                std::size_t dims = nd.num_dimensions();
+                switch (dims)
                 {
-                    if (row != 0)
-                        out << ", ";
-                    detail::print_array<double>(
-                        out, blaze::row(data, row), data.columns());
-                }
-                out << "]";
-            }
-            break;
+                case 0:
+                    out << nd[0];
+                    break;
 
-        default:
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "node_data<double>::operator<<()",
-                "invalid dimensionality: " + std::to_string(dims));
-        }
+                case 1: HPX_FALLTHROUGH;
+                case 3:
+                    detail::print_array<double>(out, nd.vector(), nd.size());
+                    break;
+
+                case 2: HPX_FALLTHROUGH;
+                case 4:
+                    {
+                        out << "[";
+                        auto data = nd.matrix();
+                        for (std::size_t row = 0; row != data.rows(); ++row)
+                        {
+                            if (row != 0)
+                                out << ", ";
+                            detail::print_array<double>(
+                                out, blaze::row(data, row), data.columns());
+                        }
+                        out << "]";
+                    }
+                    break;
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::invalid_status,
+                        "node_data<double>::operator<<()",
+                        "invalid dimensionality: " + std::to_string(dims));
+                }
+            }).get();
         return out;
     }
 
-    std::ostream& operator<<(std::ostream& out, node_data<std::int64_t> const& nd)
+    std::ostream& operator<<(
+        std::ostream& out, node_data<std::int64_t> const& nd)
     {
-        std::size_t dims = nd.num_dimensions();
-        switch (dims)
-        {
-            case 0:
-                out << nd[0];
-                break;
-
-            case 1: HPX_FALLTHROUGH;
-            case 3:
-                detail::print_array<std::int64_t>(out, nd.vector(), nd.size());
-                break;
-
-            case 2: HPX_FALLTHROUGH;
-            case 4:
+        hpx::threads::run_as_os_thread(
+            [&]()
             {
-                out << "[";
-                auto data = nd.matrix();
-                for (std::size_t row = 0; row != data.rows(); ++row)
+                std::size_t dims = nd.num_dimensions();
+                switch (dims)
                 {
-                    if (row != 0)
-                        out << ", ";
-                    detail::print_array<std::int64_t>(
-                            out, blaze::row(data, row), data.columns());
-                }
-                out << "]";
-            }
-                break;
+                    case 0:
+                        out << nd[0];
+                        break;
 
-            default:
-                HPX_THROW_EXCEPTION(hpx::invalid_status,
-                                    "node_data<std::int64_t>::operator<<()",
-                                    "invalid dimensionality: " + std::to_string(dims));
-        }
+                    case 1: HPX_FALLTHROUGH;
+                    case 3:
+                        detail::print_array<std::int64_t>(
+                            out, nd.vector(), nd.size());
+                        break;
+
+                    case 2: HPX_FALLTHROUGH;
+                    case 4:
+                        {
+                            out << "[";
+                            auto data = nd.matrix();
+                            for (std::size_t row = 0; row != data.rows(); ++row)
+                            {
+                                if (row != 0)
+                                    out << ", ";
+                                detail::print_array<std::int64_t>(
+                                    out, blaze::row(data, row), data.columns());
+                            }
+                            out << "]";
+                        }
+                        break;
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::invalid_status,
+                            "node_data<std::int64_t>::operator<<()",
+                            "invalid dimensionality: " + std::to_string(dims));
+                }
+            }).get();
         return out;
     }
 
@@ -1612,42 +1623,47 @@ namespace phylanx { namespace ir
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::ostream& operator<<(std::ostream& out, node_data<std::uint8_t> const& nd)
+    std::ostream& operator<<(
+        std::ostream& out, node_data<std::uint8_t> const& nd)
     {
-        std::size_t dims = nd.num_dimensions();
-        switch (dims)
-        {
-        case 0:
-            out << std::boolalpha << std::to_string(bool{nd[0] != 0});
-            break;
-
-        case 1: HPX_FALLTHROUGH;
-        case 3:
-            out << std::boolalpha;
-            detail::print_array<bool>(out, nd.vector(), nd.size());
-            break;
-
-        case 2: HPX_FALLTHROUGH;
-        case 4:
+        hpx::threads::run_as_os_thread(
+            [&]()
             {
-                out << std::boolalpha << "[";
-                auto data = nd.matrix();
-                for (std::size_t row = 0; row != data.rows(); ++row)
+                std::size_t dims = nd.num_dimensions();
+                switch (dims)
                 {
-                    if (row != 0)
-                        out << ", ";
-                    detail::print_array<bool>(
-                        out, blaze::row(data, row), data.columns());
-                }
-                out << "]";
-            }
-            break;
+                case 0:
+                    out << std::boolalpha << std::to_string(bool{nd[0] != 0});
+                    break;
 
-        default:
-            HPX_THROW_EXCEPTION(hpx::invalid_status,
-                "node_data<std::uint8_t>::operator<<()",
-                "invalid dimensionality: " + std::to_string(dims));
-        }
+                case 1: HPX_FALLTHROUGH;
+                case 3:
+                    out << std::boolalpha;
+                    detail::print_array<bool>(out, nd.vector(), nd.size());
+                    break;
+
+                case 2: HPX_FALLTHROUGH;
+                case 4:
+                    {
+                        out << std::boolalpha << "[";
+                        auto data = nd.matrix();
+                        for (std::size_t row = 0; row != data.rows(); ++row)
+                        {
+                            if (row != 0)
+                                out << ", ";
+                            detail::print_array<bool>(
+                                out, blaze::row(data, row), data.columns());
+                        }
+                        out << "]";
+                    }
+                    break;
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::invalid_status,
+                        "node_data<std::uint8_t>::operator<<()",
+                        "invalid dimensionality: " + std::to_string(dims));
+                }
+            }).get();
         return out;
     }
 }}
