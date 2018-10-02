@@ -67,12 +67,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
             {
-                fargs.emplace_back(extract_ref_value(*it));
+                fargs.emplace_back(extract_ref_value(*it, name_, codename_));
             }
 
             for (auto const& param : params)
             {
-                fargs.emplace_back(extract_value(param));
+                fargs.emplace_back(extract_value(param, name_, codename_));
             }
 
             if (target_)
@@ -104,9 +104,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
             {
-                fargs.emplace_back(extract_ref_value(*it));
+                fargs.emplace_back(extract_ref_value(*it, name_, codename_));
             }
-            fargs.emplace_back(extract_value(std::move(param)));
+            fargs.emplace_back(
+                extract_value(std::move(param), name_, codename_));
 
             if (target_)
             {

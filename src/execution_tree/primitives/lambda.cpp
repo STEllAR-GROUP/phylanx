@@ -56,7 +56,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
     }
 
@@ -80,10 +81,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive_arguments_type fargs;
                 fargs.reserve(args.size() + 1);
 
-                fargs.push_back(extract_ref_value(operands_[0]));
+                fargs.push_back(
+                    extract_ref_value(operands_[0], name_, codename_));
                 for (auto const& arg : args)
                 {
-                    fargs.push_back(extract_value(arg));
+                    fargs.push_back(extract_value(arg, name_, codename_));
                 }
 
                 compiler::primitive_name_parts name_parts =
@@ -97,7 +99,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
             }
 
-            return hpx::make_ready_future(extract_ref_value(operands_[0]));
+            return hpx::make_ready_future(
+                extract_ref_value(operands_[0], name_, codename_));
         }
 
         // simply invoke the given body with the given arguments
@@ -132,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // initialize the lambda's body
-        operands_[0] = extract_copy_value(std::move(data[0]));
+        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
     }
 
     topology lambda::expression_topology(std::set<std::string>&& functions,

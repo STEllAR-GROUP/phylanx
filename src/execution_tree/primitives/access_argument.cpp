@@ -61,6 +61,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         argnum_ + 1, params.size())));
         }
 
-        return hpx::make_ready_future(extract_ref_value(params[argnum_]));
+        return hpx::make_ready_future(
+            extract_ref_value(params[argnum_], name_, codename_));
     }
 }}}

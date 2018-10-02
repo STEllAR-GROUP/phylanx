@@ -46,7 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
     }
 
@@ -62,10 +63,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 primitive_arguments_type fargs;
                 fargs.reserve(params.size() + 1);
 
-                fargs.push_back(extract_ref_value(operands_[0]));
+                fargs.push_back(
+                    extract_ref_value(operands_[0], name_, codename_));
                 for (auto const& param : params)
                 {
-                    fargs.push_back(extract_value(param));
+                    fargs.push_back(extract_value(param, name_, codename_));
                 }
 
                 compiler::primitive_name_parts name_parts =
@@ -81,7 +83,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        return hpx::make_ready_future(
+            extract_ref_value(operands_[0], name_, codename_));
     }
 
     void access_function::store(primitive_arguments_type&& vals,

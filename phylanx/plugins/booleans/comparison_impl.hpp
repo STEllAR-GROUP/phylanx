@@ -737,7 +737,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             phylanx::execution_tree::extract_boolean_value_scalar(operands[2]));
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_, propagate_type](primitive_argument_type&& op1,
+            [this_ = std::move(this_), propagate_type](
+                    primitive_argument_type&& op1,
                     primitive_argument_type&& op2)
             ->  primitive_argument_type
             {

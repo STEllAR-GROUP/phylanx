@@ -1034,8 +1034,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             // special case for 2 operands
             return hpx::dataflow(hpx::launch::sync,
-                [this_](util::future_or_value<primitive_argument_type>&& lhs,
-                        util::future_or_value<primitive_argument_type>&& rhs)
+                [this_ = std::move(this_)](
+                    hpx::future<primitive_argument_type>&& lhs,
+                    hpx::future<primitive_argument_type>&& rhs)
                 -> primitive_argument_type
                 {
                     auto && lhs_val = lhs.get();
@@ -1047,12 +1048,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->handle_numeric_operands(
                         std::move(lhs_val), rhs.get());
                 },
-                value_operand_fov(operands[0], args, name_, codename_),
-                value_operand_fov(operands[1], args, name_, codename_));
+                value_operand(operands[0], args, name_, codename_),
+                value_operand(operands[1], args, name_, codename_));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_arguments_type&& ops)
+            [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
                 if (is_list_operand_strict(ops[0]))

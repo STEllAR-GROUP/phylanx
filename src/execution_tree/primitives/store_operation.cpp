@@ -8,7 +8,6 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/future_or_value.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -103,21 +102,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             params.reserve(args.size());
             for (auto const& arg : args)
             {
-                params.emplace_back(extract_ref_value(arg));
+                params.emplace_back(extract_ref_value(arg, name_, codename_));
             }
         }
 
-        auto f = value_operand_fov(operands_[1], params, name_, codename_);
+        auto f = value_operand(operands_[1], params, name_, codename_);
         return f.then(hpx::launch::sync,
             [
-                this_, lhs = extract_ref_value(operands_[0]),
+                this_ = std::move(this_),
+                lhs = extract_ref_value(operands_[0], name_, codename_),
                 args = std::move(params)
             ]
-            (util::future_or_value<primitive_argument_type>&& val) mutable
+            (hpx::future<primitive_argument_type>&& val) mutable
             ->  primitive_argument_type
             {
-                primitive_operand(lhs, this_->name_, this_->codename_)
-                    .store(hpx::launch::sync, val.get(), std::move(args));
+                auto p = primitive_operand(
+                    std::move(lhs), this_->name_, this_->codename_);
+
+                p.store(hpx::launch::sync, val.get(), std::move(args));
                 return primitive_argument_type{};
             });
     }
@@ -156,19 +158,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
 
         primitive_arguments_type params;
-        params.emplace_back(extract_ref_value(arg));
+        params.emplace_back(extract_ref_value(arg, name_, codename_));
 
-        return value_operand_fov(operands_[1], std::move(arg), name_, codename_)
+        return value_operand(operands_[1], std::move(arg), name_, codename_)
             .then(hpx::launch::sync,
                 [
-                    this_, lhs = extract_ref_value(operands_[0]),
+                    this_ = std::move(this_),
+                    lhs = extract_ref_value(operands_[0], name_, codename_),
                     args = std::move(params)
                 ]
-                (util::future_or_value<primitive_argument_type>&& val) mutable
+                (hpx::future<primitive_argument_type>&& val) mutable
                 -> primitive_argument_type
                 {
-                    primitive_operand(lhs, this_->name_, this_->codename_)
-                        .store(hpx::launch::sync, val.get(), std::move(args));
+                    auto p = primitive_operand(
+                        std::move(lhs), this_->name_, this_->codename_);
+
+                    p.store(hpx::launch::sync, val.get(), std::move(args));
                     return primitive_argument_type{};
                 });
     }

@@ -13,7 +13,6 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/future_or_value.hpp>
 #include <phylanx/util/generate_error_message.hpp>
 #include <phylanx/util/repr_manip.hpp>
 #include <phylanx/util/small_vector.hpp>
@@ -2496,7 +2495,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive primitive_operand(primitive_argument_type const& val,
+    primitive const& primitive_operand(primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
@@ -2510,13 +2509,42 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    primitive primitive_operand(primitive_argument_type const& val,
+    primitive const& primitive_operand(primitive_argument_type const& val,
         compiler::primitive_name_parts const& parts,
         std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
             return *p;
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_primitive",
+            util::generate_error_message(
+                "primitive_value_type does not hold a primitive",
+                parts, codename));
+    }
+
+    primitive primitive_operand(primitive_argument_type && val,
+        std::string const& name, std::string const& codename)
+    {
+        primitive* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+            return std::move(*p);
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_primitive",
+            util::generate_error_message(
+                "primitive_value_type does not hold a primitive",
+                name, codename));
+    }
+
+    primitive primitive_operand(primitive_argument_type && val,
+        compiler::primitive_name_parts const& parts,
+        std::string const& codename)
+    {
+        primitive* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+            return std::move(*p);
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_primitive",
@@ -2709,7 +2737,7 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg), mode);
+                p->eval(extract_ref_value(arg, name, codename), mode);
             if (f.is_ready())
             {
                 return f;
@@ -2739,7 +2767,7 @@ namespace phylanx { namespace execution_tree
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg), mode);
+                p->eval(extract_ref_value(arg, name, codename), mode);
             if (f.is_ready())
             {
                 return f;
@@ -2758,180 +2786,6 @@ namespace phylanx { namespace execution_tree
                 extract_ref_value(std::move(val), name, codename));
         }
         return hpx::make_ready_future(std::move(val));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    util::future_or_value<primitive_argument_type> value_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename, eval_mode mode)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f = p->eval(args, mode);
-            if (f.is_ready())
-            {
-                return std::move(f);
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_value(f.get(), name, codename);
-                });
-        }
-
-        if (valid(val))
-        {
-            return extract_ref_value(val, name, codename);
-        }
-        return val;
-    }
-
-    util::future_or_value<primitive_argument_type> value_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename, eval_mode mode)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f =
-                p->eval(std::move(args), mode);
-            if (f.is_ready())
-            {
-                return f.get();
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_value(f.get(), name, codename);
-                });
-        }
-
-        if (valid(val))
-        {
-            return extract_ref_value(val, name, codename);
-        }
-        return val;
-    }
-
-    util::future_or_value<primitive_argument_type> value_operand_fov(
-        primitive_argument_type&& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename,
-        eval_mode mode)
-    {
-        primitive* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f = p->eval(args, mode);
-            if (f.is_ready())
-            {
-                return f.get();
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_value(f.get(), name, codename);
-                });
-        }
-
-        if (valid(val))
-        {
-            return extract_ref_value(std::move(val), name, codename);
-        }
-        return std::move(val);
-    }
-
-    util::future_or_value<primitive_argument_type> value_operand_fov(
-        primitive_argument_type&& val,
-        primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename, eval_mode mode)
-    {
-        primitive* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f =
-                p->eval(std::move(args), mode);
-            if (f.is_ready())
-            {
-                return f.get();
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_value(f.get(), name, codename);
-                });
-        }
-
-        if (valid(val))
-        {
-            return extract_ref_value(std::move(val), name, codename);
-        }
-        return std::move(val);
-    }
-
-    util::future_or_value<primitive_argument_type> value_operand_fov(
-        primitive_argument_type const& val, primitive_argument_type const& arg,
-        std::string const& name, std::string const& codename,
-        eval_mode mode)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg), mode);
-            if (f.is_ready())
-            {
-                return f.get();
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_value(f.get(), name, codename);
-                });
-        }
-
-        if (valid(val))
-        {
-            return extract_ref_value(val, name, codename);
-        }
-        return val;
-    }
-
-    util::future_or_value<primitive_argument_type> value_operand_fov(
-        primitive_argument_type&& val, primitive_argument_type const& arg,
-        std::string const& name, std::string const& codename,
-        eval_mode mode)
-    {
-        primitive* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg), mode);
-            if (f.is_ready())
-            {
-                return f.get();
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_value(f.get(), name, codename);
-                });
-        }
-
-        if (valid(val))
-        {
-            return extract_ref_value(std::move(val), name, codename);
-        }
-        return std::move(val);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -3948,107 +3802,6 @@ namespace phylanx { namespace execution_tree
 
         HPX_ASSERT(valid(val));
         return extract_list_value_strict(val, name, codename);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f = p->eval(args);
-            if (f.is_ready())
-            {
-                return extract_list_value(f.get(), name, codename);
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_list_value(f.get(), name, codename);
-                });
-        }
-
-        HPX_ASSERT(valid(val));
-        return extract_list_value(val, name, codename);
-    }
-
-    util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string const& codename)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
-            if (f.is_ready())
-            {
-                return extract_list_value(f.get(), name, codename);
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_list_value(f.get(), name, codename);
-                });
-        }
-
-        HPX_ASSERT(valid(val));
-        return extract_list_value(val, name, codename);
-    }
-
-    util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string && codename)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f = p->eval(args);
-            if (f.is_ready())
-            {
-                return extract_list_value(f.get(), name, codename);
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_list_value(f.get(), name, codename);
-                });
-        }
-
-        HPX_ASSERT(valid(val));
-        return extract_list_value(std::move(val), name, codename);
-    }
-
-    util::future_or_value<ir::range> list_operand_fov(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string && codename)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
-            if (f.is_ready())
-            {
-                return extract_list_value(f.get(), name, codename);
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_list_value(f.get(), name, codename);
-                });
-        }
-
-        HPX_ASSERT(valid(val));
-        return extract_list_value(std::move(val), name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////

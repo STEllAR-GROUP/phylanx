@@ -943,7 +943,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 2)
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](operand_type&& lhs, operand_type&& rhs)
+                [this_ = std::move(this_)](
+                        operand_type&& lhs, operand_type&& rhs)
                 ->  primitive_argument_type
                 {
                     std::size_t lhs_dims = lhs.num_dimensions();
@@ -972,7 +973,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](operands_type&& ops) -> primitive_argument_type
+            [this_ = std::move(this_)](operands_type&& ops)
+            ->  primitive_argument_type
             {
                 std::size_t lhs_dims = ops[0].num_dimensions();
                 switch (lhs_dims)
