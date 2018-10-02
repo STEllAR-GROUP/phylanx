@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <utility>
@@ -107,7 +108,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     break;
                 }
 
-                return primitive_argument_type{};
+                return primitive_argument_type{std::move(val)};
             },
             std::move(val), std::move(filename));
     }

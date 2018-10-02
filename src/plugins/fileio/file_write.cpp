@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -70,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "couldn't read expected number of bytes from file: " +
                         filename));
                 }
-                return primitive_argument_type{};
+                return primitive_argument_type{std::move(val)};
             },
             std::move(val), std::move(filename));
     }

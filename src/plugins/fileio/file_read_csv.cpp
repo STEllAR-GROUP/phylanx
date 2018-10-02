@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -134,12 +135,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                     else
                     {
-                        HPX_THROW_EXCEPTION(hpx::invalid_data,
-                            "phylanx::execution_tree::primitives::"
-                                "file_read_csv::eval",
-                            this_->generate_error_message(
-                                "wrong data format " + filename + ':' +
-                                std::to_string(n_rows)));
+                        throw std::runtime_error(
+                            this_->generate_error_message("wrong data format " +
+                                filename + ':' + std::to_string(n_rows)));
                     }
                 }
 

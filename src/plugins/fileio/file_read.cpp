@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -102,7 +103,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         filename));
                 }
 
-                // assume data in file is result of a serialized primitive_argument_type
+                // assume data in file is result of a serialized
+                // primitive_argument_type
                 primitive_argument_type val;
                 phylanx::util::unserialize(data, val);
 
