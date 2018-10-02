@@ -85,10 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (!infile.is_open())
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_read::eval",
-                        this_->generate_error_message(
-                            "couldn't open file: " + filename));
+                    throw std::runtime_error(this_->generate_error_message(
+                        "couldn't open file: " + filename));
                 }
 
                 std::streamsize count = infile.tellg();
@@ -99,11 +97,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 if (!infile.read(data.data(), count))
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_read::eval",
-                        this_->generate_error_message(
-                            "couldn't read expected number of bytes from file: " +
-                            filename));
+                    throw std::runtime_error(this_->generate_error_message(
+                        "couldn't read expected number of bytes from file: " +
+                        filename));
                 }
 
                 // assume data in file is result of a serialized primitive_argument_type

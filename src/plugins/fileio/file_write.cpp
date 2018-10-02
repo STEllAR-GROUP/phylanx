@@ -59,20 +59,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::ios::binary | std::ios::out | std::ios::trunc);
                 if (!outfile.is_open())
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_write::eval",
-                        this_->generate_error_message(
-                            "couldn't open file: " + filename));
+                    throw std::runtime_error(this_->generate_error_message(
+                        "couldn't open file: " + filename));
                 }
 
                 std::vector<char> data = phylanx::util::serialize(val);
                 if (!outfile.write(data.data(), data.size()))
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::file_write::eval",
-                        this_->generate_error_message(
-                            "couldn't read expected number of bytes from file: " +
-                                filename));
+                    throw std::runtime_error(this_->generate_error_message(
+                        "couldn't read expected number of bytes from file: " +
+                        filename));
                 }
                 return primitive_argument_type{};
             },

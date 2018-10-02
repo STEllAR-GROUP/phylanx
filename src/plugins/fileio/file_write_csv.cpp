@@ -62,11 +62,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     filename.c_str(), std::ios::out | std::ios::trunc);
                 if (!outfile.is_open())
                 {
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "phylanx::execution_tree::primitives::"
-                        "file_write_csv::eval",
-                        this_->generate_error_message(
-                            "couldn't open file: " + filename));
+                    throw std::runtime_error(this_->generate_error_message(
+                        "couldn't open file: " + filename));
                 }
 
                 outfile << std::setprecision(
