@@ -10,6 +10,7 @@ set(tests
     column_slicing
     constant
     count_nonzero
+    cumsum
     determinant
     diag_operation
     dot_operation

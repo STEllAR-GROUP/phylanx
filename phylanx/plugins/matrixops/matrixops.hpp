@@ -12,6 +12,7 @@
 #include <phylanx/plugins/matrixops/constant.hpp>
 #include <phylanx/plugins/matrixops/count_nonzero_operation.hpp>
 #include <phylanx/plugins/matrixops/cross_operation.hpp>
+#include <phylanx/plugins/matrixops/cumsum.hpp>
 #include <phylanx/plugins/matrixops/determinant.hpp>
 #include <phylanx/plugins/matrixops/diag_operation.hpp>
 #include <phylanx/plugins/matrixops/dot_operation.hpp>
