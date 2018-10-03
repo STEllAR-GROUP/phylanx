@@ -98,15 +98,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (args.size())
                 {
                 case 2:
-                {
-                    auto elem_0 = args.begin();
-                    result[1] = std::size_t(extract_numeric_value(*(++elem_0))[0]);
-                    HPX_FALLTHROUGH;
-                }
+                    {
+                        auto elem_0 = args.begin();
+                        result[0] = extract_integer_value(*elem_0)[0];
+                        result[1] = extract_integer_value(*(++elem_0))[0];
+                    }
+                    return result;
 
                 case 1:
-                    result[0] = std::size_t(extract_numeric_value(*args.begin())[0]);
-                    HPX_FALLTHROUGH;
+                    result[1] = extract_integer_value(*args.begin())[0];
+                    return result;
 
                 case 0:
                     return result;
