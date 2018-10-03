@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -28,7 +29,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("arange",
             std::vector<std::string>{"arange(_1, _2, _3)"},
-            &create_arange, &create_primitive<arange>)
+            &create_arange, &create_primitive<arange>, R"(
+            start, stop, step
+            Args:
+
+                start (number) : Start of interval. The interval includes this
+                    value. The default start value is 0.
+                stop (number) : End of interval. The interval does not include
+                    this value, except in some cases where step is
+                    not an integer and floating point round-off
+                    affects the length of out.
+                step (number, optional) : Spacing between values. For any
+                    output out, this is the distance between two adjacent
+                    values, `out[i+1] - out[i]`. The default step size is `1`.
+                    If step is specified as a position argument, start must
+                    also be given.
+
+            Returns:
+
+            Array of evenly spaced values. For floating point arguments, the
+            length of the result is `ceil((stop - start)/step)`. Because of
+            floating point overflow, this rule may result in the last element
+            of out being greater than stop.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -44,7 +66,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         T start = extract_scalar_data<T>(args[0], name_, codename_);
         T stop = extract_scalar_data<T>(args[1], name_, codename_);
-        T step = extract_scalar_data<T>(args[2], name_, codename_);
+        T step = T(1);
+
+        if (args.size() == 3)
+        {
+            step = extract_scalar_data<T>(args[2], name_, codename_);
+        }
 
         if (step == T(0))
         {
@@ -57,7 +84,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // because of round-off effects we might end up having one more
         // element than expected
         blaze::DynamicVector<T> result(
-            std::max(T((stop - start) / step), T(0)) + T(1));
+            (std::max)(T((stop - start) / step), T(0)) + T(1));
 
         std::size_t i = 0;
 
@@ -84,12 +111,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
-        if (operands.size() != 3)
+        if (operands.size() < 2 || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::arange",
                 generate_error_message(
-                    "the arange primitive requires exactly three arguments."));
+                    "the arange primitive requires two or three arguments."));
         }
 
         for (std::size_t i = 0; i != operands.size(); ++i)
@@ -106,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_arguments_type&& args)
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
             -> primitive_argument_type
             {
                 switch (extract_common_type(args))
