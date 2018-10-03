@@ -515,6 +515,13 @@ void interpreter(po::variables_map const& vm)
         print_performance_profile(snippets, code_source_name, dot_file,
             newick_tree_file, counter_file);
     }
+    else if (vm.count("dump-dot") != 0 || vm.count("dump-newick-tree") != 0 ||
+        vm.count("dump-counters") != 0)
+    {
+        std::cout << "physl: in order to generate any of the performance "
+            "output (--dump-dot, --dump-newick-tree, or --dump-counters), "
+            "please also specify the command line option --performance.";
+    }
 }
 
 int main(int argc, char* argv[])
