@@ -139,10 +139,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> for_each::eval(
         primitive_arguments_type const& args, eval_mode mode) const
     {
-        if (operands_.empty())
+        if (this->no_operands())
         {
             return eval(args, noargs, mode);
         }
-        return eval(operands_, args, mode);
+        return eval(this->operands(), args, mode);
     }
 }}}

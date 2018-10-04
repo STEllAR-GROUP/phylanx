@@ -734,7 +734,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         bool propagate_type = (operands.size() == 3 &&
-            phylanx::execution_tree::extract_boolean_value_scalar(operands[2]));
+            phylanx::execution_tree::extract_scalar_boolean_value(operands[2]));
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
             [this_ = std::move(this_), propagate_type](
