@@ -38,8 +38,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& args) const override;
     private:
-        void write_to_file_csv(ir::node_data<double> const& val,
-            std::string const& filename) const;
+        hpx::future<primitive_argument_type> write_to_file_csv(
+            ir::node_data<double>&& val, std::string&& filename) const;
     };
 
     inline primitive create_file_write_csv(hpx::id_type const& locality,

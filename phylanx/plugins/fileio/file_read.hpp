@@ -12,13 +12,16 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    class file_read : public primitive_component_base
+    class file_read
+      : public primitive_component_base
+      , public std::enable_shared_from_this<file_read>
     {
     public:
         static match_pattern_type const match_data;

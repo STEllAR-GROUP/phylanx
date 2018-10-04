@@ -13,10 +13,12 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/runtime/threads/run_as_os_thread.hpp>
 
 #include <cstddef>
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,30 +48,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    void file_write::write_to_file(
-        primitive_argument_type const& val, std::string const& filename) const
+    hpx::future<primitive_argument_type> file_write::write_to_file(
+        primitive_argument_type && val, std::string && filename) const
     {
-        std::ofstream outfile(filename.c_str(),
-            std::ios::binary | std::ios::out | std::ios::trunc);
-        if (!outfile.is_open())
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::eval",
-                util::generate_error_message(
-                    "couldn't open file: " + filename,
-                    name_, codename_));
-        }
+        auto this_ = this->shared_from_this();
+        return hpx::threads::run_as_os_thread(
+            [this_ = std::move(this_)](
+                primitive_argument_type && val, std::string && filename)
+            {
+                std::ofstream outfile(filename.c_str(),
+                    std::ios::binary | std::ios::out | std::ios::trunc);
+                if (!outfile.is_open())
+                {
+                    throw std::runtime_error(this_->generate_error_message(
+                        "couldn't open file: " + filename));
+                }
 
-        std::vector<char> data = phylanx::util::serialize(val);
-        if (!outfile.write(data.data(), data.size()))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::file_write::eval",
-                util::generate_error_message(
-                    "couldn't read expected number of bytes from file: " +
-                        filename,
-                    name_, codename_));
-        }
+                std::vector<char> data = phylanx::util::serialize(val);
+                if (!outfile.write(data.data(), data.size()))
+                {
+                    throw std::runtime_error(this_->generate_error_message(
+                        "couldn't read expected number of bytes from file: " +
+                        filename));
+                }
+                return primitive_argument_type{std::move(val)};
+            },
+            std::move(val), std::move(filename));
     }
 
     hpx::future<primitive_argument_type> file_write::eval(
@@ -103,21 +107,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return literal_operand(operands[1], args, name_, codename_)
             .then(hpx::launch::sync, hpx::util::unwrapping(
                 [this_ = std::move(this_), filename = std::move(filename)](
-                    primitive_argument_type && val) ->  primitive_argument_type
-        {
-            if (!valid(val))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "file_write::eval",
-                    util::generate_error_message(
-                        "the file_write primitive requires that the argument "
-                        "value given by the operand is non-empty",
-                        this_->name_, this_->codename_));
-            }
+                        primitive_argument_type && val) mutable
+                ->  hpx::future<primitive_argument_type>
+                {
+                    if (!valid(val))
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "file_write::eval",
+                            this_->generate_error_message(
+                                "the file_write primitive requires that the "
+                                "argument value given by the operand is "
+                                "non-empty"));
+                    }
 
-            this_->write_to_file(val, std::move(filename));
-            return primitive_argument_type(std::move(val));
-        }));
+                    return this_->write_to_file(
+                        std::move(val), std::move(filename));
+                }));
     }
 
     ///////////////////////////////////////////////////////////////////////////
