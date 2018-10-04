@@ -706,7 +706,7 @@ class PhySL:
         """class Tuple(elts, ctx)"""
 
         expr = tuple(map(self.apply_rule, node.elts))
-        return expr
+        return ["make_list", expr]
 
     def _UAdd(self, node):
         """
