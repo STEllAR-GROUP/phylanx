@@ -23,6 +23,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(count_nonzero_operation_plugin,
     phylanx::execution_tree::primitives::count_nonzero_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(column_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[2]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(cumsum_operation_plugin,
+    phylanx::execution_tree::primitives::cumsum::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
     constant_plugin, phylanx::execution_tree::primitives::constant::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(cross_operation_plugin,
