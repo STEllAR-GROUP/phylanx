@@ -632,7 +632,10 @@ class PhySL:
             end of the function!
         """
 
-        return self.apply_rule(node.value)
+        if type(node.value) == ast.Tuple:
+            return ["make_list", self.apply_rule(node.value)]
+        else:
+            return self.apply_rule(node.value)
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""
@@ -706,7 +709,7 @@ class PhySL:
         """class Tuple(elts, ctx)"""
 
         expr = tuple(map(self.apply_rule, node.elts))
-        return ["make_list", expr]
+        return expr
 
     def _UAdd(self, node):
         """
