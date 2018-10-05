@@ -465,7 +465,6 @@ namespace phylanx { namespace execution_tree
         case 3: HPX_FALLTHROUGH;    // std::string
         case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
         case 8:                     // phylanx::ir::dictionary
             return val;
 
@@ -488,6 +487,22 @@ namespace phylanx { namespace execution_tree
                     return primitive_argument_type{v.copy()};
                 }
                 return primitive_argument_type{v};
+            }
+            break;
+
+        case 7:     // phylanx::ir::range
+            {
+                auto const& args = util::get<7>(val);
+
+                primitive_arguments_type result;
+                result.reserve(args.size());
+
+                for (auto const& arg : args)
+                {
+                    result.push_back(extract_copy_value(arg, name, codename));
+                }
+
+                return primitive_argument_type{std::move(result)};
             }
             break;
 
@@ -539,7 +554,7 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-            case 4:    // phylanx::ir::node_data<double>
+        case 4:    // phylanx::ir::node_data<double>
             {
                 auto const& v = util::get<4>(val);
                 if (v.is_ref())
@@ -601,13 +616,12 @@ namespace phylanx { namespace execution_tree
         case 3: HPX_FALLTHROUGH;    // std::string
         case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
         case 8:                     // phylanx::ir::dictionary
             return std::move(val);
 
         case 1:    // phylanx::ir::node_data<std::uint8_t>
             {
-                auto && v = util::get<1>(std::move(val));
+                auto&& v = util::get<1>(std::move(val));
                 if (v.is_ref())
                 {
                     return primitive_argument_type{v.copy()};
@@ -627,14 +641,31 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-            case 4:    // phylanx::ir::node_data<double>
+        case 4:    // phylanx::ir::node_data<double>
             {
-                auto && v = util::get<4>(std::move(val));
+                auto&& v = util::get<4>(std::move(val));
                 if (v.is_ref())
                 {
                     return primitive_argument_type{v.copy()};
                 }
                 return primitive_argument_type{std::move(v)};
+            }
+            break;
+
+        case 7:     // phylanx::ir::range
+            {
+                auto&& args = util::get<7>(std::move(val));
+
+                primitive_arguments_type result;
+                result.reserve(args.size());
+
+                for (auto&& arg : args)
+                {
+                    result.push_back(
+                        extract_copy_value(std::move(arg), name, codename));
+                }
+
+                return primitive_argument_type{std::move(result)};
             }
             break;
 
