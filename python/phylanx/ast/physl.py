@@ -10,7 +10,6 @@ import ast
 import inspect
 import phylanx.execution_tree
 from phylanx import compiler_state
-from .utils import dump_info
 
 mapped_methods = {
     "add": "__add",
@@ -553,7 +552,6 @@ class PhySL:
 
         op = get_symbol_info(node, 'list')
         elements = tuple(map(self.apply_rule, node.elts))
-        print([op, (*elements, )])
         return [op, (*elements, )]
 
     def _Lt(self, node):
