@@ -6,6 +6,7 @@
 
 set(tests
     eval
+    dictionary
     for
     make_array
     map_numpy

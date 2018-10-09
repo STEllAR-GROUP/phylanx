@@ -52,11 +52,16 @@ namespace phylanx { namespace execution_tree
             return slice_list(extract_list_value_strict(data, name, codename),
                 indices, name, codename);
         }
+        if (is_dictionary_operand(data))
+        {
+            auto f = phylanx::execution_tree::extract_dictionary_value(data);
+            return f[indices].get();
+        }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
-                "target object does not hold a numeric or range data type and "
+                "target object does not hold a numeric, range, or dictionary type and "
                 "as such does not support slicing", name, codename));
     }
 
@@ -133,12 +138,18 @@ namespace phylanx { namespace execution_tree
                         std::move(value), name, codename),
                     name, codename)};
             }
+        } 
+        if (is_dictionary_operand(data))
+        {
+            auto f = phylanx::execution_tree::extract_dictionary_value(data);
+            f[indices] = value;
+            return primitive_argument_type{f};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
-                "target object does not hold a numeric or range data type and "
+                "target object does not hold a numeric, range, or dictionary type and "
                 "as such does not support slicing", name, codename));
     }
 
