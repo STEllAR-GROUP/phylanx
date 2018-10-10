@@ -82,7 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "triangular matrix."
         ),
         PHYLANX_LIN_MATCH_DATA("iterative_solver_conjugate_gradient",                         
-         "a, b,uplo\n"                                                            
+         "a, b\n"                                                            
          "Args:\n"                                                                
          "\n"                                                                     
          "    a (matrix) : a matrix\n"                                            
@@ -91,8 +91,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "Returns:\n"                                                             
          "\n"                                                                     
          "A matrix `x` such that `a x = b`, solved using the "                    
-         "conjugate gradient solver. If uplo = 'L', solve  " 
-        )};
+         "conjugate gradient" 
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB",                         
+         "a, b\n"                                                            
+         "Args:\n"                                                                
+         "\n"                                                                     
+         "    a (matrix) : a matrix\n"                                            
+         "    b (vector) : a vector\n"                                            
+         "\n"                                                                     
+         "Returns:\n"                                                             
+         "\n"                                                                     
+         "A matrix `x` such that `a x = b`, solved using the "                    
+         "BiCGSTAB solver." 
+        )
+        };
 
 #undef PHYLANX_LIN_MATCH_DATA
 
@@ -129,15 +142,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::posv(A, b, 'U');
                     return arg_type{std::move(b)};
                 }},
-            {"iterative_solver_conjugate_gradient",
+                {"iterative_solver_conjugate_gradient",
                 // Iterative conjugate gradient solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled 
                 [](args_type&& args) -> arg_type {
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
-                    //const std::unique_ptr<int[]> bc(new int[b.size()]); 
                     blaze::iterative::ConjugateGradientTag tag;
+                    b  = blaze::iterative::solve(A,b,tag);
+                    return arg_type{std::move(b)};
+                }},
+                {"iterative_solver_BiCGSTAB",
+                // Iterative BiCGSTAB solver
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled 
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::BiCGSTABTag tag;
                     b  = blaze::iterative::solve(A,b,tag);
                     return arg_type{std::move(b)};
                 }}
