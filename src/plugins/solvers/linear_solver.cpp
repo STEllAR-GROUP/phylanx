@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Shahrzad Shirzad
+//               2018 Patrick Diehl
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -23,6 +24,11 @@
 #include <vector>
 
 #include <blaze/Math.h>
+
+#ifdef PHYLANX_HAS_BLAZEITERATIVE
+#include <BlazeIterative.hpp>
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -110,7 +116,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage1d_type b{args[1].vector()};
                     blaze::posv(A, b, 'U');
                     return arg_type{std::move(b)};
-                }}};
+                }},
+            {"iterative_solver_conjugate_gradient",
+                // Iterative conjugate gradient solver
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled 
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    //const std::unique_ptr<int[]> bc(new int[b.size()]); 
+                    blaze::iterative::ConjugateGradientTag tag;
+                    b  = blaze::iterative::solve(A,b,tag);
+                    return arg_type{std::move(b)};
+                }}
+            };
         return lin_solver[name];
     }
 
