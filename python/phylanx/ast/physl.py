@@ -633,7 +633,7 @@ class PhySL:
         """
 
         if type(node.value) == ast.Tuple:
-            return ["make_list", self.apply_rule(node.value)]
+            return ["list", self.apply_rule(node.value)]
         else:
             return self.apply_rule(node.value)
 
