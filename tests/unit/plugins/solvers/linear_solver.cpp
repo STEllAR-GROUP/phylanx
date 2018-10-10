@@ -262,7 +262,7 @@ int main()
     test_linear_solver_l("linear_solver_cholesky");
     test_linear_solver_u("linear_solver_cholesky");
 
-    test_linear_solver_u("iterative_solver_cg");
+    test_linear_solver("iterative_solver_conjugate_gradient");
     
     return hpx::util::report_errors();
 }

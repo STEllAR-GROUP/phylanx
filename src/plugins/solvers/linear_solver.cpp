@@ -80,6 +80,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "Cholesky (LLH) decomposition. If uplo = 'L', solve "
         "`a` as a lower triangular matrix, otherwise as an upper "
         "triangular matrix."
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_conjugate_gradient",                         
+         "a, b,uplo\n"                                                            
+         "Args:\n"                                                                
+         "\n"                                                                     
+         "    a (matrix) : a matrix\n"                                            
+         "    b (vector) : a vector\n"                                            
+         "\n"                                                                     
+         "Returns:\n"                                                             
+         "\n"                                                                     
+         "A matrix `x` such that `a x = b`, solved using the "                    
+         "conjugate gradient solver. If uplo = 'L', solve  " 
         )};
 
 #undef PHYLANX_LIN_MATCH_DATA
