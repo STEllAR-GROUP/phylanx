@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2018 Shahrzad Shirzad
-//
+//               2018 Patrick Diehl   
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -262,5 +262,7 @@ int main()
     test_linear_solver_l("linear_solver_cholesky");
     test_linear_solver_u("linear_solver_cholesky");
 
+    test_linear_solver_u("iterative_solver_cg");
+    
     return hpx::util::report_errors();
 }
