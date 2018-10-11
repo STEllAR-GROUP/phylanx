@@ -68,7 +68,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///             (default: <code>list("normal", 0.0, 1.0)</code>).\n
         ///
         /// \note       Possible values for \a parameters\n
-        ///     list("uniform", min, max): Produces integer values evenly
+        ///     list("uniform_int", min, max): Produces integer values evenly
+        ///             distributed across a range ([min, max): range of
+        ///             generated values)\n
+        ///     list("uniform", min, max): Produces floating point values evenly
         ///             distributed across a range ([min, max): range of
         ///             generated values)\n
         ///     list("bernoulli", p):      Produces random boolean values,

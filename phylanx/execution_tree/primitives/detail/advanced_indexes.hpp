@@ -20,14 +20,16 @@
 namespace phylanx { namespace execution_tree { namespace detail
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::int64_t check_index(std::int64_t index, std::size_t size,
-        std::string const& name, std::string const& codename)
+    HPX_FORCEINLINE std::int64_t
+    check_index(std::int64_t index, std::size_t size, std::string const& name,
+        std::string const& codename)
     {
         if (index < 0)
         {
             index += size;
         }
 
+#if defined(PHYLANX_DEBUG)
         if (index < 0 || index >= std::int64_t(size))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -35,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace detail
                 util::generate_error_message(
                     "index out of range", name, codename));
         }
-
+#endif
         return index;
     }
 

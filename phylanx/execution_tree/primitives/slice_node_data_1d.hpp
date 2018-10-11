@@ -92,8 +92,9 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename)
     {
+        std::size_t size = data.size();
         return f.scalar(data,
-            data[detail::check_index(indices[0], data.size(), name, codename)]);
+            data[detail::check_index(indices.scalar(), size, name, codename)]);
     }
 
     template <typename T, typename Data, typename F>
@@ -103,13 +104,16 @@ namespace phylanx { namespace execution_tree
     {
         std::size_t size = data.size();
         std::size_t index_size = indices.size();
+
+        auto index_list = indices.vector();
         for (std::size_t i = 0; i != index_size; ++i)
         {
-            indices[i] = detail::check_index(indices[i], size, name, codename);
+            index_list[i] =
+                detail::check_index(index_list[i], size, name, codename);
         }
 
-        detail::index_based indexf(indices);
-        return f.vector(data, data, indexf);
+        auto sv = blaze::elements(data, index_list.data(), index_list.size());
+        return f.vector(data, std::move(sv));
     }
 
     template <typename T, typename Data, typename F>
@@ -119,12 +123,14 @@ namespace phylanx { namespace execution_tree
     {
         std::size_t size = data.size();
         std::size_t index_size = indices.size();
-        for (std::size_t i = 0; i != index_size; ++i)
-        {
-            indices[i] = detail::check_index(indices[i], size, name, codename);
-        }
 
         auto index_list = indices.vector();
+        for (std::size_t i = 0; i != index_size; ++i)
+        {
+            index_list[i] =
+                detail::check_index(index_list[i], size, name, codename);
+        }
+
         auto sv = blaze::elements(data, index_list.data(), index_list.size());
         return f.vector(data, std::move(sv));
     }
@@ -135,11 +141,6 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& codename)
     {
         std::size_t size = data.size();
-        std::size_t index_size = indices.size();
-        for (std::size_t i = 0; i != index_size; ++i)
-        {
-            indices[i] = detail::check_index(indices[i], size, name, codename);
-        }
 
         // general case, pick arbitrary elements from matrix
         auto index_matrix = indices.matrix();
@@ -151,6 +152,14 @@ namespace phylanx { namespace execution_tree
         for (std::size_t row = 0; row != index_rows; ++row)
         {
             auto index_row = blaze::row(index_matrix, row);
+            std::size_t index_size = index_row.size();
+
+            for (std::size_t i = 0; i != index_size; ++i)
+            {
+                index_row[i] =
+                    detail::check_index(index_row[i], size, name, codename);
+            }
+
             blaze::row(result, row) = blaze::trans(
                 blaze::elements(data, index_row.data(), index_row.size()));
         }
@@ -163,6 +172,9 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename)
     {
+        // make sure all indices are non-negative
+        std::size_t size = data.size();
+
         switch (indices.index())
         {
         case 0:         // 0d index
@@ -199,7 +211,7 @@ namespace phylanx { namespace execution_tree
         if (indices.size() == 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::slice_boolean1d2d",
+                "phylanx::execution_tree::slice_boolean1d0d",
                 util::generate_error_message(
                     "arrays used as indices must be non-empty", name,
                     codename));
@@ -388,7 +400,7 @@ namespace phylanx { namespace execution_tree
                         detail::slice_assign_vector<T>{rhs}, name, codename);
                 }
 
-                return slice1d<T>(data.vector_non_ref(), indices,
+                return slice1d<T>(std::move(data.vector_non_ref()), indices,
                     detail::slice_assign_vector<T>{rhs}, name, codename);
             }
 

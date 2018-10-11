@@ -19,28 +19,10 @@ namespace phylanx { namespace execution_tree { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     struct always_true
     {
-        std::size_t operator()(std::size_t index) const
+        HPX_FORCEINLINE std::size_t operator()(std::size_t index) const
         {
             return index;
         }
-    };
-
-    struct index_based
-    {
-        index_based(ir::node_data<std::int64_t>& indices)
-          : indices_(indices)
-        {}
-
-        std::size_t operator()(std::size_t index) const
-        {
-            if (index < indices_.size())
-            {
-                return indices_[index];
-            }
-            return std::size_t(-1);
-        }
-
-        ir::node_data<std::int64_t>& indices_;
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -60,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace detail
 
         template <typename Data, typename View, typename F = always_true>
         ir::node_data<T> vector(
-            Data const& data, View&& view, F const& f = F{}) const
+            Data const&, View&& view, F const& f = F{}) const
         {
             std::size_t size = view.size();
             blaze::DynamicVector<T> result(size);
