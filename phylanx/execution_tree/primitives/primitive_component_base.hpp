@@ -17,12 +17,13 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-#include <map>
 
 namespace phylanx { namespace execution_tree
 {
@@ -145,9 +146,56 @@ namespace phylanx { namespace execution_tree
             primitive_arguments_type&&, std::string const&,
             std::string const&);
 
-    using match_pattern_type = hpx::util::tuple<std::string,
-        std::vector<std::string>, factory_function_type,
-        primitive_factory_function_type, std::string >;
+    struct match_pattern_type
+    {
+        using match_pattern_data = hpx::util::tuple<std::string,
+            std::vector<std::string>, factory_function_type,
+            primitive_factory_function_type, std::string>;
+
+        match_pattern_type(match_pattern_data && data)
+          : primitive_type_(std::move(hpx::util::get<0>(data)))
+          , patterns_(std::move(hpx::util::get<1>(data)))
+          , create_primitive_(hpx::util::get<2>(data))
+          , create_instance_(hpx::util::get<3>(data))
+          , help_string_(std::move(hpx::util::get<4>(data)))
+          , supports_dtype_(false)
+        {}
+
+        match_pattern_type(char const* primitive_type,
+                std::vector<std::string> && patterns,
+                factory_function_type create_primitive,
+                primitive_factory_function_type create_instance,
+                std::string && help_string,
+                bool supports_dtype = false)
+          : primitive_type_(primitive_type)
+          , patterns_(std::move(patterns))
+          , create_primitive_(create_primitive)
+          , create_instance_(create_instance)
+          , help_string_(std::move(help_string))
+          , supports_dtype_(supports_dtype)
+        {}
+
+        match_pattern_type(char const* primitive_type,
+                std::vector<std::string> && patterns,
+                factory_function_type create_primitive,
+                primitive_factory_function_type create_instance,
+                std::string const& help_string,
+                bool supports_dtype = false)
+          : primitive_type_(primitive_type)
+          , patterns_(std::move(patterns))
+          , create_primitive_(create_primitive)
+          , create_instance_(create_instance)
+          , help_string_(help_string)
+          , supports_dtype_(supports_dtype)
+        {}
+
+        std::string primitive_type_;
+        std::vector<std::string> patterns_;
+        factory_function_type create_primitive_;
+        primitive_factory_function_type create_instance_;
+        std::string help_string_;
+        bool supports_dtype_;
+    };
 
     using pattern_list =
         std::vector<hpx::util::tuple<std::string, match_pattern_type>>;
@@ -156,9 +204,9 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT void register_pattern(
         std::string const&, match_pattern_type const& pattern);
 
-    PHYLANX_EXPORT void show_patterns();
+    PHYLANX_EXPORT void show_patterns(std::ostream& ostrm = std::cout);
     PHYLANX_EXPORT std::map<std::string,std::vector<std::string>> list_patterns();
-    PHYLANX_EXPORT std::string find_help(const std::string& s);
+    PHYLANX_EXPORT std::string find_help(std::string const& s);
 
     ///////////////////////////////////////////////////////////////////////////
     PHYLANX_EXPORT primitive create_primitive_component(

@@ -32,7 +32,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const cumsum::match_data =
     {
-        hpx::util::make_tuple("cumsum",
+        match_pattern_type{
+            "cumsum",
             std::vector<std::string>{
                 "cumsum(_1)", "cumsum(_1, _2)"
             },
@@ -47,13 +48,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             Returns:
 
-            Return the cumulative sum of the elements along a given axis.)")
+            Return the cumulative sum of the elements along a given axis.)",
+            true
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     cumsum::cumsum(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -273,7 +277,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& ops)
             ->  primitive_argument_type
             {
-                switch (extract_common_type(ops[0]))
+                node_data_type t = this_->dtype_;
+                if (t == node_data_type_unknown)
+                {
+                    t = extract_common_type(ops[0]);
+                }
+
+                switch (t)
                 {
                 case node_data_type_bool:
                     return this_->cumsum_helper<std::uint8_t>(std::move(ops));

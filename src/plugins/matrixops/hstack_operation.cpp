@@ -30,17 +30,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const hstack_operation::match_data =
     {
-        hpx::util::make_tuple("hstack",
+        match_pattern_type{
+            "hstack",
             std::vector<std::string>{"hstack(__1)"},
-            &create_hstack_operation, &create_primitive<hstack_operation>,
-            "args\n"
-            "Args:\n"
-            "\n"
-            "    *args (list of number, optional) : a list of numbers\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A list of numbeers.")
+            &create_hstack_operation, &create_primitive<hstack_operation>, R"(
+            args
+            Args:
+
+                *args (list of numbers, optional) : a list of numbers
+
+            Returns:
+
+            A list of numbers.)",
+            true
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -48,6 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -114,7 +118,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type hstack_operation::hstack0d1d(
         primitive_arguments_type&& args) const
     {
-        switch (extract_common_type(args))
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(args);
+        }
+
+        switch (t)
         {
         case node_data_type_bool:
             return hstack0d1d_helper<std::uint8_t>(std::move(args));

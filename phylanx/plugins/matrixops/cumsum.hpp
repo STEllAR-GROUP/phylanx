@@ -9,6 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ast/node.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -62,6 +63,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type cumsum2d_rows(
             primitive_arguments_type&& ops) const;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_cumsum(hpx::id_type const& locality,

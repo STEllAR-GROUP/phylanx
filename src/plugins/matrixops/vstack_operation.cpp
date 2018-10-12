@@ -30,18 +30,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const vstack_operation::match_data =
     {
-        hpx::util::make_tuple("vstack",
+        match_pattern_type{
+            "vstack",
             std::vector<std::string>{"vstack(__1)"},
-            &create_vstack_operation, &create_primitive<vstack_operation>,
-            "args\n"
-            "Args:\n"
-            "\n"
-            "    *args (list of number) : a list of numbers\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "An N by 1 matrix of numbeers, where N is the quantity "
-            "of numbers in `args`.")
+            &create_vstack_operation, &create_primitive<vstack_operation>, R"(
+            args
+            Args:
+
+                *args (list of numbers, optional) : a list of numbers
+
+            Returns:
+
+            An N by 1 matrix of numbers, where N is the quantity of numbers
+            in `args`)",
+            true
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -49,6 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -85,7 +89,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type vstack_operation::vstack0d(
         primitive_arguments_type&& args) const
     {
-        switch (extract_common_type(args))
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(args);
+        }
+
+        switch (t)
         {
         case node_data_type_bool:
             return vstack0d_helper<std::uint8_t>(std::move(args));

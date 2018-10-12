@@ -29,38 +29,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const nonzero_where::match_data =
     {
-        hpx::util::make_tuple("nonzero",
+        match_pattern_type{"nonzero",
             std::vector<std::string>{"nonzero(_1)"},
-            &create_nonzero, &create_primitive<nonzero_where>,
-            "v\n"
-            "Args:\n"
-            "\n"
-            "    v (vector) : a vector\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A new version of the vector with the zeros removed."),
+            &create_nonzero, &create_primitive<nonzero_where>, R"(
+            arg
+            Args:
 
-        hpx::util::make_tuple("where",
+                arg (vector or matrix) : a vector or matrix
+
+            Returns:
+
+            A 1D array containing the indices of the elements of `arg` that are
+            non-zero.
+            )"
+        },
+
+        match_pattern_type{"where",
             std::vector<std::string>{"where(_1)", "where(_1, _2, _3)"},
-            &create_where, &create_primitive<nonzero_where>,
-            "cond, var, val\n"
-            "Args:\n"
-            "\n"
-            "    cond (boolean expression): a condition to apply\n"
-            "    var (matrix, optional): a matrix (used if cond is true)\n"
-            "    val (float, optional): a value to supply when cond is false\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A new matrix in which cells in matrix `var` that have values "
-            "that do not match `cond` are replaced with value `val`."
-            "\n"
-            "Note:\n"
-            "\n"
-            "Either both of or none of `var` and `val` can be provided. If none "
-            "are provided, then `where` is equivalent to `nonzero`."
-            )
+            &create_where, &create_primitive<nonzero_where>, R"(
+            cond, var, val
+            Args:
+
+                cond (boolean expression): a condition to apply
+                var (matrix, optional): a matrix (used if cond is true)
+                val (matrix, optional): a value to supply when cond is false
+
+            Returns:
+
+            A new matrix in which cells in matrix `var` that have values
+            that do not match `cond` are replaced with value `val`.
+
+            Note:
+
+            Either both of or none of `var` and `val` can be provided. If none
+            are provided, then `where` is equivalent to `cond.nonzero()`.
+            )"
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////

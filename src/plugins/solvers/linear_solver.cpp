@@ -35,9 +35,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
 ///////////////////////////////////////////////////////////////////////////////
 #define PHYLANX_LIN_MATCH_DATA(name,doc)                                       \
-    hpx::util::make_tuple(name,                                                \
+    match_pattern_type{name,                                                   \
         std::vector<std::string>{name "(_1, _2)", name "(_1, _2, _3)"},        \
-        &create_linear_solver, &create_primitive<linear_solver>,doc)     \
+        &create_linear_solver, &create_primitive<linear_solver>, doc}          \
     /**/
 
     std::vector<match_pattern_type> const linear_solver::match_data = {

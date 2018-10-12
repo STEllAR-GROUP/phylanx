@@ -27,7 +27,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const arange::match_data =
     {
-        hpx::util::make_tuple("arange",
+        match_pattern_type{
+            "arange",
             std::vector<std::string>{"arange(_1, _2, _3)"},
             &create_arange, &create_primitive<arange>, R"(
             start, stop, step
@@ -50,13 +51,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             Array of evenly spaced values. For floating point arguments, the
             length of the result is `ceil((stop - start)/step)`. Because of
             floating point overflow, this rule may result in the last element
-            of out being greater than stop.)")
+            of out being greater than stop.)",
+            true
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     arange::arange(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
+      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -136,7 +140,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type&& args)
             -> primitive_argument_type
             {
-                switch (extract_common_type(args))
+                node_data_type t = this_->dtype_;
+                if (t == node_data_type_unknown)
+                {
+                    t = extract_common_type(args);
+                }
+
+                switch (t)
                 {
                 case node_data_type_bool:
                     return this_->arange_helper<std::uint8_t>(std::move(args));
