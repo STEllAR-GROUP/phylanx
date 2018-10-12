@@ -213,7 +213,7 @@ namespace phylanx { namespace execution_tree
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::slice_boolean1d0d",
                 util::generate_error_message(
-                    "arrays used as indices must be non-empty", name,
+                    "boolean arrays used as indices must be non-empty", name,
                     codename));
         }
 
@@ -286,7 +286,7 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::slice1d_boolean",
             util::generate_error_message(
-                "unexpected type for indices used for advanced integer array "
+                "unexpected type for indices used for advanced boolean array "
                 "indexing", name, codename));
     }
 
