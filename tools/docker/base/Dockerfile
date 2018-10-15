@@ -53,6 +53,15 @@ RUN apt-get update &&                                                           
     cmake --build build -- install                                                  \
     )                                                                            && \
     rm -rf /blaze-src                                                            && \
+
+    git clone --depth=1 https://github.com/STEllAR-GROUP/BlazeIterative.git         \
+        /blazeiterative-src                                                      && \
+    (                                                                               \
+    cd /blazeiterative-src                                                       && \
+    cmake -H. -Bbuild -Dblaze_DIR=/blaze/share/blaze/cmake                       && \
+    cmake --build build -- install                                                  \
+    )                                                                            && \
+    rm -rf /blaze-iterative-src                                                  && \
                                                                                     \
     git clone --depth=1 https://github.com/BlueBrain/HighFive.git /highfive-src  && \
     (                                                                               \
