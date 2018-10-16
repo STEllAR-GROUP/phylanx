@@ -138,7 +138,7 @@ namespace phylanx { namespace execution_tree
                         std::move(value), name, codename),
                     name, codename)};
             }
-        } 
+        }
         if (is_dictionary_operand(data))
         {
             auto&& f = phylanx::execution_tree::extract_dictionary_value(data);
