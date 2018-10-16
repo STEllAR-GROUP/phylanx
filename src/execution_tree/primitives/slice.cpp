@@ -141,7 +141,7 @@ namespace phylanx { namespace execution_tree
         } 
         if (is_dictionary_operand(data))
         {
-            auto f = phylanx::execution_tree::extract_dictionary_value(data);
+            auto&& f = phylanx::execution_tree::extract_dictionary_value(data);
             f[indices] = value;
             return primitive_argument_type{f};
         }
