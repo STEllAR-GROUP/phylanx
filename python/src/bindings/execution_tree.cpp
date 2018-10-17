@@ -74,6 +74,29 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
     execution_tree.def("eval", phylanx::bindings::expression_evaluator,
         "compile and evaluate a numerical expression in PhySL");
 
+    execution_tree.def("eval",
+        [](std::string const& xexpr, compiler_state& c, pybind11::args args)
+        ->  phylanx::execution_tree::primitive_argument_type
+        {
+            return phylanx::bindings::expression_evaluator(
+                "<unknown>", xexpr, c, args);
+        },
+        "compile and evaluate a numerical expression in PhySL");
+
+    // expose functionalities needed for accessing performance data
+    execution_tree.def("enable_measurements",
+        phylanx::bindings::enable_measurements,
+        "enable all performance counters for the current execution tree");
+
+    execution_tree.def("retrieve_counter_data",
+        phylanx::bindings::retrieve_counter_data,
+        "retrieve performance data from all active performance counters");
+
+    execution_tree.def("retrieve_tree_topology",
+        phylanx::bindings::retrieve_tree_topology,
+        "retrieve the tree topology for the given execution tree");
+
+    // phylanx.execution_tree.primitive
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
         "primitive", "type representing an arbitrary execution tree")
         .def(pybind11::init<>())
