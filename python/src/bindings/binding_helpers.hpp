@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include <exception>
+#include <list>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -176,7 +177,16 @@ namespace phylanx { namespace bindings
     std::string retrieve_counter_data(compiler_state& c);
 
     // retrieve tree topology in DOT format for given expression
-    std::string retrieve_tree_topology(std::string const& file_name,
+    std::list<std::string> retrieve_tree_topology(
+        std::string const& file_name, std::string const& xexpr_str,
+        compiler_state& c);
+
+    // retrieve tree topology in DOT format for given expression
+    std::string retrieve_dot_tree_topology(std::string const& file_name,
+        std::string const& xexpr_str, compiler_state& c);
+
+    // retrieve tree topology in Newick format for given expression
+    std::string retrieve_newick_tree_topology(std::string const& file_name,
         std::string const& xexpr_str, compiler_state& c);
 }}
 

@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <list>
 #include <set>
 #include <sstream>
 #include <string>
@@ -77,7 +78,7 @@ namespace phylanx { namespace bindings
                     {
                         phylanx::execution_tree::primitive_argument_type value =
                             item.cast<
-                            phylanx::execution_tree::primitive_argument_type>();
+                                phylanx::execution_tree::primitive_argument_type>();
                         keep_alive.emplace_back(std::move(value));
                         fargs.emplace_back(extract_ref_value(keep_alive.back()));
                     }
@@ -154,7 +155,7 @@ namespace phylanx { namespace bindings
     }
 
     // retrieve tree topology in DOT format for given expression
-    std::string retrieve_tree_topology(std::string const& file_name,
+    std::string retrieve_dot_tree_topology(std::string const& file_name,
         std::string const& xexpr_str, compiler_state& c)
     {
         pybind11::gil_scoped_release release;       // release GIL
@@ -186,6 +187,83 @@ namespace phylanx { namespace bindings
                     std::set<std::string>{}, std::move(resolve_children));
 
                 return phylanx::execution_tree::dot_tree(file_name, topology);
+            });
+    }
+
+    std::string retrieve_newick_tree_topology(std::string const& file_name,
+        std::string const& xexpr_str, compiler_state& c)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::string
+            {
+                auto const& code = phylanx::execution_tree::compile(
+                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+
+                if (c.enable_measurements)
+                {
+                    c.primitive_instances.push_back(
+                        phylanx::util::enable_measurements(
+                            code.entry_point().name_));
+                }
+
+                std::set<std::string> resolve_children;
+                for (auto const& f : code.entry_points())
+                {
+                    resolve_children.insert(f.name_);
+                }
+                for (auto const& f : code.scratchpad())
+                {
+                    resolve_children.insert(f.name_);
+                }
+
+                auto topology = code.get_expression_topology(
+                    std::set<std::string>{}, std::move(resolve_children));
+
+                return phylanx::execution_tree::newick_tree(file_name, topology);
+            });
+    }
+
+    std::list<std::string> retrieve_tree_topology(
+        std::string const& file_name, std::string const& xexpr_str,
+        compiler_state& c)
+    {
+        pybind11::gil_scoped_release release;       // release GIL
+
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::list<std::string>
+            {
+                auto const& code = phylanx::execution_tree::compile(
+                    file_name, xexpr_str, c.eval_snippets, c.eval_env);
+
+                if (c.enable_measurements)
+                {
+                    c.primitive_instances.push_back(
+                        phylanx::util::enable_measurements(
+                            code.entry_point().name_));
+                }
+
+                std::set<std::string> resolve_children;
+                for (auto const& f : code.entry_points())
+                {
+                    resolve_children.insert(f.name_);
+                }
+                for (auto const& f : code.scratchpad())
+                {
+                    resolve_children.insert(f.name_);
+                }
+
+                auto topology = code.get_expression_topology(
+                    std::set<std::string>{}, std::move(resolve_children));
+
+                std::list<std::string> result;
+                result.push_back(
+                    phylanx::execution_tree::newick_tree(file_name, topology));
+                result.push_back(
+                    phylanx::execution_tree::dot_tree(file_name, topology));
+
+                return result;
             });
     }
 }}

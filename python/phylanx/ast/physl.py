@@ -103,8 +103,8 @@ class PhySL:
                 self.numpy_aliases.add(key)
         self.file_name = self.fglobals['__file__']
 
-        self.performance = not (kwargs.get('performance') is None)
-        self.__perfdata__ = (None, None)
+        self.performance = kwargs.get('performance')
+        self.__perfdata__ = (None, None, None)
 
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
@@ -165,7 +165,7 @@ class PhySL:
     def call(self, args):
         func_name = self.wrapped_function.__name__
 
-        self.__perfdata__ = (None, None)
+        self.__perfdata__ = (None, None, None)
         self.performance_primitives = None
 
         if self.performance:
@@ -177,11 +177,12 @@ class PhySL:
             self.file_name, func_name, PhySL.compiler_state, *args)
 
         if self.performance:
+            treedata = phylanx.execution_tree.retrieve_tree_topology(
+                self.file_name, func_name, PhySL.compiler_state)
             self.__perfdata__ = (
                 phylanx.execution_tree.retrieve_counter_data(
                     PhySL.compiler_state),
-                phylanx.execution_tree.retrieve_tree_topology(
-                    self.file_name, func_name, PhySL.compiler_state)
+                treedata[0], treedata[1]
             )
 
         return result

@@ -11,6 +11,7 @@
 #include <bindings/type_casters.hpp>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <string>
 #include <vector>
@@ -92,9 +93,18 @@ void phylanx::bindings::bind_execution_tree(pybind11::module m)
         phylanx::bindings::retrieve_counter_data,
         "retrieve performance data from all active performance counters");
 
+    execution_tree.def("retrieve_dot_tree_topology",
+        phylanx::bindings::retrieve_dot_tree_topology,
+        "retrieve the DOT tree topology for the given execution tree");
+
+    execution_tree.def("retrieve_newick_tree_topology",
+        phylanx::bindings::retrieve_newick_tree_topology,
+        "retrieve the Newick tree topology for the given execution tree");
+
     execution_tree.def("retrieve_tree_topology",
         phylanx::bindings::retrieve_tree_topology,
-        "retrieve the tree topology for the given execution tree");
+        "retrieve the Newick and DOT tree topologies for the given "
+        "execution tree");
 
     // phylanx.execution_tree.primitive
     pybind11::class_<phylanx::execution_tree::primitive>(execution_tree,
