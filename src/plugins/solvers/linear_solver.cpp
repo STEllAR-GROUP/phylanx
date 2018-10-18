@@ -104,7 +104,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "\n"                                                                     
          "A matrix `x` such that `a x = b`, solved using the "                    
          "BiCGSTAB solver." 
-        )
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_LU",                         
+         "a, b\n"                                                            
+         "Args:\n"                                                                
+         "\n"                                                                     
+         "    a (matrix) : a matrix\n"                                            
+         "    b (vector) : a vector\n"                                            
+         "\n"                                                                     
+         "Returns:\n"                                                             
+         "\n"                                                                     
+         "A matrix `x` such that `a x = b`, solved using the "                    
+         "BiCGSTAB solver utilizing the LU decomposition as "
+         "its preconditioner." 
+        ),
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_RQ",                         
+         "a, b\n"                                                            
+         "Args:\n"                                                                
+         "\n"                                                                     
+         "    a (matrix) : a matrix\n"                                            
+         "    b (vector) : a vector\n"                                            
+         "\n"                                                                     
+         "Returns:\n"                                                             
+         "\n"                                                                     
+         "A matrix `x` such that `a x = b`, solved using the "                    
+         "BiCGSTAB solver utilizing the RQ decomposition as "
+         "its preconditioner." 
+         ),
+         PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_QR",                         
+         "a, b\n"                                                            
+         "Args:\n"                                                                
+         "\n"                                                                     
+         "    a (matrix) : a matrix\n"                                            
+         "    b (vector) : a vector\n"                                            
+         "\n"                                                                     
+         "Returns:\n"                                                             
+         "\n"                                                                     
+         "A matrix `x` such that `a x = b`, solved using the "                    
+         "BiCGSTAB solver utilizing the QR decomposition as "
+         "its preconditioner." 
+         ),
+         PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_Cholesky",                         
+         "a, b\n"                                                            
+         "Args:\n"                                                                
+         "\n"                                                                     
+         "    a (matrix) : a matrix\n"                                            
+         "    b (vector) : a vector\n"                                            
+         "\n"                                                                     
+         "Returns:\n"                                                             
+         "\n"                                                                     
+         "A matrix `x` such that `a x = b`, solved using the "                    
+         "BiCGSTAB solver utilizing the Cholesky decomposition as "
+         "its preconditioner."
+         ) 
         };
 
 #undef PHYLANX_LIN_MATCH_DATA
@@ -162,6 +214,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::BiCGSTABTag tag;
                     b  = blaze::iterative::solve(A,b,tag);
+                    return arg_type{std::move(b)};
+                }},
+                {"iterative_solver_BiCGSTAB_LU",
+                // Iterative BiCGSTAB solver
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled 
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::BiCGSTABTag tag;
+                    b  = blaze::iterative::solve(A,b,tag,"LU");
+                    return arg_type{std::move(b)};
+                }},
+                {"iterative_solver_BiCGSTAB_RQ",
+                // Iterative BiCGSTAB solver
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled 
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::BiCGSTABTag tag;
+                    b  = blaze::iterative::solve(A,b,tag,"RQ");
+                    return arg_type{std::move(b)};
+                }},
+                {"iterative_solver_BiCGSTAB_QR",
+                // Iterative BiCGSTAB solver
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled 
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::BiCGSTABTag tag;
+                    b  = blaze::iterative::solve(A,b,tag,"QR");
+                    return arg_type{std::move(b)};
+                }},
+                {"iterative_solver_BiCGSTAB_Cholesky",
+                // Iterative BiCGSTAB solver
+                // Note: Relies on BlazeIterative library and
+                // need to be explicitly enabled 
+                [](args_type&& args) -> arg_type {
+                    storage2d_type A{blaze::trans(args[0].matrix())};
+                    storage1d_type b{args[1].vector()};
+                    blaze::iterative::BiCGSTABTag tag;
+                    b  = blaze::iterative::solve(A,b,tag,"Cholesky");
                     return arg_type{std::move(b)};
                 }}
             };
