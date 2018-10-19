@@ -337,25 +337,31 @@ namespace phylanx { namespace execution_tree
                     f, name, codename);
             }
         }
-        else
+        else if (valid(indices))
         {
-            if (is_integer_operand_strict(indices))
+            if (is_integer_operand(indices))
             {
                 // advanced indexing (integer array indexing)
-                return slice1d_integer<T>(
-                    std::forward<Data>(data),
-                    extract_integer_value_strict(indices, name, codename), f,
+                return slice1d_integer<T>(std::forward<Data>(data),
+                    extract_integer_value(indices, name, codename), f,
                     name, codename);
             }
 
             if (is_boolean_operand_strict(indices))
             {
                 // advanced indexing (Boolean array indexing)
-                return slice1d_boolean<T>(
-                    std::forward<Data>(data),
+                return slice1d_boolean<T>(std::forward<Data>(data),
                     extract_boolean_value_strict(indices, name, codename), f,
                     name, codename);
             }
+        }
+        else
+        {
+            std::size_t size = data.size();
+            return slice1d_basic<T>(std::forward<Data>(data),
+                util::slicing_helpers::extract_slicing(
+                    indices, size, name, codename),
+                f, name, codename);
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,

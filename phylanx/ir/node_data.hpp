@@ -14,12 +14,10 @@
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <memory>
 #include <type_traits>
 #include <utility>
 #include <vector>

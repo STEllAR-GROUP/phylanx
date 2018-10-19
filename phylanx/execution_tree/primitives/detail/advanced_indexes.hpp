@@ -130,9 +130,9 @@ namespace phylanx { namespace execution_tree { namespace detail
                 return arg_size;
             }
         }
-        else
+        else if (valid(indices))
         {
-            if (is_integer_operand_strict(indices))
+            if (is_integer_operand(indices))
             {
                 // advanced indexing (integer array indexing)
                 return extract_numeric_value_dimensions(
@@ -144,6 +144,10 @@ namespace phylanx { namespace execution_tree { namespace detail
                 // advanced indexing (boolean array indexing)
                 return arg_size;
             }
+        }
+        else
+        {
+            return arg_size;
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,

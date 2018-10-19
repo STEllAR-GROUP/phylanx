@@ -315,7 +315,63 @@ namespace phylanx { namespace execution_tree
                     "row-step can not be zero", name, codename));
         }
 
+        HPX_ASSERT(false);      // not implemented yet
         return {};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_basic_column(Data&& m,
+        ir::slicing_indices const& columns, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        std::size_t numcols = m.columns();
+        if (columns.start() >= std::int64_t(numcols) ||
+            columns.span() > std::int64_t(numcols))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice2d_basic_column",
+                util::generate_error_message(
+                    "cannot extract the requested matrix elements",
+                    name, codename));
+        }
+
+        std::int64_t col_start = columns.start();
+        std::int64_t col_stop = columns.stop();
+        std::int64_t col_step = columns.step();
+
+        if (col_step == 0 && !columns.single_value())
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::slice2d_basic_basic",
+                util::generate_error_message(
+                    "column-step can not be zero", name, codename));
+        }
+
+        if (columns.single_value())
+        {
+            // handle single column case
+            auto col = blaze::column(m, col_start);
+            return f.vector(m, std::move(col));
+        }
+
+        // extract various sub-matrices of the given matrix
+        if (col_step == 1)
+        {
+            HPX_ASSERT(col_stop > col_start);
+
+            auto sm = blaze::submatrix(
+                m, 0ll, col_start, m.rows(), col_stop - col_start);
+
+            return f.matrix(m, std::move(sm));
+        }
+
+        // general case, pick arbitrary columns from matrix
+        auto indices = util::slicing_helpers::create_list_slice(
+            col_start, col_stop, col_step);
+
+        auto result = blaze::columns(m, indices.data(), indices.size());
+        return f.matrix(m, std::move(result));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -437,6 +493,7 @@ namespace phylanx { namespace execution_tree
         return f.matrix(m, std::move(result));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_boolean_basic(Data&& m,
         ir::node_data<std::uint8_t> && rows,
@@ -466,7 +523,18 @@ namespace phylanx { namespace execution_tree
                     "column-step can not be zero", name, codename));
         }
 
+        HPX_ASSERT(false);      // not implemented yet
         return {};
+    }
+
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_boolean_column(Data&& m,
+        ir::node_data<std::uint8_t> && columns, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        return slice2d_integer_column<T>(std::forward<Data>(m),
+            util::slicing_helpers::create_list_slice(columns),
+            f, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -541,6 +609,7 @@ namespace phylanx { namespace execution_tree
                 detail::check_index(rows[i], numrows, name, codename);
         }
 
+        HPX_ASSERT(false);      // not implemented yet
         return {};
     }
 
@@ -558,6 +627,7 @@ namespace phylanx { namespace execution_tree
                 detail::check_index(columns[i], numcols, name, codename);
         }
 
+        HPX_ASSERT(false);      // not implemented yet
         return {};
     }
 
@@ -567,6 +637,7 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::uint8_t> && columns, F const& f,
         std::string const& name, std::string const& codename)
     {
+        HPX_ASSERT(false);      // not implemented yet
         return {};
     }
 
@@ -581,15 +652,16 @@ namespace phylanx { namespace execution_tree
             switch (detail::is_advanced_slicing_index(columns))
             {
             case detail::slicing_index_basic:
-                return slice2d_basic_basic<T>(std::forward<Data>(m),
-                    rows,
-                    util::slicing_helpers::extract_slicing(
-                        columns, m.columns(), name, codename),
-                    f, name, codename);
+                {
+                    std::size_t num_cols = m.columns();
+                    return slice2d_basic_basic<T>(std::forward<Data>(m), rows,
+                        util::slicing_helpers::extract_slicing(
+                            columns, num_cols, name, codename),
+                        f, name, codename);
+                }
 
             case detail::slicing_index_advanced_integer:
-                return slice2d_basic_integer<T>(
-                    std::forward<Data>(m), rows,
+                return slice2d_basic_integer<T>(std::forward<Data>(m), rows,
                     extract_integer_value_strict(
                         detail::extract_advanced_integer_index(
                             columns, name, codename),
@@ -597,8 +669,7 @@ namespace phylanx { namespace execution_tree
                     f, name, codename);
 
             case detail::slicing_index_advanced_boolean:
-                return slice2d_basic_boolean<T>(
-                    std::forward<Data>(m), rows,
+                return slice2d_basic_boolean<T>(std::forward<Data>(m), rows,
                     extract_boolean_value_strict(
                         detail::extract_advanced_boolean_index(
                             columns, name, codename),
@@ -606,10 +677,10 @@ namespace phylanx { namespace execution_tree
                     f, name, codename);
             }
         }
-        else if (is_integer_operand_strict(columns))
+        else if (is_integer_operand(columns))
         {
             return slice2d_basic_integer<T>(std::forward<Data>(m),
-                rows, extract_integer_value_strict(columns, name, codename), f,
+                rows, extract_integer_value(columns, name, codename), f,
                 name, codename);
         }
         else if (is_boolean_operand_strict(columns))
@@ -620,7 +691,11 @@ namespace phylanx { namespace execution_tree
         }
         else if (!valid(columns))
         {
-//             return slice1d<T>(blaze::elements(input_matrix, )
+            std::size_t num_cols = m.columns();
+            return slice2d_basic_basic<T>(std::forward<Data>(m), rows,
+                util::slicing_helpers::extract_slicing(
+                    columns, num_cols, name, codename),
+                f, name, codename);
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -639,14 +714,16 @@ namespace phylanx { namespace execution_tree
             switch (detail::is_advanced_slicing_index(rows))
             {
             case detail::slicing_index_basic:
-                return slice2d_basic_basic<T>(std::forward<Data>(m),
-                    util::slicing_helpers::extract_slicing(
-                        rows, m.rows(), name, codename),
-                    columns, f, name, codename);
+                {
+                    std::size_t num_rows = m.rows();
+                    return slice2d_basic_basic<T>(std::forward<Data>(m),
+                        util::slicing_helpers::extract_slicing(
+                            rows, num_rows, name, codename),
+                        columns, f, name, codename);
+                }
 
             case detail::slicing_index_advanced_integer:
-                return slice2d_integer_basic<T>(
-                    std::forward<Data>(m),
+                return slice2d_integer_basic<T>(std::forward<Data>(m),
                     extract_integer_value_strict(
                         detail::extract_advanced_integer_index(
                             rows, name, codename),
@@ -654,8 +731,7 @@ namespace phylanx { namespace execution_tree
                     columns, f, name, codename);
 
             case detail::slicing_index_advanced_boolean:
-                return slice2d_boolean_basic<T>(
-                    std::forward<Data>(m),
+                return slice2d_boolean_basic<T>(std::forward<Data>(m),
                     extract_boolean_value_strict(
                         detail::extract_advanced_boolean_index(
                             rows, name, codename),
@@ -663,10 +739,10 @@ namespace phylanx { namespace execution_tree
                     columns, f, name, codename);
             }
         }
-        else if (is_integer_operand_strict(rows))
+        else if (is_integer_operand(rows))
         {
             return slice2d_integer_basic<T>(std::forward<Data>(m),
-                extract_integer_value_strict(rows, name, codename), columns, f,
+                extract_integer_value(rows, name, codename), columns, f,
                 name, codename);
         }
         else if (is_boolean_operand_strict(rows))
@@ -677,6 +753,8 @@ namespace phylanx { namespace execution_tree
         }
         else if (!valid(rows))
         {
+            return slice2d_basic_column<T>(
+                std::forward<Data>(m), columns, f, name, codename);
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -686,6 +764,24 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        template <typename T>
+        blaze::CustomMatrix<T, true, true>
+        create_ref(blaze::DynamicMatrix<T>& m)
+        {
+            return blaze::CustomMatrix<T, true, true>(
+                m.data(), m.rows(), m.columns(), m.spacing());
+        }
+
+        template <typename T>
+        blaze::CustomMatrix<T, true, true> create_ref(
+            blaze::CustomMatrix<T, true, true> const& m)
+        {
+            return m;
+        }
+    }
+
     // This is the main entry point for 2d slicing
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d(Data&& m,
@@ -698,10 +794,13 @@ namespace phylanx { namespace execution_tree
             switch (detail::is_advanced_slicing_index(rows))
             {
             case detail::slicing_index_basic:
-                return slice2d<T>(std::forward<Data>(m),
-                    util::slicing_helpers::extract_slicing(
-                        rows, m.rows(), name, codename),
-                    columns, f, name, codename);
+                {
+                    std::size_t num_rows = m.rows();
+                    return slice2d<T>(std::forward<Data>(m),
+                        util::slicing_helpers::extract_slicing(
+                            rows, num_rows, name, codename),
+                        columns, f, name, codename);
+                }
 
             case detail::slicing_index_advanced_integer:
                 return slice2d<T>(std::forward<Data>(m),
@@ -725,14 +824,16 @@ namespace phylanx { namespace execution_tree
             switch (detail::is_advanced_slicing_index(columns))
             {
             case detail::slicing_index_basic:
-                return slice2d<T>(std::forward<Data>(m), rows,
-                    util::slicing_helpers::extract_slicing(
-                        columns, m.rows(), name, codename),
-                    f, name, codename);
+                {
+                    std::size_t num_cols = m.columns();
+                    return slice2d<T>(std::forward<Data>(m), rows,
+                        util::slicing_helpers::extract_slicing(
+                            columns, num_cols, name, codename),
+                        f, name, codename);
+                }
 
             case detail::slicing_index_advanced_integer:
-                return slice2d<T>(std::forward<Data>(m),
-                    rows,
+                return slice2d<T>(std::forward<Data>(m), rows,
                     extract_integer_value_strict(
                         detail::extract_advanced_integer_index(
                             columns, name, codename),
@@ -740,8 +841,7 @@ namespace phylanx { namespace execution_tree
                     f, name, codename);
 
             case detail::slicing_index_advanced_boolean:
-                return slice2d<T>(std::forward<Data>(m),
-                    rows,
+                return slice2d<T>(std::forward<Data>(m), rows,
                     extract_boolean_value_strict(
                         detail::extract_advanced_boolean_index(
                             columns, name, codename),
@@ -749,37 +849,38 @@ namespace phylanx { namespace execution_tree
                     f, name, codename);
             }
         }
-        else if (is_integer_operand_strict(rows))
+        else if (is_integer_operand(rows))
         {
-            if (is_integer_operand_strict(columns))
+            if (is_integer_operand(columns))
             {
                 return slice2d_integer_integer<T>(
                     std::forward<Data>(m),
-                    extract_integer_value_strict(rows, name, codename),
-                    extract_integer_value_strict(columns, name, codename), f,
+                    extract_integer_value(rows, name, codename),
+                    extract_integer_value(columns, name, codename), f,
                     name, codename);
             }
             if (is_boolean_operand_strict(columns))
             {
                 return slice2d_integer_boolean<T>(
                     std::forward<Data>(m),
-                    extract_integer_value_strict(rows, name, codename),
+                    extract_integer_value(rows, name, codename),
                     extract_boolean_value_strict(columns, name, codename), f,
                     name, codename);
             }
             if (!valid(columns))
             {
+                HPX_ASSERT(false);      // not implemented yet
 //                 return slice1d<T>(
 //                     input_matrix.matrix(), rows, f, name, codename);
             }
         }
         else if (is_boolean_operand_strict(rows))
         {
-            if (is_integer_operand_strict(columns))
+            if (is_integer_operand(columns))
             {
                 return slice2d<T>(std::forward<Data>(m),
                     extract_boolean_value_strict(rows, name, codename),
-                    extract_integer_value_strict(columns, name, codename),
+                    extract_integer_value(columns, name, codename),
                     f, name, codename);
             }
             if (is_boolean_operand_strict(columns))
@@ -791,15 +892,27 @@ namespace phylanx { namespace execution_tree
             }
             if (!valid(columns))
             {
+                HPX_ASSERT(false);      // not implemented yet
             }
         }
         else if (!valid(rows))
         {
-            if (is_integer_operand_strict(columns))
+            if (is_integer_operand(columns))
             {
                 return slice2d_integer_column<T>(std::forward<Data>(m),
-                    extract_integer_value_strict(columns, name, codename),
+                    extract_integer_value(columns, name, codename),
                     f, name, codename);
+            }
+            if (is_boolean_operand_strict(columns))
+            {
+                return slice2d_boolean_column<T>(std::forward<Data>(m),
+                    extract_boolean_value_strict(columns, name, codename),
+                    f, name, codename);
+            }
+            if (!valid(columns))
+            {
+                // just return the full matrix
+                return f.matrix(m, detail::create_ref(m));
             }
         }
 

@@ -68,20 +68,20 @@ namespace phylanx { namespace execution_tree
         if (is_integer_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
-                extract_integer_value_strict(data, name, codename), rows,
-                columns, name, codename)};
+                extract_integer_value_strict(data, name, codename),
+                rows, columns, name, codename)};
         }
         if (is_numeric_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
-                extract_numeric_value_strict(data, name, codename), rows,
-                columns, name, codename)};
+                extract_numeric_value_strict(data, name, codename),
+                rows, columns, name, codename)};
         }
         if (is_boolean_operand_strict(data))
         {
             return primitive_argument_type{slice_extract(
-                extract_boolean_value_strict(data, name, codename), rows,
-                columns, name, codename)};
+                extract_boolean_value_strict(data, name, codename),
+                rows, columns, name, codename)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
