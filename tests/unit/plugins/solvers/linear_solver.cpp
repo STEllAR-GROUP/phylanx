@@ -264,6 +264,10 @@ int main()
 #ifdef PHYLANX_HAS_BLAZEITERATIVE 
     test_linear_solver("iterative_solver_conjugate_gradient");
     test_linear_solver("iterative_solver_BiCGSTAB");
+    test_linear_solver("iterative_solver_BiCGSTAB_LU");
+    test_linear_solver("iterative_solver_BiCGSTAB_RQ");
+    test_linear_solver("iterative_solver_BiCGSTAB_QR");
+    test_linear_solver("iterative_solver_BiCGSTAB_Cholesky");
 #endif    
     return hpx::util::report_errors();
 }
