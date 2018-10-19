@@ -1,4 +1,4 @@
-# Inspired by SUNIL RAY 
+# Inspired by SUNIL RAY
 # https://www.analyticsvidhya.com/blog/2017/05/neural-network-from-scratch-in-python-and-r/
 # Copyright (c) 2018 Weile Wei
 #
@@ -46,11 +46,11 @@ def main_phylanx(X, y, wh, bh, wout, bout, lr, num_iter):
         d_hidden_layer = Error_at_hidden_layer * slope_hidden_layer
         wout_local += (np.dot(np.transpose(hidden_layer_activations), d_output)) * lr
         bout_local += np.sum(d_output, 0, True) * lr
-        #bout += np.sum(d_output, axis=0,keepdims=True) *lr # pure python version
+        # bout += np.sum(d_output, axis=0,keepdims=True) *lr # pure python version
         wh_local += (np.dot(np.transpose(X), d_hidden_layer)) * lr
         bh_local += np.sum(d_hidden_layer, 0, True) * lr
-        #bh += np.sum(d_hidden_layer, axis=0,keepdims=True) *lr # pure python version
-    #print(output, '\n')
+        # bh += np.sum(d_hidden_layer, axis=0,keepdims=True) *lr # pure python version
+    # print(output, '\n')
 
 
 # Variable initialization
