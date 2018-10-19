@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/ir/node_data.hpp>
 
+#include <cstddef>
 #include <utility>
 
 #include <blaze/Math.h>

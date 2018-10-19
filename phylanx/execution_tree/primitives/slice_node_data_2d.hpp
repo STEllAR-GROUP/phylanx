@@ -18,6 +18,8 @@
 #include <hpx/throw_exception.hpp>
 #include <hpx/util/assert.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
 
@@ -407,6 +409,34 @@ namespace phylanx { namespace execution_tree
         return f.matrix(m, std::move(result));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T, typename Data, typename F>
+    ir::node_data<T> slice2d_integer_column(Data&& m,
+        ir::node_data<std::int64_t> && columns, F const& f,
+        std::string const& name, std::string const& codename)
+    {
+        std::size_t numcols = m.columns();
+        std::size_t index_size = columns.size();
+
+        if (index_size == 1)
+        {
+            // handle single column case
+            auto col = blaze::column(
+                m, detail::check_index(columns[0], numcols, name, codename));
+            return f.vector(m, std::move(col));
+        }
+
+        for (std::size_t i = 0; i != index_size; ++i)
+        {
+            columns[i] =
+                detail::check_index(columns[i], numcols, name, codename);
+        }
+
+        // general case, pick arbitrary columns from matrix
+        auto result = blaze::columns(m, columns.vector().data(), columns.size());
+        return f.matrix(m, std::move(result));
+    }
+
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice2d_boolean_basic(Data&& m,
         ir::node_data<std::uint8_t> && rows,
@@ -765,6 +795,12 @@ namespace phylanx { namespace execution_tree
         }
         else if (!valid(rows))
         {
+            if (is_integer_operand_strict(columns))
+            {
+                return slice2d_integer_column<T>(std::forward<Data>(m),
+                    extract_integer_value_strict(columns, name, codename),
+                    f, name, codename);
+            }
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,

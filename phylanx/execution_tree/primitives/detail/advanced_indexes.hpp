@@ -12,6 +12,8 @@
 #include <phylanx/ir/ranges.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
 
