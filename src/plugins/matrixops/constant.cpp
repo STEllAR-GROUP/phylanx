@@ -29,14 +29,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
-        std::size_t extract_num_dimensions(
-            ir::range const& shape)
+        std::size_t extract_num_dimensions(ir::range const& shape)
         {
             return shape.size();
         }
 
-        std::array<std::size_t, 2> extract_dimensions(
-            ir::range const& shape)
+        std::array<std::size_t, 2> extract_dimensions(ir::range const& shape)
         {
             std::array<std::size_t, 2> result = {0, 0};
             result[0] = extract_scalar_integer_value(*shape.begin());
@@ -52,45 +50,153 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const constant::match_data =
     {
-        hpx::util::make_tuple("constant",
+        match_pattern_type{"constant",
             std::vector<std::string>{"constant(_1, _2)", "constant(_1)"},
-            &create_constant, &create_primitive<constant>,
-            "arg1, arg2\n"
-            "Args:\n"
-            "\n"
-            "    arg1 (float): a constant value\n"
-            "    arg2 (int, optional): the number of values\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "An array of size arg2 with each element equal to arg1.\n")
+            &create_constant, &create_primitive<constant>, R"(
+            arg1, arg2
+            Args:
+
+                arg1 (float): a constant value
+                arg2 (int, optional): the number of values
+
+            Returns:
+
+            An array of size arg2 with each element equal to arg1.)",
+            true
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     constant::constant(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , dtype_(extract_dtype(name_))
     {}
 
-    primitive_argument_type constant::constant0d(operand_type && op) const
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    ir::node_data<T> constant::constant0d_helper(
+        primitive_argument_type&& op) const
     {
-        return primitive_argument_type{std::move(op)};       // no-op
+        return ir::node_data<T>{
+            extract_scalar_data<T>(std::move(op), name_, codename_)};
+    }
+
+    primitive_argument_type constant::constant0d(
+        primitive_argument_type&& op) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(op);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return constant0d_helper<std::uint8_t>(std::move(op));
+
+        case node_data_type_int64:
+            return constant0d_helper<std::int64_t>(std::move(op));
+
+        case node_data_type_double:
+            return constant0d_helper<double>(std::move(op));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "constant::constant0d",
+            util::generate_error_message(
+                "the contsnat primitive requires for all arguments to "
+                    "be numeric data types",
+                name_, codename_));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    ir::node_data<T> constant::constant1d_helper(
+        primitive_argument_type&& op, std::size_t dim) const
+    {
+        return ir::node_data<T>{blaze::DynamicVector<T>(
+            dim, extract_scalar_data<T>(std::move(op), name_, codename_))};
     }
 
     primitive_argument_type constant::constant1d(
-        operand_type&& op, std::size_t dim) const
+        primitive_argument_type&& op, std::size_t dim) const
     {
-        using vector_type = blaze::DynamicVector<double>;
-        return primitive_argument_type{
-            operand_type{vector_type(dim, op[0])}};
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(op);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return constant1d_helper<std::uint8_t>(std::move(op), dim);
+
+        case node_data_type_int64:
+            return constant1d_helper<std::int64_t>(std::move(op), dim);
+
+        case node_data_type_double:
+            return constant1d_helper<double>(std::move(op), dim);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "constant::constant1d",
+            util::generate_error_message(
+                "the contsnat primitive requires for all arguments to "
+                    "be numeric data types",
+                name_, codename_));
     }
 
-    primitive_argument_type constant::constant2d(operand_type&& op,
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    ir::node_data<T> constant::constant2d_helper(primitive_argument_type&& op,
         operand_type::dimensions_type const& dim) const
     {
-        using matrix_type = blaze::DynamicMatrix<double>;
-        return primitive_argument_type{
-            operand_type{matrix_type{dim[0], dim[1], op[0]}}};
+        return ir::node_data<T>{blaze::DynamicMatrix<T>(dim[0], dim[1],
+            extract_scalar_data<T>(std::move(op), name_, codename_))};
+    }
+
+    primitive_argument_type constant::constant2d(primitive_argument_type&& op,
+        operand_type::dimensions_type const& dim) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(op);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return constant2d_helper<std::uint8_t>(std::move(op), dim);
+
+        case node_data_type_int64:
+            return constant2d_helper<std::int64_t>(std::move(op), dim);
+
+        case node_data_type_double:
+            return constant2d_helper<double>(std::move(op), dim);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "constant::constant2d",
+            util::generate_error_message(
+                "the contsnat primitive requires for all arguments to "
+                    "be numeric data types",
+                name_, codename_));
     }
 
     hpx::future<primitive_argument_type> constant::eval(
@@ -122,10 +228,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 2)
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](operand_type&& op0, ir::range&& op1)
+                [this_ = std::move(this_)](
+                        primitive_argument_type&& op0, ir::range&& op1)
                 ->  primitive_argument_type
                 {
-                    if (op0.num_dimensions() != 0)
+                    if (extract_numeric_value_dimension(op0) != 0)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
@@ -134,6 +241,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "scalar value",
                                 this_->name_, this_->codename_));
                     }
+
                     if (op1.empty())
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -143,6 +251,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "for the shape not to be empty",
                                 this_->name_, this_->codename_));
                     }
+
                     if (op1.size() > 2)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -175,13 +284,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 this_->name_, this_->codename_));
                     }
                 }),
-                numeric_operand(operands[0], args, name_, codename_),
+                value_operand(operands[0], args, name_, codename_),
                 list_operand(operands[1], args, name_, codename_));
         }
 
         // if constant() was invoked with one argument, we simply
         // provide the argument as the desired result
-        return literal_operand(operands[0], args, name_, codename_);
+        return value_operand(operands[0], args, name_, codename_);
     }
 
     hpx::future<primitive_argument_type> constant::eval(
