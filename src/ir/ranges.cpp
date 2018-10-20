@@ -366,7 +366,7 @@ namespace phylanx { namespace ir
             {
                 auto const& first = util::get<2>(data_).first;
                 auto const& second = util::get<2>(data_).second;
-                return std::distance(second, first);
+                return std::distance(first, second);
             }
 
         default:

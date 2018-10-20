@@ -52,8 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (argnum_ >= params.size())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "phylanx::execution_tree::primitives::"
-                    "access_argument::eval",
+                "phylanx::execution_tree::primitives::access_argument::eval",
                 generate_error_message(hpx::util::format(
                     "argument count out of bounds, expected at least "
                         PHYLANX_FORMAT_SPEC(1) " argument(s) while only "
@@ -62,6 +61,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         return hpx::make_ready_future(
-            extract_ref_value(params[argnum_], name_, codename_));
+            extract_value(params[argnum_], name_, codename_));
     }
 }}}
