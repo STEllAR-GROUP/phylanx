@@ -263,11 +263,11 @@ int main()
     test_linear_solver_u("linear_solver_cholesky");
 #ifdef PHYLANX_HAS_BLAZEITERATIVE 
     test_linear_solver("iterative_solver_conjugate_gradient");
-    test_linear_solver("iterative_solver_BiCGSTAB");
-    test_linear_solver("iterative_solver_BiCGSTAB_LU");
-    test_linear_solver("iterative_solver_BiCGSTAB_RQ");
-    test_linear_solver("iterative_solver_BiCGSTAB_QR");
-    test_linear_solver("iterative_solver_BiCGSTAB_Cholesky");
+    test_linear_solver("iterative_solver_bicgstab");
+    test_linear_solver("iterative_solver_bicgstab_lu");
+    test_linear_solver("iterative_solver_bicgstab_rq");
+    test_linear_solver("iterative_solver_bicgstab_qr");
+    test_linear_solver("iterative_solver_bicgstab_cholesky");
 #endif    
     return hpx::util::report_errors();
 }

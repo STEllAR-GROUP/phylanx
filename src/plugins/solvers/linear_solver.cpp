@@ -93,7 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "A matrix `x` such that `a x = b`, solved using the "
          "conjugate gradient"
         ),
-        PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB",
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab",
          "a, b\n"
          "Args:\n"
          "\n"
@@ -105,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "A matrix `x` such that `a x = b`, solved using the "
          "BiCGSTAB solver."
         ),
-        PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_LU",
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_lu",
          "a, b\n"
          "Args:\n"
          "\n"
@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "BiCGSTAB solver utilizing the LU decomposition as "
          "its preconditioner."
         ),
-        PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_RQ",
+        PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_rq",
          "a, b\n"
          "Args:\n"
          "\n"
@@ -131,7 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "BiCGSTAB solver utilizing the RQ decomposition as "
          "its preconditioner."
          ),
-         PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_QR",
+         PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_qr",
          "a, b\n"
          "Args:\n"
          "\n"
@@ -144,7 +144,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "BiCGSTAB solver utilizing the QR decomposition as "
          "its preconditioner."
          ),
-         PHYLANX_LIN_MATCH_DATA("iterative_solver_BiCGSTAB_Cholesky",
+         PHYLANX_LIN_MATCH_DATA("iterative_solver_bicgstab_cholesky",
          "a, b\n"
          "Args:\n"
          "\n"
@@ -205,7 +205,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     b  = blaze::iterative::solve(A,b,tag);
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_BiCGSTAB",
+                {"iterative_solver_bicgstab",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -216,7 +216,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     b  = blaze::iterative::solve(A,b,tag);
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_BiCGSTAB_LU",
+                {"iterative_solver_bicgstab_lu",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -227,7 +227,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     b  = blaze::iterative::solve(A,b,tag,"LU");
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_BiCGSTAB_RQ",
+                {"iterative_solver_bicgstab_rq",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -238,7 +238,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     b  = blaze::iterative::solve(A,b,tag,"RQ");
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_BiCGSTAB_QR",
+                {"iterative_solver_bicgstab_qr",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -249,7 +249,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     b  = blaze::iterative::solve(A,b,tag,"QR");
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_BiCGSTAB_Cholesky",
+                {"iterative_solver_bicgstab_cholesky",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
