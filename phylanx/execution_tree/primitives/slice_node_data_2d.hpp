@@ -677,16 +677,16 @@ namespace phylanx { namespace execution_tree
                     f, name, codename);
             }
         }
-        else if (is_integer_operand(columns))
-        {
-            return slice2d_basic_integer<T>(std::forward<Data>(m),
-                rows, extract_integer_value(columns, name, codename), f,
-                name, codename);
-        }
         else if (is_boolean_operand_strict(columns))
         {
             return slice2d_basic_boolean<T>(std::forward<Data>(m),
                 rows, extract_boolean_value_strict(columns, name, codename), f,
+                name, codename);
+        }
+        else if (is_integer_operand(columns))
+        {
+            return slice2d_basic_integer<T>(std::forward<Data>(m),
+                rows, extract_integer_value(columns, name, codename), f,
                 name, codename);
         }
         else if (!valid(columns))
@@ -739,17 +739,17 @@ namespace phylanx { namespace execution_tree
                     columns, f, name, codename);
             }
         }
-        else if (is_integer_operand(rows))
-        {
-            return slice2d_integer_basic<T>(std::forward<Data>(m),
-                extract_integer_value(rows, name, codename), columns, f,
-                name, codename);
-        }
         else if (is_boolean_operand_strict(rows))
         {
             return slice2d_boolean_basic<T>(std::forward<Data>(m),
                 extract_boolean_value_strict(rows, name, codename),
                 columns, f, name, codename);
+        }
+        else if (is_integer_operand(rows))
+        {
+            return slice2d_integer_basic<T>(std::forward<Data>(m),
+                extract_integer_value(rows, name, codename), columns, f,
+                name, codename);
         }
         else if (!valid(rows))
         {
@@ -849,22 +849,43 @@ namespace phylanx { namespace execution_tree
                     f, name, codename);
             }
         }
-        else if (is_integer_operand(rows))
+        else if (is_boolean_operand_strict(rows))
         {
+            if (is_boolean_operand_strict(columns))
+            {
+                return slice2d<T>(std::forward<Data>(m),
+                    extract_boolean_value_strict(rows, name, codename),
+                    extract_boolean_value_strict(columns, name, codename),
+                    f, name, codename);
+            }
             if (is_integer_operand(columns))
             {
-                return slice2d_integer_integer<T>(
-                    std::forward<Data>(m),
-                    extract_integer_value(rows, name, codename),
-                    extract_integer_value(columns, name, codename), f,
-                    name, codename);
+                return slice2d<T>(std::forward<Data>(m),
+                    extract_boolean_value_strict(rows, name, codename),
+                    extract_integer_value(columns, name, codename),
+                    f, name, codename);
             }
+            if (!valid(columns))
+            {
+                HPX_ASSERT(false);      // not implemented yet
+            }
+        }
+        else if (is_integer_operand(rows))
+        {
             if (is_boolean_operand_strict(columns))
             {
                 return slice2d_integer_boolean<T>(
                     std::forward<Data>(m),
                     extract_integer_value(rows, name, codename),
                     extract_boolean_value_strict(columns, name, codename), f,
+                    name, codename);
+            }
+            if (is_integer_operand(columns))
+            {
+                return slice2d_integer_integer<T>(
+                    std::forward<Data>(m),
+                    extract_integer_value(rows, name, codename),
+                    extract_integer_value(columns, name, codename), f,
                     name, codename);
             }
             if (!valid(columns))
@@ -874,39 +895,18 @@ namespace phylanx { namespace execution_tree
 //                     input_matrix.matrix(), rows, f, name, codename);
             }
         }
-        else if (is_boolean_operand_strict(rows))
-        {
-            if (is_integer_operand(columns))
-            {
-                return slice2d<T>(std::forward<Data>(m),
-                    extract_boolean_value_strict(rows, name, codename),
-                    extract_integer_value(columns, name, codename),
-                    f, name, codename);
-            }
-            if (is_boolean_operand_strict(columns))
-            {
-                return slice2d<T>(std::forward<Data>(m),
-                    extract_boolean_value_strict(rows, name, codename),
-                    extract_boolean_value_strict(columns, name, codename),
-                    f, name, codename);
-            }
-            if (!valid(columns))
-            {
-                HPX_ASSERT(false);      // not implemented yet
-            }
-        }
         else if (!valid(rows))
         {
-            if (is_integer_operand(columns))
-            {
-                return slice2d_integer_column<T>(std::forward<Data>(m),
-                    extract_integer_value(columns, name, codename),
-                    f, name, codename);
-            }
             if (is_boolean_operand_strict(columns))
             {
                 return slice2d_boolean_column<T>(std::forward<Data>(m),
                     extract_boolean_value_strict(columns, name, codename),
+                    f, name, codename);
+            }
+            if (is_integer_operand(columns))
+            {
+                return slice2d_integer_column<T>(std::forward<Data>(m),
+                    extract_integer_value(columns, name, codename),
                     f, name, codename);
             }
             if (!valid(columns))

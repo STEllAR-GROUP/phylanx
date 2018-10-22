@@ -339,19 +339,19 @@ namespace phylanx { namespace execution_tree
         }
         else if (valid(indices))
         {
-            if (is_integer_operand(indices))
-            {
-                // advanced indexing (integer array indexing)
-                return slice1d_integer<T>(std::forward<Data>(data),
-                    extract_integer_value(indices, name, codename), f,
-                    name, codename);
-            }
-
             if (is_boolean_operand_strict(indices))
             {
                 // advanced indexing (Boolean array indexing)
                 return slice1d_boolean<T>(std::forward<Data>(data),
                     extract_boolean_value_strict(indices, name, codename), f,
+                    name, codename);
+            }
+
+            if (is_integer_operand(indices))
+            {
+                // advanced indexing (integer array indexing)
+                return slice1d_integer<T>(std::forward<Data>(data),
+                    extract_integer_value(indices, name, codename), f,
                     name, codename);
             }
         }

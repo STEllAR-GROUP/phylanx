@@ -59,14 +59,14 @@ namespace phylanx { namespace execution_tree { namespace detail
         ir::range const& list = util::get<7>(indices);
         if (list.size() == 1)
         {
-            if (is_integer_operand_strict(*list.begin()))
-            {
-                return slicing_index_advanced_integer;
-            }
-
             if (is_boolean_operand_strict(*list.begin()))
             {
                 return slicing_index_advanced_boolean;
+            }
+
+            if (is_integer_operand_strict(*list.begin()))
+            {
+                return slicing_index_advanced_integer;
             }
         }
         return slicing_index_basic;
@@ -132,17 +132,17 @@ namespace phylanx { namespace execution_tree { namespace detail
         }
         else if (valid(indices))
         {
+            if (is_boolean_operand_strict(indices))
+            {
+                // advanced indexing (boolean array indexing)
+                return arg_size;
+            }
+
             if (is_integer_operand(indices))
             {
                 // advanced indexing (integer array indexing)
                 return extract_numeric_value_dimensions(
                     indices, name, codename)[1];
-            }
-
-            if (is_boolean_operand_strict(indices))
-            {
-                // advanced indexing (boolean array indexing)
-                return arg_size;
             }
         }
         else
