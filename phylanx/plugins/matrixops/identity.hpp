@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -45,7 +46,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args) const override;
 
     private:
-        primitive_argument_type identity_nd(operand_type&& op) const;
+        template <typename T>
+        primitive_argument_type identity_helper(
+            primitive_argument_type&& op) const;
+        primitive_argument_type identity_nd(primitive_argument_type&& op) const;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_identity(hpx::id_type const& locality,
