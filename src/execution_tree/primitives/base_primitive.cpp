@@ -426,8 +426,9 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type extract_value(primitive_argument_type const& val,
-        std::string const& name, std::string const& codename)
+    primitive_argument_type const& extract_value(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
     {
         switch (val.index())
         {
@@ -578,7 +579,7 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    primitive_argument_type extract_value(primitive_argument_type&& val,
+    primitive_argument_type&& extract_value(primitive_argument_type&& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -682,7 +683,7 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    primitive_argument_type extract_ref_value(primitive_argument_type&& val,
+    primitive_argument_type&& extract_ref_value(primitive_argument_type&& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -705,6 +706,45 @@ namespace phylanx { namespace execution_tree
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::extract_value",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a value type "
+                    "(type held: '" + type + "')",
+                name, codename));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // check whether data in argument is a reference
+    bool is_ref_value(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:     // phylanx::ir::node_data<std::uint8_t>
+            return util::get<1>(val).is_ref();
+
+        case 2:     // ir::node_data<std::int64_t>
+            return util::get<2>(val).is_ref();
+
+        case 4:     // phylanx::ir::node_data<double>
+            return util::get<4>(val).is_ref();
+
+        case 7:     // phylanx::ir::range
+            return util::get<7>(val).is_ref();
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // std::string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 8:                     // phylanx::ir::dictionary
+            return false;
+
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::is_ref_value",
             util::generate_error_message(
                 "primitive_argument_type does not hold a value type "
                     "(type held: '" + type + "')",
@@ -1125,7 +1165,7 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    ir::node_data<double> extract_numeric_value_strict(
+    ir::node_data<double>&& extract_numeric_value_strict(
         primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
     {
@@ -1323,8 +1363,9 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    ir::node_data<std::uint8_t> extract_boolean_data(primitive_argument_type&& val,
-        std::string const& name, std::string const& codename)
+    ir::node_data<std::uint8_t>&& extract_boolean_data(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
     {
         switch (val.index())
         {
@@ -1698,25 +1739,12 @@ namespace phylanx { namespace execution_tree
         case 2:     // ir::node_data<std::int64_t>
             return util::get<2>(val).ref();
 
-        case 6:     // std::vector<ast::expression>
-            {
-                auto && exprs = util::get<6>(std::move(val));
-                if (exprs.size() == 1)
-                {
-                    if (ast::detail::is_literal_value(exprs[0]))
-                    {
-                        return to_primitive_int_type(
-                                ast::detail::literal_value(std::move(exprs[0])));
-                    }
-                }
-            }
-            break;
-
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
         case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
         default:
@@ -1725,55 +1753,41 @@ namespace phylanx { namespace execution_tree
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "phylanx::execution_tree::extract_integer_value_strict",
-                            util::generate_error_message(
-                                    "primitive_argument_type does not hold an integer "
-                                    "value type (type held: '" + type + "')",
-                                    name, codename));
+            "phylanx::execution_tree::extract_integer_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold an integer "
+                "value type (type held: '" + type + "')",
+                name, codename));
     }
 
-    ir::node_data<std::int64_t> extract_integer_value_strict(
-            primitive_argument_type&& val, std::string const& name,
-            std::string const& codename)
+    ir::node_data<std::int64_t>&& extract_integer_value_strict(
+        primitive_argument_type&& val, std::string const& name,
+        std::string const& codename)
     {
         switch (val.index())
         {
-            case 2:    // ir::node_data<std::int64_t>
-                return util::get<2>(std::move(val));
+        case 2:    // ir::node_data<std::int64_t>
+            return util::get<2>(std::move(val));
 
-            case 6:    // std::vector<ast::expression>
-            {
-                auto&& exprs = util::get<6>(std::move(val));
-                if (exprs.size() == 1)
-                {
-                    if (ast::detail::is_literal_value(exprs[0]))
-                    {
-                        return to_primitive_int_type(
-                                ast::detail::literal_value(std::move(exprs[0])));
-                    }
-                }
-            }
-                break;
-
-            case 0:HPX_FALLTHROUGH;    // nil
-            case 1:HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
-            case 3:HPX_FALLTHROUGH;    // string
-            case 4:HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-            case 5:HPX_FALLTHROUGH;    // primitive
-            case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
-            case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
-            default:
-                break;
+        case 0:HPX_FALLTHROUGH;    // nil
+        case 1:HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
+        case 3:HPX_FALLTHROUGH;    // string
+        case 4:HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5:HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
+        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
         }
 
         std::string type(detail::get_primitive_argument_type_name(val.index()));
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "phylanx::execution_tree::extract_integer_value_strict",
-                            util::generate_error_message(
-                                    "primitive_argument_type does not hold an integer "
-                                    "value type (type held: '" +
-                                    type + "')",
-                                    name, codename));
+            "phylanx::execution_tree::extract_integer_value_strict",
+            util::generate_error_message(
+                "primitive_argument_type does not hold an integer "
+                "value type (type held: '" + type + "')",
+                name, codename));
     }
 
     bool is_integer_operand_strict(primitive_argument_type const& val)
@@ -1924,7 +1938,7 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    ir::node_data<std::uint8_t> extract_boolean_value_strict(
+    ir::node_data<std::uint8_t>&& extract_boolean_value_strict(
         primitive_argument_type&& val, std::string const& name,
         std::string const& codename)
     {
@@ -2433,33 +2447,13 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::range extract_list_value_strict(
-        primitive_argument_type const& val,
+    ir::range extract_list_value_strict(primitive_argument_type const& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
-        case 6:     // std::vector<ast::expression>
-            {
-                primitive_arguments_type result;
-                result.reserve(util::get<6>(val).size());
-                for (auto const& v : util::get<6>(val))
-                {
-                    if (ast::detail::is_literal_value(v))
-                    {
-                        result.push_back(to_primitive_value_type(
-                            ast::detail::literal_value(v)));
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                return result;
-            }
-
         case 7:     // phylanx::ir:range
-            return util::get<7>(val);
+            return util::get<7>(val).ref();
 
         case 0: HPX_FALLTHROUGH;    // nil
         case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
@@ -2467,6 +2461,7 @@ namespace phylanx { namespace execution_tree
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
         default:
             break;
@@ -2481,31 +2476,11 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    ir::range extract_list_value_strict(
-        primitive_argument_type && val,
+    ir::range&& extract_list_value_strict(primitive_argument_type&& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {
-        case 6:     // std::vector<ast::expression>
-            {
-                primitive_arguments_type result;
-                result.reserve(util::get<6>(val).size());
-                for (auto && v : util::get<6>(std::move(val)))
-                {
-                    if (ast::detail::is_literal_value(v))
-                    {
-                        result.push_back(to_primitive_value_type(
-                            ast::detail::literal_value(v)));
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                return result;
-            }
-
         case 7:     // phylanx::ir::range
             return util::get<7>(std::move(val));
 
@@ -2515,6 +2490,7 @@ namespace phylanx { namespace execution_tree
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
         default:
             break;
@@ -2533,7 +2509,6 @@ namespace phylanx { namespace execution_tree
     {
         switch (val.index())
         {
-        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 7:                     // phylanx::ir::range
             return true;
 
@@ -2543,6 +2518,7 @@ namespace phylanx { namespace execution_tree
         case 3: HPX_FALLTHROUGH;    // string
         case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
         case 5: HPX_FALLTHROUGH;    // primitive
+        case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
         case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
         default:
             break;
@@ -2571,8 +2547,9 @@ namespace phylanx { namespace execution_tree
         return false;
     }
 
-    ir::dictionary extract_dictionary_value(primitive_argument_type const& val,
-        std::string const& name, std::string const& codename)
+    ir::dictionary extract_dictionary_value(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
     {
         switch (val.index())
         {
@@ -2596,12 +2573,11 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_dictionary_value",
             util::generate_error_message(
                 "primitive_argument_type does not hold a dictionary "
-                "value type (type held: '" +
-                    type + "')",
+                "value type (type held: '" + type + "')",
                 name, codename));
     }
 
-    ir::dictionary extract_dictionary_value(primitive_argument_type&& val,
+    ir::dictionary&& extract_dictionary_value(primitive_argument_type&& val,
         std::string const& name, std::string const& codename)
     {
         switch (val.index())
@@ -2626,8 +2602,7 @@ namespace phylanx { namespace execution_tree
             "phylanx::execution_tree::extract_dictionary_value",
             util::generate_error_message(
                 "primitive_argument_type does not hold a dictionary "
-                "value type (type held: '" +
-                    type + "')",
+                "value type (type held: '" + type + "')",
                 name, codename));
     }
 
