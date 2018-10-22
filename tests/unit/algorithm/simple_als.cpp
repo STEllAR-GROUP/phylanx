@@ -33,7 +33,7 @@ char const* const als_test = R"(
     define(result_cpp, als(ratings, regularization, num_factors, iterations,
             alpha, enable_output))
     define(als_physl, ratings, regularization, num_factors, iterations, alpha,
-        enable_output,
+        enable_output, random_input,
             block(
                 define(num_users, shape(ratings, 0)),
                 define(num_items, shape(ratings, 1)),
@@ -46,10 +46,27 @@ char const* const als_test = R"(
                 define(p_u, constant(0.0, make_list(num_items))),
                 define(p_i, constant(0.0, make_list(num_users))),
 
-                set_seed(0),
-                define(X, random(make_list(num_users, num_factors))),
-                define(Y, random(make_list(num_items, num_factors))),
-
+                define(X, [[0.302805, 1.12279, 0.0730414],
+                                   [0.0708592, 1.52007, -1.42233],
+                                   [-0.13309, -0.291394, -1.76165],
+                                   [-0.17307, 1.36688, -0.0876731],
+                                   [-0.358996, 1.12531, -1.3395],
+                                   [1.22061, -0.123463, 0.428373],
+                                   [-0.124051, 1.41438, 0.229887],
+                                   [2.00816, 1.62716, 0.604894],
+                                   [0.230434, 1.59456, -0.96898],
+                                   [-0.0649103, -0.782776, 0.591243]]),
+                define(Y, [[-0.345186, -0.444233, -0.442653],
+                           [-0.881801, -1.32323, -0.540916],
+                           [0.907346, -0.112799, 0.229098],
+                           [0.81527, 0.477525, -1.02618],
+                           [-0.731458, 1.2927, 0.989476]]),
+                if(random_input, block(
+                        set_seed(0),
+                        store(X, random(make_list(num_users, num_factors))),
+                        store(Y, random(make_list(num_items, num_factors)))
+                        )
+                ),
                 define(I_f, identity(num_factors)),
                 define(I_i, identity(num_items)),
                 define(I_u, identity(num_users)),
@@ -107,7 +124,15 @@ char const* const als_test = R"(
             )
         )
     define(result_physl, als_physl(ratings, regularization, num_factors, iterations,
-        alpha, enable_output))
+        alpha, enable_output, 1))
+
+    define(X_diff, sum(absolute(slice(result_physl, 0) - slice(result_cpp, 0))) /
+            (num_factors * shape(ratings, 0)))
+    define(Y_diff, sum(absolute(slice(result_physl, 1) - slice(result_cpp, 1))) /
+            (num_factors * shape(ratings, 1)))
+    define(physl_cpp_match, if((X_diff < 1e-5) && (Y_diff < 1e-5), true, false))
+
+
     define(result_expected,'([[-0.867185, 0.240093, -1.62405],
             [-0.257688, 0.735767, 0.968469], [0.0100641, 0.96555, -0.543022],
             [-0.868835, 0.24055, -1.62714], [0.22776, 0.157143, 1.77557],
@@ -116,13 +141,8 @@ char const* const als_test = R"(
             [[-0.759349, 0.580224, 0.367949], [-0.904612, -0.239779, -0.166589],
             [-0.774534, 0.233851, 0.641465], [1.15658, 0.804942, -0.37349],
             [-1.35317, 0.0204483, 0.654514]]))
-
-    define(X_diff, sum(absolute(slice(result_physl, 0) - slice(result_cpp, 0))) /
-            (num_factors * shape(ratings, 0)))
-    define(Y_diff, sum(absolute(slice(result_physl, 1) - slice(result_cpp, 1))) /
-            (num_factors * shape(ratings, 1)))
-    define(physl_cpp_match, if((X_diff < 1e-10) && (Y_diff < 1e-10), true, false))
-
+    store(result_physl, als_physl(ratings, regularization, num_factors, iterations,
+        alpha, enable_output, 0))
     store(X_diff, sum(absolute(slice(result_physl, 0) - slice(result_expected, 0))) /
             (num_factors * shape(ratings,0)))
     store(Y_diff, sum(absolute(slice(result_physl, 1) - slice(result_expected, 1))) /
