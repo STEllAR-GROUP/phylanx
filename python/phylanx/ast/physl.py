@@ -702,6 +702,14 @@ class PhySL:
         #         return [op, (value, slice_)]
         return [op, (value, slice_)]
 
+    def _Dict(self, node):
+        res = []
+        for i in range(len(node.keys)):
+            key = self.apply_rule(node.keys[i])
+            val = self.apply_rule(node.values[i])
+            res += [["list", (key, val)]]
+        return ["dict", (["list", tuple(res)],)]
+
     def _Tuple(self, node):
         """class Tuple(elts, ctx)"""
 
