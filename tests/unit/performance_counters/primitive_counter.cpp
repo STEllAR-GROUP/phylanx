@@ -108,7 +108,7 @@ int main()
     for (auto const& pattern :
         phylanx::execution_tree::get_all_known_patterns())
     {
-        std::string const& name = hpx::util::get<0>(hpx::util::get<1>(pattern));
+        std::string const& name = hpx::util::get<1>(pattern).primitive_type_;
 
         // Verify the number of primitive instances in lra
         auto entries = hpx::agas::find_symbols(

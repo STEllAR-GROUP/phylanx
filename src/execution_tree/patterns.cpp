@@ -7,6 +7,7 @@
 #include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/execution_tree/compile.hpp>
 
+#include <cstddef>
 #include <iostream>
 #include <map>
 #include <set>
@@ -18,6 +19,11 @@ namespace phylanx { namespace execution_tree
 {
     ///////////////////////////////////////////////////////////////////////////
     std::vector<std::pair<std::string, match_pattern_type>> registered_patterns;
+
+    void show_patterns()
+    {
+        show_patterns(std::cout);
+    }
 
     void show_patterns(std::ostream& ostrm)
     {
