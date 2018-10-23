@@ -101,7 +101,9 @@ class PhySL:
         for key, val in self.fglobals.items():
             if type(val).__name__ == 'module' and val.__name__ == 'numpy':
                 self.numpy_aliases.add(key)
-        self.file_name = self.fglobals['__file__']
+        self.file_name = self.fglobals.get('__file__')
+        if not self.file_name:
+            self.file_name = "<none>"
 
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
