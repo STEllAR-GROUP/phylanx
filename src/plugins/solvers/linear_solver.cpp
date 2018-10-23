@@ -81,6 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "`a` as a lower triangular matrix, otherwise as an upper "
         "triangular matrix."
         ),
+#ifdef PHYLANX_HAS_BLAZEITERATIVE
         PHYLANX_LIN_MATCH_DATA("iterative_solver_conjugate_gradient",
          "a, b\n"
          "Args:\n"
@@ -157,7 +158,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
          "BiCGSTAB solver utilizing the Cholesky decomposition as "
          "its preconditioner."
          )
-        };
+#endif
+    };
 
 #undef PHYLANX_LIN_MATCH_DATA
 
@@ -194,7 +196,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::posv(A, b, 'U');
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_conjugate_gradient",
+#ifdef PHYLANX_HAS_BLAZEITERATIVE
+            {"iterative_solver_conjugate_gradient",
                 // Iterative conjugate gradient solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -202,10 +205,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::ConjugateGradientTag tag;
-                    b  = blaze::iterative::solve(A,b,tag);
+                    b = blaze::iterative::solve(A, b, tag);
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_bicgstab",
+            {"iterative_solver_bicgstab",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -213,10 +216,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::BiCGSTABTag tag;
-                    b  = blaze::iterative::solve(A,b,tag);
+                    b = blaze::iterative::solve(A, b, tag);
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_bicgstab_lu",
+            {"iterative_solver_bicgstab_lu",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -224,10 +227,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::BiCGSTABTag tag;
-                    b  = blaze::iterative::solve(A,b,tag,"LU");
+                    b = blaze::iterative::solve(A, b, tag, "LU");
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_bicgstab_rq",
+            {"iterative_solver_bicgstab_rq",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -235,10 +238,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::BiCGSTABTag tag;
-                    b  = blaze::iterative::solve(A,b,tag,"RQ");
+                    b = blaze::iterative::solve(A, b, tag, "RQ");
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_bicgstab_qr",
+            {"iterative_solver_bicgstab_qr",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -246,10 +249,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::BiCGSTABTag tag;
-                    b  = blaze::iterative::solve(A,b,tag,"QR");
+                    b = blaze::iterative::solve(A, b, tag, "QR");
                     return arg_type{std::move(b)};
                 }},
-                {"iterative_solver_bicgstab_cholesky",
+            {"iterative_solver_bicgstab_cholesky",
                 // Iterative BiCGSTAB solver
                 // Note: Relies on BlazeIterative library and
                 // need to be explicitly enabled
@@ -257,10 +260,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     storage2d_type A{blaze::trans(args[0].matrix())};
                     storage1d_type b{args[1].vector()};
                     blaze::iterative::BiCGSTABTag tag;
-                    b  = blaze::iterative::solve(A,b,tag,"Cholesky");
+                    b = blaze::iterative::solve(A, b, tag, "Cholesky");
                     return arg_type{std::move(b)};
                 }}
-            };
+#endif
+        };
         return lin_solver[name];
     }
 
@@ -291,6 +295,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }}};
         return lin_solver[name];
     }
+
     ///////////////////////////////////////////////////////////////////////////
     namespace detail {
         std::string extract_function_name(std::string const& name)
@@ -304,6 +309,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return name_parts.primitive;
         }
     }
+
     ///////////////////////////////////////////////////////////////////////////
     linear_solver::linear_solver(
         primitive_arguments_type && operands,
@@ -342,8 +348,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
                 util::generate_error_message(
-                    "this linear_solver primitive "
-                    "requires exactly two operands",
+                    "this linear_solver primitive requires exactly two operands",
                     name_, codename_));
         }
         return primitive_argument_type{
@@ -359,8 +364,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
                 util::generate_error_message(
-                    "the linear_solver primitive "
-                    "requires exactly two operands",
+                    "the linear_solver primitive requires exactly two operands",
                     name_, codename_));
         }
 
@@ -370,9 +374,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver_operation::eval",
                 util::generate_error_message(
-                    "the linear_solver primitive requires "
-                    "that the arguments given by the operands "
-                    "array are valid",
+                    "the linear_solver primitive requires that the arguments "
+                    "given by the operands array are valid",
                     name_, codename_));
         }
 
