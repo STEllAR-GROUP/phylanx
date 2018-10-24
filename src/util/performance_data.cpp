@@ -29,6 +29,55 @@
 namespace phylanx { namespace util
 {
     ///////////////////////////////////////////////////////////////////////////
+    std::string enable_measurements(std::string const& primitive_instance)
+    {
+        using phylanx::execution_tree::primitives::primitive_component;
+
+        hpx::id_type id =
+            hpx::agas::resolve_name(hpx::launch::sync, primitive_instance);
+
+        auto p = hpx::get_ptr<primitive_component>(hpx::launch::sync, id);
+
+        p->enable_measurements();
+
+        return primitive_instance;
+    }
+
+    std::vector<std::string> enable_measurements(
+        std::vector<std::string> const& primitive_instances)
+    {
+        if (primitive_instances.empty())
+        {
+            return enable_measurements(
+                hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"));
+        }
+
+        using phylanx::execution_tree::primitives::primitive_component;
+
+        std::vector<hpx::future<std::shared_ptr<primitive_component>>> primitives;
+        primitives.reserve(primitive_instances.size());
+
+        for (auto const& entry : primitive_instances)
+        {
+            hpx::future<hpx::id_type> f = hpx::agas::resolve_name(entry);
+            primitives.emplace_back(f.then(
+                [](hpx::future<hpx::id_type>&& f)
+                ->  hpx::future<std::shared_ptr<primitive_component>>
+                {
+                    return hpx::get_ptr<primitive_component>(f.get());
+                }));
+        }
+
+        hpx::wait_all(primitives);
+
+        for (auto& f : primitives)
+        {
+            f.get()->enable_measurements();
+        }
+
+        return primitive_instances;
+    }
+
     std::vector<std::string> enable_measurements(
         std::map<std::string, hpx::id_type> const& primitive_instances)
     {

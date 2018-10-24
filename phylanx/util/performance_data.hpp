@@ -33,6 +33,36 @@ namespace phylanx { namespace util
     PHYLANX_EXPORT std::vector<std::string> enable_measurements(
         std::map<std::string, hpx::id_type> const& primitive_instances);
 
+    /// Enable the collection of performance data for the given list of
+    /// primitives.
+    ///
+    /// \param primitive_instances The primitives for which performance counter
+    ///                 data is required
+    ///
+    /// \note This has to be called after compilation of a PhySL code block and
+    ///       before its execution.
+    ///
+    /// \returns The list of primitives for which the collection of performance
+    ///          data was enabled
+    ///
+    PHYLANX_EXPORT std::vector<std::string> enable_measurements(
+        std::vector<std::string> const& primitive_instances);
+
+    /// Enable the collection of performance data for the given list of
+    /// primitives.
+    ///
+    /// \param primitive_instance The primitive for which performance counter
+    ///                 data is required
+    ///
+    /// \note This has to be called after compilation of a PhySL code block and
+    ///       before its execution.
+    ///
+    /// \returns The primitive for which the collection of performance
+    ///          data was enabled
+    ///
+    PHYLANX_EXPORT std::string enable_measurements(
+        std::string const& primitive_instance);
+
     /// Enable the collection of performance data for all existing primitives.
     ///
     /// \note This has to be called after compilation of a PhySL code block and

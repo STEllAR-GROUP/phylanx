@@ -22,13 +22,13 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
             :function:f the decorated funtion.
             """
-            valid_kwargs = ['debug', 'target', 'compiler_state']
+            valid_kwargs = ['debug', 'target', 'compiler_state', 'performance']
 
             self.backends_map = {'PhySL': PhySL, 'OpenSCoP': OpenSCoP}
             self.backend = self.get_backend(kwargs.get('target'))
             for key in kwargs.keys():
                 if key not in valid_kwargs:
-                    raise NotImplementedError("Uknown Phylanx argument '%s'." % key)
+                    raise NotImplementedError("Unknown Phylanx argument '%s'." % key)
 
             # Obtain global environment if the object is a function.
             if inspect.isclass(f):
@@ -78,7 +78,12 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             if self.backend == 'OpenSCoP':
                 raise NotImplementedError(
                     "OpenSCoP kernels are not yet callable.")
-            return self.backend.call(args)
+
+            result = self.backend.call(args)
+
+            self.__perfdata__ = self.backend.__perfdata__
+
+            return result
 
         def generate_ast(self):
             return generate_phylanx_ast(self.__src__)

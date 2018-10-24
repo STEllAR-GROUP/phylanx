@@ -105,6 +105,9 @@ class PhySL:
         if not self.file_name:
             self.file_name = "<none>"
 
+        self.performance = kwargs.get('performance')
+        self.__perfdata__ = (None, None, None)
+
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
             for arg in tree.body[0].args.args:
@@ -125,7 +128,8 @@ class PhySL:
         elif PhySL.compiler_state is None:
             PhySL.compiler_state = compiler_state()
 
-        phylanx.execution_tree.compile(self.file_name, self.__src__, PhySL.compiler_state)
+        phylanx.execution_tree.compile(
+            self.file_name, self.__src__, PhySL.compiler_state)
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
@@ -162,8 +166,28 @@ class PhySL:
 
     def call(self, args):
         func_name = self.wrapped_function.__name__
-        return phylanx.execution_tree.eval(func_name, PhySL.compiler_state,
-                                           *args)
+
+        self.__perfdata__ = (None, None, None)
+        self.performance_primitives = None
+
+        if self.performance:
+            self.performance_primitives = \
+                phylanx.execution_tree.enable_measurements(
+                    PhySL.compiler_state, True)
+
+        result = phylanx.execution_tree.eval(
+            self.file_name, func_name, PhySL.compiler_state, *args)
+
+        if self.performance:
+            treedata = phylanx.execution_tree.retrieve_tree_topology(
+                self.file_name, func_name, PhySL.compiler_state)
+            self.__perfdata__ = (
+                phylanx.execution_tree.retrieve_counter_data(
+                    PhySL.compiler_state),
+                treedata[0], treedata[1]
+            )
+
+        return result
 
 # #############################################################################
 # Transducer rules
