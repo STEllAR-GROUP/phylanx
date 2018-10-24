@@ -222,8 +222,6 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& rhs, F&& f, std::size_t size,
         std::string const& name, std::string const& codename)
     {
-        using storage1d_type = typename ir::node_data<T>::storage1d_type;
-
         switch (rhs.num_dimensions())
         {
         case 0:
@@ -346,9 +344,6 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& rhs, F&& f, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename)
     {
-        using storage1d_type = typename ir::node_data<T>::storage1d_type;
-        using storage2d_type = typename ir::node_data<T>::storage2d_type;
-
         switch (rhs.num_dimensions())
         {
         case 0:

@@ -364,12 +364,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 break;                                                         \
                                                                                \
             case 1:                                                            \
-                dist_ = stdtype{static_cast<param>(std::get<2>(params))};      \
+                dist_ = stdtype(static_cast<param>(std::get<2>(params)));      \
                 break;                                                         \
                                                                                \
             case 2:                                                            \
-                dist_ = stdtype{static_cast<param>(std::get<2>(params)),       \
-                    std::get<3>(params)};                                      \
+                dist_ = stdtype(static_cast<param>(std::get<2>(params)),       \
+                    std::get<3>(params));                                      \
                 break;                                                         \
                                                                                \
             default:                                                           \
@@ -406,6 +406,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }                                                                          \
     /**/
 
+        PHYLANX_RANDOM_DISTRIBUTION_2(uniform_int,
+            std::uniform_int_distribution<std::int64_t>, std::int64_t,
+            std::int64_t);
         PHYLANX_RANDOM_DISTRIBUTION_2(
             uniform, std::uniform_real_distribution<double>, double, double);
         PHYLANX_RANDOM_DISTRIBUTION_1(
@@ -445,6 +448,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///////////////////////////////////////////////////////////////////////
         std::map<std::string, create_distribution_type> distributions =
         {
+            { "uniform_int", create_uniform_int },
             { "uniform", create_uniform },
             { "bernoulli", create_bernoulli },
             { "binomial", create_binomial },

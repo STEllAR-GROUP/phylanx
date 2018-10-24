@@ -1422,13 +1422,13 @@ namespace phylanx { namespace execution_tree
         switch (val.index())
         {
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            return ir::node_data<std::int64_t>(util::get<1>(val));
+            return ir::node_data<std::int64_t>(util::get<1>(val).ref());
 
         case 2:     // ir::node_data<std::int64_t>
-            return util::get<2>(val);
+            return util::get<2>(val).ref();
 
         case 4:     // phylanx::ir::node_data<double>
-            return ir::node_data<std::int64_t>(util::get<4>(val));
+            return ir::node_data<std::int64_t>(util::get<4>(val).ref());
 
         case 6:     // std::vector<ast::expression>
             {
@@ -1822,13 +1822,13 @@ namespace phylanx { namespace execution_tree
             return ir::node_data<std::uint8_t>{std::uint8_t(0)};
 
         case 1:    // phylanx::ir::node_data<std::uint8_t>
-            return util::get<1>(val);
+            return util::get<1>(val).ref();
 
         case 2:     // ir::node_data<std::int64_t>
-            return ir::node_data<std::uint8_t>{util::get<2>(val)};
+            return ir::node_data<std::uint8_t>{util::get<2>(val).ref()};
 
         case 4:     // phylanx::ir::node_data<double>
-            return ir::node_data<std::uint8_t>{util::get<4>(val)};
+            return ir::node_data<std::uint8_t>{util::get<4>(val).ref()};
 
         case 6:     // std::vector<ast::expression>
             {
@@ -2329,11 +2329,11 @@ namespace phylanx { namespace execution_tree
 
         case 1:    // phylanx::ir::node_data<std::uint8_t>
             return primitive_arguments_type{
-                primitive_argument_type{util::get<1>(val)}};
+                primitive_argument_type{util::get<1>(val).ref()}};
 
         case 2:     // ir::node_data<std::int64_t>
             return primitive_arguments_type{
-                primitive_argument_type{util::get<2>(val)}};
+                primitive_argument_type{util::get<2>(val).ref()}};
 
         case 3:     // string
             return primitive_arguments_type{
@@ -2341,7 +2341,7 @@ namespace phylanx { namespace execution_tree
 
         case 4:     // phylanx::ir::node_data<double>
             return primitive_arguments_type{
-                primitive_argument_type{util::get<4>(val)}};
+                primitive_argument_type{util::get<4>(val).ref()}};
 
         case 5:     // primitive
             return primitive_arguments_type{

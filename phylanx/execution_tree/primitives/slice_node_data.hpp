@@ -17,13 +17,13 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // extract a slice from the given node_data instance
     template <typename T>
-    PHYLANX_EXPORT ir::node_data<T> slice(ir::node_data<T> const& data,
+    PHYLANX_EXPORT ir::node_data<T> slice_extract(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& indices,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     template <typename T>
-    PHYLANX_EXPORT ir::node_data<T> slice(ir::node_data<T> const& data,
+    PHYLANX_EXPORT ir::node_data<T> slice_extract(ir::node_data<T> const& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         std::string const& name = "",
@@ -32,13 +32,13 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given node_data instance
     template <typename T>
-    PHYLANX_EXPORT ir::node_data<T> slice(ir::node_data<T>&& data,
+    PHYLANX_EXPORT ir::node_data<T> slice_assign(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& indices,
         ir::node_data<T>&& value, std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     template <typename T>
-    PHYLANX_EXPORT ir::node_data<T> slice(ir::node_data<T>&& data,
+    PHYLANX_EXPORT ir::node_data<T> slice_assign(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<T>&& value, std::string const& name = "",

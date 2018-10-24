@@ -8,6 +8,7 @@ set(tests
     522_multidimension_np_arrays
     530_augmented_assignment_indexed_lhs
     596_list_arrays
+    624_advanced_indexing
     array_len_494
     array_shape_486
     array_subscript_403
