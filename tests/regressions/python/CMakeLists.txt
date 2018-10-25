@@ -25,7 +25,7 @@ set(tests
     list_iter_space_429
     list_slice_assign_528
     name_constants_411
-    no_parans_decorator_407
+    no_parens_decorator_407
     np_sum_489
     passing_compiler_state_453
     reassign_512

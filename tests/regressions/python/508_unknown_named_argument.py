@@ -11,7 +11,7 @@ try:
     @Phylanx(Foo=True)
     def func_1():
         pass
-except NotImplementedError as e:
+except NotImplementedError:
     pass
 
 

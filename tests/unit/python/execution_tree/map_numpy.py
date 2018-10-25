@@ -204,5 +204,5 @@ try:
 
     raise Exception("Should fail because abc.shape doesn't exist")
 
-except NotImplementedError as e:
+except NotImplementedError:
     pass
