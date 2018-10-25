@@ -5,9 +5,9 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/matrixops/random_utils.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

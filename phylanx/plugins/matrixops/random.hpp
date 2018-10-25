@@ -9,7 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
-#include <phylanx/plugins/matrixops/random_utils.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/lcos/future.hpp>
 

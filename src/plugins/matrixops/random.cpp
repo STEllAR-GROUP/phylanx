@@ -7,7 +7,7 @@
 #include <phylanx/execution_tree/primitives/generic_function.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
-#include <phylanx/plugins/matrixops/random_utils.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
