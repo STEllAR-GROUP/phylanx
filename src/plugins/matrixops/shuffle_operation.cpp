@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/plugins/matrixops/random_utils.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
@@ -84,8 +85,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    std::mt19937 shuffle_operation::rand_machine{std::random_device{}()};
-
     shuffle_operation::shuffle_operation(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
@@ -96,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type shuffle_operation::shuffle_1d(arg_type && arg) const
     {
         auto x = arg.vector();
-        std::shuffle(x.begin(), x.end(), rand_machine);
+        std::shuffle(x.begin(), x.end(), util::rng_);
 
         return primitive_argument_type{ir::node_data<double>{std::move(x)}};
     }
@@ -106,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto x = arg.matrix();
         auto x_begin = util::matrix_row_iterator<decltype(x)>(x);
         auto x_end = util::matrix_row_iterator<decltype(x)>(x, x.rows());
-        std::shuffle(x_begin, x_end, rand_machine);
+        std::shuffle(x_begin, x_end, util::rng_);
 
         return primitive_argument_type{ir::node_data<double>{std::move(x)}};
     }
