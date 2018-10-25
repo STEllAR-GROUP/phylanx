@@ -10,6 +10,7 @@ set(tests
     596_list_arrays
     624_advanced_indexing
     635_arange_args
+    636_boolean_array
     array_len_494
     array_shape_486
     array_subscript_403
