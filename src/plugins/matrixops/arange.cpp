@@ -1,4 +1,6 @@
 // Copyright (c) 2018 Hartmut Kaiser
+// Copyright (c) 2018 R. Tohid
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -29,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         match_pattern_type{
             "arange",
-            std::vector<std::string>{"arange(_1, _2, _3)"},
+            std::vector<std::string>{"arange(__1)"},
             &create_arange, &create_primitive<arange>, R"(
             start, stop, step
             Args:
@@ -68,13 +70,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type arange::arange_helper(
         primitive_arguments_type&& args) const
     {
-        T start = extract_scalar_data<T>(args[0], name_, codename_);
-        T stop = extract_scalar_data<T>(args[1], name_, codename_);
+
+        T start = T(0);
         T step = T(1);
+        T stop;
+
+        if (args.size() > 1)
+        {
+          start = extract_scalar_data<T>(args[0], name_, codename_);
+          stop = extract_scalar_data<T>(args[1], name_, codename_);
+
+        }
+        else
+        {
+          stop = extract_scalar_data<T>(args[0], name_, codename_);
+        }
 
         if (args.size() == 3)
         {
-            step = extract_scalar_data<T>(args[2], name_, codename_);
+          step = extract_scalar_data<T>(args[2], name_, codename_);
         }
 
         if (step == T(0))
@@ -115,12 +129,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
-        if (operands.size() < 2 || operands.size() > 3)
+        if (operands.size() < 1 || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::arange",
                 generate_error_message(
-                    "the arange primitive requires two or three arguments."));
+                    "the arange primitive requires one, two, or three arguments."));
         }
 
         for (std::size_t i = 0; i != operands.size(); ++i)
