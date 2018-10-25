@@ -335,8 +335,8 @@ class PhySL:
 
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
-        dtype_floats = ['f', 'float']
-        dtype_ints = ['i', 'int']
+        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
+        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
         dtypes_bools = ['b', 'bool']
         phylanx_dtype = {
             **dict.fromkeys(dtype_floats, 'float'),
@@ -355,8 +355,8 @@ class PhySL:
                 else:
                     raise NotImplementedError(
                         'Only the followig are acceptable Phylanx array types:\n'
-                        '%s, %s / %s, %s / %s, %s' %
-                        (*dtypes_bools, *dtype_floats, *dtype_ints))
+                        'booleans: %s\nfloats: %s\nintegers %s' %
+                        (dtypes_bools, dtype_floats, dtype_ints))
                 break
 
         # TODO: these are workarounds for the cases that Phylanx does not
@@ -389,17 +389,8 @@ class PhySL:
                 return [symbol, ('1', [op, args])]
             else:
                 return [symbol, ('1', args)]
-        elif 'ones' in symbol:
-            symbol = symbol.replace('ones', 'constant' + dtype)
-            op = get_symbol_info(node.func, 'list')
-            if isinstance(args[0], tuple):
-                return [symbol, ('1', [op, args])]
-            else:
-                return [symbol, ('1', args)]
         elif 'identity' in symbol:
             symbol = symbol.replace('identity', 'identity' + dtype)
-        elif 'arange' in symbol:
-            symbol = symbol.replace('arange', 'arange' + dtype)
         elif 'arange' in symbol:
             symbol = symbol.replace('arange', 'arange' + dtype)
         elif 'cumsum' in symbol:
