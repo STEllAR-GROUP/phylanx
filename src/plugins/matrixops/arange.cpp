@@ -70,25 +70,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type arange::arange_helper(
         primitive_arguments_type&& args) const
     {
-
         T start = T(0);
         T step = T(1);
         T stop;
 
         if (args.size() > 1)
         {
-          start = extract_scalar_data<T>(args[0], name_, codename_);
-          stop = extract_scalar_data<T>(args[1], name_, codename_);
-
+            start = extract_scalar_data<T>(args[0], name_, codename_);
+            stop = extract_scalar_data<T>(args[1], name_, codename_);
         }
         else
         {
-          stop = extract_scalar_data<T>(args[0], name_, codename_);
+            stop = extract_scalar_data<T>(args[0], name_, codename_);
         }
 
         if (args.size() == 3)
         {
-          step = extract_scalar_data<T>(args[2], name_, codename_);
+            step = extract_scalar_data<T>(args[2], name_, codename_);
         }
 
         if (step == T(0))
