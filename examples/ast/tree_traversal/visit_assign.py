@@ -54,8 +54,29 @@ def tea_func(a : row_vector):
   b  = np.ones((2,2))
   c  = np.transpose(a)
   d  = np.dot(a,b)
+  
+def sec_func(b,d):
+  a = b * d
+  
+  
+a = np.ones((1,5))
+tea_func(a)
+sec_func(a,a)
 '''
 
-get_var_and_target_list(expr_)
+expr2 = '''
+def test_func():
+    a : scalar = 1
+    a += 1
+'''
+
+#get_var_and_target_list(expr2)
+
+expr = '''
+def test_func(b):
+    a = b
+'''
+
+get_var_and_target_list(expr)
 
 

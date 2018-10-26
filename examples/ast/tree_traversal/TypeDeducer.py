@@ -7,6 +7,7 @@ import get_type
 import numpy_output_type
 import ast
 import time
+import astpretty
 
 
 class Variable(object):
@@ -58,6 +59,7 @@ class TypeDeducerState(object):
         self.var_list = []
         self.variable_dict = variable_dict
         self.inside_conditional = inside_conditional
+        self.new_variable_ref = False
 
     def get_closest_ref_type(self, my_name, my_lineno, my_col):
         """Given a variable name and location returns the most recent type
@@ -84,7 +86,23 @@ class TypeDeducerState(object):
             assert(self.inside_conditional is not True)
             return closest_ref.var_type
         else:
-            return None
+            raise LookupError("Variable {} not found")
+
+    def variable_previously_used(self, my_name, my_lineno, my_col):
+        """Given a variable name and location checks whether that variable has
+        been previously declared"""
+        for var in self.var_list:
+            if var.name == my_name:
+                if var.lineno < my_lineno:
+                    return True
+                elif var.lineno == my_lineno:
+                    if var.col_offset < my_col:
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+        return False
 
     def add_to_target_list(self, node, var_type):
         """Adds nodes found as targets in assignments as variables to
@@ -114,6 +132,7 @@ class TypeDeducer(ast.NodeVisitor):
         self.var_type = None
         self.type_deducer_state = state
         self.target = target
+        self.referenced_var_list = []
 
     def generic_visit(self, node):
             ast.NodeVisitor.generic_visit(self, node)
@@ -128,9 +147,16 @@ class TypeDeducer(ast.NodeVisitor):
         these annotations are ever used or if the var and target lists
         in TypeDeducerState will be sufficient
         """
-        x = TypeDeducer(self.type_deducer_state)
-        x.visit(node.value)
-        self.var_type = x.var_type
+        if type(node.value).__name__ == "Num":
+            self.var_type = 'scalar'
+        else:
+            x = TypeDeducer(self.type_deducer_state)
+            x.visit(node.value)
+            if x.type_deducer_state.new_variable_ref:
+                raise Exception("Attempting to use undeclared variable in"
+                                " assignment: Line number: {} Column Offset: {}".format(
+                                    node.lineno, node.col_offset))
+            self.var_type = x.var_type
         self.type_deducer_state.add_to_target_list(node.targets[0], self.var_type)
         node = ast.AnnAssign(lineno=node.lineno, col_offset=node.col_offset,
                              target=node.targets, annotation=self.var_type,
@@ -138,19 +164,33 @@ class TypeDeducer(ast.NodeVisitor):
         self.type_deducer_state.assign_list.append(node)
 
     def visit_AnnAssign(self, node):
+        #astpretty.pprint(node)
         x = TypeDeducer(self.type_deducer_state)
         x.visit(node.value)
+        if x.type_deducer_state.new_variable_ref:
+            raise Exception("Attempting to use undeclared variable in annotated"
+                            " assignment: Line number: {} Column Offset: {}".format(
+                                node.lineno, node.col_offset))
         self.var_type = x.var_type
         self.type_deducer_state.add_to_target_list(node.target, self.var_type)
         # If an assignment is previously annotated, it should be annotated
         # with the type of the target
-        assert(node.annotation.id == self.var_type)
-        node.annotation = node.annotation.id
+        if isinstance(node.annotation, ast.Name):
+            assert(node.annotation.id == self.var_type)
+            node.annotation = node.annotation.id
+        elif isinstance(node.annotation, ast.NameConstant):
+            assert(node.annotation.value == self.var_type)
+            node.annotation = node.annotation.value
+
 
     def visit_AugAssign(self, node):
         aug_op = ast.BinOp(left=node.target, op=node.op, right=node.value)
         x = TypeDeducer(self.type_deducer_state)
         x.visit(aug_op)
+        if x.type_deducer_state.new_variable_ref:
+            raise Exception("Attempting to use undeclared variable in augmented"
+                            " assignment: Line number: {} Column Offset: {}".format(
+                                node.lineno, node.col_offset))
         self.var_type = x.var_type
         node = ast.AnnAssign(lineno=node.lineno, col_offset=node.col_offset,
                              target=node.target, annotation=self.var_type,
@@ -158,15 +198,22 @@ class TypeDeducer(ast.NodeVisitor):
         self.type_deducer_state.assign_list.append(node)
         self.type_deducer_state.add_to_target_list(node.target, self.var_type)
 
+    def visit_Num(self, node):
+        self.var_type = 'scalar'
+
     def visit_Name(self, node):
         """Creates variables and inserts them into the TypeDeducerState's
         var_list. Also checks if the variable is being assigned inside a
         conditional. This is not particularly useful though, as it only
         matters if the Name is an assignment target
         """
-        var_type = self.type_deducer_state.get_closest_ref_type(node.id,
-                                                                node.lineno,
-                                                                node.col_offset)
+        try:
+            var_type = self.type_deducer_state.get_closest_ref_type(node.id,
+                                                                    node.lineno,
+                                                                    node.col_offset)
+        except LookupError:
+            self.type_deducer_state.new_variable_ref = True
+            var_type = None
         if self.type_deducer_state.inside_conditional:
             var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type,
                                conditional_assigned=True)
@@ -175,6 +222,7 @@ class TypeDeducer(ast.NodeVisitor):
         if var_tmp is not None:
             self.type_deducer_state.var_list.append(var_tmp)
             self.var_type = var_tmp.var_type
+            self.referenced_var_list.append(var_tmp)
         ast.NodeVisitor.generic_visit(self, node)
 
     def visit_arg(self, node):
@@ -182,15 +230,19 @@ class TypeDeducer(ast.NodeVisitor):
         as arguments to the function into the var list. If the argument
         is annotated, which should be the argument's type, it adds that
         information to the variable."""
-        var_type = self.type_deducer_state.get_closest_ref_type(node.arg,
+        try:
+            var_type = self.type_deducer_state.get_closest_ref_type(node.arg,
                                                                 node.lineno,
                                                                 node.col_offset)
-        var_tmp = Variable(node.arg, node.lineno, node.col_offset, var_type)
+            var_tmp = Variable(node.arg, node.lineno, node.col_offset, var_type)
+        except LookupError:
+            var_tmp = Variable(node.arg, node.lineno, node.col_offset, None)
         if node.annotation is not None:
             var_tmp.var_type = node.annotation.id
             node.annotation = node.annotation.id
         self.type_deducer_state.var_list.append(var_tmp)
         self.var_type = var_tmp.var_type
+        self.referenced_var_list.append(var_tmp)
         ast.NodeVisitor.generic_visit(self, node)
 
     def visit_BinOp(self, node):
@@ -207,6 +259,8 @@ class TypeDeducer(ast.NodeVisitor):
             if type(node.op).__name__ == 'Mult':
                 op_name = 'mul'
             self.var_type = get_type.get_type(op_name, left_type, right_type)
+            self.referenced_var_list.append(left_type_deducer.referenced_var_list)
+            self.referenced_var_list.append(right_type_deducer.referenced_var_list)
         else:
             self.var_type = None
 
@@ -230,11 +284,9 @@ class TypeDeducer(ast.NodeVisitor):
         """Like visit_BinOp and visit_UnaryOp, visit_Call handles type deduction
         for arbitrary function calls. Currently, it only supports numpy unary or
         binary function calls however"""
-        print("Inside a call!")
         if isinstance(node.func, ast.Attribute):
             callable_name = node.func.value.id
             if callable_name == 'np' or callable_name == 'numpy':
-                print("Found a numpy function!")
                 if len(node.args) == 2 and isinstance(node.args[0], ast.Name)\
                         and isinstance(node.args[1], ast.Name):
                     try:
@@ -247,6 +299,8 @@ class TypeDeducer(ast.NodeVisitor):
                         if left_type is not None and right_type is not None:
                             self.var_type = get_type.get_type(node.func.attr,
                                                               left_type, right_type)
+                            self.referenced_var_list.append(left_type_deducer.referenced_var_list)
+                            self.referenced_var_list.append(right_type_deducer.referenced_var_list)
                         else:
                             self.var_type = None
                     except TypeError:
@@ -263,6 +317,7 @@ class TypeDeducer(ast.NodeVisitor):
                         type_var = type_deducer.var_type
                         if type_var is not None:
                             self.var_type = get_type.get_type(node.func.attr, type_var)
+                            self.referenced_var_list.append(type_deducer.referenced_var_list)
                         else:
                             self.var_type = None
                     except TypeError:
@@ -275,13 +330,16 @@ class TypeDeducer(ast.NodeVisitor):
                                 "Numpy function {} not supported".format(node.func.attr))
                 else:
                     try:
-                        print("Trying numpy parsers! {}".format(node.func.attr))
                         func = numpy_output_type.numpy_parsers[node.func.attr]
                         self.var_type = func(node.args, node.keywords)
-                        print(numpy_output_type.numpy_parsers)
                     except KeyError:
                         raise NotImplementedError(
                             "Numpy function {} not supported".format(node.func.attr))
+                    except TypeError:
+                        raise TypeError("Numpy function {} output type not determinable on variable inputs\n"
+                                        "\tLine number: {} Column Offset: {}".format(node.func.attr,
+                                                                                     node.lineno,
+                                                                                     node.col_offset))
             else:
                 raise NotImplementedError(
                     "Non-Numpy function calls not supported"

@@ -10,29 +10,30 @@ import ast
 def parse_zeros(args, keywords):
     """Special function for determining output types of the numpy.zeros
     function given its arguments"""
-    print("Inside parse_zeros!")
     if len(args) > 0:
-        print(args[0])
         if isinstance(args[0], ast.Tuple):
-            print("It's a tuple!")
             if len(args[0].elts) == 0:
                 return 'scalar'
             elif len(args[0].elts) == 1:
                 if args[0].elts[0].n > 1:
-                    return 'vector'
+                    return 'row_vector'
                 else:
                     return 'scalar'
             else:
-                if args[0].elts[0].n > 1:
-                    if args[0].elts[1].n > 1:
-                        return 'matrix'
+                if isinstance(args[0].elts[0], ast.Num) and isinstance(args[0].elts[1], ast.Num):
+                    if args[0].elts[0].n > 1:
+                        if args[0].elts[1].n > 1:
+                            return 'matrix'
+                        else:
+                            return 'column_vector'
                     else:
-                        return 'vector'
+                        if args[0].elts[1].n > 1:
+                            return 'row_vector'
+                        else:
+                            return 'scalar'
                 else:
-                    if args[0].elts[1].n > 1:
-                        return 'vector'
-                    else:
-                        return 'scalar'
+                    raise TypeError("numpy function output type not determinable on "
+                                    "variable inputs")
     return None
 
 

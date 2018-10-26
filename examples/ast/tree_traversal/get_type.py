@@ -11,7 +11,7 @@ unary_scalar = {
     "add": "scalar",
     "minus": "scalar",
     "not": "scalar",
-    "sub": "scalar",
+    "usub": "scalar",
     "add_dim": "vector",
     "arange": "vector",
     "define": "scalar",
@@ -24,7 +24,7 @@ unary_scalar = {
 unary_vector = {
     "add": "vector",
     "minus": "vector",
-    "sub": "vector",
+    "usub": "vector",
     "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
     "linear_solver": "vector",
     "add_dim": "matrix",
@@ -51,7 +51,7 @@ unary_vector = {
 unary_col_vector = {
     "add": "column_vector",
     "minus": "column_vector",
-    "sub": "vector",
+    "usub": "column_vector",
     "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
     "linear_solver": "column_vector",
     "add_dim": "matrix",
@@ -68,23 +68,23 @@ unary_col_vector = {
     "slice_column": "scalar",
     "slice_row": "scalar",
     "sum": "scalar",
-    "transpose": "row vector"  # This is debatable, could be considered a matrix
+    "transpose": "row_vector"  # This is debatable, could be considered a matrix
 }
 
 unary_row_vector = {
-    "add": "row vector",
-    "minus": "row vector",
-    "sub": "vector",
+    "add": "row_vector",
+    "minus": "row_vector",
+    "usub": "row_vector",
     "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
-    "linear_solver": "row vector",
+    "linear_solver": "row_vector",
     "add_dim": "matrix",
     "argmax": "scalar",
     "argmin": "scalar",
     "cumsum": "scalar",
-    "inverse": "row vector",
+    "inverse": "row_vector",
     "len": "scalar",
-    "list": "row vector",
-    "make_list": "row vector",
+    "list": "row_vector",
+    "make_list": "row_vector",
     "mean": "scalar",
     "shape": "scalar",
     "slice": "scalar",
