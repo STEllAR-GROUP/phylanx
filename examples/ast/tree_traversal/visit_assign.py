@@ -73,8 +73,9 @@ def test_func():
 #get_var_and_target_list(expr2)
 
 expr = '''
-def test_func(b):
-    a = b
+def test_func():
+    b = np.zeros((3,3))
+    a = determinant(b)
 '''
 
 get_var_and_target_list(expr)

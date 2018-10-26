@@ -368,5 +368,63 @@ def test_func():
         self.assertEqual('matrix', td.type_deducer_state.target_list[0].var_type,
                          "Failed Call with two constants meant to obtain matrix")
 
+        # Determinant on r-value
+        expr = '''
+def test_func():
+    a = determinant(np.zeros((3,3)))
+        '''
+        td = self.get_td(expr)
+        self.assertEqual(1, len(td.type_deducer_state.target_list), "Wrong length on variable list")
+        self.assertEqual('matrix', td.type_deducer_state.target_list[0].var_type,
+                         "Failed call to determinant on 3x3 matrix")
+        self.assertEqual((2, 2), td.type_deducer_state.target_list[0].dims,
+                         "Failed call to determinant on 3x3 matrix")
+
+        # Determinant on l-value
+        expr = '''
+def test_func():
+    b = np.zeros((3,3))
+    a = determinant(b)
+        '''
+        td = self.get_td(expr)
+        self.assertEqual(2, len(td.type_deducer_state.target_list), "Wrong length on variable list")
+        self.assertEqual('matrix', td.type_deducer_state.target_list[1].var_type,
+                         "Failed call to determinant on 3x3 matrix")
+        self.assertEqual((2, 2), td.type_deducer_state.target_list[1].dims,
+                         "Failed call to determinant on 3x3 matrix")
+
+        # Determinant on r-value drop to scalar
+        expr = '''
+def test_func():
+    a = determinant(np.zeros((2,2)))
+            '''
+        td = self.get_td(expr)
+        self.assertEqual(1, len(td.type_deducer_state.target_list), "Wrong length on variable list")
+        self.assertEqual('scalar', td.type_deducer_state.target_list[0].var_type,
+                         "Failed call to determinant on 3x3 matrix")
+        self.assertEqual((1, 1), td.type_deducer_state.target_list[0].dims,
+                         "Failed call to determinant on 3x3 matrix")
+
+        # Determinant on l-value drop to scalar
+        expr = '''
+def test_func():
+    b = np.zeros((2,2))
+    a = determinant(b)
+            '''
+        td = self.get_td(expr)
+        self.assertEqual(2, len(td.type_deducer_state.target_list), "Wrong length on variable list")
+        self.assertEqual('scalar', td.type_deducer_state.target_list[1].var_type,
+                         "Failed call to determinant on 3x3 matrix")
+        self.assertEqual((1, 1), td.type_deducer_state.target_list[1].dims,
+                         "Failed call to determinant on 3x3 matrix")
+
+        # Determinant on l-value drop to scalar
+        expr = '''
+def test_func():
+    b = np.zeros((1, 1))
+    a = determinant(b)
+            '''
+        self.assertRaises(NotImplementedError, self.get_td, expr)
+
     def test_visit_BoolOp(self):
         self.fail()

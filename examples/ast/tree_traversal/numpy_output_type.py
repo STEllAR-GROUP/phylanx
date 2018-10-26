@@ -13,24 +13,24 @@ def parse_zeros(args, keywords):
     if len(args) > 0:
         if isinstance(args[0], ast.Tuple):
             if len(args[0].elts) == 0:
-                return 'scalar'
+                return 'scalar', (1, 1)
             elif len(args[0].elts) == 1:
                 if args[0].elts[0].n > 1:
-                    return 'row_vector'
+                    return 'row_vector', (1, args[0].elts[0].n)
                 else:
-                    return 'scalar'
+                    return 'scalar', (1, 1)
             else:
                 if isinstance(args[0].elts[0], ast.Num) and isinstance(args[0].elts[1], ast.Num):
                     if args[0].elts[0].n > 1:
                         if args[0].elts[1].n > 1:
-                            return 'matrix'
+                            return 'matrix', (args[0].elts[0].n, args[0].elts[1].n)
                         else:
-                            return 'column_vector'
+                            return 'column_vector', (args[0].elts[0].n, args[0].elts[1].n)
                     else:
                         if args[0].elts[1].n > 1:
-                            return 'row_vector'
+                            return 'row_vector', (args[0].elts[0].n, args[0].elts[1].n)
                         else:
-                            return 'scalar'
+                            return 'scalar', (args[0].elts[0].n, args[0].elts[1].n)
                 else:
                     raise TypeError("numpy function output type not determinable on "
                                     "variable inputs")
@@ -40,12 +40,16 @@ def parse_zeros(args, keywords):
 def parse_identity(args, keywords):
     """Special function for determining output types of the numpy.identity
     function given its arguments"""
+    print("Inside parse_identity")
     if len(args) > 0:
-        if isinstance(args[0], int):
-            if args[0] == 1:
-                return 'scalar'
-            elif args[0] >= 2:
-                return 'matrix'
+        print(args[0])
+        print(args)
+        if isinstance(args[0].n, int):
+            print("Haha")
+            if args[0].n == 1:
+                return 'scalar', (1, 1)
+            elif args[0].n >= 2:
+                return 'matrix', (args[0].n, args[0].n)
     return None
 
 
