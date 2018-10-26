@@ -698,7 +698,7 @@ class PhySL:
 
         if type(node.value) == ast.Tuple:
             return ["list", self.apply_rule(node.value)]
-        else:
+
         return self.apply_rule(node.value)
 
     def _Slice(self, node):
