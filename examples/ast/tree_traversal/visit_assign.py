@@ -16,8 +16,8 @@ unary_vector = {
     "add": "vector",
     "minus": "vector",
     "sub": "vector",
-    "_decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
-    "_linear_solver": "vector",
+    "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
+    "linear_solver": "vector",
     "add_dim": "matrix",
     "all": " ",
     "als": " ",
@@ -39,11 +39,57 @@ unary_vector = {
     "transpose": "vector"  # This is debatable, could be considered a matrix
 }
 
+unary_col_vector = {
+    "add": "column vector",
+    "minus": "column vector",
+    "sub": "vector",
+    "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
+    "linear_solver": "column vector",
+    "add_dim": "matrix",
+    "argmax": "scalar",
+    "argmin": "scalar",
+    "cumsum": "scalar",
+    "inverse": "column vector",
+    "len": "scalar",
+    "list": "column vector",
+    "make_list": "column vector",
+    "mean": "scalar",
+    "shape": "scalar",
+    "slice": "scalar",
+    "slice_column": "scalar",
+    "slice_row": "scalar",
+    "sum": "scalar",
+    "transpose": "row vector"  # This is debatable, could be considered a matrix
+}
+
+unary_row_vector = {
+    "add": "row vector",
+    "minus": "row vector",
+    "sub": "vector",
+    "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
+    "linear_solver": "row vector",
+    "add_dim": "matrix",
+    "argmax": "scalar",
+    "argmin": "scalar",
+    "cumsum": "scalar",
+    "inverse": "row vector",
+    "len": "scalar",
+    "list": "row vector",
+    "make_list": "row vector",
+    "mean": "scalar",
+    "shape": "scalar",
+    "slice": "scalar",
+    "slice_column": "scalar",
+    "slice_row": "scalar",
+    "sum": "scalar",
+    "transpose": "column vector"  # This is debatable, could be considered a matrix
+}
+
 unary_matrix = {
     "add": "matrix",
     "minus": "matrix",
-    "_decomposition": "matrices",  # Matrix factorization yields multiple matrices
-    "_linear_solver": "vector",
+    "decomposition": "matrices",  # Matrix factorization yields multiple matrices
+    "linear_solver": "vector",
     "add_dim": "matrix",
     "append": "matrix",
     "argmax": " ",  # Should these count?
@@ -105,6 +151,36 @@ scalar_vector = {
     "sum": "scalar"
 }
 
+scalar_column_vector = {
+    "add": "column vector",
+    "minus": "column vector",
+    "mul": "column vector",
+    "sub": "column vector",
+    "cumsum": "scalar",
+    "dot": "column vector",
+    "filter": "column vector",
+    "power": "column vector",
+    "slice": "scalar",
+    "slice_column": "scalar",
+    "slice_row": "scalar",
+    "sum": "scalar"
+}
+
+scalar_row_vector = {
+    "add": "row vector",
+    "minus": "row vector",
+    "mul": "row vector",
+    "sub": "row vector",
+    "cumsum": "scalar",
+    "dot": "row vector",
+    "filter": "row vector",
+    "power": "row vector",
+    "slice": "scalar",
+    "slice_column": "scalar",
+    "slice_row": "scalar",
+    "sum": "scalar"
+}
+
 scalar_matrix = {
     "add": "matrix",
     "mul": "matrix",
@@ -127,6 +203,34 @@ vector_scalar = {
     "sum": "scalar"
 }
 
+column_vector_scalar = {
+    "add": "column vector",
+    "div": "column vector",
+    "minus": "column vector",
+    "mul": "column vector",
+    "sub": "column vector",
+    "cumsum": "scalar",
+    "power": "column vector",
+    "slice": "scalar",
+    "slice_column": "column vector",
+    "slice_row": "scalar",
+    "sum": "scalar"
+}
+
+row_vector_scalar = {
+    "add": "row vector",
+    "div": "row vector",
+    "minus": "row vector",
+    "mul": "row vector",
+    "sub": "row vector",
+    "cumsum": "scalar",
+    "power": "row vector",
+    "slice": "scalar",
+    "slice_column": "scalar",
+    "slice_row": "row column",
+    "sum": "scalar"
+}
+
 vector_vector = {
     "add": "vector",
     "div": "vector",
@@ -140,6 +244,46 @@ vector_vector = {
     "sum": "vector"  # This could go either way I think vector | scalar
 }
 
+column_vector_column_vector = {
+    "add": "column vector",
+    "div": "column vector",  # Assuming element-wise division here
+    "minus": "column vector",
+    "mul": "column vector",  # Element-wise
+    "sub": "column vector",
+    "cumsum": "scalar",
+    "mean": "scalar",  # This could be a vector of averages between the two elements, or average of all elements
+    "power": "column vector"
+}
+
+column_vector_row_vector = {
+    "add": "matrix",  # Should this even be supported? I sorta think not
+    "div": "matrix",
+    "minus": "matrix",
+    "mul": "matrix",
+    "sub": "matrix",
+    "dot": "matrix",
+    "power": "matrix"
+}
+
+row_vector_row_vector = {
+    "add": "row vector",
+    "div": "row vector",
+    "minus": "row vector",
+    "mul": "row vector",
+    "sub": "row vector",
+    "power": "row vector"
+}
+
+row_vector_column_vector = {
+    "add": "matrix",
+    "div": "matrix",
+    "minus": "matrix",
+    "mul": "matrix",
+    "sub": "matrix",
+    "dot": "scalar",
+    "power": "matrix"
+}
+
 vector_matrix = {
     "add": "matrix",
     "mul": "vector",
@@ -151,6 +295,21 @@ vector_matrix = {
     "sum": "vector"
 }
 
+row_vector_matrix = {
+    "add": "matrix",
+    "mul": "matrix",
+    "dot": "row vector",
+    "power": "matrix"
+}
+
+column_vector_matrix = {
+    "add": "matrix",
+    "div": "matrix",
+    "minus": "matrix",
+    "mul": "matrix",
+    "sub": "matrix",
+    "power": "matrix"
+}
 
 matrix_scalar = {
     "add": "matrix",
@@ -158,7 +317,7 @@ matrix_scalar = {
     "minus": "matrix",
     "mul": "matrix",
     "sub": "matrix",
-    "_decomposition": "matrix",  # Maybe decompose indexed vector?
+    "decomposition": "matrix",  # Maybe decompose indexed vector?
     "cumsum": "scalar",
     "diag": "vector",  # indexed diagonal?
     "dot": "matrix",
@@ -180,6 +339,26 @@ matrix_vector = {
     "sum": "scalar"  # Is this right? Maybe when I'm less tired it will be obvious
 }
 
+matrix_row_vector = {
+    "add": "matrix",
+    "div": "matrix",
+    "minus": "matrix",
+    "mul": "matrix",
+    "sub": "matrix",
+    "dot": "row vector",
+    "power": "matrix"
+}
+
+matrix_column_vector = {
+    "add": "matrix",
+    "div": "matrix",
+    "minus": "matrix",
+    "mul": "vector",
+    "sub": "matrix",
+    "dot": "column vector",
+    "power": "matrix"
+}
+
 matrix_matrix = {
     "add": "matrix",
     "and": "matrix",  # Element-wise and operation
@@ -187,7 +366,7 @@ matrix_matrix = {
     "minus": "matrix",
     "mul": "matrix",
     "sub": "matrix",
-    "_linear_solver": "matrix",  # Maybe?
+    "linear_solver": "matrix",  # Maybe?
     "append": "matrix",
     "cumsum": "scalar",
     "dot": "matrix",
@@ -198,7 +377,8 @@ matrix_matrix = {
 
 scalar = {
     "scalar": scalar_scalar,
-    "vector": scalar_vector,
+    "row vector": scalar_row_vector,
+    "column vector": scalar_column_vector,
     "matrix": scalar_matrix
 }
 
@@ -208,9 +388,25 @@ vector = {
     "matrix": vector_matrix
 }
 
+row_vector = {
+    "scalar": vector_scalar,
+    "row vector": row_vector_row_vector,
+    "column vector": row_vector_column_vector,
+    "matrix": row_vector_matrix
+}
+
+column_vector = {
+    "scalar": column_vector_scalar,
+    "row vector": column_vector_row_vector,
+    "column vector": column_vector_column_vector,
+    "matrix": column_vector_matrix
+}
+
 matrix = {
     "scalar": matrix_scalar,
     "vector": matrix_vector,
+    "row_vector": matrix_row_vector,
+    "column_vector": matrix_column_vector,
     "matrix": matrix_matrix
 }
 
