@@ -8,6 +8,8 @@ import ast
 
 # This needs review
 def parse_zeros(args, keywords):
+    """Special function for determining output types of the numpy.zeros
+    function given its arguments"""
     print("Inside parse_zeros!")
     if len(args) > 0:
         print(args[0])
@@ -35,6 +37,8 @@ def parse_zeros(args, keywords):
 
 
 def parse_identity(args, keywords):
+    """Special function for determining output types of the numpy.identity
+    function given its arguments"""
     if len(args) > 0:
         if isinstance(args[0], int):
             if args[0] == 1:
@@ -44,6 +48,7 @@ def parse_identity(args, keywords):
     return None
 
 
+"""Dictionary for determining which numpy parsing function should be called"""
 numpy_parsers = {
     'zeros': parse_zeros,
     'ones': parse_zeros,

@@ -5,7 +5,7 @@
 
 
 #################################################
-# Dictionary for mapping unary operators/functions to output types
+""" Dictionary for mapping unary operators/functions to output types """
 
 unary_scalar = {
     "add": "scalar",
@@ -49,19 +49,19 @@ unary_vector = {
 }
 
 unary_col_vector = {
-    "add": "column vector",
-    "minus": "column vector",
+    "add": "column_vector",
+    "minus": "column_vector",
     "sub": "vector",
     "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
-    "linear_solver": "column vector",
+    "linear_solver": "column_vector",
     "add_dim": "matrix",
     "argmax": "scalar",
     "argmin": "scalar",
     "cumsum": "scalar",
-    "inverse": "column vector",
+    "inverse": "column_vector",
     "len": "scalar",
-    "list": "column vector",
-    "make_list": "column vector",
+    "list": "column_vector",
+    "make_list": "column_vector",
     "mean": "scalar",
     "shape": "scalar",
     "slice": "scalar",
@@ -91,7 +91,7 @@ unary_row_vector = {
     "slice_column": "scalar",
     "slice_row": "scalar",
     "sum": "scalar",
-    "transpose": "column vector"  # This is debatable, could be considered a matrix
+    "transpose": "column_vector"  # This is debatable, could be considered a matrix
 }
 
 unary_matrix = {
@@ -125,11 +125,13 @@ unary_matrix = {
 unary_ops = {
     "scalar": unary_scalar,
     "vector": unary_vector,
+    "row_vector": unary_row_vector,
+    "column_vector": unary_col_vector,
     "matrix": unary_matrix
 }
 
 ####################################################
-# Dictionaries for mapping input types and operator/function name to output type
+""" Dictionaries for mapping input types and operator/function name to output type """
 
 scalar_scalar = {
     "add": "scalar",
@@ -162,14 +164,14 @@ scalar_vector = {
 }
 
 scalar_column_vector = {
-    "add": "column vector",
-    "minus": "column vector",
-    "mul": "column vector",
-    "sub": "column vector",
+    "add": "column_vector",
+    "minus": "column_vector",
+    "mul": "column_vector",
+    "sub": "column_vector",
     "cumsum": "scalar",
-    "dot": "column vector",
-    "filter": "column vector",
-    "power": "column vector",
+    "dot": "column_vector",
+    "filter": "column_vector",
+    "power": "column_vector",
     "slice": "scalar",
     "slice_column": "scalar",
     "slice_row": "scalar",
@@ -177,14 +179,14 @@ scalar_column_vector = {
 }
 
 scalar_row_vector = {
-    "add": "row vector",
-    "minus": "row vector",
-    "mul": "row vector",
-    "sub": "row vector",
+    "add": "row_vector",
+    "minus": "row_vector",
+    "mul": "row_vector",
+    "sub": "row_vector",
     "cumsum": "scalar",
-    "dot": "row vector",
-    "filter": "row vector",
-    "power": "row vector",
+    "dot": "row_vector",
+    "filter": "row_vector",
+    "power": "row_vector",
     "slice": "scalar",
     "slice_column": "scalar",
     "slice_row": "scalar",
@@ -214,27 +216,27 @@ vector_scalar = {
 }
 
 column_vector_scalar = {
-    "add": "column vector",
-    "div": "column vector",
-    "minus": "column vector",
-    "mul": "column vector",
-    "sub": "column vector",
+    "add": "column_vector",
+    "div": "column_vector",
+    "minus": "column_vector",
+    "mul": "column_vector",
+    "sub": "column_vector",
     "cumsum": "scalar",
-    "power": "column vector",
+    "power": "column_vector",
     "slice": "scalar",
-    "slice_column": "column vector",
+    "slice_column": "column_vector",
     "slice_row": "scalar",
     "sum": "scalar"
 }
 
 row_vector_scalar = {
-    "add": "row vector",
-    "div": "row vector",
-    "minus": "row vector",
-    "mul": "row vector",
-    "sub": "row vector",
+    "add": "row_vector",
+    "div": "row_vector",
+    "minus": "row_vector",
+    "mul": "row_vector",
+    "sub": "row_vector",
     "cumsum": "scalar",
-    "power": "row vector",
+    "power": "row_vector",
     "slice": "scalar",
     "slice_column": "scalar",
     "slice_row": "row column",
@@ -255,14 +257,14 @@ vector_vector = {
 }
 
 column_vector_column_vector = {
-    "add": "column vector",
-    "div": "column vector",  # Assuming element-wise division here
-    "minus": "column vector",
-    "mul": "column vector",  # Element-wise
-    "sub": "column vector",
+    "add": "column_vector",
+    "div": "column_vector",  # Assuming element-wise division here
+    "minus": "column_vector",
+    "mul": "column_vector",  # Element-wise
+    "sub": "column_vector",
     "cumsum": "scalar",
     "mean": "scalar",  # This could be a vector of averages between the two elements, or average of all elements
-    "power": "column vector"
+    "power": "column_vector"
 }
 
 column_vector_row_vector = {
@@ -276,12 +278,12 @@ column_vector_row_vector = {
 }
 
 row_vector_row_vector = {
-    "add": "row vector",
-    "div": "row vector",
-    "minus": "row vector",
-    "mul": "row vector",
-    "sub": "row vector",
-    "power": "row vector"
+    "add": "row_vector",
+    "div": "row_vector",
+    "minus": "row_vector",
+    "mul": "row_vector",
+    "sub": "row_vector",
+    "power": "row_vector"
 }
 
 row_vector_column_vector = {
@@ -308,7 +310,7 @@ vector_matrix = {
 row_vector_matrix = {
     "add": "matrix",
     "mul": "matrix",
-    "dot": "row vector",
+    "dot": "row_vector",
     "power": "matrix"
 }
 
@@ -355,7 +357,7 @@ matrix_row_vector = {
     "minus": "matrix",
     "mul": "matrix",
     "sub": "matrix",
-    "dot": "row vector",
+    "dot": "row_vector",
     "power": "matrix"
 }
 
@@ -365,7 +367,7 @@ matrix_column_vector = {
     "minus": "matrix",
     "mul": "vector",
     "sub": "matrix",
-    "dot": "column vector",
+    "dot": "column_vector",
     "power": "matrix"
 }
 
@@ -387,8 +389,8 @@ matrix_matrix = {
 
 scalar = {
     "scalar": scalar_scalar,
-    "row vector": scalar_row_vector,
-    "column vector": scalar_column_vector,
+    "row_vector": scalar_row_vector,
+    "column_vector": scalar_column_vector,
     "matrix": scalar_matrix
 }
 
@@ -400,15 +402,15 @@ vector = {
 
 row_vector = {
     "scalar": vector_scalar,
-    "row vector": row_vector_row_vector,
-    "column vector": row_vector_column_vector,
+    "row_vector": row_vector_row_vector,
+    "column_vector": row_vector_column_vector,
     "matrix": row_vector_matrix
 }
 
 column_vector = {
     "scalar": column_vector_scalar,
-    "row vector": column_vector_row_vector,
-    "column vector": column_vector_column_vector,
+    "row_vector": column_vector_row_vector,
+    "column_vector": column_vector_column_vector,
     "matrix": column_vector_matrix
 }
 
@@ -423,16 +425,18 @@ matrix = {
 first_type = {
     "scalar": scalar,
     "vector": vector,
-    "row vector": row_vector,
-    "column vector": column_vector,
+    "row_vector": row_vector,
+    "column_vector": column_vector,
     "matrix": matrix
 }
 
-# End of dictionaries for output types on two input types
+""" End of dictionaries for output types on two input types """
 ###################################################
 
 
 def get_type(op, lhs, rhs=None) -> str:
+    """Utility function for obtaining output type information for a given
+    function and its argument types"""
     try:
         if rhs is not None:
             dict_1 = first_type[lhs]
