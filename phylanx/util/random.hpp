@@ -6,6 +6,7 @@
 
 #include <phylanx/config.hpp>
 
+#include <cstdint>
 #include <random>
 
 #if !defined(PHYLANX_PRIMITIVES_RANDOM_UTILS)

@@ -6,6 +6,7 @@
 
 #include <phylanx/util/random.hpp>
 
+#include <cstdint>
 #include <random>
 
 namespace phylanx { namespace util
