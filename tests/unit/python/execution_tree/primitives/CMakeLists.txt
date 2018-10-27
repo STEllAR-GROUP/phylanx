@@ -8,6 +8,7 @@ set(tests
     lambda
     make_list
     make_vector
+    numpy_dtype
    )
 
 foreach(test ${tests})

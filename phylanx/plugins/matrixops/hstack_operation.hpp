@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -56,6 +57,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& args) const;
         primitive_argument_type hstack2d(
             primitive_arguments_type&& args) const;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_hstack_operation(hpx::id_type const& locality,

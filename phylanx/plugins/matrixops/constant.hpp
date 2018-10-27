@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -45,11 +46,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args) const override;
 
     private:
-        primitive_argument_type constant0d(operand_type && op) const;
-        primitive_argument_type constant1d(
-            operand_type&& op, std::size_t dim) const;
-        primitive_argument_type constant2d(operand_type&& op,
+        template <typename T>
+        ir::node_data<T> constant0d_helper(primitive_argument_type&& op) const;
+        template <typename T>
+        ir::node_data<T> constant1d_helper(
+            primitive_argument_type&& op, std::size_t dim) const;
+        template <typename T>
+        ir::node_data<T> constant2d_helper(primitive_argument_type&& op,
             operand_type::dimensions_type const& dim) const;
+
+        primitive_argument_type constant0d(primitive_argument_type&& op) const;
+        primitive_argument_type constant1d(
+            primitive_argument_type&& op, std::size_t dim) const;
+        primitive_argument_type constant2d(primitive_argument_type&& op,
+            operand_type::dimensions_type const& dim) const;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_constant(hpx::id_type const& locality,

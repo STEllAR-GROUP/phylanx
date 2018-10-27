@@ -14,6 +14,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -27,42 +28,81 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const identity::match_data =
     {
-        hpx::util::make_tuple("identity",
+        match_pattern_type{"identity",
             std::vector<std::string>{"identity(_1)"},
-            &create_identity, &create_primitive<identity>,
-            "sz\n"
-            "Args:\n"
-            "\n"
-            "    sz (int) : the size of a matrix\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "An identity matrix of size `sz` by `sz`."
-            )
+            &create_identity, &create_primitive<identity>, R"(
+            n
+            Args:
+
+                n (int) : the size of a created (n x n) matrix
+
+            Returns:
+
+            An identity matrix of size `sz` by `sz`.
+            )",
+            true
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     identity::identity(primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename    )
+      , dtype_(extract_dtype(name_))
     {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type identity::identity_nd(operand_type&& op) const
+    template <typename T>
+    primitive_argument_type identity::identity_helper(
+        primitive_argument_type&& op) const
     {
-        if (op.num_dimensions() != 0)
+        if (extract_numeric_value_dimension(op) != 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "identity::identity_nd",
+                "identity::identity_helper",
                 util::generate_error_message(
-                    "input should be a scalar",
-                    name_, codename_));
+                    "input should be a scalar", name_, codename_));
         }
 
-        std::size_t dim = static_cast<std::size_t>(op.scalar());
+        std::size_t size = static_cast<std::size_t>(
+            extract_numeric_value(op, name_, codename_)[0]);
+
         return primitive_argument_type{
-            operand_type{blaze::IdentityMatrix<double>(dim)}};
+            operand_type{blaze::IdentityMatrix<T>(size)}};
+    }
+
+    primitive_argument_type identity::identity_nd(
+        primitive_argument_type&& op) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(op);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return identity_helper<std::uint8_t>(std::move(op));
+
+        case node_data_type_int64:
+            return identity_helper<std::int64_t>(std::move(op));
+
+        case node_data_type_double:
+            return identity_helper<double>(std::move(op));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::"
+                "identity::identity_nd",
+            util::generate_error_message(
+                "the contsnat primitive requires for all arguments to "
+                    "be numeric data types",
+                name_, codename_));
     }
 
     hpx::future<primitive_argument_type> identity::eval(
