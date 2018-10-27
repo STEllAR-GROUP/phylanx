@@ -434,7 +434,7 @@ first_type = {
 ###################################################
 
 
-def get_type(op, lhs, rhs=None) -> str:
+def get_output(op: str, lhs: str, rhs: str = None) -> str:
     """Utility function for obtaining output type information for a given
     function and its argument types"""
     try:
@@ -447,9 +447,9 @@ def get_type(op, lhs, rhs=None) -> str:
         return result
     except KeyError:
         if rhs is not None:
-            raise TypeError("Operation {} not supported with argument types {} "
+            raise TypeError("Operation {} not supported with arguments of type {} "
                             "and {}".format(op, lhs, rhs))
         else:
-            raise TypeError("Operation {} not supported with argument "
+            raise TypeError("Operation {} not supported with argument of "
                             "type {}".format(op, lhs))
 
