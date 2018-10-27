@@ -125,18 +125,28 @@ namespace phylanx { namespace bindings
     template <typename T>
     std::string as_string(T const& value)
     {
-        std::stringstream strm;
-        strm << value;
-        return strm.str();
+        pybind11::gil_scoped_release release;       // release GIL
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::string
+            {
+                std::stringstream strm;
+                strm << value;
+                return strm.str();
+            });
     }
 
     // support for __repr__
     template <typename T>
     std::string repr(T const& value)
     {
-        std::stringstream strm;
-        strm << phylanx::util::repr << value << phylanx::util::norepr;
-        return strm.str();
+        pybind11::gil_scoped_release release;       // release GIL
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::string
+            {
+                std::stringstream strm;
+                strm << phylanx::util::repr << value << phylanx::util::norepr;
+                return strm.str();
+            });
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -145,17 +155,24 @@ namespace phylanx { namespace bindings
     std::vector<char> pickle_helper(Ast const& ast)
     {
         pybind11::gil_scoped_release release;       // release GIL
-        return phylanx::util::serialize(ast);
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::vector<char>
+            {
+                return phylanx::util::serialize(ast);
+            });
     }
 
     template <typename Ast>
-    Ast unpickle_helper(std::vector<char> data)
+    Ast unpickle_helper(std::vector<char> const& data)
     {
         pybind11::gil_scoped_release release;       // release GIL
-
-        Ast ast;
-        phylanx::util::detail::unserialize(data, ast);
-        return ast;
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> Ast
+            {
+                Ast ast;
+                phylanx::util::detail::unserialize(data, ast);
+                return ast;
+            });
     }
 
     ///////////////////////////////////////////////////////////////////////////

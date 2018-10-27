@@ -54,8 +54,8 @@ namespace phylanx { namespace execution_tree
         }
         if (is_dictionary_operand(data))
         {
-            auto f = phylanx::execution_tree::extract_dictionary_value(data);
-            return f[indices].get();
+            auto dict = phylanx::execution_tree::extract_dictionary_value(data);
+            return dict[indices].get();
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -109,48 +109,76 @@ namespace phylanx { namespace execution_tree
                 indices, extract_value(std::move(value), name, codename), name,
                 codename)};
         }
-        else if (is_numeric_operand(data))
+        else if (is_integer_operand_strict(data))
         {
             if (is_integer_operand_strict(value))
             {
                 return primitive_argument_type{slice_assign(
-                    extract_integer_value(std::move(data), name, codename),
+                    extract_integer_value_strict(
+                        std::move(data), name, codename),
                     indices,
                     extract_integer_value_strict(
                         std::move(value), name, codename),
                     name, codename)};
             }
+
+            return primitive_argument_type{slice_assign(
+                extract_integer_value_strict(std::move(data), name, codename),
+                indices,
+                extract_integer_value(std::move(value), name, codename),
+                name, codename)};
+        }
+        else if (is_numeric_operand_strict(data))
+        {
             if (is_numeric_operand_strict(value))
             {
                 return primitive_argument_type{slice_assign(
-                    extract_numeric_value(std::move(data), name, codename),
+                    extract_numeric_value_strict(
+                        std::move(data), name, codename),
                     indices,
                     extract_numeric_value_strict(
                         std::move(value), name, codename),
                     name, codename)};
             }
+
+            return primitive_argument_type{slice_assign(
+                extract_numeric_value_strict(std::move(data), name, codename),
+                indices,
+                extract_numeric_value(std::move(value), name, codename),
+                name, codename)};
+        }
+        else if (is_boolean_operand_strict(data))
+        {
             if (is_boolean_operand_strict(value))
             {
                 return primitive_argument_type{slice_assign(
-                    extract_boolean_value(std::move(data), name, codename),
+                    extract_boolean_value_strict(
+                        std::move(data), name, codename),
                     indices,
                     extract_boolean_value_strict(
                         std::move(value), name, codename),
                     name, codename)};
             }
+
+            return primitive_argument_type{slice_assign(
+                extract_boolean_value_strict(std::move(data), name, codename),
+                indices,
+                extract_boolean_value(std::move(value), name, codename),
+                name, codename)};
         }
-        if (is_dictionary_operand(data))
+        else if (is_dictionary_operand(data))
         {
-            auto&& f = phylanx::execution_tree::extract_dictionary_value(data);
-            f[indices] = value;
-            return primitive_argument_type{f};
+            auto&& dict = phylanx::execution_tree::extract_dictionary_value(
+                std::move(data));
+            dict[indices] = value;
+            return primitive_argument_type{std::move(dict)};
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
-                "target object does not hold a numeric, range, or dictionary type and "
-                "as such does not support slicing", name, codename));
+                "target object does not hold a numeric, range, or dictionary "
+                "type and as such does not support slicing", name, codename));
     }
 
     primitive_argument_type slice(primitive_argument_type&& data,
@@ -158,28 +186,64 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& columns, primitive_argument_type&& value,
         std::string const& name, std::string const& codename)
     {
-        if (is_integer_operand_strict(value))
+        if (is_integer_operand_strict(data))
         {
+            if (is_integer_operand_strict(value))
+            {
+                return primitive_argument_type{
+                    slice_assign(
+                        extract_integer_value_strict(
+                            std::move(data), name, codename),
+                        rows, columns,
+                        extract_integer_value_strict(
+                            std::move(value), name, codename),
+                        name, codename)};
+            }
+
             return primitive_argument_type{slice_assign(
-                extract_integer_value(std::move(data), name, codename), rows,
-                columns,
-                extract_integer_value_strict(std::move(value), name, codename),
+                extract_integer_value_strict(std::move(data), name, codename),
+                rows, columns,
+                extract_integer_value(std::move(value), name, codename),
                 name, codename)};
         }
-        if (is_numeric_operand_strict(value))
+        if (is_numeric_operand_strict(data))
         {
+            if (is_numeric_operand_strict(value))
+            {
+                return primitive_argument_type{
+                    slice_assign(
+                        extract_numeric_value_strict(
+                            std::move(data), name, codename),
+                        rows, columns,
+                        extract_numeric_value_strict(
+                            std::move(value), name, codename),
+                        name, codename)};
+            }
+
             return primitive_argument_type{slice_assign(
-                extract_numeric_value(std::move(data), name, codename), rows,
-                columns,
-                extract_numeric_value_strict(std::move(value), name, codename),
+                extract_numeric_value_strict(std::move(data), name, codename),
+                rows, columns,
+                extract_numeric_value(std::move(value), name, codename),
                 name, codename)};
         }
-        if (is_boolean_operand_strict(value))
+        if (is_boolean_operand_strict(data))
         {
+            if (is_boolean_operand_strict(value))
+            {
+                return primitive_argument_type{
+                    slice_assign(
+                        extract_boolean_value_strict(
+                            std::move(data), name, codename),
+                        rows, columns,
+                        extract_boolean_value_strict(
+                            std::move(value), name, codename),
+                        name, codename)};
+            }
+
             return primitive_argument_type{slice_assign(
-                extract_boolean_value(std::move(data), name, codename), rows,
-                columns,
-                extract_boolean_value_strict(std::move(value), name, codename),
+                extract_boolean_value_strict(std::move(data), name, codename),
+                rows, columns,
+                extract_boolean_value(std::move(value), name, codename),
                 name, codename)};
         }
 
