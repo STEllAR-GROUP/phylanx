@@ -3,6 +3,8 @@
 #  Distributed under the Boost Software License, Version 1.0. (See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+# flake8: noqa
+
 import numpy as np
 from phylanx import Phylanx
 
@@ -14,5 +16,5 @@ def test_assign(x):
 
 
 assert(test_assign.__src__ ==
-        'define$11$0(test_assign$11$0, x$11$16, ' + \       # noqa: W504
-        'block(store$12$4(x$12$4, 1), x$13$11))')
+        'define$13$0(test_assign$13$0, x$13$16, ' + \
+        'block(store$14$4(x$14$4, 1), x$15$11))')
