@@ -57,48 +57,48 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 bool is_locality_0 = false;
 
 std::string init_arrays = R"(block(
-    define(arrays_init, 
-	    block(
-		    define(a, constant(41.0, list(2, 4))),
-		    define(rowsA, shape(a, 0)),
-		    define(columnsA, shape(a, 1)),
-		    define(a1, slice(a, list(0, rowsA), list(0, columnsA / 2))),
-		    define(a2, slice(a, list(0, rowsA), list(columnsA / 2, columnsA))),
-		    // cout(a),
-		    // cout(a1),
-		    // cout(a2),
+    define(arrays_init,
+        block(
+            define(a, constant(41.0, list(2, 4))),
+            define(rowsA, shape(a, 0)),
+            define(columnsA, shape(a, 1)),
+            define(a1, slice(a, list(0, rowsA), list(0, columnsA / 2))),
+            define(a2, slice(a, list(0, rowsA), list(columnsA / 2, columnsA))),
+            // cout(a),
+            // cout(a1),
+            // cout(a2),
 
-		    define(b, constant(1.0, list(2, 4))),
-		    define(rowsB, shape(b, 0)),
-		    define(columnsB, shape(b, 1)),
-		    define(b1, slice(b, list(0, rowsB), list(0, columnsB / 2))),
-		    define(b2, slice(b, list(0, rowsB), list(columnsB / 2, columnsB))),
+            define(b, constant(1.0, list(2, 4))),
+            define(rowsB, shape(b, 0)),
+            define(columnsB, shape(b, 1)),
+            define(b1, slice(b, list(0, rowsB), list(0, columnsB / 2))),
+            define(b2, slice(b, list(0, rowsB), list(columnsB / 2, columnsB))),
 
-		    // cout(b),
-		    // cout(b1),
-		    // cout(b2),
-		    list(a1, a2, b1, b2)
-	    )
+            // cout(b),
+            // cout(b1),
+            // cout(b2),
+            list(a1, a2, b1, b2)
+        )
     ),
     arrays_init
 ))";
 
 std::string code1 = R"(block(
     define(code1, arg0, arg1,
-	    block(
-		    define(c1, __add(arg0, arg1)),
+        block(
+            define(c1, __add(arg0, arg1)),
             debug(c1)
-	    )	
+        )
     ),
     code1
 ))";
 
 std::string code2 = R"(block(
     define(code2, arg0, arg1,
-	    block(
-		    define(c2, __add(arg0, arg1)),
-		    debug(c2)
-	    )	
+        block(
+            define(c2, __add(arg0, arg1)),
+            debug(c2)
+        )
     ),
     code2
 ))";
@@ -142,10 +142,9 @@ void test_remote_arrays_chain(std::uint32_t here, std::uint32_t there)
 
     auto et1 = compile(code1, here);
     auto r1 = et1(a1, b1);
-    
+
     auto et2 = compile(code2, there);
     et2(a2, b2);
-
 }
 
 void test_remote_arrays_on(std::uint32_t there)
@@ -179,11 +178,13 @@ int main(int argc, char* argv[])
     if (is_locality_0)
     {
         std::stringstream const& strm = hpx::get_consolestream();
-        HPX_TEST_EQ(
-            strm.str(), std::string("0\n1\n"
-        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n"
-        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n"
-        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n"));
+        HPX_TEST_EQ(strm.str(),
+            std::string("0\n1\n"
+                        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n[[42, "
+                        "42], [42, 42]]\n"
+                        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n[[42, "
+                        "42], [42, 42]]\n"
+                        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n"));
     }
 
     return hpx::util::report_errors();
