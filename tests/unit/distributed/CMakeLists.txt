@@ -6,6 +6,7 @@
 
 set(tests
     remote_run
+    remote_arrays_addition
    )
 
 foreach(test ${tests})
