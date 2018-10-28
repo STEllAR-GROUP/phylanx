@@ -61,8 +61,8 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
-                "target object does not hold a numeric, range, or dictionary type and "
-                "as such does not support slicing", name, codename));
+                "target object does not hold a numeric, range, or dictionary "
+                "type and as such does not support slicing", name, codename));
     }
 
     primitive_argument_type slice(primitive_argument_type const& data,

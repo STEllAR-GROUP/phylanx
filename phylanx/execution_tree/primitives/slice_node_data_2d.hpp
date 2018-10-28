@@ -315,7 +315,11 @@ namespace phylanx { namespace execution_tree
                     "row-step can not be zero", name, codename));
         }
 
-        HPX_ASSERT(false);      // not implemented yet
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_basic_boolean",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+
         return {};
     }
 
@@ -523,7 +527,11 @@ namespace phylanx { namespace execution_tree
                     "column-step can not be zero", name, codename));
         }
 
-        HPX_ASSERT(false);      // not implemented yet
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_boolean_basic",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+
         return {};
     }
 
@@ -609,7 +617,11 @@ namespace phylanx { namespace execution_tree
                 detail::check_index(rows[i], numrows, name, codename);
         }
 
-        HPX_ASSERT(false);      // not implemented yet
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_integer_boolean",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+
         return {};
     }
 
@@ -627,7 +639,11 @@ namespace phylanx { namespace execution_tree
                 detail::check_index(columns[i], numcols, name, codename);
         }
 
-        HPX_ASSERT(false);      // not implemented yet
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_boolean_integer",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+
         return {};
     }
 
@@ -637,7 +653,11 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::uint8_t> && columns, F const& f,
         std::string const& name, std::string const& codename)
     {
-        HPX_ASSERT(false);      // not implemented yet
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
+            "phylanx::execution_tree::slice2d_boolean_boolean",
+            util::generate_error_message(
+                "this operation is not supported (yet)", name, codename));
+
         return {};
     }
 
@@ -867,7 +887,11 @@ namespace phylanx { namespace execution_tree
             }
             if (!valid(columns))
             {
-                HPX_ASSERT(false);      // not implemented yet
+                HPX_THROW_EXCEPTION(hpx::not_implemented,
+                    "phylanx::execution_tree::slice2d",
+                    util::generate_error_message(
+                        "this operation is not supported (yet)",
+                        name, codename));
             }
         }
         else if (is_integer_operand(rows))
@@ -890,7 +914,11 @@ namespace phylanx { namespace execution_tree
             }
             if (!valid(columns))
             {
-                HPX_ASSERT(false);      // not implemented yet
+                HPX_THROW_EXCEPTION(hpx::not_implemented,
+                    "phylanx::execution_tree::slice2d",
+                    util::generate_error_message(
+                        "this operation is not supported (yet)",
+                        name, codename));
 //                 return slice1d<T>(
 //                     input_matrix.matrix(), rows, f, name, codename);
             }

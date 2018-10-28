@@ -189,8 +189,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return;
 
             case 1:
+                {
+                    HPX_THROW_EXCEPTION(hpx::not_implemented,
+                        "phylanx::execution_tree::primitives::access_argument::"
+                            "store",
+                        generate_error_message(
+                            "assignment to (non-sliced) function argument is "
+                            "not supported (yet)"));
+                }
+                break;
+
             default:
-                HPX_ASSERT(false);
                 break;
             }
         }
@@ -270,8 +279,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return;
 
             case 1:
+                {
+                    HPX_THROW_EXCEPTION(hpx::not_implemented,
+                        "phylanx::execution_tree::primitives::access_argument::"
+                            "store",
+                        generate_error_message(
+                            "assignment to (non-sliced) function argument is "
+                            "not supported (yet)"));
+                }
+
             default:
-                HPX_ASSERT(false);
                 break;
             }
         }
