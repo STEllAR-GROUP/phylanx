@@ -78,7 +78,7 @@ def test_func():
     c = np.zeros((3,3))
     c = determinant(b)
     c = b
-    a = determinant( b * c )
+    a = np.zeros((4,4)) * c
 '''
 
 get_var_and_target_list(expr)

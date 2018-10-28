@@ -195,7 +195,6 @@ class TypeDeducer(ast.NodeVisitor):
         else:
             x = TypeDeducer(self.type_deducer_state)
             x.visit(node.value)
-            print(x.referenced_var_list)
             if x.type_deducer_state.new_variable_ref:
                 raise Exception("Attempting to use undeclared variable in"
                                 " assignment: Line number: {} Column Offset: {}".format(
@@ -216,10 +215,8 @@ class TypeDeducer(ast.NodeVisitor):
         '''
 
     def visit_AnnAssign(self, node):
-        #astpretty.pprint(node)
         x = TypeDeducer(self.type_deducer_state)
         x.visit(node.value)
-        print(x.referenced_var_list)
         if x.type_deducer_state.new_variable_ref:
             raise Exception("Attempting to use undeclared variable in annotated"
                             " assignment: Line number: {} Column Offset: {}".format(
@@ -243,7 +240,8 @@ class TypeDeducer(ast.NodeVisitor):
     '''
 
     def visit_AugAssign(self, node):
-        aug_op = ast.BinOp(left=node.target, op=node.op, right=node.value)
+        aug_op = ast.BinOp(left=node.target, op=node.op, right=node.value,
+                           lineno=node.lineno, col_offset=node.col_offset)
         x = TypeDeducer(self.type_deducer_state)
         x.visit(aug_op)
         if x.type_deducer_state.new_variable_ref:
@@ -313,6 +311,17 @@ class TypeDeducer(ast.NodeVisitor):
         self.referenced_var_list.append(var_tmp)
         ast.NodeVisitor.generic_visit(self, node)
 
+    def visit_Tuple(self, node):
+        self.var_type = 'row_vector'
+        if len(node.elts) == 0:
+            self.dims = ()
+        elif len(node.elts) == 1:
+            if isinstance(node.elts[0], ast.Num):
+                self.dims = (node.elts[0].n, )
+        elif len(node.elts) == 2:
+            if isinstance(node.elts[0], ast.Num) and isinstance(node.elts[1], ast.Num):
+                self.dims = (node.elts[0].n, node.elts[1].n)
+
     def visit_BinOp(self, node):
         """Another linchpin for TypeDeducer, BinOp handles type inference
         for binary operations"""
@@ -353,91 +362,55 @@ class TypeDeducer(ast.NodeVisitor):
 
     def visit_Call(self, node):
         """Like visit_BinOp and visit_UnaryOp, visit_Call handles type deduction
-        for arbitrary function calls. Currently, it only supports numpy unary or
-        binary function calls however"""
+        for arbitrary function calls. Currently however, it only supports numpy unary or
+        binary function calls, and determinant"""
+        # astpretty.pprint(node)
+        op_name = None
         if isinstance(node.func, ast.Attribute):
-            callable_name = node.func.value.id
-            if callable_name == 'np' or callable_name == 'numpy':
-                if len(node.args) == 2 and isinstance(node.args[0], ast.Name)\
-                        and isinstance(node.args[1], ast.Name):
-                    try:
-                        left_type_deducer = TypeDeducer(self.type_deducer_state)
-                        left_type_deducer.visit(node.args[0])
-                        left_type = left_type_deducer.var_type
-                        right_type_deducer = TypeDeducer(self.type_deducer_state)
-                        right_type_deducer.visit(node.args[1])
-                        right_type = right_type_deducer.var_type
-                        if left_type is not None and right_type is not None:
-                            self.var_type = get_type.get_output(node.func.attr,
-                                                                left_type, right_type)
-                            self.make_var_representation(node)
-                            self.referenced_var_list.append(left_type_deducer.referenced_var_list)
-                            self.referenced_var_list.append(right_type_deducer.referenced_var_list)
-                        else:
-                            self.var_type = None
-                    except TypeError:
-                        try:
-                            func = numpy_output_type.numpy_parsers[node.func.attr]
-                            self.var_type, self.dims = func(node.args, node.keywords)
-                            self.make_var_representation(node)
-                        except KeyError:
-                            raise NotImplementedError(
-                                "Numpy function {} not supported".format(node.func.attr))
-                elif len(node.args) == 1 and isinstance(node.args[0], ast.Name):
-                    try:
-                        type_deducer = TypeDeducer(self.type_deducer_state)
-                        type_deducer.visit(node.args[0])
-                        type_var = type_deducer.var_type
-                        if type_var is not None:
-                            self.var_type = get_type.get_output(node.func.attr, type_var)
-                            self.referenced_var_list.append(type_deducer.referenced_var_list)
-                            self.make_var_representation(node)
-                        else:
-                            self.var_type = None
-                    except TypeError:
-                        try:
-                            func = numpy_output_type.numpy_parsers[node.func.attr]
-                            self.var_type, self.dims = func(node.args, node.keywords)
-                            self.make_var_representation(node)
-                        except KeyError:
-                            raise NotImplementedError(
-                                "Numpy function {} not supported".format(node.func.attr))
-                else:
-                    try:
-                        func = numpy_output_type.numpy_parsers[node.func.attr]
-                        self.var_type, self.dims = func(node.args, node.keywords)
-                        self.make_var_representation(node)
-                    except KeyError:
-                        raise NotImplementedError(
-                            "Numpy function {} not supported".format(node.func.attr))
-                    except TypeError:
-                        raise TypeError("Numpy function {} output type not determinable on variable inputs\n"
-                                        "\tLine number: {} Column Offset: {}".format(node.func.attr,
-                                                                                     node.lineno,
-                                                                                     node.col_offset))
+            if node.func.value.id == "np" or node.func.value.id == "numpy":
+                op_name = node.func.attr
             else:
-                raise NotImplementedError(
-                    "Non-Numpy function calls not supported"
-                )
-        else:
-            if isinstance(node.func, ast.Name):
-                if node.func.id == 'determinant':
-                    if len(node.args) == 1:  # and isinstance(node.args[0], ast.Name):
-                        x = TypeDeducer(self.type_deducer_state)
-                        x.visit(node.args[0])
-                        if x.dims is not None:
-                            if x.dims[0] == x.dims[1]:
-                                if x.dims[0] > 2:
-                                    self.var_type = "matrix"
-                                    self.dims = (x.dims[0]-1, x.dims[0]-1)
-                                elif x.dims[0] == 2:
-                                    self.var_type = "scalar"
-                                    self.dims = (1, 1)
-                                self.make_var_representation(node)
-                                return
-                    raise NotImplementedError("Determinant calls must be on matrices with detectable, "
-                                              "square dimensions")
-            raise NotImplementedError(
-                "Non-Numpy function calls not supported"
-            )
+                raise NotImplementedError("Non-Numpy functions not supported\n"
+                                          "\tLine number: {}\n\tColumn Offset: {}"
+                                          .format(node.lineno, node.col_offset))
+        elif isinstance(node.func, ast.Name):
+            op_name = node.func.id
+        if len(node.args) == 2: # and isinstance(node.args[0], ast.Name)\
+                # and isinstance(node.args[1], ast.Name):
+            print("It's a binary call!")
+            left_type_deducer = TypeDeducer(self.type_deducer_state)
+            left_type_deducer.visit(node.args[0])
+            left_type = left_type_deducer.var_type
+            right_type_deducer = TypeDeducer(self.type_deducer_state)
+            right_type_deducer.visit(node.args[1])
+            right_type = right_type_deducer.var_type
+            if left_type is not None and right_type is not None:
+                self.var_type, self.dims = get_type.get_output(op_name,
+                                                               left_type, right_type,
+                                                               ldims=left_type_deducer.dims,
+                                                               rdims=right_type_deducer.dims)
+                self.make_var_representation(node)
+                self.referenced_var_list.append(left_type_deducer.referenced_var_list)
+                self.referenced_var_list.append(right_type_deducer.referenced_var_list)
+            else:
+                self.var_type = None
+        elif len(node.args) == 1: # and isinstance(node.args[0], ast.Name):
+            type_deducer = TypeDeducer(self.type_deducer_state)
+            type_deducer.visit(node.args[0])
+            type_var = type_deducer.var_type
+            type_dims = type_deducer.dims
+            print(type_dims)
+            print("###############################")
+            for k in self.type_deducer_state.target_list:
+                k.print()
+            print(op_name, type_var, type_dims, len(type_dims), type(type_dims).__name__)
+            time.sleep(0.01)
+            if type_var is not None:
+                self.var_type, self.dims = get_type.get_output(op_name,
+                                                               type_var,
+                                                               ldims=type_dims)
+                self.referenced_var_list.append(type_deducer.referenced_var_list)
+                self.make_var_representation(node)
+            else:
+                self.var_type = None
 

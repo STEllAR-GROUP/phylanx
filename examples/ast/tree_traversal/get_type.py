@@ -2,7 +2,7 @@
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
+import numpy_output_type
 
 #################################################
 """ Dictionary for mapping unary operators/functions to output types """
@@ -103,7 +103,6 @@ unary_matrix = {
     "append": "matrix",
     "argmax": " ",  # Should these count?
     "argmin": " ",
-    "determinant": "depends",
     "diag": "vector",
     "identity": "matrix",  # Return matrix of same dimension but identity?
     "inverse": "matrix",
@@ -434,22 +433,99 @@ first_type = {
 ###################################################
 
 
-def get_output(op: str, lhs: str, rhs: str = None) -> str:
+# This needs review
+def parse_zeros(dims):
+    """Special function for determining output types of the numpy.zeros
+    function given its arguments"""
+    if len(dims) == 0:
+        return 'scalar', (1, 1)
+    elif len(dims) == 1:
+        if dims[0] > 1:
+            return 'row_vector', (1, dims[0])
+        else:
+            return 'scalar', (1, 1)
+    else:
+        if dims[0] > 1:
+            if dims[1] > 1:
+                return 'matrix', (dims[0], dims[1])
+            else:
+                return 'column_vector', (dims[0], dims[1])
+        else:
+            if dims[1] > 1:
+                return 'row_vector', (dims[0], dims[1])
+            else:
+                return 'scalar', (dims[0], dims[1])
+
+
+def parse_identity(dims):
+    """Special function for determining output types of the numpy.identity
+    function given its arguments"""
+    if isinstance(dims[0], int):
+        if dims[0] == 1:
+            return 'scalar', (1, 1)
+        elif dims[0] >= 2:
+            return 'matrix', (dims[0], dims[0])
+    return None
+
+
+def parse_determinant(dims):
+    if dims[0] == dims[1]:
+        if dims[0] > 2:
+            var_type = "matrix"
+            dims = (dims[0] - 1, dims[0] - 1)
+        elif dims[0] == 2:
+            var_type = "scalar"
+            dims = (1, 1)
+        else:
+            raise NotImplementedError("Determinant calls must be"
+                                      " on matrices with detectable, "
+                                      "square dimensions")
+        return var_type, dims
+    raise NotImplementedError(
+        "Non-Numpy function calls not supported"
+    )
+
+
+"""Dictionary for determining which numpy parsing function should be called"""
+numpy_parsers: dict = {
+    'zeros': parse_zeros,
+    'ones': parse_zeros,
+    'identity': parse_identity,
+    'determinant': parse_determinant
+}
+
+
+def get_output(op: str, lhs: str, rhs: str = None, ldims: tuple = None, rdims=None) -> str:
     """Utility function for obtaining output type information for a given
     function and its argument types"""
-    try:
-        if rhs is not None:
-            dict_1 = first_type[lhs]
-            dict_2 = dict_1[rhs]
-            result = dict_2[op]
-        else:
-            result = unary_ops[lhs][op]
-        return result
-    except KeyError:
-        if rhs is not None:
-            raise TypeError("Operation {} not supported with arguments of type {} "
-                            "and {}".format(op, lhs, rhs))
-        else:
-            raise TypeError("Operation {} not supported with argument of "
-                            "type {}".format(op, lhs))
-
+    print("Inside output!")
+    error = None
+    if rhs is not None:
+        try:
+            return first_type[lhs][rhs][op]
+        except KeyError:
+            error = NotImplementedError("Operation {} not supported with arguments of type {} "
+                                        "and {}".format(op, lhs, rhs))
+        try:
+            if ldims is not None and rdims is not None:
+                return numpy_parsers[op](ldims, rdims)
+        except TypeError:
+            error = TypeError("Numpy function look-up or dimension parsing failed")
+    else:
+        print("Inside else!")
+        print(ldims)
+        try:
+            print("B4 unary ops")
+            print(lhs, op)
+            return unary_ops[lhs][op]
+        except KeyError:
+            error = NotImplementedError("Operation {} not supported with single argument of "
+                                        "type {}".format(op, lhs))
+        print("After unary ops!")
+        try:
+            print("Looking for non-op single arg")
+            if ldims is not None:
+                return numpy_parsers[op](ldims)
+        except TypeError:
+            error = TypeError("Numpy function look-up or dimension parsing failed")
+    raise error
