@@ -33,17 +33,15 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& indices,
         std::string const& name, std::string const& codename)
     {
-        switch (data.index())
+        switch (data.num_dimensions())
         {
         case 0:
             return slice1d_extract0d(data, indices, name, codename);
 
-        case 1: HPX_FALLTHROUGH;
-        case 3:
+        case 1:
             return slice1d_extract1d(data, indices, name, codename);
 
-        case 2: HPX_FALLTHROUGH;
-        case 4:
+        case 2:
             return slice1d_extract2d(data, indices, name, codename);
 
         default:
@@ -63,10 +61,9 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& columns,
         std::string const& name, std::string const& codename)
     {
-        switch (data.index())
+        switch (data.num_dimensions())
         {
-        case 1: HPX_FALLTHROUGH;
-        case 3:
+        case 1:
             {
                 if (valid(rows))
                 {
@@ -82,11 +79,10 @@ namespace phylanx { namespace execution_tree
             }
             break;
 
-        case 2: HPX_FALLTHROUGH;
-        case 4:
+        case 2:
             return slice2d_extract2d(data, rows, columns, name, codename);
 
-        case 0: HPX_FALLTHROUGH;
+        case 0:
         default:
             break;
         }
@@ -142,19 +138,17 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& value, std::string const& name,
         std::string const& codename)
     {
-        switch (data.index())
+        switch (data.num_dimensions())
         {
         case 0:
             return slice1d_assign0d(std::move(data), indices, std::move(value),
                 name, codename);
 
-        case 1: HPX_FALLTHROUGH;
-        case 3:
+        case 1:
             return slice1d_assign1d(std::move(data), indices, std::move(value),
                 name, codename);
 
-        case 2: HPX_FALLTHROUGH;
-        case 4:
+        case 2:
             return slice1d_assign2d(std::move(data), indices, std::move(value),
                 name, codename);
 
@@ -176,19 +170,17 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& value, std::string const& name,
         std::string const& codename)
     {
-        switch (data.index())
+        switch (data.num_dimensions())
         {
-        case 1: HPX_FALLTHROUGH;
-        case 3:
+        case 1:
             return slice2d_assign1d(std::move(data), rows, columns,
                 std::move(value), name, codename);
 
-        case 2: HPX_FALLTHROUGH;
-        case 4:
+        case 2:
             return slice2d_assign2d(std::move(data), rows, columns,
                 std::move(value), name, codename);
 
-        case 0: HPX_FALLTHROUGH;
+        case 0:
         default:
             break;
         }
