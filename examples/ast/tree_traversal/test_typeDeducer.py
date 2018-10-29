@@ -1,12 +1,15 @@
 from unittest import TestCase
 from TypeDeducer import TypeDeducer, TypeDeducerState
 import ast
+import astpretty
 
 
 class TestTypeDeducer(TestCase):
 
-    def get_td(self, expr):
+    def get_td(self, expr, debug=False):
         tree = ast.parse(expr)
+        if debug:
+            astpretty.pprint(tree)
         tds = TypeDeducerState({})
         td = TypeDeducer(tds)
         td.visit(tree)

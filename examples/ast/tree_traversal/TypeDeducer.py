@@ -119,7 +119,7 @@ class TypeDeducerState(object):
             assert(self.inside_conditional is not True)
             return closest_ref
         else:
-            raise LookupError("Variable {} not found")
+            raise LookupError("Variable {} not found".format(my_name))
 
     def variable_previously_used(self, my_name, my_lineno, my_col):
         """Given a variable name and location checks whether that variable has
@@ -160,6 +160,7 @@ class TypeDeducer(ast.NodeVisitor):
     var_type: str
     type_deducer_state: TypeDeducerState
     target: bool
+    dims : tuple
 
     def __init__(self, state, target=False):
         self.var_type = None
@@ -176,7 +177,8 @@ class TypeDeducer(ast.NodeVisitor):
         self.var_representation = Variable("r{}".format(self.type_deducer_state.last_id),
                                            node.lineno, node.col_offset, self.var_type,
                                            conditional_assigned=
-                                           self.type_deducer_state.inside_conditional)
+                                           self.type_deducer_state.inside_conditional,
+                                           dims=self.dims)
         self.type_deducer_state.last_id += 1
         self.type_deducer_state.var_list.append(self.var_representation)
 
@@ -206,13 +208,6 @@ class TypeDeducer(ast.NodeVisitor):
                              target=node.targets, annotation=self.var_type,
                              value=node.value, simple=1)
         self.type_deducer_state.assign_list.append(node)
-        '''
-        if x is not None:
-            self.var_representation = Variable("w{}".format(self.type_deducer_state.last_id),
-                                           node.lineno, node.col_offset, self.var_type, dims=x.dims)
-            self.type_deducer_state.last_id += 1
-            self.type_deducer_state.var_list.append(self.var_representation)
-        '''
 
     def visit_AnnAssign(self, node):
         x = TypeDeducer(self.type_deducer_state)
@@ -232,12 +227,6 @@ class TypeDeducer(ast.NodeVisitor):
         elif isinstance(node.annotation, ast.NameConstant):
             assert(node.annotation.value == self.var_type)
             node.annotation = node.annotation.value
-    '''
-        self.var_representation = Variable("w{}".format(self.type_deducer_state.last_id),
-                                           node.lineno, node.col_offset, self.var_type, dims=x.dims)
-        self.type_deducer_state.last_id += 1
-        self.type_deducer_state.var_list.append(self.var_representation)
-    '''
 
     def visit_AugAssign(self, node):
         aug_op = ast.BinOp(left=node.target, op=node.op, right=node.value,
@@ -255,15 +244,10 @@ class TypeDeducer(ast.NodeVisitor):
                              value=aug_op, simple=1)
         self.type_deducer_state.assign_list.append(node)
         self.type_deducer_state.add_to_target_list(node.target, self.var_type, self.dims)
-        '''
-        self.var_representation = Variable("w{}".format(self.type_deducer_state.last_id),
-                                           node.lineno, node.col_offset, self.var_type, dims=x.dims)
-        self.type_deducer_state.last_id += 1
-        self.type_deducer_state.var_list.append(self.var_representation)
-        '''
 
     def visit_Num(self, node):
         self.var_type = 'scalar'
+        self.dims = (1, 1)
 
     def visit_Name(self, node):
         """Creates variables and inserts them into the TypeDeducerState's
@@ -282,9 +266,9 @@ class TypeDeducer(ast.NodeVisitor):
             var_type = None
         if self.type_deducer_state.inside_conditional:
             var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type,
-                               conditional_assigned=True)
+                               conditional_assigned=True, dims=self.dims)
         else:
-            var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type)
+            var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type, dims=self.dims)
         if var_tmp is not None:
             self.type_deducer_state.var_list.append(var_tmp)
             self.var_type = var_tmp.var_type
@@ -325,6 +309,7 @@ class TypeDeducer(ast.NodeVisitor):
     def visit_BinOp(self, node):
         """Another linchpin for TypeDeducer, BinOp handles type inference
         for binary operations"""
+        time.sleep(0.01)
         left_type_deducer = TypeDeducer(self.type_deducer_state)
         left_type_deducer.visit(node.left)
         left_type = left_type_deducer.var_type
@@ -335,7 +320,7 @@ class TypeDeducer(ast.NodeVisitor):
             op_name = type(node.op).__name__.lower()
             if type(node.op).__name__ == 'Mult':
                 op_name = 'mul'
-            self.var_type = get_type.get_output(op_name, left_type, right_type)
+            self.var_type, self.dims = get_type.get_output(op_name, [left_type, right_type])
             self.make_var_representation(node)
             self.referenced_var_list.append(left_type_deducer.referenced_var_list)
             self.referenced_var_list.append(right_type_deducer.referenced_var_list)
@@ -350,7 +335,7 @@ class TypeDeducer(ast.NodeVisitor):
         type_var = type_deducer.var_type
         if type_var is not None:
             op_name = type(node.op).__name__.lower()
-            self.var_type = get_type.get_output(op_name, type_var)
+            self.var_type, self.dims = get_type.get_output(op_name, [type_var])
             self.make_var_representation(node)
         else:
             self.var_type = None
@@ -364,7 +349,6 @@ class TypeDeducer(ast.NodeVisitor):
         """Like visit_BinOp and visit_UnaryOp, visit_Call handles type deduction
         for arbitrary function calls. Currently however, it only supports numpy unary or
         binary function calls, and determinant"""
-        # astpretty.pprint(node)
         op_name = None
         if isinstance(node.func, ast.Attribute):
             if node.func.value.id == "np" or node.func.value.id == "numpy":
@@ -375,42 +359,20 @@ class TypeDeducer(ast.NodeVisitor):
                                           .format(node.lineno, node.col_offset))
         elif isinstance(node.func, ast.Name):
             op_name = node.func.id
-        if len(node.args) == 2: # and isinstance(node.args[0], ast.Name)\
-                # and isinstance(node.args[1], ast.Name):
-            print("It's a binary call!")
-            left_type_deducer = TypeDeducer(self.type_deducer_state)
-            left_type_deducer.visit(node.args[0])
-            left_type = left_type_deducer.var_type
-            right_type_deducer = TypeDeducer(self.type_deducer_state)
-            right_type_deducer.visit(node.args[1])
-            right_type = right_type_deducer.var_type
-            if left_type is not None and right_type is not None:
-                self.var_type, self.dims = get_type.get_output(op_name,
-                                                               left_type, right_type,
-                                                               ldims=left_type_deducer.dims,
-                                                               rdims=right_type_deducer.dims)
-                self.make_var_representation(node)
-                self.referenced_var_list.append(left_type_deducer.referenced_var_list)
-                self.referenced_var_list.append(right_type_deducer.referenced_var_list)
-            else:
-                self.var_type = None
-        elif len(node.args) == 1: # and isinstance(node.args[0], ast.Name):
-            type_deducer = TypeDeducer(self.type_deducer_state)
-            type_deducer.visit(node.args[0])
-            type_var = type_deducer.var_type
-            type_dims = type_deducer.dims
-            print(type_dims)
-            print("###############################")
-            for k in self.type_deducer_state.target_list:
-                k.print()
-            print(op_name, type_var, type_dims, len(type_dims), type(type_dims).__name__)
-            time.sleep(0.01)
-            if type_var is not None:
-                self.var_type, self.dims = get_type.get_output(op_name,
-                                                               type_var,
-                                                               ldims=type_dims)
-                self.referenced_var_list.append(type_deducer.referenced_var_list)
-                self.make_var_representation(node)
-            else:
-                self.var_type = None
-
+        td_list = []
+        type_list = []
+        dims_list = []
+        if len(node.args) > 0:
+            for arg in node.args:
+                td = TypeDeducer(self.type_deducer_state)
+                td.visit(arg)
+                if td.var_type is None:
+                    self.var_type = None
+                    return
+                td_list.append(td)
+                type_list.append(td.var_type)
+                dims_list.append(td.dims)
+            self.var_type, self.dims = get_type.get_output(op_name, type_list, dims_list)
+            self.make_var_representation(node)
+            for td in td_list:
+                self.referenced_var_list.append(td.referenced_var_list)

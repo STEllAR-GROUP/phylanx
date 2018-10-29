@@ -495,37 +495,31 @@ numpy_parsers: dict = {
 }
 
 
-def get_output(op: str, lhs: str, rhs: str = None, ldims: tuple = None, rdims=None) -> str:
+def get_output(op: str, types: list, dims: list = None) -> tuple:
     """Utility function for obtaining output type information for a given
     function and its argument types"""
-    print("Inside output!")
     error = None
-    if rhs is not None:
+    if len(types) > 1:
         try:
-            return first_type[lhs][rhs][op]
+            return first_type[types[0]][types[1]][op], None
         except KeyError:
+            # print("Key error!", op, types[0], types[1])
             error = NotImplementedError("Operation {} not supported with arguments of type {} "
-                                        "and {}".format(op, lhs, rhs))
+                                        "and {}".format(op, types[0], types[1]))
         try:
-            if ldims is not None and rdims is not None:
-                return numpy_parsers[op](ldims, rdims)
+            if dims is not None and len(dims) > 1:
+                return numpy_parsers[op](dims[0], dims[1])
         except TypeError:
             error = TypeError("Numpy function look-up or dimension parsing failed")
-    else:
-        print("Inside else!")
-        print(ldims)
+    elif len(types) == 1:
         try:
-            print("B4 unary ops")
-            print(lhs, op)
-            return unary_ops[lhs][op]
+            return unary_ops[types[0]][op], None
         except KeyError:
             error = NotImplementedError("Operation {} not supported with single argument of "
-                                        "type {}".format(op, lhs))
-        print("After unary ops!")
+                                        "type {}".format(op, types[0]))
         try:
-            print("Looking for non-op single arg")
-            if ldims is not None:
-                return numpy_parsers[op](ldims)
+            if dims is not None and len(dims) == 1:
+                return numpy_parsers[op](dims[0])
         except TypeError:
             error = TypeError("Numpy function look-up or dimension parsing failed")
     raise error
