@@ -1,12 +1,13 @@
-//   Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 //
-//   Distributed under the Boost Software License, Version 1.0. (See accompanying
-//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/generic_function.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -50,28 +51,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "An array of random numbers.")
     };
-
-    ///////////////////////////////////////////////////////////////////////////
-    std::uint32_t random::default_seed()
-    {
-        static const std::uint32_t seed =
-            static_cast<std::uint32_t>(std::random_device{}());
-        return seed;
-    }
-
-    std::uint32_t random::seed_ = 0;
-    std::mt19937 random::rng_{random::default_seed()};
-
-    void random::set_seed(std::uint32_t seed)
-    {
-        seed_ = seed;
-        rng_.seed(seed_);
-    }
-
-    std::uint32_t random::get_seed()
-    {
-        return seed_;
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     // extract the required dimensionality from argument 1
@@ -250,7 +229,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename Dist, typename T>
         primitive_argument_type randomize(Dist& dist, T& d)
         {
-            d = dist(primitives::random::rng_);
+            d = dist(util::rng_);
             return primitive_argument_type{d};
         }
 
@@ -262,7 +241,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             for (std::size_t i = 0; i != size; ++i)
             {
-                v[i] = dist(primitives::random::rng_);
+                v[i] = dist(util::rng_);
             }
 
             return primitive_argument_type{std::move(v)};
@@ -279,7 +258,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 for (std::size_t j = 0; j != columns; ++j)
                 {
-                    m(i, j) = dist(primitives::random::rng_);
+                    m(i, j) = dist(util::rng_);
                 }
             }
 
@@ -740,7 +719,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             .then(hpx::launch::sync, hpx::util::unwrapping(
                 [](ir::node_data<double>&& data) -> primitive_argument_type
                 {
-                    random::set_seed(static_cast<std::uint32_t>(data[0]));
+                    util::set_seed(static_cast<std::uint32_t>(data[0]));
                     return primitive_argument_type{};
                 }));
     }
@@ -751,6 +730,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const&, std::string const&)
     {
         return primitive_argument_type{
-            static_cast<std::int64_t>(random::get_seed())};
+            static_cast<std::int64_t>(util::get_seed())};
     }
 }}}

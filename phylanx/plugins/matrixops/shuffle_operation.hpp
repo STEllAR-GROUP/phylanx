@@ -14,7 +14,6 @@
 #include <hpx/lcos/future.hpp>
 
 #include <memory>
-#include <random>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,8 +54,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& params) const override;
 
     private:
-        static std::mt19937 rand_machine;
-
         primitive_argument_type shuffle_1d(arg_type&& arg) const;
         primitive_argument_type shuffle_2d(arg_type&& arg) const;
     };

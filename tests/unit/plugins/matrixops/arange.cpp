@@ -47,5 +47,11 @@ int main(int argc, char* argv[])
 
     test_arange("arange(5.0, 0, -1.0)", "hstack(5.0, 4.0, 3.0, 2.0, 1.0)");
 
+    test_arange("arange__int(0, 5, 1)", "hstack(0, 1, 2, 3, 4)");
+    test_arange("arange__float(0, 5, 1)", "hstack(0.0, 1.0, 2.0, 3.0, 4.0)");
+    test_arange("arange__bool(0, 1, 1)", "hstack(false)");
+
+    test_arange("arange__int(0.0, 5.0, 1.0)", "hstack(0, 1, 2, 3, 4)");
+
     return hpx::util::report_errors();
 }

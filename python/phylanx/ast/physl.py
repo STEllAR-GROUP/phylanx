@@ -335,28 +335,66 @@ class PhySL:
 
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
+        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
+        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
+        dtypes_bools = ['b', 'bool']
+        phylanx_dtype = {
+            **dict.fromkeys(dtype_floats, 'float'),
+            **dict.fromkeys(dtype_ints, 'int'),
+            **dict.fromkeys(dtypes_bools, 'bool')
+        }
+        dtype = ''
+        for k in node.keywords:
+            if k.arg is 'dtype':
+                if isinstance(k.value, ast.Name):
+                    type_str = phylanx_dtype.get(k.value.id)
+                if isinstance(k.value, ast.Str):
+                    type_str = phylanx_dtype.get(k.value.s)
+                if type_str:
+                    dtype = '__' + type_str
+                else:
+                    raise NotImplementedError(
+                        'Only the followig are acceptable Phylanx array types:\n'
+                        'booleans: %s\nfloats: %s\nintegers %s' %
+                        (dtypes_bools, dtype_floats, dtype_ints))
+                break
 
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy functions' signatures.
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if 'hstack' in symbol and isinstance(args[0], list):
             if args[0][1] and isinstance(args[0][1][0], list):
-                symbol = symbol.replace('hstack', 'vstack')
+                symbol = symbol.replace('hstack', 'vstack' + dtype)
                 for i in range(len(args[0][1])):
                     args[0][1][i][0] = args[0][1][i][0].replace(
-                        'list', 'hstack')
+                        'list', 'hstack' + dtype)
                     if isinstance(args[0][1][i][1][0], list):
                         raise NotImplementedError(
                             'Phylanx only supports 1 and 2 dimensional arrays.'
                         )
+            else:
+                symbol = symbol.replace('hstack', 'hstack' + dtype)
             args = args[0][1]
         elif 'zeros' in symbol:
-            symbol = symbol.replace('zeros', 'constant')
+            symbol = symbol.replace('zeros', 'constant' + dtype)
             op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
                 return [symbol, ('0', [op, args])]
             else:
                 return [symbol, ('0', args)]
+        elif 'ones' in symbol:
+            symbol = symbol.replace('ones', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'list')
+            if isinstance(args[0], tuple):
+                return [symbol, ('1', [op, args])]
+            else:
+                return [symbol, ('1', args)]
+        elif 'identity' in symbol:
+            symbol = symbol.replace('identity', 'identity' + dtype)
+        elif 'arange' in symbol:
+            symbol = symbol.replace('arange', 'arange' + dtype)
+        elif 'cumsum' in symbol:
+            symbol = symbol.replace('cumsum', 'cumsum' + dtype)
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         return [symbol, args]
@@ -660,8 +698,8 @@ class PhySL:
 
         if type(node.value) == ast.Tuple:
             return ["list", self.apply_rule(node.value)]
-        else:
-            return self.apply_rule(node.value)
+
+        return self.apply_rule(node.value)
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""
