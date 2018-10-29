@@ -7,6 +7,7 @@ set(subdirs
     als
     lir
     lra
+    nn
    )
 
 foreach(subdir ${subdirs})
