@@ -47,6 +47,7 @@ char const* const nn_code = R"(block(
     //
     define(nn, X, y, num_iter, lr,
         block(
+            set_seed(0),
             define(inputlayer_neurons, slice(shape(X), 1)),
             define(hidden_layer_neurons, inputlayer_neurons/2),
             define(output_neurons, slice(shape(y), 0)),
@@ -80,7 +81,6 @@ char const* const nn_code = R"(block(
 
 int hpx_main(boost::program_options::variables_map& vm)
 {
-    std::cout << "hihihi\n";
     if (vm.count("data_csv") == 0)
     {
         std::cerr << "Please specify '--data_csv=data-file'";

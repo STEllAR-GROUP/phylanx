@@ -3,7 +3,6 @@ import numpy as np
 import time
 import argparse
 import sys
-from phylanx import Phylanx
 
 if not len(sys.argv) == 6:
     print("This program requires the following 6 arguments seperated by a space ")
@@ -39,17 +38,18 @@ print("Starting NN ....")
 
 tnn=time.time()
 
-def SingleLayerNeuralNetwork(X, y, num_iter, lr):
 
-    input_layer_neurons = np.shape(X)[1]  # number of features in data set
-    output_neurons = np.shape(y)[0]  # number of neurons at output layer
-    hidden_layer_neurons = input_layer_neurons/2
+def SingleLayerNeuralNetwork(X, y, num_iter, lr):
+    np.random.seed(0)
+    input_layer_neurons = X.shape[1]  # number of features in data set
+    output_neurons = y.shape[0]  # number of neurons at output layer
+    hidden_layer_neurons = int(input_layer_neurons/2)
 
     # weight and bias initialization
-    wh = random([input_layer_neurons, hidden_layer_neurons], "uniform")
-    bh = random([1, hidden_layer_neurons], "uniform")
-    wout = random([hidden_layer_neurons, output_neurons], "uniform")
-    bout = random([1, output_neurons], "uniform")
+    wh = np.random.uniform(size=(input_layer_neurons, hidden_layer_neurons))
+    bh = np.random.uniform(size=(1, hidden_layer_neurons))
+    wout = np.random.uniform(size=(hidden_layer_neurons, output_neurons))
+    bout = np.random.uniform(size=(1, output_neurons))
 
     for i in range(num_iter):
         # Forward
@@ -68,11 +68,11 @@ def SingleLayerNeuralNetwork(X, y, num_iter, lr):
         Error_at_hidden_layer = np.dot(d_output, np.transpose(wout))
         d_hidden_layer = Error_at_hidden_layer * slope_hidden_layer
         wout += (np.dot(np.transpose(hidden_layer_activations), d_output)) * lr
-        bout += np.sum(d_output, 0, True) * lr
-        # bout += np.sum(d_output, axis=0,keepdims=True) *lr # pure python version
+        # bout += np.sum(d_output, 0, True) * lr
+        bout += np.sum(d_output, axis=0,keepdims=True) *lr # pure python version
         wh += (np.dot(np.transpose(X), d_hidden_layer)) * lr
-        bh += np.sum(d_hidden_layer, 0, True) * lr
-        # bh += np.sum(d_hidden_layer, axis=0,keepdims=True) *lr # pure python version
+        # bh += np.sum(d_hidden_layer, 0, True) * lr
+        bh += np.sum(d_hidden_layer, axis=0,keepdims=True) *lr # pure python version
     # print(output, '\n')
     return wh
 
@@ -82,4 +82,3 @@ weights = SingleLayerNeuralNetwork(X, Y, iterations, 1e-5)
 tfinal= time.time()
 
 print (" result = " , weights, " time: ", tfinal-tnn)
-
