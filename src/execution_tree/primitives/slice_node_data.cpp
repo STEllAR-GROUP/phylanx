@@ -94,8 +94,8 @@ namespace phylanx { namespace execution_tree
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice",
             util::generate_error_message(
-                "target ir::node_data object holds data type that does not support "
-                "2d slicing",
+                "target ir::node_data object holds data type that does not "
+                "support 2d slicing",
                 name, codename));
     }
 

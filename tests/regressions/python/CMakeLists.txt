@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    466_compiler_problems
     508_unknown_named_argument
     522_multidimension_np_arrays
     530_augmented_assignment_indexed_lhs
@@ -11,6 +12,7 @@ set(tests
     624_advanced_indexing
     635_arange_args
     636_boolean_array
+    640_function_argument
     array_len_494
     array_shape_486
     array_subscript_403

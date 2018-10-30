@@ -70,7 +70,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         eval_mode mode) const
     {
         // handle slicing, we can replace the params with our slicing
-        // parameter as variable evaluation can't depend on those anyways
+        // parameters as variable evaluation can't depend on those anyways
         mode = eval_mode(mode | eval_dont_wrap_functions);
         switch (operands_.size())
         {

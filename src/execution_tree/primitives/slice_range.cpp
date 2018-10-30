@@ -253,7 +253,7 @@ namespace phylanx { namespace execution_tree
 //             }
 //         }
 
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+        HPX_THROW_EXCEPTION(hpx::not_implemented,
             "phylanx::execution_tree::slice_list",
             util::generate_error_message(
                 "assignment to list elements based on an index list is not "
