@@ -263,13 +263,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 0:
             {
                 auto rhs_val = extract_value_scalar<R>(
-                    std::move(rhs), name_, codename_).scalar();
+                    std::move(rhs), name_, codename_);
 
                 return primitive_argument_type{
                     extract_value_vector<R>(std::move(lhs),
                         [&](T val, std::size_t index)
                         {
-                            return op[index] ? val : rhs_val;
+                            return op[index] ? val : rhs_val.scalar();
                         },
                         sizes[1], name_, codename_)};
             }
@@ -328,13 +328,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 0:
             {
                 auto rhs_val = extract_value_scalar<R>(
-                    std::move(rhs), name_, codename_).scalar();
+                    std::move(rhs), name_, codename_);
 
                 return primitive_argument_type{
                     extract_value_matrix<R>(std::move(lhs),
                         [&](T val, std::size_t row, std::size_t column)
                         {
-                            return op.at(row, column) ? val : rhs_val;
+                            return op.at(row, column) ? val : rhs_val.scalar();
                         },
                         sizes[0], sizes[1], name_, codename_)};
             }
