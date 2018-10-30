@@ -17,6 +17,7 @@
 #include <boost/spirit/include/phoenix_function.hpp>
 
 #include <cstdint>
+#include <string>
 
 namespace phylanx { namespace ast { namespace parser
 {

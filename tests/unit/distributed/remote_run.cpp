@@ -36,13 +36,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple(
             "locality_id", std::vector<std::string>{"locality_id()"},
             &create_generic_function<locality_id_action>,
-            &create_primitive<generic_function<locality_id_action>>,
-            R"(
+            &create_primitive<generic_function<locality_id_action>>, R"(
+            locality_id
+
             Args:
+                none
 
             Returns:
 
-            The locality of the currently executing code)")
+            The locality id of the currently executing code)")
     };
 
     hpx::future<primitive_argument_type> locality_id(

@@ -122,6 +122,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
             return extract_copy_value(arg_, name_);
         }
 
+        ///////////////////////////////////////////////////////////////////////
         // interpret this function as an invocable (evaluate object itself and
         // use the returned value to evaluate the arguments)
         result_type operator()(
@@ -259,6 +260,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 // user-facing functions need to copy all arguments
                 arguments_type keep_alive;
                 keep_alive.reserve(args.size());
+
                 for (auto && arg : std::move(args))
                 {
                     keep_alive.emplace_back(
@@ -266,6 +268,29 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 }
 
                 return p->eval(std::move(keep_alive), std::move(ctx));
+            }
+            return hpx::make_ready_future(arg_);
+        }
+
+        template <typename ... Ts>
+        hpx::future<result_type> eval(Ts &&... ts) const
+        {
+            primitive const* p = util::get_if<primitive>(&arg_);
+            if (p != nullptr)
+            {
+                // user-facing functions need to copy all arguments
+                arguments_type keep_alive;
+                keep_alive.reserve(sizeof...(Ts));
+
+                int const sequencer_[] = {
+                    0, (keep_alive.emplace_back(
+                            extract_value(primitive_argument_type{
+                                std::forward<Ts>(ts)
+                            })), 0)...
+                };
+                (void)sequencer_;
+
+                return p->eval(std::move(keep_alive));
             }
             return hpx::make_ready_future(arg_);
         }
