@@ -53,20 +53,13 @@ def SingleLayerNeuralNetwork(X, y, num_iter, lr):
 
     for i in range(num_iter):
         # Forward
-        hidden_layer_input1 = np.dot(X, wh)
-        hidden_layer_input = hidden_layer_input1 + bh
-        hidden_layer_activations = (1 / (1 + np.exp(-hidden_layer_input)))
-        output_layer_input1 = np.dot(hidden_layer_activations, wout)
-        output_layer_input = output_layer_input1 + bout
-        output = (1 / (1 + np.exp(-output_layer_input)))
+        hidden_layer_activations = (1 / (1 + np.exp(-(np.dot(X, wh) + bh))))
+        output = (1 / (1 + np.exp(-(np.dot(hidden_layer_activations, wout) + bout))))
 
         # Backpropagation
         Error = y - output
-        slope_output_layer = (output * (1 - output))
-        slope_hidden_layer = (hidden_layer_activations * (1 - hidden_layer_activations))
-        d_output = Error * slope_output_layer
-        Error_at_hidden_layer = np.dot(d_output, np.transpose(wout))
-        d_hidden_layer = Error_at_hidden_layer * slope_hidden_layer
+        d_output = Error * (output * (1 - output))
+        d_hidden_layer = np.dot(d_output, np.transpose(wout)) * (hidden_layer_activations * (1 - hidden_layer_activations))
         wout += (np.dot(np.transpose(hidden_layer_activations), d_output)) * lr
         # bout += np.sum(d_output, 0, True) * lr
         bout += np.sum(d_output, axis=0,keepdims=True) *lr # pure python version
