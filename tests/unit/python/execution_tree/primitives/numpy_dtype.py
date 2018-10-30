@@ -82,3 +82,41 @@ def test_ones():
 
 
 assert (test_ones() == np.ones((3, 3), dtype=float)).all
+
+
+@Phylanx
+def test_ones_like():
+    a = np.zeros((3, 3), dtype=int)
+    return np.ones_like(a, dtype=int)
+
+
+a = np.zeros((3, 3), dtype=int)
+assert (test_ones_like() == np.ones_like(a, dtype=int)).all
+
+
+@Phylanx
+def test_zeros_like():
+    a = np.ones((3, 3), dtype=int)
+    return np.zeros_like(a, dtype=int)
+
+
+a = np.ones((3, 3), dtype=int)
+assert (test_zeros_like() == np.zeros_like(a, dtype=int)).all
+
+
+@Phylanx
+def test_full():
+    return np.full((3, 3), 2, dtype=int)
+
+
+assert (test_full() == np.full((3, 3), 2, dtype=int)).all
+
+
+@Phylanx
+def test_full_like():
+    a = np.zeros((3, 3), dtype=int)
+    return np.full_like(a, 42, dtype=int)
+
+
+a = np.zeros((3, 3), dtype=int)
+assert (test_full_like() == np.full_like(a, 42, dtype=int)).all
