@@ -481,7 +481,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 auto at = cf->target<access_target>();
                 if (at == nullptr || at->target_name_ != "access-variable")
                 {
-//                     if (cf->target<access_argument>() == nullptr)
+                    if (cf->target<access_argument>() == nullptr)
                     {
                         return false;
                     }

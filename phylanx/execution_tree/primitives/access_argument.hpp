@@ -33,6 +33,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& params,
             eval_mode) const override;
 
+        void store(primitive_arguments_type&& data,
+            primitive_arguments_type&& params) override;
+
+        void store(primitive_argument_type&& data,
+            primitive_arguments_type&& params) override;
+
     private:
         std::size_t argnum_;
     };

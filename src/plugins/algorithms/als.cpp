@@ -151,7 +151,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             if (enable_output)
             {
-                std::cout << "iteration " << step << "\nX: " << X
+                hpx::cout << "iteration " << step << "\nX: " << X
                           << "\nY: " << Y << std::endl;
             }
 
