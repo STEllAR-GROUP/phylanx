@@ -291,6 +291,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case node_data_type_int64:
                     return this_->cumsum_helper<std::int64_t>(std::move(ops));
 
+                case node_data_type_unknown: HPX_FALLTHROUGH;
                 case node_data_type_double:
                     return this_->cumsum_helper<double>(std::move(ops));
 

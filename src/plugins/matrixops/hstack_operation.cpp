@@ -132,6 +132,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return hstack0d1d_helper<std::int64_t>(std::move(args));
 
+        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return hstack0d1d_helper<double>(std::move(args));
 
