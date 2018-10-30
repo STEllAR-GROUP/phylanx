@@ -83,24 +83,23 @@ std::string init_arrays = R"(block(
     arrays_init
 ))";
 
-std::string code1 = R"(block(
-    define(code1, arg0, arg1,
+std::string sub_array_add = R"(block(
+    define(sub_array_add, arg0, arg1,
         block(
-            define(c1, __add(arg0, arg1)),
-            debug(c1)
+            define(c_part, __add(arg0, arg1)),
+            c_part
         )
     ),
-    code1
+    sub_array_add
 ))";
 
-std::string code2 = R"(block(
-    define(code2, arg0, arg1,
+std::string result_func = R"(block(
+    define(result_foo, arg0, arg1,
         block(
-            define(c2, __add(arg0, arg1)),
-            debug(c2)
+            debug(hstack(arg0, arg1))
         )
     ),
-    code2
+    result_foo
 ))";
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,11 +139,14 @@ void test_remote_arrays_chain(std::uint32_t here, std::uint32_t there)
     auto b1 = *it++;
     auto b2 = *it++;
 
-    auto et1 = compile(code1, here);
+    auto et1 = compile(sub_array_add, here);
     auto r1 = et1(a1, b1);
 
-    auto et2 = compile(code2, there);
-    et2(a2, b2);
+    auto et2 = compile(sub_array_add, there);
+    auto r2 = et2(a2, b2);
+
+    auto et3 = compile_and_run(result_func);
+    auto r3 = et3(r1, r2);
 }
 
 void test_remote_arrays_on(std::uint32_t there)
@@ -179,12 +181,10 @@ int main(int argc, char* argv[])
     {
         std::stringstream const& strm = hpx::get_consolestream();
         HPX_TEST_EQ(strm.str(),
-            std::string("0\n1\n"
-                        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n[[42, "
-                        "42], [42, 42]]\n"
-                        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n[[42, "
-                        "42], [42, 42]]\n"
-                        "[[42, 42], [42, 42]]\n[[42, 42], [42, 42]]\n"));
+            std::string("0\n1\n[[42, 42, 42, 42], [42, 42, 42, 42]]\n"
+            "[[42, 42, 42, 42], [42, 42, 42, 42]]\n"
+            "[[42, 42, 42, 42], [42, 42, 42, 42]]\n"
+            "[[42, 42, 42, 42], [42, 42, 42, 42]]\n"));
     }
 
     return hpx::util::report_errors();
