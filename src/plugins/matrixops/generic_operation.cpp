@@ -75,6 +75,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("arctanh"),
         PHYLANX_GEN_MATCH_DATA("erf"),
         PHYLANX_GEN_MATCH_DATA("erfc"),
+        PHYLANX_GEN_MATCH_DATA("sleep"),
     };
 
 #undef PHYLANX_GEN_MATCH_DATA
@@ -111,6 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"arccos", [](double m) -> double { return blaze::acos(m); }},
             {"arctan", [](double m) -> double { return blaze::atan(m); }},
             {"arcsinh", [](double m) -> double { return blaze::asinh(m); }},
+            {"sleep", [](double m) -> double { return usleep(m*1.0e6); return 1.0; }},
             {"arccosh",
                 [](double m) -> double {
 #if defined(PHYLANX_DEBUG)
@@ -456,6 +458,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     else
                     {
                         m.vector() = blaze::asinh(m.vector());
+                    }
+                    return arg_type(std::move(m));
+                }},
+            {"sleep",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        //m = blaze::asinh(m.vector());
+                        usleep(m.vector()[0]*1.0e6);
+                        m = 1.0;
+                    }
+                    else
+                    {
+                        //m.vector() = blaze::asinh(m.vector());
+                        usleep(m.vector()[0]*1.0e6);
+                        m.vector()[0] = 1.0;
                     }
                     return arg_type(std::move(m));
                 }},
@@ -861,6 +879,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     else
                     {
                         m.matrix() = blaze::asinh(m.matrix());
+                    }
+                    return arg_type(std::move(m));
+                }},
+            {"sleep",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        //m = 1.0; usleep(m.matrix()[0]*1.0e6);
+                    }
+                    else
+                    {
+                        //m.matrix()[0] = 1.0; usleep(m.matrix()[0][0]*1e6);
                     }
                     return arg_type(std::move(m));
                 }},
