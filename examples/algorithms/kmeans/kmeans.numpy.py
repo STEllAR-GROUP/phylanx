@@ -20,6 +20,8 @@
 import argparse
 import csv
 import numpy as np
+import time
+import os
 
 
 def initialize_centroids(points, k):
@@ -46,26 +48,39 @@ def kmeans(points, k, iterations):
     return centroids
 
 
-def generate_random():
-    return np.vstack((
-        (np.random.randn(150, 2) * 0.75 + np.array([1, 0])),
-        (np.random.randn(50, 2) * 0.25 + np.array([-0.5, 0.5])),
-        (np.random.randn(50, 2) * 0.5 + np.array([-0.5, -0.5]))
-    ))
+def generate_random(centroids, points):
+    # a portion of total number of points cluster around each centroid
+    raw_shares = np.random.rand(centroids)
+    shares = (points * raw_shares / np.sum(raw_shares)).astype(int)
+    raw_points_collection = []
+
+    for i in shares:
+        # random points in each cluster gather around a random centroid
+        # a random factor is multiplied to separate clusters
+        raw_points_collection.append(
+            np.random.rand(i, 2) * np.random.rand() + np.random.rand(2))
+
+    return np.vstack(raw_points_collection)
 
 
 def csv_records(path):
-    with argparse.FileType('r')(path) as csv_file:
-        data = [d for d in csv.reader(csv_file, delimiter=',')]
-        return np.asarray(data, dtype=np.float_)
+    if os.path.exists(path):
+        with argparse.FileType('r')(path) as csv_file:
+            data = [d for d in csv.reader(csv_file, delimiter=',')]
+            return np.asarray(data, dtype=np.float_)
+    if path.isdigit():
+        return int(path)
+    raise ValueError("provided path argument is not either an integer or a valid path")
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--centroids', type=int, default=3)
-    parser.add_argument('--iterations', type=int, default=2)
-    parser.add_argument('--csv-file', dest='points', type=csv_records,
-                        default=generate_random())
+    parser.add_argument('--centroids', type=int, default=3,
+        help='number of centroids')
+    parser.add_argument('--iterations', type=int, default=2,
+        help='number of iterations to run')
+    parser.add_argument('--points', type=csv_records, default=250,
+        help='number of random points to generate or path to CSV file containing points')
     parser.add_argument('--dry-run', type=bool, nargs='?', const=True,
                         default=False)
     return parser.parse_args()
@@ -74,11 +89,22 @@ def parse_args():
 def main():
     args = parse_args()
 
+    # points should be replaced with actual random points in case it contains
+    # the set count of random points
+    if isinstance(args.points, int):
+        args.points = generate_random(args.centroids, args.points)
+
+    # time the execution
+    start_time = time.time()
+
+    # print what is going to be run and do not run
     if args.dry_run:
         print('kmeans', args.points.shape, args.centroids, args.iterations)
     else:
         print('Cluster centroids are:\n',
               kmeans(args.points, args.centroids, args.iterations))
+    execution_time = time.time() - start_time
+    print('Time:', execution_time)
 
 
 if __name__ == '__main__':
