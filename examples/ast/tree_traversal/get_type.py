@@ -429,6 +429,8 @@ first_type = {
     "matrix": matrix
 }
 
+
+
 """ End of dictionaries for output types on two input types """
 ###################################################
 
@@ -496,6 +498,12 @@ numpy_parsers: dict = {
 
 
 def get_output(op: str, types: list, dims: list = None) -> tuple:
+    """
+    TODO replace these dictionaries with maps to functions which return shapes for dimensions,
+    since numpy uses tuples of dimensions to represent the data types in play
+    Should end up only using these dimension tuples instead of strings for shape
+    Major revision
+    """
     """Utility function for obtaining output type information for a given
     function and its argument types"""
     error = None
