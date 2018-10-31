@@ -465,11 +465,11 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(&(src->matrix_non_ref()));
 
             // custom types require a copy (done by vector_copy/matrix_copy)
-            case 3:     // blaze::CustomVector<T>
+            case 4:     // blaze::CustomVector<T>
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 4:     // blaze::CustomMatrix<T>
+            case 5:     // blaze::CustomMatrix<T>
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
@@ -494,11 +494,11 @@ namespace pybind11 { namespace detail
                     std::move(src->matrix_non_ref())));
 
             // custom types require a copy (done by vector_copy/matrix_copy)
-            case 3:     // blaze::CustomVector<T>
+            case 4:     // blaze::CustomVector<T>
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 4:     // blaze::CustomMatrix<T>
+            case 5:     // blaze::CustomMatrix<T>
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
@@ -520,11 +520,11 @@ namespace pybind11 { namespace detail
             case 2:     // blaze::DynamicMatrix<T>
                 return blaze_array_cast(src->matrix_non_ref());
 
-            case 3:     // blaze::CustomVector<T>
+            case 4:     // blaze::CustomVector<T>
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 4:     // blaze::CustomMatrix<T>
+            case 5:     // blaze::CustomMatrix<T>
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
@@ -547,11 +547,11 @@ namespace pybind11 { namespace detail
                 return blaze_ref_array(src->matrix_non_ref());
 
             // custom types require a copy (done by vector_copy/matrix_copy)
-            case 3:     // blaze::CustomVector<T>
+            case 4:     // blaze::CustomVector<T>
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 4:     // blaze::CustomMatrix<T>
+            case 5:     // blaze::CustomMatrix<T>
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
@@ -573,8 +573,8 @@ namespace pybind11 { namespace detail
             case 2:     // blaze::DynamicMatrix<T>
                 return blaze_ref_array(src->matrix_non_ref(), parent);
 
-            case 3: HPX_FALLTHROUGH;    // blaze::CustomVector<T>
-            case 4: HPX_FALLTHROUGH;    // blaze::CustomMatrix<T>
+            case 4: HPX_FALLTHROUGH;    // blaze::CustomVector<T>
+            case 5: HPX_FALLTHROUGH;    // blaze::CustomMatrix<T>
             default:
                 throw cast_error("cast_impl_reference_internal: "
                     "unexpected node_data type: should not happen!");

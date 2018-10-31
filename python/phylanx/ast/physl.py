@@ -234,6 +234,9 @@ class PhySL:
         if node.vararg or node.kwarg:
             raise (Exception("Phylanx does not support *args and **kwargs"))
         args = tuple(map(self.apply_rule, node.args))
+        for arg in args:
+            symbol_name = re.sub(r'\$\d+', '', arg)
+            self.defined.add(symbol_name)
         return args
 
     def _Assign(self, node):
