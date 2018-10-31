@@ -4,10 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import get_type
-import numpy_output_type
 import ast
-import time
-import astpretty
 
 
 class Variable(object):
@@ -49,7 +46,7 @@ class TypeDeducerState(object):
     """ Used as a reference to certain information for the recursive
     TypeDeducer data structure
 
-    Also contains two auxiliary functions, get_closest_ref_type as well as
+    Also contains three auxiliary functions, get_closest_ref_type as well as
     add_to_target_list
     """
     assign_list: list
@@ -67,32 +64,32 @@ class TypeDeducerState(object):
         self.new_variable_ref = False
         self.last_id = 0
 
-    def get_closest_ref_type(self, my_name, my_lineno, my_col):
-        """Given a variable name and location returns the most recent type
-        that that variable had"""
-        closest_ref = None
-        for var in self.var_list:
-            if var.name == my_name:
-                if var.lineno < my_lineno:
-                    if closest_ref is not None and var.lineno > closest_ref.lineno:
-                        closest_ref = var
-                    else:
-                        closest_ref = var
-                elif var.lineno == my_lineno:
-                    if var.col_offset < my_col:
-                        if closest_ref is not None and closest_ref.lineno:
-                            if closest_ref.lineno == var.lineno:
-                                if closest_ref.col_offset < var.col_offset:
-                                    closest_ref = var
-                            else:
-                                closest_ref = var
-                        else:
-                            closest_ref = var
-        if closest_ref is not None:
-            assert(self.inside_conditional is not True)
-            return closest_ref.var_type
-        else:
-            raise LookupError("Variable {} not found")
+    # def get_closest_ref_type(self, my_name, my_lineno, my_col):
+    #     """Given a variable name and location returns the most recent type
+    #     that that variable had"""
+    #     closest_ref = None
+    #     for var in self.var_list:
+    #         if var.name == my_name:
+    #             if var.lineno < my_lineno:
+    #                 if closest_ref is not None and var.lineno > closest_ref.lineno:
+    #                     closest_ref = var
+    #                 else:
+    #                     closest_ref = var
+    #             elif var.lineno == my_lineno:
+    #                 if var.col_offset < my_col:
+    #                     if closest_ref is not None and closest_ref.lineno:
+    #                         if closest_ref.lineno == var.lineno:
+    #                             if closest_ref.col_offset < var.col_offset:
+    #                                 closest_ref = var
+    #                         else:
+    #                             closest_ref = var
+    #                     else:
+    #                         closest_ref = var
+    #     if closest_ref is not None:
+    #         assert(self.inside_conditional is not True)
+    #         return closest_ref.var_type
+    #     else:
+    #         raise LookupError("Variable {} not found")
 
     def get_closest_ref(self, my_name, my_lineno, my_col):
         """Given a variable name and location returns the most recent type
@@ -149,6 +146,7 @@ class TypeDeducerState(object):
             self.target_list.append(var_tmp)
             self.var_list.append(var_tmp)
 
+
 class TypeDeducer(ast.NodeVisitor):
     """
     Recursive data structure used to traverse the AST and extract
@@ -160,7 +158,10 @@ class TypeDeducer(ast.NodeVisitor):
     var_type: str
     type_deducer_state: TypeDeducerState
     target: bool
-    dims : tuple
+    dims: tuple
+    # TODO - Should refactor TypeDeducer and associated classes/functions to use dims the
+    # the same way Numpy does, as the primary way of interpreting what is currently
+    # 'var_type'
 
     def __init__(self, state, target=False):
         self.var_type = None
@@ -309,7 +310,6 @@ class TypeDeducer(ast.NodeVisitor):
     def visit_BinOp(self, node):
         """Another linchpin for TypeDeducer, BinOp handles type inference
         for binary operations"""
-        time.sleep(0.01)
         left_type_deducer = TypeDeducer(self.type_deducer_state)
         left_type_deducer.visit(node.left)
         left_type = left_type_deducer.var_type
