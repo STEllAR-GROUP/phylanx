@@ -40,13 +40,13 @@ class Variable(object):
             print("\tDimensions: {}\n".format(self.dims))
         else:
             print()
-        
+
 
 class TypeDeducerState(object):
     """ Used as a reference to certain information for the recursive
     TypeDeducer data structure
 
-    Also contains three auxiliary functions, get_closest_ref_type as well as
+    Also contains two auxiliary functions, get_closest_ref as well as
     add_to_target_list
     """
     assign_list: list
@@ -63,33 +63,6 @@ class TypeDeducerState(object):
         self.inside_conditional = inside_conditional
         self.new_variable_ref = False
         self.last_id = 0
-
-    # def get_closest_ref_type(self, my_name, my_lineno, my_col):
-    #     """Given a variable name and location returns the most recent type
-    #     that that variable had"""
-    #     closest_ref = None
-    #     for var in self.var_list:
-    #         if var.name == my_name:
-    #             if var.lineno < my_lineno:
-    #                 if closest_ref is not None and var.lineno > closest_ref.lineno:
-    #                     closest_ref = var
-    #                 else:
-    #                     closest_ref = var
-    #             elif var.lineno == my_lineno:
-    #                 if var.col_offset < my_col:
-    #                     if closest_ref is not None and closest_ref.lineno:
-    #                         if closest_ref.lineno == var.lineno:
-    #                             if closest_ref.col_offset < var.col_offset:
-    #                                 closest_ref = var
-    #                         else:
-    #                             closest_ref = var
-    #                     else:
-    #                         closest_ref = var
-    #     if closest_ref is not None:
-    #         assert(self.inside_conditional is not True)
-    #         return closest_ref.var_type
-    #     else:
-    #         raise LookupError("Variable {} not found")
 
     def get_closest_ref(self, my_name, my_lineno, my_col):
         """Given a variable name and location returns the most recent type
@@ -141,7 +114,8 @@ class TypeDeducerState(object):
             var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type,
                                conditional_assigned=True, dims=dims)
         else:
-            var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type, dims=dims)
+            var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type,
+                               dims=dims)
         if var_tmp is not None:
             self.target_list.append(var_tmp)
             self.var_list.append(var_tmp)
@@ -204,7 +178,8 @@ class TypeDeducer(ast.NodeVisitor):
                                     node.lineno, node.col_offset))
             self.var_type = x.var_type
             self.dims = x.dims
-        self.type_deducer_state.add_to_target_list(node.targets[0], self.var_type, self.dims)
+        self.type_deducer_state.add_to_target_list(node.targets[0], self.var_type,
+                                                   self.dims)
         node = ast.AnnAssign(lineno=node.lineno, col_offset=node.col_offset,
                              target=node.targets, annotation=self.var_type,
                              value=node.value, simple=1)
@@ -269,7 +244,8 @@ class TypeDeducer(ast.NodeVisitor):
             var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type,
                                conditional_assigned=True, dims=self.dims)
         else:
-            var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type, dims=self.dims)
+            var_tmp = Variable(node.id, node.lineno, node.col_offset, var_type,
+                               dims=self.dims)
         if var_tmp is not None:
             self.type_deducer_state.var_list.append(var_tmp)
             self.var_type = var_tmp.var_type
@@ -282,9 +258,10 @@ class TypeDeducer(ast.NodeVisitor):
         is annotated, which should be the argument's type, it adds that
         information to the variable."""
         try:
-            var_type = self.type_deducer_state.get_closest_ref_type(node.arg,
-                                                                    node.lineno,
-                                                                    node.col_offset)
+            var = self.type_deducer_state.get_closest_ref(node.arg,
+                                                               node.lineno,
+                                                               node.col_offset)
+            var_type = var.var_type
             var_tmp = Variable(node.arg, node.lineno, node.col_offset, var_type)
         except LookupError:
             var_tmp = Variable(node.arg, node.lineno, node.col_offset, None)
@@ -320,7 +297,8 @@ class TypeDeducer(ast.NodeVisitor):
             op_name = type(node.op).__name__.lower()
             if type(node.op).__name__ == 'Mult':
                 op_name = 'mul'
-            self.var_type, self.dims = get_type.get_output(op_name, [left_type, right_type])
+            self.var_type, self.dims = get_type.get_output(op_name,
+                                                           [left_type, right_type])
             self.make_var_representation(node)
             self.referenced_var_list.append(left_type_deducer.referenced_var_list)
             self.referenced_var_list.append(right_type_deducer.referenced_var_list)
@@ -342,8 +320,9 @@ class TypeDeducer(ast.NodeVisitor):
 
     def visit_BoolOp(self, node):
         """TODO - Finish the implementation for BoolOps"""
-        raise NotImplementedError("Boolean operations are not supported: Line Number: {} Column Offset: {}".format(
-            node.lineno, node.col_offset))
+        raise NotImplementedError("Boolean operations are not supported: "
+                                  "Line Number: {} Column Offset: {}".format(
+                                   node.lineno, node.col_offset))
 
     def visit_Call(self, node):
         """Like visit_BinOp and visit_UnaryOp, visit_Call handles type deduction

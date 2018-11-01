@@ -25,7 +25,8 @@ unary_vector = {
     "add": "vector",
     "minus": "vector",
     "usub": "vector",
-    "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
+    "decomposition": "matrix",  # Decompose vector into one or more vectors,
+                                # sounds like a matrix to me
     "linear_solver": "vector",
     "add_dim": "matrix",
     "all": " ",
@@ -52,7 +53,8 @@ unary_col_vector = {
     "add": "column_vector",
     "minus": "column_vector",
     "usub": "column_vector",
-    "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
+    "decomposition": "matrix",  # Decompose vector into one or more vectors,
+                                # sounds like a matrix to me
     "linear_solver": "column_vector",
     "add_dim": "matrix",
     "argmax": "scalar",
@@ -75,7 +77,8 @@ unary_row_vector = {
     "add": "row_vector",
     "minus": "row_vector",
     "usub": "row_vector",
-    "decomposition": "matrix",  # Decompose vector into one or more vectors, sounds like a matrix to me
+    "decomposition": "matrix",  # Decompose vector into one or more vectors,
+                                # sounds like a matrix to me
     "linear_solver": "row_vector",
     "add_dim": "matrix",
     "argmax": "scalar",
@@ -262,7 +265,8 @@ column_vector_column_vector = {
     "mul": "column_vector",  # Element-wise
     "sub": "column_vector",
     "cumsum": "scalar",
-    "mean": "scalar",  # This could be a vector of averages between the two elements, or average of all elements
+    "mean": "scalar",  # This could be a vector of averages between the
+                       # two elements, or average of all elements
     "power": "column_vector"
 }
 
@@ -499,8 +503,9 @@ numpy_parsers: dict = {
 
 def get_output(op: str, types: list, dims: list = None) -> tuple:
     """
-    TODO replace these dictionaries with maps to functions which return shapes for dimensions,
-    since numpy uses tuples of dimensions to represent the data types in play
+    TODO replace these dictionaries with maps to functions which return shapes for
+    dimensions, since numpy uses tuples of dimensions to represent the data types
+    in play.
     Should end up only using these dimension tuples instead of strings for shape
     Major revision
     """
@@ -512,8 +517,8 @@ def get_output(op: str, types: list, dims: list = None) -> tuple:
             return first_type[types[0]][types[1]][op], None
         except KeyError:
             # print("Key error!", op, types[0], types[1])
-            error = NotImplementedError("Operation {} not supported with arguments of type {} "
-                                        "and {}".format(op, types[0], types[1]))
+            error = NotImplementedError("Operation {} not supported with arguments of "
+                                        "type {} and {}".format(op, types[0], types[1]))
         try:
             if dims is not None and len(dims) > 1:
                 return numpy_parsers[op](dims[0], dims[1])
@@ -523,8 +528,8 @@ def get_output(op: str, types: list, dims: list = None) -> tuple:
         try:
             return unary_ops[types[0]][op], None
         except KeyError:
-            error = NotImplementedError("Operation {} not supported with single argument of "
-                                        "type {}".format(op, types[0]))
+            error = NotImplementedError("Operation {} not supported with single "
+                                        "argument of type {}".format(op, types[0]))
         try:
             if dims is not None and len(dims) == 1:
                 return numpy_parsers[op](dims[0])
