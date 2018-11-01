@@ -22,8 +22,8 @@ try:
 
 except Exception as e:
     expected = \
-        'exception_swallowed_369.py(14, 8): __add:: the dimensions of the ' + \
-        'operands do not match: HPX(bad_parameter)'
+        'exception_swallowed_369.py(14, 8): __add:: cannot broadcast a ' + \
+        'matrix into a differently sized matrix: HPX(bad_parameter)'
     assert (str(e).endswith(expected))
     exception_thrown = True
 
