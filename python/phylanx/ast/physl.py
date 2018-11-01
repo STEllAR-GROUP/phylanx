@@ -378,6 +378,18 @@ class PhySL:
             else:
                 symbol = symbol.replace('hstack', 'hstack' + dtype)
             args = args[0][1]
+        elif 'zeros_like' in symbol:
+            symbol = symbol.replace('zeros_like', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'shape')
+            return [symbol, ('0', [op, args])]
+        elif 'ones_like' in symbol:
+            symbol = symbol.replace('ones_like', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'shape')
+            return [symbol, ('1', [op, args])]
+        elif 'full_like' in symbol:
+            symbol = symbol.replace('full_like', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'shape')
+            return [symbol, (args[1], [op, (args[0], )])]
         elif 'zeros' in symbol:
             symbol = symbol.replace('zeros', 'constant' + dtype)
             op = get_symbol_info(node.func, 'list')
@@ -392,6 +404,13 @@ class PhySL:
                 return [symbol, ('1', [op, args])]
             else:
                 return [symbol, ('1', args)]
+        elif 'full' in symbol:
+            symbol = symbol.replace('full', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'list')
+            if isinstance(args[0], tuple):
+                return [symbol, (args[1], [op, args[0]])]
+            else:
+                return [symbol, (args[1], args[0])]
         elif 'identity' in symbol:
             symbol = symbol.replace('identity', 'identity' + dtype)
         elif 'arange' in symbol:
