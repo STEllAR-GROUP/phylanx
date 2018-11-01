@@ -89,7 +89,7 @@ for p in all:
             for argname in argnames:
                 if not re.search(r"\n    [* ]?" + argname + r" ?\(", argdefs):
                     err = add_err(
-                        "Missing definition or improper indentation " +
+                        "Missing definition or improper indentation " + \
                         "for arg: '%s' in '%s'" % (argname, n))
 
         # Get the count of the args in the docstring
@@ -98,7 +98,7 @@ for p in all:
 
         # Check that there's an Args: section
         if not re.search(r'^Args:\n\n', h, re.MULTILINE):
-            err = add_err("Missing 'Args:' section or 'Args:' not followed " +
+            err = add_err("Missing 'Args:' section or 'Args:' not followed " + \
                           "by a blank line in '%s'" % n)
 
         # Check that there's a Returns: section

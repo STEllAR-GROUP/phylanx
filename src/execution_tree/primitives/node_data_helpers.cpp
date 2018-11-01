@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/compiler/primitive_name.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
@@ -20,6 +21,36 @@
 
 namespace phylanx { namespace execution_tree
 {
+    ///////////////////////////////////////////////////////////////////////////
+    node_data_type extract_dtype(std::string name)
+    {
+        compiler::primitive_name_parts name_parts;
+        if (compiler::parse_primitive_name(name, name_parts))
+        {
+            name = std::move(name_parts.primitive);
+        }
+
+        node_data_type result = node_data_type_unknown;
+        auto p = name.find("__");
+        if (p != std::string::npos)
+        {
+            boost::string_ref spec(&name[p + 2], name.size() - p - 2);
+            if (spec == "bool")
+            {
+                result = node_data_type_bool;
+            }
+            else if (spec == "int")
+            {
+                result = node_data_type_int64;
+            }
+            else if (spec == "float")
+            {
+                result = node_data_type_double;
+            }
+        }
+        return result;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     node_data_type extract_common_type(primitive_argument_type const& arg)
     {

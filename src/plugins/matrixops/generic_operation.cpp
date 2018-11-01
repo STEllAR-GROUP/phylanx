@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
 ///////////////////////////////////////////////////////////////////////////////
 #define PHYLANX_GEN_MATCH_DATA(name)                                           \
-    hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
+    match_pattern_type{name, std::vector<std::string>{name "(_1)"},            \
         &create_generic_operation, &create_primitive<generic_operation>,       \
         "arg\n"                                                                \
         "Args:\n"                                                              \
@@ -40,7 +40,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "\n"                                                                   \
         "This function implements function `" name "` from Python's "          \
         "math library."                                                        \
-        )                                                                      \
+    }                                                                          \
     /**/
 
     std::vector<match_pattern_type> const generic_operation::match_data = {

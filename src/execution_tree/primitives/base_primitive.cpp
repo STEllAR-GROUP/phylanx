@@ -136,8 +136,7 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> primitive::eval(
-        primitive_arguments_type const& params,
-        eval_mode mode) const
+        primitive_arguments_type const& params, eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
@@ -145,8 +144,7 @@ namespace phylanx { namespace execution_tree
         return detail::lazy_trace("eval", *this, std::move(f));
     }
     hpx::future<primitive_argument_type> primitive::eval(
-        primitive_arguments_type&& params,
-        eval_mode mode) const
+        primitive_arguments_type&& params, eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
@@ -165,16 +163,14 @@ namespace phylanx { namespace execution_tree
         return detail::lazy_trace("eval", *this, std::move(f));
     }
 
-    hpx::future<primitive_argument_type> primitive::eval(
-        eval_mode mode) const
+    hpx::future<primitive_argument_type> primitive::eval(eval_mode mode) const
     {
         static primitive_arguments_type params;
         return eval(params, mode);
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        primitive_arguments_type const& params,
-        eval_mode mode) const
+        primitive_arguments_type const& params, eval_mode mode) const
     {
         using action_type = primitives::primitive_component::eval_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
@@ -213,8 +209,7 @@ namespace phylanx { namespace execution_tree
         return detail::trace("eval", *this, f.get());
     }
 
-    hpx::future<void> primitive::store(
-        primitive_arguments_type&& data,
+    hpx::future<void> primitive::store(primitive_arguments_type&& data,
         primitive_arguments_type&& params)
     {
         using action_type = primitives::primitive_component::store_action;
@@ -231,8 +226,7 @@ namespace phylanx { namespace execution_tree
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        primitive_arguments_type&& data,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& data, primitive_arguments_type&& params)
     {
         using action_type = primitives::primitive_component::store_action;
         hpx::sync<action_type>(
@@ -240,8 +234,7 @@ namespace phylanx { namespace execution_tree
     }
 
     void primitive::store(hpx::launch::sync_policy,
-        primitive_argument_type&& data,
-        primitive_arguments_type&& params)
+        primitive_argument_type&& data, primitive_arguments_type&& params)
     {
         using action_type = primitives::primitive_component::store_single_action;
         hpx::sync<action_type>(

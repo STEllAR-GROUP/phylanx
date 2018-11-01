@@ -4,11 +4,15 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    466_compiler_problems
     508_unknown_named_argument
     522_multidimension_np_arrays
     530_augmented_assignment_indexed_lhs
     596_list_arrays
     624_advanced_indexing
+    635_arange_args
+    636_boolean_array
+    640_function_argument
     array_len_494
     array_shape_486
     array_subscript_403
@@ -23,7 +27,7 @@ set(tests
     list_iter_space_429
     list_slice_assign_528
     name_constants_411
-    no_parans_decorator_407
+    no_parens_decorator_407
     np_sum_489
     passing_compiler_state_453
     reassign_512

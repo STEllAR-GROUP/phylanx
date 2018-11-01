@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <hpx/lcos/future.hpp>
@@ -42,6 +43,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& args) const override;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_arange(hpx::id_type const& locality,

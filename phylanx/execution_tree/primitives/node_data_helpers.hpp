@@ -33,6 +33,9 @@ namespace phylanx { namespace execution_tree
         node_data_type_bool = 2,
     };
 
+    /// Extract node_data_type from a primitive name
+    PHYLANX_EXPORT node_data_type extract_dtype(std::string name);
+
     /// Return the common data type to be used for the result of an operation
     /// involving the given argument.
     PHYLANX_EXPORT node_data_type extract_common_type(

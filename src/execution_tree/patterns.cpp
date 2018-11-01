@@ -7,12 +7,13 @@
 #include <phylanx/execution_tree/primitives.hpp>
 #include <phylanx/execution_tree/compile.hpp>
 
-#include <utility>
-#include <string>
-#include <vector>
-#include <set>
+#include <cstddef>
 #include <iostream>
 #include <map>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace phylanx { namespace execution_tree
 {
@@ -21,58 +22,74 @@ namespace phylanx { namespace execution_tree
 
     void show_patterns()
     {
-        std::cout << "patterns: " << std::endl;
-        for(auto i : list_patterns())
+        show_patterns(std::cout);
+    }
+
+    void show_patterns(std::ostream& ostrm)
+    {
+        ostrm << "patterns: " << std::endl;
+        for(auto const& i : list_patterns())
         {
-            std::cout << "pattern: " << i.first << std::endl;
-            for(auto s : i.second)
+            ostrm << "pattern: " << i.first << std::endl;
+            for (auto const& s : i.second)
             {
-                std::cout << "  matches: " << s << std::endl;
+                ostrm << "  matches: " << s << std::endl;
             }
         }
     }
 
     std::map<std::string,std::vector<std::string>> list_patterns()
     {
-        std::map<std::string,std::vector<std::string>> result;
-        std::map<std::string,std::set<std::string>> found;
-        for(auto p : get_all_known_patterns())
+        std::map<std::string, std::vector<std::string>> result;
+        std::map<std::string, std::set<std::string>> found;
+
+        for (auto const& p : get_all_known_patterns())
         {
-            std::string pat = hpx::util::get<0>(p);
-            for(auto pat2 : hpx::util::get<1>(hpx::util::get<1>(p)))
+            std::string const& pat = hpx::util::get<0>(p);
+            for(auto const& pat2 : hpx::util::get<1>(p).patterns_)
             {
                 found[pat].insert(pat2);
             }
         }
-        for(auto p = found.begin();p != found.end();++p)
+
+        for (auto const& it : found)
         {
-            for(auto p2 : p->second)
+            for (auto const& p2 : it.second)
             {
-                result[p->first].push_back(p2);
+                result[it.first].push_back(p2);
             }
         }
+
         return result;
     }
 
-    std::string find_help(const std::string& s)
+    std::string find_help(std::string const& s)
     {
-        for(auto p : get_all_known_patterns())
+        for(auto const& p : get_all_known_patterns())
         {
-            std::string pat = hpx::util::get<0>(p);
-            std::string help = hpx::util::get<4>(hpx::util::get<1>(p));
-            if(pat == s)
+            std::string const& pat = hpx::util::get<0>(p);
+            std::string const& help = hpx::util::get<1>(p).help_string_;
+            if (pat == s)
+            {
                 return help;
-            for(auto pat2 : hpx::util::get<1>(hpx::util::get<1>(p)))
+            }
+
+            for (auto const& pat2 : hpx::util::get<1>(p).patterns_)
             {
                 std::string p = pat2;
-                for(int i=0;i<p.size();i++) {
-                    if(p[i] == '(') {
+                for (std::size_t i = 0; i != p.size(); ++i)
+                {
+                    if (p[i] == '(')
+                    {
                         p.resize(i);
                         break;
                     }
                 }
-                if(p == s)
+
+                if (p == s)
+                {
                     return help;
+                }
             }
         }
         return "No help available.";
@@ -81,7 +98,7 @@ namespace phylanx { namespace execution_tree
     void register_pattern(
         std::string const& name, match_pattern_type const& pattern)
     {
-        registered_patterns.push_back(std::make_pair(name, pattern));
+        registered_patterns.emplace_back(name, pattern);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -89,12 +106,12 @@ namespace phylanx { namespace execution_tree
     {
         ///////////////////////////////////////////////////////////////////////
 #define PHYLANX_MATCH_DATA(type)                                               \
-    hpx::util::make_tuple(hpx::util::get<0>(primitives::type::match_data),     \
+    hpx::util::make_tuple(primitives::type::match_data.primitive_type_,        \
         primitives::type::match_data)                                          \
 /**/
 #define PHYLANX_MATCH_DATA_VERBATIM(type)                                      \
     hpx::util::make_tuple(                                                     \
-        hpx::util::get<0>(primitives::type), primitives::type)                 \
+        primitives::type.primitive_type_, primitives::type)                    \
 /**/
 
         pattern_list get_all_known_patterns()

@@ -174,22 +174,19 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::int64_t>&& indices, F const& f,
         std::string const& name, std::string const& codename)
     {
-        // make sure all indices are non-negative
         std::size_t size = data.size();
 
-        switch (indices.index())
+        switch (indices.num_dimensions())
         {
         case 0:         // 0d index
             return slice_integer_1d0d_scalar<T>(std::forward<Data>(data),
                 std::move(indices), f, name, codename);
 
-        case 1: HPX_FALLTHROUGH;
-        case 3:         // 1d indexes
+        case 1:         // 1d indexes
             return slice_integer_1d1d<T>(std::forward<Data>(data),
                 std::move(indices), f, name, codename);
 
-        case 2: HPX_FALLTHROUGH;
-        case 4:         // 2d indexes
+        case 2:         // 2d indexes
             return slice_integer_1d2d<T>(std::forward<Data>(data),
                 std::move(indices), f, name, codename);
 
@@ -265,19 +262,17 @@ namespace phylanx { namespace execution_tree
         ir::node_data<std::uint8_t>&& indices, F const& f,
         std::string const& name, std::string const& codename)
     {
-        switch (indices.index())
+        switch (indices.num_dimensions())
         {
         case 0:         // 0d index
             return slice_boolean_1d0d<T>(std::forward<Data>(data),
                 std::move(indices), f, name, codename);
 
-        case 1: HPX_FALLTHROUGH;
-        case 3:         // 1d indexes
+        case 1:         // 1d indexes
             return slice_boolean_1d1d<T>(std::forward<Data>(data),
                 std::move(indices), f, name, codename);
 
-        case 2: HPX_FALLTHROUGH;
-        case 4:         // 2d indexes
+        case 2:         // 2d indexes
             return slice_boolean_1d2d<T>(std::forward<Data>(data),
                 std::move(indices), f, name, codename);
 

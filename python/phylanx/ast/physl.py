@@ -105,6 +105,9 @@ class PhySL:
         if not self.file_name:
             self.file_name = "<none>"
 
+        self.performance = kwargs.get('performance')
+        self.__perfdata__ = (None, None, None)
+
         # Add arguments of the function to the list of discovered variables.
         if inspect.isfunction(tree.body[0]):
             for arg in tree.body[0].args.args:
@@ -125,7 +128,8 @@ class PhySL:
         elif PhySL.compiler_state is None:
             PhySL.compiler_state = compiler_state()
 
-        phylanx.execution_tree.compile(self.file_name, self.__src__, PhySL.compiler_state)
+        phylanx.execution_tree.compile(
+            self.file_name, self.__src__, PhySL.compiler_state)
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
@@ -162,8 +166,28 @@ class PhySL:
 
     def call(self, args):
         func_name = self.wrapped_function.__name__
-        return phylanx.execution_tree.eval(func_name, PhySL.compiler_state,
-                                           *args)
+
+        self.__perfdata__ = (None, None, None)
+        self.performance_primitives = None
+
+        if self.performance:
+            self.performance_primitives = \
+                phylanx.execution_tree.enable_measurements(
+                    PhySL.compiler_state, True)
+
+        result = phylanx.execution_tree.eval(
+            self.file_name, func_name, PhySL.compiler_state, *args)
+
+        if self.performance:
+            treedata = phylanx.execution_tree.retrieve_tree_topology(
+                self.file_name, func_name, PhySL.compiler_state)
+            self.__perfdata__ = (
+                phylanx.execution_tree.retrieve_counter_data(
+                    PhySL.compiler_state),
+                treedata[0], treedata[1]
+            )
+
+        return result
 
 # #############################################################################
 # Transducer rules
@@ -210,6 +234,9 @@ class PhySL:
         if node.vararg or node.kwarg:
             raise (Exception("Phylanx does not support *args and **kwargs"))
         args = tuple(map(self.apply_rule, node.args))
+        for arg in args:
+            symbol_name = re.sub(r'\$\d+', '', arg)
+            self.defined.add(symbol_name)
         return args
 
     def _Assign(self, node):
@@ -311,28 +338,85 @@ class PhySL:
 
         symbol = self.apply_rule(node.func)
         args = tuple(self.apply_rule(arg) for arg in node.args)
+        dtype_floats = ['f', 'f2', 'f4', 'f8', 'float']
+        dtype_ints = ['u2', 'u4', 'u8', 'i', 'i2', 'i4', 'i8', 'int']
+        dtypes_bools = ['b', 'bool']
+        phylanx_dtype = {
+            **dict.fromkeys(dtype_floats, 'float'),
+            **dict.fromkeys(dtype_ints, 'int'),
+            **dict.fromkeys(dtypes_bools, 'bool')
+        }
+        dtype = ''
+        for k in node.keywords:
+            if k.arg is 'dtype':
+                if isinstance(k.value, ast.Name):
+                    type_str = phylanx_dtype.get(k.value.id)
+                if isinstance(k.value, ast.Str):
+                    type_str = phylanx_dtype.get(k.value.s)
+                if type_str:
+                    dtype = '__' + type_str
+                else:
+                    raise NotImplementedError(
+                        'Only the followig are acceptable Phylanx array types:\n'
+                        'booleans: %s\nfloats: %s\nintegers %s' %
+                        (dtypes_bools, dtype_floats, dtype_ints))
+                break
 
         # TODO: these are workarounds for the cases that Phylanx does not
         # follow NumPy functions' signatures.
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if 'hstack' in symbol and isinstance(args[0], list):
             if args[0][1] and isinstance(args[0][1][0], list):
-                symbol = symbol.replace('hstack', 'vstack')
+                symbol = symbol.replace('hstack', 'vstack' + dtype)
                 for i in range(len(args[0][1])):
                     args[0][1][i][0] = args[0][1][i][0].replace(
-                        'list', 'hstack')
+                        'list', 'hstack' + dtype)
                     if isinstance(args[0][1][i][1][0], list):
                         raise NotImplementedError(
                             'Phylanx only supports 1 and 2 dimensional arrays.'
                         )
+            else:
+                symbol = symbol.replace('hstack', 'hstack' + dtype)
             args = args[0][1]
+        elif 'zeros_like' in symbol:
+            symbol = symbol.replace('zeros_like', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'shape')
+            return [symbol, ('0', [op, args])]
+        elif 'ones_like' in symbol:
+            symbol = symbol.replace('ones_like', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'shape')
+            return [symbol, ('1', [op, args])]
+        elif 'full_like' in symbol:
+            symbol = symbol.replace('full_like', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'shape')
+            return [symbol, (args[1], [op, (args[0], )])]
         elif 'zeros' in symbol:
-            symbol = symbol.replace('zeros', 'constant')
+            symbol = symbol.replace('zeros', 'constant' + dtype)
             op = get_symbol_info(node.func, 'list')
             if isinstance(args[0], tuple):
                 return [symbol, ('0', [op, args])]
             else:
                 return [symbol, ('0', args)]
+        elif 'ones' in symbol:
+            symbol = symbol.replace('ones', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'list')
+            if isinstance(args[0], tuple):
+                return [symbol, ('1', [op, args])]
+            else:
+                return [symbol, ('1', args)]
+        elif 'full' in symbol:
+            symbol = symbol.replace('full', 'constant' + dtype)
+            op = get_symbol_info(node.func, 'list')
+            if isinstance(args[0], tuple):
+                return [symbol, (args[1], [op, args[0]])]
+            else:
+                return [symbol, (args[1], args[0])]
+        elif 'identity' in symbol:
+            symbol = symbol.replace('identity', 'identity' + dtype)
+        elif 'arange' in symbol:
+            symbol = symbol.replace('arange', 'arange' + dtype)
+        elif 'cumsum' in symbol:
+            symbol = symbol.replace('cumsum', 'cumsum' + dtype)
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         return [symbol, args]
@@ -636,8 +720,8 @@ class PhySL:
 
         if type(node.value) == ast.Tuple:
             return ["list", self.apply_rule(node.value)]
-        else:
-            return self.apply_rule(node.value)
+
+        return self.apply_rule(node.value)
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""

@@ -36,6 +36,6 @@ try:
     @Phylanx("PhySL")
     def e():
         return 0
-except InvalidDecoratorArgumentError as e:
+except InvalidDecoratorArgumentError:
     raised = True
 assert raised

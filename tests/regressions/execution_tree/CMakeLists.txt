@@ -12,6 +12,7 @@ set(tests
     define_loses_values_177
     empty_hstack_509
     expression_topology_213
+    external_functions_337
     list_iter_space_429
     list_of_variables_244
     negative_integral_value_131
@@ -32,6 +33,7 @@ set(cout_noargs_prints_nothing_159_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(cout_prints_twice_155_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(define_loses_values_177_FLAGS COMPONENT_DEPENDENCIES iostreams)
 set(out_of_scope_variable_232_FLAGS COMPONENT_DEPENDENCIES iostreams)
+set(external_functions_337_FLAGS COMPONENT_DEPENDENCIES iostreams)
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

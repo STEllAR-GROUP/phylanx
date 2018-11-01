@@ -23,34 +23,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    constexpr char const* const helpstring = R"(
+        args
+        Args:
+
+            *args (list of values, optional): a list of values
+
+        Returns:
+
+        A Phylanx list populated by the values supplied.
+    )";
+
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const make_list::match_data =
     {
-        hpx::util::make_tuple("list",
+        match_pattern_type{"list",
             std::vector<std::string>{"list(__1)"},
-            &create_make_list, &create_primitive<make_list>,
-            "args\n"
-            "Args:\n"
-            "\n"
-            "    *args (list of values, optional): a list of values\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A Phylanx list populated by the values supplied."
-            ),
+            &create_make_list, &create_primitive<make_list>, helpstring
+        },
 
-        hpx::util::make_tuple("make_list",
+        match_pattern_type{"make_list",
             std::vector<std::string>{"make_list(__1)"},
-            &create_make_list, &create_primitive<make_list>,
-            "args\n"
-            "Args:\n"
-            "\n"
-            "    *args (list of values, optional): a list of values\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "A Phylanx list populated by the values supplied."
-            )
+            &create_make_list, &create_primitive<make_list>, helpstring
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////

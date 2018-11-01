@@ -30,44 +30,49 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx {namespace execution_tree {    namespace primitives {
+namespace phylanx {namespace execution_tree {    namespace primitives
+{
+    ///////////////////////////////////////////////////////////////////////////
+    constexpr char const* const docstr = R"(
+        v, ind
+        Args:
 
-    std::string docstr =
-        "v, ind\n"
-        "Args:\n"
-        "\n"
-        "    v (list) : a list to take a slice from\n"
-        "    ind (int or list) : index or slice range\n"
-        "\n"
-        "Returns:\n"
-        "\n"
-        "If `ind` is an integer, this operation returns an element of the "
-        "list. If it is negative, indexing is done from the back of the list. "
-        "Alternatively, `ind` may consist of a list of values which serve as "
-        "the `start`, `stop`, and (optionally) `step` of a Python range. In this "
-        "case, the return value is a new list with the values of `v` described "
-        "by the range.";
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    )";
 
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const slicing_operation::match_data =
     {
-        hpx::util::make_tuple("slice",
+        match_pattern_type{"slice",
             std::vector<std::string>{"slice(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
-            docstr),
+            docstr
+        },
 
-        hpx::util::make_tuple("slice_row",
+        match_pattern_type{"slice_row",
             std::vector<std::string>{"slice_row(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
-            docstr),
+            docstr
+        },
 
-        hpx::util::make_tuple("slice_column",
+        match_pattern_type{"slice_column",
             std::vector<std::string>{"slice_column(_1, __2)"},
             &create_slicing_operation,
             &create_primitive<slicing_operation>,
-            docstr)
+            docstr
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////

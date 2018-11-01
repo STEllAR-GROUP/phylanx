@@ -191,7 +191,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto data1 =
             value_operand_sync(data[1], params, name_, codename_);
-        auto result = slice(std::move(bound_value_), data1,
+        auto result = slice(std::move(bound_value_), std::move(data1),
             value_operand_sync(
                 data[2], std::move(params), name_, codename_),
             std::move(data[0]), name_, codename_);
