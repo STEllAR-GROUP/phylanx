@@ -75,14 +75,18 @@ def csv_records(path):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--centroids', type=int, default=3,
+    parser.add_argument(
+        '--centroids', type=int, default=3,
         help='number of centroids')
-    parser.add_argument('--iterations', type=int, default=2,
+    parser.add_argument(
+        '--iterations', type=int, default=2,
         help='number of iterations to run')
-    parser.add_argument('--points', type=csv_records, default=250,
+    parser.add_argument(
+        '--points', type=csv_records, default=250,
         help='number of random points to generate or path to CSV file containing points')
-    parser.add_argument('--dry-run', type=bool, nargs='?', const=True,
-                        default=False)
+    parser.add_argument(
+        '--dry-run', type=bool, nargs='?', const=True,
+        default=False)
     return parser.parse_args()
 
 

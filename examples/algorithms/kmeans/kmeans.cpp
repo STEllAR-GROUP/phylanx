@@ -79,7 +79,8 @@ blaze::DynamicMatrix<double> generate_random(int centroids, int num_points)
     /*blaze::DynamicMatrix<double> result(num_points, 2ul);
     blaze::Rand<blaze::DynamicVector<double>> gen_1d{};
     auto const raw_shares = gen_1d.generate(num_points);
-    double const raw_shares_sum = std::accumulate(raw_shares.begin(), raw_shares.end(), 0.);
+    double const raw_shares_sum = std::accumulate(
+        raw_shares.begin(), raw_shares.end(), 0.);
     auto const shares = num_points * raw_shares / raw_shares_sum;*/
 
     blaze::Rand<blaze::DynamicMatrix<double>> gen_2d{};

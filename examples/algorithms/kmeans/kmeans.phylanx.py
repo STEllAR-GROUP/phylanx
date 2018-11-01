@@ -21,32 +21,33 @@ from phylanx import Phylanx
 import argparse
 import csv
 import numpy as np
+import os
 import time
 
 
 @Phylanx
 def initialize_centroids(points, k):
     centroids = points
-    shuffle(centroids)
+    np.shuffle(centroids)
     return centroids[:k]
 
 
 @Phylanx
 def closest_centroid(points, centroids):
-    points_x = np.expand_dims(slice_column(points, 0))
-    points_y = np.expand_dims(slice_column(points, 1))
-    centroids_x = slice_column(centroids, 0)
-    centroids_y = slice_column(centroids, 1)
-    return np.argmin(sqrt(
-        power(points_x - centroids_x, 2) + power(points_y - centroids_y, 2)
+    points_x = np.expand_dims(np.slice_column(points, 0))
+    points_y = np.expand_dims(np.slice_column(points, 1))
+    centroids_x = np.slice_column(centroids, 0)
+    centroids_y = np.slice_column(centroids, 1)
+    return np.argmin(np.sqrt(
+        np.power(points_x - centroids_x, 2) + np.power(points_y - centroids_y, 2)
     ), 0)
 
 
 @Phylanx
 def move_centroids(points, closest, centroids):
-    return fmap(
-        lambda k: mean(points * np.expand_dims(closest == k), 1),
-        range(shape(centroids, 0))
+    return np.fmap(
+        lambda k: np.mean(points * np.add_dim(closest == k), 1),
+        range(np.shape(centroids, 0))
     )
 
 
@@ -54,8 +55,8 @@ def move_centroids(points, closest, centroids):
 def kmeans(points, k, iterations):
     centroids = initialize_centroids(points, k)
     for i in range(iterations):
-        centroids = apply(
-            vstack,
+        centroids = np.apply(
+            np.vstack,
             move_centroids(
                 points,
                 closest_centroid(points, centroids),
@@ -91,14 +92,18 @@ def csv_records(path):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--centroids', type=int, default=3,
+    parser.add_argument(
+        '--centroids', type=int, default=3,
         help='number of centroids')
-    parser.add_argument('--iterations', type=int, default=2,
+    parser.add_argument(
+        '--iterations', type=int, default=2,
         help='number of iterations to run')
-    parser.add_argument('--points', type=csv_records, default=250,
+    parser.add_argument(
+        '--points', type=csv_records, default=250,
         help='number of random points to generate or path to CSV file containing points')
-    parser.add_argument('--dry-run', type=bool, nargs='?', const=True,
-                        default=False)
+    parser.add_argument(
+        '--dry-run', type=bool, nargs='?', const=True,
+        default=False)
     return parser.parse_args()
 
 
