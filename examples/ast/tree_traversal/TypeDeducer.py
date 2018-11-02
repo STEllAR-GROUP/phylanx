@@ -47,11 +47,6 @@ class TypeDeducerState(object):
     Also contains two auxiliary functions, get_closest_ref as well as
     add_to_target_list
     """
-    assign_list: list
-    target_list: list
-    var_list: list
-    variable_dict: dict
-    inside_conditional: bool
 
     def __init__(self, variable_dict, inside_conditional=False):
         self.assign_list = []
@@ -148,8 +143,8 @@ class TypeDeducer(ast.NodeVisitor):
     def make_var_representation(self, node):
         self.var_representation = Variable("r{}".format(self.type_deducer_state.last_id),
                                            node.lineno, node.col_offset, self.var_type,
-                                           conditional_assigned=
-                                           self.type_deducer_state.inside_conditional,
+                                           conditional_assigned=self.
+                                           type_deducer_state.inside_conditional,
                                            dims=self.dims)
         self.type_deducer_state.last_id += 1
         self.type_deducer_state.var_list.append(self.var_representation)
@@ -255,8 +250,8 @@ class TypeDeducer(ast.NodeVisitor):
         information to the variable."""
         try:
             var = self.type_deducer_state.get_closest_ref(node.arg,
-                                                               node.lineno,
-                                                               node.col_offset)
+                                                          node.lineno,
+                                                          node.col_offset)
             var_type = var.var_type
             var_tmp = Variable(node.arg, node.lineno, node.col_offset, var_type)
         except LookupError:
@@ -317,8 +312,8 @@ class TypeDeducer(ast.NodeVisitor):
     def visit_BoolOp(self, node):
         """TODO - Finish the implementation for BoolOps"""
         raise NotImplementedError("Boolean operations are not supported: "
-                                  "Line Number: {} Column Offset: {}".format(
-                                   node.lineno, node.col_offset))
+                                  "Line Number: {} Column Offset: "
+                                  "{}".format(node.lineno, node.col_offset))
 
     def visit_Call(self, node):
         """Like visit_BinOp and visit_UnaryOp, visit_Call handles type deduction

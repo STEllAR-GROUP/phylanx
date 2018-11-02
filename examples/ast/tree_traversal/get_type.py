@@ -2,7 +2,6 @@
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-import numpy_output_type
 
 #################################################
 """ Dictionary for mapping unary operators/functions to output types """
@@ -109,7 +108,7 @@ unary_matrix = {
     "diag": "vector",
     "identity": "matrix",  # Return matrix of same dimension but identity?
     "inverse": "matrix",
-    "invert" : "matrix",
+    "invert": "matrix",
     "len": "scalar",
     "linearmatrix": "vector",  # Here assuming that linear matrix is concat'ed matrix
                                # rows/columns
@@ -433,8 +432,6 @@ first_type = {
     "matrix": matrix
 }
 
-
-
 """ End of dictionaries for output types on two input types """
 ###################################################
 
@@ -493,7 +490,7 @@ def parse_determinant(dims):
 
 
 """Dictionary for determining which numpy parsing function should be called"""
-numpy_parsers: dict = {
+numpy_parsers = {
     'zeros': parse_zeros,
     'ones': parse_zeros,
     'identity': parse_identity,
