@@ -6,10 +6,4 @@
 from .core import *
 from .core.config import *
 from .ast.transducer import Phylanx
-
-
-class parallel:
-
-    @staticmethod
-    def is_parallel_block():
-        return True
+from .execution_tree import parallel

@@ -40,11 +40,13 @@ def main_phylanx(X, y, wh, bh, wout, bout, lr, num_iter):
         # Backpropagation
         Error = y - output
         slope_output_layer = (output * (1 - output))
-        slope_hidden_layer = (hidden_layer_activations * (1 - hidden_layer_activations))
+        slope_hidden_layer = (
+            hidden_layer_activations * (1 - hidden_layer_activations))
         d_output = Error * slope_output_layer
         Error_at_hidden_layer = np.dot(d_output, np.transpose(wout_local))
         d_hidden_layer = Error_at_hidden_layer * slope_hidden_layer
-        wout_local += (np.dot(np.transpose(hidden_layer_activations), d_output)) * lr
+        wout_local += (np.dot(
+            np.transpose(hidden_layer_activations), d_output)) * lr
         bout_local += np.sum(d_output, 0, True) * lr
         # bout += np.sum(d_output, axis=0,keepdims=True) *lr # pure python version
         wh_local += (np.dot(np.transpose(X), d_hidden_layer)) * lr
