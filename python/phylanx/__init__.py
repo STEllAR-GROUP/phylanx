@@ -13,5 +13,3 @@ class parallel:
     @staticmethod
     def is_parallel_block():
         return True
-
-
