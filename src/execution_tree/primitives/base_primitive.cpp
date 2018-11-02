@@ -1087,11 +1087,11 @@ namespace phylanx { namespace execution_tree
         }
         break;
 
-        case 0:HPX_FALLTHROUGH;    // nil
-        case 3:HPX_FALLTHROUGH;    // string
-        case 5:HPX_FALLTHROUGH;    // primitive
-        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
         default:
             break;
         }
@@ -1140,11 +1140,11 @@ namespace phylanx { namespace execution_tree
         }
         break;
 
-        case 0:HPX_FALLTHROUGH;    // nil
-        case 3:HPX_FALLTHROUGH;    // string
-        case 5:HPX_FALLTHROUGH;    // primitive
-        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
         default:
             break;
         }
