@@ -75,8 +75,6 @@ def split(node, max_depth, min_sz, n_features, depth, classes):
         else:
             term = to_terminal(left, classes)
 
-        #node[LFT] = term
-        #node[RHT] = term
         node[LW] = term
         node[RW] = term
         return
@@ -84,25 +82,19 @@ def split(node, max_depth, min_sz, n_features, depth, classes):
     if depth >= max_depth:
         lterm = to_terminal(left, classes)
         rterm = to_terminal(right, classes)
-        #node[LFT] = lterm
-        #node[RHT] = rterm
         node[LW] = lterm
         node[RW] = rterm
         return
 
     if len(left) <= min_sz:
-        #node[LFT] = to_terminal(left, classes)
         node[LW] = to_terminal(left, classes)
     else:
-        #node[LW] = inf
         node[LFT] = get_split(left, n_features, classes)
         split(node[LFT], max_depth, min_sz, n_features, depth+1, classes) 
 
     if len(right) <= min_sz:
-        #node[RHT] = to_terminal(right, classes)
         node[RW] = to_terminal(right, classes)
     else:
-        #node[RW] = inf
         node[RHT] = get_split(right, n_features, classes)
         split(node[RHT], max_depth, min_sz, n_features, depth+1, classes)
 
@@ -113,13 +105,11 @@ def build_tree(train, max_depth, min_sz, n_features, classes):
 
 def node_predict(node, r):
     if r[node['index']] < node['value']:
-        #if not node['right'] in classes:
         if node['lw'] == inf:
             return node_predict(node['left'], r)
         else:
             return node['lw']
     else:
-        #if not node['right'] in classes:
         if node['rw'] == inf:
             return node_predict(node['right'], r)
         else:
@@ -149,7 +139,7 @@ def bagging_predict(trees, row, classes):
 
 def random_forest(train, max_depth, min_sz, sample_sz, n_trees):
     cls = unique(train[:,-1])
-    classes = dict() #zeros(cls.shape[0], dtype=int64)
+    classes = dict()
     for c in range(cls.shape[0]):
         classes[int64(cls[c])] = c
 
