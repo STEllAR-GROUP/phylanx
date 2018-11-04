@@ -153,7 +153,7 @@ def random_forest(train, max_depth, min_sz, sample_sz, n_trees):
 def predict(randomforest, test):
     trees, classes = randomforest['trees'], randomforest['classes']
     predictions = list(map(lambda row: bagging_predict(trees, test[row, :], classes), range(len(test))))
-    return (predictions, classes)
+    return predictions
 
 if __name__ == "__main__":
     file_name = "../datasets/breast_cancer.csv"
