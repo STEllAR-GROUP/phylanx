@@ -13,6 +13,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -96,6 +97,25 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    std::size_t extract_smallest_dimension(
+        primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename)
+    {
+        std::size_t result = 2;
+        for (auto const& arg : args)
+        {
+            result = (std::min)(
+                result, extract_numeric_value_dimension(arg, name, codename));
+
+            if (result == 0)
+            {
+                break;      // can't get larger than that
+            }
+        }
+        return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     std::size_t extract_largest_dimension(
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
@@ -112,6 +132,33 @@ namespace phylanx { namespace execution_tree
             }
         }
         return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::array<std::size_t, 2> extract_largest_dimensions(
+        primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename)
+    {
+        std::vector<std::array<std::size_t, 2>> sizes;
+        sizes.reserve(args.size());
+
+        for (auto const& arg : args)
+        {
+            sizes.emplace_back(
+                extract_numeric_value_dimensions(arg, name, codename));
+        }
+
+        std::array<std::size_t, 2> result{0, 0};
+
+        auto max_array =
+            [](std::array<std::size_t, 2> const& lhs,
+                std::array<std::size_t, 2> const& rhs)
+            {
+                return std::array<std::size_t, 2>{
+                    (std::max)(lhs[0], rhs[0]), (std::max)(lhs[1], rhs[1])};
+            };
+
+        return std::accumulate(sizes.begin(), sizes.end(), result, max_array);
     }
 
     ///////////////////////////////////////////////////////////////////////////

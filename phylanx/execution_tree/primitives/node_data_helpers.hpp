@@ -60,6 +60,25 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // Extract the smallest dimension from all of the given arguments
+    PHYLANX_EXPORT std::size_t extract_smallest_dimension(
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    // Extract the largest dimension from all of the given arguments
+    template <typename... Ts>
+    std::size_t extract_smallest_dimension(std::string const& name,
+        std::string const& codename, Ts const&... args)
+    {
+        std::size_t const __dummy[] = {
+            extract_numeric_value_dimension(args, name, codename)...,
+            0
+        };
+        return *std::min_element(&__dummy[0], &__dummy[sizeof...(args)]);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Extract the largest dimension from all of the given arguments
     PHYLANX_EXPORT std::size_t extract_largest_dimension(
         primitive_arguments_type const& args,
