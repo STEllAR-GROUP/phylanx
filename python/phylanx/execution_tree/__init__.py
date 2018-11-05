@@ -8,3 +8,10 @@ try:
 
 except Exception:
     from phylanx._phylanxd.execution_tree import *
+
+
+class parallel:
+
+    @staticmethod
+    def is_parallel_block():
+        return True

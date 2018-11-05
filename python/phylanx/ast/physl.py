@@ -10,6 +10,7 @@ import ast
 import inspect
 import phylanx.execution_tree
 from phylanx import compiler_state
+from phylanx.ast.utils import dump_info
 
 mapped_methods = {
     "add": "__add",
@@ -790,6 +791,20 @@ class PhySL:
         #     else:
         #         return [op, (value, slice_)]
         return [op, (value, slice_)]
+
+    def _With(self, node):
+        if 0 < len(node.items) and type(node.items[0]) == ast.withitem:
+            withitem = node.items[0]
+            if type(withitem.context_expr) == ast.Attribute:
+                attribute = withitem.context_expr
+                if attribute.attr == "parallel":
+                    if self.fglobals[attribute.value.id].parallel.is_parallel_block():
+                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+            elif type(withitem.context_expr) == ast.Name:
+                if withitem.context_expr.id == "parallel":
+                    if self.fglobals["parallel"].is_parallel_block():
+                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+        raise Exception("Unsupported use of 'With'")
 
     def _Dict(self, node):
         res = []

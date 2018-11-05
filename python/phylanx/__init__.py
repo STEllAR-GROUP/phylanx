@@ -6,3 +6,4 @@
 from .core import *
 from .core.config import *
 from .ast.transducer import Phylanx
+from .execution_tree import parallel
