@@ -38,7 +38,9 @@ def gini_index(groups, classes):
     gini = 0.0
 
     p = zeros(len(classes), dtype=float64)
-    for (group, group_len) in filter(lambda x: x[1] > 0, zip(groups, groups_len)):
+    for (group, group_len) in filter(
+        lambda x: x[1] > 0, zip(groups, groups_len)
+    ):
         for row in group:
             p[classes[int64(row[-1])]] += 1.0
         score = sum(((p / float64(group_len)) ** 2.0))
@@ -55,12 +57,12 @@ def get_split(dataset, n_features, classes):
 
     b_idx = iinfo(int64).max
     b_val = finfo(float64).max
-    b_score = finfo(float64).max 
+    b_score = finfo(float64).max
     b_groups = (list(), list())
     idx_w = randint(0, dataset.shape[1] - 1, size=dataset.shape[1] - 1)
     idx = zeros(dataset.shape[1] - 1, dtype=int64)
 
-    for i in range(dataset.shape[1]-1):
+    for i in range(dataset.shape[1] - 1):
         idx[i] = i
 
     features = idx[argsort(idx_w)][:n_features]
@@ -74,7 +76,11 @@ def get_split(dataset, n_features, classes):
                 b_score = gini
                 b_groups = groups
 
-    return {'index': b_idx, 'value': b_val, 'groups': b_groups, 'lw': inf, 'rw': inf}
+    return {'index': b_idx,
+            'value': b_val,
+            'groups': b_groups,
+            'lw': inf,
+            'rw': inf}
 
 
 def to_terminal(group, classes):
@@ -142,7 +148,7 @@ def node_predict(node, r):
 
 
 def subsample(dataset, ratio):
-    n_sample = int64(floor(len(dataset)*ratio))
+    n_sample = int64(floor(len(dataset) * ratio))
     idx_w = list(map(lambda x: rand(), range(dataset.shape[0])))
     idx_s = argsort(idx_w)
     sample = vstack(map(lambda x: dataset[idx_s[x], :], range(n_sample)))
@@ -176,13 +182,17 @@ def random_forest(train, max_depth, min_sz, sample_sz, n_trees):
         classes[int64(cls[c])] = c
 
     n_features = int64(floor(sqrt(dataset.shape[0])))
-    trees = list(map(lambda i:
-        build_tree(subsample(train, sample_sz)
-            , max_depth
-            , min_sz
-            , n_features
-            , classes)
-        , range(n_trees)))
+    trees = list(
+        map(lambda i:
+            build_tree(
+                subsample(train, sample_sz),
+                max_depth,
+                min_sz,
+                n_features,
+                classes
+            ),
+            range(n_trees))
+    )
 
     # parallel
     #
@@ -197,7 +207,15 @@ def random_forest(train, max_depth, min_sz, sample_sz, n_trees):
 
 def predict(randomforest, test):
     trees, classes = randomforest['trees'], randomforest['classes']
-    predictions = list(map(lambda row: bagging_predict(trees, test[row, :], classes), range(len(test))))
+    predictions = list(
+        map(lambda row:
+            bagging_predict(
+                trees,
+                test[row, :],
+                classes),
+            range(len(test)))
+    )
+
     return predictions
 
 
@@ -209,7 +227,13 @@ if __name__ == "__main__":
     sample_size = 1.0
     n_trees = [1, 5, 10]
     train = int64(dataset.shape[0] / 2)
-    trees = random_forest(dataset[:train, :], max_depth, min_size, sample_size, n_trees[1])
+    trees = random_forest(
+        dataset[:train, :],
+        max_depth,
+        min_size,
+        sample_size,
+        n_trees[1]
+    )
     print('predict')
     predict = predict(trees, dataset[train:, :])
     print(predict)
