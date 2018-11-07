@@ -1,10 +1,3 @@
-# Inspired by SUNIL RAY
-# https://www.analyticsvidhya.com/blog/2017/05/neural-network-from-scratch-in-python-and-r/
-# Copyright (c) 2018 Weile Wei
-#
-# Distributed under the Boost Software License, Version 1.0. (See accompanying
-# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
 import pandas as pd
 import numpy as np
 import time
@@ -13,24 +6,16 @@ import sys
 from phylanx import Phylanx
 
 if not len(sys.argv) == 6:
-    print(
-        "This program requires the following 6 arguments seperated by a space "
-    )
+    print("This program requires the following 6 arguments seperated by a space ")
     print("iterations Row_START Row_STOP Col_START Col_STOP")
     exit(-57)
 
-parser = argparse.ArgumentParser(
-    description='Iteration and slicing operations')
-parser.add_argument(
-    'integers',
-    metavar='Iteration  + Slicing Parameters',
-    type=int,
-    nargs='+',
-    help='iterations, Row_START, Row_STOP, Col_START, Col_STOP')
+parser = argparse.ArgumentParser(description='Iteration and slicing operations')
+parser.add_argument('integers', metavar='Iteration  + Slicing Parameters', type=int, nargs='+',
+                    help='iterations, Row_START, Row_STOP, Col_START, Col_STOP')
 
 args = parser.parse_args()
-print("Command Line: ", args.integers[0], args.integers[1], args.integers[2],
-      args.integers[3], args.integers[4])
+print("Command Line: " ,args.integers[0], args.integers[1], args.integers[2], args.integers[3], args.integers[4])
 
 iterations = args.integers[0]
 row_start = args.integers[1]
@@ -38,34 +23,34 @@ row_stop = args.integers[2]
 col_start = args.integers[3]
 col_stop = args.integers[4]
 
-treading = time.time()
+treading=time.time()
 
 print("Reading Data ....")
-df = pd.read_csv('/phylanx-data/CSV/10kx10k.csv', sep=',', header=None)
+df = pd.read_csv('/phylanx-data/CSV/10kx10k.csv', sep=',',header=None)
 df = df.values
 print("Slicing ....")
-X = df[row_start:row_stop, col_start:col_stop]
-Y = np.squeeze(np.asarray(df[row_start:row_stop, 10000:10001]))
-trslice = time.time()
+X = df[row_start:row_stop,col_start:col_stop]
+Y = np.squeeze(np.asarray(df[row_start:row_stop,10000:10001]))
+trslice=time.time()
 print("Reading and Slicing done in ", trslice - treading, " s ")
 
 print("Starting NN ....")
 
-tnn = time.time()
 
+tnn=time.time()
 
 @Phylanx
 def SingleLayerNeuralNetwork(X, y, num_iter, lr):
 
     input_layer_neurons = np.shape(X)[1]  # number of features in data set
     output_neurons = np.shape(y)[0]  # number of neurons at output layer
-    hidden_layer_neurons = input_layer_neurons / 2
+    hidden_layer_neurons = input_layer_neurons/2
 
     # weight and bias initialization
-    wh = random([input_layer_neurons, hidden_layer_neurons], "uniform") # noqa
-    bh = random([1, hidden_layer_neurons], "uniform") # noqa
-    wout = random([hidden_layer_neurons, output_neurons], "uniform") # noqa
-    bout = random([1, output_neurons], "uniform") # noqa
+    wh = random([input_layer_neurons, hidden_layer_neurons], "uniform")
+    bh = random([1, hidden_layer_neurons], "uniform")
+    wout = random([hidden_layer_neurons, output_neurons], "uniform")
+    bout = random([1, output_neurons], "uniform")
 
     for i in range(num_iter):
         # Forward
@@ -79,8 +64,7 @@ def SingleLayerNeuralNetwork(X, y, num_iter, lr):
         # Backpropagation
         Error = y - output
         slope_output_layer = (output * (1 - output))
-        slope_hidden_layer = (
-            hidden_layer_activations * (1 - hidden_layer_activations))
+        slope_hidden_layer = (hidden_layer_activations * (1 - hidden_layer_activations))
         d_output = Error * slope_output_layer
         Error_at_hidden_layer = np.dot(d_output, np.transpose(wout))
         d_hidden_layer = Error_at_hidden_layer * slope_hidden_layer
@@ -96,6 +80,7 @@ def SingleLayerNeuralNetwork(X, y, num_iter, lr):
 
 weights = SingleLayerNeuralNetwork(X, Y, iterations, 1e-5)
 
-tfinal = time.time()
+tfinal= time.time()
 
-print(" result = ", weights, " time: ", tfinal - tnn)
+print (" result = " , weights, " time: ", tfinal-tnn)
+
