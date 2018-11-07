@@ -123,6 +123,7 @@ int hpx_main(boost::program_options::variables_map& vm)
 
     std::cout << "time: " << elapsed << " seconds" << std::endl;
 <<<<<<< HEAD
+<<<<<<< HEAD
     /*<< "Result: \n"
               << phylanx::execution_tree::extract_numeric_value(result)
               << std::endl
@@ -276,10 +277,10 @@ int hpx_main(boost::program_options::variables_map& vm)
     auto elapsed = t.elapsed();
 
     std::cout << "time: " << elapsed << " seconds" << std::endl;
-    /*<< "Result: \n"
+
+        /*<< "Result: \n"
               << phylanx::execution_tree::extract_numeric_value(result)
-              << std::endl
-              */
+              << std::endl*/
 
     return hpx::finalize();
 }
