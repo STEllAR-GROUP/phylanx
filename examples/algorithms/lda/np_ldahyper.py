@@ -285,7 +285,7 @@ def estimate(training, numTopics, alpha_, beta, numIterations=2000):
 
 if __name__ == "__main__":
     matlab_vars = dict()
-    loadmat('docword.kos.train.mat', matlab_vars)
+    loadmat('../datasets/docword.kos.train.mat', matlab_vars)
     D = int(matlab_vars['D'][0][0])
     W = int(matlab_vars['W'][0][0])
     N = int(matlab_vars['N'][0][0])
