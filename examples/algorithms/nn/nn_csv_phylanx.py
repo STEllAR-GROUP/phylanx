@@ -55,10 +55,10 @@ def SingleLayerNeuralNetwork(X, y, num_iter, lr):
     hidden_layer_neurons = input_layer_neurons / 2
 
     # weight and bias initialization
-    wh = random([input_layer_neurons, hidden_layer_neurons], "uniform")
-    bh = random([1, hidden_layer_neurons], "uniform")
-    wout = random([hidden_layer_neurons, output_neurons], "uniform")
-    bout = random([1, output_neurons], "uniform")
+    wh = random([input_layer_neurons, hidden_layer_neurons], "uniform") # noqa
+    bh = random([1, hidden_layer_neurons], "uniform") # noqa
+    wout = random([hidden_layer_neurons, output_neurons], "uniform")  # noqa
+    bout = random([1, output_neurons], "uniform") # noqa
 
     for i in range(num_iter):
         # Forward
