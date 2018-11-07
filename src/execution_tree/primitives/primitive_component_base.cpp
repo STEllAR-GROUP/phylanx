@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
         primitive_arguments_type const& params,
-        eval_mode mode) const
+        eval_context ctx) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -86,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ++eval_count_;
         }
 
-        auto f = this->eval(params, mode);
+        auto f = this->eval(params, std::move(ctx));
 
         if (enable_timer && !f.is_ready())
         {
@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        primitive_argument_type&& param, eval_mode mode) const
+        primitive_argument_type&& param, eval_context ctx) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ++eval_count_;
         }
 
-        auto f = this->eval(std::move(param), mode);
+        auto f = this->eval(std::move(param), std::move(ctx));
 
         if (enable_timer && !f.is_ready())
         {
@@ -138,22 +138,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         primitive_arguments_type const& params) const
     {
-        return this->eval(params, eval_default);
+        return this->eval(params, eval_context{});
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::eval(
         primitive_arguments_type const& params,
-        eval_mode mode) const
+        eval_context ctx) const
     {
         return this->eval(params);
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::eval(
-        primitive_argument_type && param, eval_mode mode) const
+        primitive_argument_type && param, eval_context ctx) const
     {
         primitive_arguments_type params;
         params.emplace_back(std::move(param));
-        return this->eval(params, mode);
+        return this->eval(params, std::move(ctx));
     }
 
     // store_action

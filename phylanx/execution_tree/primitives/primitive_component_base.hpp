@@ -50,10 +50,10 @@ namespace phylanx { namespace execution_tree
             // eval_action
             virtual hpx::future<primitive_argument_type> eval(
                 primitive_arguments_type const& params,
-                eval_mode mode) const;
+                eval_context ctx) const;
 
             virtual hpx::future<primitive_argument_type> eval(
-                primitive_argument_type && param, eval_mode mode) const;
+                primitive_argument_type && param, eval_context ctx) const;
 
             // store_action
             virtual void store(primitive_arguments_type&&,
@@ -77,10 +77,10 @@ namespace phylanx { namespace execution_tree
             // helper functions to invoke eval functionalities
             hpx::future<primitive_argument_type> do_eval(
                 primitive_arguments_type const& params,
-                eval_mode mode) const;
+                eval_context ctx) const;
 
             hpx::future<primitive_argument_type> do_eval(
-                primitive_argument_type && param, eval_mode mode) const;
+                primitive_argument_type && param, eval_context ctx) const;
 
             virtual hpx::future<primitive_argument_type> eval(
                 primitive_arguments_type const& params) const;

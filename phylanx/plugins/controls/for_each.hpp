@@ -33,13 +33,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& args,
-            eval_mode mode) const override;
+            eval_context ctx) const override;
 
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
-            eval_mode mode) const;
+            eval_context ctx) const;
 
     private:
         struct iteration_for;

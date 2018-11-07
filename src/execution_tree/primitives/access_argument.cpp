@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> access_argument::eval(
-        primitive_arguments_type const& params, eval_mode mode) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (argnum_ >= params.size())
         {
@@ -83,7 +83,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             extract_ref_value(*it, name_, codename_));
                     }
 
-                    mode = eval_mode(mode | eval_dont_wrap_functions);
+                    eval_mode mode =
+                        eval_mode(ctx.mode_ | eval_dont_wrap_functions);
                     return value_operand(params[argnum_], std::move(fargs),
                         name_, codename_, mode);
                 }
@@ -94,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     auto this_ = this->shared_from_this();
                     return hpx::dataflow(
                         hpx::launch::sync,
-                        [   this_ = std::move(this_), mode,
+                        [   this_ = std::move(this_),
                             target = params[argnum_]
                         ](hpx::future<primitive_argument_type>&& rows,
                                 hpx::future<primitive_argument_type>&& cols)
@@ -111,7 +112,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto this_ = this->shared_from_this();
                 return value_operand(operands_[1], params, name_, codename_)
                     .then(hpx::launch::sync,
-                        [   this_ = std::move(this_), mode,
+                        [   this_ = std::move(this_),
                             target = params[argnum_]
                         ](hpx::future<primitive_argument_type>&& rows)
                         -> primitive_argument_type

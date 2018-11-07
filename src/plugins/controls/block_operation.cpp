@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> block_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type args, eval_mode mode) const
+        primitive_arguments_type args, eval_context ctx) const
     {
         // Empty blocks are allowed (Issue #278)
         if (this->no_operands())
@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(primitive_argument_type{});
         }
 
-        mode = eval_mode(mode & ~eval_dont_wrap_functions);
+        ctx.mode_ = eval_mode(ctx.mode_ & ~eval_dont_wrap_functions);
 
         hpx::future<primitive_argument_type> f;
 
@@ -64,11 +64,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (i == size - 1)
             {
-                f = value_operand(operands_[i], args, name_, codename_, mode);
+                f = value_operand(
+                    operands_[i], args, name_, codename_, std::move(ctx));
             }
             else
             {
-                value_operand_sync(operands_[i], args, name_, codename_, mode);
+                value_operand_sync(
+                    operands_[i], args, name_, codename_, std::move(ctx));
             }
         }
 
@@ -78,12 +80,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     // start iteration over given block statement
     hpx::future<primitive_argument_type> block_operation::eval(
-        primitive_arguments_type const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (this->no_operands())
         {
-            return eval(args, noargs, mode);
+            return eval(args, noargs, std::move(ctx));
         }
-        return eval(this->operands(), args, mode);
+        return eval(this->operands(), args, std::move(ctx));
     }
 }}}

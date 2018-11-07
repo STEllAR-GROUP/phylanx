@@ -31,8 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    call_function::call_function(
-            primitive_arguments_type&& args,
+    call_function::call_function(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -86,7 +85,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     eval_dont_evaluate_partials |
                     eval_dont_evaluate_lambdas)),
             detail::map_operands(std::move(fargs), functional::value_operand{},
-                params, name_, codename_, eval_dont_evaluate_partials));
+                params, name_, codename_,
+                eval_context(eval_dont_evaluate_partials)));
     }
 
     void call_function::store(primitive_arguments_type&& data,

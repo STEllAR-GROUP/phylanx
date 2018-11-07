@@ -43,7 +43,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& params,
-            eval_mode) const override;
+            eval_context) const override;
     };
 
     inline primitive create_append_operation(hpx::id_type const& locality,

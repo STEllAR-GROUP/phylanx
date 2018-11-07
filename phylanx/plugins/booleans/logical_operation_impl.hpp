@@ -605,7 +605,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // implement '&&' for all possible combinations of lhs logical rhs
     template <typename Op>
     hpx::future<primitive_argument_type> logical_operation<Op>::eval(
-        primitive_arguments_type const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_context) const
     {
         if (this->no_operands())
         {

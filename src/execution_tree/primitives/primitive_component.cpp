@@ -109,9 +109,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // eval_action
     hpx::future<primitive_argument_type> primitive_component::eval(
         primitive_arguments_type const& params,
-        eval_mode mode) const
+        eval_context ctx) const
     {
-        if ((mode & eval_dont_evaluate_partials) &&
+        if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty() && !params.empty())
         {
             // return a client referring to this component as the evaluation
@@ -120,13 +120,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(params, mode);
+        return primitive_->do_eval(params, std::move(ctx));
     }
 
     hpx::future<primitive_argument_type> primitive_component::eval_single(
-        primitive_argument_type && param, eval_mode mode) const
+        primitive_argument_type && param, eval_context ctx) const
     {
-        if ((mode & eval_dont_evaluate_partials) &&
+        if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty())
         {
             // return a client referring to this component as the evaluation
@@ -135,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(std::move(param), mode);
+        return primitive_->do_eval(std::move(param), std::move(ctx));
     }
 
     // store_action

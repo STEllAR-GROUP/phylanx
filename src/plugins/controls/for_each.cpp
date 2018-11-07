@@ -60,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> for_each::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
@@ -94,13 +94,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "invocable object", name_, codename_));
         }
 
-        mode = eval_mode(mode & ~eval_dont_wrap_functions);
+        ctx.mode_ = eval_mode(ctx.mode_ & ~eval_dont_wrap_functions);
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            [this_ = std::move(this_), mode](
+            [this_ = std::move(this_), ctx = std::move(ctx)](
                     hpx::future<primitive_argument_type>&& f,
-                    hpx::future<ir::range>&& list)
+                    hpx::future<ir::range>&& list) mutable
             -> primitive_argument_type
             {
                 auto && bound_func = f.get();
@@ -120,7 +120,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // range
                 for (auto && e : list.get())
                 {
-                    auto r = p->eval(hpx::launch::sync, std::move(e), mode);
+                    auto r = p->eval(
+                        hpx::launch::sync, std::move(e), std::move(ctx));
                     if (extract_boolean_value(
                             r, this_->name_, this_->codename_))
                     {
@@ -137,12 +138,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // Start iteration over given for_each statement
     hpx::future<primitive_argument_type> for_each::eval(
-        primitive_arguments_type const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (this->no_operands())
         {
-            return eval(args, noargs, mode);
+            return eval(args, noargs, std::move(ctx));
         }
-        return eval(this->operands(), args, mode);
+        return eval(this->operands(), args, std::move(ctx));
     }
 }}}

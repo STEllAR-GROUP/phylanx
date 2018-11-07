@@ -438,7 +438,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     // Implement a boolean operation for all possible combinations of lhs and rhs
     template <typename Op, typename Derived>
     hpx::future<primitive_argument_type> numeric<Op, Derived>::eval(
-        primitive_arguments_type const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_context) const
     {
         if (this->no_operands())
         {

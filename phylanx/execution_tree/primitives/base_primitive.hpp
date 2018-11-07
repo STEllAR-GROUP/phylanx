@@ -19,7 +19,6 @@
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/include/serialization.hpp>
 
 #include <array>
 #include <cstddef>
@@ -41,38 +40,38 @@ namespace phylanx { namespace execution_tree
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type&& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type&& val,
         primitive_arguments_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
         primitive_argument_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type&& val,
         primitive_argument_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -617,31 +616,31 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
         primitive_arguments_type&& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val,
         primitive_arguments_type const& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val,
         primitive_arguments_type&& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val, primitive_argument_type const& arg,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val, primitive_argument_type const& arg,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     namespace functional
     {

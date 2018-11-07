@@ -72,7 +72,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> variable::eval(
-        primitive_arguments_type const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (!value_set_ && !valid(bound_value_))
         {
@@ -87,7 +87,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             valid(bound_value_) ? bound_value_ : operands_[0];
 
         // if given, args[0] and args[1] are optional slicing arguments
-        if (!args.empty() && !(mode & eval_dont_evaluate_partials))
+        if (!args.empty() && !(ctx.mode_ & eval_dont_evaluate_partials))
         {
             if (args.size() > 1)
             {
@@ -106,7 +106,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> variable::eval(
-        primitive_argument_type && arg, eval_mode mode) const
+        primitive_argument_type && arg, eval_context ctx) const
     {
         if (!value_set_ && !valid(bound_value_))
         {
@@ -121,7 +121,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             valid(bound_value_) ? bound_value_ : operands_[0];
 
         // if given, args[0] and args[1] are optional slicing arguments
-        if (valid(arg) && !(mode & eval_dont_evaluate_partials))
+        if (valid(arg) && !(ctx.mode_ & eval_dont_evaluate_partials))
         {
             // handle row-slicing
             return hpx::make_ready_future(

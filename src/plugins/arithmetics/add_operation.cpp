@@ -199,7 +199,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     // Implement '+' for all possible combinations of lhs and rhs
     hpx::future<primitive_argument_type> add_operation::eval(
-        primitive_arguments_type const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_context) const
     {
         if (this->no_operands())
         {

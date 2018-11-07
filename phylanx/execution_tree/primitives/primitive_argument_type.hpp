@@ -15,6 +15,7 @@
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/runtime/serialization/serialization_fwd.hpp>
 
 #include <cstdint>
 #include <iosfwd>
@@ -54,11 +55,10 @@ namespace phylanx { namespace execution_tree
           : children_(std::move(names)), name_(std::move(name))
         {}
 
-        template <typename Archive>
-        void serialize(Archive & ar, unsigned)
-        {
-            ar & children_ & name_;
-        }
+        PHYLANX_EXPORT void serialize(hpx::serialization::output_archive& ar,
+            unsigned);
+        PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
+            unsigned);
 
         std::vector<topology> children_;
         std::string name_;
@@ -85,6 +85,21 @@ namespace phylanx { namespace execution_tree
         eval_dont_evaluate_lambdas = 0x04   // don't evaluate functions
     };
 
+    struct eval_context
+    {
+        eval_context(eval_mode mode = eval_default)
+            : mode_(mode)
+        {}
+
+        PHYLANX_EXPORT void serialize(hpx::serialization::output_archive& ar,
+            unsigned);
+        PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
+            unsigned);
+
+        eval_mode mode_;
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     class primitive
       : public hpx::components::client_base<primitive,
             primitives::primitive_component>
@@ -115,28 +130,28 @@ namespace phylanx { namespace execution_tree
         primitive& operator=(primitive &&) = default;
 
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             primitive_argument_type && arg,
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             primitive_arguments_type && args,
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& args,
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
 
         PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
         PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
             primitive_argument_type && arg,
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
         PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
             primitive_arguments_type&& args,
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
         PHYLANX_EXPORT primitive_argument_type eval(hpx::launch::sync_policy,
             primitive_arguments_type const& args,
-            eval_mode mode = eval_default) const;
+            eval_context ctx = eval_context{}) const;
 
         PHYLANX_EXPORT hpx::future<void> store(primitive_argument_type&&,
             primitive_arguments_type&&);

@@ -32,9 +32,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& params,
-            eval_mode) const override;
+            eval_context) const override;
         hpx::future<primitive_argument_type> eval(
-            primitive_argument_type && arg, eval_mode mode) const override;
+            primitive_argument_type && arg, eval_context ctx) const override;
 
         bool bind(
             primitive_arguments_type const& params) const override;

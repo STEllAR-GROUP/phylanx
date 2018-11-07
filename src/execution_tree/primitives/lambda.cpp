@@ -63,7 +63,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lambda::eval(
-        primitive_arguments_type const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (!valid(operands_[0]))
         {
@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
-        if (mode & eval_dont_evaluate_lambdas)
+        if (ctx.mode_ & eval_dont_evaluate_lambdas)
         {
             if (!args.empty())
             {

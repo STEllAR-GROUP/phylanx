@@ -116,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> append_operation::eval(
-        primitive_arguments_type const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_context) const
     {
         if (this->no_operands())
         {

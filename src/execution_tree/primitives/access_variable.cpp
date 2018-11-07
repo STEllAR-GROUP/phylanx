@@ -67,11 +67,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
         primitive_arguments_type const& params,
-        eval_mode mode) const
+        eval_context ctx) const
     {
         // handle slicing, we can replace the params with our slicing
         // parameters as variable evaluation can't depend on those anyways
-        mode = eval_mode(mode | eval_dont_wrap_functions);
+        eval_mode mode = eval_mode(ctx.mode_ | eval_dont_wrap_functions);
         switch (operands_.size())
         {
         case 2:

@@ -52,10 +52,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // eval_action
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& params,
-            eval_mode mode) const;
+            eval_context ctx) const;
 
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval_single(
-            primitive_argument_type && param, eval_mode mode) const;
+            primitive_argument_type && param, eval_context ctx) const;
 
         // store_action
         PHYLANX_EXPORT void store(primitive_arguments_type&&,

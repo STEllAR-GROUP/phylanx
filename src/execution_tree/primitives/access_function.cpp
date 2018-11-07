@@ -54,9 +54,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_function::eval(
         primitive_arguments_type const& params,
-        eval_mode mode) const
+        eval_context ctx) const
     {
-        if (!(mode & eval_dont_wrap_functions) && !params.empty())
+        if (!(ctx.mode_ & eval_dont_wrap_functions) && !params.empty())
         {
             if (!params.empty())
             {
