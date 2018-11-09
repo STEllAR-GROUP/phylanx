@@ -113,13 +113,16 @@ def learnSymmetricConcentration(countHistogram, topicSizeHistogram,
         currentParameter = betaSum / fnumTypes
         currentDigamma = 0.0
         numerator = 0
+
         for idx in range(largestNonZeroCount):
             currentDigamma += 1.0 / (currentParameter + float64(idx - 1))
             numerator += countHistogram[idx] * currentDigamma
+
         currentDigamma = 0.0
         denominator = 0.0
         previousLength = 0
-        cachedDigamma = digamma(currentValue)
+        cachedDigamma = digamma(currentDigamma)
+
         for denseIdx in range(denseIdxSize):
             length = nonZeroLengthIndex[denseIdx]
             if length - previousLength > 20:
@@ -128,6 +131,7 @@ def learnSymmetricConcentration(countHistogram, topicSizeHistogram,
             else:
                 for idx in range(previousLength, length):
                     currentDigamma += 1.0 / (betaSum + float64(idx))
+
             denominator += currentDigamma * topicSizeHistogram[length]
 
         betaSum = currentParameter * numerator / denominator
@@ -140,11 +144,14 @@ def optimizeAlpha(topicDocCounts, docLengthCounts, maxTokens,
 
     locDocLengthCounts = zeros(maxTokens, dtype=int64)
     locTopicDocCounts = zeros((numTopics, maxTokens+1), dtype=int64)
+
     for i in range(len(topicDocCounts)):
+
         sourceLengthCounts = topicDocCounts[i]
         sourceTopicCounts = topicDocCounts[i]
         locDocLengthCounts[:] += sourceLengthCounts[:]
         sourceLengthCounts[:] = 0
+
         for t in range(numTopics):
             if usingSymmetricAlpha:
                 locTopicDocCounts[:, :] += sourceTopicCounts[:, :]
