@@ -31,16 +31,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operlogicals,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
     public:
         logical_operation() = default;
 
         logical_operation(primitive_arguments_type&& operlogicals,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args, eval_context) const override;
 
     private:
         struct visit_logical;

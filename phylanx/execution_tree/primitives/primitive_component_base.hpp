@@ -49,11 +49,15 @@ namespace phylanx { namespace execution_tree
 
             // eval_action
             virtual hpx::future<primitive_argument_type> eval(
-                primitive_arguments_type const& params,
-                eval_context ctx) const;
+                primitive_arguments_type const& params, eval_context ctx) const;
 
             virtual hpx::future<primitive_argument_type> eval(
                 primitive_argument_type && param, eval_context ctx) const;
+
+            // eval implementation
+            virtual hpx::future<primitive_argument_type> eval(
+                primitive_arguments_type const& operands,
+                primitive_arguments_type const& args, eval_context ctx) const;
 
             // store_action
             virtual void store(primitive_arguments_type&&,
@@ -69,7 +73,7 @@ namespace phylanx { namespace execution_tree
 
             // bind_action
             virtual bool bind(
-                primitive_arguments_type const& params) const;
+                primitive_arguments_type const& params, eval_context ctx) const;
 
         protected:
             friend class primitive_component;
@@ -81,9 +85,6 @@ namespace phylanx { namespace execution_tree
 
             hpx::future<primitive_argument_type> do_eval(
                 primitive_argument_type && param, eval_context ctx) const;
-
-            virtual hpx::future<primitive_argument_type> eval(
-                primitive_arguments_type const& params) const;
 
             // access data for performance counter
             std::int64_t get_eval_count(bool reset) const;

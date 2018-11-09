@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> append_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
@@ -111,17 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "append_operation accepts a list "
                             "value as its lhs operand only"));
                 }),
-            value_operand(operands[0], args, name_, codename_),
-            value_operand(operands[1], args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> append_operation::eval(
-        primitive_arguments_type const& args, eval_context) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            value_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}

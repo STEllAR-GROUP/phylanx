@@ -114,10 +114,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "hstack_operation::vstack0d",
-            util::generate_error_message(
+            generate_error_message(
                 "the vstack_operation primitive requires for all arguments to "
-                    "be numeric data types",
-                name_, codename_));
+                    "be numeric data types"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -153,10 +152,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
                     "vstack_operation::vstack2d",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the vstack_operation primitive can not stack "
-                        "matrices/vectors with a scalar",
-                        name_, codename_));
+                        "matrices/vectors with a scalar"));
             }
 
             std::array<std::size_t, 2> dim =
@@ -177,11 +175,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
                     "vstack_operation::vstack2d",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the vstack_operation primitive requires for the "
                         "number of columns/size to be equal for all "
-                        "matrices/vectors being stacked",
-                        name_, codename_));
+                        "matrices/vectors being stacked"));
             }
 
             num_dims_first = num_dims_second;
@@ -235,16 +232,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "vstack_operation::vstack1d2d",
-            util::generate_error_message(
+            generate_error_message(
                 "the vstack_operation primitive requires for all arguments to "
-                "be numeric data types",
-                name_, codename_));
+                "be numeric data types"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> vstack_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty())
         {
@@ -267,11 +263,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "vstack_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the vstack_operation primitive requires "
                         "that the arguments given by the operands "
-                        "array are valid",
-                    name_, codename_));
+                        "array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -293,25 +288,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "vstack_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> vstack_operation::eval(
-        primitive_arguments_type const& args, eval_context) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

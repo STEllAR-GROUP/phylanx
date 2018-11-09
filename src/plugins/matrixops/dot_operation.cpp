@@ -184,10 +184,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot1d2d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
         }
 
         lhs = blaze::trans(blaze::trans(lhs.vector()) * rhs.matrix());
@@ -239,10 +237,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d1d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
         }
 
         rhs = lhs.matrix() * rhs.vector();
@@ -257,10 +253,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::dot2d2d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
         }
 
         lhs = lhs.matrix() * rhs.matrix();
@@ -270,27 +264,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> dot_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the dot_operation primitive requires exactly "
-                        "two operands",
-                    name_, codename_));
+                        "two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dot_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the dot_operation primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -319,18 +310,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             this_->name_, this_->codename_));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_),
-            numeric_operand(operands[1], args, name_, codename_));
-    }
-
-    // implement 'dot' for all possible combinations of lhs and rhs
-    hpx::future<primitive_argument_type> dot_operation::eval(
-        primitive_arguments_type const& args, eval_context) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args, name_, codename_, ctx),
+            numeric_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}

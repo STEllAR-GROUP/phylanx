@@ -65,20 +65,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmin::argmin0d",
-                    util::generate_error_message(
-                        "operand axis must be a scalar", name_,
-                        codename_));
+                    generate_error_message(
+                        "operand axis must be a scalar"));
             }
-            const int axis = args[1].scalar();
+
             // `axis` can only be -1 or 0
+            int const axis = args[1].scalar();
             if (axis < -1 || axis > 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmin::argmin0d",
-                    util::generate_error_message(
+                    generate_error_message(
                         "operand axis can only between -1 and 0 for "
-                        "an a operand that is 0d",
-                        name_, codename_));
+                        "an a operand that is 0d"));
             }
         }
 
@@ -96,20 +95,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmin::argmin1d",
-                    util::generate_error_message(
-                        "operand axis must be a scalar", name_,
-                        codename_));
+                    generate_error_message(
+                        "operand axis must be a scalar"));
             }
-            const int axis = args[1].scalar();
+
             // `axis` can only be -1 or 0
+            int const axis = args[1].scalar();
             if (axis < -1 || axis > 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmin::argmin1d",
-                    util::generate_error_message(
+                    generate_error_message(
                         "operand axis can only between -1 and 0 for "
-                        "an a operand that is 1d",
-                        name_, codename_));
+                        "an a operand that is 1d"));
             }
         }
 
@@ -120,16 +118,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmin::argmin1d",
-                util::generate_error_message(
-                    "attempt to get argmin of an empty sequence",
-                    name_, codename_));
+                generate_error_message(
+                    "attempt to get argmin of an empty sequence"));
         }
 
         // Find the minimum value among the elements
         const auto min_it = std::min_element(a.begin(), a.end());
 
         // Return min's index
-        return primitive_argument_type((std::int64_t)(std::distance(a.begin(), min_it)));
+        return primitive_argument_type(
+            (std::int64_t)(std::distance(a.begin(), min_it)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -203,14 +201,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type argmin::argmin2d(args_type && args) const
     {
         // a should not be empty
-        if (args[0].matrix().rows() == 0 ||
-            args[0].matrix().columns() == 0)
+        if (args[0].matrix().rows() == 0 || args[0].matrix().columns() == 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmin::argmin2d",
-                util::generate_error_message(
-                    "attempt to get argmin of an empty sequence",
-                    name_, codename_));
+                generate_error_message(
+                    "attempt to get argmin of an empty sequence"));
         }
 
         // `axis` is optional
@@ -225,19 +221,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmin::argmin2d",
-                util::generate_error_message(
-                    "operand axis must be a scalar", name_, codename_));
+                generate_error_message(
+                    "operand axis must be a scalar"));
         }
-        const int axis = args[1].scalar();
+
         // `axis` can only be -2, -1, 0, or 1
+        int const axis = args[1].scalar();
         if (axis < -2 || axis > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmin::argmin2d",
-                util::generate_error_message(
+                generate_error_message(
                     "operand axis can only between -2 and 1 for an a "
-                    "operand that is 2d",
-                    name_, codename_));
+                    "operand that is 2d"));
         }
         switch (axis)
         {
@@ -254,25 +250,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmin::argmin2d",
-                util::generate_error_message(
-                    "operand a has an invalid number of "
-                    "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "operand has an invalid value for the axis parameter"));
         }
     }
 
     hpx::future<primitive_argument_type> argmin::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "argmin::eval",
-                util::generate_error_message(
-                    "the argmin primitive requires exactly one or two "
-                    "operands",
-                    name_, codename_));
+                generate_error_message(
+                    "the argmin primitive requires exactly one or two operands"));
         }
 
         for (auto const& i : operands)
@@ -281,11 +273,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "argmin::eval",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the argmin primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
-                        name_, codename_));
+                        "arguments given by the operands array are valid"));
             }
         }
 
@@ -310,24 +300,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "argmin::eval",
-                        util::generate_error_message(
-                            "operand a has an invalid "
-                            "number of dimensions",
-                            this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "operand a has an invalid number of dimensions"));
                 }
             }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> argmin::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

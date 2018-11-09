@@ -39,7 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         using val_type = double;
         using arg_type = ir::node_data<val_type>;
@@ -52,9 +53,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         sum_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
 
     private:
         primitive_argument_type sum0d(arg_type&& arg,

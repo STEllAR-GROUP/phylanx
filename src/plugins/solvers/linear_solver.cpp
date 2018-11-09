@@ -297,7 +297,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
+    namespace detail
+    {
         std::string extract_function_name(std::string const& name)
         {
             compiler::primitive_name_parts name_parts;
@@ -311,9 +312,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    linear_solver::linear_solver(
-        primitive_arguments_type && operands,
-        std::string const& name, std::string const& codename)
+    linear_solver::linear_solver(primitive_arguments_type && operands,
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
         std::string func_name = detail::extract_function_name(name);
@@ -332,10 +332,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
-                util::generate_error_message(
-                    "this linear_solver primitive "
-                    "requires exactly three operands",
-                    name_, codename_));
+                generate_error_message(
+                    "this linear_solver primitive requires exactly three "
+                    "operands"));
         }
         return primitive_argument_type{func_(std::move(op))};
     }
@@ -357,15 +356,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> linear_solver::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2 && operands.size() != 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver::eval",
-                util::generate_error_message(
-                    "the linear_solver primitive requires exactly two operands",
-                    name_, codename_));
+                generate_error_message(
+                    "the linear_solver primitive requires exactly two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]) ||
@@ -373,87 +371,67 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linear_solver_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the linear_solver primitive requires that the arguments "
-                    "given by the operands array are valid",
-                    name_, codename_));
+                    "given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         if (operands.size() == 3)
         {
-            return hpx::dataflow(hpx::launch::sync,
-                hpx::util::unwrapping(
-                    [this_ = std::move(this_)](arg_type&& lhs,
-                        arg_type&& rhs,
-                        std::string ul) -> primitive_argument_type
-                    {
-                        if (lhs.num_dimensions() != 2 ||
-                            rhs.num_dimensions() != 1)
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "linear_solver::eval",
-                                util::generate_error_message(
-                                    "the linear_solver primitive "
-                                    "requires "
-                                    "that first operand to be a matrix and "
-                                    "the second "
-                                    "operand to be a vector",
-                                    this_->name_, this_->codename_));
-                        }
-                        if (ul != "L" && ul != "U")
-                        {
-                            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                                "linear_solver::eval",
-                                util::generate_error_message(
-                                    "the linear_solver primitive "
-                                    "requires "
-                                    "that third argument to be either 'L' "
-                                    "or 'U'",
-                                    this_->name_, this_->codename_));
-                        }
-
-                        return this_->calculate_linear_solver(
-                            std::move(lhs), std::move(rhs), std::move(ul));
-                    }),
-                numeric_operand(operands[0], args, name_, codename_),
-                numeric_operand(operands[1], args, name_, codename_),
-                string_operand(operands[2], args, name_, codename_));
-        }
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](args_type&& args)
+            return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+                [this_ = std::move(this_)](
+                    arg_type&& lhs, arg_type&& rhs, std::string && ul)
                 -> primitive_argument_type
                 {
-                    if (args[0].num_dimensions() != 2 ||
-                        args[1].num_dimensions() != 1)
+                    if (lhs.num_dimensions() != 2 || rhs.num_dimensions() != 1)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                            "linear_solver_operation::eval",
-                            util::generate_error_message(
-                                "the linear_solver_operation primitive "
-                                "requires "
+                            "linear_solver::eval",
+                            this_->generate_error_message(
+                                "the linear_solver primitive requires "
                                 "that first operand to be a matrix and "
-                                "the second "
-                                "operand to be a vector",
-                                this_->name_, this_->codename_));
+                                "the second operand to be a vector"));
+                    }
+                    if (ul != "L" && ul != "U")
+                    {
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "linear_solver::eval",
+                            this_->generate_error_message(
+                                "the linear_solver primitive requires for "
+                                "the third argument to be either 'L' or 'U'"));
                     }
 
-                    return this_->calculate_linear_solver(std::move(args));
+                    return this_->calculate_linear_solver(
+                        std::move(lhs), std::move(rhs), std::move(ul));
                 }),
-            detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> linear_solver::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
+                numeric_operand(operands[0], args, name_, codename_, ctx),
+                numeric_operand(operands[1], args, name_, codename_, ctx),
+                string_operand(operands[2], args, name_, codename_, ctx));
         }
-        return eval(this->operands(), args);
+
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](args_type&& args)
+            -> primitive_argument_type
+            {
+                if (args[0].num_dimensions() != 2 ||
+                    args[1].num_dimensions() != 1)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "linear_solver_operation::eval",
+                        util::generate_error_message(
+                            "the linear_solver_operation primitive "
+                            "requires "
+                            "that first operand to be a matrix and "
+                            "the second "
+                            "operand to be a vector",
+                            this_->name_, this_->codename_));
+                }
+
+                return this_->calculate_linear_solver(std::move(args));
+            }),
+            detail::map_operands(operands, functional::numeric_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}
 

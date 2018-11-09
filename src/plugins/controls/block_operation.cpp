@@ -47,7 +47,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> block_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type args, eval_context ctx) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // Empty blocks are allowed (Issue #278)
         if (this->no_operands())
@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(primitive_argument_type{});
         }
 
-        ctx.mode_ = eval_mode(ctx.mode_ & ~eval_dont_wrap_functions);
+        ctx.remove_mode(eval_dont_wrap_functions);
 
         hpx::future<primitive_argument_type> f;
 
@@ -69,23 +69,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
             else
             {
-                value_operand_sync(
-                    operands_[i], args, name_, codename_, std::move(ctx));
+                value_operand_sync(operands_[i], args, name_, codename_, ctx);
             }
         }
 
         return f;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // start iteration over given block statement
-    hpx::future<primitive_argument_type> block_operation::eval(
-        primitive_arguments_type const& args, eval_context ctx) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs, std::move(ctx));
-        }
-        return eval(this->operands(), args, std::move(ctx));
     }
 }}}

@@ -133,7 +133,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     //////////////////////////////////////////////////////////////////////////
-    bool variable::bind(primitive_arguments_type const& args) const
+    bool variable::bind(primitive_arguments_type const& args,
+        eval_context ctx) const
     {
         if (!value_set_)
         {
@@ -148,7 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (p != nullptr)
         {
             bound_value_ = extract_copy_value(
-                p->eval(hpx::launch::sync, args), name_, codename_);
+                p->eval(hpx::launch::sync, args, std::move(ctx)),
+                name_, codename_);
         }
         else
         {

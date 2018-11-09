@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> target_reference::eval(
-        primitive_arguments_type const& params, eval_context) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (operands_.size() > 1)
         {
@@ -69,7 +69,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 fargs.emplace_back(extract_ref_value(*it, name_, codename_));
             }
-
             for (auto const& param : params)
             {
                 fargs.emplace_back(extract_value(param, name_, codename_));
@@ -77,21 +76,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
             if (target_)
             {
-                return target_->eval(std::move(fargs), eval_context{});
+                return target_->eval(
+                    std::move(fargs), set_mode(std::move(ctx), eval_default));
             }
 
-            return value_operand(
-                operands_[0], std::move(fargs), name_, codename_);
+            return value_operand(operands_[0], std::move(fargs), name_,
+                codename_, set_mode(std::move(ctx), eval_default));
         }
 
         if (target_)
         {
             return target_->eval(
-                params, eval_context(eval_dont_wrap_functions));
+                params, add_mode(std::move(ctx), eval_dont_wrap_functions));
         }
 
         return value_operand(operands_[0], params, name_, codename_,
-            eval_context(eval_dont_wrap_functions));
+            add_mode(std::move(ctx), eval_dont_wrap_functions));
     }
 
     hpx::future<primitive_argument_type> target_reference::eval(

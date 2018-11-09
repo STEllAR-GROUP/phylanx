@@ -66,32 +66,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
-        primitive_arguments_type const& params,
-        eval_context ctx) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         // handle slicing, we can replace the params with our slicing
         // parameters as variable evaluation can't depend on those anyways
-        eval_mode mode = eval_mode(ctx.mode_ | eval_dont_wrap_functions);
         switch (operands_.size())
         {
         case 2:
             {
                 // one slicing parameter
                 auto this_ = this->shared_from_this();
-                return value_operand(operands_[1], params, name_, codename_)
+                return value_operand(operands_[1], params, name_, codename_, ctx)
                     .then(hpx::launch::sync,
-                        [this_ = std::move(this_), mode](
+                        [this_ = std::move(this_), ctx](
                                 hpx::future<primitive_argument_type>&& rows)
-                        -> hpx::future<primitive_argument_type>
+                        mutable -> hpx::future<primitive_argument_type>
                         {
+                            ctx.add_mode(eval_dont_wrap_functions);
                             if (this_->target_)
                             {
                                 return this_->target_->eval_single(
-                                    rows.get(), mode);
+                                    rows.get(), std::move(ctx));
                             }
                             return value_operand(this_->operands_[0],
                                 rows.get(), this_->name_, this_->codename_,
-                                mode);
+                                std::move(ctx));
                         });
             }
 
@@ -100,24 +99,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // two slicing parameters
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::launch::sync,
-                    [this_ = std::move(this_), mode](
+                    [this_ = std::move(this_), ctx](
                             hpx::future<primitive_argument_type>&& rows,
-                            hpx::future<primitive_argument_type>&& cols)
+                            hpx::future<primitive_argument_type>&& cols) mutable
                     -> hpx::future<primitive_argument_type>
                     {
                         primitive_arguments_type args;
                         args.reserve(2);
                         args.emplace_back(rows.get());
                         args.emplace_back(cols.get());
+
+                        ctx.add_mode(eval_dont_wrap_functions);
                         if (this_->target_)
                         {
-                            return this_->target_->eval(std::move(args), mode);
+                            return this_->target_->eval(
+                                std::move(args), std::move(ctx));
                         }
                         return value_operand(this_->operands_[0],
-                            std::move(args), this_->name_, this_->codename_, mode);
+                            std::move(args), this_->name_, this_->codename_,
+                            std::move(ctx));
                     },
-                    value_operand(operands_[1], params, name_, codename_),
-                    value_operand(operands_[2], params, name_, codename_));
+                    value_operand(operands_[1], params, name_, codename_, ctx),
+                    value_operand(operands_[2], params, name_, codename_, ctx));
             }
 
         default:
@@ -125,11 +128,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // no slicing parameters given, access variable directly
+        ctx.add_mode(eval_dont_wrap_functions);
         if (target_)
         {
-            return target_->eval(noargs, mode);
+            return target_->eval(noargs, std::move(ctx));
         }
-        return value_operand(operands_[0], noargs, name_, codename_, mode);
+        return value_operand(
+            operands_[0], noargs, name_, codename_, std::move(ctx));
     }
 
     void access_variable::store(primitive_arguments_type&& vals,

@@ -94,11 +94,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "invocable object", name_, codename_));
         }
 
-        ctx.mode_ = eval_mode(ctx.mode_ & ~eval_dont_wrap_functions);
+        ctx.remove_mode(eval_dont_wrap_functions);
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            [this_ = std::move(this_), ctx = std::move(ctx)](
+            [this_ = std::move(this_), ctx](
                     hpx::future<primitive_argument_type>&& f,
                     hpx::future<ir::range>&& list) mutable
             -> primitive_argument_type
@@ -120,8 +120,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // range
                 for (auto && e : list.get())
                 {
-                    auto r = p->eval(
-                        hpx::launch::sync, std::move(e), std::move(ctx));
+                    auto r = p->eval(hpx::launch::sync, std::move(e), ctx);
                     if (extract_boolean_value(
                             r, this_->name_, this_->codename_))
                     {
@@ -132,18 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{};
             },
             value_operand(operands_[0], args, name_, codename_,
-                eval_dont_evaluate_lambdas),
-            list_operand(operands_[1], args, name_, codename_));
-    }
-
-    // Start iteration over given for_each statement
-    hpx::future<primitive_argument_type> for_each::eval(
-        primitive_arguments_type const& args, eval_context ctx) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs, std::move(ctx));
-        }
-        return eval(this->operands(), args, std::move(ctx));
+                add_mode(ctx, eval_dont_evaluate_lambdas)),
+            list_operand(operands_[1], args, name_, codename_, ctx));
     }
 }}}

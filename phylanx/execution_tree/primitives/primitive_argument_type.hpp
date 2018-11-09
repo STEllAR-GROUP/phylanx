@@ -91,13 +91,65 @@ namespace phylanx { namespace execution_tree
             : mode_(mode)
         {}
 
+        eval_context& set_mode(eval_mode mode)
+        {
+            mode_ = mode;
+            return *this;
+        }
+        eval_context& add_mode(eval_mode mode)
+        {
+            mode_ = eval_mode(mode_ | mode);
+            return *this;
+        }
+        eval_context& remove_mode(eval_mode mode)
+        {
+            mode_ = eval_mode(mode_ & ~mode);
+            return *this;
+        }
+
+    private:
+        friend class hpx::serialization::access;
         PHYLANX_EXPORT void serialize(hpx::serialization::output_archive& ar,
             unsigned);
         PHYLANX_EXPORT void serialize(hpx::serialization::input_archive& ar,
             unsigned);
 
+    public:
         eval_mode mode_;
     };
+
+    inline eval_context set_mode(eval_context const& ctx, eval_mode mode)
+    {
+        eval_context newctx = ctx;
+        return std::move(newctx.set_mode(mode));
+    }
+    inline eval_context set_mode(eval_context && ctx, eval_mode mode)
+    {
+        eval_context newctx = std::move(ctx);
+        return std::move(newctx.set_mode(mode));
+    }
+
+    inline eval_context add_mode(eval_context const& ctx, eval_mode mode)
+    {
+        eval_context newctx = ctx;
+        return std::move(newctx.add_mode(mode));
+    }
+    inline eval_context add_mode(eval_context && ctx, eval_mode mode)
+    {
+        eval_context newctx = std::move(ctx);
+        return std::move(newctx.add_mode(mode));
+    }
+
+    inline eval_context remove_mode(eval_context const& ctx, eval_mode mode)
+    {
+        eval_context newctx = ctx;
+        return std::move(newctx.remove_mode(mode));
+    }
+    inline eval_context remove_mode(eval_context && ctx, eval_mode mode)
+    {
+        eval_context newctx = std::move(ctx);
+        return std::move(newctx.remove_mode(mode));
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     class primitive
@@ -178,9 +230,9 @@ namespace phylanx { namespace execution_tree
             std::set<std::string>&& resolve_children) const;
 
         PHYLANX_EXPORT bool bind(
-            primitive_arguments_type&& args) const;
+            primitive_arguments_type&& args, eval_context ctx) const;
         PHYLANX_EXPORT bool bind(
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args, eval_context ctx) const;
 
     public:
         static bool enable_tracing;

@@ -78,30 +78,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> file_write::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the file_write primitive requires exactly two "
-                    "operands",
-                    name_, codename_));
+                    "operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the file_write primitive requires that the "
-                    "given operands are valid",
-                    name_, codename_));
+                    "given operands are valid"));
         }
 
-        std::string filename =
-            string_operand_sync(operands[0], args, name_, codename_);
+        std::string filename = string_operand_sync(
+            operands[0], args, name_, codename_, std::move(ctx));
 
         auto this_ = this->shared_from_this();
         return literal_operand(operands[1], args, name_, codename_)
@@ -123,17 +121,5 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->write_to_file(
                         std::move(val), std::move(filename));
                 }));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Write data to given file and return content
-    hpx::future<primitive_argument_type> file_write::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
     }
 }}}

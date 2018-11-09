@@ -162,9 +162,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component::bind(
-        primitive_arguments_type const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
-        return primitive_->bind(params);
+        return primitive_->bind(params, std::move(ctx));
     }
 
     // access data for performance counter

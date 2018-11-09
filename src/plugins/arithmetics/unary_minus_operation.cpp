@@ -202,7 +202,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> unary_minus_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -249,18 +249,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "operand has unsupported number of dimensions"));
                 }
             }),
-            value_operand(operands[0], args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Implement unary '-' for all possible combinations of lhs and rhs
-    hpx::future<primitive_argument_type> unary_minus_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

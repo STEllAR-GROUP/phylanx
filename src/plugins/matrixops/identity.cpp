@@ -61,8 +61,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::identity_helper",
-                util::generate_error_message(
-                    "input should be a scalar", name_, codename_));
+                generate_error_message(
+                    "input should be a scalar"));
         }
 
         std::size_t size = static_cast<std::size_t>(
@@ -100,55 +100,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "identity::identity_nd",
-            util::generate_error_message(
-                "the contsnat primitive requires for all arguments to "
-                    "be numeric data types",
-                name_, codename_));
+            generate_error_message(
+                "the identity primitive requires for all arguments to "
+                    "be numeric data types"));
     }
 
     hpx::future<primitive_argument_type> identity::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
-                util::generate_error_message(
-                    "the identity primitive requires"
-                        "at most one operand",
-                    name_, codename_));
+                generate_error_message(
+                    "the identity primitive requires at most one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the identity primitive requires that the "
-                        "arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](operand_type&& op0)
+            [this_ = std::move(this_)](primitive_argument_type&& op0)
             -> primitive_argument_type
             {
                 return this_->identity_nd(std::move(op0));
             }),
-            numeric_operand(operands[0], args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> identity::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

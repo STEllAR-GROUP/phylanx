@@ -105,7 +105,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // simply invoke the given body with the given arguments
         return value_operand(operands_[0], args, name_, codename_,
-            eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
+            add_mode(std::move(ctx),
+                eval_mode(
+                    eval_dont_evaluate_lambdas | eval_dont_wrap_functions)));
     }
 
     void lambda::store(primitive_arguments_type&& data,

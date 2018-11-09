@@ -136,16 +136,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component_base::eval(
-        primitive_arguments_type const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
-        return this->eval(params, eval_context{});
-    }
-
-    hpx::future<primitive_argument_type> primitive_component_base::eval(
-        primitive_arguments_type const& params,
-        eval_context ctx) const
-    {
-        return this->eval(params);
+        if (no_operands())
+        {
+            return this->eval(params, noargs, std::move(ctx));
+        }
+        return this->eval(this->operands(), params, std::move(ctx));
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::eval(
@@ -154,6 +151,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type params;
         params.emplace_back(std::move(param));
         return this->eval(params, std::move(ctx));
+    }
+
+    hpx::future<primitive_argument_type> primitive_component_base::eval(
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+                "eval",
+            generate_error_message(
+                "eval function should be implemented by all primitives"));
     }
 
     // store_action
@@ -212,7 +220,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component_base::bind(
-        primitive_arguments_type const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::"

@@ -77,24 +77,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "range_operation::generate_range",
-            util::generate_error_message(
-                "range_operation needs at most three operands",
-                name_, codename_));
+            generate_error_message(
+                "range_operation needs at most three operands"));
     }
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> range_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "range_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the range_operation primitive requires exactly one, two, "
-                        "or three operands",
-                    name_, codename_));
+                        "or three operands"));
         }
 
         for (auto const& i : operands)
@@ -103,10 +101,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "range_operation::eval",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the range_operation primitive requires that the "
-                            "arguments given by the operands array are valid",
-                        name_, codename_));
+                            "arguments given by the operands array are valid"));
             }
         }
 
@@ -119,16 +116,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             detail::map_operands(
                 operands, functional::integer_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> range_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

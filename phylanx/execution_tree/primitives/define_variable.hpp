@@ -39,7 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // Create a new instance of the variable and initialize it with the
         // value as returned by evaluating the given body.
         hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         void store(primitive_arguments_type&& val,
             primitive_arguments_type&& params) override;

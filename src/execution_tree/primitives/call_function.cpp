@@ -52,7 +52,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> call_function::eval(
-        primitive_arguments_type const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (!valid(operands_[0]))
         {
@@ -74,19 +74,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& func,
-                    primitive_arguments_type&& args)
+                [this_ = std::move(this_), ctx](
+                        primitive_argument_type&& func,
+                        primitive_arguments_type&& args) mutable
+                ->  primitive_argument_type
                 {
                     return value_operand_sync(std::move(func),
-                        std::move(args), this_->name_, this_->codename_);
+                        std::move(args), this_->name_, this_->codename_,
+                        ctx.set_mode(eval_default));
                 }),
             value_operand(operands_[0], params, name_, codename_,
-                eval_mode(eval_dont_wrap_functions |
+                add_mode(ctx, eval_mode(eval_dont_wrap_functions |
                     eval_dont_evaluate_partials |
-                    eval_dont_evaluate_lambdas)),
+                    eval_dont_evaluate_lambdas))),
             detail::map_operands(std::move(fargs), functional::value_operand{},
                 params, name_, codename_,
-                eval_context(eval_dont_evaluate_partials)));
+                add_mode(ctx, eval_dont_evaluate_partials)));
     }
 
     void call_function::store(primitive_arguments_type&& data,

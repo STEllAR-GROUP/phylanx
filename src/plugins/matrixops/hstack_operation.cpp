@@ -70,10 +70,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
                         "hstack_operation::get_vecsize",
-                    util::generate_error_message(
+                    generate_error_message(
                         "for 0d/1d stacking, the hstack_operation primitive "
-                        "requires the input be either a vector or a scalar",
-                        name_, codename_));
+                        "requires the input be either a vector or a scalar"));
             }
 
             if (num_dims == 0)
@@ -143,10 +142,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "hstack_operation::hstack0d1d",
-            util::generate_error_message(
+            generate_error_message(
                 "the hstack_operation primitive requires for all arguments to "
-                    "be numeric data types",
-                name_, codename_));
+                    "be numeric data types"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -167,10 +165,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
                         "hstack_operation::hstack2d_helper",
-                    util::generate_error_message(
+                    generate_error_message(
                         "for 2d stacking, the hstack_operation primitive "
-                            "requires all the inputs be a matrices",
-                        name_, codename_));
+                            "requires all the inputs be a matrices"));
             }
 
             std::array<std::size_t, 2> dim =
@@ -181,11 +178,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::"
                         "hstack_operation::hstack2d_helper",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the hstack_operation primitive requires the "
                             "number of rows to be equal for all matrices "
-                            "being stacked",
-                        name_, codename_));
+                            "being stacked"));
             }
 
             total_cols += dim[1];
@@ -232,15 +228,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "hstack_operation::hstack2d",
-            util::generate_error_message(
+            generate_error_message(
                 "the hstack_operation primitive requires for all arguments to "
-                "be numeric data types",
-                name_, codename_));
+                "be numeric data types"));
     }
 
     hpx::future<primitive_argument_type> hstack_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty())
         {
@@ -263,11 +258,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "hstack_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the hstack_operation primitive requires that "
                         "the arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
+                        "are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -289,25 +283,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "hstack_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> hstack_operation::eval(
-        primitive_arguments_type const& args, eval_context) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}
