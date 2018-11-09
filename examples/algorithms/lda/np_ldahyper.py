@@ -8,12 +8,201 @@
 # https://github.com/mimno/Mallet
 #
 
-from numpy import zeros, where, cumsum, argsort
-from numpy.random import randint, rand
+from numpy import zeros, where, cumsum, argsort, argmax, log
+from numpy.random import randint, rand, int64, float64
 import numpy.ma as ma
 import numpy as np
 
 from scipy.io import loadmat
+
+
+def learnParameters(alpha, locTopicDocCounts, locDocLengthCounts,
+                    shape=1.001, scale=1.0, numIterations=1):
+    i = 0
+    k = 0
+
+    parametersSum = sum(alpha)
+    oldParametersK = 0.0
+    currentDigamma = 0.0
+    denominator = 0.0
+
+    nonZeroLimit = 0
+    nonZeroLimits = zeros(locTopicDocCounts.shape[0], dtype=int64)
+    nonZeroLimits[:] = -1
+
+    for i in range(locTopicDocCounts.shape[0]):
+        for k in range(locTopicDocCounts.shape[1]):
+            if locTopicDocCounts[i, k] > 0:
+                nonZeroLimits[i] = k
+
+    for itr in range(numIterations):
+        denominator = 0.0
+        currentDigamma = 0.0
+        for i in range(locDocLengthCounts.shape[0]):
+            currentDigamma += 1.0 / (parametersSum + float64(i) - 1.0)
+            denominator += locDocLengthCounts[i] * currentDigamma
+
+        denominator -= 1.0 / scale
+        parametersSum = 0.0
+        for k in range(alpha.shape[0]):
+            nonZeroLimit = nonZeroLimits[k]
+            oldParametersK = alpha[k]
+            currentDigamma = 0.0
+            for i in range(nonZeroLimit):
+                currentDigamma += 1.0 / (oldParametersK + float64(i) - 1)
+                alpha[k] += locTopicDocCounts[k, i] * currentDigamma
+            alpha[k] = (oldParametersK * alpha[k] + shape) / denominator
+            parametersSum += alpha[k]
+
+    return parametersSum
+
+
+def digamma(z):
+    EULER_MASCHERONI = -0.5772156649015328606065121
+    DIGAMMA_COEF_1 = 1.0/12.0
+    DIGAMMA_COEF_2 = 1.0/120.0
+    DIGAMMA_COEF_3 = 1.0/252.0
+    DIGAMMA_COEF_4 = 1.0/240.0
+    DIGAMMA_COEF_5 = 1.0/132.0
+    DIGAMMA_COEF_6 = 691.0/32760.0
+    DIGAMMA_COEF_7 = 1.0/12.0
+    # DIGAMMA_COEF_8 = 3617.0/8160.0
+    # DIGAMMA_COEF_9 = 43867.0/14364.0
+    # DIGAMMA_COEF_10 = 174611.0/6600.0
+
+    DIGAMMA_LARGE = 9.5
+    DIGAMMA_SMALL = 0.000001
+
+    if z < DIGAMMA_SMALL:
+        return EULER_MASCHERONI - (1.0/z)
+
+    psi = 0.0
+    while z < DIGAMMA_LARGE:
+        psi -= (1.0/z)
+        z += 1.0
+
+    invZ = 1.0/z
+    invZSquared = invZ * invZ
+
+    psi += log(z) - 0.5 * invZ - (
+            invZSquared * (DIGAMMA_COEF_1 - invZSquared * (
+                DIGAMMA_COEF_2 - invZSquared * (
+                    DIGAMMA_COEF_3 - invZSquared * (
+                        DIGAMMA_COEF_4 - invZSquared * (
+                            DIGAMMA_COEF_5 - invZSquared * (
+                                DIGAMMA_COEF_6 - invZSquared * (
+                                    DIGAMMA_COEF_7)))))))
+    )
+
+    return psi
+
+
+def learnSymmetricConcentration(countHistogram, topicSizeHistogram,
+                                numTypes, betaSum):
+    currentDigamma = 0.0
+    largestNonZeroCount = 0
+    nonZeroLengthIndex = zeros(topicSizeHistogram.shape[0])
+    largestNonZeroCount = argmax(countHistogram)
+    idxs = where(topicSizeHistogram > 0)[0]
+    denseIdx = len(idxs)
+    nonZeroLengthIndex[idxs] = idxs
+    denseIdxSize = denseIdx
+    fnumTypes = float64(numTypes)
+
+    for i in range(200):
+        currentParameter = betaSum / fnumTypes
+        currentDigamma = 0.0
+        numerator = 0
+
+        for idx in range(largestNonZeroCount):
+            currentDigamma += 1.0 / (currentParameter + float64(idx - 1))
+            numerator += countHistogram[idx] * currentDigamma
+
+        currentDigamma = 0.0
+        denominator = 0.0
+        previousLength = 0
+        cachedDigamma = digamma(currentDigamma)
+
+        for denseIdx in range(denseIdxSize):
+            length = nonZeroLengthIndex[denseIdx]
+            if length - previousLength > 20:
+                # FIXME
+                currentDigamma = digamma(betaSum + length) - cachedDigamma
+            else:
+                for idx in range(previousLength, length):
+                    currentDigamma += 1.0 / (betaSum + float64(idx))
+
+            denominator += currentDigamma * topicSizeHistogram[length]
+
+        betaSum = currentParameter * numerator / denominator
+
+    return betaSum
+
+
+def optimizeAlpha(topicDocCounts, docLengthCounts, maxTokens,
+                  numTopics, alphaSum, usingSymmetricAlpha=False):
+
+    locDocLengthCounts = zeros(maxTokens, dtype=int64)
+    locTopicDocCounts = zeros((numTopics, maxTokens+1), dtype=int64)
+
+    for i in range(len(topicDocCounts)):
+
+        sourceLengthCounts = topicDocCounts[i]
+        sourceTopicCounts = topicDocCounts[i]
+        locDocLengthCounts[:] += sourceLengthCounts[:]
+        sourceLengthCounts[:] = 0
+
+        for t in range(numTopics):
+            if usingSymmetricAlpha:
+                locTopicDocCounts[:, :] += sourceTopicCounts[:, :]
+                # sourceTopicCounts[:, :] = 0
+            else:
+                locTopicDocCounts[0, :] += sum(sourceTopicCounts[:, :], axis=0)
+                # sourceTopicCounts[:, :] = 0
+
+            sourceTopicCounts[:, :] = 0
+
+    if usingSymmetricAlpha:
+        alphaSum = learnSymmetricConcentration(
+            locTopicDocCounts[0, :], locDocLengthCounts,
+            numTopics, alphaSum
+        )
+        alpha[:] = alphaSum / float64(numTopics)
+    else:
+        alphaSum = learnParameters(
+            alpha, locTopicDocCounts,
+            locDocLengthCounts, 1.001, 1.0, 1
+        )
+
+    return alphaSum
+
+
+def resetBeta(beta, betaSum):
+    pass
+
+
+def optimizeBeta(typeTopicCounts, tokensPerTopic,
+                 numTypes, numTopics, betaSum, maxTypeCount):
+    countHistogram = zeros(maxTypeCount+1, dtype=int64)
+    idx = 0
+    for t in range(numTypes):
+        while idx < typeTopicCounts[t].shape[0] and typeTopicCounts[t] > 0:
+            countHistogram[typeTopicCounts[t]] += 1
+            idx += 1
+
+    maxTopicSize = tokensPerTopic[argmax(tokensPerTopic)]
+    topicSizeHistogram = zeros(maxTopicSize+1, dtype=int64)
+    for t in range(numTopics):
+        topicSizeHistogram[tokensPerTopic[t]] += 1
+
+    betaSum = learnSymmetricConcentration(
+        countHistogram, topicSizeHistogram,
+        numTypes, betaSum
+    )
+
+    beta = betaSum / float64(numTypes)
+    resetBeta(beta, betaSum)
+    return betaSum
 
 
 def estimate(training, numTopics, alpha_, beta, numIterations=2000):
