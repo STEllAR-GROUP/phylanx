@@ -24,6 +24,7 @@
 #  define PHYLANX_DEBUG
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
 // Blaze: use HPX threads. Do not use C++11 threads
 #if !defined(BLAZE_USE_HPX_THREADS) || BLAZE_USE_HPX_THREADS != 1
 #error "Please make sure Blaze is configured to use HPX threads for parallelization while compiling Phylanx"
@@ -35,5 +36,12 @@
 
 #undef BLAZE_USE_CPP_THREADS
 #undef BLAZE_USE_BOOST_THREADS
+
+///////////////////////////////////////////////////////////////////////////////
+#if !defined(PHYLANX_HAVE_BLAZETENSOR)
+#  define PHYLANX_MAX_DIMENSIONS 2
+#else
+#  define PHYLANX_MAX_DIMENSIONS 3
+#endif
 
 #endif // PHYLANX_CONFIG_AUG_25_2017_0711PM

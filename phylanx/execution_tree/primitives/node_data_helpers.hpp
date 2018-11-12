@@ -99,32 +99,32 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract the largest dimension from all of the given arguments
-    PHYLANX_EXPORT std::array<std::size_t, 2> extract_largest_dimensions(
-        primitive_arguments_type const& args,
+    PHYLANX_EXPORT std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_largest_dimensions(primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
     // Extract the largest dimension from all of the given arguments
     template <typename... Ts>
-    std::array<std::size_t, 2> extract_largest_dimensions(
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_largest_dimensions(
         std::string const& name, std::string const& codename, Ts const&... args)
     {
-        std::array<std::size_t, 2> const __dummy[] =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const __dummy[] =
         {
             extract_numeric_value_dimensions(args, name, codename)...,
-            std::array<std::size_t, 2>{0, 0}
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{0, 0}
         };
 
         auto max_array =
-            [](std::array<std::size_t, 2> const& lhs,
-                std::array<std::size_t, 2> const& rhs)
+            [](std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& lhs,
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& rhs)
             {
-                return std::array<std::size_t, 2>{
+                return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{
                     (std::max)(lhs[0], rhs[0]), (std::max)(lhs[1], rhs[1])};
             };
 
         return std::accumulate(&__dummy[0], &__dummy[sizeof...(args)],
-            std::array<std::size_t, 2>{0, 0}, max_array);
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{0, 0}, max_array);
     }
 
     ///////////////////////////////////////////////////////////////////////////

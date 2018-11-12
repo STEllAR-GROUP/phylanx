@@ -25,6 +25,11 @@
 #include <utility>
 #include <vector>
 
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#include <blaze_tensor/Math.h>
+#endif
+
 // Pybind11 V2.3 changed the interface for the description strings
 #if defined(PYBIND11_DESCR)
 #define PHYLANX_PYBIND_DESCR PYBIND11_DESCR
@@ -90,8 +95,9 @@ namespace pybind11 { namespace detail
     ///////////////////////////////////////////////////////////////////////////
     // Takes an input array and determines whether we can make it fit into the
     // Blaze type.
-    using array_index_type =
-        hpx::util::tuple<std::size_t, std::size_t, std::size_t, std::size_t>;
+    using array_index_type = hpx::util::tuple<
+        std::size_t, std::size_t, std::size_t,
+        std::size_t, std::size_t, std::size_t>;
 
     template <typename Scalar>
     inline bool conformable(
@@ -101,7 +107,21 @@ namespace pybind11 { namespace detail
         if (dims != expected_dims)
             return false;
 
-        if (dims == 2)
+        if (dims == 3)
+        {
+            // Tensor type: require exact match (or dynamic)
+            std::size_t np_rows = a.shape(0);
+            std::size_t np_cols = a.shape(1);
+            std::size_t np_pages = a.shape(2);
+            std::size_t np_rstride = a.strides(0) / sizeof(Scalar);
+            std::size_t np_cstride = a.strides(1) / sizeof(Scalar);
+            std::size_t np_pstride = a.strides(2) / sizeof(Scalar);
+
+            t = array_index_type{
+                np_rows, np_cols, np_pages, np_rstride, np_cstride, np_pstride};
+            return true;
+        }
+        else if (dims == 2)
         {
             // Matrix type: require exact match (or dynamic)
             std::size_t np_rows = a.shape(0);
@@ -109,7 +129,8 @@ namespace pybind11 { namespace detail
             std::size_t np_rstride = a.strides(0) / sizeof(Scalar);
             std::size_t np_cstride = a.strides(1) / sizeof(Scalar);
 
-            t = array_index_type{np_rows, np_cols, np_rstride, np_cstride};
+            t = array_index_type{
+                np_rows, np_cols, 0, np_rstride, np_cstride, 0};
             return true;
         }
         else if (dims == 1)
@@ -120,12 +141,12 @@ namespace pybind11 { namespace detail
             std::size_t const n = a.shape(0);
             std::size_t stride = a.strides(0) / sizeof(Scalar);
 
-            t = array_index_type{n, 1, stride, 0};
+            t = array_index_type{n, 1, 0, stride, 0, 0};
             return true;
         }
         else if (dims == 0)
         {
-            t = array_index_type{1, 1, 0, 0};
+            t = array_index_type{1, 1, 0, 1, 0, 0};
             return true;
         }
         return false;
@@ -230,6 +251,46 @@ namespace pybind11 { namespace detail
         }
         return a.release();
     }
+
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+    template <typename T>
+    handle blaze_array_cast(blaze::DynamicTensor<T> const& src,
+        handle base = handle(), bool writeable = true)
+    {
+        array a{
+            {src.pages(), src.rows(), src.columns()},       // sizes
+            {   sizeof(T) * src.spacing() * src.rows(),     // strides
+                sizeof(T) * src.spacing(),
+                sizeof(T)},
+            src.data(), base};
+
+        if (!writeable)
+        {
+            array_proxy(a.ptr())->flags &=
+                ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
+        }
+        return a.release();
+    }
+
+    template <typename T, bool AF, bool PF>
+    handle blaze_array_cast(blaze::CustomTensor<T, AF, PF> const& src,
+        handle base = handle(), bool writeable = true)
+    {
+        array a{
+            {src.pages(), src.rows(), src.columns()},       // sizes
+            {   sizeof(T) * src.spacing() * src.rows(),     // strides
+                sizeof(T) * src.spacing(),
+                sizeof(T)},
+            src.data(), base};
+
+        if (!writeable)
+        {
+            array_proxy(a.ptr())->flags &=
+                ~detail::npy_api::NPY_ARRAY_WRITEABLE_;
+        }
+        return a.release();
+    }
+#endif
 
     // Takes an lvalue ref to some Blaze type and a (python) base object,
     // creating a numpy array that references the Blaze object's data with
@@ -433,14 +494,13 @@ namespace pybind11 { namespace detail
             if (!fits) return false;
 
             // Allocate the new type, then build a numpy reference into it
-            value = blaze::DynamicMatrix<T>(hpx::util::get<0>(t),
-                hpx::util::get<1>(t), hpx::util::get<3>(t));
+            value = blaze::DynamicMatrix<T>(
+                hpx::util::get<0>(t), hpx::util::get<1>(t));
 
             auto m = value.matrix();
             auto ref = reinterpret_steal<array>(blaze_ref_array(m));
 
-            if (dims == 1) ref = ref.squeeze();
-            else if (ref.ndim() == 1) buf = buf.squeeze();
+            if (ref.ndim() == 1) buf = buf.squeeze();
 
             int result =
                 detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
@@ -453,26 +513,81 @@ namespace pybind11 { namespace detail
             return true;
         }
 
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+        bool load3d(handle src, bool convert)
+        {
+            if (!convert && !is_array_instance<result_type>::call(src))
+            {
+                return false;
+            }
+
+            // Coerce into an array, but don't do type conversion yet; the copy
+            // below handles it.
+            auto buf = array::ensure(src);
+            if (!buf) return false;
+
+            auto dims = buf.ndim();
+            if (dims != 3) return false;
+
+            array_index_type ait;
+            bool fits = conformable<result_type>(buf, 3, ait);
+            if (!fits) return false;
+
+            // Allocate the new type, then build a numpy reference into it
+            value = blaze::DynamicTensor<T>(hpx::util::get<0>(ait),
+                hpx::util::get<1>(ait), hpx::util::get<2>(ait));
+
+            auto t = value.tensor();
+            auto ref = reinterpret_steal<array>(blaze_ref_array(t));
+
+            if (ref.ndim() == 1) buf = buf.squeeze();
+
+            int result =
+                detail::npy_api::get().PyArray_CopyInto_(ref.ptr(), buf.ptr());
+            if (result < 0)
+            {
+                // Copy failed!
+                PyErr_Clear();
+                return false;
+            }
+            return true;
+        }
+#endif
+
         template <typename Type>
         static handle cast_impl_automatic(Type* src)
         {
             switch (src->index())
             {
-            case 1:     // blaze::DynamicVector<T>
+            // blaze::DynamicVector<T>
+            case phylanx::ir::node_data<T>::storage1d:
                 return blaze_encapsulate(&(src->vector_non_ref()));
 
-            case 2:     // blaze::DynamicMatrix<T>
+            // blaze::DynamicMatrix<T>
+            case phylanx::ir::node_data<T>::storage2d:
                 return blaze_encapsulate(&(src->matrix_non_ref()));
 
             // custom types require a copy (done by vector_copy/matrix_copy)
-            case 4:     // blaze::CustomVector<T>
+            // blaze::CustomVector<T>
+            case phylanx::ir::node_data<T>::custom_storage1d:
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 5:     // blaze::CustomMatrix<T>
+            // blaze::CustomMatrix<T>
+            case phylanx::ir::node_data<T>::custom_storage2d:
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_encapsulate(&(src->tensor_non_ref()));
+
+            // blaze::CustomTensor<T>
+            case phylanx::ir::node_data<T>::custom_storage3d:
+                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                    src->tensor_copy()));
+#endif
             default:
                 throw cast_error("cast_impl_automatic: "
                     "unexpected node_data type: should not happen!");
@@ -485,23 +600,38 @@ namespace pybind11 { namespace detail
         {
             switch (src->index())
             {
-            case 1:     // blaze::DynamicVector<T>
+            // blaze::DynamicVector<T>
+            case phylanx::ir::node_data<T>::storage1d:
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     std::move(src->vector_non_ref())));
 
-            case 2:     // blaze::DynamicMatrix<T>
+            // blaze::DynamicMatrix<T>
+            case phylanx::ir::node_data<T>::storage2d:
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     std::move(src->matrix_non_ref())));
 
             // custom types require a copy (done by vector_copy/matrix_copy)
-            case 4:     // blaze::CustomVector<T>
+            // blaze::CustomVector<T>
+            case phylanx::ir::node_data<T>::custom_storage1d:
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 5:     // blaze::CustomMatrix<T>
+            // blaze::CustomMatrix<T>
+            case phylanx::ir::node_data<T>::custom_storage2d:
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                    std::move(src->tensor_non_ref())));
+
+            // blaze::CustomTensor<T>
+            case phylanx::ir::node_data<T>::custom_storage3d:
+                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                    src->tensor_copy()));
+#endif
             default:
                 throw cast_error("cast_impl_move: "
                     "unexpected node_data type: should not happen!");
@@ -514,20 +644,34 @@ namespace pybind11 { namespace detail
         {
             switch (src->index())
             {
-            case 1:     // blaze::DynamicVector<T>
+            // blaze::DynamicVector<T>
+            case phylanx::ir::node_data<T>::storage1d:
                 return blaze_array_cast(src->vector_non_ref());
 
-            case 2:     // blaze::DynamicMatrix<T>
+            // blaze::DynamicMatrix<T>
+            case phylanx::ir::node_data<T>::storage2d:
                 return blaze_array_cast(src->matrix_non_ref());
 
-            case 4:     // blaze::CustomVector<T>
+            // blaze::CustomVector<T>
+            case phylanx::ir::node_data<T>::custom_storage1d:
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 5:     // blaze::CustomMatrix<T>
+            // blaze::CustomMatrix<T>
+            case phylanx::ir::node_data<T>::custom_storage2d:
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_array_cast(src->tensor_non_ref());
+
+            // blaze::CustomTensor<T>
+            case phylanx::ir::node_data<T>::custom_storage3d:
+                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                    src->tensor_copy()));
+#endif
             default:
                 throw cast_error("cast_impl_copy: "
                     "unexpected node_data type: should not happen!");
@@ -540,21 +684,35 @@ namespace pybind11 { namespace detail
         {
             switch (src->index())
             {
-            case 1:     // blaze::DynamicVector<T>
+            // blaze::DynamicVector<T>
+            case phylanx::ir::node_data<T>::storage1d:
                 return blaze_ref_array(src->vector_non_ref());
 
-            case 2:     // blaze::DynamicMatrix<T>
+            // blaze::DynamicMatrix<T>
+            case phylanx::ir::node_data<T>::storage2d:
                 return blaze_ref_array(src->matrix_non_ref());
 
             // custom types require a copy (done by vector_copy/matrix_copy)
-            case 4:     // blaze::CustomVector<T>
+            // blaze::CustomVector<T>
+            case phylanx::ir::node_data<T>::custom_storage1d:
                 return blaze_encapsulate(new blaze::DynamicVector<T>(
                     src->vector_copy()));
 
-            case 5:     // blaze::CustomMatrix<T>
+            // blaze::CustomMatrix<T>
+            case phylanx::ir::node_data<T>::custom_storage2d:
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_ref_array(src->tensor_non_ref());
+
+            // blaze::CustomTensor<T>
+            case phylanx::ir::node_data<T>::custom_storage3d:
+                return blaze_encapsulate(new blaze::DynamicTensor<T>(
+                    src->tensor_copy()));
+#endif
             default:
                 throw cast_error("cast_impl_automatic_reference: "
                     "unexpected node_data type: should not happen!");
@@ -567,14 +725,26 @@ namespace pybind11 { namespace detail
         {
             switch (src->index())
             {
-            case 1:     // blaze::DynamicVector<T>
+            // blaze::DynamicVector<T>
+            case phylanx::ir::node_data<T>::storage1d:
                 return blaze_ref_array(src->vector_non_ref(), parent);
 
-            case 2:     // blaze::DynamicMatrix<T>
+            // blaze::DynamicMatrix<T>
+            case phylanx::ir::node_data<T>::storage2d:
                 return blaze_ref_array(src->matrix_non_ref(), parent);
 
-            case 4: HPX_FALLTHROUGH;    // blaze::CustomVector<T>
-            case 5: HPX_FALLTHROUGH;    // blaze::CustomMatrix<T>
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+            // blaze::DynamicTensor<T>
+            case phylanx::ir::node_data<T>::storage3d:
+                return blaze_ref_array(src->tensor_non_ref(), parent);
+
+            // blaze::CustomTensor<T>
+            case phylanx::ir::node_data<T>::custom_storage3d: HPX_FALLTHROUGH;
+#endif
+
+            // blaze::CustomVector<T>, blaze::CustomMatrix<T>
+            case phylanx::ir::node_data<T>::custom_storage1d: HPX_FALLTHROUGH;
+            case phylanx::ir::node_data<T>::custom_storage2d: HPX_FALLTHROUGH;
             default:
                 throw cast_error("cast_impl_reference_internal: "
                     "unexpected node_data type: should not happen!");
@@ -595,8 +765,7 @@ namespace pybind11 { namespace detail
 
             switch (policy)
             {
-            case return_value_policy::take_ownership:
-                HPX_FALLTHROUGH;
+            case return_value_policy::take_ownership:   HPX_FALLTHROUGH;
             case return_value_policy::automatic:
                 return cast_impl_automatic(src);
 
@@ -606,8 +775,7 @@ namespace pybind11 { namespace detail
             case return_value_policy::copy:
                 return cast_impl_copy(src);
 
-            case return_value_policy::reference:
-                HPX_FALLTHROUGH;
+            case return_value_policy::reference:        HPX_FALLTHROUGH;
             case return_value_policy::automatic_reference:
                 return cast_impl_automatic_reference(src);
 
@@ -624,8 +792,13 @@ namespace pybind11 { namespace detail
     public:
         bool load(handle src, bool convert)
         {
-            return load0d(src, convert) || load1d(src, convert) ||
-                load2d(src, convert);
+            return load0d(src, convert)
+                || load1d(src, convert)
+                || load2d(src, convert)
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+                || load3d(src, convert)
+#endif
+                ;
         }
 
         // Normal returned non-reference, non-const value:

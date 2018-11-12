@@ -233,7 +233,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 2:
             {
-                std::array<std::size_t, 2> sizes =
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> sizes =
                     extract_largest_dimensions(name_, codename_, lhs, rhs);
                 return primitive_argument_type{extract_value_matrix<R>(
                     op.scalar() ? std::move(lhs) : std::move(rhs),

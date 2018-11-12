@@ -154,7 +154,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         std::size_t args_size = args.size();
 
-        std::array<std::size_t, 2> prevdim =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
             extract_numeric_value_dimensions(args[0], name_, codename_);
         std::size_t total_cols = 0;
 
@@ -170,7 +170,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "requires all the inputs be a matrices"));
             }
 
-            std::array<std::size_t, 2> dim =
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
                 extract_numeric_value_dimensions(args[i], name_, codename_);
 
             if (i != 0 && prevdim[0] != dim[0])

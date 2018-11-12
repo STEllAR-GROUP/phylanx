@@ -21,4 +21,14 @@ macro(phylanx_setup_blaze)
     phylanx_add_config_cond_define(NOMINMAX)
   endif()
 
+  # Add iterative solvers from BlazeIterative
+  if(PHYLANX_WITH_ITERATIVE_SOLVERS)
+    find_package(BlazeIterative)
+  endif()
+
+  # Add tensors from BlazeTensors
+  if(PHYLANX_WITH_BLAZE_TENSOR)
+    find_package(BlazeTensor)
+  endif()
+
 endmacro()

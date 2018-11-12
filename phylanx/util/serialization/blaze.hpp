@@ -13,6 +13,9 @@
 #include <hpx/include/util.hpp>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 #include <cstddef>
 
@@ -64,20 +67,47 @@ namespace hpx { namespace serialization
             hpx::serialization::make_array(target.data(), rows * spacing);
     }
 
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+    template <typename T>
+    void load(input_archive& archive, blaze::DynamicTensor<T>& target,
+        unsigned)
+    {
+        // De-serialize matrix
+        std::size_t rows = 0UL;
+        std::size_t columns = 0UL;
+        std::size_t pages = 0UL;
+        std::size_t spacing = 0UL;
+        archive >> rows >> columns >> pages >> spacing;
+
+        target.resize(rows, columns, pages, false);
+        archive >> hpx::serialization::make_array(
+                       target.data(), rows * spacing * pages);
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T, bool AF, bool PF, bool TF>
+    template <typename T, bool AF, bool PF, bool TF, typename RT>
     void load(input_archive& archive,
-        blaze::CustomVector<T, AF, PF, TF>& target, unsigned)
+        blaze::CustomVector<T, AF, PF, TF, RT>& target, unsigned)
     {
         HPX_ASSERT(false);      // shouldn't ever be called
     }
 
-    template <typename T, bool AF, bool PF, bool SO>
+    template <typename T, bool AF, bool PF, bool SO, typename RT>
     void load(input_archive& archive,
-        blaze::CustomMatrix<T, AF, PF, SO>& target, unsigned)
+        blaze::CustomMatrix<T, AF, PF, SO, RT>& target, unsigned)
     {
         HPX_ASSERT(false);      // shouldn't ever be called
     }
+
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+    template <typename T, bool AF, bool PF, typename RT>
+    void load(input_archive& archive,
+        blaze::CustomTensor<T, AF, PF, RT>& target, unsigned)
+    {
+        HPX_ASSERT(false);      // shouldn't ever be called
+    }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, bool TF>
@@ -88,6 +118,7 @@ namespace hpx { namespace serialization
         std::size_t count = target.size();
         std::size_t spacing = target.spacing();
         archive << count << spacing;
+
         archive << hpx::serialization::make_array(target.data(), spacing);
     }
 
@@ -100,6 +131,7 @@ namespace hpx { namespace serialization
         std::size_t columns = target.columns();
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
+
         archive << hpx::serialization::make_array(
             target.data(), spacing * columns);
     }
@@ -113,47 +145,85 @@ namespace hpx { namespace serialization
         std::size_t columns = target.columns();
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
+
         archive << hpx::serialization::make_array(
             target.data(), rows * spacing);
     }
 
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+    template <typename T>
+    void save(output_archive& archive, blaze::DynamicTensor<T> const& target,
+        unsigned)
+    {
+        // Serialize tensor
+        std::size_t rows = target.rows();
+        std::size_t columns = target.columns();
+        std::size_t pages = target.pages();
+        std::size_t spacing = target.spacing();
+        archive << rows << columns << pages << spacing;
+
+        archive << hpx::serialization::make_array(
+            target.data(), rows * spacing * pages);
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
-    template <typename T, bool AF, bool PF, bool TF>
+    template <typename T, bool AF, bool PF, bool TF, typename RT>
     void save(output_archive& archive,
-        blaze::CustomVector<T, AF, PF, TF> const& target, unsigned)
+        blaze::CustomVector<T, AF, PF, TF, RT> const& target, unsigned)
     {
         // Serialize vector
         std::size_t count = target.size();
         std::size_t spacing = target.spacing();
         archive << count << spacing;
+
         archive << hpx::serialization::make_array(target.data(), spacing);
     }
 
-    template <typename T, bool AF, bool PF>
+    template <typename T, bool AF, bool PF, typename RT>
     void save(output_archive& archive,
-        blaze::CustomMatrix<T, AF, PF, true> const& target, unsigned)
+        blaze::CustomMatrix<T, AF, PF, true, RT> const& target, unsigned)
     {
         // Serialize matrix
         std::size_t rows = target.rows();
         std::size_t columns = target.columns();
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
+
         archive << hpx::serialization::make_array(
             target.data(), spacing * columns);
     }
 
-    template <typename T, bool AF, bool PF>
+    template <typename T, bool AF, bool PF, typename RT>
     void save(output_archive& archive,
-        blaze::CustomMatrix<T, AF, PF, false> const& target, unsigned)
+        blaze::CustomMatrix<T, AF, PF, false, RT> const& target, unsigned)
     {
         // Serialize matrix
         std::size_t rows = target.rows();
         std::size_t columns = target.columns();
         std::size_t spacing = target.spacing();
         archive << rows << columns << spacing;
+
         archive << hpx::serialization::make_array(
             target.data(), rows * spacing);
     }
+
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+    template <typename T, bool AF, bool PF, typename RT>
+    void save(output_archive& archive,
+        blaze::CustomTensor<T, AF, PF, RT> const& target, unsigned)
+    {
+        // Serialize tensor
+        std::size_t rows = target.rows();
+        std::size_t columns = target.columns();
+        std::size_t pages = target.pages();
+        std::size_t spacing = target.spacing();
+        archive << rows << columns << pages << spacing;
+
+        archive << hpx::serialization::make_array(
+            target.data(), rows * spacing * pages);
+    }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
@@ -163,12 +233,21 @@ namespace hpx { namespace serialization
         (template <typename T, bool SO>), (blaze::DynamicMatrix<T, SO>));
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T, bool AF, bool PF, bool TF>),
-        (blaze::CustomVector<T, AF, PF, TF>));
+        (template <typename T, bool AF, bool PF, bool TF, typename RT>),
+        (blaze::CustomVector<T, AF, PF, TF, RT>));
 
     HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
-        (template <typename T, bool AF, bool PF, bool SO>),
-        (blaze::CustomMatrix<T, AF, PF, SO>));
+        (template <typename T, bool AF, bool PF, bool SO, typename RT>),
+        (blaze::CustomMatrix<T, AF, PF, SO, RT>));
+
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+    HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
+        (template <typename T>), (blaze::DynamicTensor<T>));
+
+    HPX_SERIALIZATION_SPLIT_FREE_TEMPLATE(
+        (template <typename T, bool AF, bool PF, typename RT>),
+        (blaze::CustomTensor<T, AF, PF, RT>));
+#endif
 }}
 
 #endif

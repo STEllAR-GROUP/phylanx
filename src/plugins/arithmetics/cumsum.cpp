@@ -102,7 +102,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        std::array<std::size_t, 2> dims =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
             extract_numeric_value_dimensions(ops[0], name_, codename_);
 
         ir::node_data<T> value = extract_value_vector<T>(
@@ -123,7 +123,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumsum::cumsum2d_noaxis(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, 2> dims =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
             extract_numeric_value_dimensions(ops[0], name_, codename_);
 
         ir::node_data<T> value = extract_value_matrix<T>(
@@ -152,7 +152,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumsum::cumsum2d_columns(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, 2> dims =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
             extract_numeric_value_dimensions(ops[0], name_, codename_);
 
         ir::node_data<T> value = extract_value_matrix<T>(
@@ -178,7 +178,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type cumsum::cumsum2d_rows(
         primitive_arguments_type&& ops) const
     {
-        std::array<std::size_t, 2> dims =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims =
             extract_numeric_value_dimensions(ops[0], name_, codename_);
 
         ir::node_data<T> value = extract_value_matrix<T>(

@@ -1281,9 +1281,9 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
-    std::array<std::size_t, 2> extract_numeric_value_dimensions(
-        primitive_argument_type const& val, std::string const& name,
-        std::string const& codename)
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_numeric_value_dimensions(primitive_argument_type const& val,
+        std::string const& name, std::string const& codename)
     {
         switch (val.index())
         {

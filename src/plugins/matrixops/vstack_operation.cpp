@@ -129,7 +129,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::size_t num_dims_first =
             extract_numeric_value_dimension(args[0], name_, codename_);
 
-        std::array<std::size_t, 2> prevdim =
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> prevdim =
             extract_numeric_value_dimensions(args[0], name_, codename_);
 
         std::size_t total_rows = 1;
@@ -157,7 +157,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "matrices/vectors with a scalar"));
             }
 
-            std::array<std::size_t, 2> dim =
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dim =
                 extract_numeric_value_dimensions(args[i], name_, codename_);
 
             std::size_t second_size = dim[1];

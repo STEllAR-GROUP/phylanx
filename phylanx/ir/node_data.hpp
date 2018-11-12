@@ -24,6 +24,9 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 namespace phylanx { namespace ir
 {
@@ -99,6 +102,8 @@ namespace phylanx { namespace ir
         };
     }
 
+    constexpr static std::size_t const max_dimensions = PHYLANX_MAX_DIMENSIONS;
+
     template <typename T>
     class node_data
     {
@@ -117,10 +122,6 @@ namespace phylanx { namespace ir
         static bool enable_counts(bool enable);
 
     public:
-        constexpr static std::size_t const max_dimensions = 2;
-
-        using dimensions_type = std::array<std::size_t, max_dimensions>;
-
         using storage0d_type = T;
         using storage1d_type = blaze::DynamicVector<T>;
         using storage2d_type = blaze::DynamicMatrix<T>;
@@ -129,9 +130,47 @@ namespace phylanx { namespace ir
         using custom_storage1d_type = blaze::CustomVector<T, true, true>;
         using custom_storage2d_type = blaze::CustomMatrix<T, true, true>;
 
+        constexpr static std::size_t const max_dimensions =
+            PHYLANX_MAX_DIMENSIONS;
+
+#if !defined(PHYLANX_HAVE_BLAZETENSOR)
+
         using storage_type = util::variant<
             storage0d_type, storage1d_type, storage2d_type,
             custom_storage0d_type, custom_storage1d_type, custom_storage2d_type>;
+
+        enum variant_index
+        {
+            storage0d = 0,
+            storage1d = 1,
+            storage2d = 2,
+            custom_storage0d = 3,
+            custom_storage1d = 4,
+            custom_storage2d = 5
+        };
+#else
+        using storage3d_type = blaze::DynamicTensor<T>;
+        using custom_storage3d_type = blaze::CustomTensor<T, true, true>;
+
+        using storage_type = util::variant<
+            storage0d_type, storage1d_type, storage2d_type, storage3d_type,
+            custom_storage0d_type, custom_storage1d_type,
+            custom_storage2d_type, custom_storage3d_type>;
+
+        enum variant_index
+        {
+            storage0d = 0,
+            storage1d = 1,
+            storage2d = 2,
+            storage3d = 3,
+            custom_storage0d = 4,
+            custom_storage1d = 5,
+            custom_storage2d = 6,
+            custom_storage3d = 7
+        };
+#endif
+
+        using dimensions_type = std::array<std::size_t, max_dimensions>;
 
         node_data() = default;
 
@@ -159,26 +198,40 @@ namespace phylanx { namespace ir
         explicit node_data(custom_storage2d_type const& values);
         explicit node_data(custom_storage2d_type && values);
 
-        // conversion helpers for Python bindings
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+        /// Create node data for a 3-dimensional value
+        explicit node_data(storage3d_type const& values);
+        explicit node_data(storage3d_type && values);
+
+        explicit node_data(custom_storage3d_type const& values);
+        explicit node_data(custom_storage3d_type && values);
+#endif
+
+        // conversion helpers for Python bindings and AST parsing
         explicit node_data(std::vector<T> const& values);
         explicit node_data(std::vector<std::vector<T>> const& values);
 
-        template <typename U = T, typename U1 =
-            typename std::enable_if<!std::is_same<U, bool>::value>::type>
-        explicit node_data(std::vector<std::vector<T>> const& values)
-          : data_(storage2d_type{values.size(), values[0].size()})
-        {
-            std::size_t const nx = values.size();
-            for (std::size_t i = 0; i != nx; ++i)
-            {
-                std::vector<T> const& row = values[i];
-                std::size_t const ny = row.size();
-                for (std::size_t j = 0; j != ny; ++j)
-                {
-                    util::get<2>(data_)(i, j) = row[j];
-                }
-            }
-        }
+//         template <typename U = T, typename U1 =
+//             typename std::enable_if<!std::is_same<U, bool>::value>::type>
+//         explicit node_data(std::vector<std::vector<T>> const& values)
+//           : data_(storage2d_type{values.size(), values[0].size()})
+//         {
+//             std::size_t const nx = values.size();
+//             for (std::size_t i = 0; i != nx; ++i)
+//             {
+//                 std::vector<T> const& row = values[i];
+//                 std::size_t const ny = row.size();
+//                 for (std::size_t j = 0; j != ny; ++j)
+//                 {
+//                     util::get<storage2d>(data_)(i, j) = row[j];
+//                 }
+//             }
+//         }
+
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+        explicit node_data(
+            std::vector<std::vector<std::vector<T>>> const& values);
+#endif
 
     private:
         static storage_type init_data_from(node_data const& d);
@@ -190,17 +243,17 @@ namespace phylanx { namespace ir
 
             switch (dims)
             {
-            case 0:
-            case 3:
+            case storage0d:         HPX_FALLTHROUGH;
+            case custom_storage0d:
                 return storage_type(d.scalar());
 
-            case 1:
-            case 4:
+            case storage1d:         HPX_FALLTHROUGH;
+            case custom_storage1d:
                 increment_copy_construction_count();
                 return storage_type(d.vector());
 
-            case 2:
-            case 5:
+            case storage2d:         HPX_FALLTHROUGH;
+            case custom_storage2d:
                 increment_copy_construction_count();
                 return storage_type(d.matrix());
 
@@ -240,9 +293,22 @@ namespace phylanx { namespace ir
         node_data& operator=(custom_storage2d_type const& val);
         node_data& operator=(custom_storage2d_type && val);
 
-        // conversion helpers for Python bindings
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+        node_data& operator=(storage3d_type const& val);
+        node_data& operator=(storage3d_type && val);
+
+        node_data& operator=(custom_storage3d_type const& val);
+        node_data& operator=(custom_storage3d_type && val);
+#endif
+
+        // conversion helpers for Python bindings and AST parsing
         node_data& operator=(std::vector<T> const& val);
         node_data& operator=(std::vector<std::vector<T>> const& values);
+
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+        node_data& operator=(
+            std::vector<std::vector<std::vector<T>>> const& values);
+#endif
 
     private:
         static storage_type copy_data_from(node_data const& d);
@@ -266,10 +332,31 @@ namespace phylanx { namespace ir
         T& operator[](dimensions_type const& indicies);
         T const& operator[](dimensions_type const& indicies) const;
 
+#if !defined(PHYLANX_HAVE_BLAZETENSOR)
         T& at(std::size_t index1, std::size_t index2);
         T const& at(std::size_t index1, std::size_t index2) const;
+#else
+        T& at(std::size_t index1, std::size_t index2, std::size_t index3 = 0);
+        T const& at(std::size_t index1, std::size_t index2,
+            std::size_t index3 = 0) const;
+#endif
 
         std::size_t size() const;
+
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+        storage3d_type& tensor_non_ref();
+        storage3d_type const& tensor_non_ref() const;
+
+        storage3d_type tensor_copy() &;
+        storage3d_type tensor_copy() const&;
+        storage3d_type tensor_copy() &&;
+        storage3d_type tensor_copy() const&&;
+
+        custom_storage3d_type tensor() &;
+        custom_storage3d_type tensor() const&;
+        custom_storage3d_type tensor() &&;
+        custom_storage3d_type tensor() const&&;
+#endif
 
         storage2d_type& matrix_non_ref();
         storage2d_type const& matrix_non_ref() const;
@@ -342,9 +429,13 @@ namespace phylanx { namespace ir
         const_iterator cbegin() const;
         const_iterator cend() const;
 
-        // conversion helpers for Python bindings
+        // conversion helpers for Python bindings and AST parsing
         std::vector<T> as_vector() const;
         std::vector<std::vector<T>> as_matrix() const;
+#if defined(PHYLANX_HAVE_BLAZETENSOR)
+        std::vector<std::vector<std::vector<T>>> as_tensor() const;
+#endif
+
         std::size_t index() const { return data_.index(); }
 
     private:

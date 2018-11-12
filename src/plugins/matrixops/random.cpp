@@ -54,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     // extract the required dimensionality from argument 1
-    std::array<std::size_t, 2> extract_dimensions(
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
         primitive_argument_type const& val, std::string const& name,
         std::string const& codename)
     {
@@ -71,7 +71,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 7:    // phylanx::ir::range
             {
-                std::array<std::size_t, 2> result{1ull, 1ull};
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{
+                    1ull, 1ull};
                 auto const& list = util::get<7>(val);
                 auto const& args = list;
                 switch (args.size())
@@ -113,10 +114,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name, codename));
     }
 
-    hpx::future<std::array<std::size_t, 2>> dimensions_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename, eval_context ctx)
+    hpx::future<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>>
+    dimensions_operand(primitive_argument_type const& val,
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -273,7 +274,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             virtual primitive_argument_type call0d() = 0;
             virtual primitive_argument_type call1d(std::size_t dim) = 0;
             virtual primitive_argument_type call2d(
-                std::array<std::size_t, 2> const& dims) = 0;
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const&
+                    dims) = 0;
         };
 
         using create_distribution_type = std::unique_ptr<distribution> (*)(
@@ -315,7 +317,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return randomize(dist_, data);                                     \
         }                                                                      \
         primitive_argument_type call2d(                                        \
-            std::array<std::size_t, 2> const& dims) override                   \
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override \
         {                                                                      \
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
             return randomize(dist_, data);                                     \
@@ -369,7 +371,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return randomize(dist_, data);                                     \
         }                                                                      \
         primitive_argument_type call2d(                                        \
-            std::array<std::size_t, 2> const& dims) override                   \
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims) override \
         {                                                                      \
             blaze::DynamicMatrix<T> data(dims[0], dims[1]);                    \
             return randomize(dist_, data);                                     \
@@ -498,7 +500,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         primitive_argument_type randomize2d(
-            std::array<std::size_t, 2> const& dims,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params, std::string const& name,
             std::string const& codename)
         {
@@ -524,7 +526,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         ///////////////////////////////////////////////////////////////////////
-        inline int num_dimensions(std::array<std::size_t, 2> const& dims)
+        inline int num_dimensions(
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
         {
             if (dims[0] != 1)
             {
@@ -562,7 +565,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // the first argument encodes the requested dimensionality, this
         // can either be an instance of node_data or a list of values
-        hpx::future<std::array<std::size_t, 2>> dims =
+        hpx::future<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>> dims =
             dimensions_operand(operands[0], args, name_, codename_, ctx);
 
         // the second (optional) argument encodes the distribution to use
@@ -580,7 +583,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](std::array<std::size_t, 2> && dims,
+            [this_ = std::move(this_)](
+                    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> && dims,
                     distribution_parameters_type && params)
             ->  primitive_argument_type
             {
@@ -619,7 +623,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type random::random2d(
-        std::array<std::size_t, 2> const& dims,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
         distribution_parameters_type&& params) const
     {
         return detail::randomize2d(dims, std::move(params), name_, codename_);

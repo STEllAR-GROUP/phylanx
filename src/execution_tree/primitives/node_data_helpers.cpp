@@ -135,11 +135,11 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::array<std::size_t, 2> extract_largest_dimensions(
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_largest_dimensions(
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
-        std::vector<std::array<std::size_t, 2>> sizes;
+        std::vector<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>> sizes;
         sizes.reserve(args.size());
 
         for (auto const& arg : args)
@@ -148,13 +148,13 @@ namespace phylanx { namespace execution_tree
                 extract_numeric_value_dimensions(arg, name, codename));
         }
 
-        std::array<std::size_t, 2> result{0, 0};
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{0, 0};
 
         auto max_array =
-            [](std::array<std::size_t, 2> const& lhs,
-                std::array<std::size_t, 2> const& rhs)
+            [](std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& lhs,
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& rhs)
             {
-                return std::array<std::size_t, 2>{
+                return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{
                     (std::max)(lhs[0], rhs[0]), (std::max)(lhs[1], rhs[1])};
             };
 

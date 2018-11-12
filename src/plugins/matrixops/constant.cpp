@@ -35,9 +35,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return shape.size();
         }
 
-        std::array<std::size_t, 2> extract_dimensions(ir::range const& shape)
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
+            ir::range const& shape)
         {
-            std::array<std::size_t, 2> result = {1, 1};
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {1, 1};
             if (!shape.empty())
             {
                 if (shape.size() == 1)
@@ -296,7 +297,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "scalar value"));
                     }
 
-                    std::array<std::size_t, 2> dims;
+                    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims;
                     std::size_t numdims = 0;
                     if (is_list_operand_strict(op1))
                     {
@@ -378,7 +379,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ->  primitive_argument_type
             {
                 primitive_argument_type value;
-                std::array<std::size_t, 2> dims{1, 1};
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims{1, 1};
                 std::size_t numdims = 0;
 
                 if (is_list_operand_strict(op0))
