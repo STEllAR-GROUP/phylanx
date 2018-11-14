@@ -121,10 +121,6 @@ class TypeDeducer(ast.NodeVisitor):
     Inherits from ast.NodeVisitor, in order to allow the use of
     TypeDeducer.visit() to traverse the AST
     """
-    var_type: str
-    type_deducer_state: TypeDeducerState
-    target: bool
-    dims: tuple
     # TODO - Should refactor TypeDeducer and associated classes/functions to use dims the
     # the same way Numpy does, as the primary way of interpreting what is currently
     # 'var_type'
