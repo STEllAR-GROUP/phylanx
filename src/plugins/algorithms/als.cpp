@@ -160,7 +160,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto conf_u = blaze::trans(blaze::row(conf, u));
                 auto diag = blaze::band(c_u, 0);
                 diag = conf_u;
-                auto p_u =
+                blaze::DynamicVector<double> p_u =
                     blaze::map(conf_u, [&](double x) { return (x != 0.0); });
                 auto A = (blaze::trans(Y) * c_u) * Y + YtY;
                 auto b = (blaze::trans(Y) * (c_u + I_i)) * (p_u);
@@ -173,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto conf_i = blaze::column(conf, i);
                 auto diag = blaze::band(c_i, 0);
                 diag = conf_i;
-                auto p_i =
+                blaze::DynamicVector<double> p_i =
                     blaze::map(conf_i, [&](double x) { return (x != 0.0); });
                 auto A = (blaze::trans(X) * c_i) * X + XtX;
                 auto b = (blaze::trans(X) * (c_i + I_u)) * (p_i);
