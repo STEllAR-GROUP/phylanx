@@ -36,8 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "Returns:\n"
             "\n"
-            "    A list of values obtained by apply `func` to every value it `listv`\n"
-            "    in parallel.\n"
+            "    A list of values obtained by apply `func` to every value it \n"
+            "    `listv` in parallel.\n"
             "\n"
             "Examples:\n"
             "\n"
@@ -56,11 +56,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> parallel_map_operation::map_1(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](
+            [this_ = std::move(this_), ctx](
                     primitive_argument_type&& bound_func, ir::range&& list)
             ->  hpx::future<primitive_argument_type>
             {
@@ -85,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     // Evaluate function for each of the argument sets
                     primitive_arguments_type args;
                     args.emplace_back(std::move(elem));
-                    result.push_back(p->eval(std::move(args)));
+                    result.push_back(p->eval(std::move(args), ctx));
                 }
 
                 return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
@@ -97,13 +97,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(result));
             }),
             value_operand(operands_[0], args, name_, codename_,
-                eval_dont_evaluate_lambdas),
-            list_operand_strict(operands[1], args, name_, codename_));
+                add_mode(ctx, eval_dont_evaluate_lambdas)),
+            list_operand_strict(operands[1], args, name_, codename_, ctx));
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::map_n(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // all remaining operands have to be lists
         primitive_arguments_type lists;
@@ -114,7 +114,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& bound_func,
+            [this_ = std::move(this_), ctx](
+                primitive_argument_type&& bound_func,
                 std::vector<ir::range, arguments_allocator<ir::range>>&& lists)
             ->  hpx::future<primitive_argument_type>
             {
@@ -170,7 +171,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
 
                     // Evaluate function for each of the argument sets
-                    result.push_back(p->eval(std::move(args)));
+                    result.push_back(p->eval(std::move(args), ctx));
                 }
 
                 return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
@@ -182,16 +183,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     std::move(result));
             }),
             value_operand(operands_[0], args, name_, codename_,
-                eval_mode(eval_dont_wrap_functions |
-                    eval_dont_evaluate_partials |
-                    eval_dont_evaluate_lambdas)),
+                add_mode(ctx,
+                    eval_mode(eval_dont_wrap_functions |
+                        eval_dont_evaluate_partials |
+                        eval_dont_evaluate_lambdas))),
             detail::map_operands(lists, functional::list_operand_strict{}, args,
-                name_, codename_));
+                name_, codename_, ctx));
     }
 
     hpx::future<primitive_argument_type> parallel_map_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() < 2)
         {
@@ -232,20 +234,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // handle common case separately
         if (operands.size() == 2)
         {
-            return map_1(operands, args);
+            return map_1(operands, args, std::move(ctx));
         }
 
-        return map_n(operands, args);
-    }
-
-    // Start iteration over given for statement
-    hpx::future<primitive_argument_type> parallel_map_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+        return map_n(operands, args, std::move(ctx));
     }
 }}}

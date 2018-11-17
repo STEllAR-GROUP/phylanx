@@ -31,13 +31,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         car_cdr_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
-
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         primitive_argument_type car(primitive_argument_type&& arg) const;
         primitive_argument_type cdr(primitive_argument_type&& arg) const;

@@ -61,7 +61,7 @@ void test_dict_key()
     phylanx::execution_tree::primitive dict =
         phylanx::execution_tree::primitives::create_dict_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(phylanx::execution_tree::primitive_argument_type{
                     phylanx::ir::range(key_value)})});
 

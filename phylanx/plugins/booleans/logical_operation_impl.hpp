@@ -443,9 +443,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::logical2d1d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
+                generate_error_message(
+                    "the dimensions of the operands do not match"));
         }
 
         // TODO: SIMD functionality should be added, blaze implementation
@@ -485,9 +484,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::logical2d2d",
-                util::generate_error_message(
-                    "the dimensions of the operands do not match",
-                    name_, codename_));
+                generate_error_message(
+                    "the dimensions of the operands do not match"));
         }
 
         // TODO: SIMD functionality should be added, blaze implementation
@@ -527,10 +525,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::logical2d",
-                util::generate_error_message(
-                    "the operands have incompatible number of "
-                        "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "the operands have incompatible number of dimensions"));
         }
     }
 
@@ -554,17 +550,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "logical::logical_all",
-                util::generate_error_message(
-                    "left hand side operlogical has unsupported number of "
-                        "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "left hand side operand of logical has unsupported number "
+                        "of dimensions"));
         }
     }
 
     template <typename Op>
     hpx::future<primitive_argument_type> logical_operation<Op>::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // TODO: support for operands.size() > 2
         if (operands.size() != 2)
@@ -587,31 +582,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_argument_type&& op1,
-                        primitive_argument_type&& op2)
-                ->  primitive_argument_type
-                {
-                    return primitive_argument_type(
-                        util::visit(visit_logical{*this_},
-                            std::move(op1.variant()),
-                            std::move(op2.variant())));
-                }),
-            value_operand(operands[0], args, name_, codename_),
-            value_operand(operands[1], args, name_, codename_));
-    }
-
-    // implement '&&' for all possible combinations of lhs logical rhs
-    template <typename Op>
-    hpx::future<primitive_argument_type> logical_operation<Op>::eval(
-        primitive_arguments_type const& args, eval_mode) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_argument_type&& op1,
+                    primitive_argument_type&& op2)
+            ->  primitive_argument_type
+            {
+                return primitive_argument_type(
+                    util::visit(visit_logical{*this_},
+                        std::move(op1.variant()), std::move(op2.variant())));
+            }),
+            value_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}
 

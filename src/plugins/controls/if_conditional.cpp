@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> if_conditional::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands_.size() != 3 && operands_.size() != 2)
         {
@@ -90,36 +90,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // Keep data alive with a shared pointer
-        auto f = boolean_operand(operands_[0], args, name_, codename_);
+        auto f = boolean_operand(operands_[0], args, name_, codename_, ctx);
         auto this_ = this->shared_from_this();
         return f.then(hpx::launch::sync,
-            [this_ = std::move(this_), args = std::move(args)](
-                hpx::future<std::uint8_t>&& cond_eval) mutable
-            -> hpx::future<primitive_argument_type>
+            [this_ = std::move(this_), args = args, ctx = std::move(ctx)](
+                    hpx::future<std::uint8_t>&& cond_eval) mutable
+            ->  hpx::future<primitive_argument_type>
             {
                 if (cond_eval.get() != 0)
                 {
-                    return literal_operand(this_->operands_[1],
-                        std::move(args), this_->name_, this_->codename_);
+                    return value_operand(this_->operands_[1], std::move(args),
+                        this_->name_, this_->codename_, std::move(ctx));
                 }
                 if (this_->operands_.size() > 2)
                 {
-                    return literal_operand(this_->operands_[2],
-                        std::move(args), this_->name_, this_->codename_);
+                    return value_operand(this_->operands_[2], std::move(args),
+                        this_->name_, this_->codename_, std::move(ctx));
                 }
                 return hpx::make_ready_future(primitive_argument_type{});
             });
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Evaluate 'true_case' or 'false_case' based on 'cond'
-    hpx::future<primitive_argument_type> if_conditional::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
     }
 }}}

@@ -107,7 +107,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::extract_dimensions",
-            phylanx::util::generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a dimensionality "
                     "description",
                 name, codename));
@@ -116,12 +116,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<std::array<std::size_t, 2>> dimensions_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return p->eval(args).then(hpx::launch::sync,
+            return p->eval(args, std::move(ctx)).then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type>&& f)
                 {
                     return extract_dimensions(f.get(), name, codename);
@@ -189,7 +189,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "extract_distribution_parameters",
-            phylanx::util::generate_error_message(
+            util::generate_error_message(
                 "primitive_argument_type does not hold a distribution "
                     "parameters description",
                 name, codename));
@@ -198,12 +198,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<distribution_parameters_type> distribution_parameters_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            return p->eval(args).then(hpx::launch::sync,
+            return p->eval(args, std::move(ctx)).then(hpx::launch::sync,
                 [&](hpx::future<primitive_argument_type>&& f)
                 {
                     return extract_distribution_parameters(
@@ -540,15 +540,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> random::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
-                util::generate_error_message(
-                    "the random primitive requires at most one operand",
-                    name_, codename_));
+                generate_error_message(
+                    "the random primitive requires at most one operand"));
         }
 
         if (!valid(operands[0]) ||
@@ -556,16 +555,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "random::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the random primitive requires that the arguments "
-                        "given by the operands array are valid",
-                    name_, codename_));
+                        "given by the operands array are valid"));
         }
 
         // the first argument encodes the requested dimensionality, this
         // can either be an instance of node_data or a list of values
         hpx::future<std::array<std::size_t, 2>> dims =
-            dimensions_operand(operands[0], args, name_, codename_);
+            dimensions_operand(operands[0], args, name_, codename_, ctx);
 
         // the second (optional) argument encodes the distribution to use
         hpx::future<distribution_parameters_type> params;
@@ -577,7 +575,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else
         {
             params = distribution_parameters_operand(
-                operands[1], args, name_, codename_);
+                operands[1], args, name_, codename_, std::move(ctx));
         }
 
         auto this_ = this->shared_from_this();
@@ -600,10 +598,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "random::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                         "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }), std::move(dims), std::move(params));
     }
@@ -627,16 +624,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         return detail::randomize2d(dims, std::move(params), name_, codename_);
     }
-
-    hpx::future<primitive_argument_type> random::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
-    }
 }}}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -645,12 +632,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> set_seed(
         primitive_arguments_type const&,
         primitive_arguments_type const&,
-        std::string const&, std::string const&);
+        std::string const&, std::string const&, eval_context);
 
     primitive_argument_type get_seed(
         primitive_arguments_type const&,
         primitive_arguments_type const&,
-        std::string const&, std::string const&);
+        std::string const&, std::string const&, eval_context);
 }}}
 
 HPX_PLAIN_ACTION(
@@ -694,7 +681,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<primitive_argument_type> set_seed(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         if (operands.empty() || operands.size() > 2)
         {
@@ -715,9 +702,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     name, codename));
         }
 
-        return numeric_operand(operands[0], args, name, codename)
+        return integer_operand(operands[0], args, name, codename, std::move(ctx))
             .then(hpx::launch::sync, hpx::util::unwrapping(
-                [](ir::node_data<double>&& data) -> primitive_argument_type
+                [](ir::node_data<std::int64_t>&& data) -> primitive_argument_type
                 {
                     util::set_seed(static_cast<std::uint32_t>(data[0]));
                     return primitive_argument_type{};
@@ -725,9 +712,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     primitive_argument_type get_seed(
-        primitive_arguments_type const&,
-        primitive_arguments_type const&,
-        std::string const&, std::string const&)
+        primitive_arguments_type const&, primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context)
     {
         return primitive_argument_type{
             static_cast<std::int64_t>(util::get_seed())};

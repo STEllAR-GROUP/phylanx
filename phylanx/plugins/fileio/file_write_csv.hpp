@@ -26,7 +26,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args, eval_context ctx) const;
     public:
         static match_pattern_type const match_data;
 
@@ -35,8 +35,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         file_write_csv(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
     private:
         hpx::future<primitive_argument_type> write_to_file_csv(
             ir::node_data<double>&& val, std::string&& filename) const;

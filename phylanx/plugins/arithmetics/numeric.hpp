@@ -41,7 +41,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         template <typename T>
         using arg_type = ir::node_data<T>;
@@ -55,9 +56,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         numeric(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args, eval_mode) const override;
 
     private:
         template <typename T>

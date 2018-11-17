@@ -194,17 +194,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> gradient_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "gradient_operation::gradient_operation",
-                util::generate_error_message(
+                generate_error_message(
                     "the gradient_operation primitive requires "
-                    "either one or two arguments",
-                    name_, codename_));
+                    "either one or two arguments"));
         }
 
         bool arguments_valid = true;
@@ -220,11 +219,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "gradient_operation::eval",
-                util::generate_error_message(
-                    "the gradient_operation primitive requires "
-                    "that the arguments given by the operands "
-                    "array are valid",
-                    name_, codename_));
+                generate_error_message(
+                    "the gradient_operation primitive requires that the "
+                    "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -256,16 +253,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> gradient_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}
