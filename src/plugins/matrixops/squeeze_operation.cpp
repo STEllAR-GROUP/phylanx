@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Parsa Amini
+// Copyright (c) 2018 Bita Hasheminezhad
 // Copyright (c) 2018 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -45,35 +45,83 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
+    primitive_argument_type squeeze_operation::squeeze0d(arg_type&& arg,
+        hpx::util::optional<std::int64_t> axis) const
+    {
+        // works for any axis value
+
+        return primitive_argument_type{arg.scalar()};
+    }
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> squeeze_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args,
+        eval_context ctx) const
     {
+        if (operands.empty() || operands.size() > 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "squeeze_operation::eval",
+                util::generate_error_message(
+                    "the squeeze_operation primitive requires exactly one, or two operands",
+                    name_, codename_));
+        }
+
+        for (auto const& i : operands)
+        {
+            if (!valid(i))
+            {
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "squeeze_operation::eval",
+                    util::generate_error_message(
+                        "the squeeze_operation primitive requires that the "
+                        "arguments given by the operands array are "
+                        "valid",
+                        name_, codename_));
+            }
+        }
+
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping(
-                [this_ = std::move(this_)](primitive_arguments_type&& args)
-                    -> primitive_argument_type
+            hpx::util::unwrapping([this_ = std::move(this_)](
+                                      primitive_arguments_type&& args)
+                                      -> primitive_argument_type {
+                // Extract axis
+                // Presence of axis changes behavior for >2d cases
+                hpx::util::optional<std::int64_t> axis;
+
+                // axis is the second argument
+                if (args.size() > 1)
                 {
+                    if (valid(args[1]))
+                        axis = execution_tree::extract_scalar_integer_value(
+                            args[1], this_->name_, this_->codename_);
+
+
+                }
+
+                // Extract the matrix
+                arg_type a = execution_tree::extract_numeric_value(
+                    args[0], this_->name_, this_->codename_);
+
+                std::size_t a_dims = a.num_dimensions();
+                switch (a_dims)
+                {
+                case 0:
+                    return this_->squeeze0d(std::move(a), axis);
+                //case 1:
+                //    return this_->sum1d(std::move(a), axis);
+                //case 2:
+                //    return this_->sum2d(std::move(a), axis);
+                default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "sum_operation::eval",
-                        util::generate_error_message(
-                            "operand a has an invalid "
-                            "number of dimensions",
+                        "squeeze_operation::eval",
+                        util::generate_error_message("operand a has an invalid "
+                                                     "number of dimensions",
                             this_->name_, this_->codename_));
-                }),
+                }
+            }),
             detail::map_operands(
                 operands, functional::value_operand{}, args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> squeeze_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
     }
 }}}

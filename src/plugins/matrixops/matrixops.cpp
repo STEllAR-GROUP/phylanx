@@ -63,6 +63,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(shuffle_operation_plugin,
     phylanx::execution_tree::primitives::shuffle_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[0]);
+PHYLANX_REGISTER_PLUGIN_FACTORY(squeeze_operation_plugin,
+    phylanx::execution_tree::primitives::squeeze_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(sum_operation_plugin,
     phylanx::execution_tree::primitives::sum_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(transpose_operation_plugin,
