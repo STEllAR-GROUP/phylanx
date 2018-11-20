@@ -379,6 +379,10 @@ class PhySL:
             else:
                 symbol = symbol.replace('hstack', 'hstack' + dtype)
             args = args[0][1]
+        elif 'hstack' in symbol:
+            symbol = symbol.replace('hstack', 'hstack' + dtype)
+        elif 'vstack' in symbol:
+            symbol = symbol.replace('vstack', 'vstack' + dtype)
         elif 'zeros_like' in symbol:
             symbol = symbol.replace('zeros_like', 'constant' + dtype)
             op = get_symbol_info(node.func, 'shape')
