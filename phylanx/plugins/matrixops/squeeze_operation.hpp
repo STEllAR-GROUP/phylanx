@@ -46,6 +46,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         primitive_argument_type squeeze0d(
             arg_type&& arg, hpx::util::optional<std::int64_t> axis) const;
+        primitive_argument_type squeeze1d(
+            arg_type&& arg, hpx::util::optional<std::int64_t> axis) const;
+        primitive_argument_type squeeze2d(
+            arg_type&& arg, hpx::util::optional<std::int64_t> axis) const;
     };
     inline primitive create_squeeze_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,

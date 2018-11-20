@@ -49,8 +49,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::optional<std::int64_t> axis) const
     {
         // works for any axis value
-
         return primitive_argument_type{arg.scalar()};
+    }
+
+    primitive_argument_type squeeze_operation::squeeze1d(arg_type&& arg,
+        hpx::util::optional<std::int64_t> axis) const
+    {
+        // works for any axis value
+        auto v = arg.vector();
+        if (v.size() == 1)
+            return primitive_argument_type{v[0]};
+
+        return primitive_argument_type{arg};
+    }
+
+    primitive_argument_type squeeze_operation::squeeze2d(arg_type&& arg,
+        hpx::util::optional<std::int64_t> axis) const
+    {
+        // works for any axis value
+        auto m = arg.matrix();
+        //if (v.size() == 1)
+        //    return primitive_argument_type{ v[0] };
+
+        return primitive_argument_type{ arg };
     }
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> squeeze_operation::eval(
@@ -63,7 +84,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "squeeze_operation::eval",
                 util::generate_error_message(
-                    "the squeeze_operation primitive requires exactly one, or two operands",
+                    "the squeeze_operation primitive requires exactly one, or "
+                    "two operands",
                     name_, codename_));
         }
 
@@ -109,10 +131,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                 case 0:
                     return this_->squeeze0d(std::move(a), axis);
-                //case 1:
-                //    return this_->sum1d(std::move(a), axis);
-                //case 2:
-                //    return this_->sum2d(std::move(a), axis);
+                case 1:
+                    return this_->squeeze1d(std::move(a), axis);
+                case 2:
+                    return this_->squeeze2d(std::move(a), axis);
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "squeeze_operation::eval",

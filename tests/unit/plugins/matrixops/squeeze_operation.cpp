@@ -35,9 +35,55 @@ void test_squeeze_operation_0d()
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
+void test_squeeze_operation_1d()
+{
+    blaze::DynamicVector<double> v1{ 4.0 };
+
+    double expected = 4.;
+
+    phylanx::execution_tree::primitive first =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+
+    phylanx::execution_tree::primitive p =
+        phylanx::execution_tree::primitives::create_squeeze_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(first) });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
+void test_squeeze_operation_1d_nochange()
+{
+    blaze::DynamicVector<double> v1{ 42.0, 4.0 };
+
+    blaze::DynamicVector<double> expected{ 42.0, 4.0 };
+
+    phylanx::execution_tree::primitive first =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+
+    phylanx::execution_tree::primitive p =
+        phylanx::execution_tree::primitives::create_squeeze_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(first) });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+
 int main(int argc, char* argv[])
 {
     test_squeeze_operation_0d();
+    test_squeeze_operation_1d();
+    test_squeeze_operation_1d_nochange();
 
     return hpx::util::report_errors();
 }
