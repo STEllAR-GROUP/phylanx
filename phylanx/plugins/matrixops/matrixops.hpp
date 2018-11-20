@@ -6,7 +6,6 @@
 #if !defined(PHYLANX_PLUGINS_MATRIXOPS_PRIMITIVES_APR_09_2108_0946PM)
 #define PHYLANX_PLUGINS_MATRIXOPS_PRIMITIVES_APR_09_2108_0946PM
 
-#include <phylanx/plugins/matrixops/add_dimension.hpp>
 #include <phylanx/plugins/matrixops/arange.hpp>
 #include <phylanx/plugins/matrixops/argmax.hpp>
 #include <phylanx/plugins/matrixops/argmin.hpp>
@@ -17,6 +16,7 @@
 #include <phylanx/plugins/matrixops/determinant.hpp>
 #include <phylanx/plugins/matrixops/diag_operation.hpp>
 #include <phylanx/plugins/matrixops/dot_operation.hpp>
+#include <phylanx/plugins/matrixops/expand_dims.hpp>
 #include <phylanx/plugins/matrixops/extract_shape.hpp>
 #include <phylanx/plugins/matrixops/generic_operation.hpp>
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>

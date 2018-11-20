@@ -25,6 +25,15 @@ mapped_methods = {
     "subtract": "__sub",
 }
 
+methods_supporting_dtype = [
+    'arange',
+    'cumsum',
+    'expand_dims',
+    'hstack',
+    'identity',
+    'vstack',
+]
+
 
 def primitive_name(method_name):
     """Given a method_name, returns the corresponding Phylanx primitive.
@@ -379,10 +388,6 @@ class PhySL:
             else:
                 symbol = symbol.replace('hstack', 'hstack' + dtype)
             args = args[0][1]
-        elif 'hstack' in symbol:
-            symbol = symbol.replace('hstack', 'hstack' + dtype)
-        elif 'vstack' in symbol:
-            symbol = symbol.replace('vstack', 'vstack' + dtype)
         elif 'zeros_like' in symbol:
             symbol = symbol.replace('zeros_like', 'constant' + dtype)
             op = get_symbol_info(node.func, 'shape')
@@ -416,12 +421,11 @@ class PhySL:
                 return [symbol, (args[1], [op, args[0]])]
             else:
                 return [symbol, (args[1], args[0])]
-        elif 'identity' in symbol:
-            symbol = symbol.replace('identity', 'identity' + dtype)
-        elif 'arange' in symbol:
-            symbol = symbol.replace('arange', 'arange' + dtype)
-        elif 'cumsum' in symbol:
-            symbol = symbol.replace('cumsum', 'cumsum' + dtype)
+        else:
+            method = [m for m in methods_supporting_dtype if m in symbol]
+            if len(method) == 1:
+                symbol = symbol.replace(method[0], method[0] + dtype)
+
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         return [symbol, args]

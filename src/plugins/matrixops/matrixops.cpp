@@ -11,8 +11,6 @@
 
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
-PHYLANX_REGISTER_PLUGIN_FACTORY(add_dimension_plugin,
-    phylanx::execution_tree::primitives::add_dimension::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(arange_plugin,
     phylanx::execution_tree::primitives::arange::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
@@ -37,6 +35,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(diag_operation_plugin,
     phylanx::execution_tree::primitives::diag_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(dot_operation_plugin,
     phylanx::execution_tree::primitives::dot_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(expand_dims_plugin,
+    phylanx::execution_tree::primitives::expand_dims::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(extract_shape_plugin,
     phylanx::execution_tree::primitives::extract_shape::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(gradient_operation_plugin,
