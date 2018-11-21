@@ -12,9 +12,9 @@
 #include <hpx/util/lightweight_test.hpp>
 
 #include <iostream>
+#include <string>
 #include <utility>
 #include <vector>
-#include <string>
 
 //////////////////////////////////////////////////////////////////////////
 void test_squeeze_operation_0d()
@@ -38,7 +38,7 @@ void test_squeeze_operation_0d()
 
 void test_squeeze_operation_1d()
 {
-    blaze::DynamicVector<double> v1{ 4.0 };
+    blaze::DynamicVector<double> v1{4.0};
 
     double expected = 4.;
 
@@ -50,7 +50,7 @@ void test_squeeze_operation_1d()
         phylanx::execution_tree::primitives::create_squeeze_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first) });
+                std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 
@@ -60,9 +60,9 @@ void test_squeeze_operation_1d()
 
 void test_squeeze_operation_1d_nochange()
 {
-    blaze::DynamicVector<double> v1{ 42.0, 4.0 };
+    blaze::DynamicVector<double> v1{42.0, 4.0};
 
-    blaze::DynamicVector<double> expected{ 42.0, 4.0 };
+    blaze::DynamicVector<double> expected{42.0, 4.0};
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -72,7 +72,7 @@ void test_squeeze_operation_1d_nochange()
         phylanx::execution_tree::primitives::create_squeeze_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first) });
+                std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 
@@ -82,9 +82,9 @@ void test_squeeze_operation_1d_nochange()
 
 void test_squeeze_operation_2d_nochange()
 {
-    blaze::DynamicMatrix<double> m1{ {6., 9.}, {13., 42.}, {33., 33.} };
+    blaze::DynamicMatrix<double> m1{{6., 9.}, {13., 42.}, {33., 33.}};
 
-    blaze::DynamicMatrix<double> expected{ {6., 9.}, {13., 42.}, {33., 33.} };
+    blaze::DynamicMatrix<double> expected{{6., 9.}, {13., 42.}, {33., 33.}};
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -94,7 +94,7 @@ void test_squeeze_operation_2d_nochange()
         phylanx::execution_tree::primitives::create_squeeze_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first) });
+                std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 
@@ -138,7 +138,7 @@ void test_squeeze_operation_2d_column()
         phylanx::execution_tree::primitives::create_squeeze_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first) });
+                std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 
@@ -160,7 +160,7 @@ void test_squeeze_operation_2d_row()
         phylanx::execution_tree::primitives::create_squeeze_operation(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
-                std::move(first) });
+                std::move(first)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 

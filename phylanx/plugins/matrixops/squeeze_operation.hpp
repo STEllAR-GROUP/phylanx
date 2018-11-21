@@ -15,6 +15,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,6 +23,12 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+/// \brief squeeze removes single-dimensional entries from the shape of an
+///        array.
+/// \param a         The scalar, vector, or matrix to perform squeeze over
+/// \param axis      Optional. If provided, squeeze is calculated along the
+///                  provided axis for >2d arrays.
+
     class squeeze_operation
         : public primitive_component_base
         , public std::enable_shared_from_this<squeeze_operation>
@@ -61,4 +68,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 }}}
 
-#endif 
+#endif
