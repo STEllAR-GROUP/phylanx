@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Bita Hasheminezhad
+// Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -68,10 +69,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         // works for any axis value
         auto m = arg.matrix();
-        //if (v.size() == 1)
-        //    return primitive_argument_type{ v[0] };
+        if (m.columns() == 1 || m.rows() == 1)
+        {
+            if (m.columns() == 1 && m.rows() == 1)
+                return primitive_argument_type{m(0, 0)};
+            else if (m.columns() == 1)
+                return primitive_argument_type{
+                    blaze::DynamicVector<double>{blaze::column(m, 0ul)}};
+            else if (m.rows() == 1)
+                return primitive_argument_type{blaze::DynamicVector<double>{
+                    blaze::trans(blaze::row(m, 0ul))}};
+        }
 
-        return primitive_argument_type{ arg };
+        return primitive_argument_type{arg};
     }
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> squeeze_operation::eval(
