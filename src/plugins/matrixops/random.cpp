@@ -117,7 +117,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     hpx::future<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>>
     dimensions_operand(primitive_argument_type const& val,
         primitive_arguments_type const& args, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
