@@ -9,6 +9,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 
 #include <hpx/lcos/future.hpp>
@@ -23,9 +24,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /// \brief Creates a vector from scalar values and a column matrix from
     /// vectors
     /// \param a may either be a scalar or a vector
-    class add_dimension
+    class expand_dims
       : public primitive_component_base
-      , public std::enable_shared_from_this<add_dimension>
+      , public std::enable_shared_from_this<expand_dims>
     {
     protected:
         hpx::future<primitive_argument_type> eval(
@@ -33,29 +34,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using val_type = double;
-        using arg_type = ir::node_data<val_type>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-
     public:
         static match_pattern_type const match_data;
 
-        add_dimension() = default;
+        expand_dims() = default;
 
-        add_dimension(primitive_arguments_type&& operands,
+        expand_dims(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type add_dim_0d(args_type && args) const;
-        primitive_argument_type add_dim_1d(args_type && args) const;
+        template <typename T>
+        primitive_argument_type add_dim_0d(ir::node_data<T>&& arg) const;
+
+        template <typename T>
+        primitive_argument_type add_dim_1d(ir::node_data<T>&& arg) const;
+
+        primitive_argument_type add_dim_0d(primitive_argument_type&& arg) const;
+        primitive_argument_type add_dim_1d(primitive_argument_type&& arg) const;
+
+    private:
+        node_data_type dtype_;
     };
 
-    inline primitive create_add_dimension(hpx::id_type const& locality,
+    inline primitive create_expand_dims(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(
-            locality, "add_dim", std::move(operands), name, codename);
+            locality, "expand_dims", std::move(operands), name, codename);
     }
 }}}
 

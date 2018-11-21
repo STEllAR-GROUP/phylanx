@@ -22,14 +22,14 @@ void test_0d()
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(42.0));
 
-    phylanx::execution_tree::primitive add_dim =
-        phylanx::execution_tree::primitives::create_add_dimension(
+    phylanx::execution_tree::primitive expand_dims =
+        phylanx::execution_tree::primitives::create_expand_dims(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        add_dim.eval();
+        expand_dims.eval();
 
     blaze::DynamicVector<double> expected{ 42. };
 
@@ -44,14 +44,14 @@ void test_1d()
         phylanx::execution_tree::primitives::create_variable(
             hpx::find_here(), phylanx::ir::node_data<double>(subject));
 
-    phylanx::execution_tree::primitive add_dim =
-        phylanx::execution_tree::primitives::create_add_dimension(
+    phylanx::execution_tree::primitive expand_dims =
+        phylanx::execution_tree::primitives::create_expand_dims(
             hpx::find_here(),
             phylanx::execution_tree::primitive_arguments_type{
         std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
-        add_dim.eval();
+        expand_dims.eval();
 
     blaze::DynamicMatrix<double> expected{{6.}, {9.}, {13.}, {42.}, {54.}};
 

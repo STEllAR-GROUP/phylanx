@@ -32,11 +32,11 @@ def initialize_centroids(points, k):
 
 @Phylanx
 def closest_centroid(points, centroids):
-    points_x = add_dim(slice_column(points, 0))
-    points_y = add_dim(slice_column(points, 1))
+    points_x = np.expand_dims(slice_column(points, 0))
+    points_y = np.expand_dims(slice_column(points, 1))
     centroids_x = slice_column(centroids, 0)
     centroids_y = slice_column(centroids, 1)
-    return argmin(sqrt(
+    return np.argmin(sqrt(
         power(points_x - centroids_x, 2) + power(points_y - centroids_y, 2)
     ), 0)
 
@@ -44,7 +44,7 @@ def closest_centroid(points, centroids):
 @Phylanx
 def move_centroids(points, closest, centroids):
     return fmap(
-        lambda k: mean(points * add_dim(closest == k), 1),
+        lambda k: mean(points * np.expand_dims(closest == k), 1),
         range(shape(centroids, 0))
     )
 

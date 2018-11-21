@@ -13,6 +13,8 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -36,10 +38,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using val_type = double;
-        using arg_type = ir::node_data<val_type>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -49,12 +47,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type argmax0d(args_type && args) const;
-        primitive_argument_type argmax1d(args_type && args) const;
-        primitive_argument_type argmax2d_flatten(arg_type && arg_a) const;
-        primitive_argument_type argmax2d_x_axis(arg_type && arg_a) const;
-        primitive_argument_type argmax2d_y_axis(arg_type && arg_a) const;
-        primitive_argument_type argmax2d(args_type && args) const;
+        primitive_argument_type argmax0d(primitive_arguments_type&& args) const;
+        primitive_argument_type argmax1d(primitive_arguments_type&& args) const;
+        primitive_argument_type argmax2d(primitive_arguments_type&& args) const;
+
+        template <typename T>
+        primitive_argument_type argmax0d(std::size_t numargs,
+            ir::node_data<T>&& args, std::int64_t axis) const;
+        template <typename T>
+        primitive_argument_type argmax1d(std::size_t numargs,
+            ir::node_data<T>&& args, std::int64_t axis) const;
+        template <typename T>
+        primitive_argument_type argmax2d(std::size_t numargs,
+            ir::node_data<T>&& args, std::int64_t axis) const;
+
+        template <typename T>
+        primitive_argument_type argmax2d_flatten(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type argmax2d_x_axis(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type argmax2d_y_axis(ir::node_data<T>&& arg) const;
     };
 
     inline primitive create_argmax(hpx::id_type const& locality,
