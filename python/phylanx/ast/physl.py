@@ -98,6 +98,70 @@ def remove_line(a):
     return re.sub(r'\$.*', '', a)
 
 
+def is_fun(f, a):
+    return type(a) == list and type(a[0]) == str and re.match(f + r'\b', a[0])
+
+
+def check_noreturn(a):
+    if type(a) not in [list, tuple]:
+        return
+    if len(a) == 0:
+        return
+    elif len(a) == 1:
+        check_noreturn(a[0])
+    elif is_fun('return', a):
+        raise NotImplementedError("Illegal return")
+    elif is_fun('.*', a):
+        check_noreturn(a[1])
+    elif type(a) in [list, tuple]:
+        for s in a:
+            check_noreturn(s)
+
+
+def check_hasreturn(a):
+    if type(a) not in [list, tuple]:
+        return
+    if len(a) == 0:
+        return
+    elif len(a) == 1:
+        check_hasreturn(a[0])
+    elif is_fun('for_each', a):
+        check_noreturn(a[1])
+    elif is_fun('while', a):
+        check_noreturn(a[1])
+    elif is_fun('if', a):
+        for k in a[1][1:]:
+            check_hasreturn(k)
+    elif is_fun('.*', a):
+        check_hasreturn(a[1])
+    else:
+        if len(a) == 0:
+            return
+        check_noreturn(a[:-1])
+        check_hasreturn([a[-1]])
+
+
+def check_return(a):
+    if type(a) not in [list, tuple]:
+        return
+    if len(a) == 0:
+        return
+    elif len(a) == 1:
+        check_return(a[0])
+    elif is_fun('block', a):
+        check_hasreturn(a[1])
+    elif is_fun('while', a):
+        check_noreturn(a[1])
+    elif is_fun('if', a):
+        for k in a[1][1:]:
+            check_hasreturn(k)
+    elif is_fun('.*', a):
+        check_return(a[1])
+    else:
+        for s in a:
+            check_return(s)
+
+
 class PhySL:
     """Python AST to PhySL Transducer."""
 
@@ -126,6 +190,7 @@ class PhySL:
             PhySL.defined_classes = {}
 
         self.ir = self.apply_rule(tree.body[0])
+        check_return(self.ir)
         self.__src__ = self.generate_physl(self.ir)
 
         if kwargs.get("debug"):
@@ -144,8 +209,14 @@ class PhySL:
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
                 ir[1], tuple):
-            return ir[0] + '(' + ', '.join(
-                [self.generate_physl(i) for i in ir[1]]) + ')'
+            result = [self.generate_physl(i) for i in ir[1]]
+            if ir[0] == 'return':
+                if len(result) == 1:
+                    return result[0]
+                else:
+                    return '(' + ', '.join(result) + ')'
+            else:
+                return ir[0] + '(' + ', '.join(result) + ')'
         elif isinstance(ir, list):
             return ', '.join([self.generate_physl(i) for i in ir])
         elif isinstance(ir, tuple):
@@ -728,9 +799,9 @@ class PhySL:
         """
 
         if type(node.value) == ast.Tuple:
-            return ["list", self.apply_rule(node.value)]
+            return ["return", (["list", self.apply_rule(node.value)],)]
 
-        return self.apply_rule(node.value)
+        return ["return", (self.apply_rule(node.value),)]
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""
