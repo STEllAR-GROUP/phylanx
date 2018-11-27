@@ -140,7 +140,7 @@ namespace phylanx { namespace ir
     template <typename T>
     node_data<T>::node_data(dimensions_type const& dims)
     {
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         if (dims[2] != 0)
         {
             data_ = storage3d_type(dims[0], dims[1], dims[2]);
@@ -164,7 +164,7 @@ namespace phylanx { namespace ir
     template <typename T>
     node_data<T>::node_data(dimensions_type const& dims, T default_value)
     {
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         if (dims[2] != 0)
         {
             data_ = storage3d_type(dims[0], dims[1], dims[2], default_value);
@@ -230,7 +230,7 @@ namespace phylanx { namespace ir
         increment_move_construction_count();
     }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     // Create node data for a 3-dimensional value
     template <typename T>
     node_data<T>::node_data(storage3d_type const& values)
@@ -249,7 +249,7 @@ namespace phylanx { namespace ir
     template <typename T>
     node_data<T>::node_data(custom_storage3d_type const& values)
       : data_(custom_storage3d_type{const_cast<T*>(values.data()),
-            values.rows(), values.columns(), values.pages(), values.spacing()})
+            values.pages(), values.rows(), values.columns(), values.spacing()})
     {
         increment_copy_construction_count();
     }
@@ -290,7 +290,7 @@ namespace phylanx { namespace ir
         }
     }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     node_data<T>::node_data(
             std::vector<std::vector<std::vector<T>>> const& values)
@@ -308,7 +308,7 @@ namespace phylanx { namespace ir
                 std::size_t const nz = row.size();
                 for (std::size_t j = 0; j != nz; ++j)
                 {
-                    util::get<storage3d>(data_)(i, j, k) = row[j];
+                    util::get<storage3d>(data_)(k, i, j) = row[j];
                 }
             }
         }
@@ -355,7 +355,7 @@ namespace phylanx { namespace ir
             }
             break;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
             {
                 increment_copy_construction_count();
@@ -368,7 +368,7 @@ namespace phylanx { namespace ir
                 increment_move_construction_count();
                 auto t = d.tensor();
                 return custom_storage3d_type{
-                    t.data(), t.rows(), t.columns(), t.pages(), t.spacing()};
+                    t.data(), t.pages(), t.rows(), t.columns(), t.spacing()};
             }
             break;
 #endif
@@ -484,7 +484,7 @@ namespace phylanx { namespace ir
         return *this;
     }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     node_data<T>& node_data<T>::operator=(storage3d_type const& val)
     {
@@ -505,8 +505,8 @@ namespace phylanx { namespace ir
     node_data<T>& node_data<T>::operator=(custom_storage3d_type const& val)
     {
         increment_move_assignment_count();
-        data_ = custom_storage3d_type{const_cast<T*>(val.data()), val.rows(),
-            val.columns(), val.pages(), val.spacing()};
+        data_ = custom_storage3d_type{const_cast<T*>(val.data()), val.pages(),
+            val.rows(), val.columns(), val.spacing()};
         return *this;
     }
 
@@ -550,7 +550,7 @@ namespace phylanx { namespace ir
         return *this;
     }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     node_data<T>& node_data<T>::operator=(
         std::vector<std::vector<std::vector<T>>> const& values)
@@ -569,7 +569,7 @@ namespace phylanx { namespace ir
                 std::size_t const nz = row.size();
                 for (std::size_t j = 0; j != nz; ++j)
                 {
-                    util::get<storage3d>(data_)(i, j, k) = row[j];
+                    util::get<storage3d>(data_)(k, i, j) = row[j];
                 }
             }
         }
@@ -618,7 +618,7 @@ namespace phylanx { namespace ir
             }
             break;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
             {
                 increment_copy_assignment_count();
@@ -631,7 +631,7 @@ namespace phylanx { namespace ir
                 increment_move_construction_count();
                 auto t = d.tensor();
                 return custom_storage3d_type{
-                    t.data(), t.rows(), t.columns(), t.pages(), t.spacing()};
+                    t.data(), t.pages(), t.rows(), t.columns(), t.spacing()};
             }
             break;
 #endif
@@ -687,7 +687,7 @@ namespace phylanx { namespace ir
                 return m(idx_m, idx_n);
             }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             {
@@ -725,7 +725,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return matrix()(indicies[0], indicies[1]);
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             return tensor()(indicies[0], indicies[1], indicies[2]);
@@ -740,7 +740,7 @@ namespace phylanx { namespace ir
             "node_data object holds unsupported data type");
     }
 
-#if !defined(PHYLANX_HAVE_BLAZETENSOR)
+#if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     T& node_data<T>::at(std::size_t index1, std::size_t index2)
     {
@@ -821,7 +821,7 @@ namespace phylanx { namespace ir
                 return m(idx_m, idx_n);
             }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             {
@@ -859,7 +859,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return matrix()(indicies[0], indicies[1]);
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             return tensor()(indicies[0], indicies[1], indicies[2]);
@@ -874,7 +874,7 @@ namespace phylanx { namespace ir
             "node_data object holds unsupported data type");
     }
 
-#if !defined(PHYLANX_HAVE_BLAZETENSOR)
+#if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     T const& node_data<T>::at(std::size_t index1, std::size_t index2) const
     {
@@ -953,7 +953,7 @@ namespace phylanx { namespace ir
                 return m.rows() * m.columns();
             }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             {
@@ -996,7 +996,7 @@ namespace phylanx { namespace ir
     }
 
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     typename node_data<T>::storage3d_type& node_data<T>::tensor_non_ref()
@@ -1125,7 +1125,7 @@ namespace phylanx { namespace ir
         if (t != nullptr)
         {
             return custom_storage3d_type(
-                t->data(), t->rows(), t->columns(), t->pages(), t->spacing());
+                t->data(), t->pages(), t->rows(), t->columns(), t->spacing());
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -1141,14 +1141,14 @@ namespace phylanx { namespace ir
         if (ct != nullptr)
         {
             return custom_storage3d_type(const_cast<T*>(ct->data()),
-                ct->rows(), ct->columns(), ct->pages(), ct->spacing());
+                ct->pages(), ct->rows(), ct->columns(), ct->spacing());
         }
 
         storage3d_type const* t = util::get_if<storage3d_type>(&data_);
         if (t != nullptr)
         {
             return custom_storage3d_type(const_cast<T*>(t->data()),
-                t->rows(), t->columns(), t->pages(), t->spacing());
+                t->pages(), t->rows(), t->columns(), t->spacing());
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -1716,6 +1716,34 @@ namespace phylanx { namespace ir
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    typename node_data<T>::storage0d_type& node_data<T>::scalar_non_ref()
+    {
+        storage0d_type* s = util::get_if<storage0d_type>(&data_);
+        if (s == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::scalar_non_ref()",
+                "node_data object holds unsupported data type");
+        }
+        return *s;
+    }
+
+    template <typename T>
+    typename node_data<T>::storage0d_type const& node_data<T>::scalar_non_ref()
+        const
+    {
+        storage0d_type const* s = util::get_if<storage0d_type>(&data_);
+        if (s == nullptr)
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "phylanx::ir::node_data<T>::scalar_non_ref()",
+                "node_data object holds unsupported data type");
+        }
+        return *s;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     /// Extract the dimensionality of the underlying data array.
     template <typename T>
     std::size_t node_data<T>::num_dimensions() const
@@ -1734,7 +1762,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return 2;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             return 3;
@@ -1769,12 +1797,12 @@ namespace phylanx { namespace ir
                 return dimensions_type{m.rows(), m.columns()};
             }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             {
                 auto t = tensor();
-                return dimensions_type{t.rows(), t.columns(), t.pages()};
+                return dimensions_type{t.pages(), t.rows(), t.columns()};
             }
 #endif
         default:
@@ -1797,16 +1825,41 @@ namespace phylanx { namespace ir
 
         case storage1d:         HPX_FALLTHROUGH;
         case custom_storage1d:
-            return (dim == 0) ? vector().size() : 1ul;
+            {
+                switch (dim)
+                {
+                case 0:
+                    return vector().size();
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::ir::node_data<T>::dimension()",
+                        "unknown dimension requested");
+                    break;
+                }
+            }
 
         case storage2d:         HPX_FALLTHROUGH;
         case custom_storage2d:
             {
                 auto m = matrix();
-                return (dim == 0) ? m.rows() : m.columns();
+                switch (dim)
+                {
+                case 0:
+                    return m.rows();
+
+                case 1:
+                    return m.columns();
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::ir::node_data<T>::dimension()",
+                        "unknown dimension requested");
+                    break;
+                }
             }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:
             {
@@ -1814,13 +1867,13 @@ namespace phylanx { namespace ir
                 switch (dim)
                 {
                 case 0:
-                    return t.rows();
+                    return t.pages();
 
                 case 1:
-                    return t.columns();
+                    return t.rows();
 
                 case 2:
-                    return t.pages();
+                    return t.columns();
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -1859,7 +1912,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return *this;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
             return node_data<T>{tensor()};
 
@@ -1894,7 +1947,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return *this;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
             return node_data<T>{tensor()};
 
@@ -1946,7 +1999,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return node_data<T>{matrix_copy()};
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
             return *this;
 
@@ -1979,7 +2032,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return true;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
             return false;
 
@@ -2012,7 +2065,7 @@ namespace phylanx { namespace ir
         case storage2d:         HPX_FALLTHROUGH;
         case custom_storage0d:  HPX_FALLTHROUGH;
         case custom_storage2d:  HPX_FALLTHROUGH;
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:  HPX_FALLTHROUGH;
 #endif
@@ -2046,7 +2099,7 @@ namespace phylanx { namespace ir
         case storage1d:         HPX_FALLTHROUGH;
         case custom_storage0d:  HPX_FALLTHROUGH;
         case custom_storage1d:  HPX_FALLTHROUGH;
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:         HPX_FALLTHROUGH;
         case custom_storage3d:  HPX_FALLTHROUGH;
 #endif
@@ -2059,7 +2112,7 @@ namespace phylanx { namespace ir
             "node_data object holds unsupported data type");
     }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     std::vector<std::vector<std::vector<T>>> node_data<T>::as_tensor() const
     {
@@ -2122,7 +2175,7 @@ namespace phylanx { namespace ir
         case node_data<double>::custom_storage2d:
             return lhs.matrix() == rhs.matrix();
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case node_data<double>::storage3d:          HPX_FALLTHROUGH;
         case node_data<double>::custom_storage3d:
             return lhs.tensor() == rhs.tensor();
@@ -2159,7 +2212,7 @@ namespace phylanx { namespace ir
         case node_data<std::uint8_t>::custom_storage2d:
             return lhs.matrix() == rhs.matrix();
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case node_data<std::uint8_t>::storage3d:          HPX_FALLTHROUGH;
         case node_data<std::uint8_t>::custom_storage3d:
             return lhs.tensor() == rhs.tensor();
@@ -2196,7 +2249,7 @@ namespace phylanx { namespace ir
         case node_data<std::int64_t>::custom_storage2d:
             return lhs.matrix() == rhs.matrix();
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case node_data<std::int64_t>::storage3d:          HPX_FALLTHROUGH;
         case node_data<std::int64_t>::custom_storage3d:
             return lhs.tensor() == rhs.tensor();
@@ -2244,14 +2297,15 @@ namespace phylanx { namespace ir
 
         template <typename T, typename Tensor>
         void print_tensor(std::ostream& out, Tensor const& data,
-            std::size_t rows, std::size_t columns, std::size_t pages)
+            std::size_t pages, std::size_t rows, std::size_t columns)
         {
             out << "[";
             for (std::size_t page = 0; page != pages; ++page)
             {
                 if (page != 0)
                     out << ", ";
-//                 print_matrix<T>(out, blaze::page(data, page), rows, columns);
+                print_matrix<T>(
+                    out, blaze::pageslice(data, page), rows, columns);
             }
             out << "]";
         }
@@ -2283,13 +2337,13 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case node_data<double>::storage3d:          HPX_FALLTHROUGH;
             case node_data<double>::custom_storage3d:
                 {
                     auto t = nd.tensor();
                     detail::print_tensor<double>(
-                        out, t, t.rows(), t.columns(), t.pages());
+                        out, t, t.pages(), t.rows(), t.columns());
                 }
 #endif
             default:
@@ -2339,13 +2393,13 @@ namespace phylanx { namespace ir
                 }
                 break;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case node_data<std::int64_t>::storage3d:          HPX_FALLTHROUGH;
             case node_data<std::int64_t>::custom_storage3d:
                 {
                     auto t = nd.tensor();
                     detail::print_tensor<std::int64_t>(
-                        out, t, t.rows(), t.columns(), t.pages());
+                        out, t, t.pages(), t.rows(), t.columns());
                 }
 #endif
             default:
@@ -2395,13 +2449,13 @@ namespace phylanx { namespace ir
                     detail::print_matrix<bool>(out, m, m.rows(), m.columns());
                 }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             case node_data<std::uint8_t>::storage3d:          HPX_FALLTHROUGH;
             case node_data<std::uint8_t>::custom_storage3d:
                 {
                     auto t = nd.tensor();
                     detail::print_tensor<bool>(
-                        out, t, t.rows(), t.columns(), t.pages());
+                        out, t, t.pages(), t.rows(), t.columns());
                 }
 #endif
             default:
@@ -2441,7 +2495,7 @@ namespace phylanx { namespace ir
         case custom_storage2d:
             return matrix().nonZeros() != 0;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:          HPX_FALLTHROUGH;
         case custom_storage3d:
             return tensor().nonZeros() != 0;
@@ -2488,7 +2542,7 @@ namespace phylanx { namespace ir
             ar << util::get<custom_storage2d>(data_);
             break;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
             ar << util::get<storage3d>(data_);
             break;
@@ -2540,7 +2594,7 @@ namespace phylanx { namespace ir
             }
             break;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         case storage3d:
         case custom_storage3d:     // deserialize CustomTensor as DynamicTensor
             {

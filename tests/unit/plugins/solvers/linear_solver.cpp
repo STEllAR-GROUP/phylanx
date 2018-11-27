@@ -261,7 +261,7 @@ int main()
     test_linear_solver("linear_solver_cholesky");
     test_linear_solver_l("linear_solver_cholesky");
     test_linear_solver_u("linear_solver_cholesky");
-#ifdef PHYLANX_HAVE_BLAZEITERATIVE
+#ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
     test_linear_solver("iterative_solver_conjugate_gradient");
     test_linear_solver("iterative_solver_bicgstab");
     test_linear_solver("iterative_solver_bicgstab_lu");

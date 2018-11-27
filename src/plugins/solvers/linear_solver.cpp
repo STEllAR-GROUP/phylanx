@@ -25,7 +25,7 @@
 
 #include <blaze/Math.h>
 
-#ifdef PHYLANX_HAVE_BLAZEITERATIVE
+#ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
 #include <BlazeIterative.hpp>
 #endif
 
@@ -81,7 +81,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "`a` as a lower triangular matrix, otherwise as an upper "
         "triangular matrix."
         ),
-#ifdef PHYLANX_HAVE_BLAZEITERATIVE
+#ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
         PHYLANX_LIN_MATCH_DATA("iterative_solver_conjugate_gradient",
          "a, b\n"
          "Args:\n"
@@ -196,7 +196,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::posv(A, b, 'U');
                     return arg_type{std::move(b)};
                 }},
-#ifdef PHYLANX_HAVE_BLAZEITERATIVE
+#ifdef PHYLANX_HAVE_BLAZE_ITERATIVE
             {"iterative_solver_conjugate_gradient",
                 // Iterative conjugate gradient solver
                 // Note: Relies on BlazeIterative library and

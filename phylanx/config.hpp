@@ -38,7 +38,7 @@
 #undef BLAZE_USE_BOOST_THREADS
 
 ///////////////////////////////////////////////////////////////////////////////
-#if !defined(PHYLANX_HAVE_BLAZETENSOR)
+#if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #  define PHYLANX_MAX_DIMENSIONS 2
 #else
 #  define PHYLANX_MAX_DIMENSIONS 3

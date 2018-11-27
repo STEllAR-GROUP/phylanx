@@ -26,7 +26,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
 #endif
 
@@ -252,7 +252,7 @@ namespace pybind11 { namespace detail
         return a.release();
     }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     handle blaze_array_cast(blaze::DynamicTensor<T> const& src,
         handle base = handle(), bool writeable = true)
@@ -513,7 +513,7 @@ namespace pybind11 { namespace detail
             return true;
         }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         bool load3d(handle src, bool convert)
         {
             if (!convert && !is_array_instance<result_type>::call(src))
@@ -578,7 +578,7 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             // blaze::DynamicTensor<T>
             case phylanx::ir::node_data<T>::storage3d:
                 return blaze_encapsulate(&(src->tensor_non_ref()));
@@ -621,7 +621,7 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             // blaze::DynamicTensor<T>
             case phylanx::ir::node_data<T>::storage3d:
                 return blaze_encapsulate(new blaze::DynamicTensor<T>(
@@ -662,7 +662,7 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             // blaze::DynamicTensor<T>
             case phylanx::ir::node_data<T>::storage3d:
                 return blaze_array_cast(src->tensor_non_ref());
@@ -703,7 +703,7 @@ namespace pybind11 { namespace detail
                 return blaze_encapsulate(new blaze::DynamicMatrix<T>(
                     src->matrix_copy()));
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             // blaze::DynamicTensor<T>
             case phylanx::ir::node_data<T>::storage3d:
                 return blaze_ref_array(src->tensor_non_ref());
@@ -733,7 +733,7 @@ namespace pybind11 { namespace detail
             case phylanx::ir::node_data<T>::storage2d:
                 return blaze_ref_array(src->matrix_non_ref(), parent);
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             // blaze::DynamicTensor<T>
             case phylanx::ir::node_data<T>::storage3d:
                 return blaze_ref_array(src->tensor_non_ref(), parent);
@@ -795,7 +795,7 @@ namespace pybind11 { namespace detail
             return load0d(src, convert)
                 || load1d(src, convert)
                 || load2d(src, convert)
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
                 || load3d(src, convert)
 #endif
                 ;

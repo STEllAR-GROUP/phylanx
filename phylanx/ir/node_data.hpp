@@ -24,7 +24,7 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>
 #endif
 
@@ -133,7 +133,7 @@ namespace phylanx { namespace ir
         constexpr static std::size_t const max_dimensions =
             PHYLANX_MAX_DIMENSIONS;
 
-#if !defined(PHYLANX_HAVE_BLAZETENSOR)
+#if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
 
         using storage_type = util::variant<
             storage0d_type, storage1d_type, storage2d_type,
@@ -198,7 +198,7 @@ namespace phylanx { namespace ir
         explicit node_data(custom_storage2d_type const& values);
         explicit node_data(custom_storage2d_type && values);
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         /// Create node data for a 3-dimensional value
         explicit node_data(storage3d_type const& values);
         explicit node_data(storage3d_type && values);
@@ -228,7 +228,7 @@ namespace phylanx { namespace ir
 //             }
 //         }
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         explicit node_data(
             std::vector<std::vector<std::vector<T>>> const& values);
 #endif
@@ -293,7 +293,7 @@ namespace phylanx { namespace ir
         node_data& operator=(custom_storage2d_type const& val);
         node_data& operator=(custom_storage2d_type && val);
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         node_data& operator=(storage3d_type const& val);
         node_data& operator=(storage3d_type && val);
 
@@ -305,7 +305,7 @@ namespace phylanx { namespace ir
         node_data& operator=(std::vector<T> const& val);
         node_data& operator=(std::vector<std::vector<T>> const& values);
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         node_data& operator=(
             std::vector<std::vector<std::vector<T>>> const& values);
 #endif
@@ -332,7 +332,7 @@ namespace phylanx { namespace ir
         T& operator[](dimensions_type const& indicies);
         T const& operator[](dimensions_type const& indicies) const;
 
-#if !defined(PHYLANX_HAVE_BLAZETENSOR)
+#if !defined(PHYLANX_HAVE_BLAZE_TENSOR)
         T& at(std::size_t index1, std::size_t index2);
         T const& at(std::size_t index1, std::size_t index2) const;
 #else
@@ -343,7 +343,7 @@ namespace phylanx { namespace ir
 
         std::size_t size() const;
 
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         storage3d_type& tensor_non_ref();
         storage3d_type const& tensor_non_ref() const;
 
@@ -394,6 +394,9 @@ namespace phylanx { namespace ir
         T&& scalar() &&;
         T const&& scalar() const&&;
 
+        storage0d_type& scalar_non_ref();
+        storage0d_type const& scalar_non_ref() const;
+
         /// Extract the dimensionality of the underlying data array.
         std::size_t num_dimensions() const;
 
@@ -432,7 +435,7 @@ namespace phylanx { namespace ir
         // conversion helpers for Python bindings and AST parsing
         std::vector<T> as_vector() const;
         std::vector<std::vector<T>> as_matrix() const;
-#if defined(PHYLANX_HAVE_BLAZETENSOR)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         std::vector<std::vector<std::vector<T>>> as_tensor() const;
 #endif
 

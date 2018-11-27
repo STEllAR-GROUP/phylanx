@@ -27,6 +27,9 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -231,6 +234,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return numeric2d2d<T>(std::move(lhs), std::move(rhs));
             }
+
+// #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+//         case 3:
+//             {
+//                 auto lhs = extract_value_tensor<T>(std::move(op1), sizes[0],
+//                     sizes[1], sizes[2], name_, codename_);
+//                 auto rhs = extract_value_tensor<T>(std::move(op2), sizes[0],
+//                     sizes[1], sizes[2], name_, codename_);
+//
+//                 return numeric3d3d<T>(std::move(lhs), std::move(rhs));
+//             }
+// #endif
 
         default:
             break;
