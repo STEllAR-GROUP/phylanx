@@ -46,17 +46,16 @@ define(closest_centroids, points, centroids, block(
         slice_column(centroids, 1)
     ),
     argmin(sqrt(
-                power(points_x - centroids_x, 2
-                )+power(points_y - centroids_y, 2)
-        ), 0
-    )
+		power(points_x - centroids_x, 2) +
+		power(points_y - centroids_y, 2)
+	), 0)
 ))
 
 define(move_centroids, points, closest, centroids, block(
     fmap(lambda(k, block(
                 define(x, closest == k),
                 mean(points * add_dim(x), 1)
-    )),
+		)),
         range(shape(centroids, 0))
     )
 ))
@@ -76,23 +75,8 @@ define(kmeans, points, k, iterations, block(
 
 blaze::DynamicMatrix<double> generate_random(int centroids, int num_points)
 {
-    /*blaze::DynamicMatrix<double> result(num_points, 2ul);
-    blaze::Rand<blaze::DynamicVector<double>> gen_1d{};
-    auto const raw_shares = gen_1d.generate(num_points);
-    double const raw_shares_sum = std::accumulate(
-        raw_shares.begin(), raw_shares.end(), 0.);
-    auto const shares = num_points * raw_shares / raw_shares_sum;*/
-
     blaze::Rand<blaze::DynamicMatrix<double>> gen_2d{};
 
-    /*for (auto const& i: shares)
-    {
-        result += gen_2d.generate(i, 2ul);
-        blaze::
-    }
-
-
-    return result;*/
     return gen_2d.generate(num_points, 2ul);
 }
 
