@@ -8,11 +8,13 @@
 #if !defined(PHYLANX_INIT_HPX_HPP)
 #define PHYLANX_INIT_HPX_HPP
 
+#include <vector>
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace bindings
 {
     ///////////////////////////////////////////////////////////////////////////
-    void init_hpx_runtime();
+    void init_hpx_runtime(std::vector<std::string> const& cfg);
     void stop_hpx_runtime();
 }}
 
