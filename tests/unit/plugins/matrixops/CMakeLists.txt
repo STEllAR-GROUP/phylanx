@@ -34,6 +34,7 @@ set(tests
     slicing_operation
     sum_operation
     transpose_operation
+    unique
     vstack_operation
    )
 
