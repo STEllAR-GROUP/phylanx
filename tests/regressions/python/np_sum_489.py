@@ -6,8 +6,10 @@
 
 # Fixing #489: @Phylanx np.sum needs be written in transformation.py
 
-from phylanx import Phylanx
+from phylanx import Phylanx, PhylanxSession
 import numpy as np
+
+PhylanxSession(1)
 
 
 @Phylanx

@@ -6,7 +6,9 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import numpy as np
-from phylanx import Phylanx, parallel
+from phylanx import Phylanx, parallel, PhylanxSession
+
+PhylanxSession(1)
 
 
 def fib0(n):

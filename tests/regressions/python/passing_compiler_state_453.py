@@ -7,7 +7,9 @@
 
 import phylanx
 from phylanx import execution_tree as et
-from phylanx import Phylanx
+from phylanx import Phylanx, PhylanxSession
+
+PhylanxSession(1)
 
 cs = phylanx.compiler_state()
 

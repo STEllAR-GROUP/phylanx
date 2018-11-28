@@ -6,8 +6,10 @@
 
 # Fixing #407: @Phylanx decorator needs parentheses
 
-from phylanx import Phylanx
+from phylanx import Phylanx, PhylanxSession
 from phylanx.exceptions import InvalidDecoratorArgumentError
+
+PhylanxSession(1)
 
 
 @Phylanx

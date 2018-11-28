@@ -4,8 +4,12 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx import Phylanx
+from phylanx import Phylanx, PhylanxSession
 from phylanx.util import prange
+
+import numpy as np
+
+PhylanxSession(1)
 
 # @Phylanx(debug=True)
 # def test_prange():
@@ -13,8 +17,6 @@ from phylanx.util import prange
 #         print (x)
 
 # test_prange()
-
-import numpy as np
 
 
 @Phylanx

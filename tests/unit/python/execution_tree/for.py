@@ -5,7 +5,9 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx import Phylanx
+from phylanx import Phylanx, PhylanxSession
+
+PhylanxSession(1)
 
 
 @Phylanx
