@@ -98,67 +98,89 @@ def remove_line(a):
     return re.sub(r'\$.*', '', a)
 
 
-def is_fun(f, a):
-    return type(a) == list and type(a[0]) == str and re.match(f + r'\b', a[0])
+def is_fun(func, ir):
+    """
+    Check that the intermediate representation (ir) describes
+    a function with name func.
+    """
+    return type(ir) == list and type(ir[0]) == str and re.match(func + r'\b', ir[0])
 
 
-def check_noreturn(a):
-    if type(a) not in [list, tuple]:
+def check_noreturn(ir):
+    """
+    Check that the intermediate representation (ir) passed
+    to this routine does not contain ir return statement.
+    """
+    if type(ir) not in [list, tuple]:
         return
-    if len(a) == 0:
+    if len(ir) == 0:
         return
-    elif len(a) == 1:
-        check_noreturn(a[0])
-    elif is_fun('return', a):
-        raise NotImplementedError("Illegal return")
-    elif is_fun('.*', a):
-        check_noreturn(a[1])
-    elif type(a) in [list, tuple]:
-        for s in a:
+    elif len(ir) == 1:
+        check_noreturn(ir[0])
+    elif is_fun('return', ir):
+        msg = "Illegal return"
+        g = re.match(r'.*\$(\d+)\$(\d+)$', str(ir[0]))
+        if g:
+            msg += ": line=%s, col=%s" % (g.group(1), g.group(2))
+        raise NotImplementedError(msg)
+    elif is_fun('.*', ir):
+        check_noreturn(ir[1])
+    elif type(ir) in [list, tuple]:
+        for s in ir:
             check_noreturn(s)
 
 
-def check_hasreturn(a):
-    if type(a) not in [list, tuple]:
+def check_hasreturn(ir):
+    """
+    Process the intermediate representation (ir) passed
+    and ensure that if it has ir return statement, it is
+    at the end.
+    """
+    if type(ir) not in [list, tuple]:
         return
-    if len(a) == 0:
+    if len(ir) == 0:
         return
-    elif len(a) == 1:
-        check_hasreturn(a[0])
-    elif is_fun('for_each', a):
-        check_noreturn(a[1])
-    elif is_fun('while', a):
-        check_noreturn(a[1])
-    elif is_fun('if', a):
-        for k in a[1][1:]:
+    elif len(ir) == 1:
+        check_hasreturn(ir[0])
+    elif is_fun('for_each', ir):
+        check_noreturn(ir[1])
+    elif is_fun('while', ir):
+        check_noreturn(ir[1])
+    elif is_fun('if', ir):
+        for k in ir[1][1:]:
             check_hasreturn(k)
-    elif is_fun('.*', a):
-        check_hasreturn(a[1])
+    elif is_fun('.*', ir):
+        check_hasreturn(ir[1])
     else:
-        if len(a) == 0:
+        if len(ir) == 0:
             return
-        check_noreturn(a[:-1])
-        check_hasreturn([a[-1]])
+        check_noreturn(ir[:-1])
+        check_hasreturn([ir[-1]])
 
 
-def check_return(a):
-    if type(a) not in [list, tuple]:
+def check_return(ir):
+    """
+    Process the intermediate representation (ir) passed
+    and check that return statements are only used where
+    allowed.
+    """
+    if type(ir) not in [list, tuple]:
         return
-    if len(a) == 0:
+    if len(ir) == 0:
         return
-    elif len(a) == 1:
-        check_return(a[0])
-    elif is_fun('block', a):
-        check_hasreturn(a[1])
-    elif is_fun('while', a):
-        check_noreturn(a[1])
-    elif is_fun('if', a):
-        for k in a[1][1:]:
+    elif len(ir) == 1:
+        check_return(ir[0])
+    elif is_fun('block', ir):
+        check_hasreturn(ir[1])
+    elif is_fun('while', ir):
+        check_noreturn(ir[1])
+    elif is_fun('if', ir):
+        for k in ir[1][1:]:
             check_hasreturn(k)
-    elif is_fun('.*', a):
-        check_return(a[1])
+    elif is_fun('.*', ir):
+        check_return(ir[1])
     else:
-        for s in a:
+        for s in ir:
             check_return(s)
 
 
@@ -210,7 +232,8 @@ class PhySL:
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
                 ir[1], tuple):
             result = [self.generate_physl(i) for i in ir[1]]
-            if ir[0] == 'return':
+            # Remove return statements when generating physl
+            if re.match(r'return\$.*', ir[0]):
                 if len(result) == 1:
                     return result[0]
                 else:
@@ -798,10 +821,12 @@ class PhySL:
             end of the function!
         """
 
-        if type(node.value) == ast.Tuple:
-            return ["return", (["list", self.apply_rule(node.value)],)]
+        symbol = get_symbol_info(node, "return")
 
-        return ["return", (self.apply_rule(node.value),)]
+        if type(node.value) == ast.Tuple:
+            return [symbol, (["list", self.apply_rule(node.value)],)]
+
+        return [symbol, (self.apply_rule(node.value),)]
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""
