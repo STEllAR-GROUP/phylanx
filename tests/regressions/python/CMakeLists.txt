@@ -13,6 +13,8 @@ set(tests
     635_arange_args
     636_boolean_array
     640_function_argument
+    651_vstack_dtype
+    659_expand_dims_dtype
     array_len_494
     array_shape_486
     array_subscript_403

@@ -64,7 +64,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> store_operation::eval(
-        primitive_arguments_type const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands_.size() != 2)
         {
@@ -106,7 +106,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        auto f = value_operand(operands_[1], params, name_, codename_);
+        auto f = value_operand(
+            operands_[1], params, name_, codename_, std::move(ctx));
         return f.then(hpx::launch::sync,
             [
                 this_ = std::move(this_),
@@ -125,7 +126,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> store_operation::eval(
-        primitive_argument_type&& arg, eval_mode) const
+        primitive_argument_type&& arg, eval_context ctx) const
     {
         if (operands_.size() != 2)
         {
@@ -160,14 +161,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type params;
         params.emplace_back(extract_ref_value(arg, name_, codename_));
 
-        return value_operand(operands_[1], std::move(arg), name_, codename_)
+        return value_operand(
+                operands_[1], std::move(arg), name_, codename_, std::move(ctx))
             .then(hpx::launch::sync,
-                [
-                    this_ = std::move(this_),
+                [   this_ = std::move(this_),
                     lhs = extract_ref_value(operands_[0], name_, codename_),
                     args = std::move(params)
-                ]
-                (hpx::future<primitive_argument_type>&& val) mutable
+                ](hpx::future<primitive_argument_type>&& val) mutable
                 -> primitive_argument_type
                 {
                     auto p = primitive_operand(

@@ -999,7 +999,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> generic_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -1046,17 +1046,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions"));
                     }
                 }),
-            numeric_operand(operands[0], args, name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> generic_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

@@ -28,7 +28,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         using arg_type = ir::node_data<double>;
 
@@ -39,9 +40,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         extract_shape(primitive_arguments_type&& params,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& params) const override;
 
     private:
         primitive_argument_type shape0d(arg_type&& arg) const;

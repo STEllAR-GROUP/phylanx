@@ -113,26 +113,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> shuffle_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "shuffle_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the shuffle_operation primitive requires "
-                        "exactly one operand",
-                    name_, codename_));
+                        "exactly one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "shuffle_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the shuffle_operation primitive requires that "
-                        "the argument is valid",
-                    name_, codename_));
+                        "the argument is valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -153,23 +151,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "shuffle_operation::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "operand has an unsupported number of "
                                     "dimensions. Only possible values are: "
-                                    "1 or 2.",
-                                this_->name_, this_->codename_));
+                                    "1 or 2."));
                     }
                 }),
-            numeric_operand(operands[0], args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> shuffle_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

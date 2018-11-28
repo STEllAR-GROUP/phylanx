@@ -61,8 +61,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            util::generate_error_message(
-                "index out of range", name_, codename_));
+            generate_error_message(
+                "index out of range"));
     }
 
     primitive_argument_type extract_shape::shape1d(arg_type&& arg) const
@@ -82,8 +82,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            util::generate_error_message(
-                "index out of range", name_, codename_));
+            generate_error_message(
+                "index out of range"));
     }
 
     primitive_argument_type extract_shape::shape2d(arg_type&& arg) const
@@ -108,21 +108,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            util::generate_error_message(
-                "index out of range", name_, codename_));
+            generate_error_message(
+                "index out of range"));
     }
 
     hpx::future<primitive_argument_type> extract_shape::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::eval",
-                util::generate_error_message(
-                    "the extract_shape primitive requires one or two operands",
-                    name_, codename_));
+                generate_error_message(
+                    "the extract_shape primitive requires one or two operands"));
         }
 
         if (!valid(operands[0]) ||
@@ -130,11 +129,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the extract_shape primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -160,13 +157,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "extract_shape::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "first operand has unsupported "
-                                    "number of dimensions",
-                                this_->name_, this_->codename_));
+                                    "number of dimensions"));
                     }
                 }),
-                numeric_operand(operands[0], args, name_, codename_));
+                numeric_operand(operands[0], args,
+                    name_, codename_, std::move(ctx)));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
@@ -188,24 +185,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "first operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_),
-            scalar_integer_operand_strict(operands[1], args, name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> extract_shape::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args, name_, codename_, ctx),
+            scalar_integer_operand_strict(operands[1], args,
+                name_, codename_, ctx));
     }
 }}}

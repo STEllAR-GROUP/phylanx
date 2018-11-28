@@ -258,7 +258,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> constant::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1 && operands.size() != 2)
         {
@@ -368,8 +368,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions"));
                     }
                 }),
-                value_operand(operands[0], args, name_, codename_),
-                value_operand(operands[1], args, name_, codename_));
+                value_operand(operands[0], args, name_, codename_, ctx),
+                value_operand(operands[1], args, name_, codename_, ctx));
         }
 
         // support empty/empty_like
@@ -454,16 +454,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions"));
                 }
             }),
-            value_operand(operands[0], args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> constant::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

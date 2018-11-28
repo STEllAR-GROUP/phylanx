@@ -136,76 +136,76 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> primitive::eval(
-        primitive_arguments_type const& params, eval_mode mode) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
-            hpx::unwrap_result(this->base_type::get_id()), params, mode);
+            hpx::unwrap_result(this->base_type::get_id()), params,
+            std::move(ctx));
         return detail::lazy_trace("eval", *this, std::move(f));
     }
     hpx::future<primitive_argument_type> primitive::eval(
-        primitive_arguments_type&& params, eval_mode mode) const
+        primitive_arguments_type&& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
             hpx::unwrap_result(this->base_type::get_id()), std::move(params),
-            mode);
+            std::move(ctx));
         return detail::lazy_trace("eval", *this, std::move(f));
     }
 
     hpx::future<primitive_argument_type> primitive::eval(
-        primitive_argument_type && param, eval_mode mode) const
+        primitive_argument_type && param, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_single_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
             hpx::unwrap_result(this->base_type::get_id()), std::move(param),
-            mode);
+            std::move(ctx));
         return detail::lazy_trace("eval", *this, std::move(f));
     }
 
-    hpx::future<primitive_argument_type> primitive::eval(eval_mode mode) const
+    hpx::future<primitive_argument_type> primitive::eval(eval_context ctx) const
     {
         static primitive_arguments_type params;
-        return eval(params, mode);
+        return eval(params, std::move(ctx));
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        primitive_arguments_type const& params, eval_mode mode) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
             hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
-            std::move(params), mode);
+            std::move(params), std::move(ctx));
         return detail::trace("eval", *this, f.get());
     }
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        primitive_arguments_type&& params,
-        eval_mode mode) const
+        primitive_arguments_type&& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
             hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
-            std::move(params), mode);
+            std::move(params), std::move(ctx));
         return detail::trace("eval", *this, f.get());
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        primitive_argument_type && param, eval_mode mode) const
+        primitive_argument_type && param, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_single_action;
         hpx::future<primitive_argument_type> f = hpx::async<action_type>(
             hpx::launch::sync, hpx::unwrap_result(this->base_type::get_id()),
-            std::move(param), mode);
+            std::move(param), std::move(ctx));
         return detail::trace("eval", *this, f.get());
     }
 
     primitive_argument_type primitive::eval(hpx::launch::sync_policy,
-        eval_mode mode) const
+        eval_context ctx) const
     {
         using action_type = primitives::primitive_component::eval_action;
         static primitive_arguments_type params;
         hpx::future<primitive_argument_type> f = hpx::sync<action_type>(
-            this->base_type::get_id(), std::move(params), mode);
+            this->base_type::get_id(), std::move(params), std::move(ctx));
         return detail::trace("eval", *this, f.get());
     }
 
@@ -241,7 +241,7 @@ namespace phylanx { namespace execution_tree
             this->base_type::get_id(), std::move(data), std::move(params));
     }
 
-    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<topology> primitive::expression_topology(
         std::set<std::string>&& functions) const
     {
@@ -295,18 +295,21 @@ namespace phylanx { namespace execution_tree
             std::move(functions), std::move(resolve_children)).get();
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     bool primitive::bind(
-        primitive_arguments_type const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), params));
+            action_type()(this->base_type::get_id(), params, std::move(ctx)));
     }
-    bool primitive::bind(primitive_arguments_type&& params) const
+    bool primitive::bind(
+        primitive_arguments_type&& params, eval_context ctx) const
     {
         using action_type = primitives::primitive_component::bind_action;
         return detail::trace("bind", *this,
-            action_type()(this->base_type::get_id(), std::move(params)));
+            action_type()(
+                this->base_type::get_id(), std::move(params), std::move(ctx)));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -2717,12 +2720,13 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename, eval_mode mode)
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args, mode);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return f;
@@ -2746,13 +2750,13 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
         primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename, eval_mode mode)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(std::move(args), mode);
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return f;
@@ -2777,12 +2781,13 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type&& val,
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename,
-        eval_mode mode)
+        eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args, mode);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return f;
@@ -2806,13 +2811,13 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val,
         primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename, eval_mode mode)
+        std::string const& codename, eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(std::move(args), mode);
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return f;
@@ -2836,13 +2841,13 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val, primitive_argument_type const& arg,
         std::string const& name, std::string const& codename,
-        eval_mode mode)
+        eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg, name, codename), mode);
+                p->eval(extract_ref_value(arg, name, codename), std::move(ctx));
             if (f.is_ready())
             {
                 return f;
@@ -2866,13 +2871,13 @@ namespace phylanx { namespace execution_tree
     hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val, primitive_argument_type const& arg,
         std::string const& name, std::string const& codename,
-        eval_mode mode)
+        eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             hpx::future<primitive_argument_type> f =
-                p->eval(extract_ref_value(arg, name, codename), mode);
+                p->eval(extract_ref_value(arg, name, codename), std::move(ctx));
             if (f.is_ready())
             {
                 return f;
@@ -2898,13 +2903,14 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename,
-        eval_mode mode)
+        eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, args, mode), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         if (valid(val))
@@ -2917,14 +2923,14 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename, eval_mode mode)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, std::move(args), mode), name,
-                codename);
+                p->eval(hpx::launch::sync, std::move(args), std::move(ctx)),
+                name, codename);
         }
 
         if (valid(val))
@@ -2937,13 +2943,14 @@ namespace phylanx { namespace execution_tree
     primitive_argument_type value_operand_sync(primitive_argument_type&& val,
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename,
-        eval_mode mode)
+        eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, args, mode), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         if (valid(val))
@@ -2955,14 +2962,14 @@ namespace phylanx { namespace execution_tree
 
     primitive_argument_type value_operand_sync(primitive_argument_type&& val,
         primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename, eval_mode mode)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, std::move(args), mode), name,
-                codename);
+                p->eval(hpx::launch::sync, std::move(args), std::move(ctx)),
+                name, codename);
         }
 
         if (valid(val))
@@ -2974,14 +2981,14 @@ namespace phylanx { namespace execution_tree
 
     primitive_argument_type value_operand_sync(
         primitive_argument_type const& val, primitive_argument_type && arg,
-        std::string const& name, std::string const& codename, eval_mode mode)
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, std::move(arg), mode), name,
-                codename);
+                p->eval(hpx::launch::sync, std::move(arg), std::move(ctx)),
+                name, codename);
         }
 
         if (valid(val))
@@ -2993,14 +3000,14 @@ namespace phylanx { namespace execution_tree
 
     primitive_argument_type value_operand_sync(primitive_argument_type&& val,
         primitive_argument_type&& args, std::string const& name,
-        std::string const& codename, eval_mode mode)
+        std::string const& codename, eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_value(
-                p->eval(hpx::launch::sync, std::move(args), mode), name,
-                codename);
+                p->eval(hpx::launch::sync, std::move(args), std::move(ctx)),
+                name, codename);
         }
 
         if (valid(val))
@@ -3032,14 +3039,14 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> literal_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type const& val, primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3059,9 +3066,8 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> literal_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type const& val, primitive_arguments_type && args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -3086,9 +3092,8 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> literal_operand(
-        primitive_argument_type && val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type && val, primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
@@ -3113,14 +3118,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<primitive_argument_type> literal_operand(
-        primitive_argument_type && val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type && val, primitive_arguments_type && args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3141,15 +3146,15 @@ namespace phylanx { namespace execution_tree
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type literal_operand_sync(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type const& val, primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_literal_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -3160,12 +3165,13 @@ namespace phylanx { namespace execution_tree
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3185,14 +3191,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename)
+        primitive_argument_type const& val, primitive_arguments_type&& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3212,14 +3218,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
-        primitive_argument_type&& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type&& val, primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3239,14 +3245,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand(
-        primitive_argument_type&& val,
-        primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename)
+        primitive_argument_type&& val, primitive_arguments_type&& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3268,13 +3274,14 @@ namespace phylanx { namespace execution_tree
     // Extract an integer value from a primitive_argument_type
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3297,13 +3304,14 @@ namespace phylanx { namespace execution_tree
     //make extract_shape.cpp error happy
     hpx::future<std::int64_t> scalar_integer_operand_strict(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3326,12 +3334,13 @@ namespace phylanx { namespace execution_tree
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
         primitive_argument_type const& val,
         primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename)
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3352,14 +3361,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
-        primitive_argument_type&& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type&& val, primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3379,14 +3388,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<std::int64_t>> integer_operand_strict(
-        primitive_argument_type&& val,
-        primitive_arguments_type&& args, std::string const& name,
-        std::string const& codename)
+        primitive_argument_type&& val, primitive_arguments_type&& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3408,13 +3417,14 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3434,14 +3444,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<double>> numeric_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type const& val, primitive_arguments_type&& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3461,14 +3471,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<double>> numeric_operand(
-        primitive_argument_type && val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type&& val, primitive_arguments_type const& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3488,14 +3498,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::node_data<double>> numeric_operand(
-        primitive_argument_type && val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string const& codename)
+        primitive_argument_type&& val, primitive_arguments_type&& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
     {
         primitive* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3517,14 +3527,15 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     ir::node_data<double> numeric_operand_sync(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_numeric_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -3534,13 +3545,14 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::uint8_t> boolean_operand(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3560,14 +3572,15 @@ namespace phylanx { namespace execution_tree
     }
 
     std::uint8_t boolean_operand_sync(primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_scalar_boolean_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -3575,15 +3588,15 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<std::string> string_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+    hpx::future<std::string> string_operand(primitive_argument_type const& val,
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3603,14 +3616,15 @@ namespace phylanx { namespace execution_tree
     }
 
     std::string string_operand_sync(primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_string_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -3620,13 +3634,14 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<std::vector<ast::expression>> ast_operand(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3646,14 +3661,15 @@ namespace phylanx { namespace execution_tree
 
     std::vector<ast::expression> ast_operand_sync(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_ast_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -3661,15 +3677,15 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<ir::range> list_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+    hpx::future<ir::range> list_operand(primitive_argument_type const& val,
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3687,15 +3703,15 @@ namespace phylanx { namespace execution_tree
         return hpx::make_ready_future(extract_list_value(val, name, codename));
     }
 
-    hpx::future<ir::range> list_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string const& codename)
+    hpx::future<ir::range> list_operand(primitive_argument_type const& val,
+        primitive_arguments_type&& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3713,15 +3729,15 @@ namespace phylanx { namespace execution_tree
         return hpx::make_ready_future(extract_list_value(val, name, codename));
     }
 
-    hpx::future<ir::range> list_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string && codename)
+    hpx::future<ir::range> list_operand(primitive_argument_type const& val,
+        primitive_arguments_type const& args, std::string const& name,
+        std::string&& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3740,15 +3756,15 @@ namespace phylanx { namespace execution_tree
             extract_list_value(std::move(val), name, codename));
     }
 
-    hpx::future<ir::range> list_operand(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string && codename)
+    hpx::future<ir::range> list_operand(primitive_argument_type const& val,
+        primitive_arguments_type&& args, std::string const& name,
+        std::string&& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3767,16 +3783,16 @@ namespace phylanx { namespace execution_tree
             extract_list_value(std::move(val), name, codename));
     }
 
-    ir::range list_operand_sync(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+    ir::range list_operand_sync(primitive_argument_type const& val,
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_list_value(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         HPX_ASSERT(valid(val));
@@ -3786,13 +3802,41 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<ir::range> list_operand_strict(
         primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
+            if (f.is_ready())
+            {
+                return hpx::make_ready_future(
+                    extract_list_value_strict(f.get(), name, codename));
+            }
+
+            return f.then(hpx::launch::sync,
+                [&](hpx::future<primitive_argument_type> && f)
+                {
+                    return extract_list_value_strict(f.get(), name, codename);
+                });
+        }
+
+        HPX_ASSERT(valid(val));
+        return hpx::make_ready_future(
+            extract_list_value_strict(val, name, codename));
+    }
+
+    hpx::future<ir::range> list_operand_strict(
+        primitive_argument_type const& val, primitive_arguments_type&& args,
+        std::string const& name, std::string const& codename, eval_context ctx)
+    {
+        primitive const* p = util::get_if<primitive>(&val);
+        if (p != nullptr)
+        {
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3813,40 +3857,14 @@ namespace phylanx { namespace execution_tree
 
     hpx::future<ir::range> list_operand_strict(
         primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string const& codename)
+        primitive_arguments_type const& args, std::string const& name,
+        std::string&& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
-            if (f.is_ready())
-            {
-                return hpx::make_ready_future(
-                    extract_list_value_strict(f.get(), name, codename));
-            }
-
-            return f.then(hpx::launch::sync,
-                [&](hpx::future<primitive_argument_type> && f)
-                {
-                    return extract_list_value_strict(f.get(), name, codename);
-                });
-        }
-
-        HPX_ASSERT(valid(val));
-        return hpx::make_ready_future(
-            extract_list_value_strict(val, name, codename));
-    }
-
-    hpx::future<ir::range> list_operand_strict(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string && codename)
-    {
-        primitive const* p = util::get_if<primitive>(&val);
-        if (p != nullptr)
-        {
-            hpx::future<primitive_argument_type> f = p->eval(args);
+            hpx::future<primitive_argument_type> f =
+                p->eval(args, std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3866,14 +3884,14 @@ namespace phylanx { namespace execution_tree
     }
 
     hpx::future<ir::range> list_operand_strict(
-        primitive_argument_type const& val,
-        primitive_arguments_type && args,
-        std::string const& name, std::string && codename)
+        primitive_argument_type const& val, primitive_arguments_type&& args,
+        std::string const& name, std::string&& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
-            hpx::future<primitive_argument_type> f = p->eval(std::move(args));
+            hpx::future<primitive_argument_type> f =
+                p->eval(std::move(args), std::move(ctx));
             if (f.is_ready())
             {
                 return hpx::make_ready_future(
@@ -3893,16 +3911,16 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ir::range list_operand_strict_sync(
-        primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename)
+    ir::range list_operand_strict_sync(primitive_argument_type const& val,
+        primitive_arguments_type const& args, std::string const& name,
+        std::string const& codename, eval_context ctx)
     {
         primitive const* p = util::get_if<primitive>(&val);
         if (p != nullptr)
         {
             return extract_list_value_strict(
-                p->eval(hpx::launch::sync, args), name, codename);
+                p->eval(hpx::launch::sync, args, std::move(ctx)), name,
+                codename);
         }
 
         HPX_ASSERT(valid(val));

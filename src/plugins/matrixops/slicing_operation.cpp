@@ -113,7 +113,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
 
     hpx::future<primitive_argument_type> slicing_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 3)
         {
@@ -190,17 +190,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives
                             "either one, two, or three arguments"));
             }),
             detail::map_operands_sv(
-                operands, functional::value_operand{}, args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> slicing_operation::eval(
-        primitive_arguments_type const& args, eval_mode) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

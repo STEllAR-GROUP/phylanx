@@ -82,14 +82,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> define_variable::eval(
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // evaluate the expression bound to this name and store the value in
         // the associated variable
         primitive* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-             p->bind(args);
+             p->bind(args, std::move(ctx));
         }
         return hpx::make_ready_future(
             extract_ref_value(operands_[0], name_, codename_));

@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> fold_right_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 3)
         {
@@ -104,8 +104,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& bound_func,
-                primitive_argument_type&& initial, ir::range&& list)
+            [this_ = std::move(this_), ctx](
+                    primitive_argument_type&& bound_func,
+                    primitive_argument_type&& initial, ir::range&& list)
             ->  primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -127,25 +128,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     args[1] = std::move(initial);
 
                     initial = value_operand_sync(bound_func, std::move(args),
-                        this_->name_, this_->codename_);
+                        this_->name_, this_->codename_, ctx);
                 }
 
                 return primitive_argument_type{std::move(initial)};
             }),
             value_operand(operands_[0], args, name_, codename_,
-                eval_dont_evaluate_lambdas),
-            value_operand(operands_[1], args, name_, codename_),
-            list_operand(operands_[2], args, name_, codename_));
-    }
-
-    // Start iteration over given for statement
-    hpx::future<primitive_argument_type> fold_right_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                add_mode(ctx, eval_dont_evaluate_lambdas)),
+            value_operand(operands_[1], args, name_, codename_, ctx),
+            list_operand(operands_[2], args, name_, codename_, ctx));
     }
 }}}

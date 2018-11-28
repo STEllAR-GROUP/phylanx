@@ -54,15 +54,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> len_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::len_operation::eval",
-                util::generate_error_message(
-                    "len_operation accepts exactly one argument", name_,
-                    codename_));
+                generate_error_message(
+                    "len_operation accepts exactly one argument"));
         }
 
         auto this_ = this->shared_from_this();
@@ -72,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (is_list_operand_strict(arg))
             {
-                auto val = extract_list_value_strict(std::move(arg));
+                auto&& val = extract_list_value_strict(std::move(arg));
                 return primitive_argument_type{ir::node_data<std::int64_t>{
                     static_cast<std::int64_t>(val.size())}};
             }
@@ -94,11 +93,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return primitive_argument_type{ir::node_data<std::int64_t>{
                         static_cast<std::int64_t>(1)}};
 
-                case 1:
+                case 1:     // for vectors, return number of elements
                     return primitive_argument_type{ir::node_data<std::int64_t>{
                         static_cast<std::int64_t>(val[1])}};
 
-                case 2:
+                case 2:     // for matrices, return number of rows
                     return primitive_argument_type{ir::node_data<std::int64_t>{
                         static_cast<std::int64_t>(val[0])}};
 
@@ -114,16 +113,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "value as its operand only"));
         }),
             value_operand(operands[0], args,
-            name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> len_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

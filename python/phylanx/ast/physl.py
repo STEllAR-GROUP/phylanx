@@ -10,6 +10,7 @@ import ast
 import inspect
 import phylanx.execution_tree
 from phylanx import compiler_state
+from phylanx.ast.utils import dump_info
 
 mapped_methods = {
     "add": "__add",
@@ -23,6 +24,15 @@ mapped_methods = {
     "print": "cout",
     "subtract": "__sub",
 }
+
+methods_supporting_dtype = [
+    'arange',
+    'cumsum',
+    'expand_dims',
+    'hstack',
+    'identity',
+    'vstack',
+]
 
 
 def primitive_name(method_name):
@@ -411,12 +421,11 @@ class PhySL:
                 return [symbol, (args[1], [op, args[0]])]
             else:
                 return [symbol, (args[1], args[0])]
-        elif 'identity' in symbol:
-            symbol = symbol.replace('identity', 'identity' + dtype)
-        elif 'arange' in symbol:
-            symbol = symbol.replace('arange', 'arange' + dtype)
-        elif 'cumsum' in symbol:
-            symbol = symbol.replace('cumsum', 'cumsum' + dtype)
+        else:
+            method = [m for m in methods_supporting_dtype if m in symbol]
+            if len(method) == 1:
+                symbol = symbol.replace(method[0], method[0] + dtype)
+
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         return [symbol, args]
@@ -790,6 +799,20 @@ class PhySL:
         #     else:
         #         return [op, (value, slice_)]
         return [op, (value, slice_)]
+
+    def _With(self, node):
+        if 0 < len(node.items) and type(node.items[0]) == ast.withitem:
+            withitem = node.items[0]
+            if type(withitem.context_expr) == ast.Attribute:
+                attribute = withitem.context_expr
+                if attribute.attr == "parallel":
+                    if self.fglobals[attribute.value.id].parallel.is_parallel_block():
+                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+            elif type(withitem.context_expr) == ast.Name:
+                if withitem.context_expr.id == "parallel":
+                    if self.fglobals["parallel"].is_parallel_block():
+                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+        raise Exception("Unsupported use of 'With'")
 
     def _Dict(self, node):
         res = []

@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
-            std::string const& name, std::string const& codename) const;
+            eval_context ctx) const override;
 
     public:
         static match_pattern_type const match_data;
@@ -40,9 +40,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         transpose_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
 
     private:
         primitive_argument_type transpose0d1d(operands_type&& ops) const;

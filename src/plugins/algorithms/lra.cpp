@@ -141,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lra::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 4 && operands.size() != 5)
         {
@@ -179,16 +179,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> lra::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

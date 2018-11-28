@@ -66,27 +66,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         dict.reserve(args_list.size());
         for (auto it = args_list.begin(); it != args_list.end(); ++it)
         {
-            if (!is_list_operand(*it))
+            if (!is_list_operand_strict(*it))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "dictionary_operation::generate_dict",
-                    util::generate_error_message(
+                    generate_error_message(
                         "dict_operation expects a list of lists with exactly "
-                        "elements each",
-                        name_, codename_));
+                        "two elements each"));
             }
 
-            auto && element = extract_list_value(*it);
+            auto element = extract_list_value_strict(std::move(*it));
             auto && p = element.args();
 
             if (p.size() != 2)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "dictionary_operation::generate_dict",
-                    util::generate_error_message(
+                    generate_error_message(
                         "dict_operation needs exactly two values for each of "
-                        "the key/value pairs",
-                        name_, codename_));
+                        "the key/value pairs"));
             }
 
             dict[std::move(p[0])] = std::move(p[1]);
@@ -97,26 +95,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> dict_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dict_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the dictionary_operation primitive requires that the "
-                    "arguments given by the operands array are valid",
-                    name_, codename_));
+                    "arguments given by the operands array are valid"));
         }
 
         if (!operands.empty() && !valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "dict_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the dictionary_operation primitive requires that the "
-                    "argument given by the operand is a valid list",
-                    name_, codename_));
+                    "argument given by the operand is a valid list"));
         }
 
         if (operands.empty())
@@ -135,16 +131,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->generate_dict(std::move(args));
                 }),
             detail::map_operands(
-                operands, functional::list_operand{}, args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> dict_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                operands, functional::list_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

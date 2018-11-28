@@ -79,7 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
+    namespace detail
+    {
         std::string function_name(std::string const& name)
         {
             compiler::primitive_name_parts name_parts;
@@ -91,6 +92,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return name_parts.primitive;
         }
     }
+
     ///////////////////////////////////////////////////////////////////////////
     decomposition::decomposition(
         primitive_arguments_type && operands,
@@ -113,7 +115,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> decomposition::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -156,18 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->calculate_decomposition(std::move(args));
                 }),
             detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> decomposition::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}
 
