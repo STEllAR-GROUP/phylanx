@@ -196,6 +196,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
             })};
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Op, typename Derived>
+    template <typename T>
+    primitive_argument_type numeric<Op, Derived>::numeric3d3d(
+        arg_type<T>&& lhs, arg_type<T>&& rhs) const
+    {
+        // Avoid overwriting references, avoid memory reallocation when possible
+        if (lhs.is_ref())
+        {
+            // Cannot reuse the memory if an operand is a reference
+            if (rhs.is_ref())
+            {
+                rhs = Op{}(lhs.tensor(), rhs.tensor());
+            }
+            else
+            {
+                // Reuse the memory from rhs operand
+                rhs.tensor() = Op{}(lhs.tensor(), rhs.tensor());
+            }
+            return primitive_argument_type(std::move(rhs));
+        }
+
+        // Reuse the memory from lhs operand
+        auto m = lhs.matrix();
+        Op{}.op_assign(m, rhs.matrix());
+
+        return primitive_argument_type(std::move(lhs));
+    }
+
+    template <typename Op, typename Derived>
+    template <typename T>
+    primitive_argument_type numeric<Op, Derived>::numeric3d3d(
+        args_type<T>&& args) const
+    {
+        return primitive_argument_type{std::accumulate(
+            args.begin() + 1, args.end(), std::move(args[0]),
+            [](arg_type<T>& result, arg_type<T> const& curr) -> arg_type<T>
+            {
+                if (result.is_ref())
+                {
+                    result = Op{}(result.tensor(), curr.tensor());
+                }
+                else
+                {
+                    auto m = result.tensor();
+                    Op{}.op_assign(m, curr.tensor());
+                }
+                return std::move(result);
+            })};
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename Op, typename Derived>
     template <typename T>
@@ -235,17 +288,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return numeric2d2d<T>(std::move(lhs), std::move(rhs));
             }
 
-// #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-//         case 3:
-//             {
-//                 auto lhs = extract_value_tensor<T>(std::move(op1), sizes[0],
-//                     sizes[1], sizes[2], name_, codename_);
-//                 auto rhs = extract_value_tensor<T>(std::move(op2), sizes[0],
-//                     sizes[1], sizes[2], name_, codename_);
-//
-//                 return numeric3d3d<T>(std::move(lhs), std::move(rhs));
-//             }
-// #endif
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            {
+                auto lhs = extract_value_tensor<T>(std::move(op1), sizes[0],
+                    sizes[1], sizes[2], name_, codename_);
+                auto rhs = extract_value_tensor<T>(std::move(op2), sizes[0],
+                    sizes[1], sizes[2], name_, codename_);
+
+                return numeric3d3d<T>(std::move(lhs), std::move(rhs));
+            }
+#endif
 
         default:
             break;
@@ -345,6 +398,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return numeric2d2d<T>(std::move(args));
             }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            {
+                args_type<T> args;
+                args.reserve(ops.size());
+
+                for (auto && op : std::move(ops))
+                {
+                    args.emplace_back(extract_value_tensor<T>(std::move(op),
+                        sizes[0], sizes[1], sizes[2], name_, codename_));
+                }
+
+                return numeric3d3d<T>(std::move(args));
+            }
+#endif
 
         default:
             break;

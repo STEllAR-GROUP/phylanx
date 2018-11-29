@@ -2295,6 +2295,7 @@ namespace phylanx { namespace ir
             out << "]";
         }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T, typename Tensor>
         void print_tensor(std::ostream& out, Tensor const& data,
             std::size_t pages, std::size_t rows, std::size_t columns)
@@ -2309,6 +2310,7 @@ namespace phylanx { namespace ir
             }
             out << "]";
         }
+#endif
     }
 
     ///////////////////////////////////////////////////////////////////////////
