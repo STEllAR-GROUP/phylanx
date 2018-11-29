@@ -17,8 +17,7 @@ set(tests
     dot_operation
     expand_dims
     extract_shape
-    flatten
-    generic_operation
+    eye_operation    flatten    generic_operation
     gradient_operation
     hstack_operation
     identity
