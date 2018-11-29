@@ -9,8 +9,9 @@ import re
 import ast
 import inspect
 import phylanx.execution_tree
-from phylanx import compiler_state
+from phylanx import compiler_state, PhylanxSession
 from phylanx.ast.utils import dump_info
+
 
 mapped_methods = {
     "add": "__add",
@@ -132,6 +133,8 @@ class PhySL:
             print_physl_src(self.__src__)
             print(end="", flush="")
 
+        if not PhylanxSession.is_initialized:
+            PhylanxSession(1)
         if "compiler_state" in kwargs:
             PhySL.compiler_state = kwargs['compiler_state']
         # the static method compiler_state is constructed only once
