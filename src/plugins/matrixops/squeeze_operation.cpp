@@ -48,21 +48,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    squeeze_operation::squeeze_operation(
-        primitive_arguments_type&& operands,
+    squeeze_operation::squeeze_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
+      , dtype_(extract_dtype(name_))
     {}
 
-    primitive_argument_type squeeze_operation::squeeze0d(arg_type&& arg,
-        hpx::util::optional<std::int64_t> axis) const
+    primitive_argument_type squeeze_operation::squeeze0d(
+        primitive_argument_type&& arg) const
     {
-        // works for any axis value
-        return primitive_argument_type{arg.scalar()};
+        return primitive_argument_type{arg};
     }
 
-    primitive_argument_type squeeze_operation::squeeze1d(arg_type&& arg,
-        hpx::util::optional<std::int64_t> axis) const
+    template <typename T>
+    primitive_argument_type squeeze_operation::squeeze1d(ir::node_data<T>&& arg) const
     {
         // works for any axis value
         auto v = arg.vector();
@@ -71,9 +70,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return primitive_argument_type{arg};
     }
+    primitive_argument_type squeeze_operation::squeeze1d(
+        primitive_argument_type&& arg) const
+    {
 
-    primitive_argument_type squeeze_operation::squeeze2d(arg_type&& arg,
-        hpx::util::optional<std::int64_t> axis) const
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return squeeze1d(
+                extract_boolean_value_strict(std::move(arg), name_, codename_));
+
+        case node_data_type_int64:
+            return squeeze1d(
+                extract_integer_value_strict(std::move(arg), name_, codename_));
+
+        case node_data_type_double:
+            return squeeze1d(
+                extract_numeric_value_strict(std::move(arg), name_, codename_));
+
+        case node_data_type_unknown:
+            return squeeze1d(
+                extract_numeric_value(std::move(arg), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::squeeze_operation::squeeze1d",
+            generate_error_message(
+                "the arange primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+    template <typename T>
+    primitive_argument_type squeeze_operation::squeeze2d(ir::node_data<T>&& arg) const
     {
         // works for any axis value
         auto m = arg.matrix();
@@ -83,14 +114,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{m(0, 0)};
             else if (m.columns() == 1)
                 return primitive_argument_type{
-                    blaze::DynamicVector<double>{blaze::column(m, 0ul)}};
+                    blaze::DynamicVector<T>{blaze::column(m, 0ul)}};
             else if (m.rows() == 1)
-                return primitive_argument_type{blaze::DynamicVector<double>{
-                    blaze::trans(blaze::row(m, 0ul))}};
+                return primitive_argument_type{
+                    blaze::DynamicVector<T>{blaze::trans(blaze::row(m, 0ul))}};
         }
 
         return primitive_argument_type{arg};
     }
+    primitive_argument_type squeeze_operation::squeeze2d(
+        primitive_argument_type&& arg) const
+    {
+
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return squeeze2d(
+                extract_boolean_value_strict(std::move(arg), name_, codename_));
+
+        case node_data_type_int64:
+            return squeeze2d(
+                extract_integer_value_strict(std::move(arg), name_, codename_));
+
+        case node_data_type_double:
+            return squeeze2d(
+                extract_numeric_value_strict(std::move(arg), name_, codename_));
+
+        case node_data_type_unknown:
+            return squeeze2d(
+                extract_numeric_value(std::move(arg), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::squeeze_operation::squeeze2d",
+            generate_error_message(
+                "the arange primitive requires for all arguments to "
+                "be numeric data types"));
+    }
+
+
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> squeeze_operation::eval(
         primitive_arguments_type const& operands,
@@ -138,19 +203,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             args[1], this_->name_, this_->codename_);
                 }
 
-                // Extract the matrix
-                arg_type a = execution_tree::extract_numeric_value(
+                std::size_t a_dims = extract_numeric_value_dimension(
                     args[0], this_->name_, this_->codename_);
-
-                std::size_t a_dims = a.num_dimensions();
                 switch (a_dims)
                 {
                 case 0:
-                    return this_->squeeze0d(std::move(a), axis);
+                    return this_->squeeze0d(std::move(args[0]));
                 case 1:
-                    return this_->squeeze1d(std::move(a), axis);
+                    return this_->squeeze1d(std::move(args[0]));
                 case 2:
-                    return this_->squeeze2d(std::move(a), axis);
+                    return this_->squeeze2d(std::move(args[0]));
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "squeeze_operation::eval",

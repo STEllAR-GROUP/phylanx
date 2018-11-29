@@ -11,6 +11,7 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -36,15 +37,35 @@ void test_squeeze_operation_0d()
         42.0, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
 }
 
+void test_squeeze_operation_0d_int()
+{
+    phylanx::execution_tree::primitive first =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(42));
+    std::int64_t expected = 42;
+
+    phylanx::execution_tree::primitive squeeze =
+        phylanx::execution_tree::primitives::create_squeeze_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(first) });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        squeeze.eval();
+
+    HPX_TEST_EQ(
+        expected, phylanx::execution_tree::extract_numeric_value(f.get())[0]);
+}
+
 void test_squeeze_operation_1d()
 {
-    blaze::DynamicVector<double> v1{4.0};
+    blaze::DynamicVector<std::int64_t> v1{42};
 
-    double expected = 4.;
+    std::int64_t expected = 42;
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(v1));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(v1));
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_squeeze_operation(
@@ -54,8 +75,8 @@ void test_squeeze_operation_1d()
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(expected),
+        phylanx::execution_tree::extract_integer_value(f.get()));
 }
 
 void test_squeeze_operation_1d_nochange()
@@ -104,9 +125,9 @@ void test_squeeze_operation_2d_nochange()
 
 void test_squeeze_operation_2d()
 {
-    blaze::DynamicMatrix<double> m1{{42.}};
+    blaze::DynamicMatrix<std::int64_t> m1{{42}};
 
-    double expected = 42.;
+    std::int64_t expected = 42;
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
@@ -148,13 +169,13 @@ void test_squeeze_operation_2d_column()
 
 void test_squeeze_operation_2d_row()
 {
-    blaze::DynamicMatrix<double> m1{{42., 13.}};
+    blaze::DynamicMatrix<std::int64_t> m1{{42, 13}};
 
-    blaze::DynamicVector<double> expected{42.0, 13.0};
+    blaze::DynamicVector<std::int64_t> expected{42, 13};
 
     phylanx::execution_tree::primitive first =
         phylanx::execution_tree::primitives::create_variable(
-            hpx::find_here(), phylanx::ir::node_data<double>(m1));
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(m1));
 
     phylanx::execution_tree::primitive p =
         phylanx::execution_tree::primitives::create_squeeze_operation(
@@ -164,13 +185,14 @@ void test_squeeze_operation_2d_row()
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f = p.eval();
 
-    HPX_TEST_EQ(phylanx::ir::node_data<double>(expected),
-        phylanx::execution_tree::extract_numeric_value(f.get()));
+    HPX_TEST_EQ(phylanx::ir::node_data<std::int64_t>(expected),
+        phylanx::execution_tree::extract_integer_value(f.get()));
 }
 
 int main(int argc, char* argv[])
 {
     test_squeeze_operation_0d();
+    test_squeeze_operation_0d_int();
     test_squeeze_operation_1d();
     test_squeeze_operation_1d_nochange();
     test_squeeze_operation_2d_nochange();
