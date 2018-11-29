@@ -6,15 +6,14 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx import Phylanx, PhylanxSession
+from phylanx import Phylanx
 import numpy as np
-
-PhylanxSession(1)
 
 et = phylanx.execution_tree
 cs = phylanx.compiler_state()
 
-fib10 = et.eval("""
+fib10 = et.eval(
+    """
 block(
     define(fib,n,
     if(n<2,n,
@@ -23,7 +22,8 @@ block(
 
 assert fib10 == 55.0
 
-sum10 = et.eval("""
+sum10 = et.eval(
+    """
 block(
     define(sum10,
         block(

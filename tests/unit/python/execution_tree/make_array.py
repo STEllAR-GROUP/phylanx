@@ -6,11 +6,9 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx import Phylanx, PhylanxSession
+from phylanx import Phylanx
 
 import numpy as np
-
-PhylanxSession(1)
 
 # Create a vector
 x0 = 0

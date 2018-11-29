@@ -7,9 +7,7 @@
 # operations between a vector and a matrix with only one column
 
 import numpy as np
-from phylanx import Phylanx, PhylanxSession
-
-PhylanxSession(1)
+from phylanx import Phylanx
 
 ###############################################################################
 # Add

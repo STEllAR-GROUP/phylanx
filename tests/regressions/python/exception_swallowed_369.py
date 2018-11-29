@@ -6,9 +6,7 @@
 # Fixing #369: Exception getting swallowed
 
 import numpy as np
-from phylanx import Phylanx, PhylanxSession
-
-PhylanxSession(1)
+from phylanx import Phylanx
 
 
 @Phylanx
@@ -24,7 +22,7 @@ try:
 
 except Exception as e:
     expected = \
-        'exception_swallowed_369.py(16, 8): __add:: cannot broadcast a ' + \
+        'exception_swallowed_369.py(14, 8): __add:: cannot broadcast a ' + \
         'matrix into a differently sized matrix: HPX(bad_parameter)'
     assert (str(e).endswith(expected))
     exception_thrown = True

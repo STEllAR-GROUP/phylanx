@@ -7,7 +7,6 @@ import phylanx
 import phylanx.ast as ast
 import phylanx.util as util
 
-phylanx.PhylanxSession(1)
 ###############################################################################
 
 

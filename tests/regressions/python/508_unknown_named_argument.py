@@ -5,9 +5,7 @@
 
 # Fixing #508: @Phylanx not complaining about unknown named arguments.
 
-from phylanx import Phylanx, PhylanxSession
-
-PhylanxSession(1)
+from phylanx import Phylanx
 
 try:
     @Phylanx(Foo=True)

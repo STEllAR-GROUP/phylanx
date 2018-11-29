@@ -5,9 +5,7 @@
 import numpy as np
 
 import phylanx
-from phylanx import Phylanx, PhylanxSession
-
-PhylanxSession(1)
+from phylanx import Phylanx
 
 np_x = np.array([1, 2, 3])
 np_y = np.array([4, 5, 6])
@@ -21,7 +19,7 @@ def np_argmax(x):
 
 assert (np_argmax(np_array) == np.argmax(np_array)).all
 assert np_argmax.__src__ == \
-    'define$18$0(np_argmax$18$0, x$18$14, argmax$19$11(x$19$21))'
+    'define$16$0(np_argmax$16$0, x$16$14, argmax$17$11(x$17$21))'
 
 
 @Phylanx
@@ -31,7 +29,7 @@ def np_argmin(x):
 
 assert (np_argmin(np_array) == np.argmin(np_array)).all
 assert np_argmin.__src__ == \
-    'define$28$0(np_argmin$28$0, x$28$14, argmin$29$11(x$29$21))'
+    'define$26$0(np_argmin$26$0, x$26$14, argmin$27$11(x$27$21))'
 
 
 @Phylanx
@@ -41,7 +39,7 @@ def np_cross(x, y):
 
 assert (np_cross(np_x, np_y) == np.cross(np_x, np_y)).all
 assert np_cross.__src__ == \
-    'define$38$0(np_cross$38$0, x$38$13, y$38$16, cross$39$11(x$39$20, y$39$23))'
+    'define$36$0(np_cross$36$0, x$36$13, y$36$16, cross$37$11(x$37$20, y$37$23))'
 
 
 @Phylanx
@@ -51,7 +49,7 @@ def np_determinant(x):
 
 assert (np_determinant(np_array) == np.linalg.det(np_array)).all
 assert np_determinant.__src__ == \
-    'define$48$0(np_determinant$48$0, x$48$19, determinant$49$11(x$49$25))'
+    'define$46$0(np_determinant$46$0, x$46$19, determinant$47$11(x$47$25))'
 
 
 @Phylanx
@@ -61,7 +59,7 @@ def np_diag(x):
 
 assert (np_diag(np_array) == np.diagonal(np_array)).all
 assert np_diag.__src__ == \
-    'define$58$0(np_diag$58$0, x$58$12, diag$59$11(x$59$23))'
+    'define$56$0(np_diag$56$0, x$56$12, diag$57$11(x$57$23))'
 
 
 @Phylanx
@@ -71,7 +69,7 @@ def np_dot(x, y):
 
 assert (np_dot(np_x, np_y) == np.dot(np_y, np_y)).all
 assert np_dot.__src__ == \
-    'define$68$0(np_dot$68$0, x$68$11, y$68$14, dot$69$11(x$69$18, y$69$21))'
+    'define$66$0(np_dot$66$0, x$66$11, y$66$14, dot$67$11(x$67$18, y$67$21))'
 
 
 @Phylanx
@@ -81,7 +79,7 @@ def np_exp(x):
 
 assert (np_exp(np_array) == np.exp(np_array)).all
 assert np_exp.__src__ == \
-    'define$78$0(np_exp$78$0, x$78$11, exp$79$11(x$79$18))'
+    'define$76$0(np_exp$76$0, x$76$11, exp$77$11(x$77$18))'
 
 # @Phylanx
 # def np_hstack(x, y):
@@ -97,7 +95,7 @@ def np_identity(x):
 
 assert (np_identity(3) == np.identity(3)).all
 assert np_identity.__src__ == \
-    'define$94$0(np_identity$94$0, x$94$16, identity$95$11(x$95$23))'
+    'define$92$0(np_identity$92$0, x$92$16, identity$93$11(x$93$23))'
 
 # TODO
 # np.inverse = np.linalg.inv
@@ -121,7 +119,7 @@ def np_linspace(start, stop, steps):
 
 assert (np_linspace(2, 3, 5) == np.linspace(2, 3, 5)).all
 assert np_linspace.__src__ == \
-    'define$118$0(np_linspace$118$0, start$118$16, stop$118$23, steps$118$29, linspace$119$11(2, 3, 5))' # noqa E501
+    'define$116$0(np_linspace$116$0, start$116$16, stop$116$23, steps$116$29, linspace$117$11(2, 3, 5))' # noqa E501
 
 
 @Phylanx
@@ -131,7 +129,7 @@ def np_power(x, p):
 
 assert (np_power(np_array, 2) == np.power(np_array, 2)).all
 assert np_power.__src__ == \
-    'define$128$0(np_power$128$0, x$128$13, p$128$16, power$129$11(x$129$20, 2))'
+    'define$126$0(np_power$126$0, x$126$13, p$126$16, power$127$11(x$127$20, 2))'
 
 # TODO
 # @Phylanx
@@ -158,7 +156,7 @@ def np_slice_01(x):
 
 assert (np_slice_01(arr) == arr[1:4]).all
 assert np_slice_01.__src__ == \
-    'define$155$0(np_slice_01$155$0, x$155$16, slice$156$11(x$156$11, list(1, 4)))'
+    "define$153$0(np_slice_01$153$0, x$153$16, slice$154$11(x$154$11, list(1, 4)))"
 
 a = np.array([1, 4, 9])
 
@@ -170,7 +168,7 @@ def np_sqrt(x):
 
 assert (np_sqrt(a) == np.sqrt(a)).all
 assert np_sqrt.__src__ == \
-    'define$167$0(np_sqrt$167$0, x$167$12, sqrt$168$11(x$168$19))'
+    'define$165$0(np_sqrt$165$0, x$165$12, sqrt$166$11(x$166$19))'
 
 
 @Phylanx
@@ -181,7 +179,7 @@ def np_transpose(x):
 
 assert (np_transpose(np_array) == np.transpose(np_array)).all
 assert np_transpose.__src__ == \
-    'define$177$0(np_transpose$177$0, x$177$17, block(define$178$4(transx$178$4, transpose$178$13(x$178$26)), transx$179$11))' # noqa E501
+    'define$175$0(np_transpose$175$0, x$175$17, block(define$176$4(transx$176$4, transpose$176$13(x$176$26)), transx$177$11))' # noqa E501
 
 # @Phylanx
 # def np_vstack(np_x, np_y):

@@ -9,7 +9,6 @@
 #define PHYLANX_INIT_HPX_HPP
 
 #include <vector>
-#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace bindings

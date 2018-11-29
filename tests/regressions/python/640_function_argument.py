@@ -6,9 +6,7 @@
 # flake8: noqa
 
 import numpy as np
-from phylanx import Phylanx, PhylanxSession
-
-PhylanxSession(1)
+from phylanx import Phylanx
 
 
 @Phylanx
@@ -18,4 +16,5 @@ def test_assign(x):
 
 
 assert(test_assign.__src__ ==
-        'define$15$0(test_assign$15$0, x$15$16, block(store$16$4(x$16$4, 1), x$17$11))')
+        'define$13$0(test_assign$13$0, x$13$16, ' + \
+        'block(store$14$4(x$14$4, 1), x$15$11))')
