@@ -27,11 +27,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
-            nullptr, &create_primitive<lambda>)
+            nullptr, &create_primitive<lambda>,
+            "args, body\n"
+            "Args:\n"
+            "\n"
+            "    *args (argument list): the list of arguments\n"
+            "    body (statement): the body of the lambda function\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A function object with the arguments and body specified."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    lambda::lambda(std::vector<primitive_argument_type>&& args,
+    lambda::lambda(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -46,13 +56,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lambda::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (!valid(operands_[0]))
         {
@@ -63,17 +74,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
-        if (mode & eval_dont_evaluate_lambdas)
+        if (ctx.mode_ & eval_dont_evaluate_lambdas)
         {
             if (!args.empty())
             {
-                std::vector<primitive_argument_type> fargs;
+                primitive_arguments_type fargs;
                 fargs.reserve(args.size() + 1);
 
-                fargs.push_back(extract_ref_value(operands_[0]));
+                fargs.push_back(
+                    extract_ref_value(operands_[0], name_, codename_));
                 for (auto const& arg : args)
                 {
-                    fargs.push_back(extract_value(arg));
+                    fargs.push_back(extract_value(arg, name_, codename_));
                 }
 
                 compiler::primitive_name_parts name_parts =
@@ -87,16 +99,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     });
             }
 
-            return hpx::make_ready_future(extract_ref_value(operands_[0]));
+            return hpx::make_ready_future(
+                extract_ref_value(operands_[0], name_, codename_));
         }
 
         // simply invoke the given body with the given arguments
         return value_operand(operands_[0], args, name_, codename_,
-            eval_mode(eval_dont_evaluate_lambdas | eval_dont_wrap_functions));
+            add_mode(std::move(ctx),
+                eval_mode(
+                    eval_dont_evaluate_lambdas | eval_dont_wrap_functions)));
     }
 
-    void lambda::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void lambda::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (valid(operands_[0]))
         {
@@ -122,7 +137,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // initialize the lambda's body
-        operands_[0] = extract_copy_value(std::move(data[0]));
+        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
     }
 
     topology lambda::expression_topology(std::set<std::string>&& functions,

@@ -6,7 +6,6 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/access_variable.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component.hpp>
-#include <phylanx/util/future_or_value.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -27,12 +26,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("access-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive<access_variable>)
+            nullptr, &create_primitive<access_variable>,
+            "Internal")
     };
 
     ///////////////////////////////////////////////////////////////////////////
     access_variable::access_variable(
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
         : primitive_component_base(std::move(operands), name, codename, true)
     {
@@ -50,7 +50,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
 
         // try to bind to the variable object locally
@@ -65,32 +66,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> access_variable::eval(
-        std::vector<primitive_argument_type> const& params,
-        eval_mode mode) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         // handle slicing, we can replace the params with our slicing
-        // parameter as variable evaluation can't depend on those anyways
-        mode = eval_mode(mode | eval_dont_wrap_functions);
+        // parameters as variable evaluation can't depend on those anyways
         switch (operands_.size())
         {
         case 2:
             {
                 // one slicing parameter
                 auto this_ = this->shared_from_this();
-                return value_operand_fov(operands_[1], params, name_, codename_)
+                return value_operand(operands_[1], params, name_, codename_, ctx)
                     .then(hpx::launch::sync,
-                        [this_, mode](
-                            util::future_or_value<primitive_argument_type>&& rows)
-                        -> hpx::future<primitive_argument_type>
+                        [this_ = std::move(this_), ctx](
+                                hpx::future<primitive_argument_type>&& rows)
+                        mutable -> hpx::future<primitive_argument_type>
                         {
+                            ctx.add_mode(eval_dont_wrap_functions);
                             if (this_->target_)
                             {
                                 return this_->target_->eval_single(
-                                    rows.get(), mode);
+                                    rows.get(), std::move(ctx));
                             }
                             return value_operand(this_->operands_[0],
                                 rows.get(), this_->name_, this_->codename_,
-                                mode);
+                                std::move(ctx));
                         });
             }
 
@@ -99,24 +99,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // two slicing parameters
                 auto this_ = this->shared_from_this();
                 return hpx::dataflow(hpx::launch::sync,
-                    [this_, mode](
-                        util::future_or_value<primitive_argument_type>&& rows,
-                        util::future_or_value<primitive_argument_type>&& cols)
+                    [this_ = std::move(this_), ctx](
+                            hpx::future<primitive_argument_type>&& rows,
+                            hpx::future<primitive_argument_type>&& cols) mutable
                     -> hpx::future<primitive_argument_type>
                     {
-                        std::vector<primitive_argument_type> args;
+                        primitive_arguments_type args;
                         args.reserve(2);
                         args.emplace_back(rows.get());
                         args.emplace_back(cols.get());
+
+                        ctx.add_mode(eval_dont_wrap_functions);
                         if (this_->target_)
                         {
-                            return this_->target_->eval(std::move(args), mode);
+                            return this_->target_->eval(
+                                std::move(args), std::move(ctx));
                         }
                         return value_operand(this_->operands_[0],
-                            std::move(args), this_->name_, this_->codename_, mode);
+                            std::move(args), this_->name_, this_->codename_,
+                            std::move(ctx));
                     },
-                    value_operand_fov(operands_[1], params, name_, codename_),
-                    value_operand_fov(operands_[2], params, name_, codename_));
+                    value_operand(operands_[1], params, name_, codename_, ctx),
+                    value_operand(operands_[2], params, name_, codename_, ctx));
             }
 
         default:
@@ -124,15 +128,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // no slicing parameters given, access variable directly
+        ctx.add_mode(eval_dont_wrap_functions);
         if (target_)
         {
-            return target_->eval(noargs, mode);
+            return target_->eval(noargs, std::move(ctx));
         }
-        return value_operand(operands_[0], noargs, name_, codename_, mode);
+        return value_operand(
+            operands_[0], noargs, name_, codename_, std::move(ctx));
     }
 
-    void access_variable::store(std::vector<primitive_argument_type>&& vals,
-            std::vector<primitive_argument_type>&& params)
+    void access_variable::store(primitive_arguments_type&& vals,
+            primitive_arguments_type&& params)
     {
         if (vals.size() != 1)
         {
@@ -146,7 +152,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // the argument list
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
-            vals.emplace_back(extract_ref_value(*it));
+            vals.emplace_back(extract_ref_value(*it, name_, codename_));
         }
 
         if (target_)
@@ -164,19 +170,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void access_variable::store(primitive_argument_type&& val,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         if (operands_.size() > 1)
         {
             // handle slicing, simply append the slicing parameters to the end of
             // the argument list
-            std::vector<primitive_argument_type> vals;
+            primitive_arguments_type vals;
             vals.reserve(operands_.size());
             vals.emplace_back(std::move(val));
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
             {
-                vals.emplace_back(extract_ref_value(*it));
+                vals.emplace_back(extract_ref_value(*it, name_, codename_));
             }
 
             if (target_)

@@ -8,7 +8,6 @@
 #include <phylanx/ast/detail/is_literal_value.hpp>
 #include <phylanx/execution_tree/primitives/store_operation.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/util/future_or_value.hpp>
 #include <phylanx/util/slicing_helpers.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -30,7 +29,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_store_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         static std::string type("store");
@@ -42,19 +41,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("store",
             std::vector<std::string>{"store(_1, _2)"},
-            &create_store_operation, &create_primitive<store_operation>)
+            &create_store_operation, &create_primitive<store_operation>,
+            "var, value\n"
+            "Update the definition of variable `var` with value `value`. "
+            "This primitive is used to implement the assignment operator. "
+            "Note that the variable should first be created with define.\n"
+            "Args:\n"
+            "\n"
+            "    var (symbol) : a variable to be defined\n"
+            "    value (expression) : a value to assign\n"
+            "\n"
+            "Returns:"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     store_operation::store_operation(
-            std::vector<primitive_argument_type> && operands,
+            primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> store_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands_.size() != 2)
         {
@@ -86,33 +96,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
 
-        std::vector<primitive_argument_type> params;
+        primitive_arguments_type params;
         if (!args.empty())
         {
             params.reserve(args.size());
             for (auto const& arg : args)
             {
-                params.emplace_back(extract_ref_value(arg));
+                params.emplace_back(extract_ref_value(arg, name_, codename_));
             }
         }
 
-        auto f = value_operand_fov(operands_[1], params, name_, codename_);
+        auto f = value_operand(
+            operands_[1], params, name_, codename_, std::move(ctx));
         return f.then(hpx::launch::sync,
             [
-                this_, lhs = extract_ref_value(operands_[0]),
+                this_ = std::move(this_),
+                lhs = extract_ref_value(operands_[0], name_, codename_),
                 args = std::move(params)
             ]
-            (util::future_or_value<primitive_argument_type>&& val) mutable
+            (hpx::future<primitive_argument_type>&& val) mutable
             ->  primitive_argument_type
             {
-                primitive_operand(lhs, this_->name_, this_->codename_)
-                    .store(hpx::launch::sync, val.get(), std::move(args));
+                auto p = primitive_operand(
+                    std::move(lhs), this_->name_, this_->codename_);
+
+                p.store(hpx::launch::sync, val.get(), std::move(args));
                 return primitive_argument_type{};
             });
     }
 
     hpx::future<primitive_argument_type> store_operation::eval(
-        primitive_argument_type&& arg, eval_mode) const
+        primitive_argument_type&& arg, eval_context ctx) const
     {
         if (operands_.size() != 2)
         {
@@ -144,20 +158,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
 
-        std::vector<primitive_argument_type> params;
-        params.emplace_back(extract_ref_value(arg));
+        primitive_arguments_type params;
+        params.emplace_back(extract_ref_value(arg, name_, codename_));
 
-        return value_operand_fov(operands_[1], std::move(arg), name_, codename_)
+        return value_operand(
+                operands_[1], std::move(arg), name_, codename_, std::move(ctx))
             .then(hpx::launch::sync,
-                [
-                    this_, lhs = extract_ref_value(operands_[0]),
+                [   this_ = std::move(this_),
+                    lhs = extract_ref_value(operands_[0], name_, codename_),
                     args = std::move(params)
-                ]
-                (util::future_or_value<primitive_argument_type>&& val) mutable
+                ](hpx::future<primitive_argument_type>&& val) mutable
                 -> primitive_argument_type
                 {
-                    primitive_operand(lhs, this_->name_, this_->codename_)
-                        .store(hpx::launch::sync, val.get(), std::move(args));
+                    auto p = primitive_operand(
+                        std::move(lhs), this_->name_, this_->codename_);
+
+                    p.store(hpx::launch::sync, val.get(), std::move(args));
                     return primitive_argument_type{};
                 });
     }

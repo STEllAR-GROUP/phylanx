@@ -24,26 +24,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , public std::enable_shared_from_this<string_output>
     {
     protected:
-        using args_type = std::vector<primitive_argument_type>;
+        using args_type = primitive_arguments_type;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
     public:
         static match_pattern_type const match_data;
 
         string_output() = default;
 
-        string_output(std::vector<primitive_argument_type>&& operands,
+        string_output(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
     };
 
     PHYLANX_EXPORT primitive create_string_output(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "");
 }}}
 

@@ -23,7 +23,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_string_output(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
     {
         static std::string type("string");
@@ -35,23 +35,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("string",
             std::vector<std::string>{"string(__1)"},
-            &create_string_output, &create_primitive<string_output>)
+            &create_string_output, &create_primitive<string_output>,
+            "args\n"
+            "Args:\n"
+            "\n"
+            "    *args (object list) : any objects\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A string created by concatenating the string "
+            "representations of the objects in `args`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     string_output::string_output(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> string_output::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](args_type && args) -> primitive_argument_type
+            [this_ = std::move(this_)](args_type && args)
+            -> primitive_argument_type
             {
                 if (args.empty())
                 {
@@ -67,18 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type(strm.str());
             }),
             detail::map_operands(
-                operands, functional::value_operand{}, args, name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Write data to given file and return content
-    hpx::future<primitive_argument_type> string_output::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                operands, functional::value_operand{}, args, name_, codename_,
+                std::move(ctx)));
     }
 }}}

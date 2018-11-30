@@ -34,6 +34,9 @@ add_phylanx_library_sources(phylanx_python
   GLOB GLOBS "${PROJECT_SOURCE_DIR}/python/phylanx/ast/*.py"
   APPEND)
 add_phylanx_library_sources(phylanx_python
+  GLOB GLOBS "${PROJECT_SOURCE_DIR}/python/phylanx/core/*.py"
+  APPEND)
+add_phylanx_library_sources(phylanx_python
   GLOB GLOBS "${PROJECT_SOURCE_DIR}/python/phylanx/execution_tree/*.py"
   APPEND)
 add_phylanx_library_sources(phylanx_python

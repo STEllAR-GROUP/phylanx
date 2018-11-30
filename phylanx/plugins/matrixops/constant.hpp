@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -27,33 +28,44 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         using operand_type = ir::node_data<double>;
         using operands_type = std::vector<operand_type>;
 
     public:
-        static match_pattern_type const match_data;
+        static std::vector<match_pattern_type> const match_data;
 
         constant() = default;
 
-        constant(std::vector<primitive_argument_type>&& operands,
+        constant(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
+    private:
+        template <typename T>
+        ir::node_data<T> constant0d_helper(primitive_argument_type&& op) const;
+        template <typename T>
+        ir::node_data<T> constant1d_helper(
+            primitive_argument_type&& op, std::size_t dim) const;
+        template <typename T>
+        ir::node_data<T> constant2d_helper(primitive_argument_type&& op,
+            operand_type::dimensions_type const& dim) const;
+
+        primitive_argument_type constant0d(primitive_argument_type&& op) const;
+        primitive_argument_type constant1d(
+            primitive_argument_type&& op, std::size_t dim) const;
+        primitive_argument_type constant2d(primitive_argument_type&& op,
+            operand_type::dimensions_type const& dim) const;
 
     private:
-        primitive_argument_type constant0d(operand_type && op) const;
-        primitive_argument_type constant1d(
-            operand_type&& op, std::size_t dim) const;
-        primitive_argument_type constant2d(operand_type&& op,
-            operand_type::dimensions_type const& dim) const;
+        node_data_type dtype_;
+        bool implements_like_operations_;
     };
 
     inline primitive create_constant(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

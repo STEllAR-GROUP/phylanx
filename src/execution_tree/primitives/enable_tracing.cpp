@@ -21,7 +21,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_enable_tracing(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         static std::string type("enable_tracing");
@@ -33,56 +33,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("enable_tracing",
             std::vector<std::string>{"enable_tracing(_1)"},
-            &create_enable_tracing, &create_primitive<enable_tracing>)
+            &create_enable_tracing, &create_primitive<enable_tracing>,
+            "eon\n"
+            "Args:\n"
+            "\n"
+            "    eon (boolean) : set to true/false to enable/disable tracing."
+            "\n"
+            "Returns:\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     enable_tracing::enable_tracing(
-            std::vector<primitive_argument_type> && operands,
+            primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    namespace detail
-    {
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args,
-            std::string const& name, std::string const& codename)
-        {
-            if (operands.size() != 1)
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "enable_tracing::eval",
-                    util::generate_error_message(
-                        "expected one (boolean) argument",
-                        name, codename));
-            }
-
-            if (!valid(operands[0]))
-            {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "enable_tracing::eval",
-                    util::generate_error_message(
-                        "the enable_tracing primitive requires that the "
-                            "argument given by the operand is valid",
-                        name, codename));
-            }
-
-            primitive::enable_tracing =
-                boolean_operand_sync(operands[0], args, name, codename) != 0;
-
-            return hpx::make_ready_future(primitive_argument_type{});
-        }
-    }
-
     hpx::future<primitive_argument_type> enable_tracing::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (this->no_operands())
+        if (operands.size() != 1)
         {
-            return detail::eval(args, noargs, name_, codename_);
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "enable_tracing::eval",
+                generate_error_message(
+                    "expected one (boolean) argument"));
         }
-        return detail::eval(operands_, args, name_, codename_);
+
+        if (!valid(operands[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "enable_tracing::eval",
+                generate_error_message(
+                    "the enable_tracing primitive requires that the "
+                        "argument given by the operand is valid"));
+        }
+
+        primitive::enable_tracing =
+            boolean_operand_sync(
+                operands[0], args, name_, codename_, std::move(ctx)) != 0;
+
+        return hpx::make_ready_future(primitive_argument_type{});
     }
 }}}

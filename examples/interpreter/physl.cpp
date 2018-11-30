@@ -117,12 +117,12 @@ void dump_physl_code(std::vector<phylanx::ast::expression> const& ast,
     }
 }
 
-std::vector<phylanx::execution_tree::primitive_argument_type>
+phylanx::execution_tree::primitive_arguments_type
 read_arguments(std::vector<std::string> const& args,
     phylanx::execution_tree::compiler::function_list& snippets,
     phylanx::execution_tree::compiler::environment& env)
 {
-    std::vector<phylanx::execution_tree::primitive_argument_type> result(
+    phylanx::execution_tree::primitive_arguments_type result(
         args.size());
 
     std::transform(
@@ -514,6 +514,13 @@ void interpreter(po::variables_map const& vm)
 
         print_performance_profile(snippets, code_source_name, dot_file,
             newick_tree_file, counter_file);
+    }
+    else if (vm.count("dump-dot") != 0 || vm.count("dump-newick-tree") != 0 ||
+        vm.count("dump-counters") != 0)
+    {
+        std::cout << "physl: in order to generate any of the performance "
+            "output (--dump-dot, --dump-newick-tree, or --dump-counters), "
+            "please also specify the command line option --performance.";
     }
 }
 

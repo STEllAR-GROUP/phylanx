@@ -28,7 +28,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive outfile =
             phylanx::execution_tree::primitives::create_file_write_csv(
                 hpx::find_here(),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
+                phylanx::execution_tree::primitive_arguments_type{
                     {filename}, litval});
 
         auto f = outfile.eval();
@@ -41,7 +41,7 @@ void test_file_io_lit(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive infile =
             phylanx::execution_tree::primitives::create_file_read_csv(
                 hpx::find_here(),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
+                phylanx::execution_tree::primitive_arguments_type{
                     {filename}});
 
         f = infile.eval();
@@ -61,7 +61,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive outfile =
             phylanx::execution_tree::primitives::create_file_write_csv(
                 hpx::find_here(),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
+                phylanx::execution_tree::primitive_arguments_type{
                     {filename}, in});
 
         auto f = outfile.eval();
@@ -74,7 +74,7 @@ void test_file_io_primitive(phylanx::ir::node_data<double> const& in)
         phylanx::execution_tree::primitive infile =
             phylanx::execution_tree::primitives::create_file_read_csv(
                 hpx::find_here(),
-                std::vector<phylanx::execution_tree::primitive_argument_type>{
+                phylanx::execution_tree::primitive_arguments_type{
                     {filename}});
 
         f = infile.eval();

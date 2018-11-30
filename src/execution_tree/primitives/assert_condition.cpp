@@ -25,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_assert_condition(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         static std::string type("assert");
@@ -37,19 +37,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("assert",
             std::vector<std::string>{"assert(_1)"},
-            &create_assert_condition, &create_primitive<assert_condition>)
+            &create_assert_condition, &create_primitive<assert_condition>,
+            "cond\n"
+            "Args:\n"
+            "\n"
+            "    cond (boolean expression) : if not true, raise an AssertionError\n"
+            "Returns:\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     assert_condition::assert_condition(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> assert_condition::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -61,7 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::uint8_t cond)
+            [this_ = std::move(this_)](std::uint8_t cond)
             -> primitive_argument_type
             {
                 if (cond == 0)
@@ -72,17 +78,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 return {};
             }),
-            boolean_operand(operands_[0], args, name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> assert_condition::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            boolean_operand(
+                operands_[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

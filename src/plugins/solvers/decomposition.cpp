@@ -30,8 +30,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
 ///////////////////////////////////////////////////////////////////////////////
 #define PHYLANX_DECOM_MATCH_DATA(name)                                         \
-    hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
-        &create_decomposition, &create_primitive<decomposition>)
+    match_pattern_type{name, std::vector<std::string>{name "(_1)"},            \
+        &create_decomposition, &create_primitive<decomposition>,               \
+        "m\n"                                                                  \
+        "Args:\n"                                                              \
+        "\n"                                                                   \
+        "    m (matrix): a matrix"                                             \
+        "\n"                                                                   \
+        "Returns:\n"                                                           \
+        "\n"                                                                   \
+        "Computes LU decomposition of a general matrix in form of "            \
+        "A = L*U*P where P is a permutation matrix, L is a lower "             \
+        "triangular matrix, and U is an upper triangular matrix. "             \
+    }                                                                          \
     /**/
 
     std::vector<match_pattern_type> const decomposition::match_data = {
@@ -60,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     blaze::lu(A, L, U, P);
                 }
                 return primitive_argument_type{
-                    std::vector<primitive_argument_type>{
+                    primitive_arguments_type{
                         primitive_argument_type{L}, primitive_argument_type{U},
                         primitive_argument_type{P}}};
             }}};
@@ -68,7 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    namespace detail {
+    namespace detail
+    {
         std::string function_name(std::string const& name)
         {
             compiler::primitive_name_parts name_parts;
@@ -80,9 +92,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return name_parts.primitive;
         }
     }
+
     ///////////////////////////////////////////////////////////////////////////
     decomposition::decomposition(
-        std::vector<primitive_argument_type> && operands,
+        primitive_arguments_type && operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -101,8 +114,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> decomposition::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -129,7 +142,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](args_type&& args) -> primitive_argument_type {
+                [this_ = std::move(this_)](args_type&& args)
+                -> primitive_argument_type
+                {
                     if (args[0].num_dimensions() != 2)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -143,18 +158,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->calculate_decomposition(std::move(args));
                 }),
             detail::map_operands(operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> decomposition::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (operands_.empty())
-        {
-            return eval(args, noargs);
-        }
-        return eval(operands_, args);
+                name_, codename_, std::move(ctx)));
     }
 }}}
 

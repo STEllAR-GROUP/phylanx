@@ -97,7 +97,7 @@ namespace phylanx { namespace plugin
 
 #define PHYLANX_REGISTER_PLUGIN_FACTORY_2(pluginname, match_data)              \
     PHYLANX_REGISTER_PLUGIN_FACTORY_3(                                         \
-        pluginname, match_data, hpx::util::get<0>(match_data))                 \
+        pluginname, match_data, match_data.primitive_type_)                    \
     /**/
 
 #define PHYLANX_REGISTER_PLUGIN_FACTORY_3(pluginname, match_data, name)        \

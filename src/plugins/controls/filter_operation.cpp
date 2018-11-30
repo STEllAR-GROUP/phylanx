@@ -26,39 +26,60 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("filter",
             std::vector<std::string>{"filter(_1, _2)"},
-            &create_filter_operation, &create_primitive<filter_operation>)
+            &create_filter_operation, &create_primitive<filter_operation>,
+            "func, iter\n"
+            "\n"
+            "Args:\n"
+            "\n"
+            "    func (function) : a function that takes one arg and returns a boolean\n"
+            "    iter (iterator) : an iterator\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "filter applies `func` to each item in iter and creates a list consisting\n"
+            "of the values for which `func` evaluated to true.\n"
+            "\n"
+            "Example:\n"
+            "\n"
+            "    from phylanx.ast import Phylanx\n"
+            "\n"
+            "    @Phylanx\n"
+            "    def foo():\n"
+            "        print(filter(lambda a : a > 1, [1, 2, 3, 4]))\n"
+            "\n"
+            "    foo()\n"
+            "\n"
+            "Prints [2, 3, 4]"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     filter_operation::filter_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> filter_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the filter_operation primitive requires exactly "
-                        "two operands",
-                    name_, codename_));
+                        "two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands_[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the filter_operation primitive requires that the "
-                        "arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         // the first argument must be an invokable
@@ -66,14 +87,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                util::generate_error_message(
-                    "the first argument to map must be an invocable "
-                    "object", name_, codename_));
+                generate_error_message(
+                    "the first argument to map must be an invocable object"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& bound_func, ir::range&& list)
+            [this_ = std::move(this_), ctx](
+                    primitive_argument_type&& bound_func, ir::range&& list)
             ->  primitive_argument_type
             {
                 primitive const* p = util::get_if<primitive>(&bound_func);
@@ -81,22 +102,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "filter_operation::eval",
-                        util::generate_error_message(
-                            "the first argument to filter must be an invocable "
-                            "object", this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "the first argument to filter must be an "
+                            "invocable object"));
                 }
 
                 // sequentially evaluate all operations
-                std::size_t size = list.size();
-
-                std::vector<primitive_argument_type> result;
-                result.reserve(size);
+                primitive_arguments_type result;
+                result.reserve(list.size());
 
                 for (auto && curr : list)
                 {
-                    std::vector<primitive_argument_type> arg(1, curr);
+                    primitive_arguments_type arg(1, curr);
                     if (boolean_operand_sync(bound_func, std::move(arg),
-                            this_->name_, this_->codename_))
+                            this_->name_, this_->codename_, ctx))
                     {
                         result.push_back(std::move(curr));
                     }
@@ -105,18 +124,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{std::move(result)};
             }),
             value_operand(operands_[0], args, name_, codename_,
-                eval_dont_evaluate_lambdas),
-            list_operand(operands_[1], args, name_, codename_));
-    }
-
-    // Start iteration over given for statement
-    hpx::future<primitive_argument_type> filter_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                add_mode(ctx, eval_dont_evaluate_lambdas)),
+            list_operand(operands_[1], args, name_, codename_, ctx));
     }
 }}}

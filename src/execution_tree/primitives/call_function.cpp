@@ -26,12 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("call-function",
             std::vector<std::string>{},
-            nullptr, &create_primitive<call_function>)
+            nullptr, &create_primitive<call_function>,
+            "Internal")
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    call_function::call_function(
-            std::vector<primitive_argument_type>&& args,
+    call_function::call_function(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -45,13 +45,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> call_function::eval(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (!valid(operands_[0]))
         {
@@ -62,33 +63,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "has not been initialized"));
         }
 
-        std::vector<primitive_argument_type> fargs;
+        primitive_arguments_type fargs;
         fargs.reserve(operands_.size() - 1);
 
         // pass along pre-bound arguments
         for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
         {
-            fargs.push_back(extract_ref_value(*it));
+            fargs.push_back(extract_ref_value(*it, name_, codename_));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](primitive_argument_type&& func,
-                    std::vector<primitive_argument_type>&& args)
+                [this_ = std::move(this_), ctx](
+                        primitive_argument_type&& func,
+                        primitive_arguments_type&& args) mutable
+                ->  primitive_argument_type
                 {
                     return value_operand_sync(std::move(func),
-                        std::move(args), this_->name_, this_->codename_);
+                        std::move(args), this_->name_, this_->codename_,
+                        ctx.set_mode(eval_default));
                 }),
             value_operand(operands_[0], params, name_, codename_,
-                eval_mode(eval_dont_wrap_functions |
+                add_mode(ctx, eval_mode(eval_dont_wrap_functions |
                     eval_dont_evaluate_partials |
-                    eval_dont_evaluate_lambdas)),
+                    eval_dont_evaluate_lambdas))),
             detail::map_operands(std::move(fargs), functional::value_operand{},
-                params, name_, codename_, eval_dont_evaluate_partials));
+                params, name_, codename_,
+                add_mode(ctx, eval_dont_evaluate_partials)));
     }
 
-    void call_function::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void call_function::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (valid(operands_[0]))
         {
@@ -113,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "store shouldn't be called with dynamic arguments"));
         }
 
-        operands_[0] = extract_copy_value(std::move(data[0]));
+        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
     }
 
     topology call_function::expression_topology(

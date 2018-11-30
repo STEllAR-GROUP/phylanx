@@ -29,8 +29,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
 ///////////////////////////////////////////////////////////////////////////////
 #define PHYLANX_GEN_MATCH_DATA(name)                                           \
-    hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
-        &create_generic_operation, &create_primitive<generic_operation>)
+    match_pattern_type{name, std::vector<std::string>{name "(_1)"},            \
+        &create_generic_operation, &create_primitive<generic_operation>,       \
+        "arg\n"                                                                \
+        "Args:\n"                                                              \
+        "\n"                                                                   \
+        "    arg (float) : a floating point number\n"                          \
+        "\n"                                                                   \
+        "Returns:\n"                                                           \
+        "\n"                                                                   \
+        "This function implements function `" name "` from Python's "          \
+        "math library."                                                        \
+    }                                                                          \
     /**/
 
     std::vector<match_pattern_type> const generic_operation::match_data = {
@@ -955,7 +965,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     generic_operation::generic_operation(
-        std::vector<primitive_argument_type> && operands,
+        primitive_arguments_type && operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -988,8 +998,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> generic_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
@@ -1013,7 +1023,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](arg_type&& op) -> primitive_argument_type {
+                [this_ = std::move(this_)](arg_type&& op)
+                -> primitive_argument_type
+                {
                     std::size_t dims = op.num_dimensions();
                     switch (dims)
                     {
@@ -1034,17 +1046,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions"));
                     }
                 }),
-            numeric_operand(operands[0], args, name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> generic_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

@@ -6,14 +6,13 @@
 # Files
 # =====
 *.pyc
-/python/phylanx/__init__.py
+/python/phylanx/core/__init__.py
 
 # Directories
 # ===========
-build/
-.idea/
-.vscode/
-cmake-build-debug/
-cmake-build-release/
-cmake-build-relwithdebinfo/
 /.vs
+.idea/
+build*/
+.vscode/
+cmake-build-*
+phylanx.egg-info/

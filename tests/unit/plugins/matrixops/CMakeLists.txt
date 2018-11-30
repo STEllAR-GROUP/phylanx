@@ -4,16 +4,18 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    add_dimension
+    arange
     argmin
     argmax
-    column_set
     column_slicing
     constant
+    count_nonzero
+    cross_operation
+    cumsum
     determinant
     diag_operation
     dot_operation
-    cross_operation
+    expand_dims
     extract_shape
     generic_operation
     gradient_operation
@@ -27,12 +29,9 @@ set(tests
     power_operation
     random
     random_distributions
-    row_set
     row_slicing
-    set_operation
     shuffle_operation
     slicing_operation
-    square_root_operation
     sum_operation
     transpose_operation
     vstack_operation

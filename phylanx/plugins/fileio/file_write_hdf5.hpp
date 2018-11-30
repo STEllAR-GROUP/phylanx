@@ -27,19 +27,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args, eval_context ctx) const;
 
     public:
         static match_pattern_type const match_data;
 
         file_write_hdf5() = default;
 
-        file_write_hdf5(std::vector<primitive_argument_type>&& operands,
+        file_write_hdf5(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
 
     private:
         void write_to_file_hdf5(ir::node_data<double> const& val,
@@ -47,7 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_file_write_hdf5(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

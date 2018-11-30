@@ -4,6 +4,7 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
+#include <phylanx/execution_tree/primitives/primitive_argument_type.hpp>
 #include <phylanx/plugins/controls/apply.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -26,17 +27,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("apply",
             std::vector<std::string>{"apply(_1, _2)"},
-            &create_apply, &create_primitive<apply>)
+            &create_apply, &create_primitive<apply>,
+            "func, range\n"
+            "Call function `func` one time using the values in `range` "
+            "as the argument list.\n"
+            "\n"
+            "Args:\n"
+            "\n"
+            "    func(function) : a function\n"
+            "    range(iter) : an iterator with at least as many values \n"
+            "                  as function `func` has arguments.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The return value of function `func` when called with the \n"
+            "arguments supplied by `range`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    apply::apply(std::vector<primitive_argument_type>&& operands,
+    apply::apply(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> apply::eval(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (operands_.size() != 2)
         {
@@ -57,20 +73,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& func, ir::range&& list)
+            [this_ = std::move(this_), ctx](
+                primitive_argument_type&& func, ir::range&& list)
             {
                 if (list.is_ref())
                 {
-                    return value_operand_sync(func,
-                        std::move(list.args()), this_->name_, this_->codename_);
+                    return value_operand_sync(func, std::move(list.args()),
+                        this_->name_, this_->codename_, ctx);
                 }
                 return value_operand_sync(
-                    func, list.copy(), this_->name_, this_->codename_);
+                    func, list.copy(), this_->name_, this_->codename_, ctx);
             }),
             value_operand(operands_[0], params, name_, codename_,
-                eval_mode(eval_dont_wrap_functions |
-                    eval_dont_evaluate_partials |
-                    eval_dont_evaluate_lambdas)),
-            list_operand(operands_[1], params, name_, codename_));
+                add_mode(ctx,
+                    eval_mode(eval_dont_wrap_functions |
+                        eval_dont_evaluate_partials |
+                        eval_dont_evaluate_lambdas))),
+            list_operand(operands_[1], params, name_, codename_, ctx));
     }
 }}}

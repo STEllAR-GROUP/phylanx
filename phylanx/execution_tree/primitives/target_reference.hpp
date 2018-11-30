@@ -26,17 +26,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         target_reference() = default;
 
-        target_reference(std::vector<primitive_argument_type>&& operands,
+        target_reference(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params,
-            eval_mode) const override;
+            primitive_arguments_type const& params,
+            eval_context) const override;
         hpx::future<primitive_argument_type> eval(
-            primitive_argument_type && param, eval_mode) const override;
+            primitive_argument_type && param, eval_context) const override;
 
-        void store(std::vector<primitive_argument_type>&& data,
-            std::vector<primitive_argument_type>&& params) override;
+        void store(primitive_arguments_type&& data,
+            primitive_arguments_type&& params) override;
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;

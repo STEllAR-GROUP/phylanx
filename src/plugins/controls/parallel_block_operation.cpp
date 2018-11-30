@@ -27,54 +27,49 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("parallel_block",
             std::vector<std::string>{"parallel_block(__1)"},
             &create_parallel_block_operation,
-            &create_primitive<parallel_block_operation>)
+            &create_primitive<parallel_block_operation>,
+            "*args\n"
+            "Args:\n"
+            "\n"
+            "    *args (list) : a list of zero or more statements\n"
+            "            to be evaluated in parallel.\n"
+            "Returns:\n"
+            "\n"
+            "The result as returned from the last statement in the list `args`.\n"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     parallel_block_operation::parallel_block_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> parallel_block_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "parallel_block_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the parallel_block_operation primitive "
-                        "requires at least one argument",
-                    name_, codename_));
+                        "requires at least one argument"));
         }
 
         // Evaluate condition of while statement
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type> && ops)
+            [this_ = std::move(this_)](primitive_arguments_type && ops)
             ->  primitive_argument_type
             {
                 return ops.back();
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Start iteration over given parallel-block statement
-    hpx::future<primitive_argument_type> parallel_block_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

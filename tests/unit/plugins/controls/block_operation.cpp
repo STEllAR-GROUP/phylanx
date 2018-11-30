@@ -30,7 +30,7 @@ void test_block_operation()
     phylanx::execution_tree::primitive block =
         phylanx::execution_tree::primitives::create_block_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 phylanx::execution_tree::primitive_argument_type{std::move(arg1)},
                 phylanx::execution_tree::primitive_argument_type{std::move(arg2)},
                 phylanx::execution_tree::primitive_argument_type{std::move(arg3)}

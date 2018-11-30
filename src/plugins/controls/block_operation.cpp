@@ -25,20 +25,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("block",
             std::vector<std::string>{"block(__1)"},
-            &create_block_operation, &create_primitive<block_operation>)
+            &create_block_operation, &create_primitive<block_operation>,
+            "stmt\n"
+            "Args:\n"
+            "\n"
+            "    *stmt (statement list) :  a list of statements.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The value of the last statement."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
 
     block_operation::block_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> block_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> args, eval_mode mode) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // Empty blocks are allowed (Issue #278)
         if (this->no_operands())
@@ -46,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(primitive_argument_type{});
         }
 
-        mode = eval_mode(mode & ~eval_dont_wrap_functions);
+        ctx.remove_mode(eval_dont_wrap_functions);
 
         hpx::future<primitive_argument_type> f;
 
@@ -55,26 +64,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if (i == size - 1)
             {
-                f = value_operand(operands_[i], args, name_, codename_, mode);
+                f = value_operand(
+                    operands_[i], args, name_, codename_, std::move(ctx));
             }
             else
             {
-                value_operand_sync(operands_[i], args, name_, codename_, mode);
+                value_operand_sync(operands_[i], args, name_, codename_, ctx);
             }
         }
 
         return f;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // start iteration over given block statement
-    hpx::future<primitive_argument_type> block_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode mode) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs, mode);
-        }
-        return eval(this->operands(), args, mode);
     }
 }}}

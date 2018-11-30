@@ -30,30 +30,54 @@
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-namespace phylanx {namespace execution_tree {    namespace primitives {
+namespace phylanx {namespace execution_tree {    namespace primitives
+{
+    ///////////////////////////////////////////////////////////////////////////
+    constexpr char const* const docstr = R"(
+        v, ind
+        Args:
+
+            v (list) : a list to take a slice from
+            ind (int or list) : index or slice range
+
+        Returns:
+
+        If `ind` is an integer, this operation returns an element of the
+        list. If it is negative, indexing is done from the back of the list.
+        Alternatively, `ind` may consist of a list of values which serve as
+        the `start`, `stop`, and (optionally) `step` of a Python range. In this
+        case, the return value is a new list with the values of `v` described
+        by the range.
+    )";
 
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const slicing_operation::match_data =
     {
-        hpx::util::make_tuple("slice",
+        match_pattern_type{"slice",
             std::vector<std::string>{"slice(_1, __2)"},
             &create_slicing_operation,
-            &create_primitive<slicing_operation>),
+            &create_primitive<slicing_operation>,
+            docstr
+        },
 
-        hpx::util::make_tuple("slice_row",
+        match_pattern_type{"slice_row",
             std::vector<std::string>{"slice_row(_1, __2)"},
             &create_slicing_operation,
-            &create_primitive<slicing_operation>),
+            &create_primitive<slicing_operation>,
+            docstr
+        },
 
-        hpx::util::make_tuple("slice_column",
+        match_pattern_type{"slice_column",
             std::vector<std::string>{"slice_column(_1, __2)"},
             &create_slicing_operation,
-            &create_primitive<slicing_operation>)
+            &create_primitive<slicing_operation>,
+            docstr
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     slicing_operation::slicing_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , slice_rows_(false)
@@ -88,8 +112,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
     }
 
     hpx::future<primitive_argument_type> slicing_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 3)
         {
@@ -122,7 +146,8 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](util::small_vector<primitive_argument_type>&& args)
+            [this_ = std::move(this_)](
+                    util::small_vector<primitive_argument_type>&& args)
             ->  primitive_argument_type
             {
                 switch (args.size())
@@ -165,17 +190,7 @@ namespace phylanx {namespace execution_tree {    namespace primitives {
                             "either one, two, or three arguments"));
             }),
             detail::map_operands_sv(
-                operands, functional::value_operand{}, args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> slicing_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

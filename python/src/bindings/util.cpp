@@ -16,6 +16,8 @@
 
 #include <cstdint>
 #include <vector>
+#include <map>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
 // expose util submodule
@@ -71,4 +73,19 @@ void phylanx::bindings::bind_util(pybind11::module m)
     util.def("unserialize_expr",
         &phylanx::util::unserialize<phylanx::ast::expression>,
         "un-serialize a byte-stream into a Phylanx object");
+
+    util.def("phyhelpex",
+            [](std::string const& s)
+            -> std::string
+            {
+                return phylanx::execution_tree::find_help(s);
+            },
+            "display help strings for Phylanx primitives and plugins.");
+    util.def("phylist",
+            []()
+            -> std::map<std::string,std::vector<std::string>>
+            {
+                return phylanx::execution_tree::list_patterns();
+            },
+            "display help strings for Phylanx primitives and plugins.");
 }

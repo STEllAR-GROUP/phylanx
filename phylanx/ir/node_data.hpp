@@ -1,4 +1,4 @@
- // Copyright (c) 2017-2018 Hartmut Kaiser
+// Copyright (c) 2017-2018 Hartmut Kaiser
 // Copyright (c) 2017 Parsa Amini
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -17,6 +17,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <type_traits>
 #include <utility>
@@ -124,12 +125,13 @@ namespace phylanx { namespace ir
         using storage1d_type = blaze::DynamicVector<T>;
         using storage2d_type = blaze::DynamicMatrix<T>;
 
+        using custom_storage0d_type = std::reference_wrapper<T>;
         using custom_storage1d_type = blaze::CustomVector<T, true, true>;
         using custom_storage2d_type = blaze::CustomMatrix<T, true, true>;
 
-        using storage_type =
-            util::variant<storage0d_type, storage1d_type, storage2d_type,
-                custom_storage1d_type, custom_storage2d_type>;
+        using storage_type = util::variant<
+            storage0d_type, storage1d_type, storage2d_type,
+            custom_storage0d_type, custom_storage1d_type, custom_storage2d_type>;
 
         node_data() = default;
 
@@ -139,6 +141,9 @@ namespace phylanx { namespace ir
         /// Create node data for a 0-dimensional value
         explicit node_data(storage0d_type const& value);
         explicit node_data(storage0d_type && value);
+
+        explicit node_data(custom_storage0d_type const& value);
+        explicit node_data(custom_storage0d_type && value);
 
         /// Create node data for a 1-dimensional value
         explicit node_data(storage1d_type const& values);
@@ -186,13 +191,16 @@ namespace phylanx { namespace ir
             switch (dims)
             {
             case 0:
+            case 3:
                 return storage_type(d.scalar());
 
             case 1:
+            case 4:
                 increment_copy_construction_count();
                 return storage_type(d.vector());
 
             case 2:
+            case 5:
                 increment_copy_construction_count();
                 return storage_type(d.matrix());
 
@@ -216,6 +224,9 @@ namespace phylanx { namespace ir
         }
 
         node_data& operator=(storage0d_type val);
+
+        node_data& operator=(custom_storage0d_type const& val);
+        node_data& operator=(custom_storage0d_type && val);
 
         node_data& operator=(storage1d_type const& val);
         node_data& operator=(storage1d_type && val);
@@ -262,7 +273,11 @@ namespace phylanx { namespace ir
 
         storage2d_type& matrix_non_ref();
         storage2d_type const& matrix_non_ref() const;
-        storage2d_type matrix_copy() const;
+
+        storage2d_type matrix_copy() &;
+        storage2d_type matrix_copy() const&;
+        storage2d_type matrix_copy() &&;
+        storage2d_type matrix_copy() const&&;
 
         custom_storage2d_type matrix() &;
         custom_storage2d_type matrix() const&;
@@ -271,15 +286,26 @@ namespace phylanx { namespace ir
 
         storage1d_type& vector_non_ref();
         storage1d_type const& vector_non_ref() const;
-        storage1d_type vector_copy() const;
+
+        storage1d_type vector_copy() &;
+        storage1d_type vector_copy() const&;
+        storage1d_type vector_copy() &&;
+        storage1d_type vector_copy() const&&;
 
         custom_storage1d_type vector() &;
         custom_storage1d_type vector() const&;
         custom_storage1d_type vector() &&;
         custom_storage1d_type vector() const&&;
 
-        storage0d_type& scalar();
-        storage0d_type const& scalar() const;
+        storage0d_type scalar_copy() &;
+        storage0d_type scalar_copy() const&;
+        storage0d_type scalar_copy() &&;
+        storage0d_type scalar_copy() const&&;
+
+        T& scalar() &;
+        T const& scalar() const&;
+        T&& scalar() &&;
+        T const&& scalar() const&&;
 
         /// Extract the dimensionality of the underlying data array.
         std::size_t num_dimensions() const;

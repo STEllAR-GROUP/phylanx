@@ -28,7 +28,7 @@ phylanx::execution_tree::primitive_argument_type compile_and_run(
 //////////////////////////////////////////////////////////////////////////
 void test_range_stop()
 {
-    char const* const code = "map(lambda(x, x), range(2))";
+    char const* const code = "fmap(lambda(x, x), range(2))";
 
     auto result =
         phylanx::execution_tree::extract_list_value(compile_and_run(code));
@@ -44,7 +44,7 @@ void test_range_stop()
 
 void test_range_start_stop()
 {
-    char const* const code = "map(lambda(x, x), range(-1, 2))";
+    char const* const code = "fmap(lambda(x, x), range(-1, 2))";
 
     auto result =
         phylanx::execution_tree::extract_list_value(compile_and_run(code));
@@ -60,7 +60,7 @@ void test_range_start_stop()
 
 void test_range_start_stop_step()
 {
-    char const* const code = "map(lambda(x, x), range(-3, 2, 4))";
+    char const* const code = "fmap(lambda(x, x), range(-3, 2, 4))";
 
     auto result =
         phylanx::execution_tree::extract_list_value(compile_and_run(code));

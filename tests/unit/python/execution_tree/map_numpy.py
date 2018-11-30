@@ -5,7 +5,7 @@
 import numpy as np
 
 import phylanx
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 
 np_x = np.array([1, 2, 3])
 np_y = np.array([4, 5, 6])
@@ -156,7 +156,7 @@ def np_slice_01(x):
 
 assert (np_slice_01(arr) == arr[1:4]).all
 assert np_slice_01.__src__ == \
-    "define$153$0(np_slice_01$153$0, x$153$16, slice$154$11(x$154$11,list(1, 4)))"
+    "define$153$0(np_slice_01$153$0, x$153$16, slice$154$11(x$154$11, list(1, 4)))"
 
 a = np.array([1, 4, 9])
 
@@ -168,7 +168,7 @@ def np_sqrt(x):
 
 assert (np_sqrt(a) == np.sqrt(a)).all
 assert np_sqrt.__src__ == \
-    'define$165$0(np_sqrt$165$0, x$165$12, square_root$166$11(x$166$19))'
+    'define$165$0(np_sqrt$165$0, x$165$12, sqrt$166$11(x$166$19))'
 
 
 @Phylanx
@@ -179,10 +179,30 @@ def np_transpose(x):
 
 assert (np_transpose(np_array) == np.transpose(np_array)).all
 assert np_transpose.__src__ == \
-    'define$175$0(np_transpose$175$0, x$175$17, block$175$0(define$176$4(transx$176$4, transpose$176$13(x$176$26)), transx$177$11))' # noqa E501
+    'define$175$0(np_transpose$175$0, x$175$17, block(define$176$4(transx$176$4, transpose$176$13(x$176$26)), transx$177$11))' # noqa E501
 
 # @Phylanx
 # def np_vstack(np_x, np_y):
 #     return np.vstack((np_x, np_y))
 #
 # assert (np_vstack(np_x, np_y) == np.vstack((np_x, np_y))).all
+
+# Please note that even if class::abc did have member function `shape` this code
+# would not have worked as, at this point, Phylanx does not support not support
+# any member function other than limited list of NumPy functions.
+# TODO: This test does not belong here and must be move to more appropriate
+# test!
+try:
+
+    # Quiet Flake8
+    class abc:
+        pass
+
+    @Phylanx
+    def bad_kernel(a):
+        return abc.shape()
+
+    raise Exception("Should fail because abc.shape doesn't exist")
+
+except NotImplementedError:
+    pass

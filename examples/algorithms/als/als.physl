@@ -6,7 +6,7 @@
 # file LICENSE_1_0.txt or copy at http:    //www.boost.org/LICENSE_1_0.txt)
 #
 #
-# Linear Regression Algorithm example in PhySL
+# Alternating Least Squares Algorithm example in PhySL
 # \param filepath
 # \param row_stop
 # \param col_stop
@@ -69,7 +69,7 @@ define(als, filepath, row_stop, col_stop, regularization, num_factors,
                         store(b,
                             dot(dot(transpose(Y), (c_u + I_i)),
                                 transpose(p_u))),
-                        set_row(X, u, u + 1, 1, dot(inverse(A), b)),
+                        store(slice(X, list(u, u + 1, 1),nil), dot(inverse(A), b)),
                         store(u, u + 1)
                     )
                 ),
@@ -82,14 +82,14 @@ define(als, filepath, row_stop, col_stop, regularization, num_factors,
                         store(b,
                             dot(dot(transpose(X), (c_i + I_u)),
                                 transpose(p_i))),
-                        set_row(Y, i, i + 1, 1, dot(inverse(A), b)),
+                        store(slice(Y, list(i, i + 1, 1),nil), dot(inverse(A), b)),
                         store(i, i + 1)
                     )
                 ),
                 store(i, 0),
                 store(k, k + 1))),
-        list(X, Y)
-    )
+                list(X, Y)
+            )
 )
 
 if(len(sys_argv) < 8,

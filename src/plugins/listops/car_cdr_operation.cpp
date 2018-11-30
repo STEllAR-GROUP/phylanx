@@ -25,12 +25,28 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    constexpr char const* const helpstring = R"(
+        li
+        Args:
+
+            li (list) : a list
+
+        Returns:
+
+        car returns the head of a list, e.g. car([1 ,2, 3]) returns 1
+        cdr returns the tail of a list, e.g. cdr([1, 2, 3]) returns [2, 3]
+        caar() is the same as car(car())
+        cadr() is the same as car(cdr())
+        etc.
+    )";
+
     ///////////////////////////////////////////////////////////////////////////
 #define PHYLANX_CAR_CDR_MATCH_DATA(name)                                       \
-    hpx::util::make_tuple(name, std::vector<std::string>{name "(_1)"},         \
-        &create_car_cdr_operation, &create_primitive<car_cdr_operation>)       \
+    match_pattern_type{name, std::vector<std::string>{name "(_1)"},            \
+        &create_car_cdr_operation, &create_primitive<car_cdr_operation>,       \
+        helpstring                                                             \
+    }                                                                          \
 /**/
-
     std::vector<match_pattern_type> const car_cdr_operation::match_data =
     {
         PHYLANX_CAR_CDR_MATCH_DATA("car"),
@@ -85,7 +101,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     car_cdr_operation::car_cdr_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , operation_(detail::generate_operation_code(name))
@@ -133,7 +149,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         // create a copy of the vector excluding index 0
-        std::vector<primitive_argument_type> list_copy;
+        primitive_arguments_type list_copy;
         list_copy.reserve(list.size() - 1);
         auto it = list.begin();
         std::move(++it, list.end(), std::back_inserter(list_copy));
@@ -142,33 +158,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> car_cdr_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the car_cdr_operation primitive requires exactly "
-                        "one (list-) operand",
-                    name_, codename_));
+                        "one (list-) operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the car_cdr_operation primitive requires that the "
                         "arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
+                        "are valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](ir::range&& list)
+            [this_ = std::move(this_)](ir::range&& list)
             -> primitive_argument_type
             {
                 primitive_argument_type result{std::move(list)};
@@ -191,17 +205,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return result;
             }),
-            list_operand(operands_[0], args, name_, codename_));
-    }
-
-    // Start iteration over given for statement
-    hpx::future<primitive_argument_type> car_cdr_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            list_operand(operands_[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

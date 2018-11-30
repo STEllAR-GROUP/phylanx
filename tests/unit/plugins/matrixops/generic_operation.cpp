@@ -25,7 +25,7 @@ void test_generic_operation_0d(std::string const& func_name,
     phylanx::execution_tree::primitive generic =
         phylanx::execution_tree::primitives::create_generic_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)},
             func_name);
 
@@ -45,7 +45,7 @@ void test_generic_operation_0d_greater1(std::string const& func_name,
     phylanx::execution_tree::primitive generic =
         phylanx::execution_tree::primitives::create_generic_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)},
             func_name);
 
@@ -70,7 +70,7 @@ void test_generic_operation_1d(std::string const& func_name,
     phylanx::execution_tree::primitive generic =
         phylanx::execution_tree::primitives::create_generic_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)},
             func_name);
 
@@ -96,7 +96,7 @@ void test_generic_operation_1d_greater1(std::string const& func_name,
     phylanx::execution_tree::primitive generic =
         phylanx::execution_tree::primitives::create_generic_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)},
             func_name);
 
@@ -123,7 +123,7 @@ void test_generic_operation_2d(std::string const& func_name,
     phylanx::execution_tree::primitive generic =
         phylanx::execution_tree::primitives::create_generic_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)},
             func_name);
 
@@ -150,7 +150,7 @@ void test_generic_operation_2d_greater1(std::string const& func_name,
     phylanx::execution_tree::primitive generic =
         phylanx::execution_tree::primitives::create_generic_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)},
             func_name);
 

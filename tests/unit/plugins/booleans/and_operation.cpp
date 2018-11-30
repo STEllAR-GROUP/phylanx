@@ -28,7 +28,7 @@ void test_and_operation_0d_false()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -51,7 +51,7 @@ void test_and_operation_0d_double_false()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -74,7 +74,7 @@ void test_and_operation_0d_true()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -97,7 +97,7 @@ void test_and_operation_0d_double_true()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -118,7 +118,7 @@ void test_and_operation_0d_lit_false()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -139,7 +139,7 @@ void test_and_operation_0d_double_lit_false()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -160,7 +160,7 @@ void test_and_operation_0d_lit_true()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -181,7 +181,7 @@ void test_and_operation_0d_double_lit_true()
     phylanx::execution_tree::primitive and_operation;
     and_operation = phylanx::execution_tree::primitives::create_and_operation(
         hpx::find_here(),
-        std::vector<phylanx::execution_tree::primitive_argument_type>{
+        phylanx::execution_tree::primitive_arguments_type{
             std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -207,7 +207,7 @@ void test_and_operation_0d1d_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -234,7 +234,7 @@ void test_and_operation_0d1d_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -263,7 +263,7 @@ void test_and_operation_0d1d_double_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -289,7 +289,7 @@ void test_and_operation_0d1d_double_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -317,7 +317,7 @@ void test_and_operation_0d1d_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -344,7 +344,7 @@ void test_and_operation_0d1d_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -373,7 +373,7 @@ void test_and_operation_0d1d_double_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -400,7 +400,7 @@ void test_and_operation_0d1d_double_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -429,7 +429,7 @@ void test_and_operation_0d2d_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -456,7 +456,7 @@ void test_and_operation_0d2d_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -485,7 +485,7 @@ void test_and_operation_0d2d_double_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -511,7 +511,7 @@ void test_and_operation_0d2d_double_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -539,7 +539,7 @@ void test_and_operation_0d2d_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -566,7 +566,7 @@ void test_and_operation_0d2d_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -595,7 +595,7 @@ void test_and_operation_0d2d_double_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -622,7 +622,7 @@ void test_and_operation_0d2d_double_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -652,7 +652,7 @@ void test_and_operation_1d()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -680,7 +680,7 @@ void test_and_operation_1d_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -710,7 +710,7 @@ void test_and_operation_1d_double()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -738,7 +738,7 @@ void test_and_operation_1d_double_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -767,7 +767,7 @@ void test_and_operation_1d0d_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -794,7 +794,7 @@ void test_and_operation_1d0d_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -823,7 +823,7 @@ void test_and_operation_1d0d_double_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -849,7 +849,7 @@ void test_and_operation_1d0d_double_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -877,7 +877,7 @@ void test_and_operation_1d0d_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -904,7 +904,7 @@ void test_and_operation_1d0d_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -933,7 +933,7 @@ void test_and_operation_1d0d_double_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -960,7 +960,7 @@ void test_and_operation_1d0d_double_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -992,7 +992,7 @@ void test_and_operation_1d2d()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1026,7 +1026,7 @@ void test_and_operation_1d2d_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1062,7 +1062,7 @@ void test_and_operation_1d2d_double()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1096,7 +1096,7 @@ void test_and_operation_1d2d_double_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1130,7 +1130,7 @@ void test_and_operation_2d()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1158,7 +1158,7 @@ void test_and_operation_2d_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1188,7 +1188,7 @@ void test_and_operation_2d_double()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1216,7 +1216,7 @@ void test_and_operation_2d_double_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1245,7 +1245,7 @@ void test_and_operation_2d0d_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1272,7 +1272,7 @@ void test_and_operation_2d0d_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1301,7 +1301,7 @@ void test_and_operation_2d0d_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1328,7 +1328,7 @@ void test_and_operation_2d0d_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1357,7 +1357,7 @@ void test_and_operation_2d0d_double_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1384,7 +1384,7 @@ void test_and_operation_2d0d_double_lit_true()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1413,7 +1413,7 @@ void test_and_operation_2d0d_double_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1439,7 +1439,7 @@ void test_and_operation_2d0d_double_lit_false()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1470,7 +1470,7 @@ void test_and_operation_2d1d()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1503,7 +1503,7 @@ void test_and_operation_2d1d_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1538,7 +1538,7 @@ void test_and_operation_2d1d_double()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =
@@ -1571,7 +1571,7 @@ void test_and_operation_2d1d_double_lit()
     phylanx::execution_tree::primitive and_operation =
         phylanx::execution_tree::primitives::create_and_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)});
 
     phylanx::execution_tree::primitive_argument_type f =

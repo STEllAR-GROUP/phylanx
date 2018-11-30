@@ -6,10 +6,13 @@
 
 set(tests
     eval
+    dictionary
     for
+    slice
     make_array
     map_numpy
     set_operation
+    parallel
    )
 
 foreach(test ${tests})

@@ -3,8 +3,6 @@
 //   Distributed under the Boost Software License, Version 1.0. (See accompanying
 //   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// Fixing #244: Can not create a list or a vector of previously defined variables
-
 #include <phylanx/phylanx.hpp>
 
 #include <hpx/hpx_main.hpp>
@@ -15,9 +13,11 @@
 #include <iostream>
 #include <string>
 
+#define ARRAY_SIZE std::int64_t(100000)
+
 ///////////////////////////////////////////////////////////////////////////////
 std::string const randstr = R"(
-    define(call, size, random(size, "uniform"))
+    define(call, size, random(size, list("uniform_int", 0, 99999)))
     call
 )";
 
@@ -29,7 +29,19 @@ std::string const bench1 = R"(
         for_each(
             lambda(i, store(z, slice(x, slice(local_y, i)) + 1)),
             range(k)
-        )
+        ),
+        z
+    ))
+    run
+)";
+
+std::string const bench1_intidx = R"(
+    define(run, y, k, block(
+        define(x, constant(0.0, k)),
+        define(local_y, y),
+        define(z, 0),
+        store(z, slice(x, local_y) + 1),
+        z
     ))
     run
 )";
@@ -44,12 +56,21 @@ std::string const bench2 = R"(
                 store(slice(x, idx), slice(x, idx) + 1)
             )),
             range(k)
-        )
+        ),
+        x
     ))
     run
 )";
 
-#define ARRAY_SIZE std::int64_t(100000)
+std::string const bench2_intidx = R"(
+    define(run, y, k, block(
+        define(x, constant(0.0, k)),
+        define(local_y, y),
+        store(slice(x, local_y), slice(x, local_y) + 1),
+        x
+    ))
+    run
+)";
 
 ///////////////////////////////////////////////////////////////////////////////
 template <typename Data>
@@ -77,10 +98,16 @@ int main(int argc, char* argv[])
     auto const& rand_code = phylanx::execution_tree::compile(randstr, snippets);
     auto rand = rand_code.run();
 
-    auto y = rand(ARRAY_SIZE);
+    phylanx::execution_tree::primitive_arguments_type dims{
+        phylanx::execution_tree::primitive_argument_type(ARRAY_SIZE)};
+
+    auto y = rand(dims);
 
     benchmark("bench1", snippets, bench1, y);
     benchmark("bench2", snippets, bench2, y);
+
+    benchmark("bench1_intidx", snippets, bench1_intidx, y);
+    benchmark("bench2_intidx", snippets, bench2_intidx, y);
 
     return 0;
 }

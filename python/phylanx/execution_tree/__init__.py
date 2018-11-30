@@ -4,7 +4,14 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 try:
-    from _phylanx.execution_tree import *
+    from phylanx._phylanx.execution_tree import *
 
 except Exception:
-    from _phylanxd.execution_tree import *
+    from phylanx._phylanxd.execution_tree import *
+
+
+class parallel:
+
+    @staticmethod
+    def is_parallel_block():
+        return True

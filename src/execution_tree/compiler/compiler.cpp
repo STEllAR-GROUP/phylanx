@@ -45,10 +45,20 @@ namespace phylanx { namespace execution_tree { namespace compiler
         for (auto const& patterns : patterns_list)
         {
             auto const& p = hpx::util::get<1>(patterns);
-            if (!hpx::util::get<1>(p).empty())
+            if (!p.patterns_.empty())
             {
-                result.define(hpx::util::get<0>(p),
-                    builtin_function(hpx::util::get<2>(p), default_locality));
+                result.define(p.primitive_type_,
+                    builtin_function(p.create_primitive_, default_locality));
+            }
+
+            if (p.supports_dtype_)
+            {
+                result.define(p.primitive_type_ + "__bool",
+                    builtin_function(p.create_primitive_, default_locality));
+                result.define(p.primitive_type_ + "__int",
+                    builtin_function(p.create_primitive_, default_locality));
+                result.define(p.primitive_type_ + "__float",
+                    builtin_function(p.create_primitive_, default_locality));
             }
         }
 
@@ -61,21 +71,52 @@ namespace phylanx { namespace execution_tree { namespace compiler
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    namespace detail
+    {
+        std::string construct_extended_pattern(std::string pattern,
+            std::string const& main_name, std::string const& suffix)
+        {
+            auto p = pattern.find(main_name);
+            if (p != std::string::npos)
+            {
+                pattern.replace(p, main_name.size(), main_name + suffix);
+            }
+            return pattern;
+        }
+
+        void insert_pattern(expression_pattern_list& result,
+            std::string pattern, match_pattern_type const& p,
+            std::string const& suffix = "")
+        {
+            pattern =
+                construct_extended_pattern(pattern, p.primitive_type_, suffix);
+
+            auto exprs = ast::generate_ast(pattern);
+            HPX_ASSERT(exprs.size() == 1);
+
+            result.insert(expression_pattern_list::value_type(
+                p.primitive_type_ + suffix,
+                hpx::util::make_tuple(pattern, exprs[0], p.create_primitive_)
+            ));
+        }
+    }
+
     expression_pattern_list generate_patterns(pattern_list const& patterns_list)
     {
         expression_pattern_list result;
         for (auto const& patterns : patterns_list)
         {
             auto const& p = hpx::util::get<1>(patterns);
-            for (auto const& pattern : hpx::util::get<1>(p))
+            for (auto const& pattern : p.patterns_)
             {
-                auto exprs = ast::generate_ast(pattern);
-                HPX_ASSERT(exprs.size() == 1);
+                detail::insert_pattern(result, pattern, p);
 
-                result.insert(expression_pattern_list::value_type(
-                    hpx::util::get<0>(p),
-                    hpx::util::make_tuple(
-                        pattern, exprs[0], hpx::util::get<2>(p))));
+                if (p.supports_dtype_)
+                {
+                    detail::insert_pattern(result, pattern, p, "__bool");
+                    detail::insert_pattern(result, pattern, p, "__int");
+                    detail::insert_pattern(result, pattern, p, "__float");
+                }
             }
         }
         return result;
@@ -440,7 +481,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 auto at = cf->target<access_target>();
                 if (at == nullptr || at->target_name_ != "access-variable")
                 {
-//                     if (cf->target<access_argument>() == nullptr)
+                    if (cf->target<access_argument>() == nullptr)
                     {
                         return false;
                     }
@@ -557,7 +598,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     id.id, id.col, snippets_.compile_id_ - 1);
                 name_parts.instance = std::move(name);
 
-                std::vector<primitive_argument_type> fargs;
+                primitive_arguments_type fargs;
                 fargs.reserve(argexprs.size() + 1);
 
                 fargs.push_back(
@@ -644,6 +685,17 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     name_, id));
         }
 
+        // separate name from possible dtype
+        static std::string extract_name_and_dtype(std::string const& fullname)
+        {
+            std::string::size_type p  = fullname.find("__");
+            if (p != std::string::npos)
+            {
+                return fullname.substr(0, p);
+            }
+            return fullname;
+        }
+
     public:
         function operator()(ast::expression const& expr)
         {
@@ -651,7 +703,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
             if (ast::detail::is_function_call(expr))
             {
                 // handle function calls separately
-                std::string function_name = ast::detail::function_name(expr);
+                std::string const& function_name =
+                    ast::detail::function_name(expr);
 
                 expression_pattern_list::const_iterator cit =
                     patterns_.lower_bound(function_name);

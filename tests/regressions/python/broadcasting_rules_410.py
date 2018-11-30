@@ -7,14 +7,14 @@
 # operations between a vector and a matrix with only one column
 
 import numpy as np
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 
 ###############################################################################
 # Add
 ###############################################################################
 
 
-@Phylanx()
+@Phylanx
 def add_op(lhs, rhs):
     return lhs + rhs
 
@@ -76,7 +76,7 @@ assert compare_add_with_numpy([[3.]], [[1.], [2.]])
 ###############################################################################
 
 
-@Phylanx()
+@Phylanx
 def sub_op(lhs, rhs):
     return lhs - rhs
 
@@ -138,7 +138,7 @@ assert compare_sub_with_numpy([[3.]], [[1.], [2.]])
 ###############################################################################
 
 
-@Phylanx()
+@Phylanx
 def mul_op(lhs, rhs):
     return lhs * rhs
 
@@ -200,7 +200,7 @@ assert compare_mul_with_numpy([[3.]], [[1.], [2.]])
 ###############################################################################
 
 
-@Phylanx()
+@Phylanx
 def div_op(lhs, rhs):
     return lhs / rhs
 

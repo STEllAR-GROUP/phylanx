@@ -25,15 +25,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         access_function() = default;
 
-        access_function(std::vector<primitive_argument_type>&& operands,
+        access_function(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        void store(std::vector<primitive_argument_type>&& val,
-            std::vector<primitive_argument_type>&& params) override;
+        void store(primitive_arguments_type&& val,
+            primitive_arguments_type&& params) override;
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params,
-            eval_mode mode) const override;
+            primitive_arguments_type const& params,
+            eval_context ctx) const override;
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;

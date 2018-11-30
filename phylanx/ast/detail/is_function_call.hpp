@@ -77,15 +77,6 @@ namespace phylanx { namespace ast { namespace detail
         return function_arguments(ast.get());
     }
 
-//     inline bool is_function_call(identifier const& id)
-//     {
-//         return !id.name.empty();
-//     }
-//     inline std::string function_name(identifier const& id)
-//     {
-//         return id.name;
-//     }
-
     inline bool is_function_call(operation const& op)
     {
         return is_function_call(op.operand_);

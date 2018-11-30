@@ -47,7 +47,7 @@ char const* const als_explicit = R"(
             define(conf, alpha * ratings),
 
             define(conf_u, constant(0.0, make_list(num_items))),
-            define(conf_i, constant(0.0,make_list(num_users))),
+            define(conf_i, constant(0.0, make_list(num_users))),
 
             define(c_u, constant(0.0, make_list(num_items, num_items))),
             define(c_i, constant(0.0, make_list(num_users, num_users))),
@@ -71,25 +71,25 @@ char const* const als_explicit = R"(
 
             while(k < iterations,
                 block(
-                    store(YtY, dot(transpose(Y), Y) + regularization*I_f),
-                    store(XtX, dot(transpose(X), X) + regularization*I_f),
+                    if(enable_output,
+                            block(
+                                    cout("iteration ", k, u),
+                                    cout("X: ",X),
+                                    cout("Y: ",Y)
+                            )
+                    ),
+                    store(YtY, dot(transpose(Y), Y) + regularization * I_f),
+                    store(XtX, dot(transpose(X), X) + regularization * I_f),
 
                     while(u < num_users,
                         block(
-                                if(enable_output,
-                                        block(
-                                                cout("iteration ",k,u) //,
-//                                                cout("X: ",X),
-//                                                cout("Y: ",Y)
-                                        )
-                                ),
                             store(conf_u, slice_row(conf, u)),
                             store(c_u, diag(conf_u)),
-                            store(p_u, __ne(conf_u,0.0,true)),
-                            store(A, dot(dot(transpose(Y),c_u),Y)+ YtY),
-                            store(b, dot(dot(transpose(Y),(c_u + I_i)),transpose(p_u))),
-                            set_row(X,u,u+1,1,dot(inverse(A),b)),
-                            store(u, u+1)
+                            store(p_u, __ne(conf_u, 0.0, true)),
+                            store(A, dot(dot(transpose(Y), c_u), Y)+ YtY),
+                            store(b, dot(dot(transpose(Y),(c_u + I_i)), transpose(p_u))),
+                            store(slice(X, list(u, u + 1, 1),nil), dot(inverse(A), b)),
+                            store(u, u + 1)
                         )
                     ),
                     store(u, 0),
@@ -97,24 +97,24 @@ char const* const als_explicit = R"(
                         block(
                             store(conf_i, slice_column(conf, i)),
                             store(c_i, diag(conf_i)),
-                            store(p_i, __ne(conf_i,0.0,true)),
-                            store(A, dot(dot(transpose(X),c_i),X) + XtX),
-                            store(b, dot(dot(transpose(X),(c_i + I_u)),transpose(p_i))),
-                            set_row(Y,i,i+1,1,dot(inverse(A),b)),
-                            store(i, i+1)
+                            store(p_i, __ne(conf_i, 0.0, true)),
+                            store(A, dot(dot(transpose(X),c_i), X) + XtX),
+                            store(b, dot(dot(transpose(X),(c_i + I_u)), transpose(p_i))),
+                            store(slice(Y, list(i, i + 1, 1),nil), dot(inverse(A), b)),
+                            store(i, i + 1)
                         )
                     ),
                     store(i, 0),
-                    store(k,k+1)
+                    store(k, k + 1)
                 )
             ),
-            make_list(X, Y)
+            list(X, Y)
         )
     )
     als_explicit
 )";
 
-std::string const als_direct = R"(b
+std::string const als_direct = R"(
     //
     // Alternating Least squares algorithm (ALS) (direct implementation)
     //

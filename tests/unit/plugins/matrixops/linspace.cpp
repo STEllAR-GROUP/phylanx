@@ -30,7 +30,7 @@ void test_linspace0d()
     phylanx::execution_tree::primitive linspace =
         phylanx::execution_tree::primitives::create_linspace(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(start), std::move(stop), std::move(num_samples)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -60,7 +60,7 @@ void test_linspace1d()
     phylanx::execution_tree::primitive linspace =
         phylanx::execution_tree::primitives::create_linspace(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(start), std::move(stop), std::move(num_samples)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =

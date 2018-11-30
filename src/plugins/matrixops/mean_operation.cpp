@@ -34,19 +34,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("mean",
             std::vector<std::string>{"mean(_1, _2)", "mean(_1)"},
             &create_mean_operation,
-            &create_primitive<mean_operation>)
+            &create_primitive<mean_operation>,
+            "ar, axis\n"
+            "Args:\n"
+            "\n"
+            "    ar (array) : an array of values\n"
+            "    axis (optional, int) : the axis along which to calcualte the mean\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The mean of the array. If an axis is specified, the result is the vector "
+            "created when the mean is taken along the specified axis."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     mean_operation::mean_operation(
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-
     primitive_argument_type mean_operation::mean0d(args_type&& args) const
     {
         // `axis` is optional
@@ -57,19 +67,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "mean_operation::mean0d",
-                    util::generate_error_message(
-                        "operand axis must be a scalar", name_, codename_));
+                    generate_error_message(
+                        "operand axis must be a scalar"));
             }
-            const int axis = args[1].scalar();
+
             // `axis` can only be -1 or 0
+            int const axis = args[1].scalar();
             if (axis < -1 || axis > 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "mean_operation::mean0d",
-                    util::generate_error_message(
+                    generate_error_message(
                         "operand axis can only between -1 and 0 for "
-                        "an a operand that is 0d",
-                        name_, codename_));
+                        "an a operand that is 0d"));
             }
         }
         return primitive_argument_type{std::move(args[0])};
@@ -86,8 +96,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "mean_operation::mean1d",
-                    util::generate_error_message(
-                        "operand axis must be a scalar", name_, codename_));
+                    generate_error_message(
+                        "operand axis must be a scalar"));
             }
             const int axis = args[1].scalar();
             // `axis` can only be -1 or 0
@@ -95,10 +105,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "mean_operation::mean1d",
-                    util::generate_error_message(
+                    generate_error_message(
                         "operand axis can only between -1 and 0 for "
-                        "an a operand that is 1d",
-                        name_, codename_));
+                        "an a operand that is 1d"));
             }
         }
 
@@ -109,9 +118,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mean_operation::mean1d",
-                util::generate_error_message(
-                    "attempt to get mean of an empty sequence", name_,
-                    codename_));
+                generate_error_message(
+                    "attempt to get mean of an empty sequence"));
         }
 
         // Find the sum of all the elements
@@ -197,9 +205,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mean_operation::mean2d",
-                util::generate_error_message(
-                    "attempt to get mean of an empty sequence", name_,
-                    codename_));
+                generate_error_message(
+                    "attempt to get mean of an empty sequence"));
         }
 
         // `axis` is optional
@@ -214,57 +221,53 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mean_operation::mean2d",
-                util::generate_error_message(
-                    "operand axis must be a scalar", name_, codename_));
+                generate_error_message(
+                    "operand axis must be a scalar"));
         }
-        const int axis = args[1].scalar();
+
         // `axis` can only be -2, -1, 0, or 1
+        int const axis = args[1].scalar();
         if (axis < -2 || axis > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mean_operation::mean2d",
-                util::generate_error_message(
+                generate_error_message(
                     "operand axis can only between -2 and 1 for an a "
-                    "operand that is 2d",
-                    name_, codename_));
+                    "operand that is 2d"));
         }
+
         switch (axis)
         {
-        // Option 2: Find mean among rows
-        case -2:
-            HPX_FALLTHROUGH;
+        case -2: HPX_FALLTHROUGH;
         case 0:
+            // Option 2: Find mean among rows
             return mean2d_x_axis(std::move(args[0]));
 
-            // Option 3: Find mean among columns
-        case -1:
-            HPX_FALLTHROUGH;
+        case -1: HPX_FALLTHROUGH;
         case 1:
+            // Option 3: Find mean among columns
             return mean2d_y_axis(std::move(args[0]));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mean_operation::mean2d",
-                util::generate_error_message(
-                    "operand a has an invalid number of "
-                    "dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "operand a has an invalid number of dimensions"));
         }
     }
 
     hpx::future<primitive_argument_type> mean_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1 && operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "mean_operation::mean_operation",
-                util::generate_error_message(
+                generate_error_message(
                     "the mean_operation primitive requires "
-                    "either one or two arguments",
-                    name_, codename_));
+                    "either one or two arguments"));
         }
 
         bool arguments_valid = true;
@@ -280,17 +283,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "mean_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the mean_operation primitive requires "
                     "that the arguments given by the operands "
-                    "array are valid",
-                    name_, codename_));
+                    "array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](args_type&& args) -> primitive_argument_type
+                [this_ = std::move(this_)](args_type&& args)
+                -> primitive_argument_type
                 {
                     std::size_t matrix_dims = args[0].num_dimensions();
                     switch (matrix_dims)
@@ -307,24 +310,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "mean_operation::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "left hand side operand has unsupported "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
+                                "number of dimensions"));
                     }
                 }),
             detail::map_operands(operands, functional::numeric_operand{},
-                args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> mean_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                args, name_, codename_, std::move(ctx)));
     }
 }}}

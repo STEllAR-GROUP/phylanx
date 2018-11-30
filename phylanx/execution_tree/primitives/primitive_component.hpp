@@ -35,14 +35,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         PHYLANX_EXPORT static std::shared_ptr<primitive_component_base>
         create_primitive(std::string const& type,
-            std::vector<primitive_argument_type>&& params,
+            primitive_arguments_type&& params,
             std::string const& name, std::string const& codename);
 
     public:
         primitive_component() = default;
 
         primitive_component(std::string const& type,
-                std::vector<primitive_argument_type>&& operands,
+                primitive_arguments_type&& operands,
                 std::string const& name, std::string const& codename)
           : primitive_(
                 create_primitive(type, std::move(operands), name, codename))
@@ -51,18 +51,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // eval_action
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params,
-            eval_mode mode) const;
+            primitive_arguments_type const& params,
+            eval_context ctx) const;
 
         PHYLANX_EXPORT hpx::future<primitive_argument_type> eval_single(
-            primitive_argument_type && param, eval_mode mode) const;
+            primitive_argument_type && param, eval_context ctx) const;
 
         // store_action
-        PHYLANX_EXPORT void store(std::vector<primitive_argument_type>&&,
-            std::vector<primitive_argument_type>&&);
+        PHYLANX_EXPORT void store(primitive_arguments_type&&,
+            primitive_arguments_type&&);
 
         PHYLANX_EXPORT void store_single(primitive_argument_type&&,
-            std::vector<primitive_argument_type>&&);
+            primitive_arguments_type&&);
 
         // extract_topology_action
         PHYLANX_EXPORT topology expression_topology(
@@ -71,7 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         // bind an invocable object
         PHYLANX_EXPORT bool bind(
-            std::vector<primitive_argument_type> const& params) const;
+            primitive_arguments_type const& params, eval_context ctx) const;
 
         HPX_DEFINE_COMPONENT_ACTION(
             primitive_component, eval, eval_action);

@@ -9,6 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/lcos/future.hpp>
 
@@ -33,15 +34,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public primitive_component_base
       , public std::enable_shared_from_this<random>
     {
-        static std::uint32_t seed_;     // The current seed for the generator.
-        static std::uint32_t default_seed();
-
-    public:
-        static std::mt19937 rng_;       // The Mersenne twister generator.
-
-        static void set_seed(std::uint32_t);
-        static std::uint32_t get_seed();
-
     public:
         static match_pattern_type const match_data;
 
@@ -68,7 +60,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///             (default: <code>list("normal", 0.0, 1.0)</code>).\n
         ///
         /// \note       Possible values for \a parameters\n
-        ///     list("uniform", min, max): Produces integer values evenly
+        ///     list("uniform_int", min, max): Produces integer values evenly
+        ///             distributed across a range ([min, max): range of
+        ///             generated values)\n
+        ///     list("uniform", min, max): Produces floating point values evenly
         ///             distributed across a range ([min, max): range of
         ///             generated values)\n
         ///     list("bernoulli", p):      Produces random boolean values,
@@ -127,16 +122,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///             values, distributed according to the student probability
         ///             density function (n: degrees of freedom)\n
         ///
-        random(std::vector<primitive_argument_type>&& operands,
+        random(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args) const override;
 
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         primitive_argument_type random0d(
             distribution_parameters_type&& params) const;
@@ -147,7 +140,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_random(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

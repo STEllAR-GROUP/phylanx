@@ -14,10 +14,14 @@
 #include <hpx/include/performance_counters.hpp>
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/util/assert.hpp>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -25,6 +29,55 @@
 namespace phylanx { namespace util
 {
     ///////////////////////////////////////////////////////////////////////////
+    std::string enable_measurements(std::string const& primitive_instance)
+    {
+        using phylanx::execution_tree::primitives::primitive_component;
+
+        hpx::id_type id =
+            hpx::agas::resolve_name(hpx::launch::sync, primitive_instance);
+
+        auto p = hpx::get_ptr<primitive_component>(hpx::launch::sync, id);
+
+        p->enable_measurements();
+
+        return primitive_instance;
+    }
+
+    std::vector<std::string> enable_measurements(
+        std::vector<std::string> const& primitive_instances)
+    {
+        if (primitive_instances.empty())
+        {
+            return enable_measurements(
+                hpx::agas::find_symbols(hpx::launch::sync, "/phylanx/*$*"));
+        }
+
+        using phylanx::execution_tree::primitives::primitive_component;
+
+        std::vector<hpx::future<std::shared_ptr<primitive_component>>> primitives;
+        primitives.reserve(primitive_instances.size());
+
+        for (auto const& entry : primitive_instances)
+        {
+            hpx::future<hpx::id_type> f = hpx::agas::resolve_name(entry);
+            primitives.emplace_back(f.then(
+                [](hpx::future<hpx::id_type>&& f)
+                ->  hpx::future<std::shared_ptr<primitive_component>>
+                {
+                    return hpx::get_ptr<primitive_component>(f.get());
+                }));
+        }
+
+        hpx::wait_all(primitives);
+
+        for (auto& f : primitives)
+        {
+            f.get()->enable_measurements();
+        }
+
+        return primitive_instances;
+    }
+
     std::vector<std::string> enable_measurements(
         std::map<std::string, hpx::id_type> const& primitive_instances)
     {
@@ -144,6 +197,33 @@ namespace phylanx { namespace util
             }
         }
 
+        // collect range of tags for each primitive type
+        std::map<std::string, std::pair<std::int64_t, std::int64_t>> tag_ranges;
+
+        // Iterate and collect the result from the futures
+        constexpr std::int64_t maxval = (std::numeric_limits<std::int64_t>::max)();
+        constexpr std::int64_t minval = (std::numeric_limits<std::int64_t>::min)();
+
+        for (auto const& name : primitive_instances)
+        {
+            // Parse the primitive name
+            auto const tags =
+                phylanx::execution_tree::compiler::parse_primitive_name(name);
+
+            auto it = tag_ranges.find(tags.primitive);
+            if (it == tag_ranges.end())
+            {
+                auto p = tag_ranges.insert(decltype(tag_ranges)::value_type(
+                    tags.primitive, std::make_pair(maxval, minval)));
+                it = p.first;
+            }
+
+            it->second.first =
+                (std::min)(it->second.first, tags.sequence_number);
+            it->second.second =
+                (std::max)(it->second.second, tags.sequence_number);
+        }
+
         // Return value
         std::map<std::string, std::vector<std::int64_t>> result;
 
@@ -158,11 +238,17 @@ namespace phylanx { namespace util
             std::vector<std::vector<std::int64_t>>& counter_values =
                 counter_values_pile[tags.primitive];
 
+            // extract offset for sequence number
+            auto const& r = tag_ranges[tags.primitive];
+
             // Collect the performance counter values
             std::vector<std::int64_t> data(counter_name_last_parts.size());
             for (unsigned int i = 0; i < counter_values.size(); ++i)
             {
-                data[i] = counter_values[i][tags.sequence_number];
+                HPX_ASSERT(static_cast<std::size_t>(r.second - r.first) <
+                    counter_values[i].size());
+
+                data[i] = counter_values[i][tags.sequence_number - r.first];
             }
 
             result.emplace(decltype(result)::value_type(name, data));

@@ -32,19 +32,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("gradient",
             std::vector<std::string>{"gradient(_1, _2)", "gradient(_1)"},
             &create_gradient_operation,
-            &create_primitive<gradient_operation>)
+            &create_primitive<gradient_operation>,
+            "m, axis\n"
+            "Args:\n"
+            "\n"
+            "    m (vector or matrix) : values to take the gradient of\n"
+            "    axis (optional, integer) : the axis along whic to take\n"
+            "                    the gradient.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The numerical gradient, i.e., differences of adjacent values "
+            "along the specified axis."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     gradient_operation::gradient_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     using arg_type = ir::node_data<double>;
-    using args_type = std::vector<arg_type>;
+    using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
     using storage1d_type = typename arg_type::storage1d_type;
     using storage2d_type = typename arg_type::storage2d_type;
 
@@ -172,7 +184,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                 }
             }
-            return primitive_argument_type{std::vector<primitive_argument_type>{
+            return primitive_argument_type{primitive_arguments_type{
                 primitive_argument_type{
                     ir::node_data<double>{storage2d_type{std::move(gradient)}}},
                 primitive_argument_type{ir::node_data<double>{
@@ -181,18 +193,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> gradient_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                 "gradient_operation::gradient_operation",
-                util::generate_error_message(
+                generate_error_message(
                     "the gradient_operation primitive requires "
-                    "either one or two arguments",
-                    name_, codename_));
+                    "either one or two arguments"));
         }
 
         bool arguments_valid = true;
@@ -208,17 +219,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "gradient_operation::eval",
-                util::generate_error_message(
-                    "the gradient_operation primitive requires "
-                    "that the arguments given by the operands "
-                    "array are valid",
-                    name_, codename_));
+                generate_error_message(
+                    "the gradient_operation primitive requires that the "
+                    "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](args_type&& args) -> primitive_argument_type {
+                [this_ = std::move(this_)](args_type&& args)
+                -> primitive_argument_type
+                {
                     std::size_t matrix_dims = args[0].num_dimensions();
                     switch (matrix_dims)
                     {
@@ -242,16 +253,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> gradient_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

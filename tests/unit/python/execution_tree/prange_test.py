@@ -4,7 +4,7 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import phylanx
-from phylanx.ast import *
+from phylanx import Phylanx
 from phylanx.util import prange
 
 # @Phylanx(debug=True)
@@ -14,10 +14,16 @@ from phylanx.util import prange
 
 # test_prange()
 
+import numpy as np
 
-@Phylanx(debug=True)
+
+@Phylanx
 def test_prange_list():
-    arr = [0, 0, 0, 0, 0]
+
+    # TODO: originaly just a list which does not work.
+    # replacing the list with numpy array resolves the issue
+    arr = np.array([0, 0, 0, 0, 0])
+    # arr = [0, 0, 0, 0, 0]
     arrlen = 5
 
     # TODO: add 'len' support

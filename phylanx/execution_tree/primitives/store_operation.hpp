@@ -27,20 +27,20 @@ namespace phylanx {namespace execution_tree { namespace primitives
 
         store_operation() = default;
 
-        store_operation(std::vector<primitive_argument_type>&& operands,
+        store_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& args,
-            eval_mode) const override;
+            primitive_arguments_type const& args,
+            eval_context) const override;
 
         hpx::future<primitive_argument_type> eval(
-            primitive_argument_type&& arg, eval_mode mode) const override;
+            primitive_argument_type&& arg, eval_context ctx) const override;
     };
 
     PHYLANX_EXPORT primitive create_store_operation(
         hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "");
 }}}
 

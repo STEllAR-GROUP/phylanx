@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({v.size(), 1UL}));
+            phylanx::ir::node_data<double>::dimensions_type({1UL, v.size()}));
 
         test_serialization(array_value);
     }
@@ -72,7 +72,8 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<std::uint8_t>::dimensions_type({v.size(), 1UL}));
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type(
+                {1UL, v.size()}));
     }
 
     {
@@ -83,7 +84,8 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-                 phylanx::ir::node_data<std::int64_t>::dimensions_type({v.size(), 1UL}));
+            phylanx::ir::node_data<std::int64_t>::dimensions_type(
+                {1UL, v.size()}));
 
         test_serialization(array_value);
     }
@@ -96,7 +98,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({v.size(), 1UL}));
+            phylanx::ir::node_data<double>::dimensions_type({1UL, v.size()}));
 
         test_serialization(array_value);
     }
@@ -109,7 +111,8 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-                 phylanx::ir::node_data<std::int64_t>::dimensions_type({v.size(), 1UL}));
+            phylanx::ir::node_data<std::int64_t>::dimensions_type(
+                {1UL, v.size()}));
 
         test_serialization(array_value);
     }

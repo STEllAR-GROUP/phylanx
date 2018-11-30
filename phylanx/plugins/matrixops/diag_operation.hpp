@@ -26,11 +26,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     protected:
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args) const;
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type>;
+        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
         using storage1d_type = typename arg_type::storage1d_type;
         using storage2d_type = typename arg_type::storage2d_type;
 
@@ -62,11 +63,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
          * >numpy.diag</a>
          */
 
-        diag_operation(std::vector<primitive_argument_type>&& operands,
+        diag_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params) const override;
 
     private:
         primitive_argument_type diag0d(args_type&& args) const;
@@ -75,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     };
 
     inline primitive create_diag_operation(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name = "", std::string const& codename = "")
     {
         return create_primitive_component(

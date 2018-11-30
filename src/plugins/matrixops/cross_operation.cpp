@@ -28,11 +28,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("cross",
             std::vector<std::string>{"cross(_1, _2)"},
-            &create_cross_operation, &create_primitive<cross_operation>)
+            &create_cross_operation, &create_primitive<cross_operation>,
+            "v1, v2\n"
+            "Args:\n"
+            "\n"
+            "    v1 (vector) : a vector\n"
+            "    v2 (vector) : a vector\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The cross product of `v1` and `v2`."
+            )
     };
 
     cross_operation::cross_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -52,10 +62,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross1d",
-                util::generate_error_message(
+                generate_error_message(
                     "right hand side operand has unsupported number of "
-                        "dimensions",
-                    name_, codename_));
+                        "dimensions"));
         }
     }
 
@@ -69,9 +78,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross1d1d",
-                util::generate_error_message(
-                    "operands have an invalid number of columns",
-                name_, codename_));
+                generate_error_message(
+                    "operands have an invalid number of columns"));
         }
 
         // lhs vector has 2 elements
@@ -171,9 +179,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "cross_operation::cross1d2d",
-            util::generate_error_message(
-                "operand vectors have an invalid number of elements",
-                name_, codename_));
+            generate_error_message(
+                "operand vectors have an invalid number of elements"));
     }
 
     primitive_argument_type cross_operation::cross2d(
@@ -190,10 +197,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross2d",
-                util::generate_error_message(
+                generate_error_message(
                     "right hand side operand has unsupported number of "
-                        "dimensions",
-                    name_, codename_));
+                        "dimensions"));
         }
     }
 
@@ -254,9 +260,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "cross_operation::cross2d1d",
-            util::generate_error_message(
-                "operand vectors have an invalid number of elements",
-                name_, codename_));
+            generate_error_message(
+                "operand vectors have an invalid number of elements"));
     }
 
     primitive_argument_type cross_operation::cross2d2d(
@@ -267,9 +272,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::cross2d",
-                util::generate_error_message(
-                    "operands have non-matching number of rows",
-                    name_, codename_));
+                generate_error_message(
+                    "operands have non-matching number of rows"));
         }
 
         // If both have 2 elements per vector
@@ -352,38 +356,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "cross_operation::cross2d2d",
-            util::generate_error_message(
-                "operand vectors have an invalid number of elements",
-                name_, codename_));
+            generate_error_message(
+                "operand vectors have an invalid number of elements"));
     }
 
     hpx::future<primitive_argument_type> cross_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the cross_operation primitive requires exactly two "
-                        "operands",
-                    name_, codename_));
+                        "operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "cross_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the cross_operation primitive requires that the "
-                        "arguments given by the operands array are valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](operand_type&& op1, operand_type&& op2)
+            [this_ = std::move(this_)](operand_type&& op1, operand_type&& op2)
             ->  primitive_argument_type
             {
                 switch (op1.num_dimensions())
@@ -397,24 +398,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "cross_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_),
-            numeric_operand(operands[1], args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> cross_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args, name_, codename_, ctx),
+            numeric_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}
 

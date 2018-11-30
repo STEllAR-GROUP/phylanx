@@ -23,49 +23,52 @@
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
 {
+    constexpr char const* const helpstring = R"(
+        args
+        Args:
+
+            *args (list of values, optional): a list of values
+
+        Returns:
+
+        A Phylanx list populated by the values supplied.
+    )";
+
     ///////////////////////////////////////////////////////////////////////////
     std::vector<match_pattern_type> const make_list::match_data =
     {
-        hpx::util::make_tuple("list",
+        match_pattern_type{"list",
             std::vector<std::string>{"list(__1)"},
-            &create_make_list, &create_primitive<make_list>),
+            &create_make_list, &create_primitive<make_list>, helpstring
+        },
 
-        hpx::util::make_tuple("make_list",
+        match_pattern_type{"make_list",
             std::vector<std::string>{"make_list(__1)"},
-            &create_make_list, &create_primitive<make_list>)
+            &create_make_list, &create_primitive<make_list>, helpstring
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     make_list::make_list(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> make_list::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type> && args)
+            [this_ = std::move(this_)](primitive_arguments_type && args)
             ->  primitive_argument_type
             {
                 return primitive_argument_type{std::move(args)};
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> make_list::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

@@ -23,7 +23,7 @@ void test_extract_shape_0d()
     phylanx::execution_tree::primitive shape =
         phylanx::execution_tree::primitives::create_extract_shape(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
@@ -43,7 +43,7 @@ void test_extract_shape_1d()
     phylanx::execution_tree::primitive shape =
         phylanx::execution_tree::primitives::create_extract_shape(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
@@ -64,7 +64,7 @@ void test_extract_shape_2d_1()
     phylanx::execution_tree::primitive shape =
         phylanx::execution_tree::primitives::create_extract_shape(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();
@@ -91,7 +91,7 @@ void test_extract_shape_2d_2()
     phylanx::execution_tree::primitive shape =
         phylanx::execution_tree::primitives::create_extract_shape(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1), std::move(arg2)});
 
     phylanx::execution_tree::primitive_argument_type f = shape.eval().get();

@@ -116,6 +116,11 @@ phylanx_option(
   "Enable or disable YouCompleteMe configuration support for VIM"
   OFF ADVANCED CATEGORY "Build")
 
+phylanx_option(
+  PHYLANX_WITH_ITERATIVE_SOLVERS BOOL
+  "Enable or disable the iterative solvers"
+  OFF ADVANCED CATEGORY "BUILD")
+
 if(MSVC)
   phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
     "Force creating pseudo targets and pseudo dependencies (default OFF)."
@@ -142,6 +147,13 @@ endif()
 
 set(PHYLANX_TLL_PUBLIC ${HPX_TLL_PUBLIC})
 set(PHYLANX_TLL_PRIVATE ${HPX_TLL_PRIVATE})
+
+################################################################################
+# Add iterative solvers from Blaxeiterative
+################################################################################
+if(PHYLANX_WITH_ITERATIVE_SOLVERS)
+find_package(BlazeIterative)
+endif()
 
 ################################################################################
 # Set basic search paths for the generated Phylanx headers
@@ -201,6 +213,9 @@ if(PHYLANX_WITH_TESTS_BENCHMARKS OR PHYLANX_WITH_TESTS_REGRESSIONS OR PHYLANX_WI
 endif()
 
 # Configure phylanxrun.py
+if(HPX_WITH_PARCELPORT_MPI)
+    find_package(MPI QUIET)
+endif(HPX_WITH_PARCELPORT_MPI)
 configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/phylanxrun.py.in"
                "${CMAKE_BINARY_DIR}/bin/phylanxrun.py"
                @ONLY)

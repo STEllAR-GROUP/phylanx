@@ -67,11 +67,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto const& pattern : get_all_known_patterns())
                 {
                     auto const& p = hpx::util::get<1>(pattern);
-                    if (hpx::util::get<3>(p) != nullptr)
+                    if (p.create_instance_ != nullptr)
                     {
                         instance_.insert(factories_map_type::value_type(
                             hpx::util::get<0>(pattern),
-                            hpx::util::get<3>(p)));
+                            p.create_instance_));
                     }
                 }
             }
@@ -89,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     /////////////////////////////////////////////////////////////////////////
     std::shared_ptr<primitive_component_base>
     primitive_component::create_primitive(std::string const& type,
-        std::vector<primitive_argument_type>&& args, std::string const& name,
+        primitive_arguments_type&& args, std::string const& name,
         std::string const& codename)
     {
         auto const& factories = detail::get_factories();
@@ -108,10 +108,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component::eval(
-        std::vector<primitive_argument_type> const& params,
-        eval_mode mode) const
+        primitive_arguments_type const& params,
+        eval_context ctx) const
     {
-        if ((mode & eval_dont_evaluate_partials) &&
+        if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty() && !params.empty())
         {
             // return a client referring to this component as the evaluation
@@ -120,13 +120,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(params, mode);
+        return primitive_->do_eval(params, std::move(ctx));
     }
 
     hpx::future<primitive_argument_type> primitive_component::eval_single(
-        primitive_argument_type && param, eval_mode mode) const
+        primitive_argument_type && param, eval_context ctx) const
     {
-        if ((mode & eval_dont_evaluate_partials) &&
+        if ((ctx.mode_ & eval_dont_evaluate_partials) &&
             primitive_->operands_.empty())
         {
             // return a client referring to this component as the evaluation
@@ -135,18 +135,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::make_ready_future(
                 primitive_argument_type{std::move(this_)});
         }
-        return primitive_->do_eval(std::move(param), mode);
+        return primitive_->do_eval(std::move(param), std::move(ctx));
     }
 
     // store_action
-    void primitive_component::store(std::vector<primitive_argument_type>&& args,
-        std::vector<primitive_argument_type>&& params)
+    void primitive_component::store(primitive_arguments_type&& args,
+        primitive_arguments_type&& params)
     {
         primitive_->store(std::move(args), std::move(params));
     }
 
     void primitive_component::store_single(primitive_argument_type&& arg,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
         primitive_->store(std::move(arg), std::move(params));
     }
@@ -162,9 +162,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component::bind(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
-        return primitive_->bind(params);
+        return primitive_->bind(params, std::move(ctx));
     }
 
     // access data for performance counter
@@ -209,7 +209,7 @@ namespace phylanx { namespace execution_tree
 {
     primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         return primitive{
@@ -223,7 +223,7 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type operand, std::string const& name,
         std::string const& codename)
     {
-        std::vector<primitive_argument_type> operands;
+        primitive_arguments_type operands;
         operands.emplace_back(std::move(operand));
 
         return primitive{

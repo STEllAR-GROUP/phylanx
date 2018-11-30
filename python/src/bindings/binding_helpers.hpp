@@ -16,10 +16,11 @@
 
 #include <cstdint>
 #include <exception>
+#include <list>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace bindings
@@ -39,12 +40,16 @@ namespace phylanx { namespace bindings
         phylanx::execution_tree::compiler::environment eval_env;
         phylanx::execution_tree::compiler::function_list eval_snippets;
 
+        // data related to measurement status
+        bool enable_measurements;
+        std::vector<std::string> primitive_instances;
+
         static pybind11::object import_phylanx()
         {
 #if defined(_DEBUG)
-            return pybind11::module::import("_phylanxd");
+            return pybind11::module::import("phylanx._phylanxd");
 #else
-            return pybind11::module::import("_phylanx");
+            return pybind11::module::import("phylanx._phylanx");
 #endif
         }
 
@@ -52,6 +57,7 @@ namespace phylanx { namespace bindings
           : m(import_phylanx())
           , eval_env(phylanx::execution_tree::compiler::default_environment())
           , eval_snippets()
+          , enable_measurements(false)
         {
         }
     };
@@ -119,18 +125,28 @@ namespace phylanx { namespace bindings
     template <typename T>
     std::string as_string(T const& value)
     {
-        std::stringstream strm;
-        strm << value;
-        return strm.str();
+        pybind11::gil_scoped_release release;       // release GIL
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::string
+            {
+                std::stringstream strm;
+                strm << value;
+                return strm.str();
+            });
     }
 
     // support for __repr__
     template <typename T>
     std::string repr(T const& value)
     {
-        std::stringstream strm;
-        strm << phylanx::util::repr << value << phylanx::util::norepr;
-        return strm.str();
+        pybind11::gil_scoped_release release;       // release GIL
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::string
+            {
+                std::stringstream strm;
+                strm << phylanx::util::repr << value << phylanx::util::norepr;
+                return strm.str();
+            });
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -139,69 +155,56 @@ namespace phylanx { namespace bindings
     std::vector<char> pickle_helper(Ast const& ast)
     {
         pybind11::gil_scoped_release release;       // release GIL
-        return phylanx::util::serialize(ast);
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> std::vector<char>
+            {
+                return phylanx::util::serialize(ast);
+            });
     }
 
     template <typename Ast>
-    Ast unpickle_helper(std::vector<char> data)
+    Ast unpickle_helper(std::vector<char> const& data)
     {
         pybind11::gil_scoped_release release;       // release GIL
-
-        Ast ast;
-        phylanx::util::detail::unserialize(data, ast);
-        return ast;
+        return hpx::threads::run_as_hpx_thread(
+            [&]() -> Ast
+            {
+                Ast ast;
+                phylanx::util::detail::unserialize(data, ast);
+                return ast;
+            });
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    inline void expression_compiler(std::string xexpr_str, compiler_state& c)
-    {
-        pybind11::gil_scoped_release release;       // release GIL
+    // compile expression
+    std::string expression_compiler(std::string const& file_name,
+        std::string const& xexpr_str, compiler_state& c);
 
-        return hpx::threads::run_as_hpx_thread(
-            [&]() -> void
-            {
-                phylanx::execution_tree::compile(
-                    phylanx::ast::generate_ast(xexpr_str), c.eval_snippets,
-                    c.eval_env);
-            });
-    };
+    // evaluate compiled expression
+    phylanx::execution_tree::primitive_argument_type expression_evaluator(
+        std::string const& file_name, std::string const& xexpr_str,
+        compiler_state& c, pybind11::args args);
 
     ///////////////////////////////////////////////////////////////////////////
-    inline phylanx::execution_tree::primitive_argument_type
-    expression_evaluator(
-        std::string xexpr_str, compiler_state& c, pybind11::args args)
-    {
-        pybind11::gil_scoped_release release;       // release GIL
+    // initialize measurements for tree evaluations
+    std::vector<std::string> enable_measurements(
+        compiler_state& c, bool reset_counters);
 
-        return hpx::threads::run_as_hpx_thread(
-            [&]() -> phylanx::execution_tree::primitive_argument_type
-            {
-                pybind11::gil_scoped_acquire acquire;
-                auto xexpr = phylanx::ast::generate_ast(xexpr_str);
-                auto const& code_x = phylanx::execution_tree::compile(
-                    xexpr, c.eval_snippets, c.eval_env);
-                auto x = code_x.run();
+    // retrieve performance data from all active performance counters
+    std::string retrieve_counter_data(compiler_state& c);
 
-                std::vector<phylanx::execution_tree::primitive_argument_type>
-                    keep_alive;
-                keep_alive.reserve(args.size());
-                std::vector<phylanx::execution_tree::primitive_argument_type>
-                    fargs;
-                fargs.reserve(args.size());
+    // retrieve tree topology in DOT format for given expression
+    std::list<std::string> retrieve_tree_topology(
+        std::string const& file_name, std::string const& xexpr_str,
+        compiler_state& c);
 
-                for (auto const& item : args)
-                {
-                    phylanx::execution_tree::primitive_argument_type value =
-                        item.cast<
-                            phylanx::execution_tree::primitive_argument_type>();
-                    keep_alive.emplace_back(std::move(value));
-                    fargs.emplace_back(extract_ref_value(keep_alive.back()));
-                }
+    // retrieve tree topology in DOT format for given expression
+    std::string retrieve_dot_tree_topology(std::string const& file_name,
+        std::string const& xexpr_str, compiler_state& c);
 
-                pybind11::gil_scoped_release release;       // release GIL
-                return x(std::move(fargs));
-            });
-    };
+    // retrieve tree topology in Newick format for given expression
+    std::string retrieve_newick_tree_topology(std::string const& file_name,
+        std::string const& xexpr_str, compiler_state& c);
 }}
 
 #endif

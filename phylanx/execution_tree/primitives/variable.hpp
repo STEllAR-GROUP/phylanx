@@ -27,25 +27,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         variable() = default;
 
-        variable(std::vector<primitive_argument_type>&& operands,
+        variable(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            std::vector<primitive_argument_type> const& params,
-            eval_mode) const override;
+            primitive_arguments_type const& params,
+            eval_context) const override;
         hpx::future<primitive_argument_type> eval(
-            primitive_argument_type && arg, eval_mode mode) const override;
+            primitive_argument_type && arg, eval_context ctx) const override;
 
-        bool bind(
-            std::vector<primitive_argument_type> const& params) const override;
+        bool bind(primitive_arguments_type const& params,
+            eval_context ctx) const override;
 
-        void store(std::vector<primitive_argument_type>&& data,
-            std::vector<primitive_argument_type>&& params) override;
+        void store(primitive_arguments_type&& data,
+            primitive_arguments_type&& params) override;
         void store(primitive_argument_type&& data,
-            std::vector<primitive_argument_type>&& params) override;
+            primitive_arguments_type&& params) override;
 
         topology expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const override;
+
+    protected:
+        void store1dslice(primitive_arguments_type&& data,
+            primitive_arguments_type&& params);
+        void store2dslice(primitive_arguments_type&& data,
+            primitive_arguments_type&& params);
 
     private:
         mutable primitive_argument_type bound_value_;

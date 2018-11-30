@@ -36,11 +36,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("function",
             std::vector<std::string>{},
-            nullptr, &create_primitive<function>)
+            nullptr, &create_primitive<function>,
+            "Internal"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    function::function(std::vector<primitive_argument_type>&& operands,
+    function::function(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename, true)
       , value_set_(false)
@@ -55,13 +57,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (valid(operands_[0]))
         {
-            operands_[0] = extract_copy_value(std::move(operands_[0]));
+            operands_[0] =
+                extract_copy_value(std::move(operands_[0]), name_, codename_);
             value_set_ = true;
         }
     }
 
     hpx::future<primitive_argument_type> function::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (!value_set_)
         {
@@ -75,12 +78,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive const* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-            return p->eval(args);
+            return p->eval(args, std::move(ctx));
         }
-        return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        return hpx::make_ready_future(
+            extract_ref_value(operands_[0], name_, codename_));
     }
 
-    bool function::bind(std::vector<primitive_argument_type> const& args) const
+    bool function::bind(
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (!value_set_)
         {
@@ -93,8 +98,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
-    void function::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void function::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (data.empty())
         {
@@ -111,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "store shouldn't be called with dynamic arguments"));
         }
 
-        operands_[0] = extract_copy_value(std::move(data[0]));
+        operands_[0] = extract_copy_value(std::move(data[0]), name_, codename_);
         value_set_ = true;
     }
 

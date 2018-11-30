@@ -27,10 +27,10 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    std::vector<primitive_argument_type> primitive_component_base::noargs{};
+    primitive_arguments_type primitive_component_base::noargs{};
 
     primitive_component_base::primitive_component_base(
-            std::vector<primitive_argument_type>&& params,
+            primitive_arguments_type&& params,
             std::string const& name, std::string const& codename,
             bool eval_direct)
       : operands_(std::move(params))
@@ -70,8 +70,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        std::vector<primitive_argument_type> const& params,
-        eval_mode mode) const
+        primitive_arguments_type const& params,
+        eval_context ctx) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -86,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ++eval_count_;
         }
 
-        auto f = this->eval(params, mode);
+        auto f = this->eval(params, std::move(ctx));
 
         if (enable_timer && !f.is_ready())
         {
@@ -103,7 +103,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::do_eval(
-        primitive_argument_type&& param, eval_mode mode) const
+        primitive_argument_type&& param, eval_context ctx) const
     {
 #if defined(HPX_HAVE_APEX)
         hpx::util::annotate_function annotate(eval_name_.c_str());
@@ -118,7 +118,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ++eval_count_;
         }
 
-        auto f = this->eval(std::move(param), mode);
+        auto f = this->eval(std::move(param), std::move(ctx));
 
         if (enable_timer && !f.is_ready())
         {
@@ -136,29 +136,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // eval_action
     hpx::future<primitive_argument_type> primitive_component_base::eval(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
-        return this->eval(params, eval_default);
+        if (no_operands())
+        {
+            return this->eval(params, noargs, std::move(ctx));
+        }
+        return this->eval(this->operands(), params, std::move(ctx));
     }
 
     hpx::future<primitive_argument_type> primitive_component_base::eval(
-        std::vector<primitive_argument_type> const& params,
-        eval_mode mode) const
+        primitive_argument_type && param, eval_context ctx) const
     {
-        return this->eval(params);
-    }
-
-    hpx::future<primitive_argument_type> primitive_component_base::eval(
-        primitive_argument_type && param, eval_mode mode) const
-    {
-        std::vector<primitive_argument_type> params;
+        primitive_arguments_type params;
         params.emplace_back(std::move(param));
-        return this->eval(params, mode);
+        return this->eval(params, std::move(ctx));
+    }
+
+    hpx::future<primitive_argument_type> primitive_component_base::eval(
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+                "eval",
+            generate_error_message(
+                "eval function should be implemented by all primitives"));
     }
 
     // store_action
-    void primitive_component_base::store(std::vector<primitive_argument_type>&&,
-        std::vector<primitive_argument_type>&&)
+    void primitive_component_base::store(primitive_arguments_type&&,
+        primitive_arguments_type&&)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
@@ -169,9 +177,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void primitive_component_base::store(primitive_argument_type&& param,
-        std::vector<primitive_argument_type>&& params)
+        primitive_arguments_type&& params)
     {
-        std::vector<primitive_argument_type> args;
+        primitive_arguments_type args;
         args.emplace_back(std::move(param));
         return this->store(std::move(args), std::move(params));
     }
@@ -212,7 +220,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // bind_action
     bool primitive_component_base::bind(
-        std::vector<primitive_argument_type> const& params) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::"
@@ -258,6 +266,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return sync_execution;
     }
 
+    // get eval count from command line
+    std::int64_t primitive_component_base::get_ec_threshold()
+    {
+        static std::int64_t ec_threshold = std::stol(
+            hpx::get_config_entry("phylanx.eval_count_threshold", "5"));
+        return ec_threshold;
+    }
+
+    // get execution time upper threshold from command line
+    std::int64_t primitive_component_base::get_exec_upper_threshold()
+    {
+        static std::int64_t exec_upper_threshold =
+            std::stol(hpx::get_config_entry(
+                "phylanx.exec_time_upper_threshold",
+/* What's going on here?  Well, direct actions cause problems on POWER8
+ * with Clang 5.0. That's because the call stack gets too deep.  Changing
+ * this threshold to 0 will disable direct actions on that platform.
+ * There is also a github issue #584 that explains this in detail. */
+#if defined(__POWERPC__) && defined(__clang_version__)
+                "0"
+#else
+                "500000"
+#endif
+                ));
+        return exec_upper_threshold;
+    }
+
+    // get execution time lower threshold from command line
+    std::int64_t primitive_component_base::get_exec_lower_threshold()
+    {
+        static std::int64_t exec_lower_threshold =
+            std::stol(hpx::get_config_entry(
+                "phylanx.exec_time_lower_threshold", "350000"));
+        return exec_lower_threshold;
+    }
+
     hpx::launch primitive_component_base::select_direct_eval_execution(
         hpx::launch policy) const
     {
@@ -273,16 +317,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return hpx::launch::sync;
         }
 
-        if ((eval_count_ != 0 && measurements_enabled_) || (eval_count_ > 5))
+        if ((eval_count_ != 0 && measurements_enabled_) ||
+            (eval_count_ > get_ec_threshold()))
         {
             // check whether execution status needs to be changed (with some
             // hysteresis)
             std::int64_t exec_time = (eval_duration_ / eval_count_);
-            if (exec_time > 500000)
+            if (exec_time > get_exec_upper_threshold())
             {
                 execute_directly_ = 0;
             }
-            else if (exec_time < 350000)
+            else if (exec_time < get_exec_lower_threshold())
             {
                 execute_directly_ = 1;
             }

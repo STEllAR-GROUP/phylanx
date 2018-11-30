@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2018 Shahrzad Shirzad
-//
+//               2018 Patrick Diehl
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -147,7 +147,7 @@ void test_linear_solver_lu(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)},
             func_name);
 
@@ -172,7 +172,7 @@ void test_linear_solver(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs)},
             func_name);
 
@@ -201,7 +201,7 @@ void test_linear_solver_l(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs), std::move(ul)},
             func_name);
 
@@ -230,7 +230,7 @@ void test_linear_solver_u(std::string const& func_name)
     phylanx::execution_tree::primitive linear_solver =
         phylanx::execution_tree::primitives::create_linear_solver(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs), std::move(rhs), std::move(ul)},
             func_name);
 
@@ -261,6 +261,13 @@ int main()
     test_linear_solver("linear_solver_cholesky");
     test_linear_solver_l("linear_solver_cholesky");
     test_linear_solver_u("linear_solver_cholesky");
-
+#ifdef PHYLANX_HAS_BLAZEITERATIVE
+    test_linear_solver("iterative_solver_conjugate_gradient");
+    test_linear_solver("iterative_solver_bicgstab");
+    test_linear_solver("iterative_solver_bicgstab_lu");
+    test_linear_solver("iterative_solver_bicgstab_rq");
+    test_linear_solver("iterative_solver_bicgstab_qr");
+    test_linear_solver("iterative_solver_bicgstab_cholesky");
+#endif
     return hpx::util::report_errors();
 }

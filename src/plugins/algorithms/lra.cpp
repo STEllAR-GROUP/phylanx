@@ -34,18 +34,33 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "lra(_1, _2, _3, _4, _5)",
                 "lra(_1, _2, _3, _4)"
             },
-            &create_lra, &create_primitive<lra>)
+            &create_lra, &create_primitive<lra>,
+            "x, y, alpha, iters, enable_output\n"
+            "Args:\n"
+            "\n"
+            "    x (matrix) : a matrix\n"
+            "    y (vector) : a vector\n"
+            "the data\n"
+            "    alpha (float): It is the learning rate\n"
+            "    iters (int): The number of iterations\n"
+            "    enable_output (optional, boolean): If enabled, prints out the step "
+            "number and weights during each iteration\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The Calculated weights"
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    lra::lra(std::vector<primitive_argument_type>&& operands,
+    lra::lra(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type lra::calculate_lra(
-        std::vector<primitive_argument_type> && args) const
+        primitive_arguments_type && args) const
     {
         // extract arguments
         auto arg1 = extract_numeric_value(args[0], name_, codename_);
@@ -83,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "lra::eval",
                 generate_error_message(
                     "the lra algorithm primitive requires for the second "
-                    "argument ('alpha') to represent a vector"));
+                    "argument ('alpha') the learning rate"));
         }
         auto alpha = arg3.scalar();
 
@@ -125,8 +140,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> lra::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 4 && operands.size() != 5)
         {
@@ -157,23 +172,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type> && args)
+            [this_ = std::move(this_)](primitive_arguments_type && args)
             ->  primitive_argument_type
             {
                 return this_->calculate_lra(std::move(args));
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> lra::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

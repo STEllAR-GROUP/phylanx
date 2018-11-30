@@ -27,19 +27,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("shape",
             std::vector<std::string>{"shape(_1, _2)", "shape(_1)"},
-            &create_extract_shape, &create_primitive<extract_shape>)
+            &create_extract_shape, &create_primitive<extract_shape>,
+            "m, dim\n"
+            "Args:\n"
+            "\n"
+            "    m (object): a vector or matrix\n"
+            "    dim (optional, int): the dimension to get the size of\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "Without the optional argument, it returns a list of integers "
+            "corresponding to the size of each dimension of the vector or "
+            "matrix. If the optional `dim` argument is supplied, then the "
+            "size for that dimension is returned as an integer."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     extract_shape::extract_shape(
-            std::vector<primitive_argument_type> && operands,
+            primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     primitive_argument_type extract_shape::shape0d(arg_type&& arg) const
     {
-        std::vector<primitive_argument_type> result{};
+        primitive_arguments_type result{};
         return primitive_argument_type{std::move(result)};
     }
 
@@ -48,13 +61,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            util::generate_error_message(
-                "index out of range", name_, codename_));
+            generate_error_message(
+                "index out of range"));
     }
 
     primitive_argument_type extract_shape::shape1d(arg_type&& arg) const
     {
-        std::vector<primitive_argument_type> result{
+        primitive_arguments_type result{
             primitive_argument_type{std::int64_t(arg.size())}};
         return primitive_argument_type{std::move(result)};
     }
@@ -69,8 +82,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            util::generate_error_message(
-                "index out of range", name_, codename_));
+            generate_error_message(
+                "index out of range"));
     }
 
     primitive_argument_type extract_shape::shape2d(arg_type&& arg) const
@@ -78,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         // return a list of numbers representing the
         // dimensions of the first argument
         auto dims = arg.dimensions();
-        std::vector<primitive_argument_type> result{
+        primitive_arguments_type result{
             primitive_argument_type{std::int64_t(dims[0])},
             primitive_argument_type{std::int64_t(dims[1])}};
         return primitive_argument_type{std::move(result)};
@@ -95,21 +108,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "extract_shape::eval",
-            util::generate_error_message(
-                "index out of range", name_, codename_));
+            generate_error_message(
+                "index out of range"));
     }
 
     hpx::future<primitive_argument_type> extract_shape::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::eval",
-                util::generate_error_message(
-                    "the extract_shape primitive requires one or two operands",
-                    name_, codename_));
+                generate_error_message(
+                    "the extract_shape primitive requires one or two operands"));
         }
 
         if (!valid(operands[0]) ||
@@ -117,11 +129,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "extract_shape::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the extract_shape primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -129,7 +139,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 1)
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_](arg_type && arg) -> primitive_argument_type
+                [this_ = std::move(this_)](arg_type && arg)
+                -> primitive_argument_type
                 {
                     auto dims = arg.num_dimensions();
                     switch (dims)
@@ -146,17 +157,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "extract_shape::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "first operand has unsupported "
-                                    "number of dimensions",
-                                this_->name_, this_->codename_));
+                                    "number of dimensions"));
                     }
                 }),
-                numeric_operand(operands[0], args, name_, codename_));
+                numeric_operand(operands[0], args,
+                    name_, codename_, std::move(ctx)));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](arg_type && arg, std::int64_t index)
+            [this_ = std::move(this_)](arg_type && arg, std::int64_t index)
             ->  primitive_argument_type
             {
                 auto dims = arg.num_dimensions();
@@ -174,24 +185,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "first operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_),
-            scalar_integer_operand_strict(operands[1], args, name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> extract_shape::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args, name_, codename_, ctx),
+            scalar_integer_operand_strict(operands[1], args,
+                name_, codename_, ctx));
     }
 }}}

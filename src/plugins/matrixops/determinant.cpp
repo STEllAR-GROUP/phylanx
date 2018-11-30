@@ -29,11 +29,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("determinant",
             std::vector<std::string>{"determinant(_1)"},
-            &create_determinant, &create_primitive<determinant>)
+            &create_determinant, &create_primitive<determinant>,
+            "arg\n"
+            "Args:\n"
+            "\n"
+            "    arg (matrix) : a square matrix of numbers\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The determinant of the matrix represnted by `arg`.")
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    determinant::determinant(std::vector<primitive_argument_type>&& operands,
+    determinant::determinant(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -41,33 +49,30 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
 
     hpx::future<primitive_argument_type> determinant::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "determinant::eval",
-                util::generate_error_message(
-                    "the determinant primitive requires"
-                        "exactly one operand",
-                    name_, codename_));
+                generate_error_message(
+                    "the determinant primitive requires exactly one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "determinant::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the determinant primitive requires that the "
-                        "argument given by the operands array is "
-                        "valid",
-                    name_, codename_));
+                        "argument given by the operands array is valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](operand_type&& op) -> primitive_argument_type
+            [this_ = std::move(this_)](operand_type&& op)
+            -> primitive_argument_type
             {
                 std::size_t dims = op.num_dimensions();
                 switch (dims)
@@ -82,13 +87,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "determinant::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_));
+            numeric_operand(operands[0], args,
+                name_, codename_, std::move(ctx)));
     }
 
     primitive_argument_type determinant::determinant0d(operand_type&& op) const
@@ -100,15 +105,5 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         double d = blaze::det(op.matrix());
         return primitive_argument_type{operand_type(d)};
-    }
-
-    hpx::future<primitive_argument_type> determinant::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
     }
 }}}

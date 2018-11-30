@@ -30,12 +30,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("diag",
             std::vector<std::string>{"diag(_1)", "diag(_1, _2)"},
-            &create_diag_operation, &create_primitive<diag_operation>)
+            &create_diag_operation, &create_primitive<diag_operation>,
+            "m\n"
+            "Args:\n"
+            "\n"
+            "    m (matrix) : a square matrix\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A vector created from the diagonal elements of `m`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     diag_operation::diag_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -91,18 +100,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> diag_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() > 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                "diag_operation::diag_operation",
-                util::generate_error_message(
+                    "diag_operation::diag_operation",
+                generate_error_message(
                     "the diag_operation primitive requires "
-                    "either one or two arguments",
-                    name_, codename_));
+                    "either one or two arguments"));
         }
 
         bool arguments_valid = true;
@@ -118,16 +126,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "diag_operation::eval",
-                util::generate_error_message(
-                    "the diag_operation primitive requires "
-                    "that the arguments given by the operands "
-                    "array are valid",
-                    name_, codename_));
+                generate_error_message(
+                    "the diag_operation primitive requires that the "
+                    "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_](args_type&& args)
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](args_type&& args)
                 -> primitive_argument_type
             {
                 std::size_t matrix_dims = args[0].num_dimensions();
@@ -145,24 +151,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "diag_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                            "number of dimensions",
-                            this_->name_, this_->codename_));
+                            "number of dimensions"));
                 }
             }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> diag_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

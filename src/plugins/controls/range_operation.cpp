@@ -33,12 +33,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::vector<std::string>{
                 "range(_1)", "range(_1, _2)", "range(_1, _2, _3)"
             },
-            &create_range_operation, &create_primitive<range_operation>)
+            &create_range_operation, &create_primitive<range_operation>,
+            "start, end, step\n"
+            "Args:\n"
+            "\n"
+            "    start (number) : a starting value\n"
+            "    end (optional, number) : an ending value\n"
+            "    step (optional, number) : a step size\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "An iterator of values less than `end` where the values "
+            "are equal to `start+step*n` where n is 0, 1, 2, ... "
+            "This function works like the Python range function. "
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     range_operation::range_operation(
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -64,24 +77,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "range_operation::generate_range",
-            util::generate_error_message(
-                "range_operation needs at most three operands",
-                name_, codename_));
+            generate_error_message(
+                "range_operation needs at most three operands"));
     }
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> range_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "range_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the range_operation primitive requires exactly one, two, "
-                        "or three operands",
-                    name_, codename_));
+                        "or three operands"));
         }
 
         for (auto const& i : operands)
@@ -90,31 +101,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "range_operation::eval",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the range_operation primitive requires that the "
-                            "arguments given by the operands array are valid",
-                        name_, codename_));
+                            "arguments given by the operands array are valid"));
             }
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](args_type&& args) -> primitive_argument_type
+            [this_ = std::move(this_)](args_type&& args)
+            -> primitive_argument_type
             {
                 return this_->generate_range(std::move(args));
             }),
             detail::map_operands(
                 operands, functional::integer_operand{}, args,
-                name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> range_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

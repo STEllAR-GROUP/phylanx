@@ -28,11 +28,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("linearmatrix",
             std::vector<std::string>{"linearmatrix(_1, _2, _3, _4, _5)"},
-            &create_linearmatrix, &create_primitive<linearmatrix>)
+            &create_linearmatrix, &create_primitive<linearmatrix>,
+            "nx, ny, x0, dx, dy\n"
+            "Args:\n"
+            "\n"
+            "    nx (int) : number of rows\n"
+            "    ny (int) : number of columns\n"
+            "    x0 (float) : value of the 0,0 element\n"
+            "    dx (float) : increment in value in the x-direction\n"
+            "    dy (float) : increment in value in the x-direction\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A matrix of size `nx` by `ny` with values beginning at `x0` "
+            "and increasing by `dx` (or `dy`) as x (or y) is increased."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    linearmatrix::linearmatrix(std::vector<primitive_argument_type>&& args,
+    linearmatrix::linearmatrix(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {}
@@ -40,15 +54,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type linearmatrix::linmatrix(args_type&& args) const
     {
-
         if (5 != args.size())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "linearmatrix::linmatrix",
-                util::generate_error_message(
-                    "linearmatrix primitive requires five "
-                        "arguments.",
-                    name_, codename_));
+                generate_error_message(
+                    "linearmatrix primitive requires five arguments."));
         }
 
         std::size_t nx = extract_scalar_integer_value(args[0]);
@@ -62,10 +73,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "detail::linearmatrix",
-                util::generate_error_message(
+                generate_error_message(
                     "the size of matrix in dimension x must at "
-                        "least be one.",
-                    name_, codename_));
+                        "least be one."));
         }
 
         if (ny < 1)
@@ -73,10 +83,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "detail::linearmatrix",
-                util::generate_error_message(
+                generate_error_message(
                     "the size of matrix in dimension y must at "
-                        "least be one.",
-                    name_, codename_));
+                        "least be one."));
         }
 
         matrix_type result{nx, ny};
@@ -93,18 +102,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> linearmatrix::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 5)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "linearmatrix",
-                util::generate_error_message(
+                generate_error_message(
                     "the linearmatrix primitive requires exactly "
-                        "five arguments.",
-                    name_, codename_));
+                        "five arguments."));
         }
 
         for (std::size_t i = 0; i != operands.size(); ++i)
@@ -113,32 +121,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "linearmatrix::eval",
-                    util::generate_error_message(
+                    generate_error_message(
                         "at least one of the arguments passed to "
-                            "linearmatrix is not valid.",
-                        name_, codename_));
+                            "linearmatrix is not valid."));
             }
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](args_type&& args) -> primitive_argument_type
+            [this_ = std::move(this_)](args_type&& args)
+            -> primitive_argument_type
             {
                 return this_->linmatrix(std::move(args));
             }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> linearmatrix::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

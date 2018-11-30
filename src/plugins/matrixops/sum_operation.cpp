@@ -34,12 +34,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("sum",
         std::vector<std::string>{"sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)"},
-        &create_sum_operation, &create_primitive<sum_operation>)
+        &create_sum_operation, &create_primitive<sum_operation>,
+        "v, a1, a2\n"
+        "Args:\n"
+        "\n"
+        "    v (vector or matrix) : a vector or matrix\n"
+        "    a1 (optional, integer): a axis to sum along\n"
+        "    a2 (optional, integer): a second axis to sum along\n"
+        "\n"
+        "Returns:\n"
+        "\n"
+        "The sum of all values along the specified axes.")
     };
 
     ///////////////////////////////////////////////////////////////////////////
     sum_operation::sum_operation(
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -51,10 +61,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "sum_operation::sum0d",
-                util::generate_error_message(
+                generate_error_message(
                     "the sum_operation primitive requires operand axis to be "
-                    "either 0 or -1 for scalar values.",
-                    name_, codename_));
+                    "either 0 or -1 for scalar values."));
         }
 
         return primitive_argument_type{arg.scalar()};
@@ -67,10 +76,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "sum_operation::sum1d",
-                util::generate_error_message(
+                generate_error_message(
                     "the sum_operation primitive requires operand axis to be "
-                    "either 0 or -1 for vectors.",
-                    name_, codename_));
+                    "either 0 or -1 for vectors."));
         }
 
         auto v = arg.vector();
@@ -94,16 +102,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case -2: HPX_FALLTHROUGH;
             case 0:
                 return sum2d_axis0(std::move(arg));
+
             case -1: HPX_FALLTHROUGH;
             case 1:
                 return sum2d_axis1(std::move(arg));
+
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "sum_operation::sum1d",
-                    util::generate_error_message(
-                        "the sum_operation primitive requires operand axis to be "
-                        "between -2 and 1 for matrices.",
-                        name_, codename_));
+                    generate_error_message(
+                        "the sum_operation primitive requires operand axis "
+                        "to be between -2 and 1 for matrices."));
             }
         }
         return sum2d_flat(std::move(arg), keep_dims);
@@ -156,17 +165,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> sum_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "sum_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the sum_operation primitive requires exactly one, two, or "
-                    "three operands",
-                    name_, codename_));
+                    "three operands"));
         }
 
         for (auto const& i : operands)
@@ -175,18 +183,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "sum_operation::eval",
-                    util::generate_error_message(
+                    generate_error_message(
                         "the sum_operation primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
-                        name_, codename_));
+                        "arguments given by the operands array are valid"));
             }
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](std::vector<primitive_argument_type>&& args)
+                [this_ = std::move(this_)](primitive_arguments_type&& args)
                     -> primitive_argument_type
                 {
                     // Extract axis and keep_dims
@@ -198,20 +204,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (args.size() > 1)
                     {
                         if (valid(args[1]))
-                            axis = execution_tree::extract_scalar_integer_value(
+                        {
+                            axis = extract_scalar_integer_value(
                                 args[1], this_->name_, this_->codename_);
+                        }
 
                         // keep_dims is argument #3
                         if (args.size() == 3)
                         {
-                            keep_dims =
-                                execution_tree::extract_scalar_boolean_value(
-                                    args[2], this_->name_, this_->codename_);
+                            keep_dims = extract_scalar_boolean_value(
+                                args[2], this_->name_, this_->codename_);
                         }
                     }
 
                     // Extract the matrix
-                    arg_type a = execution_tree::extract_numeric_value(
+                    arg_type a = extract_numeric_value(
                         args[0], this_->name_, this_->codename_);
 
                     std::size_t a_dims = a.num_dimensions();
@@ -219,30 +226,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     {
                     case 0:
                         return this_->sum0d(std::move(a), axis, keep_dims);
+
                     case 1:
                         return this_->sum1d(std::move(a), axis, keep_dims);
+
                     case 2:
                         return this_->sum2d(std::move(a), axis, keep_dims);
+
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "sum_operation::eval",
-                            util::generate_error_message(
-                                "operand a has an invalid "
-                                "number of dimensions",
-                                this_->name_, this_->codename_));
+                            this_->generate_error_message(
+                                "operand a has an invalid number of dimensions"));
                     }
                 }),
             detail::map_operands(
-                operands, functional::value_operand{}, args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> sum_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                operands, functional::value_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

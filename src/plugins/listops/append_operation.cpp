@@ -32,12 +32,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("append",
             std::vector<std::string>{"append(_1, _2)"},
-            &create_append_operation, &create_primitive<append_operation>)
+            &create_append_operation, &create_primitive<append_operation>,
+            "li,val\n"
+            "Args:\n"
+            "\n"
+            "    li (list) : a list to which a value may be appended\n"
+            "    val (object) : a value to append\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A new list with the value `val` appended. Note that `li` is "
+            "not modified by this operation."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     append_operation::append_operation(
-        std::vector<primitive_argument_type> && operands,
+        primitive_arguments_type && operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -62,8 +73,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> append_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
@@ -84,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](primitive_argument_type&& lhs,
+                [this_ = std::move(this_)](primitive_argument_type&& lhs,
                     primitive_argument_type&& rhs) -> primitive_argument_type
                 {
                     if (is_list_operand_strict(lhs))
@@ -100,17 +111,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             "append_operation accepts a list "
                             "value as its lhs operand only"));
                 }),
-            value_operand(operands[0], args, name_, codename_),
-            value_operand(operands[1], args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> append_operation::eval(
-        std::vector<primitive_argument_type> const& args, eval_mode) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            value_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}

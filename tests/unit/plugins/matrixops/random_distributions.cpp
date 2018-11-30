@@ -59,7 +59,7 @@ template <typename T, typename Gen, typename Dist>
 void generate_0d(phylanx::execution_tree::compiler::function const& call,
     Gen& gen, Dist& dist)
 {
-    std::vector<phylanx::execution_tree::primitive_argument_type> dims = {
+    phylanx::execution_tree::primitive_arguments_type dims = {
         phylanx::execution_tree::primitive_argument_type{std::int64_t{1}},
         phylanx::execution_tree::primitive_argument_type{std::int64_t{1}}
     };
@@ -69,7 +69,7 @@ void generate_0d(phylanx::execution_tree::compiler::function const& call,
     HPX_TEST_EQ(
         static_cast<T>(dist(gen)),
         static_cast<T>(
-            phylanx::execution_tree::extract_numeric_value(result)[0]));
+            phylanx::execution_tree::extract_node_data<T>(result)[0]));
 }
 
 // generate a random double vector
@@ -77,9 +77,9 @@ template <typename T, typename Gen, typename Dist>
 void generate_1d(phylanx::execution_tree::compiler::function const& call,
     Gen& gen, Dist& dist)
 {
-    std::vector<phylanx::execution_tree::primitive_argument_type> dims = {
-        phylanx::execution_tree::primitive_argument_type{std::int64_t{32}},
-        phylanx::execution_tree::primitive_argument_type{std::int64_t{1}}
+    phylanx::execution_tree::primitive_arguments_type dims = {
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{1}},
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{32}}
     };
 
     auto result = call(dims);
@@ -99,7 +99,7 @@ template <typename T, typename Gen, typename Dist>
 void generate_2d(phylanx::execution_tree::compiler::function const& call,
     Gen& gen, Dist& dist)
 {
-    std::vector<phylanx::execution_tree::primitive_argument_type> dims = {
+    phylanx::execution_tree::primitive_arguments_type dims = {
         phylanx::execution_tree::primitive_argument_type{std::int64_t{32}},
         phylanx::execution_tree::primitive_argument_type{std::int64_t{16}}
     };
@@ -169,7 +169,7 @@ void test_uniform_distribution_explicit(std::mt19937& gen)
 void test_uniform_distribution_explicit_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("uniform", 2.0, 4.0))),
+            define(call, size, random(size, list("uniform", 2.0, 4.0))),
             call
         ))";
 
@@ -186,6 +186,53 @@ void test_uniform_distribution_explicit_params(std::mt19937& gen)
     {
         std::uniform_real_distribution<double> dist{2.0, 4.0};
         generate_2d<double>(call, gen, dist);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void test_uniform_int_distribution_explicit(std::mt19937& gen)
+{
+    std::string const code = R"(block(
+            define(call, size, random(size, "uniform_int")),
+            call
+        ))";
+
+    auto call = compile(code);
+
+    {
+        std::uniform_int_distribution<std::int64_t> dist;
+        generate_0d<std::int64_t>(call, gen, dist);
+    }
+    {
+        std::uniform_int_distribution<std::int64_t> dist;
+        generate_1d<std::int64_t>(call, gen, dist);
+    }
+    {
+        std::uniform_int_distribution<std::int64_t> dist;
+        generate_2d<std::int64_t>(call, gen, dist);
+    }
+}
+
+void test_uniform_int_distribution_explicit_params(std::mt19937& gen)
+{
+    std::string const code = R"(block(
+            define(call, size, random(size, list("uniform_int", 200, 400))),
+            call
+        ))";
+
+    auto call = compile(code);
+
+    {
+        std::uniform_int_distribution<std::int64_t> dist{200, 400};
+        generate_0d<std::int64_t>(call, gen, dist);
+    }
+    {
+        std::uniform_int_distribution<std::int64_t> dist{200, 400};
+        generate_1d<std::int64_t>(call, gen, dist);
+    }
+    {
+        std::uniform_int_distribution<std::int64_t> dist{200, 400};
+        generate_2d<std::int64_t>(call, gen, dist);
     }
 }
 
@@ -216,7 +263,7 @@ void test_bernoulli_distribution(std::mt19937& gen)
 void test_bernoulli_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("bernoulli", 0.8))),
+            define(call, size, random(size, list("bernoulli", 0.8))),
             call
         ))";
 
@@ -263,7 +310,7 @@ void test_binomial_distribution(std::mt19937& gen)
 void test_binomial_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("binomial", 10, 0.8))),
+            define(call, size, random(size, list("binomial", 10, 0.8))),
             call
         ))";
 
@@ -310,7 +357,7 @@ void test_negative_binomial_distribution(std::mt19937& gen)
 void test_negative_binomial_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("negative_binomial", 10, 0.8))),
+            define(call, size, random(size, list("negative_binomial", 10, 0.8))),
             call
         ))";
 
@@ -357,7 +404,7 @@ void test_geometric_distribution(std::mt19937& gen)
 void test_geometric_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("geometric", 0.8))),
+            define(call, size, random(size, list("geometric", 0.8))),
             call
         ))";
 
@@ -404,7 +451,7 @@ void test_poisson_distribution(std::mt19937& gen)
 void test_poisson_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("poisson", 4))),
+            define(call, size, random(size, list("poisson", 4))),
             call
         ))";
 
@@ -451,7 +498,7 @@ void test_exponential_distribution(std::mt19937& gen)
 void test_exponential_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("exponential", 2.0))),
+            define(call, size, random(size, list("exponential", 2.0))),
             call
         ))";
 
@@ -498,7 +545,7 @@ void test_gamma_distribution(std::mt19937& gen)
 void test_gamma_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("gamma", 0.8, 1.2))),
+            define(call, size, random(size, list("gamma", 0.8, 1.2))),
             call
         ))";
 
@@ -545,7 +592,7 @@ void test_weibull_distribution(std::mt19937& gen)
 void test_weibull_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("weibull", 0.8, 1.2))),
+            define(call, size, random(size, list("weibull", 0.8, 1.2))),
             call
         ))";
 
@@ -592,7 +639,7 @@ void test_extreme_value_distribution(std::mt19937& gen)
 void test_extreme_value_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("extreme_value", 0.8, 1.2))),
+            define(call, size, random(size, list("extreme_value", 0.8, 1.2))),
             call
         ))";
 
@@ -639,7 +686,7 @@ void test_normal_distribution(std::mt19937& gen)
 void test_normal_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("normal", 0.8, 1.2))),
+            define(call, size, random(size, list("normal", 0.8, 1.2))),
             call
         ))";
 
@@ -686,7 +733,7 @@ void test_lognormal_distribution(std::mt19937& gen)
 void test_lognormal_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("lognormal", 0.8, 1.2))),
+            define(call, size, random(size, list("lognormal", 0.8, 1.2))),
             call
         ))";
 
@@ -733,7 +780,7 @@ void test_chi_squared_distribution(std::mt19937& gen)
 void test_chi_squared_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("chi_squared", 0.8))),
+            define(call, size, random(size, list("chi_squared", 0.8))),
             call
         ))";
 
@@ -780,7 +827,7 @@ void test_cauchy_distribution(std::mt19937& gen)
 void test_cauchy_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("cauchy", 0.6, 0.8))),
+            define(call, size, random(size, list("cauchy", 0.6, 0.8))),
             call
         ))";
 
@@ -827,7 +874,7 @@ void test_fisher_f_distribution(std::mt19937& gen)
 void test_fisher_f_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("fisher_f", 0.6, 0.8))),
+            define(call, size, random(size, list("fisher_f", 0.6, 0.8))),
             call
         ))";
 
@@ -874,7 +921,7 @@ void test_student_t_distribution(std::mt19937& gen)
 void test_student_t_distribution_params(std::mt19937& gen)
 {
     std::string const code = R"(block(
-            define(call, size, random(size, '("student_t", 0.8))),
+            define(call, size, random(size, list("student_t", 0.8))),
             call
         ))";
 
@@ -908,6 +955,9 @@ int main(int argc, char* argv[])
 
     test_uniform_distribution_explicit(gen);
     test_uniform_distribution_explicit_params(gen);
+
+    test_uniform_int_distribution_explicit(gen);
+    test_uniform_int_distribution_explicit_params(gen);
 
     test_bernoulli_distribution(gen);
     test_bernoulli_distribution_params(gen);

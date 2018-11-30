@@ -21,9 +21,9 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     hpx::future<primitive_argument_type> locality_id(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
-        std::string const&, std::string const&);
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context ctx);
 }}}
 
 HPX_PLAIN_ACTION(
@@ -36,13 +36,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple(
             "locality_id", std::vector<std::string>{"locality_id()"},
             &create_generic_function<locality_id_action>,
-            &create_primitive<generic_function<locality_id_action>>)
+            &create_primitive<generic_function<locality_id_action>>,
+            "\n"
+            "Args:\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The locality of the currently executing code")
     };
 
     hpx::future<primitive_argument_type> locality_id(
-        std::vector<primitive_argument_type> const&,
-        std::vector<primitive_argument_type> const&,
-        std::string const&, std::string const&)
+        phylanx::execution_tree::primitive_arguments_type const&,
+        phylanx::execution_tree::primitive_arguments_type const&,
+        std::string const&, std::string const&, eval_context)
     {
         std::int64_t locality_ =
             hpx::naming::get_locality_id_from_id(hpx::find_here());

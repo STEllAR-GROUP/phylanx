@@ -241,7 +241,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
     primitive create_format_string(hpx::id_type const& locality,
-        std::vector<primitive_argument_type>&& operands,
+        primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         static std::string type("format");
@@ -253,21 +253,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("format",
             std::vector<std::string>{"format(_1, __2)"},
-            &create_format_string, &create_primitive<format_string>)
+            &create_format_string, &create_primitive<format_string>,
+            "s,args\n"
+            "\n"
+            "Args:\n"
+            "\n"
+            "    s (string) : a format string\n"
+            "    *args (arg list, optional) : a list of arguments\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A formatted string, with each `{}` in s replaced by \n"
+            "a value from `*args`.")
     };
 
     ///////////////////////////////////////////////////////////////////////////
     format_string::format_string(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     hpx::future<primitive_argument_type> format_string::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands_.empty())
+        if (operands.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "format_string::eval",
@@ -278,7 +289,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](std::vector<primitive_argument_type>&& args)
+            [this_ = std::move(this_)](primitive_arguments_type&& args)
             ->  primitive_argument_type
             {
                 if (!is_string_operand(args[0]))
@@ -304,18 +315,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     hpx::util::detail::format(fmt, fargs.data(), fargs.size())};
             }),
             detail::map_operands(
-                operands, functional::value_operand{}, args, name_, codename_));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // write data to given file and return content
-    hpx::future<primitive_argument_type> format_string::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (operands_.empty())
-        {
-            return eval(args, noargs);
-        }
-        return eval(operands_, args);
+                operands, functional::value_operand{}, args, name_, codename_,
+                std::move(ctx)));
     }
 }}}

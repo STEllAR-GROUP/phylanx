@@ -25,10 +25,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const any_operation::match_data = {
         hpx::util::make_tuple("any", std::vector<std::string>{"any(_1)"},
-            &create_any_operation, &create_primitive<any_operation>)};
+            &create_any_operation, &create_primitive<any_operation>,
+            "arg\n"
+            "Args:\n"
+            "\n"
+            "    arg (matrix or vector of numbers) : the input values\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "True if any of the values in the matrix/vector are nonzero,\n"
+            "False otherwise.\n"
+            )};
 
     ///////////////////////////////////////////////////////////////////////////
-    any_operation::any_operation(std::vector<primitive_argument_type> && args,
+    any_operation::any_operation(primitive_arguments_type && args,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -38,7 +48,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename T>
     primitive_argument_type any_operation::any0d(T&& arg) const
     {
-        return primitive_argument_type{ir::node_data<std::uint8_t>{arg.scalar() != 0}};
+        return primitive_argument_type{
+            ir::node_data<std::uint8_t>{arg.scalar() != 0}};
     }
 
     template <typename T>
@@ -67,77 +78,67 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 0:
             return any0d(std::move(arg));
+
         case 1:
             return any1d(std::move(arg));
+
         case 2:
             return any2d(std::move(arg));
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "any_operation::eval",
-                util::generate_error_message(
-                    "operand has unsupported "
-                    "number of dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "operand has unsupported number of dimensions"));
         }
     }
 
     hpx::future<primitive_argument_type> any_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty() || operands.size() > 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "any_operation::eval",
-                util::generate_error_message(
-                    "the any_operation primitive requires one "
-                    "operand",
-                    name_, codename_));
+                generate_error_message(
+                    "the any_operation primitive requires one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "any_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the any_operation primitive requires that the "
-                    "arguments given by the operands array are "
-                    "valid",
-                    name_, codename_));
+                    "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         hpx::future<primitive_argument_type> f =
-            value_operand(operands[0], args, name_, codename_);
+            value_operand(operands[0], args, name_, codename_, std::move(ctx));
 
         return f.then(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](primitive_argument_type&& op) -> primitive_argument_type {
+            [this_ = std::move(this_)](primitive_argument_type&& op)
+            -> primitive_argument_type
+            {
                 switch (op.index())
                 {
                 case 1:
                     return this_->any_nd(util::get<1>(std::move(op)));
+
+                case 2:
+                    return this_->any_nd(util::get<2>(std::move(op)));
+
                 case 4:
                     return this_->any_nd(util::get<4>(std::move(op)));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "any_operation::eval",
-                        util::generate_error_message(
-                            "operand has unsupported "
-                            "type",
-                            this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "operand has unsupported type"));
                 }
             }));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> any_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
     }
 }}}

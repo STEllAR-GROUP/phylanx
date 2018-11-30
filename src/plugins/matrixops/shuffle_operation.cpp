@@ -7,6 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
+#include <phylanx/util/random.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -70,14 +71,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("shuffle",
             std::vector<std::string>{"shuffle(_1)"},
-            &create_shuffle_operation, &create_primitive<shuffle_operation>)
+            &create_shuffle_operation, &create_primitive<shuffle_operation>,
+            "args\n"
+            "Args:\n"
+            "\n"
+            "    args (list) : a list of values\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A shuffled version of the list. Note that `args` itself will be "
+            "shuffled by this call."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    std::mt19937 shuffle_operation::rand_machine{std::random_device{}()};
-
     shuffle_operation::shuffle_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -86,7 +95,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type shuffle_operation::shuffle_1d(arg_type && arg) const
     {
         auto x = arg.vector();
-        std::shuffle(x.begin(), x.end(), rand_machine);
+        std::shuffle(x.begin(), x.end(), util::rng_);
 
         return primitive_argument_type{ir::node_data<double>{std::move(x)}};
     }
@@ -96,40 +105,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto x = arg.matrix();
         auto x_begin = util::matrix_row_iterator<decltype(x)>(x);
         auto x_end = util::matrix_row_iterator<decltype(x)>(x, x.rows());
-        std::shuffle(x_begin, x_end, rand_machine);
+        std::shuffle(x_begin, x_end, util::rng_);
 
         return primitive_argument_type{ir::node_data<double>{std::move(x)}};
     }
 
     //////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> shuffle_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "shuffle_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the shuffle_operation primitive requires "
-                        "exactly one operand",
-                    name_, codename_));
+                        "exactly one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "shuffle_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the shuffle_operation primitive requires that "
-                        "the argument is valid",
-                    name_, codename_));
+                        "the argument is valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_](arg_type&& arg) -> primitive_argument_type
+                [this_ = std::move(this_)](arg_type&& arg)
+                -> primitive_argument_type
                 {
                     std::size_t lhs_dims = arg.num_dimensions();
                     switch (lhs_dims)
@@ -143,23 +151,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "shuffle_operation::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "operand has an unsupported number of "
                                     "dimensions. Only possible values are: "
-                                    "1 or 2.",
-                                this_->name_, this_->codename_));
+                                    "1 or 2."));
                     }
                 }),
-            numeric_operand(operands[0], args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> shuffle_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

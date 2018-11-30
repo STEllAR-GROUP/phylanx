@@ -49,7 +49,7 @@ void test_decomposition(std::string const& func_name)
     phylanx::execution_tree::primitive decomposition =
         phylanx::execution_tree::primitives::create_decomposition(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(m)},
             func_name);
 

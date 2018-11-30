@@ -28,12 +28,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("power",
             std::vector<std::string>{"power(_1, _2)"},
-            &create_power_operation, &create_primitive<power_operation>)
+            &create_power_operation, &create_primitive<power_operation>,
+            "base, pow\n"
+            "Args:\n"
+            "\n"
+            "    base (float) : the base of the exponent\n"
+            "    pow (float) : the power of the exponent\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The value `base`**`pow`."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     power_operation::power_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -75,43 +85,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> power_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "power_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the power_operation primitive requires "
-                        "exactly two operands",
-                    name_, codename_));
+                        "exactly two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "power_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the power_operation primitive requires "
                         "that the arguments given by the operands "
-                        "array are valid",
-                    name_, codename_));
+                        "array are valid"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](operand_type&& op1, operand_type&& op2)
+            [this_ = std::move(this_)](operand_type&& op1, operand_type&& op2)
             ->  primitive_argument_type
             {
                 if (op2.num_dimensions() != 0)
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "power_operation::eval",
-                        util::generate_error_message(
-                            "right hand side operand has to be a "
-                                "scalar value",
-                            this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "right hand side operand has to be a scalar value"));
                 }
 
                 switch (op1.num_dimensions())
@@ -128,24 +134,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "power_operation::eval",
-                        util::generate_error_message(
+                        this_->generate_error_message(
                             "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
+                                "number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_),
-            numeric_operand(operands[1], args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> power_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            numeric_operand(operands[0], args, name_, codename_, ctx),
+            numeric_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}

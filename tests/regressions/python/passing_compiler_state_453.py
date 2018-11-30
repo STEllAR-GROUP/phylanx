@@ -7,7 +7,7 @@
 
 import phylanx
 from phylanx import execution_tree as et
-from phylanx.ast import Phylanx
+from phylanx import Phylanx
 
 cs = phylanx.compiler_state()
 
@@ -20,7 +20,7 @@ define(mul2, n,
     )
 )
 """
-et.compile(src_mul2, cs)
+et.compile('passing_compiler_state_453.py', src_mul2, cs)
 
 
 @Phylanx(compiler_state=cs)
@@ -28,4 +28,4 @@ def foo(n):
     return mul2(n)  # noqa: F821
 
 
-assert(6.0 == foo(3))
+assert (6.0 == foo(3))

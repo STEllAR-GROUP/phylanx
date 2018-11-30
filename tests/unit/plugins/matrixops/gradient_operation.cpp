@@ -23,7 +23,7 @@ void test_gradient_operation_1d()
     phylanx::execution_tree::primitive gradient =
         phylanx::execution_tree::primitives::create_gradient_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(vec)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -51,7 +51,7 @@ void test_gradient_operation_2d_axis_zero()
     phylanx::execution_tree::primitive gradient =
         phylanx::execution_tree::primitives::create_gradient_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(mat), std::move(k)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -81,7 +81,7 @@ void test_gradient_operation_2d_axis_one()
     phylanx::execution_tree::primitive gradient =
         phylanx::execution_tree::primitives::create_gradient_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(mat), std::move(k)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -107,7 +107,7 @@ void test_gradient_operation_2d_no_axis_given()
     phylanx::execution_tree::primitive gradient =
         phylanx::execution_tree::primitives::create_gradient_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(mat)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =

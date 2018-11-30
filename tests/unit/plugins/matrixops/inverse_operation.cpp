@@ -22,7 +22,7 @@ void test_inversion_0d()
     phylanx::execution_tree::primitive inversion =
         phylanx::execution_tree::primitives::create_inverse_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)});
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
@@ -39,7 +39,7 @@ void test_inversion_0d_lit()
     phylanx::execution_tree::primitive inversion =
         phylanx::execution_tree::primitives::create_inverse_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 
@@ -62,7 +62,7 @@ void test_inversion_2d()
     phylanx::execution_tree::primitive inversion =
         phylanx::execution_tree::primitives::create_inverse_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(lhs)
             });
 

@@ -27,68 +27,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("inverse",
             std::vector<std::string>{"inverse(_1)"},
-            &create_inverse_operation, &create_primitive<inverse_operation>)
+            &create_inverse_operation, &create_primitive<inverse_operation>,
+            "m\n"
+            "Args:\n"
+            "\n"
+            "    m (matrix): a matrix\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The inverse of m."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     inverse_operation::inverse_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> inverse_operation::eval(
-        std::vector<primitive_argument_type> const& operands,
-        std::vector<primitive_argument_type> const& args) const
-    {
-        if (operands.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "inverse_operation::eval",
-                util::generate_error_message(
-                    "the inverse_operation primitive requires"
-                        "exactly one operand",
-                        name_, codename_));
-        }
-
-        if (!valid(operands[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "inverse_operation::eval",
-                util::generate_error_message(
-                    "the inverse_operation primitive requires that "
-                        "the arguments given by the operands array "
-                        "is valid",
-                    name_, codename_));
-        }
-
-        auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_](operand_type&& op) -> primitive_argument_type
-            {
-                std::size_t dims = op.num_dimensions();
-                switch (dims)
-                {
-                case 0:
-                    return this_->inverse0d(std::move(op));
-
-                case 2:
-                    return this_->inverse2d(std::move(op));
-
-                case 1: HPX_FALLTHROUGH;
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "inverse_operation::eval",
-                        util::generate_error_message(
-                            "left hand side operand has unsupported "
-                                "number of dimensions",
-                            this_->name_, this_->codename_));
-                }
-            }),
-            numeric_operand(operands[0], args, name_, codename_));
-    }
-
     primitive_argument_type inverse_operation::inverse0d(
         operand_type&& op) const
     {
@@ -119,14 +77,53 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(op)};
     }
 
-    //////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> inverse_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (this->no_operands())
+        if (operands.size() != 1)
         {
-            return eval(args, noargs);
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "inverse_operation::eval",
+                generate_error_message(
+                    "the inverse_operation primitive requires"
+                        "exactly one operand"));
         }
-        return eval(this->operands(), args);
+
+        if (!valid(operands[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "inverse_operation::eval",
+                generate_error_message(
+                    "the inverse_operation primitive requires that "
+                        "the arguments given by the operands array is valid"));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](operand_type&& op)
+            -> primitive_argument_type
+            {
+                std::size_t dims = op.num_dimensions();
+                switch (dims)
+                {
+                case 0:
+                    return this_->inverse0d(std::move(op));
+
+                case 2:
+                    return this_->inverse2d(std::move(op));
+
+                case 1: HPX_FALLTHROUGH;
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "inverse_operation::eval",
+                        this_->generate_error_message(
+                            "left hand side operand has unsupported "
+                                "number of dimensions"));
+                }
+            }),
+            numeric_operand(operands[0], args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

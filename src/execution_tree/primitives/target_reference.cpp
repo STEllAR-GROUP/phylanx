@@ -27,12 +27,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("target-reference",
             std::vector<std::string>{},
-            nullptr, &create_primitive<target_reference>)
+            nullptr, &create_primitive<target_reference>,
+            "Internal")
     };
 
     ///////////////////////////////////////////////////////////////////////////
     target_reference::target_reference(
-            std::vector<primitive_argument_type>&& args, std::string const& name,
+            primitive_arguments_type&& args, std::string const& name,
             std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
     {
@@ -56,60 +57,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> target_reference::eval(
-        std::vector<primitive_argument_type> const& params, eval_mode) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (operands_.size() > 1)
         {
             // the function has pre-bound arguments
-            std::vector<primitive_argument_type> fargs;
+            primitive_arguments_type fargs;
             fargs.reserve(operands_.size() - 1 + params.size());
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
             {
-                fargs.emplace_back(extract_ref_value(*it));
+                fargs.emplace_back(extract_ref_value(*it, name_, codename_));
             }
-
             for (auto const& param : params)
             {
-                fargs.emplace_back(extract_value(param));
+                fargs.emplace_back(extract_value(param, name_, codename_));
             }
 
             if (target_)
             {
-                return target_->eval(std::move(fargs), eval_default);
+                return target_->eval(
+                    std::move(fargs), set_mode(std::move(ctx), eval_default));
             }
 
-            return value_operand(
-                operands_[0], std::move(fargs), name_, codename_);
+            return value_operand(operands_[0], std::move(fargs), name_,
+                codename_, set_mode(std::move(ctx), eval_default));
         }
 
         if (target_)
         {
-            return target_->eval(params, eval_dont_wrap_functions);
+            return target_->eval(
+                params, add_mode(std::move(ctx), eval_dont_wrap_functions));
         }
 
-        return value_operand(
-            operands_[0], params, name_, codename_, eval_dont_wrap_functions);
+        return value_operand(operands_[0], params, name_, codename_,
+            add_mode(std::move(ctx), eval_dont_wrap_functions));
     }
 
     hpx::future<primitive_argument_type> target_reference::eval(
-        primitive_argument_type && param, eval_mode) const
+        primitive_argument_type && param, eval_context) const
     {
         if (operands_.size() > 1)
         {
             // the function has pre-bound arguments
-            std::vector<primitive_argument_type> fargs;
+            primitive_arguments_type fargs;
             fargs.reserve(operands_.size());
 
             for (auto it = operands_.begin() + 1; it != operands_.end(); ++it)
             {
-                fargs.emplace_back(extract_ref_value(*it));
+                fargs.emplace_back(extract_ref_value(*it, name_, codename_));
             }
-            fargs.emplace_back(extract_value(std::move(param)));
+            fargs.emplace_back(
+                extract_value(std::move(param), name_, codename_));
 
             if (target_)
             {
-                return target_->eval(fargs, eval_default);
+                return target_->eval(fargs, eval_context{});
             }
 
             return value_operand(
@@ -119,15 +122,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (target_)
         {
             return target_->eval_single(
-                std::move(param), eval_dont_wrap_functions);
+                std::move(param), eval_context(eval_dont_wrap_functions));
         }
 
         return value_operand(operands_[0], std::move(param), name_, codename_,
-            eval_dont_wrap_functions);
+            eval_context(eval_dont_wrap_functions));
     }
 
-    void target_reference::store(std::vector<primitive_argument_type>&& data,
-        std::vector<primitive_argument_type>&& params)
+    void target_reference::store(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
     {
         if (target_)
         {

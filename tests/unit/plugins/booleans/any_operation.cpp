@@ -22,7 +22,7 @@ void test_any_operation_0d_true()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -39,7 +39,7 @@ void test_any_operation_0d_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -56,7 +56,7 @@ void test_any_operation_0d_double_true()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -73,7 +73,7 @@ void test_any_operation_0d_double_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -93,7 +93,7 @@ void test_any_operation_1d()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -113,7 +113,7 @@ void test_any_operation_1d_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -132,7 +132,7 @@ void test_any_operation_1d_double()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -152,7 +152,7 @@ void test_any_operation_1d_double_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -170,7 +170,7 @@ void test_any_operation_1d_numpy_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -189,7 +189,7 @@ void test_any_operation_1d_numpy_true()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -208,7 +208,7 @@ void test_any_operation_1d_double_numpy_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -227,7 +227,7 @@ void test_any_operation_1d_double_numpy_true()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -247,7 +247,7 @@ void test_any_operation_2d()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -267,7 +267,7 @@ void test_any_operation_2d_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -287,7 +287,7 @@ void test_any_operation_2d_double()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -307,7 +307,7 @@ void test_any_operation_2d_double_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -327,7 +327,7 @@ void test_any_operation_2d_numpy_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -346,7 +346,7 @@ void test_any_operation_2d_numpy_true()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -365,7 +365,7 @@ void test_any_operation_2d_double_numpy_false()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();
@@ -384,7 +384,7 @@ void test_any_operation_2d_double_numpy_true()
     phylanx::execution_tree::primitive any =
         phylanx::execution_tree::primitives::create_any_operation(
             hpx::find_here(),
-            std::vector<phylanx::execution_tree::primitive_argument_type>{
+            phylanx::execution_tree::primitive_arguments_type{
                 std::move(arg1)});
 
     phylanx::execution_tree::primitive_argument_type f = any.eval().get();

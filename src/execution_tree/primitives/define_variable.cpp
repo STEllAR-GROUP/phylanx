@@ -26,26 +26,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("define-variable",
             std::vector<std::string>{},
-            nullptr, &create_primitive<define_variable>)
+            nullptr, &create_primitive<define_variable>,
+            "Internal")
     };
 
     match_pattern_type const define_variable::match_data_define =
     {
         hpx::util::make_tuple("define",
             std::vector<std::string>{"define(__1)"},
-            nullptr, nullptr)
+            nullptr, nullptr,
+            "name,args,body\n"
+            "Args:\n"
+            "\n"
+            "    name (string) : name of symbol to define\n"
+            "    args (optional,list of symbols) : if  present, "
+            "                         this defines a function.\n"
+            "    body (expression) : value to bind to symbol `name` "
+            "                      or body of lambda function.\n"
+            "\n"
+            "Returns:\n"
+            )
     };
 
     match_pattern_type const define_variable::match_data_lambda =
     {
         hpx::util::make_tuple("lambda",
             std::vector<std::string>{"lambda(__1)"},
-            nullptr, nullptr)
+            nullptr, nullptr,
+            "args,body\n"
+            "Args:\n"
+            "\n"
+            "    *args (argument list): the list of arguments\n"
+            "    body (statemt): the body of the lambda function\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A function object with the arguments and body specified."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     define_variable::define_variable(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -60,20 +82,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> define_variable::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         // evaluate the expression bound to this name and store the value in
         // the associated variable
         primitive* p = util::get_if<primitive>(&operands_[0]);
         if (p != nullptr)
         {
-             p->bind(args);
+             p->bind(args, std::move(ctx));
         }
-        return hpx::make_ready_future(extract_ref_value(operands_[0]));
+        return hpx::make_ready_future(
+            extract_ref_value(operands_[0], name_, codename_));
     }
 
-    void define_variable::store(std::vector<primitive_argument_type>&& vals,
-        std::vector<primitive_argument_type>&& params)
+    void define_variable::store(primitive_arguments_type&& vals,
+        primitive_arguments_type&& params)
     {
         if (!valid(operands_[1]))
         {

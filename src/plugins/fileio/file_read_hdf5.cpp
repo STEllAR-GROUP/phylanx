@@ -33,12 +33,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("file_read_hdf5",
             std::vector<std::string>{"file_read_hdf5(_1, _2)"},
-            &create_file_read_hdf5, &create_primitive<file_read_hdf5>)
+            &create_file_read_hdf5, &create_primitive<file_read_hdf5>,
+            "fname,dsetname\n"
+            "Args:\n"
+            "\n"
+            "    fname (string) : a file name\n"
+            "    dsetname (string) : a dataset name\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The dataset, either a matrix or vector."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     file_read_hdf5::file_read_hdf5(
-            std::vector<primitive_argument_type> && operands,
+            primitive_arguments_type && operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {
@@ -46,32 +56,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // read data from given file and return content
     hpx::future<primitive_argument_type> file_read_hdf5::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands_.size() != 2)
+        if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_hdf5::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the file_read_hdf5 primitive requires exactly two "
-                        "literal arguments",
-                    name_, codename_));
+                        "literal arguments"));
         }
 
-        if (!valid(operands_[0]) || !valid(operands_[1]))
+        if (!valid(operands[0]) || !valid(operands[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_hdf5::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the file_read_hdf5 primitive requires that the given "
-                        "operand is valid",
-                    name_, codename_));
+                        "operand is valid"));
         }
 
         std::string filename =
-            string_operand_sync(operands_[0], args, name_, codename_);
+            string_operand_sync(operands[0], args, name_, codename_, ctx);
         std::string datasetName =
-            string_operand_sync(operands_[1], args, name_, codename_);
+            string_operand_sync(operands[1], args, name_, codename_, ctx);
 
         HighFive::File infile(filename, HighFive::File::ReadOnly);
         HighFive::DataSet dataSet = infile.getDataSet(datasetName);
@@ -111,9 +120,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_hdf5::eval",
-                util::generate_error_message(
-                    "the input file has incompatible number of dimensions",
-                    name_, codename_));
+                generate_error_message(
+                    "the input file has incompatible number of dimensions"));
         }
     }
 }}}

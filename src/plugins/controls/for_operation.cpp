@@ -25,12 +25,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("for",
             std::vector<std::string>{"for(_1, _2, _3, _4)"},
-            &create_for_operation, &create_primitive<for_operation>)
+            &create_for_operation, &create_primitive<for_operation>,
+            "init, cond, reinit, body\n"
+            "Args:\n"
+            "\n"
+            "    init (statements) : initialize loop variables\n"
+            "    cond (expression) : boolean expression, if true the loop continues\n"
+            "    reinit (statements) : update variables evaluated by `cond`\n"
+            "    body (statements) : code to execute as the body of the loop\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "  The value returned from the last iteration, `nil` otherwise."
+            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
     for_operation::for_operation(
-            std::vector<primitive_argument_type>&& operands,
+            primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
@@ -38,8 +50,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     struct for_operation::iteration_for
       : std::enable_shared_from_this<iteration_for>
     {
-        iteration_for(std::shared_ptr<for_operation const> that)
-            : that_(that)
+        iteration_for(std::shared_ptr<for_operation const> that, eval_context ctx)
+          : that_(that), ctx_(std::move(ctx))
         {
             if (that_->operands_.size() != 4)
             {
@@ -67,34 +79,36 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         hpx::future<primitive_argument_type> init(
-            std::vector<primitive_argument_type> const& operands,
-            std::vector<primitive_argument_type> const& args)
+            primitive_arguments_type const& operands,
+            primitive_arguments_type const& args)
         {
             this->args_ = args;
             auto this_ = this->shared_from_this();
-            return value_operand(
-                that_->operands_[0], args_, that_->name_, that_->codename_)
-                    .then(hpx::launch::sync,
-                        [this_](hpx::future<primitive_argument_type>&& val)
-                          -> hpx::future<primitive_argument_type>
-                {
-                    val.get();
-                    return this_->loop();
-                });
+            return value_operand(that_->operands_[0], args_,
+                    that_->name_, that_->codename_, ctx_)
+                .then(hpx::launch::sync,
+                    [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& val)
+                    -> hpx::future<primitive_argument_type>
+                    {
+                        val.get();
+                        return this_->loop();
+                    });
         }
 
         hpx::future<primitive_argument_type> loop()
         {
             // Evaluate condition of for statement
             auto this_ = this->shared_from_this();
-            return value_operand(
-                that_->operands_[1], args_, that_->name_, that_->codename_)
-                    .then(hpx::launch::sync,
-                        [this_](hpx::future<primitive_argument_type>&& cond)
-                          -> hpx::future<primitive_argument_type>
-                {
-                    return this_->body(std::move(cond));
-                });
+            return value_operand(that_->operands_[1], args_,
+                    that_->name_, that_->codename_, ctx_)
+                .then(hpx::launch::sync,
+                    [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& cond)
+                    -> hpx::future<primitive_argument_type>
+                    {
+                        return this_->body(std::move(cond));
+                    });
         }
 
         hpx::future<primitive_argument_type> body(
@@ -105,16 +119,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // Evaluate body of for statement
                 auto this_ = this->shared_from_this();
-                return value_operand(
-                    that_->operands_[3], args_, that_->name_, that_->codename_)
-                        .then(hpx::launch::sync,
-                            [this_](
-                                hpx::future<primitive_argument_type>&& result) mutable
-                            -> hpx::future<primitive_argument_type>
-                        {
-                            this_->result_ = result.get();
-                            return this_->reinit();    // Do the reinit statement
-                        });
+                return value_operand(that_->operands_[3], args_,
+                        that_->name_, that_->codename_, ctx_)
+                    .then(hpx::launch::sync,
+                        [this_ = std::move(this_)](
+                            hpx::future<primitive_argument_type>&& result) mutable
+                        -> hpx::future<primitive_argument_type>
+                    {
+                        this_->result_ = result.get();
+                        return this_->reinit();    // Do the reinit statement
+                    });
             }
 
             return hpx::make_ready_future(result_);
@@ -123,33 +137,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::future<primitive_argument_type> reinit()
         {
             auto this_ = this->shared_from_this();
-            return value_operand(
-                that_->operands_[2], args_, that_->name_, that_->codename_)
-                    .then(hpx::launch::sync,
-                        [this_](hpx::future<primitive_argument_type>&& val)
-                          -> hpx::future<primitive_argument_type>
-                {
-                    val.get();
-                    return this_->loop();   // Call the loop again
-                });
+            return value_operand(that_->operands_[2], args_,
+                    that_->name_, that_->codename_, ctx_)
+                .then(hpx::launch::sync,
+                    [this_ = std::move(this_)](
+                        hpx::future<primitive_argument_type>&& val)
+                    -> hpx::future<primitive_argument_type>
+                    {
+                        val.get();
+                        return this_->loop();   // Call the loop again
+                    });
         }
 
     private:
-        std::vector<primitive_argument_type> args_;
+        primitive_arguments_type args_;
         primitive_argument_type result_;
+        eval_context ctx_;
         std::shared_ptr<for_operation const> that_;
     };
 
     // Start iteration over given for statement
     hpx::future<primitive_argument_type> for_operation::eval(
-        std::vector<primitive_argument_type> const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (this->no_operands())
         {
             return std::make_shared<iteration_for>(
-                shared_from_this())->init(args, noargs);
+                shared_from_this(), std::move(ctx))->init(args, noargs);
         }
         return std::make_shared<iteration_for>(
-            shared_from_this())->init(operands_, args);
+            shared_from_this(), std::move(ctx))->init(operands_, args);
     }
 }}}
