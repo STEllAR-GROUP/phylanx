@@ -2,9 +2,10 @@
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
+//
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/algorithms/randomforest.hpp>
+#include <phylanx/plugins/algorithms/impl/randomforest_impl.hpp>
 #include <phylanx/util/detail/add_simd.hpp>
 #include <phylanx/util/detail/div_simd.hpp>
 
@@ -24,7 +25,6 @@
 #include <vector>
 
 #include <blaze/Math.h>
-#include <phylanx/plugins/algorithms/impl/randomforest_impl.hpp>
 
 using namespace phylanx::algorithms::impl;
 
