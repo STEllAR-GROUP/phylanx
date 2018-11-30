@@ -20,7 +20,7 @@ macro(phylanx_setup_blaze)
   phylanx_add_config_define(BLAZE_USE_HPX_THREADS 1)
   phylanx_add_config_define(BLAZE_USE_SHARED_MEMORY_PARALLELIZATION 1)
   if(MSVC)
-    phylanx_add_config_cond_define(NOMINMAX)
+    phylanx_add_config_cond_define(NOMINMAX 1)
   endif()
 
   # Add iterative solvers from BlazeIterative

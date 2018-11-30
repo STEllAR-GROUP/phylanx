@@ -24,6 +24,9 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -42,15 +45,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             Returns:
 
             Adds a dimension, making a scalar a vector or a vector a matrix.
-            )",
-            true)
+            )")
     };
 
     ///////////////////////////////////////////////////////////////////////////
     expand_dims::expand_dims(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
@@ -58,32 +59,50 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type expand_dims::add_dim_0d(
         ir::node_data<T>&& arg) const
     {
-        return primitive_argument_type{blaze::DynamicVector<T>{arg.scalar()}};
+        return primitive_argument_type{
+            blaze::DynamicVector<T>(1, arg.scalar())};
     }
 
     primitive_argument_type expand_dims::add_dim_0d(
-        primitive_argument_type&& arg) const
+        primitive_arguments_type&& args) const
     {
-        node_data_type t = dtype_;
-        if (t == node_data_type_unknown)
+        std::int64_t axis = 0;
+        if (args.size() == 2)
         {
-            t = extract_common_type(arg);
+            axis =
+                extract_scalar_integer_value_strict(args[1], name_, codename_);
         }
 
-        switch (t)
+        if (axis != 0 || axis < -1)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::expand_dims::add_dim_0d",
+                generate_error_message(
+                    "the axis parameter to expand_dims is out of range"));
+        }
+
+        if (axis < 0)
+        {
+            axis += 1;
+        }
+
+        switch (extract_common_type(args[0]))
         {
         case node_data_type_bool:
-            return add_dim_0d(extract_boolean_value(
-                std::move(arg), name_, codename_));
+            return add_dim_0d(extract_boolean_value_strict(
+                std::move(args[0]), name_, codename_));
 
         case node_data_type_int64:
-            return add_dim_0d(extract_integer_value(
-                std::move(arg), name_, codename_));
+            return add_dim_0d(extract_integer_value_strict(
+                std::move(args[0]), name_, codename_));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
+            return add_dim_0d(extract_numeric_value_strict(
+                std::move(args[0]), name_, codename_));
+
+        case node_data_type_unknown:
             return add_dim_0d(extract_numeric_value(
-                std::move(arg), name_, codename_));
+                std::move(args[0]), name_, codename_));
 
         default:
             break;
@@ -92,43 +111,74 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::expand_dims::add_dim_0d",
             generate_error_message(
-                "the arange primitive requires for all arguments to "
+                "the expand_dims primitive requires for all arguments to "
                     "be numeric data types"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type expand_dims::add_dim_1d(
-        ir::node_data<T>&& arg) const
+        ir::node_data<T>&& arg, std::int64_t axis) const
     {
         auto data = arg.vector();
-        return primitive_argument_type{
-            blaze::DynamicMatrix<T>{data.size(), 1, data.data()}};
+        if (axis == 0)
+        {
+            blaze::DynamicMatrix<T> result(1, data.size());
+            for (std::size_t i = 0; i != data.size(); ++i)
+            {
+                result(0, i) = data[i];
+            }
+            return primitive_argument_type{std::move(result)};
+        }
+
+        blaze::DynamicMatrix<T> result(data.size(), 1);
+        for (std::size_t i = 0; i != data.size(); ++i)
+        {
+            result(i, 0) = data[i];
+        }
+        return primitive_argument_type{std::move(result)};
     }
 
     primitive_argument_type expand_dims::add_dim_1d(
-        primitive_argument_type&& arg) const
+        primitive_arguments_type&& args) const
     {
-        node_data_type t = dtype_;
-        if (t == node_data_type_unknown)
+        std::int64_t axis = 0;
+        if (args.size() == 2)
         {
-            t = extract_common_type(arg);
+            axis =
+                extract_scalar_integer_value_strict(args[1], name_, codename_);
         }
 
-        switch (t)
+        if (axis > 1 || axis < -2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::expand_dims::add_dim_1d",
+                generate_error_message(
+                    "the axis parameter to expand_dims is out of range"));
+        }
+
+        if (axis < 0)
+        {
+            axis += 2;
+        }
+
+        switch (extract_common_type(args[0]))
         {
         case node_data_type_bool:
-            return add_dim_1d(extract_boolean_value(
-                std::move(arg), name_, codename_));
+            return add_dim_1d(extract_boolean_value_strict(
+                std::move(args[0]), name_, codename_), axis);
 
         case node_data_type_int64:
-            return add_dim_1d(extract_integer_value(
-                std::move(arg), name_, codename_));
+            return add_dim_1d(extract_integer_value_strict(
+                std::move(args[0]), name_, codename_), axis);
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
+            return add_dim_1d(extract_numeric_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_unknown:
             return add_dim_1d(extract_numeric_value(
-                std::move(arg), name_, codename_));
+                std::move(args[0]), name_, codename_), axis);
 
         default:
             break;
@@ -137,31 +187,110 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::expand_dims::add_dim_1d",
             generate_error_message(
+                "the expand_dims primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type expand_dims::add_dim_2d(
+        ir::node_data<T>&& arg, std::int64_t axis) const
+    {
+        auto data = arg.matrix();
+        if (axis == 0)
+        {
+            blaze::DynamicTensor<T> result(1, data.rows(), data.columns());
+            blaze::pageslice(result, 0) = data;
+            return primitive_argument_type{std::move(result)};
+        }
+        else if (axis == 1)
+        {
+            blaze::DynamicTensor<T> result(data.rows(), 1, data.columns());
+            blaze::rowslice(result, 0) = data;
+            return primitive_argument_type{std::move(result)};
+        }
+
+        blaze::DynamicTensor<T> result(data.rows(), data.columns(), 1);
+        blaze::columnslice(result, 0) = data;
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type expand_dims::add_dim_2d(
+        primitive_arguments_type&& args) const
+    {
+        std::int64_t axis = 0;
+        if (args.size() == 2)
+        {
+            axis =
+                extract_scalar_integer_value_strict(args[1], name_, codename_);
+        }
+
+        if (axis > 2 || axis < -3)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::primitives::expand_dims::add_dim_2d",
+                generate_error_message(
+                    "the axis parameter to expand_dims is out of range"));
+        }
+
+        if (axis < 0)
+        {
+            axis += 3;
+        }
+
+        switch (extract_common_type(args[0]))
+        {
+        case node_data_type_bool:
+            return add_dim_2d(extract_boolean_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_int64:
+            return add_dim_2d(extract_integer_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_double:
+            return add_dim_2d(extract_numeric_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_unknown:
+            return add_dim_2d(extract_numeric_value(
+                std::move(args[0]), name_, codename_), axis);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::expand_dims::add_dim_2d",
+            generate_error_message(
                 "the arange primitive requires for all arguments to "
                     "be numeric data types"));
     }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> expand_dims::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 1)
+        if (operands.size() != 1 && operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "expand_dims::eval",
                 generate_error_message(
-                    "the expand_dims primitive requires exactly one operand"));
+                    "the expand_dims primitive requires exactly one or two "
+                    "operands"));
         }
 
         if (!valid(operands[0]))
         {
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "expand_dims::eval",
-                    generate_error_message(
-                        "the expand_dims primitive requires that the "
-                            "arguments given by the operands array are valid"));
-            }
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "expand_dims::eval",
+                generate_error_message(
+                    "the expand_dims primitive requires that the "
+                        "arguments given by the operands array are valid"));
+        }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
@@ -174,11 +303,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (a_dims)
                 {
                 case 0:
-                    return this_->add_dim_0d(std::move(args[0]));
+                    return this_->add_dim_0d(std::move(args));
 
                 case 1:
-                    return this_->add_dim_1d(std::move(args[0]));
+                    return this_->add_dim_1d(std::move(args));
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 2:
+                    return this_->add_dim_2d(std::move(args));
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "expand_dims::eval",
