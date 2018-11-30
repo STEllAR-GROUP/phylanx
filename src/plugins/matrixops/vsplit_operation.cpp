@@ -74,16 +74,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if( block_dims < 1 )  // Scalar tiling
         {
-            std::int64_t num_blocks = 
+            std::int64_t num_blocks =
                 extract_numeric_value(args[1], name_, codename_).scalar();
-            if( num_blocks <= 0){
+            if( num_blocks <= 0)
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "vsplit_operation::eval",
                     generate_error_message(
                         "the vsplit_operation primitive can not split "
                         "matrices/vectors into fewer blocks than one"));
             }
-            if( num_blocks > num_rows){
+            if( num_blocks > num_rows)
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "vsplit_operation::eval",
                     generate_error_message(
@@ -92,40 +94,41 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "are rows"));
             }
 
-
             std::size_t last_index(num_rows);
             std::size_t tmp_block_num(num_blocks);
 
             // Find a list of tiles which, starting from the back, will
             // be of the correct sizes to use up all rows, but keep tile
             // sizes as large and uniform as possible. I think that always
-            // means that the first tile will absorb the difference/be the 
-            // smallest 
-            while(tmp_block_num > 0){
+            // means that the first tile will absorb the difference/be the
+            // smallest
+            while(tmp_block_num > 0)
+            {
                 double block_size = std::ceil(
                     double(last_index)/double(tmp_block_num));
-                std::pair<double, double> range(last_index - block_size, 
+                std::pair<double, double> range(last_index - block_size,
                                                 last_index);
                 tmp_block_num--;
                 last_index -= block_size;
                 ranges.push_back(range);
             }
-            // We want the list of ranges in forward order          
+            // We want the list of ranges in forward order
             std::reverse(ranges.begin(),ranges.end());
         }
         else // Index-based tiling
         {
             auto && indices = extract_node_data<T>(std::move(args[1]));
-            if(indices.vector().size() > 0){
-
-                for(int i = 0; i < indices.vector().size(); i++){
+            if(indices.vector().size() > 0)
+            {
+                for(int i = 0; i < indices.vector().size(); i++)
+                {
                     if(indices.vector()[i] > num_rows)
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "vsplit_operation::eval",
                             generate_error_message(
                             "the vsplit_operation primitive cannot include"
                             "rows numbered higher than the total number of"
-                            "rows in the matrix being split"));         
+                            "rows in the matrix being split"));
                 }
 
                 // Include from 0 to first index
@@ -134,7 +137,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     double(indices.vector()[0])));
 
                 // Make a list of pairs from the passed index list
-                for( int i = 0; i < indices.vector().size() - 1; i++){
+                for( int i = 0; i < indices.vector().size() - 1; i++)
+                {
                     ranges.push_back(std::make_pair<double, double>(
                                          double(indices.vector()[i]),
                                          double(indices.vector()[i+1])));
@@ -145,7 +149,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     double(indices.vector()[indices.vector().size()-1]),
                     double(num_rows)));
             }
-            else{
+            else
+            {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "vsplit_operation::eval",
                     generate_error_message(
@@ -163,17 +168,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         for(int i = 0; i < num_blocks; i++)
         {
-
-            if( ranges.at(i).second > ranges.at(i).first ){                
+            if( ranges.at(i).second > ranges.at(i).first )
+            {
                 blaze::CustomMatrix<T, true, true> block(
                     &input_data.matrix()(ranges.at(i).first,0),
-                    ranges.at(i).second-ranges.at(i).first, 
+                    ranges.at(i).second-ranges.at(i).first,
                     num_cols, num_cols);
                 result.push_back(primitive_argument_type{std::move(
                     ir::node_data<T>{std::move(block)})});
             }
-            else  // Numpy's version of this function returns an empty matrix 
-                  // of this shape when the second index is smaller than the 
+            else  // Numpy's version of this function returns an empty matrix
+                  // of this shape when the second index is smaller than the
                   // first
             {
                 blaze::DynamicMatrix<T> block(std::int64_t(0),num_cols);
@@ -281,7 +286,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> vsplit_operation::eval(
         primitive_arguments_type const& args, eval_context ctx) const
-    {       
+    {
        if (this->no_operands())
         {
            return eval(args, noargs, std::move(ctx));
