@@ -17,6 +17,7 @@
 #include <hpx/util/assert.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>

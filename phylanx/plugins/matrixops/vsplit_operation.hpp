@@ -14,7 +14,9 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 
+#include <memory>
 #include <string>
+#include <utility>
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
