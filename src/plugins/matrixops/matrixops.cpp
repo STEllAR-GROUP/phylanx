@@ -67,6 +67,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(sum_operation_plugin,
     phylanx::execution_tree::primitives::sum_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(transpose_operation_plugin,
     phylanx::execution_tree::primitives::transpose_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(vsplit_operation_plugin,
+    phylanx::execution_tree::primitives::vsplit_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(vstack_operation_plugin,
     phylanx::execution_tree::primitives::vstack_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(get_seed,
