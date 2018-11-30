@@ -14,6 +14,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -45,9 +46,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         template <typename T>
-        primitive_argument_type identity_helper(
-            primitive_argument_type&& op) const;
-        primitive_argument_type identity_nd(primitive_argument_type&& op) const;
+        primitive_argument_type identity_helper(std::int64_t&& op) const;
+        primitive_argument_type identity_nd(std::int64_t&& op) const;
 
     private:
         node_data_type dtype_;
