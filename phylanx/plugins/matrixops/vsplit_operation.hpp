@@ -44,21 +44,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         primitive_argument_type vsplit_args(
             primitive_arguments_type&& args) const;
-        primitive_argument_type vsplit_args_ind(
-            ir::range&& l, primitive_arguments_type&& args) const;
-/*
-        template <typename T>
-        primitive_argument_type vsplit0d_helper(
-            primitive_arguments_type&& args) const;
-        primitive_argument_type vsplit0d(
-            primitive_arguments_type&& args) const;
 
-        template <typename T>
-        primitive_argument_type vsplit1d_helper(
-            primitive_arguments_type&& args) const;
-        primitive_argument_type vsplit1d(
-            primitive_arguments_type&& args) const;
-*/
         template <typename T>
         primitive_argument_type vsplit2d_helper(
             primitive_arguments_type&& args) const;

@@ -26,7 +26,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    ///////////////////////////////////////////////////////////////////////////
+
     match_pattern_type const vsplit_operation::match_data =
     {
         match_pattern_type{
@@ -53,118 +53,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
       , dtype_(extract_dtype(name_))
     {}
-
-    ///////////////////////////////////////////////////////////////////////////
-/*
-    template<typename T>
-    primitive_argument_type vsplit_operation::vsplit0d_helper(
-        primitive_arguments_type&& args) const
-    {
-        std::size_t args_size = args.size();
-        std::int64_t num_blocks = 
-            extract_numeric_value(args[1], name_, codename_).scalar();
-
-        if( num_blocks != 1){
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "vsplit_operation::eval",
-                generate_error_message(
-                    "the vsplit_operation primitive can not split "
-                    "a scalar into anything other than one block"));
-        }
-
-        primitive_arguments_type result;
-        auto && input_data = extract_node_data<T>(std::move(args[0]));
-        blaze::DynamicMatrix<T> block(std::int64_t(1), std::int64_t(1));
-        block(0,0) = std::move(input_data.scalar());
-        result.push_back(primitive_argument_type{std::move(block)});
-
-        return primitive_argument_type{std::move(result)};
-    }
-
-    primitive_argument_type vsplit_operation::vsplit0d(
-        primitive_arguments_type&& args) const
-    {
-        switch (extract_common_type(args))
-        {
-        case node_data_type_bool:
-            return vsplit0d_helper<std::uint8_t>(std::move(args));
-
-        case node_data_type_int64:
-            return vsplit0d_helper<std::int64_t>(std::move(args));
-
-        case node_data_type_double:
-            return vsplit0d_helper<double>(std::move(args));
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::primitives::"
-                "vsplit_operation::vsplit1d",
-            generate_error_message(
-                "the vsplit_operation primitive requires for all arguments to "
-                "be numeric data types"));
-    }
-*/
-    ///////////////////////////////////////////////////////////////////////////
-/*
-    template<typename T>
-    primitive_argument_type vsplit_operation::vsplit1d_helper(
-        primitive_arguments_type&& args) const
-    {
-        std::int64_t num_blocks = 
-            extract_numeric_value(args[1], name_, codename_).scalar();
-
-        if( num_blocks != 1){
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "vsplit_operation::eval",
-                generate_error_message(
-                    "the vsplit_operation primitive can not split "
-                    "a row vector into anything other than one block"));
-        }  
-
-        primitive_arguments_type result;
-        auto && input_data = extract_node_data<T>(std::move(args[0]));
-        std::size_t num_columns = input_data.vector().size();
-        blaze::DynamicMatrix<T> block(1, num_columns);
-
-        for(int i = 0; i < num_columns; i++)
-        {
-            block(0,i) = std::move(input_data.vector()[i]);
-        }
-
-        result.push_back(primitive_argument_type{std::move(block)});
-
-        return primitive_argument_type{std::move(result)};
-    }
-
-    primitive_argument_type vsplit_operation::vsplit1d(
-        primitive_arguments_type&& args) const
-    {
-        switch (extract_common_type(args))
-        {
-        case node_data_type_bool:
-            return vsplit1d_helper<std::uint8_t>(std::move(args));
-
-        case node_data_type_int64:
-            return vsplit1d_helper<std::int64_t>(std::move(args));
-
-        case node_data_type_double:
-            return vsplit1d_helper<double>(std::move(args));
-
-        default:
-            break;
-        }
-
-        HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "phylanx::execution_tree::primitives::"
-                "vsplit_operation::vsplit1d",
-            generate_error_message(
-                "the vsplit_operation primitive requires for all arguments to "
-                "be numeric data types"));
-    }
-*/
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -331,13 +219,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         switch (matrix_dims)
         {
-/* Zero and One dimensional matrices cannot be vertically split
-        case 0:
-            return vsplit0d(std::move(args));
-
-        case 1: 
-            return vsplit1d(std::move(args));
-*/
         case 2:
             return vsplit2d(std::move(args));
 
