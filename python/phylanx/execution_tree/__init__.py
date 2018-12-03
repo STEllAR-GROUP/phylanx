@@ -5,9 +5,6 @@
 
 from phylanx import PhylanxSession
 
-if not PhylanxSession.is_initialized:
-    PhylanxSession(1)
-
 try:
     from phylanx._phylanx.execution_tree import *
 
