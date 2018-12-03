@@ -1,9 +1,9 @@
-//   Copyright (c) 2018 Bita Hasheminezhad
-//   Copyright (c) 2018 Shahrzad Shirzad
-//   Copyright (c) 2018 Hartmut kaiser
+// Copyright (c) 2018 Bita Hasheminezhad
+// Copyright (c) 2018 Shahrzad Shirzad
+// Copyright (c) 2018 Hartmut kaiser
 //
-//   Distributed under the Boost Software License, Version 1.0. (See accompanying
-//   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
@@ -31,10 +31,20 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         hpx::util::make_tuple("eye",
             std::vector<std::string>{"eye(_1)", "eye(_1,_2)", "eye(_1,_2,_3)"},
             &create_eye_operation, &create_primitive<eye_operation>,
-            "N, M, k, data-type\n"
+            "N, M, k, dtype\n"
             "Args:\n"
             "\n"
-            "")};
+            "    N (integer) : number of rows in the output.\n"
+            "    M (optional, integer) : number of columns in the output. If "
+            "       None, defaults to N.\n"
+            "    k (optional, integer) : index of the diagonal: 0 (the default)"
+            "       refers to the main diagonal, a positive value refers to an\n"
+            "       upper diagonal, and a negative value to a lower diagonal.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "Return an N x M matrix with ones on the k-th diagonal and zeros\n"
+            "elsewhere")};
 
     ///////////////////////////////////////////////////////////////////////////
     eye_operation::eye_operation(primitive_arguments_type&& operands,
@@ -44,7 +54,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     {
     }
     template <typename T>
-    primitive_argument_type eye_operation::eye_n_helper(val_type&& arg) const
+    primitive_argument_type eye_operation::eye_n_helper(arg_type&& arg) const
     {
         if (extract_numeric_value_dimension(arg) != 0)
         {
@@ -64,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::node_data<T>{blaze::IdentityMatrix<T>(size)}};
     }
 
-    primitive_argument_type eye_operation::eye_n(val_type&& arg) const
+    primitive_argument_type eye_operation::eye_n(arg_type&& arg) const
     {
         node_data_type t = dtype_;
 
