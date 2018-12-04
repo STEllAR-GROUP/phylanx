@@ -34,13 +34,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
     static void randomforest_predict(
         blaze::DynamicMatrix<double> const& train
-        , blaze::DynamicMatrix<double> const& train_labels
+        , blaze::DynamicVector<double> const& train_labels
         , std::uint64_t const max_depth
         , std::uint64_t const min_size
         , std::uint64_t const sample_size
         , std::uint64_t const n_trees
         , blaze::DynamicMatrix<double> const& test
-        , blaze::DynamicMatrix<double> & test_labels) {
+        , blaze::DynamicVector<double> & test_labels) {
 
         randomforest_impl rf(n_trees);
         rf.fit(train, train_labels, max_depth, min_size, sample_size);
@@ -113,10 +113,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "of rows in 'training_data' to be equal to the size of 'training_labels'"));
         }
 
-        auto max_depth = extract_scalar_integer_value(args[2], name_, codename_);
-        auto min_size = extract_scalar_integer_value(args[3], name_, codename_);
-        auto sample_size = extract_scalar_integer_value(args[4], name_, codename_);
-        auto n_trees = extract_scalar_integer_value(args[5], name_, codename_);
+        auto max_depth = static_cast<std::uint64_t>(
+            extract_scalar_integer_value(args[2], name_, codename_));
+        auto min_size = static_cast<std::uint64_t>(
+            extract_scalar_integer_value(args[3], name_, codename_));
+        auto sample_size = static_cast<std::uint64_t>(
+            extract_scalar_integer_value(args[4], name_, codename_));
+        auto n_trees = static_cast<std::uint64_t>(
+            extract_scalar_integer_value(args[5], name_, codename_));
 
         auto arg6 = extract_numeric_value(args[6], name_, codename_);
         if (arg6.num_dimensions() != 2)
@@ -129,7 +133,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto testing_data = arg6.matrix();
 
-        using vector_type = ir::node_data<std::int64_t>::storage1d_type;
+        using vector_type = ir::node_data<double>::storage1d_type;
 
         // perform calculations
         vector_type testing_labels(training_data.rows(), 0);
@@ -144,13 +148,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             , testing_data
             , testing_labels);
 
-        return primitive_argument_type{std::move(training_labels)};
+        return primitive_argument_type{std::move(testing_labels)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> randomforest::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 7)
         {
@@ -191,13 +195,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name_, codename_));
     }
 
-    hpx::future<primitive_argument_type> randomforest::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
-    }
 }}}
