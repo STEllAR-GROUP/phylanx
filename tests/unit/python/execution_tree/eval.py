@@ -9,7 +9,7 @@ import phylanx
 from phylanx import Phylanx, PhylanxSession
 import numpy as np
 
-PhylanxSession(1)
+PhylanxSession.init(1)
 
 et = phylanx.execution_tree
 cs = phylanx.compiler_state()

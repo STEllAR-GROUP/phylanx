@@ -25,8 +25,7 @@ class PhylanxSession:
 
     is_initialized = False
 
-    def __init__(self, num_threads=1):
-        # load and initialize the HPX runtime
+    def init(self, num_threads=1):
         if not PhylanxSession.is_initialized:
             hpx_thread = "hpx.os_threads!=%s" % num_threads
             PhylanxSession.cfg[3] = hpx_thread
