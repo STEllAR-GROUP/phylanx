@@ -117,7 +117,7 @@ jobs:
             # Inspect
             - run:
                 name: Build the Inspect tool
-                command: cmake --build build -- -j2 tools.inspect
+                command: cmake --build build -- -j1 tools.inspect
                 when: always
             - run:
                 name: Check the formatting of Phylanx's C++ files
@@ -164,7 +164,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build regression tests
-                command: cmake --build . -- -j2 tests.regressions
+                command: cmake --build . -- -j1 tests.regressions
             - run:
                 name: Run regression tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.regressions
@@ -180,7 +180,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build arithmetic primitive plugin unit tests
-                command: cmake --build . -- -j2 tests.unit.plugins.arithmetics
+                command: cmake --build . -- -j1 tests.unit.plugins.arithmetics
             - run:
                 name: Run arithmetic primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.arithmetics
@@ -196,7 +196,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build boolean primitive plugin unit tests
-                command: cmake --build . -- -j2 tests.unit.plugins.booleans
+                command: cmake --build . -- -j1 tests.unit.plugins.booleans
             - run:
                 name: Run boolean primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.booleans
@@ -212,7 +212,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build control primitive plugin unit tests
-                command: cmake --build . -- -j2 tests.unit.plugins.controls
+                command: cmake --build . -- -j1 tests.unit.plugins.controls
             - run:
                 name: Run control primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.controls
@@ -228,7 +228,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build file I/O and solvers primitive plugin unit tests
-                command: cmake --build . -- -j2 tests.unit.plugins.{fileio,solvers}
+                command: cmake --build . -- -j1 tests.unit.plugins.{fileio,solvers}
             - run:
                 name: Run file I/O and solvers primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.plugins.(fileio|solvers)'
@@ -244,7 +244,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build ListOps primitive plugin unit tests
-                command: cmake --build . -- -j2 tests.unit.plugins.listops
+                command: cmake --build . -- -j1 tests.unit.plugins.listops
             - run:
                 name: Run ListOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.listops
@@ -260,7 +260,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build MatrixOps primitive plugin unit tests
-                command: cmake --build . -- -j2 tests.unit.plugins.matrixops
+                command: cmake --build . -- -j1 tests.unit.plugins.matrixops
             - run:
                 name: Run MatrixOps primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.matrixops
@@ -276,7 +276,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
-                command: cmake --build . -- -j2 tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
+                command: cmake --build . -- -j1 tests.unit.{execution_tree,ast,algorithm,execution_tree.primitives_}
             - run:
                 name: Run tests.unit.{execution_tree,ast,algorithm,primitives}
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(execution_tree|ast|algorithm|primitives)'
@@ -292,7 +292,7 @@ jobs:
             - <<: *attach_phylanx_tree
             - run:
                 name: Build tests.unit.{config,ir,util,performance_counters,python}
-                command: cmake --build . -- -j2 tests.unit.{config,ir,util,performance_counters,python}
+                command: cmake --build . -- -j1 tests.unit.{config,ir,util,performance_counters,python}
             - run:
                 name: Run tests.unit.config
                 command: ctest -T test --no-compress-output --output-on-failure -R 'tests.unit.(config|ir|util|performance_counters|python)'
