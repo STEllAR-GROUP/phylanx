@@ -1,3 +1,4 @@
+//  Copyright (c) 2018 Hartmut Kaiser
 //  Copyright (c) 2018 Christopher Taylor
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -54,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "randomforest(_1, _2, _3, _4, _5, _6, _7)",
             },
             &create_randomforest, &create_primitive<randomforest>,
-            "x, y, alpha, iters, enable_output\n"
+            "training, training_labels, max_depth, min_size, sample_size, n_trees, test\n"
             "Args:\n"
             "\n"
             "    training (matrix) : training features\n"
@@ -65,7 +66,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    sample_size (int) : number of samples per tree\n"
             "    n_trees (int) : number of trees to train\n"
             "    test (matrix) : testing data to predict upon\n"
-            "    test_labels (vector) : predicted output labels for the test data\n"
             "\n"
             "Returns:\n"
             "\n"
@@ -90,9 +90,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
                 generate_error_message(
                     "the randomforest algorithm primitive requires for the first "
-                    "argument ('x') to represent a matrix"));
+                    "argument ('training_data') to represent a matrix"));
         }
-        auto x = arg1.matrix();
+        auto training_data = arg1.matrix();
 
         auto arg2 = extract_numeric_value(args[1], name_, codename_);
         if (arg2.num_dimensions() != 1)
@@ -100,63 +100,51 @@ namespace phylanx { namespace execution_tree { namespace primitives
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
                 generate_error_message(
                     "the randomforest algorithm primitive requires for the second "
-                    "argument ('y') to represent a vector"));
+                    "argument ('training_labels') to represent a vector"));
         }
-        auto y = arg2.vector();
+        auto training_labels = arg2.vector();
 
         // verify correctness of argument dimensions
-        if (x.rows() != y.size())
+        if (training_data.rows() != training_labels.size())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
                 generate_error_message(
                     "the randomforest algorithm primitive requires for the number "
-                    "of rows in 'x' to be equal to the size of 'y'"));
+                    "of rows in 'training_data' to be equal to the size of 'training_labels'"));
         }
 
-        auto arg3 = extract_numeric_value(args[2], name_, codename_);
-        if (arg3.num_dimensions() != 0)
+        auto max_depth = extract_scalar_integer_value(args[2], name_, codename_);
+        auto min_size = extract_scalar_integer_value(args[3], name_, codename_);
+        auto sample_size = extract_scalar_integer_value(args[4], name_, codename_);
+        auto n_trees = extract_scalar_integer_value(args[5], name_, codename_);
+
+        auto arg6 = extract_numeric_value(args[6], name_, codename_);
+        if (arg6.num_dimensions() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
                 generate_error_message(
-                    "the randomforest algorithm primitive requires for the second "
-                    "argument ('alpha') the learning rate"));
-        }
-        auto alpha = arg3.scalar();
-
-        auto iterations =
-            extract_scalar_integer_value(args[3], name_, codename_);
-
-        bool enable_output = false;
-        if (args.size() == 5 && valid(args[4]))
-        {
-            enable_output =
-                extract_scalar_boolean_value(args[4], name_, codename_) != 0;
+                    "the randomforest algorithm primitive requires for the first "
+                    "argument ('testing') to represent a matrix"));
         }
 
-        using vector_type = ir::node_data<double>::storage1d_type;
-        using matrix_type = ir::node_data<double>::storage2d_type;
+        auto testing_data = arg6.matrix();
+
+        using vector_type = ir::node_data<std::int64_t>::storage1d_type;
 
         // perform calculations
-        vector_type weights(x.columns(), 0.0);
-        matrix_type transx = blaze::trans(x);
+        vector_type testing_labels(training_data.rows(), 0);
 
-        for (std::int64_t step = 0; step < iterations; ++step)
-        {
-            if (enable_output)
-            {
-                hpx::cout << "step: " << step << ", " << weights << std::endl;
-            }
+        randomforest_predict(
+            training_data
+            , training_labels
+            , max_depth
+            , min_size
+            , sample_size
+            , n_trees
+            , testing_data
+            , testing_labels);
 
-            // pred = 1.0 / (1.0 + exp(-dot(x, weights)))
-            auto pred = blaze::map(
-                blaze::map(blaze::exp(-(x * weights)),
-                    util::detail::addnd0d_simd(1.0)),
-                util::detail::div0dnd_simd(1.0));
-
-            weights = weights - (alpha * (transx * (pred - y)));
-        }
-
-        return primitive_argument_type{std::move(weights)};
+        return primitive_argument_type{std::move(training_labels)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -164,13 +152,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args) const
     {
-        if (operands.size() != 4 && operands.size() != 5)
+        if (operands.size() != 7)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "randomforest::eval",
                 generate_error_message(
-                    "the randomforest algorithm primitive requires exactly either "
-                        "four or five operands"));
+                    "the randomforest algorithm primitive requires exactly seven "
+                        "operands"));
         }
 
         bool arguments_valid = true;
