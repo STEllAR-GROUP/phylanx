@@ -39,8 +39,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         randomforest() = default;
 
         ///
-        /// Creates a primitive executing the LRA algorithm on the given
-        /// input data
+        /// Creates a primitive executing the RandomForest algorithm on 
+        /// the given input data
         ///
         /// \param args Is a (possibly empty) list of any values to be
         ///             concatenated into a PhySL list in order.

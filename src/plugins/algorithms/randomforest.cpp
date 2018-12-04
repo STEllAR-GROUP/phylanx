@@ -5,7 +5,7 @@
 //
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/algorithms/randomforest.hpp>
-#include <phylanx/plugins/algorithms/impl/randomforest_impl.hpp>
+#include <phylanx/plugins/algorithms/impl/randomforest.hpp>
 #include <phylanx/util/detail/add_simd.hpp>
 #include <phylanx/util/detail/div_simd.hpp>
 
