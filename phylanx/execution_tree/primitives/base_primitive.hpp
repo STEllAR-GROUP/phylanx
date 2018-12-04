@@ -19,7 +19,6 @@
 
 #include <hpx/include/runtime.hpp>
 #include <hpx/include/util.hpp>
-#include <hpx/include/serialization.hpp>
 
 #include <array>
 #include <cstddef>
@@ -41,38 +40,38 @@ namespace phylanx { namespace execution_tree
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type&& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type&& val,
         primitive_arguments_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type const& val,
         primitive_argument_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT primitive_argument_type value_operand_sync(
         primitive_argument_type&& val,
         primitive_argument_type&& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -286,22 +285,26 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type const& val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type && val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>> integer_operand(
         primitive_argument_type && val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -341,27 +344,32 @@ namespace phylanx { namespace execution_tree
     integer_operand_strict(primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
             primitive_argument_type const& val,
             primitive_arguments_type const& args,
             std::string const& name = "",
-            std::string const& codename = "<unknown>");
+            std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>>
     integer_operand_strict(primitive_argument_type const& val,
         primitive_arguments_type&& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>>
     integer_operand_strict(primitive_argument_type&& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>>
     integer_operand_strict(primitive_argument_type&& val,
         primitive_arguments_type&& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -617,31 +625,31 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val,
         primitive_arguments_type&& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val,
         primitive_arguments_type const& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val,
         primitive_arguments_type&& args,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type const& val, primitive_argument_type const& arg,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> value_operand(
         primitive_argument_type&& val, primitive_argument_type const& arg,
         std::string const& name = "", std::string const& codename = "<unknown>",
-        eval_mode mode = eval_default);
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -666,22 +674,26 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type const& val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type && val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<primitive_argument_type> literal_operand(
         primitive_argument_type && val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -699,7 +711,8 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     // Extract a node_data<double> from a primitive_argument_type (that
     // could be a primitive or a literal value).
@@ -707,22 +720,26 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type const& val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type && val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
         primitive_argument_type && val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -740,7 +757,8 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     // Extract a boolean from a primitive_argument_type (that
     // could be a primitive or a literal value).
@@ -748,12 +766,14 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT std::uint8_t boolean_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     // Extract a std::string from a primitive_argument_type (that
     // could be a primitive or a string value).
@@ -761,12 +781,14 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT std::string string_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     // Extract an AST from a primitive_argument_type (that
     // could be a primitive or a literal value).
@@ -774,12 +796,14 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT std::vector<ast::expression> ast_operand_sync(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     // Extract a list from a primitive_argument_type (that
     // could be a primitive or a literal value).
@@ -787,22 +811,26 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::range> list_operand(
         primitive_argument_type && val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::range> list_operand(
         primitive_argument_type const& val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::range> list_operand(
         primitive_argument_type && val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -821,7 +849,8 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     // Extract a list from a primitive_argument_type (that
     // could be a primitive or a literal value).
@@ -829,22 +858,26 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::range> list_operand_strict(
         primitive_argument_type && val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::range> list_operand_strict(
         primitive_argument_type const& val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::range> list_operand_strict(
         primitive_argument_type && val,
         primitive_arguments_type && args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     namespace functional
     {
@@ -864,7 +897,8 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
-        std::string const& codename = "<unknown>");
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 }}
 
 namespace phylanx { namespace execution_tree { namespace primitives

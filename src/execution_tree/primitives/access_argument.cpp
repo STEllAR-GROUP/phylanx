@@ -51,7 +51,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     hpx::future<primitive_argument_type> access_argument::eval(
-        primitive_arguments_type const& params, eval_mode mode) const
+        primitive_arguments_type const& params, eval_context ctx) const
     {
         if (argnum_ >= params.size())
         {
@@ -83,37 +83,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
                             extract_ref_value(*it, name_, codename_));
                     }
 
-                    mode = eval_mode(mode | eval_dont_wrap_functions);
+                    ctx.add_mode(eval_dont_wrap_functions);
                     return value_operand(params[argnum_], std::move(fargs),
-                        name_, codename_, mode);
+                        name_, codename_, std::move(ctx));
                 }
 
                 if (operands_.size() > 2)
                 {
                     // handle row/column-slicing
+                    auto op1 = value_operand(
+                        operands_[1], params, name_, codename_, ctx);
                     auto this_ = this->shared_from_this();
                     return hpx::dataflow(
                         hpx::launch::sync,
-                        [   this_ = std::move(this_), mode,
-                            target = params[argnum_]
-                        ](hpx::future<primitive_argument_type>&& rows,
+                        [this_ = std::move(this_), target = params[argnum_]](
+                                hpx::future<primitive_argument_type>&& rows,
                                 hpx::future<primitive_argument_type>&& cols)
                         ->  primitive_argument_type
                         {
                             return slice(target, rows.get(), cols.get(),
                                 this_->name_, this_->codename_);
                         },
-                        value_operand(operands_[1], params, name_, codename_),
-                        value_operand(operands_[2], params, name_, codename_));
+                        op1,
+                        value_operand(operands_[2], params, name_, codename_,
+                            std::move(ctx)));
                 }
 
                 // handle row-slicing
                 auto this_ = this->shared_from_this();
-                return value_operand(operands_[1], params, name_, codename_)
+                return value_operand(
+                        operands_[1], params, name_, codename_, std::move(ctx))
                     .then(hpx::launch::sync,
-                        [   this_ = std::move(this_), mode,
-                            target = params[argnum_]
-                        ](hpx::future<primitive_argument_type>&& rows)
+                        [this_ = std::move(this_), target = params[argnum_]](
+                            hpx::future<primitive_argument_type>&& rows)
                         -> primitive_argument_type
                         {
                             return slice(target, rows.get(), this_->name_,

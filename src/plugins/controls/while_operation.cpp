@@ -51,8 +51,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     struct while_operation::iteration : std::enable_shared_from_this<iteration>
     {
         iteration(primitive_arguments_type const& args,
-            std::shared_ptr<while_operation const> that)
-          : that_(that), args_(args)
+            std::shared_ptr<while_operation const> that, eval_context ctx)
+          : that_(that), args_(args), ctx_(std::move(ctx))
         {
             this->args_ = args;
             if (that_->operands_.size() != 2)
@@ -60,10 +60,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::while_operation::"
                         "while_operation",
-                    util::generate_error_message(
+                    that_->generate_error_message(
                         "the while_operation primitive requires exactly two "
-                            "arguments",
-                        that_->name_, that_->codename_));
+                            "arguments"));
             }
 
             if (!valid(that_->operands_[0]) || !valid(that_->operands_[1]))
@@ -71,10 +70,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "phylanx::execution_tree::primitives::while_operation::"
                         "while_operation",
-                    util::generate_error_message(
+                    that_->generate_error_message(
                         "the while_operation primitive requires that the "
-                            "arguments  by the operands array are valid",
-                        that_->name_, that_->codename_));
+                            "arguments  by the operands array are valid"));
             }
         }
 
@@ -82,8 +80,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             // Evaluate condition of while statement
             auto this_ = this->shared_from_this();
-            return literal_operand(
-                that_->operands_[0], args_, that_->name_, that_->codename_)
+            return literal_operand(that_->operands_[0], args_,
+                    that_->name_, that_->codename_, ctx_)
                 .then(hpx::launch::sync,
                     [this_ = std::move(this_)](
                         hpx::future<primitive_argument_type>&& cond)
@@ -101,8 +99,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 // Evaluate body of while statement
                 auto this_ = this->shared_from_this();
-                return literal_operand(
-                    that_->operands_[1], args_, that_->name_, that_->codename_)
+                return literal_operand(that_->operands_[1], args_,
+                        that_->name_, that_->codename_, ctx_)
                     .then(hpx::launch::sync,
                         [this_ = std::move(this_)](
                             hpx::future<primitive_argument_type>&& result) mutable
@@ -117,20 +115,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
     private:
-        primitive_arguments_type args_;
-        primitive_argument_type result_;
         std::shared_ptr<while_operation const> that_;
+        primitive_arguments_type args_;
+        eval_context ctx_;
+        primitive_argument_type result_;
     };
 
     // Start iteration over given while statement
     hpx::future<primitive_argument_type> while_operation::eval(
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (this->no_operands())
         {
-            return std::make_shared<iteration>(noargs, shared_from_this())
+            return std::make_shared<iteration>(
+                noargs, shared_from_this(), std::move(ctx))
                 ->loop();
         }
-        return std::make_shared<iteration>(args, shared_from_this())->loop();
+        return std::make_shared<iteration>(
+            args, shared_from_this(), std::move(ctx))
+            ->loop();
     }
 }}}

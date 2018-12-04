@@ -13,6 +13,8 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -33,11 +35,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
-
-        using val_type = double;
-        using arg_type = ir::node_data<val_type>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
     public:
         static match_pattern_type const match_data;
@@ -47,16 +46,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         argmin(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
-
     private:
-        primitive_argument_type argmin0d(args_type && args) const;
-        primitive_argument_type argmin1d(args_type && args) const;
-        primitive_argument_type argmin2d_flatten(arg_type && arg_a) const;
-        primitive_argument_type argmin2d_x_axis(arg_type && arg_a) const;
-        primitive_argument_type argmin2d_y_axis(arg_type && arg_a) const;
-        primitive_argument_type argmin2d(args_type && args) const;
+        primitive_argument_type argmin0d(primitive_arguments_type&& args) const;
+        primitive_argument_type argmin1d(primitive_arguments_type&& args) const;
+        primitive_argument_type argmin2d(primitive_arguments_type&& args) const;
+
+        template <typename T>
+        primitive_argument_type argmin0d(std::size_t numargs,
+            ir::node_data<T>&& args, std::int64_t axis) const;
+        template <typename T>
+        primitive_argument_type argmin1d(std::size_t numargs,
+            ir::node_data<T>&& args, std::int64_t axis) const;
+        template <typename T>
+        primitive_argument_type argmin2d(std::size_t numargs,
+            ir::node_data<T>&& args, std::int64_t axis) const;
+
+        template <typename T>
+        primitive_argument_type argmin2d_flatten(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type argmin2d_x_axis(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type argmin2d_y_axis(ir::node_data<T>&& arg) const;
     };
 
     inline primitive create_argmin(hpx::id_type const& locality,

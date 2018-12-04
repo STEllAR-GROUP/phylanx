@@ -54,32 +54,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    primitive_argument_type identity::identity_helper(
-        primitive_argument_type&& op) const
+    primitive_argument_type identity::identity_helper(std::int64_t&& op) const
     {
-        if (extract_numeric_value_dimension(op) != 0)
+        if (op < 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::identity_helper",
-                util::generate_error_message(
-                    "input should be a scalar", name_, codename_));
+                generate_error_message("input should be greater than zero"));
         }
-
-        std::size_t size = static_cast<std::size_t>(
-            extract_numeric_value(op, name_, codename_)[0]);
-
+        std::size_t size = static_cast<std::size_t>(op);
         return primitive_argument_type{
-            operand_type{blaze::IdentityMatrix<T>(size)}};
+            ir::node_data<T>{blaze::IdentityMatrix<T>(size)}};
     }
 
-    primitive_argument_type identity::identity_nd(
-        primitive_argument_type&& op) const
+    primitive_argument_type identity::identity_nd(std::int64_t&& op) const
     {
         node_data_type t = dtype_;
-        if (t == node_data_type_unknown)
-        {
-            t = extract_common_type(op);
-        }
 
         switch (t)
         {
@@ -89,7 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return identity_helper<std::int64_t>(std::move(op));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
         case node_data_type_double:
             return identity_helper<double>(std::move(op));
 
@@ -100,55 +91,40 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::"
                 "identity::identity_nd",
-            util::generate_error_message(
-                "the contsnat primitive requires for all arguments to "
-                    "be numeric data types",
-                name_, codename_));
+            generate_error_message(
+                "the identity primitive requires for all arguments to "
+                    "be numeric data types"));
     }
 
     hpx::future<primitive_argument_type> identity::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
-                util::generate_error_message(
-                    "the identity primitive requires"
-                        "at most one operand",
-                    name_, codename_));
+                generate_error_message(
+                    "the identity primitive requires at most one operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the identity primitive requires that the "
-                        "arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](operand_type&& op0)
-            -> primitive_argument_type
-            {
-                return this_->identity_nd(std::move(op0));
-            }),
-            numeric_operand(operands[0], args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> identity::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping(
+                [this_ = std::move(this_)](
+                    std::int64_t&& op0) -> primitive_argument_type {
+                    return this_->identity_nd(std::move(op0));
+                }),
+            scalar_integer_operand_strict(
+                operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

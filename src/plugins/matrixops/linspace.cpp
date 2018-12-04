@@ -58,11 +58,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
-                "detail::linspace1d",
-                util::generate_error_message(
-                    "the linspace primitive requires at least one "
-                    "interval",
-                    name_, codename_));
+                    "detail::linspace1d",
+                generate_error_message(
+                    "the linspace primitive requires at least one interval"));
         }
 
         if (1 == num_samples)
@@ -84,16 +82,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> linspace::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::linspace",
-                util::generate_error_message(
+                generate_error_message(
                     "the linspace primitive requires exactly three "
-                    "arguments.",
-                    name_, codename_));
+                    "arguments."));
         }
 
         for (std::size_t i = 0; i != operands.size(); ++i)
@@ -102,10 +99,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "linspace::eval",
-                    util::generate_error_message(
+                    generate_error_message(
                         "at least one of the arguments passed to "
-                        "linspace is not valid.",
-                        name_, codename_));
+                        "linspace is not valid."));
             }
         }
 
@@ -118,17 +114,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             detail::map_operands(
                 operands, functional::numeric_operand{}, args,
-                name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> linspace::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}

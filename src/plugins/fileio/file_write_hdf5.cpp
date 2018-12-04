@@ -105,15 +105,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> file_write_hdf5::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::file_write_hdf5",
-                util::generate_error_message(
-                    "the file_write primitive requires exactly three operands",
-                    name_, codename_));
+                generate_error_message(
+                    "the file_write primitive requires exactly three operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]) ||
@@ -121,51 +120,38 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_write::file_write_hdf5",
-                util::generate_error_message(
+                generate_error_message(
                     "the file_write primitive requires that the given operands "
-                    "are valid",
-                    name_, codename_));
+                    "are valid"));
         }
 
         std::string filename =
-            string_operand_sync(operands[0], args, name_, codename_);
+            string_operand_sync(operands[0], args, name_, codename_, ctx);
         std::string dataset_name =
-            string_operand_sync(operands[1], args, name_, codename_);
+            string_operand_sync(operands[1], args, name_, codename_, ctx);
 
         auto this_ = this->shared_from_this();
-        return numeric_operand(operands[2], args, name_, codename_)
+        return numeric_operand(operands[2], args, name_, codename_, ctx)
             .then(hpx::launch::sync, hpx::util::unwrapping(
-                [this_, filename = std::move(filename),
+                [this_ = std::move(this_), filename = std::move(filename),
                     dataset_name = std::move(dataset_name)](
-                    ir::node_data<double>&& val) -> primitive_argument_type
+                    ir::node_data<double>&& val) mutable
+                -> primitive_argument_type
                 {
                     if (!valid(val))
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "file_write_hdf5::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "the file_write_hdf5 primitive requires that "
                                 "the argument value given by the operand is "
-                                "non-empty",
-                                this_->name_, this_->codename_));
+                                "non-empty"));
                     }
 
                     this_->write_to_file_hdf5(val, std::move(filename),
                         std::move(dataset_name));
                     return primitive_argument_type(std::move(val));
                 }));
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // write data to given file in hdf5 format and return content
-    hpx::future<primitive_argument_type> file_write_hdf5::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
     }
 }}}
 

@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type als::calculate_als(
-        primitive_arguments_type && args) const
+        primitive_arguments_type&& args) const
     {
         // extract arguments
         auto arg1 = extract_numeric_value(args[0], name_, codename_);
@@ -160,7 +160,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto conf_u = blaze::trans(blaze::row(conf, u));
                 auto diag = blaze::band(c_u, 0);
                 diag = conf_u;
-                auto p_u =
+                blaze::DynamicVector<double> p_u =
                     blaze::map(conf_u, [&](double x) { return (x != 0.0); });
                 auto A = (blaze::trans(Y) * c_u) * Y + YtY;
                 auto b = (blaze::trans(Y) * (c_u + I_i)) * (p_u);
@@ -173,7 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto conf_i = blaze::column(conf, i);
                 auto diag = blaze::band(c_i, 0);
                 diag = conf_i;
-                auto p_i =
+                blaze::DynamicVector<double> p_i =
                     blaze::map(conf_i, [&](double x) { return (x != 0.0); });
                 auto A = (blaze::trans(X) * c_i) * X + XtX;
                 auto b = (blaze::trans(X) * (c_i + I_u)) * (p_i);
@@ -193,7 +193,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> als::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 5 && operands.size() != 6)
         {
@@ -231,16 +231,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->calculate_als(std::move(args));
                 }),
             detail::map_operands(
-                operands, functional::value_operand{}, args, name_, codename_));
-    }
-
-    hpx::future<primitive_argument_type> als::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                operands, functional::value_operand{}, args, name_, codename_,
+                std::move(ctx)));
     }
 }}}

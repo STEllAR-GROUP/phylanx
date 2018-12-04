@@ -31,13 +31,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         filter_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
-
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
     };
 
     inline primitive create_filter_operation(hpx::id_type const& locality,

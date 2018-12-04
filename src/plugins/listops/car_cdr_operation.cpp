@@ -159,27 +159,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> car_cdr_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the car_cdr_operation primitive requires exactly "
-                        "one (list-) operand",
-                    name_, codename_));
+                        "one (list-) operand"));
         }
 
         if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "car_cdr_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the car_cdr_operation primitive requires that the "
                         "arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
+                        "are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -207,17 +205,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 return result;
             }),
-            list_operand(operands_[0], args, name_, codename_));
-    }
-
-    // Start iteration over given for statement
-    hpx::future<primitive_argument_type> car_cdr_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            list_operand(operands_[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

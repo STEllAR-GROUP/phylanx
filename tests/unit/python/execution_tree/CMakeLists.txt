@@ -12,6 +12,8 @@ set(tests
     make_array
     map_numpy
     set_operation
+    parallel
+    multi_return
    )
 
 foreach(test ${tests})

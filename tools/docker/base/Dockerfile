@@ -44,11 +44,9 @@ RUN apt-get update &&                                                           
     )                                                                            && \
     rm -rf /pybind11-src                                                         && \
                                                                                     \
-    mkdir /blaze-src                                                             && \
+    git clone --depth=1 https://bitbucket.org/blaze-lib/blaze.git /blaze-src     && \
     (                                                                               \
     cd /blaze-src                                                                && \
-    curl -JL https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.4.tar.gz |     \
-        tar xz --strip-components=2                                              && \
     cmake -H. -Bbuild -DBLAZE_SMP_THREADS=C++11                                  && \
     cmake --build build -- install                                                  \
     )                                                                            && \

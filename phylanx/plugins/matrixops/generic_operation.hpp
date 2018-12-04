@@ -27,7 +27,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
         using arg_type = ir::node_data<double>;
         using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
@@ -43,9 +44,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         generic_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
-
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
 
     public:
         using scalar_function = double(double);

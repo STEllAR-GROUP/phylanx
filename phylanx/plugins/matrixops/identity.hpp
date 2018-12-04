@@ -14,6 +14,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -32,7 +33,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args) const;
+            primitive_arguments_type const& args,
+            eval_context ctx) const override;
 
     public:
         static match_pattern_type const match_data;
@@ -42,14 +44,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         identity(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
-        hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& args) const override;
-
     private:
         template <typename T>
-        primitive_argument_type identity_helper(
-            primitive_argument_type&& op) const;
-        primitive_argument_type identity_nd(primitive_argument_type&& op) const;
+        primitive_argument_type identity_helper(std::int64_t&& op) const;
+        primitive_argument_type identity_nd(std::int64_t&& op) const;
 
     private:
         node_data_type dtype_;

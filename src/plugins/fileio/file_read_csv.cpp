@@ -57,30 +57,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // read data from given file and return content
     hpx::future<primitive_argument_type> file_read_csv::eval(
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands_.size() != 1)
+        if (operands.size() != 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the file_read_csv primitive requires exactly one "
-                        "literal argument",
-                    name_, codename_));
+                        "literal argument"));
         }
 
-        if (!valid(operands_[0]))
+        if (!valid(operands[0]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::file_read_csv::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the file_read_csv primitive requires that the given "
-                        "operand is valid",
-                    name_, codename_));
+                        "operand is valid"));
         }
 
-        std::string filename =
-            string_operand_sync(operands_[0], args, name_, codename_);
+        std::string filename = string_operand_sync(
+            operands[0], args, name_, codename_, std::move(ctx));
 
         auto this_ = this->shared_from_this();
         return hpx::threads::run_as_os_thread(

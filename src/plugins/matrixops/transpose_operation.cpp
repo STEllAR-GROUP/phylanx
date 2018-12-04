@@ -46,63 +46,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> transpose_operation::eval(
-        primitive_arguments_type const& operands,
-        primitive_arguments_type const& args,
-        std::string const& name, std::string const& codename) const
-    {
-        if (operands.size() != 1)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "transpose_operation::transpose_operation",
-                util::generate_error_message(
-                    "the transpose_operation primitive requires"
-                        "exactly one operand",
-                    name, codename));
-        }
-
-        if (!valid(operands[0]))
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "transpose_operation::transpose_operation",
-                util::generate_error_message(
-                    "the transpose_operation primitive requires "
-                        "that the arguments given by the operands "
-                        "array is valid",
-                    name, codename));
-        }
-
-        auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_), name, codename](operands_type&& ops)
-            -> primitive_argument_type
-            {
-                std::size_t dims = ops[0].num_dimensions();
-                switch (dims)
-                {
-                case 0:
-                    HPX_FALLTHROUGH;
-
-                case 1:
-                    return this_->transpose0d1d(std::move(ops));
-
-                case 2:
-                    return this_->transpose2d(std::move(ops));
-
-                default:
-                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "transpose_operation::eval",
-                        util::generate_error_message(
-                            "left hand side operand has unsupported "
-                                "number of dimensions",
-                            name, codename));
-                }
-            }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name, codename));
-    }
-
     primitive_argument_type transpose_operation::transpose0d1d(
         operands_type&& ops) const
     {
@@ -120,17 +63,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             blaze::transpose(ops[0].matrix_non_ref());
         }
+
         return primitive_argument_type{std::move(ops[0])};
     }
 
-    //////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> transpose_operation::eval(
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (this->no_operands())
+        if (operands.size() != 1)
         {
-            return eval(args, noargs, name_, codename_);
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "transpose_operation::transpose_operation",
+                generate_error_message(
+                    "the transpose_operation primitive requires"
+                        "exactly one operand"));
         }
-        return eval(operands_, args, name_, codename_);
+
+        if (!valid(operands[0]))
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "transpose_operation::transpose_operation",
+                generate_error_message(
+                    "the transpose_operation primitive requires "
+                        "that the arguments given by the operands "
+                        "array is valid"));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](operands_type&& ops)
+            -> primitive_argument_type
+            {
+                std::size_t dims = ops[0].num_dimensions();
+                switch (dims)
+                {
+                case 0: HPX_FALLTHROUGH;
+                case 1:
+                    return this_->transpose0d1d(std::move(ops));
+
+                case 2:
+                    return this_->transpose2d(std::move(ops));
+
+                default:
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "transpose_operation::eval",
+                        this_->generate_error_message(
+                            "left hand side operand has unsupported "
+                                "number of dimensions"));
+                }
+            }),
+            detail::map_operands(
+                operands, functional::numeric_operand{}, args,
+                name_, codename_, std::move(ctx)));
     }
 }}}

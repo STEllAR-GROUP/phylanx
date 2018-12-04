@@ -709,16 +709,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op>
     hpx::future<primitive_argument_type> comparison<Op>::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() < 2 || operands.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "comparison<Op>::eval",
-                util::generate_error_message(
-                    "the comparison primitive requires two or three "
-                        "operands",
-                    name_, codename_));
+                generate_error_message(
+                    "the comparison primitive requires two or three operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands[1]) ||
@@ -726,10 +724,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "comparison<Op>::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the comparison primitive requires that the "
-                        "arguments given by the operands array are valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         auto this_ = this->shared_from_this();
@@ -746,21 +743,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     util::visit(visit_comparison{*this_, propagate_type},
                         std::move(op1.variant()), std::move(op2.variant())));
             }),
-            value_operand(operands[0], args, name_, codename_),
-            value_operand(operands[1], args, name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Implement a boolean operation for all possible combinations of lhs and rhs
-    template <typename Op>
-    hpx::future<primitive_argument_type> comparison<Op>::eval(
-        primitive_arguments_type const& args, eval_mode) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+            value_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[1], args, name_, codename_, ctx));
     }
 }}}
 

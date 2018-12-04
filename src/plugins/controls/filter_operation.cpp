@@ -62,27 +62,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> filter_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.size() != 2)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the filter_operation primitive requires exactly "
-                        "two operands",
-                    name_, codename_));
+                        "two operands"));
         }
 
         if (!valid(operands[0]) || !valid(operands_[1]))
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the filter_operation primitive requires that the "
-                        "arguments given by the operands array "
-                        "are valid",
-                    name_, codename_));
+                        "arguments given by the operands array are valid"));
         }
 
         // the first argument must be an invokable
@@ -90,14 +87,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "filter_operation::eval",
-                util::generate_error_message(
-                    "the first argument to map must be an invocable "
-                    "object", name_, codename_));
+                generate_error_message(
+                    "the first argument to map must be an invocable object"));
         }
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](
+            [this_ = std::move(this_), ctx](
                     primitive_argument_type&& bound_func, ir::range&& list)
             ->  primitive_argument_type
             {
@@ -106,22 +102,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "filter_operation::eval",
-                        util::generate_error_message(
-                            "the first argument to filter must be an invocable "
-                            "object", this_->name_, this_->codename_));
+                        this_->generate_error_message(
+                            "the first argument to filter must be an "
+                            "invocable object"));
                 }
 
                 // sequentially evaluate all operations
-                std::size_t size = list.size();
-
                 primitive_arguments_type result;
-                result.reserve(size);
+                result.reserve(list.size());
 
                 for (auto && curr : list)
                 {
                     primitive_arguments_type arg(1, curr);
                     if (boolean_operand_sync(bound_func, std::move(arg),
-                            this_->name_, this_->codename_))
+                            this_->name_, this_->codename_, ctx))
                     {
                         result.push_back(std::move(curr));
                     }
@@ -130,18 +124,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return primitive_argument_type{std::move(result)};
             }),
             value_operand(operands_[0], args, name_, codename_,
-                eval_dont_evaluate_lambdas),
-            list_operand(operands_[1], args, name_, codename_));
-    }
-
-    // Start iteration over given for statement
-    hpx::future<primitive_argument_type> filter_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-        return eval(this->operands(), args);
+                add_mode(ctx, eval_dont_evaluate_lambdas)),
+            list_operand(operands_[1], args, name_, codename_, ctx));
     }
 }}}

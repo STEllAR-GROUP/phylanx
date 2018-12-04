@@ -10,6 +10,7 @@ import ast
 import inspect
 import phylanx.execution_tree
 from phylanx import compiler_state
+from phylanx.ast.utils import dump_info
 
 mapped_methods = {
     "add": "__add",
@@ -23,6 +24,15 @@ mapped_methods = {
     "print": "cout",
     "subtract": "__sub",
 }
+
+methods_supporting_dtype = [
+    'arange',
+    'cumsum',
+    'expand_dims',
+    'hstack',
+    'identity',
+    'vstack',
+]
 
 
 def primitive_name(method_name):
@@ -88,6 +98,92 @@ def remove_line(a):
     return re.sub(r'\$.*', '', a)
 
 
+def is_fun(func, ir):
+    """
+    Check that the intermediate representation (ir) describes
+    a function with name func.
+    """
+    return type(ir) == list and type(ir[0]) == str and re.match(func + r'\b', ir[0])
+
+
+def check_noreturn(ir):
+    """
+    Check that the intermediate representation (ir) passed
+    to this routine does not contain ir return statement.
+    """
+    if type(ir) not in [list, tuple]:
+        return
+    if len(ir) == 0:
+        return
+    elif len(ir) == 1:
+        check_noreturn(ir[0])
+    elif is_fun('return', ir):
+        msg = "Illegal return"
+        g = re.match(r'.*\$(\d+)\$(\d+)$', str(ir[0]))
+        if g:
+            msg += ": line=%s, col=%s" % (g.group(1), g.group(2))
+        raise NotImplementedError(msg)
+    elif is_fun('.*', ir):
+        check_noreturn(ir[1])
+    elif type(ir) in [list, tuple]:
+        for s in ir:
+            check_noreturn(s)
+
+
+def check_hasreturn(ir):
+    """
+    Process the intermediate representation (ir) passed
+    and ensure that if it has ir return statement, it is
+    at the end.
+    """
+    if type(ir) not in [list, tuple]:
+        return
+    if len(ir) == 0:
+        return
+    elif len(ir) == 1:
+        check_hasreturn(ir[0])
+    elif is_fun('for_each', ir):
+        check_noreturn(ir[1])
+    elif is_fun('while', ir):
+        check_noreturn(ir[1])
+    elif is_fun('if', ir):
+        for k in ir[1][1:]:
+            check_hasreturn(k)
+    elif is_fun('.*', ir):
+        check_hasreturn(ir[1])
+    else:
+        if len(ir) == 0:
+            return
+        check_noreturn(ir[:-1])
+        check_hasreturn([ir[-1]])
+
+
+def check_return(ir):
+    """
+    Process the intermediate representation (ir) passed
+    and check that return statements are only used where
+    allowed.
+    """
+    if type(ir) not in [list, tuple]:
+        return
+    if len(ir) == 0:
+        return
+    elif len(ir) == 1:
+        check_return(ir[0])
+    elif is_fun('block', ir):
+        check_hasreturn(ir[1])
+    elif is_fun('while', ir):
+        check_noreturn(ir[1])
+    elif is_fun('if', ir):
+        for k in ir[1][1:]:
+            check_hasreturn(k)
+    elif is_fun('.*', ir):
+        check_return(ir[1])
+    else:
+        for s in ir:
+            check_return(s)
+
+
 class PhySL:
     """Python AST to PhySL Transducer."""
 
@@ -116,6 +212,7 @@ class PhySL:
             PhySL.defined_classes = {}
 
         self.ir = self.apply_rule(tree.body[0])
+        check_return(self.ir)
         self.__src__ = self.generate_physl(self.ir)
 
         if kwargs.get("debug"):
@@ -134,8 +231,15 @@ class PhySL:
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
                 ir[1], tuple):
-            return ir[0] + '(' + ', '.join(
-                [self.generate_physl(i) for i in ir[1]]) + ')'
+            result = [self.generate_physl(i) for i in ir[1]]
+            # Remove return statements when generating physl
+            if re.match(r'return\$.*', ir[0]):
+                if len(result) == 1:
+                    return result[0]
+                else:
+                    return '(' + ', '.join(result) + ')'
+            else:
+                return ir[0] + '(' + ', '.join(result) + ')'
         elif isinstance(ir, list):
             return ', '.join([self.generate_physl(i) for i in ir])
         elif isinstance(ir, tuple):
@@ -411,12 +515,11 @@ class PhySL:
                 return [symbol, (args[1], [op, args[0]])]
             else:
                 return [symbol, (args[1], args[0])]
-        elif 'identity' in symbol:
-            symbol = symbol.replace('identity', 'identity' + dtype)
-        elif 'arange' in symbol:
-            symbol = symbol.replace('arange', 'arange' + dtype)
-        elif 'cumsum' in symbol:
-            symbol = symbol.replace('cumsum', 'cumsum' + dtype)
+        else:
+            method = [m for m in methods_supporting_dtype if m in symbol]
+            if len(method) == 1:
+                symbol = symbol.replace(method[0], method[0] + dtype)
+
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         return [symbol, args]
@@ -718,10 +821,12 @@ class PhySL:
             end of the function!
         """
 
-        if type(node.value) == ast.Tuple:
-            return ["list", self.apply_rule(node.value)]
+        symbol = get_symbol_info(node, "return")
 
-        return self.apply_rule(node.value)
+        if type(node.value) == ast.Tuple:
+            return [symbol, (["list", self.apply_rule(node.value)],)]
+
+        return [symbol, (self.apply_rule(node.value),)]
 
     def _Slice(self, node):
         """class Slice(lower, upper, step)"""
@@ -790,6 +895,20 @@ class PhySL:
         #     else:
         #         return [op, (value, slice_)]
         return [op, (value, slice_)]
+
+    def _With(self, node):
+        if 0 < len(node.items) and type(node.items[0]) == ast.withitem:
+            withitem = node.items[0]
+            if type(withitem.context_expr) == ast.Attribute:
+                attribute = withitem.context_expr
+                if attribute.attr == "parallel":
+                    if self.fglobals[attribute.value.id].parallel.is_parallel_block():
+                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+            elif type(withitem.context_expr) == ast.Name:
+                if withitem.context_expr.id == "parallel":
+                    if self.fglobals["parallel"].is_parallel_block():
+                        return ["parallel_block", tuple(map(self.apply_rule, node.body))]
+        raise Exception("Unsupported use of 'With'")
 
     def _Dict(self, node):
         res = []

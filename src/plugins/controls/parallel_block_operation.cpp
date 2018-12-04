@@ -48,17 +48,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     hpx::future<primitive_argument_type> parallel_block_operation::eval(
         primitive_arguments_type const& operands,
-        primitive_arguments_type const& args) const
+        primitive_arguments_type const& args, eval_context ctx) const
     {
         if (operands.empty())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "phylanx::execution_tree::primitives::"
                     "parallel_block_operation::eval",
-                util::generate_error_message(
+                generate_error_message(
                     "the parallel_block_operation primitive "
-                        "requires at least one argument",
-                    name_, codename_));
+                        "requires at least one argument"));
         }
 
         // Evaluate condition of while statement
@@ -71,19 +70,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
-                name_, codename_));
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Start iteration over given parallel-block statement
-    hpx::future<primitive_argument_type> parallel_block_operation::eval(
-        primitive_arguments_type const& args) const
-    {
-        if (this->no_operands())
-        {
-            return eval(args, noargs);
-        }
-
-        return eval(this->operands(), args);
+                name_, codename_, std::move(ctx)));
     }
 }}}
