@@ -140,17 +140,13 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         if (k > 0)
         {
             vecsize = M - k;
-            if (vecsize < 0)
-                vecsize = 0;
-            else if (N < vecsize)
+            if (N < vecsize)
                 vecsize = N;
         }
         else if (k < 0)
         {
             vecsize = N + k;
-            if (vecsize < 0)
-                vecsize = 0;
-            else if (M < vecsize)
+            if (M < vecsize)
                 vecsize = M;
         }
 
@@ -229,7 +225,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 case 1:
                     return this_->eye_n(std::move(args[0]));
                 case 2:
-                    return this_->eye_nmk(std::move(args));
+                    HPX_FALLTHROUGH;
                 case 3:
                     return this_->eye_nmk(std::move(args));
                 default:
