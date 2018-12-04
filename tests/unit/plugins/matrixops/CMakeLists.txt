@@ -28,6 +28,7 @@ set(tests
     power_operation
     random
     random_distributions
+    reshape_operation
     row_slicing
     shuffle_operation
     slicing_operation

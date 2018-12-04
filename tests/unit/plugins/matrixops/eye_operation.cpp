@@ -196,4 +196,3 @@ int main(int argc, char* argv[])
     test_eye_operation_NMK_all_zeros();
     return hpx::util::report_errors();
 }
-
