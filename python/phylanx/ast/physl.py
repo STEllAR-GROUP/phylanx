@@ -189,7 +189,7 @@ class PhySL:
                     PhySL.compiler_state, True)
 
         if not PhylanxSession.is_initialized:
-            PhylanxSession(1)
+            PhylanxSession.init(1)
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             # the static method compiler_state is constructed only once
