@@ -172,6 +172,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             switch (operands_.size())
             {
+            case 1:
+                {
+                    HPX_THROW_EXCEPTION(hpx::not_implemented,
+                        "phylanx::execution_tree::primitives::access_argument::"
+                            "store",
+                        generate_error_message(
+                            "assignment to (non-sliced) function argument is "
+                            "not supported (yet)"));
+                }
+                break;
+
             case 2:
                 slice(std::move(params[argnum_]),
                     value_operand_sync(std::move(operands_[1]),
@@ -190,16 +201,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
                 return;
 
-            case 1:
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            case 4:
                 {
-                    HPX_THROW_EXCEPTION(hpx::not_implemented,
-                        "phylanx::execution_tree::primitives::access_argument::"
-                            "store",
-                        generate_error_message(
-                            "assignment to (non-sliced) function argument is "
-                            "not supported (yet)"));
+                    auto data1 = value_operand_sync(
+                        operands_[1], params, name_, codename_);
+                    auto data2 = value_operand_sync(
+                        operands_[2], params, name_, codename_);
+                    slice(std::move(params[argnum_]),
+                        std::move(data1), std::move(data2),
+                        value_operand_sync(
+                            operands_[3], std::move(params), name_, codename_),
+                        std::move(data[0]), name_, codename_);
                 }
-                break;
+                return;
+#endif
 
             default:
                 break;

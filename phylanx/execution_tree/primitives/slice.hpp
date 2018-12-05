@@ -28,6 +28,15 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& columns, std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    PHYLANX_EXPORT primitive_argument_type slice(
+        primitive_argument_type const& data,
+        primitive_argument_type const& rows,
+        primitive_argument_type const& columns,
+        primitive_argument_type const& pages, std::string const& name = "",
+        std::string const& codename = "<unknown>");
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     // modify a slice of the given primitive_argument_type instance
     PHYLANX_EXPORT primitive_argument_type slice(primitive_argument_type&& data,
@@ -40,6 +49,15 @@ namespace phylanx { namespace execution_tree
         primitive_argument_type const& columns, primitive_argument_type&& value,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    PHYLANX_EXPORT primitive_argument_type slice(primitive_argument_type&& data,
+        primitive_argument_type const& rows,
+        primitive_argument_type const& columns,
+        primitive_argument_type const& pages,
+        primitive_argument_type&& value, std::string const& name = "",
+        std::string const& codename = "<unknown>");
+#endif
 }}
 
 #endif

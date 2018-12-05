@@ -10,6 +10,7 @@
 #include <phylanx/execution_tree/primitives/slice_node_data_0d.hpp>
 #include <phylanx/execution_tree/primitives/slice_node_data_1d.hpp>
 #include <phylanx/execution_tree/primitives/slice_node_data_2d.hpp>
+#include <phylanx/execution_tree/primitives/slice_node_data_3d.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/ir/ranges.hpp>
 
@@ -44,12 +45,16 @@ namespace phylanx { namespace execution_tree
         case 2:
             return slice1d_extract2d(data, indices, name, codename);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return slice1d_extract3d(data, indices, name, codename);
+#endif
         default:
             break;
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::slice",
+            "phylanx::execution_tree::slice_extract",
             util::generate_error_message(
                 "target ir::node_data object holds unsupported data type", name,
                 codename));
@@ -82,18 +87,39 @@ namespace phylanx { namespace execution_tree
         case 2:
             return slice2d_extract2d(data, rows, columns, name, codename);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return slice2d_extract3d(data, rows, columns, name, codename);
+#endif
         case 0:
         default:
             break;
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::slice",
+            "phylanx::execution_tree::slice_extract",
             util::generate_error_message(
                 "target ir::node_data object holds data type that does not "
                 "support 2d slicing",
                 name, codename));
     }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    ir::node_data<T> slice_extract(ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& pages,
+        std::string const& name, std::string const& codename)
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice_extract",
+            util::generate_error_message(
+                "target ir::node_data object holds data type that does not "
+                "support 3d slicing",
+                name, codename));
+    }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // explicit instantiations of the slice (extract) functionality
@@ -130,6 +156,29 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& columns,
         std::string const& name, std::string const& codename);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template PHYLANX_EXPORT ir::node_data<std::uint8_t>
+    slice_extract<std::uint8_t>(ir::node_data<std::uint8_t> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& pages,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT ir::node_data<double>
+    slice_extract<double>(ir::node_data<double> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& pages,
+        std::string const& name, std::string const& codename);
+
+    template PHYLANX_EXPORT ir::node_data<std::int64_t>
+    slice_extract<std::int64_t>(ir::node_data<std::int64_t> const& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& pages,
+        std::string const& name, std::string const& codename);
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     // Modifying slice functionality
     template <typename T>
@@ -152,6 +201,11 @@ namespace phylanx { namespace execution_tree
             return slice1d_assign2d(std::move(data), indices, std::move(value),
                 name, codename);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return slice1d_assign3d(std::move(data), indices, std::move(value),
+                name, codename);
+#endif
         default:
             break;
         }
@@ -180,18 +234,41 @@ namespace phylanx { namespace execution_tree
             return slice2d_assign2d(std::move(data), rows, columns,
                 std::move(value), name, codename);
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return slice2d_assign3d(std::move(data), rows, columns,
+                std::move(value), name, codename);
+#endif
         case 0:
         default:
             break;
         }
 
         HPX_THROW_EXCEPTION(hpx::invalid_status,
-            "phylanx::execution_tree::slice",
+            "phylanx::execution_tree::slice_assign",
             util::generate_error_message(
                 "target ir::node_data object holds data type that does not "
                 "support 2d slicing",
                 name, codename));
     }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename T>
+    ir::node_data<T> slice_assign(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& pages,
+        ir::node_data<T>&& value, std::string const& name,
+        std::string const& codename)
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::slice_assign",
+            util::generate_error_message(
+                "target ir::node_data object holds data type that does not "
+                "support 3d slicing",
+                name, codename));
+    }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // explicit instantiations of the slice (modify) functionality
@@ -233,4 +310,30 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& columns,
         ir::node_data<std::int64_t>&& value, std::string const& name,
         std::string const& codename);
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template PHYLANX_EXPORT ir::node_data<std::uint8_t>
+    slice_assign<std::uint8_t>(ir::node_data<std::uint8_t>&& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& page,
+        ir::node_data<std::uint8_t>&& value, std::string const& name,
+        std::string const& codename);
+
+    template PHYLANX_EXPORT ir::node_data<double>
+    slice_assign<double>(ir::node_data<double>&& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& page,
+        ir::node_data<double>&& value, std::string const& name,
+        std::string const& codename);
+
+    template PHYLANX_EXPORT ir::node_data<std::int64_t>
+    slice_assign<std::int64_t>(ir::node_data<std::int64_t>&& data,
+        execution_tree::primitive_argument_type const& rows,
+        execution_tree::primitive_argument_type const& columns,
+        execution_tree::primitive_argument_type const& page,
+        ir::node_data<std::int64_t>&& value, std::string const& name,
+        std::string const& codename);
+#endif
 }}

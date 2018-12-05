@@ -200,11 +200,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bound_value_ = std::move(result);
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    void variable::store3dslice(primitive_arguments_type&& data,
+        primitive_arguments_type&& params)
+    {
+        if (!valid(bound_value_))
+        {
+            HPX_THROW_EXCEPTION(hpx::invalid_status,
+                "variable::store3dslice",
+                generate_error_message(
+                    "in order for slicing to be possible a variable must have "
+                    "a value bound to it"));
+        }
+
+        auto data1 = value_operand_sync(data[1], params, name_, codename_);
+        auto data2 = value_operand_sync(data[2], params, name_, codename_);
+        auto result = slice(
+            std::move(bound_value_), std::move(data1), std::move(data2),
+            value_operand_sync(data[3], std::move(params), name_, codename_),
+            std::move(data[0]), name_, codename_);
+        bound_value_ = std::move(result);
+    }
+#endif
+
     void variable::store(primitive_arguments_type&& data,
         primitive_arguments_type&& params)
     {
         // data[0] is the new value to store in this variable
-        // data[1] and data[2] (optional) are interpreted as slicing arguments
+        // data[1] and optionally data[2]/data[3] are interpreted as slicing
+        // arguments
         if (data.empty())
         {
             HPX_THROW_EXCEPTION(hpx::invalid_status,
@@ -244,6 +268,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             case 3:
                 store2dslice(std::move(data), std::move(params));
                 return;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            case 4:
+                store3dslice(std::move(data), std::move(params));
+                return;
+#endif
 
             default:
                 break;

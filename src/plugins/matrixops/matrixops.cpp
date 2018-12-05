@@ -59,10 +59,10 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(
     linspace_plugin, phylanx::execution_tree::primitives::linspace::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(mean_operation_plugin,
     phylanx::execution_tree::primitives::mean_operation::match_data);
-// #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-// PHYLANX_REGISTER_PLUGIN_FACTORY(page_slicing_operation_plugin,
-//     phylanx::execution_tree::primitives::slicing_operation::match_data[3]);
-// #endif
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+PHYLANX_REGISTER_PLUGIN_FACTORY(page_slicing_operation_plugin,
+    phylanx::execution_tree::primitives::slicing_operation::match_data[3]);
+#endif
 PHYLANX_REGISTER_PLUGIN_FACTORY(power_operation_plugin,
     phylanx::execution_tree::primitives::power_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
