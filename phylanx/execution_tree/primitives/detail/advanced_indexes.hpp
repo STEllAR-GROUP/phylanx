@@ -100,7 +100,7 @@ namespace phylanx { namespace execution_tree { namespace detail
     {
         ir::range const& list = util::get<7>(indices);
         return extract_numeric_value_dimensions(
-            *list.begin(), name, codename)[1];
+            *list.begin(), name, codename)[0];
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ namespace phylanx { namespace execution_tree { namespace detail
             {
                 // advanced indexing (integer array indexing)
                 return extract_numeric_value_dimensions(
-                    indices, name, codename)[1];
+                    indices, name, codename)[0];
             }
         }
         else

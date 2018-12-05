@@ -106,7 +106,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             extract_numeric_value_dimensions(ops[0], name_, codename_);
 
         ir::node_data<T> value = extract_value_vector<T>(
-            std::move(ops[0]), dims[1], name_, codename_);
+            std::move(ops[0]), dims[0], name_, codename_);
 
         auto v = value.vector();
         blaze::DynamicVector<T> result(v.size());

@@ -96,7 +96,7 @@ jobs:
             # Build all targets
             - run:
                 name: Build all targets
-                command: cmake --build build -- -j2
+                command: cmake --build build -- -j1
             # CTest to JUnit XML transformation sheet
             - run:
                 name: Download CTest XML to JUnit XML transformation stylesheet

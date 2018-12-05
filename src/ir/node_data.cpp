@@ -147,13 +147,13 @@ namespace phylanx { namespace ir
         }
         else
 #endif
-        if (dims[0] != 1)
+        if (dims[1] != 0)
         {
             data_ = storage2d_type(dims[0], dims[1]);
         }
-        else if (dims[1] != 1)
+        else if (dims[0] != 0)
         {
-            data_ = storage1d_type(dims[1]);
+            data_ = storage1d_type(dims[0]);
         }
         else
         {
@@ -171,11 +171,11 @@ namespace phylanx { namespace ir
         }
         else
 #endif
-        if (dims[0] != 1)
+        if (dims[1] != 0)
         {
             data_ = storage2d_type(dims[0], dims[1], default_value);
         }
-        else if (dims[1] != 1)
+        else if (dims[0] != 0)
         {
             data_ = storage1d_type(dims[1], default_value);
         }
@@ -719,7 +719,7 @@ namespace phylanx { namespace ir
 
         case storage1d:         HPX_FALLTHROUGH;
         case custom_storage1d:
-            return vector()[indicies[1]];
+            return vector()[indicies[0]];
 
         case storage2d:         HPX_FALLTHROUGH;
         case custom_storage2d:
@@ -853,7 +853,7 @@ namespace phylanx { namespace ir
 
         case storage1d: HPX_FALLTHROUGH;
         case custom_storage1d:
-            return vector()[indicies[1]];
+            return vector()[indicies[0]];
 
         case storage2d: HPX_FALLTHROUGH;
         case custom_storage2d:
@@ -1784,11 +1784,11 @@ namespace phylanx { namespace ir
         {
         case storage0d: HPX_FALLTHROUGH;
         case custom_storage0d:
-            return dimensions_type{1ul, 1ul};
+            return dimensions_type{0ul};
 
         case storage1d: HPX_FALLTHROUGH;
         case custom_storage1d:
-            return dimensions_type{1ul, vector().size()};
+            return dimensions_type{vector().size()};
 
         case storage2d: HPX_FALLTHROUGH;
         case custom_storage2d:
@@ -1821,7 +1821,7 @@ namespace phylanx { namespace ir
         {
         case storage0d:         HPX_FALLTHROUGH;
         case custom_storage0d:
-            return 1ul;
+            return 0ul;
 
         case storage1d:         HPX_FALLTHROUGH;
         case custom_storage1d:
@@ -2161,7 +2161,7 @@ namespace phylanx { namespace ir
             return false;
         }
 
-        switch (lhs.num_dimensions())
+        switch (lhs.index())
         {
         case node_data<double>::storage0d:          HPX_FALLTHROUGH;
         case node_data<double>::custom_storage0d:
@@ -2198,7 +2198,7 @@ namespace phylanx { namespace ir
             return false;
         }
 
-        switch (lhs.num_dimensions())
+        switch (lhs.index())
         {
         case node_data<std::uint8_t>::storage0d:          HPX_FALLTHROUGH;
         case node_data<std::uint8_t>::custom_storage0d:
@@ -2235,7 +2235,7 @@ namespace phylanx { namespace ir
             return false;
         }
 
-        switch (lhs.num_dimensions())
+        switch (lhs.index())
         {
         case node_data<std::int64_t>::storage0d:          HPX_FALLTHROUGH;
         case node_data<std::int64_t>::custom_storage0d:
@@ -2318,8 +2318,7 @@ namespace phylanx { namespace ir
     {
         auto f = [&]()
         {
-            std::size_t dims = nd.num_dimensions();
-            switch (dims)
+            switch (nd.index())
             {
             case node_data<double>::storage0d:          HPX_FALLTHROUGH;
             case node_data<double>::custom_storage0d:
@@ -2347,10 +2346,11 @@ namespace phylanx { namespace ir
                     detail::print_tensor<double>(
                         out, t, t.pages(), t.rows(), t.columns());
                 }
+                break;
 #endif
             default:
-                throw std::runtime_error(
-                    "invalid dimensionality: " + std::to_string(dims));
+                throw std::runtime_error("invalid dimensionality: " +
+                    std::to_string(nd.num_dimensions()));
             }
         };
 
@@ -2372,8 +2372,7 @@ namespace phylanx { namespace ir
 
         auto f = [&]()
         {
-            std::size_t dims = nd.num_dimensions();
-            switch (dims)
+            switch (nd.index())
             {
             case node_data<std::int64_t>::storage0d:          HPX_FALLTHROUGH;
             case node_data<std::int64_t>::custom_storage0d:
@@ -2403,10 +2402,11 @@ namespace phylanx { namespace ir
                     detail::print_tensor<std::int64_t>(
                         out, t, t.pages(), t.rows(), t.columns());
                 }
+                break;
 #endif
             default:
-                throw std::runtime_error(
-                    "invalid dimensionality: " + std::to_string(dims));
+                throw std::runtime_error("invalid dimensionality: " +
+                    std::to_string(nd.num_dimensions()));
             }
         };
 
@@ -2428,8 +2428,7 @@ namespace phylanx { namespace ir
     {
         auto f = [&]()
         {
-            std::size_t dims = nd.num_dimensions();
-            switch (dims)
+            switch (nd.index())
             {
             case node_data<std::uint8_t>::storage0d:
             case node_data<std::uint8_t>::custom_storage0d:
@@ -2459,10 +2458,11 @@ namespace phylanx { namespace ir
                     detail::print_tensor<bool>(
                         out, t, t.pages(), t.rows(), t.columns());
                 }
+                break;
 #endif
             default:
-                throw std::runtime_error(
-                    "invalid dimensionality: " + std::to_string(dims));
+                throw std::runtime_error("invalid dimensionality: " +
+                    std::to_string(nd.num_dimensions()));
             }
         };
 
@@ -2482,8 +2482,7 @@ namespace phylanx { namespace ir
     template <typename T>
     node_data<T>::operator bool() const
     {
-        std::size_t dims = num_dimensions();
-        switch (dims)
+        switch (index())
         {
         case storage0d:          HPX_FALLTHROUGH;
         case custom_storage0d:
@@ -2505,7 +2504,7 @@ namespace phylanx { namespace ir
         default:
             HPX_THROW_EXCEPTION(hpx::invalid_status,
                 "node_data<double>::operator bool",
-                "invalid dimensionality: " + std::to_string(dims));
+                "invalid dimensionality: " + std::to_string(num_dimensions()));
         }
         return false;
     }

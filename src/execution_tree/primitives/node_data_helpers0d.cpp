@@ -155,7 +155,12 @@ namespace phylanx { namespace execution_tree
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& rhs)
             {
                 return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{
-                    (std::max)(lhs[0], rhs[0]), (std::max)(lhs[1], rhs[1])};
+                        (std::max)(lhs[0], rhs[0])
+                      , (std::max)(lhs[1], rhs[1])
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                      , (std::max)(lhs[2], rhs[2])
+#endif
+                    };
             };
 
         return std::accumulate(sizes.begin(), sizes.end(), result, max_array);

@@ -42,6 +42,10 @@ set(tests
     vstack_operation
    )
 
+if(PHYLANX_WITH_BLAZE_TENSOR)
+  set(tests ${tests} dstack_operation)
+endif()
+
 foreach(test ${tests})
   set(sources ${test}.cpp)
 
