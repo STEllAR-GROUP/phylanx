@@ -327,7 +327,7 @@ struct randomforest_impl {
             , n_features
             , depth + 1
             , classes);
-        
+
         if(std::get<1>(left_right).size() <= min_size) {
             auto rterm = to_terminal(train_labels
                 , std::get<1>(left_right)
@@ -507,7 +507,7 @@ struct randomforest_impl {
         std::uint64_t const n_features = static_cast<std::uint64_t>(
             std::floor(std::sqrt(train.rows()))
         );
-        
+
         std::vector< std::vector<std::uint64_t> > subsample_indices(trees.size());
 
         auto tree_indices = boost::irange<std::uint64_t>(0, trees.size());
@@ -528,7 +528,7 @@ struct randomforest_impl {
                         , max_depth
                         , min_size
                         , n_features
-                        , classes); 
+                        , classes);
             }
         );
     }
