@@ -156,7 +156,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 8)
+        if (operands.size() != 7)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "randomforest::eval",
