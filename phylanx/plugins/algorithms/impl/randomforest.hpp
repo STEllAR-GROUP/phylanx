@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <cmath>
 
 #include <blaze/Math.h>
@@ -110,6 +111,7 @@ struct randomforest_impl {
             std::get<0>(groups).size()
             , std::get<1>(groups).size()
         };
+
         std::vector< std::vector<std::uint64_t> > groups_vec{
             std::get<0>(groups)
             , std::get<1>(groups)
@@ -120,6 +122,7 @@ struct randomforest_impl {
                 , groups_len.end()
                 , 0UL)
         );
+
         double gini = 0.0;
 
         blaze::DynamicVector<double> p(classes.size());
@@ -142,7 +145,11 @@ struct randomforest_impl {
             );
 
             gini += (1.0 - score) * static_cast<double>(group_len / n_instances);
-            std::transform(p.begin(), p.end(), p.begin(), [](auto const i) { return 0.0; });
+            std::transform(p.begin()
+                , p.end()
+                , p.begin()
+                , [](auto const i) { return 0.0; }
+            );
         }
 
         return gini;
@@ -302,8 +309,16 @@ struct randomforest_impl {
         }
 
         randomforest_node left_node;
-        get_split(train, train_labels, std::get<0>(left_right), n_features, classes, left_node);
+
+        get_split(train
+            , train_labels
+            , std::get<0>(left_right)
+            , n_features
+            , classes
+            , left_node);
+
         node.fields["left"] = left_node;
+
         split(boost::get<randomforest_node>(node.fields["left"])
             , train
             , train_labels
@@ -386,7 +401,7 @@ struct randomforest_impl {
             else {
                 return lw;
             }
-        } 
+        }
 
         auto rw = boost::get<std::uint64_t>(node.fields["rw"]);
         if(rw == (std::numeric_limits<std::uint64_t>::max)()) {
@@ -494,7 +509,7 @@ struct randomforest_impl {
         );
         
         std::vector< std::vector<std::uint64_t> > subsample_indices(trees.size());
-        
+
         auto tree_indices = boost::irange<std::uint64_t>(0, trees.size());
 
         hpx::parallel::for_each(
