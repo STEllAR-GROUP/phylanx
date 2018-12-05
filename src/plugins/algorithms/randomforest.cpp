@@ -69,7 +69,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "Returns:\n"
             "\n"
-            "The Calculated weights"
+            "The predicted classes as a vector for each row in training (matrix)"
             )
     };
 
