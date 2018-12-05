@@ -46,16 +46,16 @@ define(closest_centroids, points, centroids, block(
         slice_column(centroids, 1)
     ),
     argmin(sqrt(
-		power(points_x - centroids_x, 2) +
-		power(points_y - centroids_y, 2)
-	), 0)
+        power(points_x - centroids_x, 2) +
+        power(points_y - centroids_y, 2)
+    ), 0)
 ))
 
 define(move_centroids, points, closest, centroids, block(
     fmap(lambda(k, block(
                 define(x, closest == k),
                 mean(points * add_dim(x), 1)
-		)),
+        )),
         range(shape(centroids, 0))
     )
 ))
