@@ -135,27 +135,16 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
         blaze::DynamicMatrix<T> result(N, M, T(0));
 
-        auto vecsize = M;
+        auto vecsize = static_cast<T>(1);    // a positive number (k=0)
 
         if (k > 0)
-        {
             vecsize = M - k;
-            if (N < vecsize)
-                vecsize = N;
-        }
         else if (k < 0)
-        {
             vecsize = N + k;
-            if (M < vecsize)
-                vecsize = M;
-        }
 
         if (vecsize > 0)
-        {
-            blaze::DynamicVector<T> ones(vecsize, T(1));
-            blaze::Band<blaze::DynamicMatrix<T>> eye = blaze::band(result, k);
-            eye = ones;
-        }
+            blaze::band(result, k) = T(1);
+
         return primitive_argument_type{ir::node_data<T>{std::move(result)}};
     }
     primitive_argument_type eye_operation::eye_nmk(args_type&& args) const
