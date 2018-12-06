@@ -110,6 +110,7 @@ class PhySL:
         self.wrapped_function = func
         self.kwargs = kwargs
         self.fglobals = self.kwargs['fglobals']
+        self.is_compiled = False
         for key, val in self.fglobals.items():
             if type(val).__name__ == 'module' and val.__name__ == 'numpy':
                 self.numpy_aliases.add(key)
@@ -143,6 +144,7 @@ class PhySL:
 
             phylanx.execution_tree.compile(
                 self.file_name, self.__src__, PhySL.compiler_state)
+            self.is_compiled = True
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
@@ -188,8 +190,7 @@ class PhySL:
                 phylanx.execution_tree.enable_measurements(
                     PhySL.compiler_state, True)
 
-        if not PhylanxSession.is_initialized:
-            PhylanxSession.init(1)
+        if not self.is_compiled:
             if "compiler_state" in self.kwargs:
                 PhySL.compiler_state = self.kwargs['compiler_state']
             # the static method compiler_state is constructed only once
@@ -198,6 +199,10 @@ class PhySL:
 
             phylanx.execution_tree.compile(
                 self.file_name, self.__src__, PhySL.compiler_state)
+            self.is_compiled = True
+
+        if not PhylanxSession.is_initialized:
+            PhylanxSession.init(1)
         result = phylanx.execution_tree.eval(
             self.file_name, func_name, PhySL.compiler_state, *args)
 

@@ -7,10 +7,12 @@
 set(tests
     eval
     dictionary
+    dynamic_init
     for
     slice
     make_array
     map_numpy
+    multi_init
     set_operation
     parallel
    )
