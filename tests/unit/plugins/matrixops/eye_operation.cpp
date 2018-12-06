@@ -127,6 +127,36 @@ void test_eye_operation_NMK_postive_K()
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
 }
 
+void test_eye_operation_NMK_zero_K()
+{
+    phylanx::execution_tree::primitive N =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(3));
+
+    phylanx::execution_tree::primitive M =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(3));
+
+    phylanx::execution_tree::primitive k =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<std::int64_t>(0));
+
+    phylanx::execution_tree::primitive eye =
+        phylanx::execution_tree::primitives::create_eye_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(N), std::move(M), std::move(k) });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        eye.eval();
+
+    blaze::DynamicMatrix<double> expected{{1., 0., 0.},
+                                          {0., 1., 0.},
+                                          {0., 0., 1.}};
+    auto result = phylanx::execution_tree::extract_numeric_value(f.get());
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)), result);
+}
+
 void test_eye_operation_NMK_all_zeros()
 {
     phylanx::execution_tree::primitive N =
@@ -162,6 +192,7 @@ int main(int argc, char* argv[])
     test_eye_operation_NM();
     test_eye_operation_NMK_negative_K();
     test_eye_operation_NMK_postive_K();
+    test_eye_operation_NMK_zero_K();
     test_eye_operation_NMK_all_zeros();
     return hpx::util::report_errors();
 }
