@@ -33,6 +33,7 @@
 #include <phylanx/plugins/matrixops/squeeze_operation.hpp>
 #include <phylanx/plugins/matrixops/sum_operation.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
+#include <phylanx/plugins/matrixops/unique.hpp>
 #include <phylanx/plugins/matrixops/vstack_operation.hpp>
 
 #endif

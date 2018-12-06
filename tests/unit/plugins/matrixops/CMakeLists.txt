@@ -35,6 +35,7 @@ set(tests
     squeeze_operation
     sum_operation
     transpose_operation
+    unique
     vstack_operation
    )
 
