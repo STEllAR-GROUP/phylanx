@@ -490,39 +490,64 @@ void test_set_index_list()
     HPX_TEST_EQ(result[0], 0.95);
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+void test_slicing_operation_3d_value()
+{
+    std::string const code = R"(block(
+        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(b, hstack(11,12,13,14,15,16,17,18)),
+        define(c, hstack(10,02,30,40,05,60,70,80)),
+        define(d, hstack(101,102,103,104,105,106,107,108)),
+        define(x, vstack(a,b,c,d)),
+        define(input, dstack(x, x, x)),
+        slice(input, 2, 2, 2)
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 30);
+}
+#endif
+
 int main(int argc, char* argv[])
 {
-    test_slicing_operation_0d();
+//     test_slicing_operation_0d();
+//
+//     test_slicing_operation_1d();
+//     test_slicing_operation_1d_start();
+//     test_slicing_operation_1d_start_negative();
+//     test_slicing_operation_1d_step();
+//     test_slicing_operation_1d_neg_step();
+//
+//     test_slicing_operation_1d_negative_index();
+//     test_slicing_operation_1d_single_slice_negative_index();
+//     test_slicing_operation_1d_negative_index_zero_start();
+//     test_slicing_operation_1d_negative_index_neg_step();
+//     test_slicing_operation_1d_single();
+//     test_slicing_operation_1d_single_negative();
+//
+//     test_slicing_operation_2d_value();
+//     test_slicing_operation_2d_single_row();
+//     test_slicing_operation_2d_single_row_v2();
+//     test_slicing_operation_2d_single_row_result_matrix();
+//     test_slicing_operation_2d();
+//     test_slicing_operation_2d_step();
+//     test_slicing_operation_2d_neg_step();
+//
+//     test_slicing_operation_2d_negative_index();
+//     test_slicing_operation_2d_single_slice_negative_index();
+//     test_slicing_operation_2d_single_slice_negative_index_v2();
+//     test_slicing_operation_2d_negative_index_zero_start();
+//     test_slicing_operation_2d_negative_index_neg_step();
+//
+//     test_set_index_scalar();
+//     test_set_index_list();
 
-    test_slicing_operation_1d();
-    test_slicing_operation_1d_start();
-    test_slicing_operation_1d_start_negative();
-    test_slicing_operation_1d_step();
-    test_slicing_operation_1d_neg_step();
-
-    test_slicing_operation_1d_negative_index();
-    test_slicing_operation_1d_single_slice_negative_index();
-    test_slicing_operation_1d_negative_index_zero_start();
-    test_slicing_operation_1d_negative_index_neg_step();
-    test_slicing_operation_1d_single();
-    test_slicing_operation_1d_single_negative();
-
-    test_slicing_operation_2d_value();
-    test_slicing_operation_2d_single_row();
-    test_slicing_operation_2d_single_row_v2();
-    test_slicing_operation_2d_single_row_result_matrix();
-    test_slicing_operation_2d();
-    test_slicing_operation_2d_step();
-    test_slicing_operation_2d_neg_step();
-
-    test_slicing_operation_2d_negative_index();
-    test_slicing_operation_2d_single_slice_negative_index();
-    test_slicing_operation_2d_single_slice_negative_index_v2();
-    test_slicing_operation_2d_negative_index_zero_start();
-    test_slicing_operation_2d_negative_index_neg_step();
-
-    test_set_index_scalar();
-    test_set_index_list();
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_slicing_operation_3d_value();
+#endif
 
     return hpx::util::report_errors();
 }

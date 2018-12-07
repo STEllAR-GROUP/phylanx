@@ -112,6 +112,18 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& pages,
         std::string const& name, std::string const& codename)
     {
+        switch (data.num_dimensions())
+        {
+        case 3:
+            return slice3d_extract3d(data, rows, columns, pages, name, codename);
+
+        case 0:
+        case 1:
+        case 2:
+        default:
+            break;
+        }
+
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::slice_extract",
             util::generate_error_message(
