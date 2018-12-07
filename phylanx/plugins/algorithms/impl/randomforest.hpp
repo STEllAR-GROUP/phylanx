@@ -563,6 +563,50 @@ struct randomforest_impl {
 
 };
 
+template<typename out_archive>
+void serialize(out_archive &ar,
+    randomforest_impl & rf, int /* version */) {
+
+    //std::vector<randomforest_node> trees;
+    //std::unordered_map<double, std::uint64_t> classes;
+
+    ar & classes.size();
+    for(auto const& cls : classes) {
+        ar << cls.first << cls.second;
+    }
+
+    for(auto const& tree : trees) {
+        serialize(ar, tree);
+    }
+}
+
+template<typename in_archive>
+void deserialize(in_archive &ar,
+    randomforest_impl & rf, int /* version */) {
+
+    //std::vector<randomforest_node> trees;
+    //std::unordered_map<double, std::uint64_t> classes;
+
+    std::size_t cls_count = 0;
+    ar & cls_count;
+
+    double dval = 0.0;
+    std::uint64_t uival = 0UL;
+    for(std::size_t i = 0UL; i < cls_count; ++i) {
+        ar >> dval >> uival;
+        rf.classes[dval] = uival;
+    }
+
+    ar & cls_count;
+    rf.trees.resize(cls_count);
+
+    for(std::size_t i = 0UL; i < cls_count; ++i) {
+        serialize(ar, rf.trees[i]);
+    }
+
+}
+
+
 }}} // end namespace
 
 #endif
