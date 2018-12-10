@@ -21,11 +21,14 @@
 #include <vector>
 
 namespace phylanx {  namespace execution_tree {  namespace primitives  {
-    /// \brief
-    ///
-    /// \param a         The scalar, vector, or matrix to perform softmax over
-    /// \param axis      Optional. If provided,
-    ///
+/// \brief Returns an array of the same shape which is the normalized exponential
+///        function of the given array.  The resulting array consists of real
+///        values in the range (0..1], which add up to 1 in direction of the
+///        given axis
+///
+/// \param a      The scalar, vector, or matrix to perform softmax over
+/// \param axis   Optional. The default is the last axis (axis == -1). Effective
+///               when the array is >1d
 
     class softmax_operation
         : public primitive_component_base
@@ -48,10 +51,12 @@ namespace phylanx {  namespace execution_tree {  namespace primitives  {
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type softmax0d(arg_type&& arg) const;
-        //primitive_argument_type softmax1d(primitive_argument_type&& arg) const;
-        //primitive_argument_type softmax2d(primitive_argument_type&& arg) const;
-
+        primitive_argument_type softmax0d() const;
+        primitive_argument_type softmax1d(arg_type&& arg) const;
+        primitive_argument_type softmax2d(
+            arg_type&& arg, std::int64_t axis) const;
+        primitive_argument_type softmax2d_axis0(arg_type&& arg) const;
+        primitive_argument_type softmax2d_axis1(arg_type&& arg) const;
     };
     inline primitive create_softmax_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,

@@ -38,12 +38,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         "a, axis\n"
         "Args:\n"
         "\n"
-        "    a (vector or matrix) : a vector or matrix\n"
-        "    axis (optional, integer): an axis to softmax along\n"
+        "    a (array_like) : input array\n"
+        "    axis (optional, integer): an axis to softmax along. The\n"
+        "        default is the last axis (axis == -1) of an array. Axis\n"
+        "        is effective for >1d arrays.\n"
         "\n"
         "Returns:\n"
         "\n"
-        "")
+        "Returns an array of the same shape which is the normalized exponential\n"
+        "function of the given array.  The resulting array consists of real\n"
+        "values in the range (0..1], which add up to 1 in direction of the given axis")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -52,13 +56,61 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    primitive_argument_type softmax_operation::softmax0d(arg_type&& arg) const
+    primitive_argument_type softmax_operation::softmax0d() const
     {
-
-
-        return primitive_argument_type{ arg.scalar() };
+        return primitive_argument_type{static_cast<double>(1.)};
     }
 
+    primitive_argument_type softmax_operation::softmax1d(arg_type&& arg) const
+    {
+        auto v = arg.vector();
+        return primitive_argument_type{blaze::softmax(v)};
+    }
+
+    primitive_argument_type softmax_operation::softmax2d_axis0(
+        arg_type&& arg) const
+    {
+        auto m = arg.matrix();
+        blaze::DynamicMatrix<double> result(m.rows(), m.columns());
+        for (std::size_t i = 0; i < m.columns(); ++i)
+        {
+            column(result, i) = softmax(column(m, i));
+        } // sum(result,axis=0) is a vector containing m.columns() ones
+        return primitive_argument_type{result};
+    }
+
+    primitive_argument_type softmax_operation::softmax2d_axis1(
+        arg_type&& arg) const
+    {
+        auto m = arg.matrix();
+        blaze::DynamicMatrix<double> result(m.rows(), m.columns());
+        for (std::size_t i = 0; i < m.rows(); ++i)
+        {
+            row(result, i) = softmax(row(m, i));
+        } // sum(result,axis=1) is a vector containing m.rows() ones
+        return primitive_argument_type{result};
+    }
+
+    primitive_argument_type softmax_operation::softmax2d(
+        arg_type&& arg, std::int64_t axis) const
+    {
+        switch (axis)
+        {
+        case 0:
+            return softmax2d_axis0(std::move(arg));
+
+        case -1: HPX_FALLTHROUGH;
+        case 1:
+            return softmax2d_axis1(std::move(arg));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "softmax_operation::softmax2d",
+                generate_error_message(
+                    "the softmax_operation primitive requires operand axis "
+                    "to be between -1 and 1 for matrices."));
+        }
+    }
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> softmax_operation::eval(
         primitive_arguments_type const& operands,
@@ -95,8 +147,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                       primitive_arguments_type&& args)
                                       -> primitive_argument_type {
                 // Extract axis
-                hpx::util::optional<std::int64_t> axis =
-                    static_cast<std::int64_t>(1); // column-wise operation
+                std::int64_t axis =
+                    static_cast<std::int64_t>(-1);    // column-wise operation
 
                 // axis is the second argument
                 if (args.size() > 1)
@@ -115,11 +167,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 switch (a_dims)
                 {
                 case 0:
-                    return this_->softmax0d(std::move(a));
-                //case 1:
-                //    return this_->softmax1d(std::move(a));
-                //case 2:
-                //    return this_->softmax2d(std::move(a),axis);
+                    return this_->softmax0d();
+                case 1:
+                    return this_->softmax1d(std::move(a));
+                case 2:
+                    return this_->softmax2d(std::move(a),axis);
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "softmax_operation::eval",
@@ -133,3 +185,4 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 name_, codename_, std::move(ctx)));
     }
 }}}
+
