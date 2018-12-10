@@ -185,6 +185,9 @@ class PhySL:
         self.__perfdata__ = (None, None, None)
         self.performance_primitives = None
 
+        if not PhylanxSession.is_initialized:
+            PhylanxSession.init(1)
+
         if self.performance:
             self.performance_primitives = \
                 phylanx.execution_tree.enable_measurements(
@@ -201,8 +204,6 @@ class PhySL:
                 self.file_name, self.__src__, PhySL.compiler_state)
             self.is_compiled = True
 
-        if not PhylanxSession.is_initialized:
-            PhylanxSession.init(1)
         result = phylanx.execution_tree.eval(
             self.file_name, func_name, PhySL.compiler_state, *args)
 
