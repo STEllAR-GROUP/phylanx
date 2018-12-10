@@ -31,7 +31,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         hpx::util::make_tuple("eye",
             std::vector<std::string>{"eye(_1)", "eye(_1,_2)", "eye(_1,_2,_3)"},
             &create_eye_operation, &create_primitive<eye_operation>,
-            "N, M, k, dtype\n"
+            "N, M, k\n"
             "Args:\n"
             "\n"
             "    N (integer) : number of rows in the output.\n"
@@ -135,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
         blaze::DynamicMatrix<T> result(N, M, T(0));
 
-        auto vecsize = static_cast<T>(1);    // a positive number (k=0)
+        std::int64_t vecsize = static_cast<std::int64_t>(1);    // a positive number (k=0)
 
         if (k > 0)
             vecsize = M - k;
