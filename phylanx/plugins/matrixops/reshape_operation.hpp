@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Bita Hasheminezhad
+// Copyright (c) 2018 Shahrzad Shirzad
 // Copyright (c) 2018 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -35,6 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
+        using arg_type = ir::node_data<std::int64_t>;
+        using args_type = std::vector<arg_type>;
 
     public:
         static match_pattern_type const match_data;
@@ -43,6 +46,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         reshape_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
+
+    private:
+        bool validate_shape(std::int64_t, ir::range&& arg) const;
+        primitive_argument_type reshape0d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
+
+        template <typename T>
+        primitive_argument_type reshape0d(ir::node_data<T>&& arr,
+            ir::range&& arg) const;
 
     private:
         node_data_type dtype_;
