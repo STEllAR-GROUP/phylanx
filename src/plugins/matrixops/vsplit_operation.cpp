@@ -74,8 +74,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if( block_dims < 1 )  // Scalar tiling
         {
-            std::int64_t num_blocks =
-                extract_numeric_value(args[1], name_, codename_).scalar();
+            phylanx::ir::node_data<double> val = extract_numeric_value(args[1], name_, codename_);
+            std::int64_t num_blocks = val.scalar();
+            //    extract_numeric_value(args[1], name_, codename_).scalar();
             if( num_blocks <= 0)
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -170,10 +171,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             if( ranges.at(i).second > ranges.at(i).first )
             {
-                blaze::CustomMatrix<T, true, true> block(
+               blaze::CustomMatrix<T, true, true> block(
                     &input_data.matrix()(ranges.at(i).first,0),
                     ranges.at(i).second-ranges.at(i).first,
-                    num_cols, num_cols);
+                    num_cols, input_data.matrix().spacing());
                 result.push_back(primitive_argument_type{std::move(
                     ir::node_data<T>{std::move(block)})});
             }
@@ -181,7 +182,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                   // of this shape when the second index is smaller than the
                   // first
             {
-                blaze::DynamicMatrix<T> block(std::int64_t(0),num_cols);
+               blaze::DynamicMatrix<T> block(std::int64_t(0),num_cols);
                 result.push_back(primitive_argument_type{std::move(
                     ir::node_data<T>{std::move(block)})});
             }
