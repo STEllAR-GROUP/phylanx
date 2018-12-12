@@ -17,8 +17,6 @@
 #include <hpx/util/iterator_facade.hpp>
 #include <hpx/util/optional.hpp>
 
-#include <algorithm>
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -36,8 +34,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("reshape",
         std::vector<std::string>{"reshape(_1,_2)"},
         &create_reshape_operation, &create_primitive<reshape_operation>,
-        "")
-    };
+         R"(
+            a, newshape
+            Args:
+
+                a (array_like) : input array
+                newshape (integer or tuple of integers): The new shape should be
+                     compatible with the original shape (number of elements in
+                     both arrays are the same). If an integer, then the result
+                     will be a 1-D array of that length. The last parameter of
+                     the newshape can be -1. In this case, the value is inferred
+                     from the length of the array and remaining dimensions.
+
+            Returns:
+
+            Returns a new shape to an array without changing its data."
+            )") };
 
     ///////////////////////////////////////////////////////////////////////////
     reshape_operation::reshape_operation(primitive_arguments_type&& operands,
@@ -50,7 +62,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         if (arg.size() == 1)
         {
-            auto first = extract_scalar_integer_value(*arg.begin());
+            auto first = extract_scalar_integer_value_strict(*arg.begin());
             if (first == -1)
                 return true;
             else
@@ -59,18 +71,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else if (arg.size() == 2)
         {
             auto it = arg.begin();
-            auto first = extract_scalar_integer_value(*it++);
-            auto second = extract_scalar_integer_value(*it);
-            if (second == -1)
+            auto first = extract_scalar_integer_value_strict(*it++);
+            auto second = extract_scalar_integer_value_strict(*it);
+            if (second == -1 && first > 0)
             {
                 if (n % first == 0)
                     return true;
-                return false;
             }
-            else
+            else if(first>0 && second > 0)
             {
                 return first * second == n;
             }
+            return false;
         }
         else
         {
@@ -337,8 +349,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "reshape_operation::eval",
                     util::generate_error_message(
                         "the reshape_operation primitive requires that the "
-                        "arguments given by the operands array are "
-                        "valid",
+                        "arguments given by the operands array are valid",
                         name_, codename_));
             }
         }
@@ -372,13 +383,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                     case 2:
                         return this_->reshape2d(std::move(arr), std::move(arg));
+
+                    default:
+                        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                            "reshape_operation::eval",
+                            util::generate_error_message("operand a has an invalid "
+                                "number of dimensions",
+                                this_->name_, this_->codename_));
                     }
                 else
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "reshape_operation::validate_shape",
-                        util::generate_error_message("The given shape does not "
-                            "accept the same number of elements as the original array",
+                        util::generate_error_message("The given shape is not "
+                            "compatible with the shape of the original array",
                             this_->name_, this_->codename_));
                 }
             }),
