@@ -57,6 +57,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(mean_operation_plugin,
     phylanx::execution_tree::primitives::mean_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(power_operation_plugin,
     phylanx::execution_tree::primitives::power_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(prod_operation_plugin,
+    phylanx::execution_tree::primitives::prod_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
     random_plugin, phylanx::execution_tree::primitives::random::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(row_slicing_operation_plugin,

@@ -28,6 +28,7 @@
 #include <phylanx/plugins/matrixops/linspace.hpp>
 #include <phylanx/plugins/matrixops/mean_operation.hpp>
 #include <phylanx/plugins/matrixops/power_operation.hpp>
+#include <phylanx/plugins/matrixops/prod_operation.hpp>
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
