@@ -18,6 +18,7 @@
 #include <phylanx/plugins/matrixops/dot_operation.hpp>
 #include <phylanx/plugins/matrixops/expand_dims.hpp>
 #include <phylanx/plugins/matrixops/extract_shape.hpp>
+#include <phylanx/plugins/matrixops/flatten.hpp>
 #include <phylanx/plugins/matrixops/generic_operation.hpp>
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>
 #include <phylanx/plugins/matrixops/hstack_operation.hpp>
@@ -30,8 +31,10 @@
 #include <phylanx/plugins/matrixops/random.hpp>
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
+#include <phylanx/plugins/matrixops/squeeze_operation.hpp>
 #include <phylanx/plugins/matrixops/sum_operation.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
+#include <phylanx/plugins/matrixops/unique.hpp>
 #include <phylanx/plugins/matrixops/vsplit_operation.hpp>
 #include <phylanx/plugins/matrixops/vstack_operation.hpp>
 
