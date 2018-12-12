@@ -82,6 +82,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     primitive_argument_type reshape_operation::reshape0d(ir::node_data<T>&& arr,
         ir::range&& arg) const
@@ -97,8 +98,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::eval",
-                util::generate_error_message("operand a has an invalid "
-                    "number of dimensions",
+                util::generate_error_message(
+                    "reshaping to >2d is not supported",
                     name_, codename_));
         }
     }
@@ -139,6 +140,62 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type reshape_operation::reshape1d(ir::node_data<T>&& arr,
+        ir::range&& arg) const
+    {
+        switch (arg.size())
+        {
+        case 1:
+            return primitive_argument_type{arr};
+        //case 2:
+        //    return primitive_argument_type{
+        //        blaze::DynamicMatrix<T>{1, 1, arr.scalar()} };
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "reshape_operation::eval",
+                util::generate_error_message(
+                    "reshaping to >2d is not supported",
+                    name_, codename_));
+        }
+    }
+
+    primitive_argument_type reshape_operation::reshape1d(
+        primitive_argument_type&& arr, ir::range&& arg) const
+    {
+        switch (extract_common_type(arr))
+        {
+        case node_data_type_bool:
+            return reshape1d(
+                extract_boolean_value_strict(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        case node_data_type_int64:
+            return reshape1d(
+                extract_integer_value_strict(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        case node_data_type_double:
+            return reshape1d(
+                extract_numeric_value_strict(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        case node_data_type_unknown:
+            return reshape1d(
+                extract_numeric_value(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::reshape_operation::reshape1d",
+            generate_error_message(
+                "the reshape primitive requires for all arguments to "
+                "be numeric data types"));
+    }
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> reshape_operation::eval(
         primitive_arguments_type const& operands,
@@ -184,8 +241,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     if (this_->validate_shape(1, std::move(arg)))
                         return this_->reshape0d(std::move(arr), std::move(arg));
 
-                    //case 1:
-                    //    return this_->reshape1d(std::move(arr), std::move(args));
+                case 1:
+                    return this_->reshape1d(std::move(arr), std::move(arg));
 
                     //case 2:
                     //    return this_->reshape2d(std::move(arr), std::move(args));

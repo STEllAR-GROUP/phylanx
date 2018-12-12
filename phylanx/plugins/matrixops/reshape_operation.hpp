@@ -51,9 +51,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         bool validate_shape(std::int64_t, ir::range&& arg) const;
         primitive_argument_type reshape0d(
             primitive_argument_type&& arr, ir::range&& arg) const;
+        primitive_argument_type reshape1d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
 
         template <typename T>
         primitive_argument_type reshape0d(ir::node_data<T>&& arr,
+            ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type reshape1d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
     private:
