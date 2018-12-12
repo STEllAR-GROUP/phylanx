@@ -74,7 +74,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if( block_dims < 1 )  // Scalar tiling
         {
-            phylanx::ir::node_data<double> val = extract_numeric_value(args[1], name_, codename_);
+            phylanx::ir::node_data<double> val =
+                extract_numeric_value(args[1], name_, codename_);
+
             std::int64_t num_blocks = val.scalar();
             //    extract_numeric_value(args[1], name_, codename_).scalar();
             if( num_blocks <= 0)

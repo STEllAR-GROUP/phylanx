@@ -55,7 +55,7 @@ void vsplit_operation_scalar_blocks()
         std::move(expected_second));
     phylanx::ir::node_data<double> data_expected_third(
         std::move(expected_third));
-    
+
     phylanx::execution_tree::primitive_argument_type result = f.get();
 
     auto list_result = extract_list_value(result);
@@ -104,7 +104,7 @@ void vsplit_operation_range_blocks()
 
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         vsplit.eval();
-   
+
     blaze::CustomMatrix<double, true, true> expected_zero(&(m1(0,0)),0,3,
                                                             m1.spacing());
     blaze::CustomMatrix<double, true, true> expected_first(&(m1(0,0)),1,3,
@@ -137,7 +137,7 @@ void vsplit_operation_range_blocks()
 
     HPX_TEST_EQ(6, list_result.size());
 
-    auto it = list_result.begin(); 
+    auto it = list_result.begin();
 
     HPX_TEST_EQ(data_expected_zero,
                 phylanx::execution_tree::extract_numeric_value(*it++));
