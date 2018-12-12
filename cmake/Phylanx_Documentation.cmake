@@ -4,22 +4,18 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 if (PHYLANX_WITH_DOCUMENTATION)
-    # check if Doxygen is installed
+    # check if Doxygen and Sphinx are installed
     find_package(Doxygen)
+    find_package(Shpinx)
     if (DOXYGEN_FOUND)
         # Add files that needs to be passed to doxygen here
         set(DOXYGEN_DEPENDENCIES
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_set.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/column_slicing.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/diag_operation.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/gradient_operation.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linearmatrix.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/linspace.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/set_operation.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/slicing_operation.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/random.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_set.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/execution_tree/primitives/row_slicing.hpp")
+            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/diag_operation.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/gradient_operation.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/linearmatrix.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/linspace.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/slicing_operation.hpp"
+            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/random.hpp")
 
         foreach(DOXYGEN_INPUT ${DOXYGEN_DEPENDENCIES})
             set(DOXYGEN_INPUTS  "${DOXYGEN_INPUTS} ${DOXYGEN_INPUT}")
