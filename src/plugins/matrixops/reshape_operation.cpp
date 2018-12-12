@@ -58,8 +58,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         else if (arg.size() == 2)
         {
-            auto first = extract_scalar_integer_value(*arg.begin());
-            auto second = extract_scalar_integer_value(*arg.end());
+            auto it = arg.begin();
+            auto first = extract_scalar_integer_value(*it++);
+            auto second = extract_scalar_integer_value(*it);
             if (second == -1)
             {
                 if (n % first == 0)

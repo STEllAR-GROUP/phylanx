@@ -47,10 +47,35 @@ void test_reshape_operation_0d_vector()
 }
 
 
+void test_reshape_operation_0d_matrix()
+{
+    phylanx::execution_tree::primitive arr =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::ir::node_data<double>(42.0));
+
+    phylanx::execution_tree::primitive reshape =
+        phylanx::execution_tree::primitives::create_reshape_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                std::move(arr),
+                phylanx::execution_tree::primitive_argument_type{
+                    phylanx::execution_tree::primitive_arguments_type{
+                        phylanx::ir::node_data<std::int64_t>(1),
+                        phylanx::ir::node_data<std::int64_t>(1)}
+                    } });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        reshape.eval();
+
+    blaze::DynamicMatrix<double> expected{{42.}};
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
 
 int main(int argc, char* argv[])
 {
     test_reshape_operation_0d_vector();
-    //test_reshape_operation_0d_matrix();
+    test_reshape_operation_0d_matrix();
     return hpx::util::report_errors();
 }
