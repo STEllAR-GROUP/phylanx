@@ -6,33 +6,13 @@
 if (PHYLANX_WITH_DOCUMENTATION)
     # check if Doxygen and Sphinx are installed
     find_package(Doxygen)
-    find_package(Shpinx)
-    if (DOXYGEN_FOUND)
-        # Add files that needs to be passed to doxygen here
-        set(DOXYGEN_DEPENDENCIES
-            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/diag_operation.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/gradient_operation.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/linearmatrix.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/linspace.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/slicing_operation.hpp"
-            "${PROJECT_SOURCE_DIR}/phylanx/plugins/matrixops/random.hpp")
+    find_package(Sphinx)
 
-        foreach(DOXYGEN_INPUT ${DOXYGEN_DEPENDENCIES})
-            set(DOXYGEN_INPUTS  "${DOXYGEN_INPUTS} ${DOXYGEN_INPUT}")
-        endforeach()
+    if (NOT DOXYGEN_FOUND)
+        message("Doxygen not found. Doxygen API Reference  can not be generated.")
+    endif ()
 
-        set(DOXYGEN_INPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/templates/Doxy.in)
-        set(DOXYGEN_OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-        configure_file(${DOXYGEN_INPUT_FILE} ${DOXYGEN_OUTPUT_FILE} @ONLY)
-        message("Documentation will be built")
-
-        add_custom_target( htmldocs ALL
-                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUTPUT_FILE}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                COMMENT "Generating API documentation with Doxygen"
-                VERBATIM )
-    else (DOXYGEN_FOUND)
-        message("Doxygen not found. Docs can not be built")
-    endif (DOXYGEN_FOUND)
+    if (NOT SPHINX_FOUND)
+        message("Sphinx not found. Sphinx Documentation  can not be generated.")
+    endif ()
 endif(PHYLANX_WITH_DOCUMENTATION)
