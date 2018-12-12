@@ -53,12 +53,25 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type&& arr, ir::range&& arg) const;
         primitive_argument_type reshape1d(
             primitive_argument_type&& arr, ir::range&& arg) const;
+        primitive_argument_type reshape2d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
 
         template <typename T>
         primitive_argument_type reshape0d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
         template <typename T>
-        primitive_argument_type reshape1d(ir::node_data<T>&& arr,
+        primitive_argument_type reshape1d_2d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type reshape1d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type reshape2d_1d(ir::node_data<T>&& arr) const;
+        template <typename T>
+        primitive_argument_type reshape2d_2d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type reshape2d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
     private:
