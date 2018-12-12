@@ -130,7 +130,6 @@ def recur11(n):
 
 @Phylanx
 def recur12():
-    def add(a,b):
-        return a+b
-    return add(3,2)
-
+    def add(a, b):
+        return a + b
+    return add(3, 2)
