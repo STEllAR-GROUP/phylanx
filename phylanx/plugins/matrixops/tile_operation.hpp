@@ -45,7 +45,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         tile_operation(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
+    private:
+        primitive_argument_type tile0d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
 
+        template <typename T>
+        primitive_argument_type tile0d(ir::node_data<T>&& arr,
+            ir::range&& arg) const;
 
     private:
         node_data_type dtype_;
