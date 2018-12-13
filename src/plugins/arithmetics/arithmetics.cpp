@@ -11,6 +11,8 @@ PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(add_operation_plugin,
     phylanx::execution_tree::primitives::add_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(cumsum_operation_plugin,
+    phylanx::execution_tree::primitives::cumsum::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(div_operation_plugin,
     phylanx::execution_tree::primitives::div_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(mul_operation_plugin,

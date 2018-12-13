@@ -7,6 +7,7 @@
 #define PHYLANX_PLUGINS_ARITHMETICS_PRIMITIVES_APR_06_2108_0253PM
 
 #include <phylanx/plugins/arithmetics/add_operation.hpp>
+#include <phylanx/plugins/arithmetics/cumsum.hpp>
 #include <phylanx/plugins/arithmetics/div_operation.hpp>
 #include <phylanx/plugins/arithmetics/mul_operation.hpp>
 #include <phylanx/plugins/arithmetics/prod_operation.hpp>

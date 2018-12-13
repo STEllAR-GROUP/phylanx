@@ -11,7 +11,6 @@ set(tests
     constant
     count_nonzero
     cross_operation
-    cumsum
     determinant
     diag_operation
     dot_operation
