@@ -11,6 +11,7 @@
 #include <phylanx/plugins/arithmetics/mul_operation.hpp>
 #include <phylanx/plugins/arithmetics/prod_operation.hpp>
 #include <phylanx/plugins/arithmetics/sub_operation.hpp>
+#include <phylanx/plugins/arithmetics/sum_operation.hpp>
 #include <phylanx/plugins/arithmetics/unary_minus_operation.hpp>
 
 #endif

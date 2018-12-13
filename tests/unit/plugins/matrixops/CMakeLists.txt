@@ -34,7 +34,6 @@ set(tests
     shuffle_operation
     slicing_operation
     squeeze_operation
-    sum_operation
     transpose_operation
     unique
     vstack_operation

@@ -19,5 +19,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(prod_operation_plugin,
     phylanx::execution_tree::primitives::prod_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(sub_operation_plugin,
     phylanx::execution_tree::primitives::sub_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(sum_operation_plugin,
+    phylanx::execution_tree::primitives::sum_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(unary_minus_operation_plugin,
     phylanx::execution_tree::primitives::unary_minus_operation::match_data);
