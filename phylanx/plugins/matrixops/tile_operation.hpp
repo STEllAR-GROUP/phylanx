@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Bita Hasheminezhad
+// Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -48,9 +49,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         primitive_argument_type tile0d(
             primitive_argument_type&& arr, ir::range&& arg) const;
+        primitive_argument_type tile1d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
 
         template <typename T>
+        primitive_argument_type tile0d_1d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile0d_2d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
         primitive_argument_type tile0d(ir::node_data<T>&& arr,
+            ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile1d_1d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile1d_2d(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile1d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
     private:

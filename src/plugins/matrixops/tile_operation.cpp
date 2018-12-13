@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Bita Hasheminezhad
+// Copyright (c) 2018 Parsa Amini
 // Copyright (c) 2018 Hartmut Kaiser
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -50,9 +51,48 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
      ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type tile_operation::tile0d_1d(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto rep = extract_scalar_integer_value(*arg.begin());
+        blaze::DynamicVector<T> result(rep, arr.scalar());
+        return primitive_argument_type{std::move(result)};
+    }
 
+    template <typename T>
+    primitive_argument_type tile_operation::tile0d_2d(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto it = arg.begin();
+        auto row = extract_scalar_integer_value(*it++);
+        auto column = extract_scalar_integer_value(*it);
+        blaze::DynamicMatrix<T> result(row, column, arr.scalar());
+        return primitive_argument_type{std::move(result)};
+    }
 
- /*   primitive_argument_type tile_operation::tile0d(
+    template <typename T>
+    primitive_argument_type tile_operation::tile0d(ir::node_data<T>&& arr,
+        ir::range&& arg) const
+    {
+        switch (arg.size())
+        {
+        case 1:
+            return tile0d_1d(std::move(arr), std::move(arg));
+
+        case 2:
+            return tile0d_2d(std::move(arr), std::move(arg));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::eval",
+                util::generate_error_message(
+                    "tiling to >2d is not supported",
+                    name_, codename_));
+        }
+    }
+
+    primitive_argument_type tile_operation::tile0d(
         primitive_argument_type&& arr, ir::range&& arg) const
     {
         switch (extract_common_type(arr))
@@ -86,45 +126,95 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "the tile primitive requires for all arguments to "
                 "be numeric data types"));
-    }*/
-
+    }
     ///////////////////////////////////////////////////////////////////////////
-    //primitive_argument_type tile_operation::tile1d(
-    //    primitive_argument_type&& arr, ir::range&& arg) const
-    //{
-    //    switch (extract_common_type(arr))
-    //    {
-    //    case node_data_type_bool:
-    //        return tile1d(
-    //            extract_boolean_value_strict(std::move(arr), name_, codename_),
-    //            std::move(arg));
+    template <typename T>
+    primitive_argument_type tile_operation::tile1d_1d(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto v = arr.vector();
+        auto rep = extract_scalar_integer_value(*arg.begin());
+        blaze::DynamicVector<T> result(rep * v.size());
+        for (auto i = 0; i < rep; ++i)
+        {
+            subvector(result, i * v.size(), v.size()) = v;
+        }
+        return primitive_argument_type{std::move(result)};
+    }
 
-    //    case node_data_type_int64:
-    //        return tile1d(
-    //            extract_integer_value_strict(std::move(arr), name_, codename_),
-    //            std::move(arg));
+    template <typename T>
+    primitive_argument_type tile_operation::tile1d_2d(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto v = arr.vector();
+        auto it = arg.begin();
+        auto row = extract_scalar_integer_value(*it++);
+        auto column = extract_scalar_integer_value(*it);
+        blaze::DynamicMatrix<T> result(row, column * v.size());
+        for (auto r = 0; r < row; ++r)
+            for (auto c = 0; c < column; ++c)
+                blaze::row(submatrix(result, r, c * v.size(), 1, v.size()), 0) =
+                    blaze::trans(v);
 
-    //    case node_data_type_double:
-    //        return tile1d(
-    //            extract_numeric_value_strict(std::move(arr), name_, codename_),
-    //            std::move(arg));
+        return primitive_argument_type{std::move(result)};
+    }
 
-    //    case node_data_type_unknown:
-    //        return tile1d(
-    //            extract_numeric_value(std::move(arr), name_, codename_),
-    //            std::move(arg));
+    template <typename T>
+    primitive_argument_type tile_operation::tile1d(ir::node_data<T>&& arr,
+        ir::range&& arg) const
+    {
+        switch (arg.size())
+        {
+        case 1:
+            return tile1d_1d(std::move(arr), std::move(arg));
 
-    //    default:
-    //        break;
-    //    }
+        case 2:
+            return tile1d_2d(std::move(arr), std::move(arg));
 
-    //    HPX_THROW_EXCEPTION(hpx::bad_parameter,
-    //        "phylanx::execution_tree::primitives::tile_operation::tile1d",
-    //        generate_error_message(
-    //            "the tile primitive requires for all arguments to "
-    //            "be numeric data types"));
-    //}
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::eval",
+                util::generate_error_message(
+                    "tiling to >2d is not supported",
+                    name_, codename_));
+        }
+    }
 
+    primitive_argument_type tile_operation::tile1d(
+        primitive_argument_type&& arr, ir::range&& arg) const
+    {
+        switch (extract_common_type(arr))
+        {
+        case node_data_type_bool:
+            return tile1d(
+                extract_boolean_value_strict(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        case node_data_type_int64:
+            return tile1d(
+                extract_integer_value_strict(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        case node_data_type_double:
+            return tile1d(
+                extract_numeric_value_strict(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        case node_data_type_unknown:
+            return tile1d(
+                extract_numeric_value(std::move(arr), name_, codename_),
+                std::move(arg));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::primitives::tile_operation::tile1d",
+            generate_error_message(
+                "the tile primitive requires for all arguments to "
+                "be numeric data types"));
+    }
     ///////////////////////////////////////////////////////////////////////////
 
 
@@ -204,11 +294,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 switch (arr_dims_num)
                 {
-                //case 0:
-                //    return this_->tile0d(std::move(arr), std::move(arg));
+                case 0:
+                    return this_->tile0d(std::move(arr), std::move(arg));
 
-                //case 1:
-                //    return this_->tile1d(std::move(arr), std::move(arg));
+                case 1:
+                    return this_->tile1d(std::move(arr), std::move(arg));
 
                 //case 2:
                 //    return this_->tile2d(std::move(arr), std::move(arg));
