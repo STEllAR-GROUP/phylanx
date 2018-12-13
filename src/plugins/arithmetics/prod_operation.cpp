@@ -8,7 +8,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/matrixops/prod_operation.hpp>
+#include <phylanx/plugins/arithmetics/prod_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>

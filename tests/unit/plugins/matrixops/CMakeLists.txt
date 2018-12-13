@@ -28,7 +28,6 @@ set(tests
     list_slicing_operation
     mean_operation
     power_operation
-    prod_operation
     random
     random_distributions
     row_slicing

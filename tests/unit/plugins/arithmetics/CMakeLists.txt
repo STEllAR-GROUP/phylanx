@@ -8,6 +8,7 @@ set(tests
     add_lists
     div_operation
     mul_operation
+    prod_operation
     sub_operation
     unary_minus_operation
    )
