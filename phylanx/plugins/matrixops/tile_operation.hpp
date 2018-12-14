@@ -26,8 +26,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 {
 /// \brief Constructs an array by repeating a, the number of times given by reps.
 ///
-/// \param a     The scalar, vector, or matrix
-/// \param reps  Integer or tuple of integers.
+/// \param a     The scalar, vector, or matrix as the tile to repeat
+/// \param reps  Integer or tuple of integers. Number of repetitions of a along
+///              each axis
     class tile_operation
         : public primitive_component_base
         , public std::enable_shared_from_this<tile_operation>
@@ -51,24 +52,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_argument_type&& arr, ir::range&& arg) const;
         primitive_argument_type tile1d(
             primitive_argument_type&& arr, ir::range&& arg) const;
+        primitive_argument_type tile2d(
+            primitive_argument_type&& arr, ir::range&& arg) const;
 
         template <typename T>
-        primitive_argument_type tile0d_1d(
+        primitive_argument_type tile0d_1arg(
             ir::node_data<T>&& arr, ir::range&& arg) const;
         template <typename T>
-        primitive_argument_type tile0d_2d(
+        primitive_argument_type tile0d_2args(
             ir::node_data<T>&& arr, ir::range&& arg) const;
         template <typename T>
         primitive_argument_type tile0d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
         template <typename T>
-        primitive_argument_type tile1d_1d(
+        primitive_argument_type tile1d_1arg(
             ir::node_data<T>&& arr, ir::range&& arg) const;
         template <typename T>
-        primitive_argument_type tile1d_2d(
+        primitive_argument_type tile1d_2args(
             ir::node_data<T>&& arr, ir::range&& arg) const;
         template <typename T>
         primitive_argument_type tile1d(ir::node_data<T>&& arr,
+            ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile2d_1arg(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile2d_2args(
+            ir::node_data<T>&& arr, ir::range&& arg) const;
+        template <typename T>
+        primitive_argument_type tile2d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
     private:

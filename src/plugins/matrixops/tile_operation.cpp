@@ -29,19 +29,20 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const tile_operation::match_data =
-    {
-        hpx::util::make_tuple("tile",
-        std::vector<std::string>{"tile(_1,_2)"},
-        &create_tile_operation, &create_primitive<tile_operation>,
-         R"(
-            a, reps
-            Args:
-                a (array_like) : input array
-                reps (integer or tuple of integers):
-            Returns:
-            Constructs an array by repeating a, the number of times given by reps."
-            )") };
+    match_pattern_type const tile_operation::match_data = {
+        hpx::util::make_tuple("tile", std::vector<std::string>{"tile(_1,_2)"},
+            &create_tile_operation, &create_primitive<tile_operation>,
+            "a, reps\n"
+            "Args:\n"
+            "\n"
+            "    a (array_like) : input array\n"
+            "    reps (integer or tuple of integers): Number of repetitions of "
+            "    a along each axis.\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "Constructs an array by repeating a, the number of times given by "
+            "reps.")};
 
     ///////////////////////////////////////////////////////////////////////////
     tile_operation::tile_operation(primitive_arguments_type&& operands,
@@ -52,21 +53,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
      ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    primitive_argument_type tile_operation::tile0d_1d(
+    primitive_argument_type tile_operation::tile0d_1arg(
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
-        auto rep = extract_scalar_integer_value(*arg.begin());
+        auto rep = extract_scalar_integer_value_strict(*arg.begin());
+        if (rep < 0)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::tile0d_1arg",
+                util::generate_error_message("The given repetition should be "
+                                             "a non-negative integer",
+                    name_, codename_));
         blaze::DynamicVector<T> result(rep, arr.scalar());
         return primitive_argument_type{std::move(result)};
     }
 
     template <typename T>
-    primitive_argument_type tile_operation::tile0d_2d(
+    primitive_argument_type tile_operation::tile0d_2args(
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
         auto it = arg.begin();
-        auto row = extract_scalar_integer_value(*it++);
-        auto column = extract_scalar_integer_value(*it);
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
+        if (row < 0 || column < 0)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::tile0d_2args",
+                util::generate_error_message(
+                    "The given repetition should be "
+                    "a non-negative integer along each axis",
+                    name_, codename_));
         blaze::DynamicMatrix<T> result(row, column, arr.scalar());
         return primitive_argument_type{std::move(result)};
     }
@@ -78,10 +92,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (arg.size())
         {
         case 1:
-            return tile0d_1d(std::move(arr), std::move(arg));
+            return tile0d_1arg(std::move(arr), std::move(arg));
 
         case 2:
-            return tile0d_2d(std::move(arr), std::move(arg));
+            return tile0d_2args(std::move(arr), std::move(arg));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -129,11 +143,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    primitive_argument_type tile_operation::tile1d_1d(
+    primitive_argument_type tile_operation::tile1d_1arg(
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
         auto v = arr.vector();
-        auto rep = extract_scalar_integer_value(*arg.begin());
+        auto rep = extract_scalar_integer_value_strict(*arg.begin());
+        if (rep < 0)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::tile1d_1arg",
+                util::generate_error_message("The given repetition should be "
+                                             "a non-negative integer",
+                    name_, codename_));
         blaze::DynamicVector<T> result(rep * v.size());
         for (auto i = 0; i < rep; ++i)
         {
@@ -143,13 +163,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     template <typename T>
-    primitive_argument_type tile_operation::tile1d_2d(
+    primitive_argument_type tile_operation::tile1d_2args(
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
         auto v = arr.vector();
         auto it = arg.begin();
-        auto row = extract_scalar_integer_value(*it++);
-        auto column = extract_scalar_integer_value(*it);
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
+        if (row < 0 || column < 0)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::tile1d_2args",
+                util::generate_error_message(
+                    "The given repetition should be "
+                    "a non-negative integer along each axis",
+                    name_, codename_));
         blaze::DynamicMatrix<T> result(row, column * v.size());
         for (auto r = 0; r < row; ++r)
             for (auto c = 0; c < column; ++c)
@@ -166,10 +193,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (arg.size())
         {
         case 1:
-            return tile1d_1d(std::move(arr), std::move(arg));
+            return tile1d_1arg(std::move(arr), std::move(arg));
 
         case 2:
-            return tile1d_2d(std::move(arr), std::move(arg));
+            return tile1d_2args(std::move(arr), std::move(arg));
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -216,9 +243,72 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "be numeric data types"));
     }
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type tile_operation::tile2d_1arg(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto m = arr.matrix();
+        auto rep = extract_scalar_integer_value_strict(*arg.begin());
+        if (rep < 0)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::tile2d_1arg",
+                util::generate_error_message("The given repetition should be "
+                                             "a non-negative integer",
+                    name_, codename_));
+        blaze::DynamicMatrix<T> result(m.rows(), rep * m.columns());
+        for (auto i = 0; i < rep; ++i)
+        {
+            submatrix(result, 0, i * m.columns(), m.rows(), m.columns()) = m;
+        }
+        return primitive_argument_type{std::move(result)};
+    }
 
+    template <typename T>
+    primitive_argument_type tile_operation::tile2d_2args(
+        ir::node_data<T>&& arr, ir::range&& arg) const
+    {
+        auto m = arr.matrix();
+        auto it = arg.begin();
+        auto row = extract_scalar_integer_value_strict(*it++);
+        auto column = extract_scalar_integer_value_strict(*it);
+        if (row < 0 || column < 0)
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::tile2d_2args",
+                util::generate_error_message(
+                    "The given repetition should be "
+                    "a non-negative integer along each axis",
+                    name_, codename_));
+        blaze::DynamicMatrix<T> result(row * m.rows(), column * m.columns());
+        for (auto r = 0; r < row; ++r)
+            for (auto c = 0; c < column; ++c)
+                submatrix(result, r * m.rows(), c * m.columns(), m.rows(),
+                    m.columns()) = m;
 
- /*   primitive_argument_type tile_operation::tile2d(
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type tile_operation::tile2d(ir::node_data<T>&& arr,
+        ir::range&& arg) const
+    {
+        switch (arg.size())
+        {
+        case 1:
+            return tile2d_1arg(std::move(arr), std::move(arg));
+
+        case 2:
+            return tile2d_2args(std::move(arr), std::move(arg));
+
+        default:
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "tile_operation::eval",
+                util::generate_error_message(
+                    "tiling to >2d is not supported",
+                    name_, codename_));
+        }
+    }
+
+    primitive_argument_type tile_operation::tile2d(
         primitive_argument_type&& arr, ir::range&& arg) const
     {
         switch (extract_common_type(arr))
@@ -252,7 +342,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             generate_error_message(
                 "the tile primitive requires for all arguments to "
                 "be numeric data types"));
-    }*/
+    }
     ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> tile_operation::eval(
         primitive_arguments_type const& operands,
@@ -300,8 +390,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 case 1:
                     return this_->tile1d(std::move(arr), std::move(arg));
 
-                //case 2:
-                //    return this_->tile2d(std::move(arr), std::move(arg));
+                case 2:
+                    return this_->tile2d(std::move(arr), std::move(arg));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
