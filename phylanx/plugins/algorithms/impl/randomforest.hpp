@@ -6,15 +6,12 @@
 #if !defined(__PHYLANX_RANDOMFORESTIMPL_HPP__)
 #define __PHYLANX_RANDOMFORESTIMPL_HPP__
 
-#include <phylanx/ir/dictionary.hpp>
-
 #include <hpx/throw_exception.hpp>
 #include <hpx/parallel/algorithms/for_each.hpp>
 #include <hpx/parallel/algorithms/transform.hpp>
 #include <hpx/parallel/algorithms/reduce.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
 #include <boost/variant/recursive_variant.hpp>
 #include <boost/range/irange.hpp>
@@ -33,6 +30,10 @@
 
 #include <blaze/Math.h>
 
+#include <phylanx/util/variant.hpp>
+#include <phylanx/ir/dictionary.hpp>
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -47,9 +48,9 @@ namespace phylanx { namespace algorithms { namespace impl {
 struct nil {};
 struct randomforest_node;
 
-using randomforest_node_variant = boost::variant<
+using randomforest_node_variant = phylanx::util::variant<
     nil
-    , boost::recursive_wrapper<randomforest_node>
+    , phylanx::util::recursive_wrapper<randomforest_node>
     , std::uint64_t
     , double
     , std::vector< std::uint64_t >
@@ -279,11 +280,11 @@ struct randomforest_impl {
         , std::unordered_map<double, std::uint64_t> & classes) {
 
         std::vector<std::uint64_t> left_group{
-            boost::get< std::vector<std::uint64_t> >(node.fields["left_groups"])
+            phylanx::util::get< std::vector<std::uint64_t> >(node.fields["left_groups"])
         };
 
         std::vector<std::uint64_t> right_group{
-            boost::get< std::vector<std::uint64_t> >(node.fields["right_groups"])
+            phylanx::util::get< std::vector<std::uint64_t> >(node.fields["right_groups"])
         };
 
         node.fields.erase("left_groups");
@@ -324,7 +325,7 @@ struct randomforest_impl {
 
         node.fields["left"] = left_node;
 
-        split(boost::get<randomforest_node>(node.fields["left"])
+        split(phylanx::util::get<randomforest_node>(node.fields["left"])
             , train
             , train_labels
             , max_depth
@@ -342,6 +343,7 @@ struct randomforest_impl {
         }
 
         randomforest_node right_node;
+
         get_split(train
             , train_labels
             , right_group
@@ -350,7 +352,8 @@ struct randomforest_impl {
             , right_node);
 
         node.fields["right"] = right_node;
-        split(boost::get<randomforest_node>(node.fields["right"])
+
+        split(phylanx::util::get<randomforest_node>(node.fields["right"])
             , train
             , train_labels
             , max_depth
@@ -394,13 +397,13 @@ struct randomforest_impl {
         , blaze::DynamicMatrix<double> const& r
         , std::uint64_t const i) {
 
-        auto index = boost::get<std::uint64_t>(node.fields["index"]);
-        auto value = boost::get<double>(node.fields["value"]);
+        auto index = phylanx::util::get<std::uint64_t>(node.fields["index"]);
+        auto value = phylanx::util::get<double>(node.fields["value"]);
 
         if(r(i, index) < value) {
-            auto lw = boost::get<std::uint64_t>(node.fields["lw"]);
+            auto lw = phylanx::util::get<std::uint64_t>(node.fields["lw"]);
             if( lw == (std::numeric_limits<std::uint64_t>::max)()) {
-                auto left = boost::get<randomforest_node>(node.fields["left"]);
+                auto left = phylanx::util::get<randomforest_node>(node.fields["left"]);
                 return node_predict(left, r, i);
             }
             else {
@@ -408,9 +411,9 @@ struct randomforest_impl {
             }
         }
 
-        auto rw = boost::get<std::uint64_t>(node.fields["rw"]);
+        auto rw = phylanx::util::get<std::uint64_t>(node.fields["rw"]);
         if(rw == (std::numeric_limits<std::uint64_t>::max)()) {
-            auto right = boost::get<randomforest_node>(node.fields["right"]);
+            auto right = phylanx::util::get<randomforest_node>(node.fields["right"]);
             return node_predict(right, r, i);
         }
 
