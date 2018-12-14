@@ -325,7 +325,8 @@ struct randomforest_impl {
 
         node.fields["left"] = left_node;
 
-        split(phylanx::util::get<randomforest_node>(node.fields["left"])
+        split(phylanx::util::get<phylanx::util::recursive_wrapper<randomforest_node>>
+            (node.fields["left"]).get()
             , train
             , train_labels
             , max_depth
@@ -353,7 +354,8 @@ struct randomforest_impl {
 
         node.fields["right"] = right_node;
 
-        split(phylanx::util::get<randomforest_node>(node.fields["right"])
+        split(phylanx::util::get<phylanx::util::recursive_wrapper<randomforest_node>>
+            (node.fields["right"]).get()
             , train
             , train_labels
             , max_depth
@@ -403,7 +405,9 @@ struct randomforest_impl {
         if(r(i, index) < value) {
             auto lw = phylanx::util::get<std::uint64_t>(node.fields["lw"]);
             if( lw == (std::numeric_limits<std::uint64_t>::max)()) {
-                auto left = phylanx::util::get<randomforest_node>(node.fields["left"]);
+                auto left = phylanx::util::get<
+                    phylanx::util::recursive_wrapper<randomforest_node>
+                        >(node.fields["left"]).get();
                 return node_predict(left, r, i);
             }
             else {
@@ -413,7 +417,9 @@ struct randomforest_impl {
 
         auto rw = phylanx::util::get<std::uint64_t>(node.fields["rw"]);
         if(rw == (std::numeric_limits<std::uint64_t>::max)()) {
-            auto right = phylanx::util::get<randomforest_node>(node.fields["right"]);
+            auto right = phylanx::util::get<
+                    phylanx::util::recursive_wrapper<randomforest_node>
+                        >(node.fields["right"]).get();
             return node_predict(right, r, i);
         }
 
