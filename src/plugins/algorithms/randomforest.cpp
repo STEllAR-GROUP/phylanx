@@ -36,6 +36,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     static void transform(std::string const& key
         , nil const& none
         , phylanx::ir::dictionary & phy) {
+        HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::transform"
+            , phylanx::util::generate_error_message(
+            "nil element discovered in tree"));
     }
 
     static void transform(std::string const& key
@@ -52,20 +55,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     static void transform(std::string const& key
-        , std::uint64_t const term
+        , std::int64_t const term
         , phylanx::ir::dictionary & phy) {
 
         auto dkey = phylanx::execution_tree::primitive_argument_type{
             std::string(key)};
 
         auto value = phylanx::execution_tree::primitive_argument_type{
-            phylanx::ir::node_data<std::int64_t>(static_cast<std::int64_t>(term))};
+            phylanx::ir::node_data<std::int64_t>(term)};
 
         phy[dkey] = value;
     }
 
     static void transform(std::string const& key
-        , std::vector< std::uint64_t > const& group
+        , std::vector< std::int64_t > const& group
         , phylanx::ir::dictionary & phy) {
 
         auto dkey = phylanx::execution_tree::primitive_argument_type{
@@ -77,7 +80,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         for(auto const g : group) {
             group_indices.push_back(
                 phylanx::execution_tree::primitive_argument_type{
-                    static_cast<std::int64_t>(g)} );
+                    std::int64_t(g)} );
         }
 
         phylanx::ir::range rng(group_indices.begin(), group_indices.end());
@@ -90,12 +93,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , phylanx::algorithms::impl::randomforest_node const& node
         , phylanx::ir::dictionary & phy) {
 
-        auto dkey = phylanx::execution_tree::primitive_argument_type{
-            std::string(key)};
-
-        phylanx::ir::dictionary child;
-
-        for(auto & field : node.fields) {
+        for(auto field : node.fields) {
             switch(field.second.index()) {
 
                case 0: // nil
@@ -105,23 +103,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
                    break;
 
                case 1: // randomforest_node
-                   transform(field.first
-                       , phylanx::util::get<phylanx::util::recursive_wrapper<
-                               phylanx::algorithms::impl::randomforest_node> >(
-                                   field.second).get(), phy);
+                   {
+                       phylanx::ir::dictionary child;
+
+                       transform(field.first
+                           , phylanx::util::get<phylanx::util::recursive_wrapper<
+                                   phylanx::algorithms::impl::randomforest_node> >(
+                                       field.second).get(), child);
+
+                       auto dkey = phylanx::execution_tree::primitive_argument_type{
+                           std::string(key)};
+
+                       auto value = phylanx::execution_tree::primitive_argument_type{
+                           child};
+
+                       phy[dkey] = value;
+                   }
+
                    break;
 
-               case 2: // std::uint64_t
-                   transform(field.first, phylanx::util::get<std::uint64_t>(
+               case 2: // std::int64_t
+                   transform(field.first, phylanx::util::get<std::int64_t>(
                        field.second), phy);
                    break;
 
                case 3: // double
-                   transform(field.first, phylanx::util::get<double>(field.second), phy);
+                   transform(field.first, phylanx::util::get<double>(
+                       field.second), phy);
                    break;
 
-               case 4: // std::vector<std::uint64_t>
-                   transform(field.first, phylanx::util::get<std::vector<std::uint64_t>>(
+               case 4: // std::vector<std::int64_t>
+                   transform(field.first, phylanx::util::get<std::vector<std::int64_t>>(
                        field.second), phy);
                    break;
 
@@ -132,52 +144,160 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }
         }
 
-        auto value = phylanx::execution_tree::primitive_argument_type{child};
-        phy[dkey] = value;
     }
 
     static void transform(randomforest_impl const& forest, phylanx::ir::dictionary &phy) {
-        std::size_t forest_index = 0ul;
+        std::size_t const forest_size = forest.trees.size();
+        auto forest_index_range = boost::irange(0ul, forest_size);
+        phy.reserve(forest_size);
 
-        for(auto & tree : forest.trees) {
-            auto const tree_id = std::string("root_node_") + std::to_string(forest_index);
-            transform(tree_id, tree, phy);
-            ++forest_index;
+        std::vector<std::string> phy_keys(forest_size);
+        std::string const root_key_prefix("root_node_");
+        std::transform(
+            forest_index_range.begin()
+            , forest_index_range.end()
+            , phy_keys.begin()
+            , [&root_key_prefix](auto const i) {
+                return root_key_prefix + std::to_string(i);
+        });
+
+        std::vector<phylanx::ir::dictionary> phy_trees(forest_size);
+        for(auto const forest_index : forest_index_range) {
+            transform(phy_keys[forest_index]
+                , forest.trees[forest_index]
+                , phy_trees[forest_index]);
+
+            auto tree_key = phylanx::execution_tree::primitive_argument_type{
+                std::string(phy_keys[forest_index])};
+
+            phy[tree_key] = phy_trees[forest_index];
         }
+
     }
 
-/*
+    ///////////////////////////////////////////////////////////////////////////
     static void transform(std::string const& key
-        , phylanx::ir::dictionary const& node
-        , randomforest_node & tree) {
+        , phylanx::ir::node_data<double> const weight 
+        , phylanx::algorithms::impl::randomforest_node & node) {
+        node.fields[key] = weight.scalar();
+    }
 
-        auto dkey = phylanx::execution_tree::primitive_argument_type{
-            std::string(key)};
+    static void transform(std::string const& key
+        , phylanx::ir::node_data<std::int64_t> const term
+        , phylanx::algorithms::impl::randomforest_node & node) {
+        node.fields[key] = term.scalar();
+    }
 
-        randomforest_node rfn;
+    static void transform(std::string const& key
+        , phylanx::ir::range const& group
+        , phylanx::algorithms::impl::randomforest_node & node) {
+
+        std::vector<std::int64_t> grp(group.size());
+        std::transform(
+            group.begin(), group.end()
+            , grp.begin()
+            , [](auto const& g) { return phylanx::util::get<
+                phylanx::ir::node_data<std::int64_t> >(
+                    g.variant()).scalar(); });
+        node.fields[key] = grp;
+    }
+ 
+    static void transform(std::string const& key
+        , phylanx::ir::dictionary & node
+        , phylanx::algorithms::impl::randomforest_node & forest) {
+
         for(auto & field : node) {
-            rfn.fields
-        }
+            switch(field.second.get().index()) {
 
-        tree.
+               case 2: // std::int64_t
+                   transform(phylanx::util::get<std::string>(field.first.get())
+                       , phylanx::util::get< phylanx::ir::node_data<std::int64_t> >(
+                           field.second.get()), forest);
+                   break;
+
+               case 4: // double
+                   transform(phylanx::util::get<std::string>(field.first.get())
+                       , phylanx::util::get< phylanx::ir::node_data<double> >(
+                           field.second.get()), forest);
+                   break;
+
+               case 7: // std::vector<std::int64_t>
+                   transform(phylanx::util::get<std::string>(field.first.get())
+                       , phylanx::util::get< phylanx::ir::range >(
+                           field.second.get()), forest);
+                   break;
+
+               case 8: // phylanx::ir::dictionary -> randomforest_node 
+                   {
+                       phylanx::algorithms::impl::randomforest_node child;
+
+                       transform(phylanx::util::get<std::string>(field.first.get())
+                           , phylanx::util::get<phylanx::ir::dictionary>(
+                                       field.second.get()), child);
+
+                       forest.fields[key] = child;
+                   }
+                   break;
+
+               default:
+                   HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::transform"
+                       , phylanx::util::generate_error_message(
+                           "unexpected element discovered in tree"));
+            }
+        }
     }
 
     static void transform(phylanx::ir::dictionary & phy
-        , randomforest_impl const& forest) {
-        //primitive_argument_type::variant(), no necessary - inherits from variant
+        , randomforest_impl & forest) {
+
+        std::size_t tree_count = 0ul;
+        std::size_t const forest_size = phy.size();
+        forest.grow(forest_size);
+
         for(auto & entry : phy) {
-            transform(entry.first, entry.second, forest);
+            switch(entry.second.get().variant().index()) {
+
+               case 2: // std::int64_t
+                   transform(phylanx::util::get<std::string>(entry.first.get())
+                       , phylanx::util::get< phylanx::ir::node_data<std::int64_t> >(
+                           entry.second.get()), forest.trees[tree_count]);
+                   break;
+
+               case 4: // double
+                   transform(phylanx::util::get<std::string>(entry.first.get())
+                       , phylanx::util::get< phylanx::ir::node_data<double> >(
+                           entry.second.get()), forest.trees[tree_count]);
+                   break;
+
+               case 7: // phylanx::ir::range -> std::vector<std::int64_t>
+                   transform(phylanx::util::get<std::string>(entry.first.get())
+                       , phylanx::util::get< phylanx::ir::range >(
+                           entry.second.get()), forest.trees[tree_count]);
+                   break;
+
+               case 8: // phylanx::ir::dictionary -> randomforest_node 
+                   transform(phylanx::util::get<std::string>(entry.first.get())
+                       , phylanx::util::get<phylanx::ir::dictionary>(
+                                   entry.second.get()), forest.trees[tree_count]);
+                   break;
+
+               default:
+                   HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::transform"
+                       , phylanx::util::generate_error_message(
+                           "unexpected element discovered in tree"));
+            }
+
+            ++tree_count;
         }
     }
 
-*/
     static phylanx::ir::dictionary randomforest_fit(
         blaze::DynamicMatrix<double> const& train
         , blaze::DynamicVector<double> const& train_labels
-        , std::uint64_t const max_depth
-        , std::uint64_t const min_size
-        , std::uint64_t const sample_size
-        , std::uint64_t const n_trees) {
+        , std::int64_t const max_depth
+        , std::int64_t const min_size
+        , std::int64_t const sample_size
+        , std::int64_t const n_trees) {
 
         randomforest_impl rf(n_trees);
         rf.fit(train, train_labels, max_depth, min_size, sample_size);
@@ -266,13 +386,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             );
         }
 
-        auto max_depth = static_cast<std::uint64_t>(
+        auto max_depth = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[2], name_, codename_));
-        auto min_size = static_cast<std::uint64_t>(
+        auto min_size = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[3], name_, codename_));
-        auto sample_size = static_cast<std::uint64_t>(
+        auto sample_size = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[4], name_, codename_));
-        auto n_trees = static_cast<std::uint64_t>(
+        auto n_trees = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[5], name_, codename_));
 
         auto arg6 = extract_numeric_value(args[6], name_, codename_);
