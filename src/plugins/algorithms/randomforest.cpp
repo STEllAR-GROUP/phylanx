@@ -193,12 +193,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , phylanx::algorithms::impl::randomforest_node & node) {
 
         std::vector<std::int64_t> grp(group.size());
+
         std::transform(
             group.begin(), group.end()
             , grp.begin()
             , [](auto const& g) { return phylanx::util::get<
                 phylanx::ir::node_data<std::int64_t> >(
                     g.variant()).scalar(); });
+
         node.fields[key] = grp;
     }
  
@@ -221,7 +223,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                            field.second.get()), forest);
                    break;
 
-               case 7: // std::vector<std::int64_t>
+               case 7: // phylanx::ir::range -> std::vector<std::int64_t>
                    transform(phylanx::util::get<std::string>(field.first.get())
                        , phylanx::util::get< phylanx::ir::range >(
                            field.second.get()), forest);
@@ -320,12 +322,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const randomforest::match_data =
     {
-        hpx::util::make_tuple("randomforest",
+        hpx::util::make_tuple("randomforest_fit",
             std::vector<std::string>{
-                "randomforest(_1, _2, _3, _4, _5, _6, _7)",
+                "randomforest_fit(_1, _2, _3, _4, _5, _6)",
             },
             &create_randomforest, &create_primitive<randomforest>,
-            "training, training_labels, max_depth, min_size, sample_size, n_trees, test\n"
+            "training, training_labels, max_depth, min_size, sample_size, n_trees\n"
             "Args:\n"
             "\n"
             "    training (matrix) : training features\n"
@@ -335,7 +337,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "    min_size (int) : min size\n"
             "    sample_size (int) : number of samples per tree\n"
             "    n_trees (int) : number of trees to train\n"
-            "    test (matrix) : testing data to predict upon\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "A trained model as a dictionary"
+            )
+        , hpx::util::make_tuple("randomforest_predict",
+            std::vector<std::string>{
+                "randomforest_predict(_1, _2)",
+            },
+            &create_randomforest, &create_primitive<randomforest>,
+            "model, input_data\n"
+            "Args:\n"
+            "\n"
+            "    model (dictionary) : randomforest\n"
+            "    input_data (matrix) : features\n"
+            "the data\n"
             "\n"
             "Returns:\n"
             "\n"
