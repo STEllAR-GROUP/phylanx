@@ -34,7 +34,7 @@ using namespace phylanx::algorithms::impl;
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     static void transform(std::string const& key
-        , nil const& none
+        , nil & none
         , phylanx::ir::dictionary & phy) {
         HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::transform"
             , phylanx::util::generate_error_message(
@@ -42,7 +42,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     static void transform(std::string const& key
-        , double const weight
+        , double weight
         , phylanx::ir::dictionary & phy) {
 
         auto dkey = phylanx::execution_tree::primitive_argument_type{
@@ -55,7 +55,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     static void transform(std::string const& key
-        , std::int64_t const term
+        , std::int64_t term
         , phylanx::ir::dictionary & phy) {
 
         auto dkey = phylanx::execution_tree::primitive_argument_type{
@@ -68,7 +68,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     static void transform(std::string const& key
-        , std::vector< std::int64_t > const& group
+        , std::vector< std::int64_t > & group
         , phylanx::ir::dictionary & phy) {
 
         auto dkey = phylanx::execution_tree::primitive_argument_type{
@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     static void transform(std::string const& key
-        , phylanx::algorithms::impl::randomforest_node const& node
+        , phylanx::algorithms::impl::randomforest_node & node
         , phylanx::ir::dictionary & phy) {
 
         for(auto field : node.fields) {
@@ -146,7 +146,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     }
 
-    static void transform(randomforest_impl const& forest, phylanx::ir::dictionary &phy) {
+    static void transform(randomforest_impl & forest
+        , phylanx::ir::dictionary &phy) {
+
         std::size_t const forest_size = forest.trees.size();
         auto forest_index_range = boost::irange(0ul, forest_size);
         phy.reserve(forest_size);
@@ -177,19 +179,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     static void transform(std::string const& key
-        , phylanx::ir::node_data<double> const weight 
+        , phylanx::ir::node_data<double> weight 
         , phylanx::algorithms::impl::randomforest_node & node) {
         node.fields[key] = weight.scalar();
     }
 
     static void transform(std::string const& key
-        , phylanx::ir::node_data<std::int64_t> const term
+        , phylanx::ir::node_data<std::int64_t> term
         , phylanx::algorithms::impl::randomforest_node & node) {
         node.fields[key] = term.scalar();
     }
 
     static void transform(std::string const& key
-        , phylanx::ir::range const& group
+        , phylanx::ir::range & group
         , phylanx::algorithms::impl::randomforest_node & node) {
 
         std::vector<std::int64_t> grp(group.size());
@@ -293,7 +295,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    static phylanx::ir::dictionary randomforest_fit(
+    static primitive_argument_type randomforest_fit_fn(
         blaze::DynamicMatrix<double> const& train
         , blaze::DynamicVector<double> const& train_labels
         , std::int64_t const max_depth
@@ -306,27 +308,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         phylanx::ir::dictionary forest;
         transform(rf, forest);
-        return std::move(forest);
+
+        return primitive_argument_type{std::move(forest)};
     }
 
-    static void randomforest_predict(
-        phylanx::ir::dictionary const& tree
-        , blaze::DynamicMatrix<double> const& test
-        , blaze::DynamicVector<double> & test_labels) {
+    static primitive_argument_type randomforest_predict_fn(
+        phylanx::ir::dictionary & tree
+        , blaze::DynamicMatrix<double> const& input_data) {
 
-        //randomforest_impl rf;
-        //transform(tree, rf);
-        //rf.predict(test, test_labels);
+        blaze::DynamicVector<double> labels(input_data.rows());
+
+        randomforest_impl rf;
+        transform(tree, rf);
+        rf.predict(input_data, labels);
+
+        return primitive_argument_type{std::move(labels)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    match_pattern_type const randomforest::match_data =
+    match_pattern_type const randomforest_fit::match_data =
     {
         hpx::util::make_tuple("randomforest_fit",
             std::vector<std::string>{
                 "randomforest_fit(_1, _2, _3, _4, _5, _6)",
             },
-            &create_randomforest, &create_primitive<randomforest>,
+            &create_randomforest_fit, &create_primitive<randomforest_fit>,
             "training, training_labels, max_depth, min_size, sample_size, n_trees\n"
             "Args:\n"
             "\n"
@@ -342,32 +348,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "\n"
             "A trained model as a dictionary"
             )
-        , hpx::util::make_tuple("randomforest_predict",
-            std::vector<std::string>{
-                "randomforest_predict(_1, _2)",
-            },
-            &create_randomforest, &create_primitive<randomforest>,
-            "model, input_data\n"
-            "Args:\n"
-            "\n"
-            "    model (dictionary) : randomforest\n"
-            "    input_data (matrix) : features\n"
-            "the data\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The predicted classes as a vector for each row in training (matrix)"
-            )
     };
 
     ///////////////////////////////////////////////////////////////////////////
-    randomforest::randomforest(primitive_arguments_type&& operands,
+    randomforest_fit::randomforest_fit(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type randomforest::calculate_randomforest(
+    primitive_argument_type randomforest_fit::calculate_randomforest_fit(
         primitive_arguments_type && args) const
     {
         // extract arguments
@@ -412,23 +402,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto n_trees = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[5], name_, codename_));
 
-        auto arg6 = extract_numeric_value(args[6], name_, codename_);
-        if (arg6.num_dimensions() != 2)
-        {
-            HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
-                generate_error_message(
-                    "the randomforest algorithm primitive requires for the first "
-                    "argument ('testing') to represent a matrix"));
-        }
-
-        auto testing_data = arg6.matrix();
-
         using vector_type = ir::node_data<double>::storage1d_type;
 
         // perform calculations
         vector_type testing_labels(training_data.rows(), 0);
 
-        auto forest = randomforest_fit(
+        auto forest = randomforest_fit_fn(
             training_data
             , training_labels
             , max_depth
@@ -436,25 +415,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             , sample_size
             , n_trees);
 
-        randomforest_predict(
-            forest
-            , testing_data
-            , testing_labels);
-
-        return primitive_argument_type{std::move(testing_labels)};
+        return primitive_argument_type{std::move(forest)};
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    hpx::future<primitive_argument_type> randomforest::eval(
+    hpx::future<primitive_argument_type> randomforest_fit::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.size() != 7)
+        if (operands.size() != 6)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "randomforest::eval",
                 generate_error_message(
-                    "the randomforest algorithm primitive requires exactly eight "
+                    "the randomforest_fit primitive requires exactly six "
                         "operands"));
         }
 
@@ -481,7 +455,114 @@ namespace phylanx { namespace execution_tree { namespace primitives
             [this_ = std::move(this_)](primitive_arguments_type && args)
             ->  primitive_argument_type
             {
-                return this_->calculate_randomforest(std::move(args));
+                return this_->calculate_randomforest_fit(std::move(args));
+            }),
+            detail::map_operands(
+                operands, functional::value_operand{}, args,
+                name_, codename_));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    match_pattern_type const randomforest_predict::match_data =
+    {
+        hpx::util::make_tuple("randomforest_predict",
+            std::vector<std::string>{
+                "randomforest_predict(_1, _2)",
+            },
+            &create_randomforest_predict, &create_primitive<randomforest_predict>,
+            "model, input_data\n"
+            "Args:\n"
+            "\n"
+            "    model (dictionary) : randomforest\n"
+            "    input_data (matrix) : features\n"
+            "the data\n"
+            "\n"
+            "Returns:\n"
+            "\n"
+            "The predicted classes as a vector for each row in training (matrix)"
+            )
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    randomforest_predict::randomforest_predict(primitive_arguments_type&& operands,
+        std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename)
+    {}
+
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type randomforest_predict::calculate_randomforest_predict(
+        primitive_arguments_type && args) const
+    {
+        // extract arguments
+        auto model = extract_dictionary_value(args[0], name_, codename_);
+        if (model.size() > 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
+                generate_error_message(
+                    "the randomforest algorithm primitive requires for the first "
+                    "argument ('model') to have more than 0 trees"));
+        }
+
+        auto arg2 = extract_numeric_value(args[1], name_, codename_);
+        if (arg2.num_dimensions() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::eval",
+                generate_error_message(
+                    "the randomforest algorithm primitive requires for the second "
+                    "argument ('input_data') to represent a matrix"));
+        }
+        auto input_data = arg2.matrix();
+
+        using vector_type = ir::node_data<double>::storage1d_type;
+
+        // perform calculations
+        vector_type input_labels(input_data.rows(), 0.0);
+
+        auto output_labels = randomforest_predict_fn(
+            model
+            , input_data);
+
+        return primitive_argument_type{std::move(output_labels)};
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    hpx::future<primitive_argument_type> randomforest_predict::eval(
+        primitive_arguments_type const& operands,
+        primitive_arguments_type const& args, eval_context ctx) const
+    {
+        if (operands.size() != 2)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "randomforest::eval",
+                generate_error_message(
+                    "the randomforest_predict primitive requires exactly two "
+                        "operands"));
+        }
+
+        bool arguments_valid = true;
+        for (std::size_t i = 0; i != operands.size(); ++i)
+        {
+            if (!valid(operands[i]))
+            {
+                arguments_valid = false;
+            }
+        }
+
+        if (!arguments_valid)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "randomforest::eval",
+                generate_error_message(
+                    "the randomforest algorithm primitive requires that the "
+                        "arguments given by the operands array are valid"));
+        }
+
+        auto this_ = this->shared_from_this();
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](primitive_arguments_type && args)
+            ->  primitive_argument_type
+            {
+                return this_->calculate_randomforest_predict(std::move(args));
             }),
             detail::map_operands(
                 operands, functional::value_operand{}, args,
