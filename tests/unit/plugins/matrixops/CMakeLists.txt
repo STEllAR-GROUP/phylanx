@@ -26,6 +26,7 @@ set(tests
     linearmatrix
     linspace
     list_slicing_operation
+    max_operation
     mean_operation
     power_operation
     random
