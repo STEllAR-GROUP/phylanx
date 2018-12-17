@@ -17,6 +17,7 @@ set(tests
     dot_operation
     expand_dims
     extract_shape
+    flatten
     generic_operation
     gradient_operation
     hstack_operation
@@ -35,6 +36,7 @@ set(tests
     squeeze_operation
     sum_operation
     transpose_operation
+    unique
     vstack_operation
    )
 

@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Tianyi Zhang
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -183,6 +184,9 @@ int main(int argc, char* argv[])
     test_generic_operation_0d("sin", std::sin);
     test_generic_operation_0d("cos", std::cos);
     test_generic_operation_0d("tan", std::tan);
+    test_generic_operation_0d("sinh", std::sinh);
+    test_generic_operation_0d("cosh", std::cosh);
+    test_generic_operation_0d("tanh", std::tanh);
     test_generic_operation_0d("arcsin", std::asin);
     test_generic_operation_0d("arccos", std::acos);
     test_generic_operation_0d("arctan", std::atan);
@@ -254,6 +258,15 @@ int main(int argc, char* argv[])
     test_generic_operation_1d("tan",
         [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicVector<double> { return blaze::tan(m); });
+    test_generic_operation_1d("sinh",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+        -> blaze::DynamicVector<double> { return blaze::sinh(m); });
+    test_generic_operation_1d("cosh",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+        -> blaze::DynamicVector<double> { return blaze::cosh(m); });
+    test_generic_operation_1d("tanh",
+        [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
+        -> blaze::DynamicVector<double> { return blaze::tanh(m); });
     test_generic_operation_1d("arcsin",
         [](blaze::CustomVector<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicVector<double> { return blaze::asin(m); });
@@ -337,6 +350,15 @@ int main(int argc, char* argv[])
     test_generic_operation_2d("tan",
         [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicMatrix<double> { return blaze::tan(m); });
+    test_generic_operation_2d("sinh",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+        -> blaze::DynamicMatrix<double> { return blaze::sinh(m); });
+    test_generic_operation_2d("cosh",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+        -> blaze::DynamicMatrix<double> { return blaze::cosh(m); });
+    test_generic_operation_2d("tanh",
+        [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
+        -> blaze::DynamicMatrix<double> { return blaze::tanh(m); });
     test_generic_operation_2d("arcsin",
         [](blaze::CustomMatrix<double, blaze::aligned, blaze::padded> m)
             -> blaze::DynamicMatrix<double> { return blaze::asin(m); });
