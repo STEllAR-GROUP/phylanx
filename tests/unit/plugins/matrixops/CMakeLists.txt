@@ -11,7 +11,6 @@ set(tests
     constant
     count_nonzero
     cross_operation
-    cumsum
     determinant
     diag_operation
     dot_operation
@@ -34,7 +33,6 @@ set(tests
     shuffle_operation
     slicing_operation
     squeeze_operation
-    sum_operation
     transpose_operation
     unique
     vstack_operation
