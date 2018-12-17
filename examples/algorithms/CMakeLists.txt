@@ -8,6 +8,7 @@ set(subdirs
     lir
     lra
     kmeans
+    randomforest
    )
 
 foreach(subdir ${subdirs})

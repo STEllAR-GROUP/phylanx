@@ -435,7 +435,7 @@ struct randomforest_impl {
     static void subsample(
         blaze::DynamicMatrix<double> const& dataset
         , std::vector<std::int64_t> & idx_w_sort
-        , std::int64_t const ratio) {
+        , double const ratio) {
 
         std::int64_t const n_sample =
             static_cast<std::int64_t>(std::floor(static_cast<double>(
@@ -510,7 +510,7 @@ struct randomforest_impl {
         , blaze::DynamicVector<double> const& train_labels
         , std::int64_t const max_depth
         , std::int64_t const min_size
-        , std::int64_t const sample_size) {
+        , double const sample_size) {
 
         std::vector<double> labels(train_labels.size());
         std::copy(train_labels.begin(), train_labels.end(), labels.begin());
