@@ -74,7 +74,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicMatrix<double> result(m.rows(), m.columns());
         for (std::size_t i = 0; i < m.columns(); ++i)
         {
-            column(result, i) = softmax(column(m, i));
+            blaze::column(result, i) = blaze::softmax(blaze::column(m, i));
         } // sum(result,axis=0) is a vector containing m.columns() ones
         return primitive_argument_type{result};
     }
@@ -86,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicMatrix<double> result(m.rows(), m.columns());
         for (std::size_t i = 0; i < m.rows(); ++i)
         {
-            row(result, i) = softmax(row(m, i));
+            blaze::row(result, i) = blaze::softmax(blaze::row(m, i));
         } // sum(result,axis=1) is a vector containing m.rows() ones
         return primitive_argument_type{result};
     }
@@ -154,7 +154,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 if (args.size() > 1)
                 {
                     if (valid(args[1]))
-                        axis = execution_tree::extract_scalar_integer_value(
+                        axis = execution_tree::extract_scalar_integer_value_strict(
                             args[1], this_->name_, this_->codename_);
                 }
 
