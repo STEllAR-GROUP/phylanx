@@ -175,6 +175,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
             phy[tree_key] = phy_trees[forest_index];
         }
 
+        phylanx::ir::dictionary cls_dictionary;
+
+        for(auto & cls : forest.classes) {
+            auto dkey = phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(cls.first)};
+            auto dval = phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<std::int64_t>(cls.second)};
+            cls_dictionary[dkey] = dval;
+        }
+
+        auto cls_key = phylanx::execution_tree::primitive_argument_type{
+            std::string("classes")};
+
+        phy[cls_key] = cls_dictionary;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -259,36 +273,56 @@ namespace phylanx { namespace execution_tree { namespace primitives
         forest.grow(forest_size);
 
         for(auto & entry : phy) {
-            switch(entry.second.get().variant().index()) {
+            auto entry_first = phylanx::util::get<std::string>(entry.first.get());
 
-               case 2: // std::int64_t
-                   transform(phylanx::util::get<std::string>(entry.first.get())
-                       , phylanx::util::get< phylanx::ir::node_data<std::int64_t> >(
-                           entry.second.get()), forest.trees[tree_count]);
-                   break;
+            if(entry_first.compare("classes") == 0ul) {
 
-               case 4: // double
-                   transform(phylanx::util::get<std::string>(entry.first.get())
-                       , phylanx::util::get< phylanx::ir::node_data<double> >(
-                           entry.second.get()), forest.trees[tree_count]);
-                   break;
+                auto cls_dictionary =
+                    phylanx::util::get<phylanx::ir::dictionary>(entry.second.get());
 
-               case 7: // phylanx::ir::range -> std::vector<std::int64_t>
-                   transform(phylanx::util::get<std::string>(entry.first.get())
-                       , phylanx::util::get< phylanx::ir::range >(
-                           entry.second.get()), forest.trees[tree_count]);
-                   break;
+                forest.classes.reserve(cls_dictionary.size());
 
-               case 8: // phylanx::ir::dictionary -> randomforest_node 
-                   transform(phylanx::util::get<std::string>(entry.first.get())
-                       , phylanx::util::get<phylanx::ir::dictionary>(
-                                   entry.second.get()), forest.trees[tree_count]);
-                   break;
+                for(auto cls : cls_dictionary) {
+                    auto k = phylanx::util::get< phylanx::ir::node_data<double> >(
+                        cls.first.get()).scalar();
+                    auto v = phylanx::util::get< phylanx::ir::node_data<std::int64_t> >(
+                        cls.second.get()).scalar();
+                    forest.classes[k] = v;
+                }
+            }
+            else {
 
-               default:
-                   HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::transform"
-                       , phylanx::util::generate_error_message(
-                           "unexpected element discovered in tree"));
+                switch(entry.second.get().variant().index()) {
+
+                   case 2: // std::int64_t
+                       transform(phylanx::util::get<std::string>(entry.first.get())
+                           , phylanx::util::get< phylanx::ir::node_data<std::int64_t> >(
+                               entry.second.get()), forest.trees[tree_count]);
+                       break;
+
+                   case 4: // double
+                       transform(phylanx::util::get<std::string>(entry.first.get())
+                           , phylanx::util::get< phylanx::ir::node_data<double> >(
+                               entry.second.get()), forest.trees[tree_count]);
+                       break;
+
+                   case 7: // phylanx::ir::range -> std::vector<std::int64_t>
+                       transform(phylanx::util::get<std::string>(entry.first.get())
+                           , phylanx::util::get< phylanx::ir::range >(
+                               entry.second.get()), forest.trees[tree_count]);
+                       break;
+
+                   case 8: // phylanx::ir::dictionary -> randomforest_node 
+                       transform(phylanx::util::get<std::string>(entry.first.get())
+                           , phylanx::util::get<phylanx::ir::dictionary>(
+                               entry.second.get()), forest.trees[tree_count]);
+                       break;
+
+                   default:
+                       HPX_THROW_EXCEPTION(hpx::bad_parameter, "randomforest::transform"
+                           , phylanx::util::generate_error_message(
+                               "unexpected element discovered in tree"));
+                }
             }
 
             ++tree_count;
