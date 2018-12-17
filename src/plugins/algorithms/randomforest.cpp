@@ -193,7 +193,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     static void transform(std::string const& key
-        , phylanx::ir::node_data<double> weight 
+        , phylanx::ir::node_data<double> weight
         , phylanx::algorithms::impl::randomforest_node & node) {
         node.fields[key] = weight.scalar();
     }
@@ -245,7 +245,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                            field.second.get()), forest);
                    break;
 
-               case 8: // phylanx::ir::dictionary -> randomforest_node 
+               case 8: // phylanx::ir::dictionary -> randomforest_node
                    {
                        phylanx::algorithms::impl::randomforest_node child;
 
@@ -312,7 +312,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                entry.second.get()), forest.trees[tree_count]);
                        break;
 
-                   case 8: // phylanx::ir::dictionary -> randomforest_node 
+                   case 8: // phylanx::ir::dictionary -> randomforest_node
                        transform(phylanx::util::get<std::string>(entry.first.get())
                            , phylanx::util::get<phylanx::ir::dictionary>(
                                entry.second.get()), forest.trees[tree_count]);
