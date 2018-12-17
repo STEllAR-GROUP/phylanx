@@ -334,7 +334,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         , blaze::DynamicVector<double> const& train_labels
         , std::int64_t const max_depth
         , std::int64_t const min_size
-        , std::int64_t const sample_size
+        , double const sample_size
         , std::int64_t const n_trees) {
 
         randomforest_impl rf(n_trees);
@@ -375,7 +375,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "the data\n"
             "    max_depth (int) : depth of tree splits\n"
             "    min_size (int) : min size\n"
-            "    sample_size (int) : number of samples per tree\n"
+            "    sample_size (double) : ratio of samples per tree\n"
             "    n_trees (int) : number of trees to train\n"
             "\n"
             "Returns:\n"
@@ -431,8 +431,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             extract_scalar_integer_value(args[2], name_, codename_));
         auto min_size = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[3], name_, codename_));
-        auto sample_size = static_cast<std::int64_t>(
-            extract_scalar_integer_value(args[4], name_, codename_));
+        auto sample_size = static_cast<double>(
+            extract_scalar_numeric_value(args[4], name_, codename_));
         auto n_trees = static_cast<std::int64_t>(
             extract_scalar_integer_value(args[5], name_, codename_));
 
