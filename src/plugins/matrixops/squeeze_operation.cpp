@@ -34,7 +34,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     match_pattern_type const squeeze_operation::match_data =
     {
         hpx::util::make_tuple("squeeze",
-        std::vector<std::string>{"squeeze()"},
+        std::vector<std::string>{"squeeze(_1)","squeeze(_1,_2)"},
         &create_squeeze_operation, &create_primitive<squeeze_operation>,
         "a, axis\n"
         "Args:\n"
