@@ -29,9 +29,10 @@ char const* const randomforest_test_code = R"(block(
             define(model, randomforest_fit(train_data, train_labels, mx_depth, min_size, sample_size, n_trees)),
             block(
                 store(test_labels, randomforest_predict(model, test_data)),
-                cout(test_data)
+                cout(test_labels)
             )
-        )
+        ),
+        test_labels
     ),
     randomforest_test
 ))";
@@ -61,7 +62,10 @@ void test_randomforest()
     auto y = phylanx::ir::node_data<double>{v2};
     auto z = phylanx::ir::node_data<double>{v1};
 
-    randomforest_test(x, y, z);
+    auto result = phylanx::execution_tree::extract_numeric_value(
+        randomforest_test(x, y, z));
+
+    std::cout << result << std::endl;
 }
 
 int main(int argc, char* argv[])
