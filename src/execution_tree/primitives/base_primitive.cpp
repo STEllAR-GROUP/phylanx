@@ -1765,14 +1765,14 @@ namespace phylanx { namespace execution_tree
         case 2:    // ir::node_data<std::int64_t>
             return util::get<2>(std::move(val));
 
-        case 0:HPX_FALLTHROUGH;    // nil
-        case 1:HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
-        case 3:HPX_FALLTHROUGH;    // string
-        case 4:HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
-        case 5:HPX_FALLTHROUGH;    // primitive
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 1: HPX_FALLTHROUGH;    // phylanx::ir::node_data<std::uint8_t>
+        case 3: HPX_FALLTHROUGH;    // string
+        case 4: HPX_FALLTHROUGH;    // phylanx::ir::node_data<double>
+        case 5: HPX_FALLTHROUGH;    // primitive
         case 6: HPX_FALLTHROUGH;    // std::vector<ast::expression>
-        case 7:HPX_FALLTHROUGH;    // phylanx::ir::range
-        case 8:HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
         default:
             break;
         }

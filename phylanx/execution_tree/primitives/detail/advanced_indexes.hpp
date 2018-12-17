@@ -53,20 +53,27 @@ namespace phylanx { namespace execution_tree { namespace detail
         slicing_index_advanced_boolean
     };
 
-    slicing_index_type is_advanced_slicing_index(
-        primitive_argument_type const& indices)
+    slicing_index_type extract_slicing_index_type(
+        primitive_argument_type const& indices,
+        std::string const& name, std::string const& codename)
     {
         ir::range const& list = util::get<7>(indices);
         if (list.size() == 1)
         {
-            if (is_boolean_operand_strict(*list.begin()))
+            auto && first_element = *list.begin();
+            if (is_boolean_operand_strict(first_element))
             {
                 return slicing_index_advanced_boolean;
             }
 
-            if (is_integer_operand_strict(*list.begin()))
+            if (is_integer_operand_strict(first_element))
             {
-                return slicing_index_advanced_integer;
+                auto&& idx = extract_integer_value_strict(
+                    std::move(first_element), name, codename);
+                if (idx.size() > 1)
+                {
+                    return slicing_index_advanced_integer;
+                }
             }
         }
         return slicing_index_basic;
@@ -111,7 +118,8 @@ namespace phylanx { namespace execution_tree { namespace detail
     {
         if (is_list_operand_strict(indices))
         {
-            slicing_index_type t = is_advanced_slicing_index(indices);
+            slicing_index_type t =
+                extract_slicing_index_type(indices, name, codename);
 
             if (t == slicing_index_basic)
             {

@@ -32,9 +32,9 @@ namespace phylanx { namespace execution_tree
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_EXPORT ir::node_data<T> slice_extract(ir::node_data<T> const& data,
+        execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
-        execution_tree::primitive_argument_type const& pages,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 #endif
@@ -57,9 +57,9 @@ namespace phylanx { namespace execution_tree
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
     PHYLANX_EXPORT ir::node_data<T> slice_assign(ir::node_data<T>&& data,
+        execution_tree::primitive_argument_type const& pages,
         execution_tree::primitive_argument_type const& rows,
         execution_tree::primitive_argument_type const& columns,
-        execution_tree::primitive_argument_type const& pages,
         ir::node_data<T>&& value, std::string const& name = "",
         std::string const& codename = "<unknown>");
 #endif

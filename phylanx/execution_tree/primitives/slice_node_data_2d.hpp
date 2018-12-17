@@ -669,7 +669,7 @@ namespace phylanx { namespace execution_tree
     {
         if (is_list_operand_strict(columns))
         {
-            switch (detail::is_advanced_slicing_index(columns))
+            switch (detail::extract_slicing_index_type(columns, name, codename))
             {
             case detail::slicing_index_basic:
                 {
@@ -731,7 +731,7 @@ namespace phylanx { namespace execution_tree
     {
         if (is_list_operand_strict(rows))
         {
-            switch (detail::is_advanced_slicing_index(rows))
+            switch (detail::extract_slicing_index_type(rows, name, codename))
             {
             case detail::slicing_index_basic:
                 {
@@ -811,7 +811,7 @@ namespace phylanx { namespace execution_tree
     {
         if (is_list_operand_strict(rows))
         {
-            switch (detail::is_advanced_slicing_index(rows))
+            switch (detail::extract_slicing_index_type(rows, name, codename))
             {
             case detail::slicing_index_basic:
                 {
@@ -841,7 +841,7 @@ namespace phylanx { namespace execution_tree
         }
         else if (is_list_operand_strict(columns))
         {
-            switch (detail::is_advanced_slicing_index(columns))
+            switch (detail::extract_slicing_index_type(columns, name, codename))
             {
             case detail::slicing_index_basic:
                 {

@@ -31,9 +31,10 @@ namespace phylanx { namespace execution_tree
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     PHYLANX_EXPORT primitive_argument_type slice(
         primitive_argument_type const& data,
+        primitive_argument_type const& pages,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns,
-        primitive_argument_type const& pages, std::string const& name = "",
+        std::string const& name = "",
         std::string const& codename = "<unknown>");
 #endif
 
@@ -52,9 +53,9 @@ namespace phylanx { namespace execution_tree
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     PHYLANX_EXPORT primitive_argument_type slice(primitive_argument_type&& data,
+        primitive_argument_type const& pages,
         primitive_argument_type const& rows,
         primitive_argument_type const& columns,
-        primitive_argument_type const& pages,
         primitive_argument_type&& value, std::string const& name = "",
         std::string const& codename = "<unknown>");
 #endif

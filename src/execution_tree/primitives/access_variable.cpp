@@ -32,13 +32,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     access_variable::access_variable(
-        primitive_arguments_type&& operands,
-        std::string const& name, std::string const& codename)
-        : primitive_component_base(std::move(operands), name, codename, true)
+            primitive_arguments_type&& operands,
+            std::string const& name, std::string const& codename)
+      : primitive_component_base(std::move(operands), name, codename, true)
     {
-        // operands_[0] is expected to be the actual variable, operands_[1] and
-        // operands_[2] are optional slicing arguments
+        // operands_[0] is expected to be the actual variable, operands_[1],
+        // operands_[2] and operands_[3] are optional slicing arguments
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        if (operands_.empty() || operands_.size() > 4)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "access_variable::access_variable",
+                generate_error_message(
+                    "the access_variable primitive requires at least one "
+                    "and at most four operands"));
+        }
+#else
         if (operands_.empty() || operands_.size() > 3)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -47,6 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "the access_variable primitive requires at least one "
                     "and at most three operands"));
         }
+#endif
 
         if (valid(operands_[0]))
         {
@@ -123,6 +134,39 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     value_operand(operands_[2], params, name_, codename_, ctx));
             }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 4:
+            {
+                // three slicing parameters
+                auto this_ = this->shared_from_this();
+                return hpx::dataflow(hpx::launch::sync,
+                    [this_ = std::move(this_), ctx](
+                            hpx::future<primitive_argument_type>&& pages,
+                            hpx::future<primitive_argument_type>&& rows,
+                            hpx::future<primitive_argument_type>&& cols) mutable
+                    -> hpx::future<primitive_argument_type>
+                    {
+                        primitive_arguments_type args;
+                        args.reserve(3);
+                        args.emplace_back(pages.get());
+                        args.emplace_back(rows.get());
+                        args.emplace_back(cols.get());
+
+                        ctx.add_mode(eval_dont_wrap_functions);
+                        if (this_->target_)
+                        {
+                            return this_->target_->eval(
+                                std::move(args), std::move(ctx));
+                        }
+                        return value_operand(this_->operands_[0],
+                            std::move(args), this_->name_, this_->codename_,
+                            std::move(ctx));
+                    },
+                    value_operand(operands_[1], params, name_, codename_, ctx),
+                    value_operand(operands_[2], params, name_, codename_, ctx),
+                    value_operand(operands_[3], params, name_, codename_, ctx));
+            }
+#endif
         default:
             break;
         }

@@ -498,17 +498,62 @@ void test_slicing_operation_3d_value()
         define(b, hstack(11,12,13,14,15,16,17,18)),
         define(c, hstack(10,02,30,40,05,60,70,80)),
         define(d, hstack(101,102,103,104,105,106,107,108)),
-        define(x, vstack(a,b,c,d)),
-        define(input, dstack(x, x, x)),
-        slice(input, 2, 2, 2)
+        define(x1, vstack(a,b,c,d)),
+        define(x2, vstack(b,c,d,a)),
+        define(x3, vstack(c,d,a,b)),
+        define(input, dstack(x1, x2, x3)),
+        slice(input, 1, 2, 3)
     ))";
 
     auto result =
         phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
 
     HPX_TEST_EQ(result.size(), std::size_t(1));
-    HPX_TEST_EQ(result[0], 30);
+    HPX_TEST_EQ(result[0], 104);
 }
+
+void test_slicing_operation_3d_value_negative_index()
+{
+    std::string const code = R"(block(
+        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(b, hstack(11,12,13,14,15,16,17,18)),
+        define(c, hstack(10,02,30,40,05,60,70,80)),
+        define(d, hstack(101,102,103,104,105,106,107,108)),
+        define(x1, vstack(a,b,c,d)),
+        define(x2, vstack(b,c,d,a)),
+        define(x3, vstack(c,d,a,b)),
+        define(input, dstack(x1, x2, x3)),
+        slice(input, -1, -2, -3)
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 6);
+}
+
+void test_slicing_operation_3d_single_slice()
+{
+    std::string const code = R"(block(
+        define(a, hstack(1,2,3,4,5,6,7,8)),
+        define(b, hstack(11,12,13,14,15,16,17,18)),
+        define(c, hstack(10,02,30,40,05,60,70,80)),
+        define(d, hstack(101,102,103,104,105,106,107,108)),
+        define(x1, vstack(a,b,c,d)),
+        define(x2, vstack(b,c,d,a)),
+        define(x3, vstack(c,d,a,b)),
+        define(input, dstack(x1, x2, x3)),
+        slice(input, list(1), list(2), list(3))
+    ))";
+
+    auto result =
+        phylanx::execution_tree::extract_numeric_value(compile_and_run(code));
+
+    HPX_TEST_EQ(result.size(), std::size_t(1));
+    HPX_TEST_EQ(result[0], 104);
+}
+
 #endif
 
 int main(int argc, char* argv[])
@@ -547,6 +592,9 @@ int main(int argc, char* argv[])
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_slicing_operation_3d_value();
+    test_slicing_operation_3d_value_negative_index();
+
+    test_slicing_operation_3d_single_slice();
 #endif
 
     return hpx::util::report_errors();

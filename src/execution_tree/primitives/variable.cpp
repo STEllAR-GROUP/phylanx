@@ -86,16 +86,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type const& target =
             valid(bound_value_) ? bound_value_ : operands_[0];
 
-        // if given, args[0] and args[1] are optional slicing arguments
+        // if given, args[0], args[1] and args[2] are optional slicing arguments
         if (!args.empty() && !(ctx.mode_ & eval_dont_evaluate_partials))
         {
-            if (args.size() > 1)
+            if (args.size() == 2)
             {
                 // handle row/column-slicing
                 return hpx::make_ready_future(
                     slice(target, args[0], args[1], name_, codename_));
             }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            if (args.size() > 2)
+            {
+                // handle page/row/column-slicing
+                return hpx::make_ready_future(
+                    slice(target, args[0], args[1], args[2], name_, codename_));
+            }
+#endif
             // handle row-slicing
             return hpx::make_ready_future(
                 slice(target, args[0], name_, codename_));
@@ -120,7 +128,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type const& target =
             valid(bound_value_) ? bound_value_ : operands_[0];
 
-        // if given, args[0] and args[1] are optional slicing arguments
+        // if given, args[0] is an optional slicing argument
         if (valid(arg) && !(ctx.mode_ & eval_dont_evaluate_partials))
         {
             // handle row-slicing

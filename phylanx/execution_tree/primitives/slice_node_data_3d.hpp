@@ -35,9 +35,9 @@ namespace phylanx { namespace execution_tree
     // return a slice from a 3d ir::node_data
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice3d_basic_basic_basic(Data&& t,
-        ir::slicing_indices const& rows, ir::slicing_indices const& columns,
-        ir::slicing_indices const& pages, F const& f, std::string const& name,
-        std::string const& codename)
+        ir::slicing_indices const& pages, ir::slicing_indices const& rows,
+        ir::slicing_indices const& columns, F const& f,
+        std::string const& name, std::string const& codename)
     {
         std::size_t numrows = t.rows();
         if (rows.start() >= std::int64_t(numrows) ||
@@ -171,9 +171,9 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     template <typename T, typename Data, typename F>
     ir::node_data<T> slice3d_integer_integer_integer(Data&& t,
+        ir::node_data<std::int64_t> && pages,
         ir::node_data<std::int64_t> && rows,
-        ir::node_data<std::int64_t> && columns,
-        ir::node_data<std::int64_t> && pages, F const& f,
+        ir::node_data<std::int64_t> && columns, F const& f,
         std::string const& name, std::string const& codename)
     {
         std::size_t numrows = t.rows();
@@ -249,12 +249,12 @@ namespace phylanx { namespace execution_tree
         std::string const& name, std::string const& codename)
     {
         auto t = data.tensor();
-        ir::slicing_indices pages{0ll, std::int64_t(t.pages()), 1ll};
+        ir::slicing_indices rows{0ll, std::int64_t(t.rows()), 1ll};
         ir::slicing_indices columns{0ll, std::int64_t(t.columns()), 1ll};
         return slice3d_basic_basic_basic<T>(t,
             util::slicing_helpers::extract_slicing(
-                indices, t.rows(), name, codename),
-            columns, pages, detail::slice_identity<T>{}, name, codename);
+                indices, t.pages(), name, codename),
+            rows, columns, detail::slice_identity<T>{}, name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -302,30 +302,27 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // This is the main entry point for 3d slicing
     template <typename T, typename Data, typename F>
-    ir::node_data<T> slice3d(Data&& t, primitive_argument_type const& rows,
-        primitive_argument_type const& columns,
-        primitive_argument_type const& pages, F const& f,
+    ir::node_data<T> slice3d(Data&& t, primitive_argument_type const& pages,
+        primitive_argument_type const& rows,
+        primitive_argument_type const& columns, F const& f,
         std::string const& name, std::string const& codename)
     {
         if (is_list_operand_strict(rows) && is_list_operand_strict(columns) &&
             is_list_operand_strict(pages))
         {
-            if (detail::is_advanced_slicing_index(rows) ==
+            if (detail::extract_slicing_index_type(rows, name, codename) ==
                     detail::slicing_index_basic &&
-                detail::is_advanced_slicing_index(columns) ==
+                detail::extract_slicing_index_type(columns, name, codename) ==
                     detail::slicing_index_basic &&
-                detail::is_advanced_slicing_index(pages) ==
+                detail::extract_slicing_index_type(pages, name, codename) ==
                     detail::slicing_index_basic)
             {
-                std::size_t num_rows = t.columns();
-                std::size_t num_cols = t.columns();
-                std::size_t num_pages = t.pages();
                 auto row_indices = util::slicing_helpers::extract_slicing(
-                    rows, num_rows, name, codename);
+                    rows, t.rows(), name, codename);
                 auto col_indices = util::slicing_helpers::extract_slicing(
-                    columns, num_cols, name, codename);
+                    columns, t.columns(), name, codename);
                 auto page_indices = util::slicing_helpers::extract_slicing(
-                    pages, num_pages, name, codename);
+                    pages, t.pages(), name, codename);
 
                 return slice3d_basic_basic_basic<T>(std::forward<Data>(t),
                     row_indices, col_indices, page_indices, f, name, codename);
@@ -360,7 +357,7 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Slice 3d data with two indices
+    // Slice 3d data with three indices
     template <typename T>
     ir::node_data<T> slice3d_assign3d(ir::node_data<T>&& data,
         execution_tree::primitive_argument_type const& rows,
