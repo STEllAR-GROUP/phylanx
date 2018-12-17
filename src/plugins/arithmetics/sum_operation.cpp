@@ -6,7 +6,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/matrixops/sum_operation.hpp>
+#include <phylanx/plugins/arithmetics/sum_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
 #include <hpx/include/lcos.hpp>
