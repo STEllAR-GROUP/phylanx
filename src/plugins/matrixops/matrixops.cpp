@@ -37,6 +37,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(expand_dims_plugin,
     phylanx::execution_tree::primitives::expand_dims::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(extract_shape_plugin,
     phylanx::execution_tree::primitives::extract_shape::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(eye_operation_plugin,
+    phylanx::execution_tree::primitives::eye_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(flatten_plugin,
     phylanx::execution_tree::primitives::flatten::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(gradient_operation_plugin,

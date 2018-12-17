@@ -17,6 +17,7 @@
 #include <phylanx/plugins/matrixops/dot_operation.hpp>
 #include <phylanx/plugins/matrixops/expand_dims.hpp>
 #include <phylanx/plugins/matrixops/extract_shape.hpp>
+#include <phylanx/plugins/matrixops/eye_operation.hpp>
 #include <phylanx/plugins/matrixops/flatten.hpp>
 #include <phylanx/plugins/matrixops/generic_operation.hpp>
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>
