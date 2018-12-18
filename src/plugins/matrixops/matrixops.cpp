@@ -55,6 +55,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(
     linspace_plugin, phylanx::execution_tree::primitives::linspace::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(mean_operation_plugin,
     phylanx::execution_tree::primitives::mean_operation::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(min_operation_plugin,
+    phylanx::execution_tree::primitives::min_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(power_operation_plugin,
     phylanx::execution_tree::primitives::power_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(
