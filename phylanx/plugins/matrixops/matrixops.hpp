@@ -12,7 +12,6 @@
 #include <phylanx/plugins/matrixops/constant.hpp>
 #include <phylanx/plugins/matrixops/count_nonzero_operation.hpp>
 #include <phylanx/plugins/matrixops/cross_operation.hpp>
-
 #include <phylanx/plugins/matrixops/determinant.hpp>
 #include <phylanx/plugins/matrixops/diag_operation.hpp>
 #include <phylanx/plugins/matrixops/dot_operation.hpp>
@@ -33,7 +32,6 @@
 #include <phylanx/plugins/matrixops/shuffle_operation.hpp>
 #include <phylanx/plugins/matrixops/slicing_operation.hpp>
 #include <phylanx/plugins/matrixops/squeeze_operation.hpp>
-
 #include <phylanx/plugins/matrixops/tile_operation.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
 #include <phylanx/plugins/matrixops/unique.hpp>
