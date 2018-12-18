@@ -27,18 +27,13 @@ char const* const randomforest_test_code = R"(block(
             define(min_size, 1),
             define(sample_size, 1.0),
             define(n_trees, 10),
-            define(model, randomforest_fit(train_data
-                , train_labels
-                , mx_depth
-                , min_size
-                , sample_size
-                , n_trees)),
+            define(model, dict()),
             block(
-                store(test_labels, randomforest_predict(model, test_data)),
-                cout(test_labels)
+                store(model, randomforestfit(train_data, train_labels, mx_depth, min_size, sample_size, n_trees))//,
+            //    store(test_labels, randomforestpredict(model, test_data)),
             )
-        ),
-        test_labels
+        )//,
+        //test_labels
     ),
     randomforest_test
 ))";
@@ -60,6 +55,8 @@ void test_randomforest()
 
     // compile the given code
     phylanx::execution_tree::compiler::function_list snippets;
+    std::cout << randomforest_test_code << std::endl;
+
     auto const& code = phylanx::execution_tree::compile(randomforest_test_code, snippets);
     auto randomforest_test = code.run();
 
