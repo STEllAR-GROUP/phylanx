@@ -141,7 +141,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 
         auto a = arg.matrix();
 
-        blaze::DynamicVector<double> result(a.rows() * a.columns(), 0.0);
+        blaze::DynamicVector<T> result(a.rows() * a.columns());
 
         if (order == "C")
         {

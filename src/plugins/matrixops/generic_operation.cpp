@@ -79,6 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("arctanh"),
         PHYLANX_GEN_MATCH_DATA("erf"),
         PHYLANX_GEN_MATCH_DATA("erfc"),
+        PHYLANX_GEN_MATCH_DATA("normalize"),
+        PHYLANX_GEN_MATCH_DATA("trace")
     };
 
 #undef PHYLANX_GEN_MATCH_DATA

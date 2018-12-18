@@ -21,8 +21,6 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(count_nonzero_operation_plugin,
     phylanx::execution_tree::primitives::count_nonzero_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(column_slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[2]);
-PHYLANX_REGISTER_PLUGIN_FACTORY(cumsum_operation_plugin,
-    phylanx::execution_tree::primitives::cumsum::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(constant_plugin,
     phylanx::execution_tree::primitives::constant::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(constant_like_plugin,
@@ -39,6 +37,8 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(expand_dims_plugin,
     phylanx::execution_tree::primitives::expand_dims::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(extract_shape_plugin,
     phylanx::execution_tree::primitives::extract_shape::match_data);
+PHYLANX_REGISTER_PLUGIN_FACTORY(eye_operation_plugin,
+    phylanx::execution_tree::primitives::eye_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(flatten_plugin,
     phylanx::execution_tree::primitives::flatten::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(gradient_operation_plugin,
@@ -67,8 +67,6 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(slicing_operation_plugin,
     phylanx::execution_tree::primitives::slicing_operation::match_data[0]);
 PHYLANX_REGISTER_PLUGIN_FACTORY(squeeze_operation_plugin,
     phylanx::execution_tree::primitives::squeeze_operation::match_data);
-PHYLANX_REGISTER_PLUGIN_FACTORY(sum_operation_plugin,
-    phylanx::execution_tree::primitives::sum_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(transpose_operation_plugin,
     phylanx::execution_tree::primitives::transpose_operation::match_data);
 PHYLANX_REGISTER_PLUGIN_FACTORY(unique_operation_plugin,
