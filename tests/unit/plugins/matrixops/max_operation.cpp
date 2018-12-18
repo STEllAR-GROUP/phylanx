@@ -11,7 +11,7 @@
 
 #include <cstdint>
 #include <string>
-
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -62,18 +62,24 @@ void test_2d_keep_dims_true()
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_max_operation("max(42.)",                                       "42.");
-    test_max_operation("max(42., 0, true)",                              "42.");
-    test_max_operation("max([13., 42., 33.])",                           "42.");
-    test_max_operation("max([13., 42., 33.], -1)",                       "42.");
-    test_max_operation("max([13., 42., 33.],  0, true)",                 "hstack(42.)");
-    test_max_operation("max([[13., 42., 33.],[101, 12, 65]])",           "101.");
-    test_max_operation("max([[13., 42., 33.],[101, 12, 65]],  0)",       "hstack(101. ,42., 65.)");
-    test_max_operation("max([[13., 42., 33.],[101, 12, 65]], -2)",       "hstack(101. ,42., 65.)");
-    test_max_operation("max([[13., 42., 33.],[101, 12, 65]],  1)",       "hstack(42., 101.)");
-    test_max_operation("max([[13., 42., 33.],[101, 12, 65]], -1)",       "hstack(42., 101.)");
-    test_max_operation("max([[13., 42., 33.],[101, 12, 65]],  0, true)", "vstack(hstack(101. ,42., 65.))");
-    test_max_operation("max([[13., 42., 33.],[101, 12, 65]],  1, true)", "vstack(hstack(42.), hstack(101.))");
+    test_max_operation("max(42.)", "42.");
+    test_max_operation("max(42., 0, true)", "42.");
+    test_max_operation("max([13., 42., 33.])", "42.");
+    test_max_operation("max([13., 42., 33.], -1)", "42.");
+    test_max_operation("max([13., 42., 33.],  0, true)", "hstack(42.)");
+    test_max_operation("max([[13., 42., 33.],[101, 12, 65]])", "101.");
+    test_max_operation(
+        "max([[13., 42., 33.],[101, 12, 65]],  0)", "hstack(101. ,42., 65.)");
+    test_max_operation(
+        "max([[13., 42., 33.],[101, 12, 65]], -2)", "hstack(101. ,42., 65.)");
+    test_max_operation(
+        "max([[13., 42., 33.],[101, 12, 65]],  1)", "hstack(42., 101.)");
+    test_max_operation(
+        "max([[13., 42., 33.],[101, 12, 65]], -1)", "hstack(42., 101.)");
+    test_max_operation("max([[13., 42., 33.],[101, 12, 65]],  0, true)",
+        "vstack(hstack(101. ,42., 65.))");
+    test_max_operation("max([[13., 42., 33.],[101, 12, 65]],  1, true)",
+        "vstack(hstack(42.), hstack(101.))");
     test_2d_keep_dims_true();
 
     return hpx::util::report_errors();
