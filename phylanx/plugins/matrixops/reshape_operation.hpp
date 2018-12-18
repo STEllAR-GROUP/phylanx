@@ -81,8 +81,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type reshape2d(ir::node_data<T>&& arr,
             ir::range&& arg) const;
 
-    private:
-        node_data_type dtype_;
     };
 
     inline primitive create_reshape_operation(hpx::id_type const& locality,

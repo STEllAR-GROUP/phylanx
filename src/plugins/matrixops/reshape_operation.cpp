@@ -55,7 +55,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     reshape_operation::reshape_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
         : primitive_component_base(std::move(operands), name, codename)
-        , dtype_(extract_dtype(name_))
     {}
 
     bool reshape_operation::validate_shape(std::int64_t n, ir::range&& arg) const
