@@ -22,15 +22,13 @@
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives {
-    /// \brief
+    /// \brief Calculates the maximum of an array or maximum along an axis.
     /// \param a         The scalar, vector, or matrix to perform max over
     /// \param axis      Optional. If provided, max is calculated along the
     ///                  provided axis and a vector of results is returned.
-    ///                  \p keep_dims is ignored if \p axis present. Must be
-    ///                  nil if \p keep_dims is set
-    /// \param keep_dims Optional. Whether the max value has to have the same
-    ///                  number of dimensions as \p a. Ignored if \p axis is
-    ///                  anything except nil.
+    /// \param keep_dims Optional. If true the max value has to have the same
+    ///                  number of dimensions as a. Otherwise, the axes with
+    ///                  size one will be reduced.
 
 
     class max_operation

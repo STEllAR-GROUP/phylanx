@@ -16,8 +16,6 @@
 #include <hpx/util/iterator_facade.hpp>
 #include <hpx/util/optional.hpp>
 
-#include <algorithm>
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -54,7 +52,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     max_operation::max_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
         : primitive_component_base(std::move(operands), name, codename)
-        , dtype_(extract_dtype(name_))
     {}
 
     template <typename T>
@@ -92,7 +89,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return primitive_argument_type{blaze::DynamicVector<T>{result}};
         }
-        return primitive_argument_type{result};
+        return primitive_argument_type{ir::node_data<T>{result}};
     }
 
     template <typename T>
@@ -135,7 +132,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
             return primitive_argument_type{blaze::DynamicMatrix<T>{{result}}};
         }
-        return primitive_argument_type{result};
+        return primitive_argument_type{ir::node_data<T>{result}};
     }
 
     template <typename T>
@@ -154,7 +151,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{
                 blaze::DynamicMatrix<T>{1, result.size(), result.data()}};
         }
-        return primitive_argument_type{result};
+        return primitive_argument_type{ir::node_data<T>{result}};
     }
 
     template <typename T>
@@ -173,7 +170,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{
                 blaze::DynamicMatrix<T>{result.size(), 1, result.data()}};
         }
-        return primitive_argument_type{result};
+        return primitive_argument_type{ir::node_data<T>{result}};
     }
 
     template <typename T>
@@ -253,13 +250,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
             }
 
-            node_data_type t = this_->dtype_;
-            if (t == node_data_type_unknown)
-            {
-                t = extract_common_type(args[0]);
-            }
-
-            switch (t)
+            switch (extract_common_type(args[0]))
             {
             case node_data_type_bool:
                 return this_->maxnd(extract_boolean_value(std::move(args[0]),
