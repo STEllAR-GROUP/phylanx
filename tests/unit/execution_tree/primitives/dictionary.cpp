@@ -96,8 +96,11 @@ void test_dict_print_function()
     stream << u;
     const std::string str = stream.str();
 
-    HPX_TEST_EQ(str,
-        "dict{Question?: 42, 42: Question of Life, Universe, and Everything}");
+    auto fail = std::string::npos;
+    auto find1 = str.find("Question?: 42");
+    auto find2 = str.find("42: Question of Life, Universe, and Everything");
+    HPX_TEST_NEQ(fail,find1);
+    HPX_TEST_NEQ(fail,find2);
 }
 
 int main(int argc, char* argv[])

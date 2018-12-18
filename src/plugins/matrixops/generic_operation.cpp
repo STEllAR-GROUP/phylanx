@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Tianyi Zhang
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -67,6 +68,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("sin"),
         PHYLANX_GEN_MATCH_DATA("cos"),
         PHYLANX_GEN_MATCH_DATA("tan"),
+        PHYLANX_GEN_MATCH_DATA("sinh"),
+        PHYLANX_GEN_MATCH_DATA("cosh"),
+        PHYLANX_GEN_MATCH_DATA("tanh"),
         PHYLANX_GEN_MATCH_DATA("arcsin"),
         PHYLANX_GEN_MATCH_DATA("arccos"),
         PHYLANX_GEN_MATCH_DATA("arctan"),
@@ -75,6 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("arctanh"),
         PHYLANX_GEN_MATCH_DATA("erf"),
         PHYLANX_GEN_MATCH_DATA("erfc"),
+        PHYLANX_GEN_MATCH_DATA("normalize"),
+        PHYLANX_GEN_MATCH_DATA("trace")
     };
 
 #undef PHYLANX_GEN_MATCH_DATA
@@ -107,6 +113,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"sin", [](double m) -> double { return blaze::sin(m); }},
             {"cos", [](double m) -> double { return blaze::cos(m); }},
             {"tan", [](double m) -> double { return blaze::tan(m); }},
+            {"sinh", [](double m) -> double { return blaze::sinh(m); }},
+            {"cosh", [](double m) -> double { return blaze::cosh(m); }},
+            {"tanh", [](double m) -> double { return blaze::tanh(m); }},
             {"arcsin", [](double m) -> double { return blaze::asin(m); }},
             {"arccos", [](double m) -> double { return blaze::acos(m); }},
             {"arctan", [](double m) -> double { return blaze::atan(m); }},
@@ -408,6 +417,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     else
                     {
                         m.vector() = blaze::tan(m.vector());
+                    }
+                    return arg_type(std::move(m));
+                }},
+            { "sinh",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        m = blaze::sinh(m.vector());
+                    }
+                    else
+                    {
+                        m.vector() = blaze::sinh(m.vector());
+                    }
+                    return arg_type(std::move(m));
+                }},
+            { "cosh",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        m = blaze::cosh(m.vector());
+                    }
+                    else
+                    {
+                        m.vector() = blaze::cosh(m.vector());
+                    }
+                    return arg_type(std::move(m));
+                    }},
+            { "tanh",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        m = blaze::tanh(m.vector());
+                    }
+                    else
+                    {
+                        m.vector() = blaze::tanh(m.vector());
                     }
                     return arg_type(std::move(m));
                 }},
@@ -813,6 +858,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     else
                     {
                         m.matrix() = blaze::tan(m.matrix());
+                    }
+                    return arg_type(std::move(m));
+                }},
+            {"sinh",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        m = blaze::sinh(m.matrix());
+                    }
+                    else
+                    {
+                        m.matrix() = blaze::sinh(m.matrix());
+                    }
+                    return arg_type(std::move(m));
+                }},
+            {"cosh",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        m = blaze::cosh(m.matrix());
+                    }
+                    else
+                    {
+                        m.matrix() = blaze::cosh(m.matrix());
+                    }
+                    return arg_type(std::move(m));
+                }},
+            {"tanh",
+                [](arg_type&& m) -> arg_type {
+                    if (m.is_ref())
+                    {
+                        m = blaze::tanh(m.matrix());
+                    }
+                    else
+                    {
+                        m.matrix() = blaze::tanh(m.matrix());
                     }
                     return arg_type(std::move(m));
                 }},

@@ -11,13 +11,12 @@ set(tests
     constant
     count_nonzero
     cross_operation
-    cumsum
     determinant
     diag_operation
     dot_operation
     expand_dims
     extract_shape
-    generic_operation
+    eye_operation    flatten    generic_operation
     gradient_operation
     hstack_operation
     identity
@@ -32,8 +31,9 @@ set(tests
     row_slicing
     shuffle_operation
     slicing_operation
-    sum_operation
+    squeeze_operation
     transpose_operation
+    unique
     vstack_operation
    )
 

@@ -378,7 +378,7 @@ namespace phylanx { namespace execution_tree
             template <typename... Ts>
             hpx::future<ir::node_data<std::int64_t>> operator()(Ts&&... ts) const
             {
-                return execution_tree::integer_operand(std::forward<Ts>(ts)...);
+                return execution_tree::integer_operand_strict(std::forward<Ts>(ts)...);
             }
         };
     }
