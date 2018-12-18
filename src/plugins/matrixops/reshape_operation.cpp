@@ -164,8 +164,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicMatrix<T> result(first, second);
 
-        auto d = result.data();
-        d = std::copy(a.begin(), a.end(), d);
+        //const matrix_row_iterator<decltype(a)> a_begin(a);
+        //const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+
+        //auto d = result.data();
+        //for (auto i = 0; i != first; i++)
+            d = std::copy(a.begin(), a.end(), d);
 
         return primitive_argument_type{std::move(result)};
     }
