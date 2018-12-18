@@ -48,7 +48,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     tile_operation::tile_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
         : primitive_component_base(std::move(operands), name, codename)
-        , dtype_(extract_dtype(name_))
     {}
 
      ///////////////////////////////////////////////////////////////////////////
