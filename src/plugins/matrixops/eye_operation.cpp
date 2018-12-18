@@ -209,9 +209,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](args_type&& args)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](args_type&& args)
+            -> primitive_argument_type
+            {
                 switch (args.size())
                 {
                 case 1:
@@ -223,12 +224,11 @@ namespace phylanx { namespace execution_tree { namespace primitives {
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "eye_operation::eval",
-                        util::generate_error_message("operand a has an invalid "
-                                                     "number of dimensions",
+                        util::generate_error_message(
+                            "operand a has an invalid number of dimensions",
                             this_->name_, this_->codename_));
                 }
             }),
-
             detail::map_operands(operands, functional::integer_operand_strict{},
                 args, name_, codename_, std::move(ctx)));
     }

@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Tianyi Zhang
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -57,6 +58,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"sin", [](T m) -> T { return blaze::sin(m); }},
             {"cos", [](T m) -> T { return blaze::cos(m); }},
             {"tan", [](T m) -> T { return blaze::tan(m); }},
+            {"sinh", [](T m) -> T { return blaze::sinh(m); }},
+            {"cosh", [](T m) -> T { return blaze::cosh(m); }},
+            {"tanh", [](T m) -> T { return blaze::tanh(m); }},
             {"arcsin", [](T m) -> T { return blaze::asin(m); }},
             {"arccos", [](T m) -> T { return blaze::acos(m); }},
             {"arctan", [](T m) -> T { return blaze::atan(m); }},

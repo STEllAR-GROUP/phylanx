@@ -49,6 +49,7 @@ link_directories(${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_DEBUG_POSTFIX "d")
 set(PHYLANX_DEBUG_POSTFIX "d")
 
+include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 include(CMakeDependentOption)
 

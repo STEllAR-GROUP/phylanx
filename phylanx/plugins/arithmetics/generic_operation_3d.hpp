@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Tianyi Zhang
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -298,6 +299,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                     return arg_type<T>(std::move(t));
                 }},
+            {"sinh",
+                [](arg_type<T>&& t) -> arg_type<T> {
+                    if (t.is_ref())
+                    {
+                        t = blaze::sinh(t.tensor());
+                    }
+                    else
+                    {
+                        t.tensor() = blaze::sinh(t.tensor());
+                    }
+                    return arg_type<T>(std::move(t));
+                }},
+            {"cosh",
+                [](arg_type<T>&& t) -> arg_type<T> {
+                    if (t.is_ref())
+                    {
+                        t = blaze::cosh(t.tensor());
+                    }
+                    else
+                    {
+                        t.tensor() = blaze::cosh(t.tensor());
+                    }
+                    return arg_type<T>(std::move(t));
+                }},
+            {"tanh",
+                [](arg_type<T>&& t) -> arg_type<T> {
+                    if (t.is_ref())
+                    {
+                        t = blaze::tanh(t.tensor());
+                    }
+                    else
+                    {
+                        t.tensor() = blaze::tanh(t.tensor());
+                    }
+                    return arg_type<T>(std::move(t));
+                }},
             {"arcsin",
                 [](arg_type<T>&& t) -> arg_type<T> {
                     if (t.is_ref())
@@ -435,7 +472,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {"trace", [](arg_type<T>&& t) -> arg_type<T> {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter, "normalize",
                         "trace() is not a supported tensor operation");
-             }}
+                }}
         };
         return map3d;
     }

@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Tianyi Zhang
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -65,6 +66,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("sin"),
         PHYLANX_GEN_MATCH_DATA("cos"),
         PHYLANX_GEN_MATCH_DATA("tan"),
+        PHYLANX_GEN_MATCH_DATA("sinh"),
+        PHYLANX_GEN_MATCH_DATA("cosh"),
+        PHYLANX_GEN_MATCH_DATA("tanh"),
         PHYLANX_GEN_MATCH_DATA("arcsin"),
         PHYLANX_GEN_MATCH_DATA("arccos"),
         PHYLANX_GEN_MATCH_DATA("arctan"),
@@ -73,6 +77,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         PHYLANX_GEN_MATCH_DATA("arctanh"),
         PHYLANX_GEN_MATCH_DATA("erf"),
         PHYLANX_GEN_MATCH_DATA("erfc"),
+        PHYLANX_GEN_MATCH_DATA("normalize"),
+        PHYLANX_GEN_MATCH_DATA("trace")
     };
 
 #undef PHYLANX_GEN_MATCH_DATA

@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Tianyi Zhang
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -292,6 +293,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     else
                     {
                         m.vector() = blaze::tan(m.vector());
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
+            { "sinh",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = blaze::sinh(m.vector());
+                    }
+                    else
+                    {
+                        m.vector() = blaze::sinh(m.vector());
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
+            { "cosh",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = blaze::cosh(m.vector());
+                    }
+                    else
+                    {
+                        m.vector() = blaze::cosh(m.vector());
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
+            { "tanh",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = blaze::tanh(m.vector());
+                    }
+                    else
+                    {
+                        m.vector() = blaze::tanh(m.vector());
                     }
                     return arg_type<T>(std::move(m));
                 }},

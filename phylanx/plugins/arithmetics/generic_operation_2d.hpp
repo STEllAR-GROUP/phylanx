@@ -1,4 +1,5 @@
 // Copyright (c) 2018 Tianyi Zhang
+// Copyright (c) 2018 Bita Hasheminezhad
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -295,6 +296,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     }
                     return arg_type<T>(std::move(m));
                 }},
+            {"sinh",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = blaze::sinh(m.matrix());
+                    }
+                    else
+                    {
+                        m.matrix() = blaze::sinh(m.matrix());
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
+            {"cosh",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = blaze::cosh(m.matrix());
+                    }
+                    else
+                    {
+                        m.matrix() = blaze::cosh(m.matrix());
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
+            {"tanh",
+                [](arg_type<T>&& m) -> arg_type<T> {
+                    if (m.is_ref())
+                    {
+                        m = blaze::tanh(m.matrix());
+                    }
+                    else
+                    {
+                        m.matrix() = blaze::tanh(m.matrix());
+                    }
+                    return arg_type<T>(std::move(m));
+                }},
             {"arcsin",
                 [](arg_type<T>&& m) -> arg_type<T> {
                     if (m.is_ref())
@@ -424,12 +461,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }},
             {"trace", [](arg_type<T>&& m) -> arg_type<T> {
                  return arg_type<T>(blaze::trace(std::move(m.matrix())));
-             }}};
+                }}
+        };
         return map2d;
     }
 
     template <typename T>
-    generic_operation::matrix_vector_function_ptr<T> 
+    generic_operation::matrix_vector_function_ptr<T>
     generic_operation::get_2d_function(std::string const& funcname,
         std::string const& name, std::string const& codename)
     {
