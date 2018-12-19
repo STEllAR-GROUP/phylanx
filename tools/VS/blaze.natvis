@@ -9,6 +9,37 @@
 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
+    <Type Name="blaze::DynamicTensor&lt;*&gt;">
+        <DisplayString>{{pages={o_}, rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[pages]">o_</Item>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <ArrayItems>
+                <Direction>Forward</Direction>
+                <Rank>3</Rank>
+                <Size>$i == 0 ? (int)o_ : ($i == 1 ? (int)m_ : (int)nn_)</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="blaze::CustomTensor&lt;*,*,*&gt;">
+        <DisplayString>{{pages={o_}, rows={m_}, columns={n_}}}</DisplayString>
+        <Expand>
+            <Item Name="[pages]">o_</Item>
+            <Item Name="[rows]">m_</Item>
+            <Item Name="[columns]">n_</Item>
+            <Item Name="[padding]">nn_</Item>
+            <ArrayItems>
+                <Direction>Forward</Direction>
+                <Rank>3</Rank>
+                <Size>$i == 0 ? (int)o_ : ($i == 1 ? (int)m_ : (int)nn_)</Size>
+                <ValuePointer>($T1*)v_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <Type Name="blaze::DynamicMatrix&lt;*,0&gt;">
         <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
         <Expand>
@@ -17,7 +48,7 @@
             <ArrayItems>
                 <Direction>Forward</Direction>
                 <Rank>2</Rank>
-                <Size>$i == 0 ? (int)n_ : (int)m_</Size>
+                <Size>$i == 0 ? (int)nn_ : (int)m_</Size>
                 <ValuePointer>($T1*)v_</ValuePointer>
             </ArrayItems>
         </Expand>
@@ -31,7 +62,7 @@
             <ArrayItems>
                 <Direction>Backward</Direction>
                 <Rank>2</Rank>
-                <Size>$i == 0 ? (int)m_ : (int)n_</Size>
+                <Size>$i == 0 ? (int)m_ : (int)nn_</Size>
                 <ValuePointer>($T1*)v_</ValuePointer>
             </ArrayItems>
         </Expand>
@@ -46,7 +77,7 @@
             <ArrayItems>
                 <Direction>Forward</Direction>
                 <Rank>2</Rank>
-                <Size>$i == 0 ? (int)n_ : (int)m_</Size>
+                <Size>$i == 0 ? (int)nn_ : (int)m_</Size>
                 <ValuePointer>($T1*)v_</ValuePointer>
             </ArrayItems>
         </Expand>
@@ -61,7 +92,7 @@
             <ArrayItems>
                 <Direction>Backward</Direction>
                 <Rank>2</Rank>
-                <Size>$i == 0 ? (int)m_ : (int)n_</Size>
+                <Size>$i == 0 ? (int)m_ : (int)nn_</Size>
                 <ValuePointer>($T1*)v_</ValuePointer>
             </ArrayItems>
         </Expand>

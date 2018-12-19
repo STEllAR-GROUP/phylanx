@@ -28,9 +28,13 @@ mapped_methods = {
 methods_supporting_dtype = [
     'arange',
     'cumsum',
+    'dstack',
     'expand_dims',
+    'eye',
     'hstack',
     'identity',
+    'prod',
+    'stack',
     'vstack',
 ]
 
