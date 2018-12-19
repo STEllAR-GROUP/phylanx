@@ -18,19 +18,16 @@
 #include <string>
 #include <utility>
 
-namespace phylanx { namespace execution_tree { namespace primitives
-{
+namespace phylanx { namespace execution_tree { namespace primitives {
 
     class vsplit_operation
       : public primitive_component_base
       , public std::enable_shared_from_this<vsplit_operation>
     {
-
     protected:
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
-            primitive_arguments_type const& args,
-            eval_context ctx) const;
+            primitive_arguments_type const& args, eval_context ctx) const;
 
     public:
         static match_pattern_type const match_data;
@@ -41,7 +38,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         hpx::future<primitive_argument_type> eval(
-            primitive_arguments_type const& params, eval_context ctx) const override;
+            primitive_arguments_type const& params,
+            eval_context ctx) const override;
 
     private:
         primitive_argument_type vsplit_args(
@@ -50,8 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         template <typename T>
         primitive_argument_type vsplit2d_helper(
             primitive_arguments_type&& args) const;
-        primitive_argument_type vsplit2d(
-            primitive_arguments_type&& args) const;
+        primitive_argument_type vsplit2d(primitive_arguments_type&& args) const;
 
     private:
         node_data_type dtype_;
@@ -59,12 +56,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     inline primitive create_vsplit_operation(hpx::id_type const& locality,
         primitive_arguments_type&& operands,
-        std::string const& name = "", std::string const& codename = "")
+        std::string const& name = "",
+        std::string const& codename = "")
     {
         return create_primitive_component(
             locality, "vsplit", std::move(operands), name, codename);
     }
-
 }}}
 
 #endif
