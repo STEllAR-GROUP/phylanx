@@ -11,7 +11,7 @@
 
 #include <cstdint>
 #include <string>
-
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 phylanx::execution_tree::primitive_argument_type compile_and_run(
@@ -62,18 +62,24 @@ void test_2d_keep_dims_true()
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
-    test_min_operation("min(42.)",                                          "42.");
-    test_min_operation("min(42., 0, true)",                                 "42.");
-    test_min_operation("min([13., 42., 33.])",                              "13.");
-    test_min_operation("min([13., 42., 33.], -1)",                          "13.");
-    test_min_operation("min([13., 42., 33.],  0, true)",                    "hstack(13.)");
-    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]])",           "12.");
-    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]],  0)",       "hstack(13. ,12., 33.)");
-    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]], -2)",       "hstack(13. ,12., 33.)");
-    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]],  1)",       "hstack(13. ,12.)");
-    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]], -1)",       "hstack(13. ,12.)");
-    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]],  0, true)", "vstack(hstack(13. ,12., 33.))");
-    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]],  1, true)", "vstack(hstack(13.), hstack(12.))");
+    test_min_operation("min(42.)", "42.");
+    test_min_operation("min(42., 0, true)", "42.");
+    test_min_operation("min([13., 42., 33.])", "13.");
+    test_min_operation("min([13., 42., 33.], -1)", "13.");
+    test_min_operation("min([13., 42., 33.],  0, true)", "hstack(13.)");
+    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]])", "12.");
+    test_min_operation(
+        "min([[13., 42., 33.],[101., 12., 65.]],  0)", "hstack(13. ,12., 33.)");
+    test_min_operation(
+        "min([[13., 42., 33.],[101., 12., 65.]], -2)", "hstack(13. ,12., 33.)");
+    test_min_operation(
+        "min([[13., 42., 33.],[101., 12., 65.]],  1)", "hstack(13. ,12.)");
+    test_min_operation(
+        "min([[13., 42., 33.],[101., 12., 65.]], -1)", "hstack(13. ,12.)");
+    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]],  0, true)",
+        "vstack(hstack(13. ,12., 33.))");
+    test_min_operation("min([[13., 42., 33.],[101., 12., 65.]],  1, true)",
+        "vstack(hstack(13.), hstack(12.))");
     test_2d_keep_dims_true();
 
     return hpx::util::report_errors();

@@ -16,6 +16,9 @@
 #include <hpx/util/iterator_facade.hpp>
 #include <hpx/util/optional.hpp>
 
+#include <boost/config.hpp>
+
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -83,7 +86,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "either 0 or -1 for vectors."));
         }
         auto v = arg.vector();
-        T result = blaze::min(v);
+        T result = blaze::min BOOST_PREVENT_MACRO_SUBSTITUTION(v);
 
         if (keep_dims)
         {
@@ -126,7 +129,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<T>&& arg, bool keep_dims) const
     {
         auto m = arg.matrix();
-        T result = blaze::min(m);
+        T result = blaze::min BOOST_PREVENT_MACRO_SUBSTITUTION(m);
 
         if (keep_dims)
         {
@@ -143,7 +146,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<T> result(m.columns());
         for (std::size_t i = 0; i < m.columns(); ++i)
         {
-            result[i] = blaze::min(column(m, i));
+            result[i] =
+                blaze::min BOOST_PREVENT_MACRO_SUBSTITUTION(column(m, i));
         }
 
         if (keep_dims)
@@ -162,7 +166,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<T> result(m.rows());
         for (std::size_t i = 0; i < m.rows(); ++i)
         {
-            result[i] = blaze::min(row(m, i));
+            result[i] = blaze::min BOOST_PREVENT_MACRO_SUBSTITUTION(row(m, i));
         }
 
         if (keep_dims)
