@@ -90,7 +90,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "flip_operation::flip1d",
+                "flip_operation::flip2d",
                 generate_error_message(
                     "the flip_operation primitive requires operand axis "
                     "to be between -2 and 1 for matrices."));
@@ -148,7 +148,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "flip_operation::eval",
+                "flip_operation::flipnd",
                 generate_error_message(
                     "operand a has an invalid number of dimensions"));
         }
