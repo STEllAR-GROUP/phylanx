@@ -117,6 +117,8 @@ def check_noreturn(ir):
         return
     elif len(ir) == 1:
         check_noreturn(ir[0])
+    elif is_fun('define', ir):
+        check_hasreturn(ir)
     elif is_fun('return', ir):
         msg = "Illegal return"
         g = re.match(r'.*\$(\d+)\$(\d+)$', str(ir[0]))

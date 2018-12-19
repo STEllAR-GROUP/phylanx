@@ -28,23 +28,26 @@
 namespace phylanx { namespace execution_tree { namespace primitives {
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const eye_operation::match_data = {
-        hpx::util::make_tuple("eye",
+        match_pattern_type{"eye",
             std::vector<std::string>{"eye(_1)", "eye(_1,_2)", "eye(_1,_2,_3)"},
-            &create_eye_operation, &create_primitive<eye_operation>,
-            "N, M, k\n"
-            "Args:\n"
-            "\n"
-            "    N (integer) : number of rows in the output.\n"
-            "    M (optional, integer) : number of columns in the output. If "
-            "       None, defaults to N.\n"
-            "    k (optional, integer) : index of the diagonal: 0 (the default)"
-            "       refers to the main diagonal, a positive value refers to an\n"
-            "       upper diagonal, and a negative value to a lower diagonal.\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "Return an N x M matrix with ones on the k-th diagonal and zeros\n"
-            "elsewhere")};
+            &create_eye_operation, &create_primitive<eye_operation>,R"(
+            N, M, k
+            Args:
+
+                N (integer) : number of rows in the output.
+                M (optional, integer) : number of columns in the output. If
+                   None, defaults to N.
+                k (optional, integer) : index of the diagonal: 0 (the default)
+                  refers to the main diagonal, a positive value refers to an
+                  upper diagonal, and a negative value to a lower diagonal.
+
+            Returns:
+
+            Return an N x M matrix with ones on the k-th diagonal and zeros
+            elsewhere.)",
+            true
+        }
+    };
 
     ///////////////////////////////////////////////////////////////////////////
     eye_operation::eye_operation(primitive_arguments_type&& operands,
