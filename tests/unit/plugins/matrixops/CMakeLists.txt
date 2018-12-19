@@ -34,6 +34,7 @@ set(tests
     row_slicing
     shuffle_operation
     slicing_operation
+    softmax_operation
     squeeze_operation
     tile_operation
     transpose_operation
