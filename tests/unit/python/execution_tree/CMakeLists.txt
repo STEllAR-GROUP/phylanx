@@ -13,6 +13,7 @@ set(tests
     make_array
     map_numpy
     multi_init
+    multi_return
     parallel
     set_operation
     slice

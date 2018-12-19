@@ -54,32 +54,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
-    primitive_argument_type identity::identity_helper(
-        primitive_argument_type&& op) const
+    primitive_argument_type identity::identity_helper(std::int64_t&& op) const
     {
-        if (extract_numeric_value_dimension(op) != 0)
+        if (op < 0)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "identity::identity_helper",
-                generate_error_message(
-                    "input should be a scalar"));
+                generate_error_message("input should be greater than zero"));
         }
-
-        std::size_t size = static_cast<std::size_t>(
-            extract_numeric_value(op, name_, codename_)[0]);
-
+        std::size_t size = static_cast<std::size_t>(op);
         return primitive_argument_type{
-            operand_type{blaze::IdentityMatrix<T>(size)}};
+            ir::node_data<T>{blaze::IdentityMatrix<T>(size)}};
     }
 
-    primitive_argument_type identity::identity_nd(
-        primitive_argument_type&& op) const
+    primitive_argument_type identity::identity_nd(std::int64_t&& op) const
     {
         node_data_type t = dtype_;
-        if (t == node_data_type_unknown)
-        {
-            t = extract_common_type(op);
-        }
 
         switch (t)
         {
@@ -89,7 +79,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case node_data_type_int64:
             return identity_helper<std::int64_t>(std::move(op));
 
-        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_unknown:
+            HPX_FALLTHROUGH;
         case node_data_type_double:
             return identity_helper<double>(std::move(op));
 
@@ -127,12 +118,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](primitive_argument_type&& op0)
-            -> primitive_argument_type
-            {
-                return this_->identity_nd(std::move(op0));
-            }),
-            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
+        return hpx::dataflow(hpx::launch::sync,
+            hpx::util::unwrapping(
+                [this_ = std::move(this_)](
+                    std::int64_t&& op0) -> primitive_argument_type {
+                    return this_->identity_nd(std::move(op0));
+                }),
+            scalar_integer_operand_strict(
+                operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}
