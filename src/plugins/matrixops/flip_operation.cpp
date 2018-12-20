@@ -65,11 +65,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "either 0 or -1 for vectors."));
         }
 
-        auto v = arg.vector();
-        blaze::DynamicVector<T> result(v.size());
-        std::reverse_copy(std::begin(v), std::end(v), std::begin(result));
-
-        return primitive_argument_type{result};
+        if (arg.is_ref())
+        {
+            auto v = arg.vector();
+            blaze::DynamicVector<T> result(v.size());
+            std::reverse_copy(std::begin(v), std::end(v), std::begin(result));
+            return primitive_argument_type{std::move(result)};
+        }
+        else
+        {
+            auto v = arg.vector();
+            std::reverse(std::begin(v), std::end(v));
+            return primitive_argument_type{std::move(arg)};
+        }
     }
 
     template <typename T>
@@ -104,15 +112,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using phylanx::util::matrix_row_iterator;
 
         auto m = arg.matrix();
-        blaze::DynamicMatrix<T> result(m.rows(), m.columns());
-
         const matrix_row_iterator<decltype(m)> m_begin(m);
         const matrix_row_iterator<decltype(m)> m_end(m, m.rows());
 
-        const matrix_row_iterator<decltype(result)> r_begin(result);
-
-        std::reverse_copy(m_begin, m_end, r_begin);
-        return primitive_argument_type{result};
+        if (arg.is_ref())
+        {
+            blaze::DynamicMatrix<T> result(m.rows(), m.columns());
+            const matrix_row_iterator<decltype(result)> r_begin(result);
+            std::reverse_copy(m_begin, m_end, r_begin);
+            return primitive_argument_type{std::move(result)};
+        }
+        else
+        {
+            std::reverse(m_begin, m_end);
+            return primitive_argument_type{std::move(arg)};
+        }
     }
 
     template <typename T>
@@ -122,15 +136,21 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using phylanx::util::matrix_column_iterator;
 
         auto m = arg.matrix();
-        blaze::DynamicMatrix<T> result(m.rows(), m.columns());
-
         const matrix_column_iterator<decltype(m)> m_begin(m);
         const matrix_column_iterator<decltype(m)> m_end(m, m.columns());
 
-        const matrix_column_iterator<decltype(result)> r_begin(result);
-
-        std::reverse_copy(m_begin, m_end, r_begin);
-        return primitive_argument_type{result};
+        if (arg.is_ref())
+        {
+            blaze::DynamicMatrix<T> result(m.rows(), m.columns());
+            const matrix_column_iterator<decltype(result)> r_begin(result);
+            std::reverse_copy(m_begin, m_end, r_begin);
+            return primitive_argument_type{std::move(result)};
+        }
+        else
+        {
+            std::reverse(m_begin, m_end);
+            return primitive_argument_type{std::move(arg)};
+        }
     }
 
     template <typename T>
