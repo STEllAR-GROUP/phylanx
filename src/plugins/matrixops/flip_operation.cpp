@@ -9,6 +9,7 @@
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/flip_operation.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
+#include <phylanx/util/detail/bad_swap.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -65,18 +66,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "either 0 or -1 for vectors."));
         }
 
-        if (arg.is_ref())
+        if (!arg.is_ref())
+        {
+            auto v = arg.vector();
+            std::reverse(std::begin(v), std::end(v));
+            return primitive_argument_type{std::move(arg)};
+        }
+        else
         {
             auto v = arg.vector();
             blaze::DynamicVector<T> result(v.size());
             std::reverse_copy(std::begin(v), std::end(v), std::begin(result));
             return primitive_argument_type{std::move(result)};
-        }
-        else
-        {
-            auto v = arg.vector();
-            std::reverse(std::begin(v), std::end(v));
-            return primitive_argument_type{std::move(arg)};
         }
     }
 
@@ -112,20 +113,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using phylanx::util::matrix_row_iterator;
 
         auto m = arg.matrix();
-        const matrix_row_iterator<decltype(m)> m_begin(m);
-        const matrix_row_iterator<decltype(m)> m_end(m, m.rows());
+        matrix_row_iterator<decltype(m)> m_begin(m);
+        matrix_row_iterator<decltype(m)> m_end(m, m.rows());
 
-        if (arg.is_ref())
-        {
-            blaze::DynamicMatrix<T> result(m.rows(), m.columns());
-            const matrix_row_iterator<decltype(result)> r_begin(result);
-            std::reverse_copy(m_begin, m_end, r_begin);
-            return primitive_argument_type{std::move(result)};
-        }
-        else
+        if (!arg.is_ref())
         {
             std::reverse(m_begin, m_end);
             return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicMatrix<T> result(m.rows(), m.columns());
+            matrix_row_iterator<decltype(result)> r_begin(result);
+            std::reverse_copy(m_begin, m_end, r_begin);
+            return primitive_argument_type{std::move(result)};
         }
     }
 
@@ -136,20 +137,20 @@ namespace phylanx { namespace execution_tree { namespace primitives
         using phylanx::util::matrix_column_iterator;
 
         auto m = arg.matrix();
-        const matrix_column_iterator<decltype(m)> m_begin(m);
-        const matrix_column_iterator<decltype(m)> m_end(m, m.columns());
+        matrix_column_iterator<decltype(m)> m_begin(m);
+        matrix_column_iterator<decltype(m)> m_end(m, m.columns());
 
-        if (arg.is_ref())
-        {
-            blaze::DynamicMatrix<T> result(m.rows(), m.columns());
-            const matrix_column_iterator<decltype(result)> r_begin(result);
-            std::reverse_copy(m_begin, m_end, r_begin);
-            return primitive_argument_type{std::move(result)};
-        }
-        else
+        if (!arg.is_ref())
         {
             std::reverse(m_begin, m_end);
             return primitive_argument_type{std::move(arg)};
+        }
+        else
+        {
+            blaze::DynamicMatrix<T> result(m.rows(), m.columns());
+            matrix_column_iterator<decltype(result)> r_begin(result);
+            std::reverse_copy(m_begin, m_end, r_begin);
+            return primitive_argument_type{std::move(result)};
         }
     }
 
