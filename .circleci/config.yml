@@ -71,7 +71,7 @@ anchors:
 
     - &attach_phylanx_tree
         attach_workspace:
-            at: /phylanx
+            at: /
 
 ################################################################################
 jobs:
@@ -102,9 +102,12 @@ jobs:
                 name: Download CTest XML to JUnit XML transformation stylesheet
                 command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o build/conv.xsl
             - persist_to_workspace:
-                root: /phylanx
+                root: /
                 paths:
-                    - .
+                    - phylanx
+                    - usr/local/include/blaze_tensor
+                    - usr/local/share/BlazeTensor
+
     check.code_format:
         <<: *docker_config
         working_directory: /phylanx
