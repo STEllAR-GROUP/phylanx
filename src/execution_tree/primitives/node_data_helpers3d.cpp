@@ -130,8 +130,8 @@ namespace phylanx { namespace execution_tree
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_tensor",
                         util::generate_error_message(
-                            "cannot broadcast a matrix into a differently "
-                                "sized tensor",
+                            "cannot broadcast a matrix into a tensor with "
+                                "a different number of rows or columns",
                             name, codename));
                 }
 

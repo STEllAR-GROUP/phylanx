@@ -284,16 +284,11 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& rhs, F&& f, std::size_t size,
         std::string const& name, std::string const& codename)
     {
-        if (result.size() != size)
-        {
-            result.resize(size);
-        }
-
         switch (rhs.num_dimensions())
         {
         case 0:
             {
-
+                result.resize(size);
                 for (std::size_t i = 0; i != size; ++i)
                 {
                     result[i] = f(rhs.scalar(), i);
@@ -306,6 +301,7 @@ namespace phylanx { namespace execution_tree
                 // vectors of size one can be broadcast into any other vector
                 if (rhs.size() == 1)
                 {
+                    result.resize(size);
                     for (std::size_t i = 0; i != size; ++i)
                     {
                         result[i] = f(rhs[0], i);
@@ -335,6 +331,7 @@ namespace phylanx { namespace execution_tree
                 // matrices of size one can be broadcast into any vector
                 if (rhs.size() == 1)
                 {
+                    result.resize(size);
                     for (std::size_t i = 0; i != size; ++i)
                     {
                         result[i] = f(rhs[0], i);
@@ -346,6 +343,8 @@ namespace phylanx { namespace execution_tree
                 // with the same number of elements
                 if (rhs.dimension(0) == 1 && size == rhs.dimension(1))
                 {
+                    result.resize(size);
+
                     auto m = rhs.matrix();
                     auto row = blaze::row(m, 0);
                     for (std::size_t i = 0; i != size; ++i)
@@ -359,6 +358,8 @@ namespace phylanx { namespace execution_tree
                 // with the same number of elements
                 if (rhs.dimension(1) == 1 && size == rhs.dimension(0))
                 {
+                    result.resize(size);
+
                     auto m = rhs.matrix();
                     auto column = blaze::column(m, 0);
                     for (std::size_t i = 0; i != size; ++i)
@@ -382,6 +383,8 @@ namespace phylanx { namespace execution_tree
                 // tensors of size one can be broadcast into any vector
                 if (rhs.size() == 1)
                 {
+                    result.resize(size);
+
                     for (std::size_t i = 0; i != size; ++i)
                     {
                         result[i] = f(rhs.at(0, 0, 0), i);
@@ -389,11 +392,29 @@ namespace phylanx { namespace execution_tree
                     return;
                 }
 
-                // tensors with one row can be broadcast into any vector
+                // tensors with one column can be broadcast into any vector
                 // with the same number of elements
                 if (rhs.dimension(0) == 1 && size == rhs.dimension(1) &&
                     rhs.dimension(2) == 1)
                 {
+                    result.resize(size);
+
+                    auto t = rhs.tensor();
+                    auto col = blaze::column(blaze::pageslice(t, 0), 0);
+                    for (std::size_t i = 0; i != size; ++i)
+                    {
+                        result[i] = f(col[i], i);
+                    }
+                    return;
+                }
+
+                // tensors with one row can be broadcast into any vector
+                // with the same number of elements
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == size)
+                {
+                    result.resize(size);
+
                     auto t = rhs.tensor();
                     auto row = blaze::row(blaze::pageslice(t, 0), 0);
                     for (std::size_t i = 0; i != size; ++i)
@@ -403,30 +424,18 @@ namespace phylanx { namespace execution_tree
                     return;
                 }
 
-                // tensors with one column can be broadcast into any vector
+                // tensors with one page-column can be broadcast into any vector
                 // with the same number of elements
                 if (rhs.dimension(0) == size && rhs.dimension(1) == 1 &&
                     rhs.dimension(2) == 1)
                 {
+                    result.resize(size);
+
                     auto t = rhs.tensor();
-                    auto column = blaze::column(blaze::pageslice(t, 0), 0);
+                    auto column = blaze::column(blaze::rowslice(t, 0), 0);
                     for (std::size_t i = 0; i != size; ++i)
                     {
                         result[i] = f(column[i], i);
-                    }
-                    return;
-                }
-
-                // tensors with one page can be broadcast into any vector
-                // with the same number of elements
-                if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
-                    rhs.dimension(2) == size)
-                {
-                    auto t = rhs.tensor();
-                    auto page = blaze::column(blaze::rowslice(t, 0), 0);
-                    for (std::size_t i = 0; i != size; ++i)
-                    {
-                        result[i] = f(page[i], i);
                     }
                     return;
                 }
@@ -439,7 +448,6 @@ namespace phylanx { namespace execution_tree
                         name, codename));
             }
 #endif
-
         default:
             break;
         }
@@ -461,15 +469,12 @@ namespace phylanx { namespace execution_tree
         ir::node_data<T>&& rhs, F&& f, std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename)
     {
-        if (result.rows() != rows || result.columns() != columns)
-        {
-            result.resize(rows, columns);
-        }
-
         switch (rhs.num_dimensions())
         {
         case 0:
             {
+                result.resize(rows, columns);
+
                 for (std::size_t i = 0; i != rows; ++i)
                 {
                     for (std::size_t j = 0; j != columns; ++j)
@@ -485,6 +490,8 @@ namespace phylanx { namespace execution_tree
                 // vectors of size one can be broadcast into any matrix
                 if (rhs.size() == 1)
                 {
+                    result.resize(rows, columns);
+
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
@@ -505,6 +512,8 @@ namespace phylanx { namespace execution_tree
                             name, codename));
                 }
 
+                result.resize(rows, columns);
+
                 for (std::size_t i = 0; i != rows; ++i)
                 {
                     for (std::size_t j = 0; j != columns; ++j)
@@ -520,6 +529,8 @@ namespace phylanx { namespace execution_tree
                 // matrices of size one can be broadcast into any other matrix
                 if (rhs.size() == 1)
                 {
+                    result.resize(rows, columns);
+
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
@@ -534,6 +545,8 @@ namespace phylanx { namespace execution_tree
                 // matrix with the same number of columns
                 if (rhs.dimension(0) == 1 && columns == rhs.dimension(1))
                 {
+                    result.resize(rows, columns);
+
                     auto m = rhs.matrix();
                     auto row = blaze::row(m, 0);
                     for (std::size_t i = 0; i != rows; ++i)
@@ -550,6 +563,8 @@ namespace phylanx { namespace execution_tree
                 // matrix with the same number of rows
                 if (rhs.dimension(1) == 1 && rows == rhs.dimension(0))
                 {
+                    result.resize(rows, columns);
+
                     auto m = rhs.matrix();
                     auto column = blaze::column(m, 0);
                     for (std::size_t i = 0; i != rows; ++i)
@@ -572,6 +587,8 @@ namespace phylanx { namespace execution_tree
                             name, codename));
                 }
 
+                result.resize(rows, columns);
+
                 for (std::size_t i = 0; i != rows; ++i)
                 {
                     for (std::size_t j = 0; j != columns; ++j)
@@ -583,121 +600,84 @@ namespace phylanx { namespace execution_tree
             }
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-//         case 3:
-//             {
-//                 // tensors of size one can be broadcast into any other matrix
-//                 if (rhs.size() == 1)
-//                 {
-//                     for (std::size_t i = 0; i != rows; ++i)
-//                     {
-//                         for (std::size_t j = 0; j != columns; ++j)
-//                         {
-//                             result(i, j) = f(rhs.at(0, 0, 0), i, j);
-//                         }
-//                     }
-//                     return;
-//                 }
-//
-//                 // tensors with one row can be broadcast into any other
-//                 // matrix with the same number of columns
-//                 if (rhs.dimension(0) == 1 && rhs.dimension(1) == columns &&
-//                     rhs.dimension(2) == 1)
-//                 {
-//                     auto t = rhs.tensor();
-//                     auto row = blaze::row(blaze::pageslice(t, 0), 0);
-//                     for (std::size_t i = 0; i != rows; ++i)
-//                     {
-//                         for (std::size_t j = 0; j != columns; ++j)
-//                         {
-//                             result(i, j) = f(row[j], i, j);
-//                         }
-//                     }
-//                     return;
-//                 }
-//
-//                 // tensors with one column can be broadcast into any other
-//                 // matrix with the same number of rows
-//                 if (rhs.dimension(0) == rows && rhs.dimension(1) == 1 &&
-//                     rhs.dimension(2) == 1)
-//                 {
-//                     auto t = rhs.tensor();
-//                     auto column = blaze::column(blaze::pageslice(t, 0), 0);
-//                     for (std::size_t i = 0; i != rows; ++i)
-//                     {
-//                         for (std::size_t j = 0; j != columns; ++j)
-//                         {
-//                             result(i, j) = f(column[i], i, j);
-//                         }
-//                     }
-//                     return;
-//                 }
-//
-//                 // tensors with one page-column can be broadcast into any other
-//                 // matrix with the same number of rows
-//                 if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
-//                     rhs.dimension(2) == rows)
-//                 {
-//                     auto t = rhs.tensor();
-//                     auto column = blaze::column(blaze::rowslice(t, 0), 0);
-//                     for (std::size_t i = 0; i != rows; ++i)
-//                     {
-//                         for (std::size_t j = 0; j != columns; ++j)
-//                         {
-//                             result(i, j) = f(column[i], i, j);
-//                         }
-//                     }
-//                     return;
-//                 }
-//
-//                 // pageslice matches
-//                 if (rhs.dimension(0) == rows && rhs.dimension(1) == columns &&
-//                     rhs.dimension(2) == 1)
-//                 {
-//                     for (std::size_t i = 0; i != rows; ++i)
-//                     {
-//                         for (std::size_t j = 0; j != columns; ++j)
-//                         {
-//                             result(i, j) = f(rhs.at(i, j, 0), i, j);
-//                         }
-//                     }
-//                     return;
-//                 }
-//
-//                 // columnslice matches
-//                 if (rhs.dimension(0) == rows && rhs.dimension(1) == 1 &&
-//                     rhs.dimension(2) == columns)
-//                 {
-//                     for (std::size_t i = 0; i != rows; ++i)
-//                     {
-//                         for (std::size_t j = 0; j != columns; ++j)
-//                         {
-//                             result(i, j) = f(rhs.at(i, 0, j), i, j);
-//                         }
-//                     }
-//                     return;
-//                 }
-//
-//                 // rowslice matches
-//                 if (rhs.dimension(0) == 1 && rhs.dimension(1) == rows &&
-//                     rhs.dimension(2) == columns)
-//                 {
-//                     for (std::size_t i = 0; i != rows; ++i)
-//                     {
-//                         for (std::size_t j = 0; j != columns; ++j)
-//                         {
-//                             result(i, j) = f(rhs.at(0, i, j), i, j);
-//                         }
-//                     }
-//                     return;
-//                 }
-//
-//                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
-//                     "phylanx::execution_tree::extract_value_matrix",
-//                     util::generate_error_message(
-//                         "cannot broadcast a tensor into a differently "
-//                             "sized matrix",
-//                         name, codename));
-//             }
+        case 3:
+            {
+                // tensors of size one can be broadcast into any other matrix
+                if (rhs.size() == 1)
+                {
+                    result.resize(rows, columns);
+
+                    for (std::size_t i = 0; i != rows; ++i)
+                    {
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            result(i, j) = f(rhs.at(0, 0, 0), i, j);
+                        }
+                    }
+                    return;
+                }
+
+                // tensors with one column can be broadcast into any other
+                // matrix with the same number of columns
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == rows &&
+                    rhs.dimension(2) == 1)
+                {
+                    result.resize(rows, columns);
+
+                    auto t = rhs.tensor();
+                    auto col = blaze::column(blaze::pageslice(t, 0), 0);
+                    for (std::size_t i = 0; i != rows; ++i)
+                    {
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            result(i, j) = f(col[j], i, j);
+                        }
+                    }
+                    return;
+                }
+
+                // tensors with one row can be broadcast into any other
+                // matrix with the same number of rows
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == columns)
+                {
+                    result.resize(rows, columns);
+
+                    auto t = rhs.tensor();
+                    auto row = blaze::row(blaze::pageslice(t, 0), 0);
+                    for (std::size_t i = 0; i != rows; ++i)
+                    {
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            result(i, j) = f(row[i], i, j);
+                        }
+                    }
+                    return;
+                }
+
+                // pageslice matches
+                result.resize(rows, columns);
+
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == rows &&
+                    rhs.dimension(2) == columns)
+                {
+                    for (std::size_t i = 0; i != rows; ++i)
+                    {
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            result(i, j) = f(rhs.at(0, i, j), i, j);
+                        }
+                    }
+                    return;
+                }
+
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "phylanx::execution_tree::extract_value_matrix",
+                    util::generate_error_message(
+                        "cannot broadcast a tensor into a differently "
+                            "sized matrix",
+                        name, codename));
+            }
 #endif
 
         default:
@@ -723,23 +703,19 @@ namespace phylanx { namespace execution_tree
         std::size_t columns, std::string const& name,
         std::string const& codename)
     {
-        if (result.rows() != rows || result.columns() != columns ||
-            result.pages() != pages)
-        {
-            result.resize(rows, columns, pages);
-        }
-
         switch (rhs.num_dimensions())
         {
         case 0:
             {
+                result.resize(pages, rows, columns);
+
                 for (std::size_t k = 0; k != pages; ++k)
                 {
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
                         {
-                            result(i, j, k) = f(rhs.scalar(), i, j, k);
+                            result(k, i, j) = f(rhs.scalar(), k, i, j);
                         }
                     }
                 }
@@ -751,13 +727,15 @@ namespace phylanx { namespace execution_tree
                 // vectors of size one can be broadcast into any matrix
                 if (rhs.size() == 1)
                 {
+                    result.resize(pages, rows, columns);
+
                     for (std::size_t k = 0; k != pages; ++k)
                     {
                         for (std::size_t i = 0; i != rows; ++i)
                         {
                             for (std::size_t j = 0; j != columns; ++j)
                             {
-                                result(i, j, k) = f(rhs[0], i, j, k);
+                                result(k, i, j) = f(rhs[0], k, i, j);
                             }
                         }
                     }
@@ -774,13 +752,15 @@ namespace phylanx { namespace execution_tree
                             name, codename));
                 }
 
+                result.resize(pages, rows, columns);
+
                 for (std::size_t k = 0; k != pages; ++k)
                 {
                     for (std::size_t i = 0; i != rows; ++i)
                     {
                         for (std::size_t j = 0; j != columns; ++j)
                         {
-                            result(i, j, k) = f(rhs[j], i, j, k);
+                            result(k, i, j) = f(rhs[j], k, i, j);
                         }
                     }
                 }
@@ -792,13 +772,15 @@ namespace phylanx { namespace execution_tree
                 // matrices of size one can be broadcast into any tensor
                 if (rhs.size() == 1)
                 {
+                    result.resize(pages, rows, columns);
+
                     for (std::size_t k = 0; k != pages; ++k)
                     {
                         for (std::size_t i = 0; i != rows; ++i)
                         {
                             for (std::size_t j = 0; j != columns; ++j)
                             {
-                                result(i, j, k) = f(rhs[0], i, j, k);
+                                result(k, i, j) = f(rhs[0], k, i, j);
                             }
                         }
                     }
@@ -809,6 +791,8 @@ namespace phylanx { namespace execution_tree
                 // tensors with the same number of columns
                 if (rhs.dimension(0) == 1 && columns == rhs.dimension(1))
                 {
+                    result.resize(pages, rows, columns);
+
                     auto m = rhs.matrix();
                     auto row = blaze::row(m, 0);
                     for (std::size_t k = 0; k != pages; ++k)
@@ -817,7 +801,7 @@ namespace phylanx { namespace execution_tree
                         {
                             for (std::size_t j = 0; j != columns; ++j)
                             {
-                                result(i, j, k) = f(row[j], i, j, k);
+                                result(k, i, j) = f(row[j], k, i, j);
                             }
                         }
                     }
@@ -825,16 +809,21 @@ namespace phylanx { namespace execution_tree
                 }
 
                 // matrices with one row can be broadcast into any other
-                // matrix with the same number of rows
+                // tensor with the same number of rows
                 if (rhs.dimension(1) == 1 && rows == rhs.dimension(0))
                 {
+                    result.resize(pages, rows, columns);
+
                     auto m = rhs.matrix();
                     auto column = blaze::column(m, 0);
-                    for (std::size_t i = 0; i != rows; ++i)
+                    for (std::size_t k = 0; k != pages; ++k)
                     {
-                        for (std::size_t j = 0; j != columns; ++j)
+                        for (std::size_t i = 0; i != rows; ++i)
                         {
-                            result(i, j) = f(column[i], i, j);
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                result(k, i, j) = f(column[i], k, i, j);
+                            }
                         }
                     }
                     return;
@@ -845,23 +834,135 @@ namespace phylanx { namespace execution_tree
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "phylanx::execution_tree::extract_value_tensor",
                         util::generate_error_message(
-                            "cannot broadcast a matrix into a differently "
-                                "sized matrix",
+                            "cannot broadcast a matrix into a tensor with "
+                                "a different number of rows or columns",
                             name, codename));
                 }
 
-                for (std::size_t i = 0; i != rows; ++i)
+                result.resize(pages, rows, columns);
+
+                for (std::size_t k = 0; k != pages; ++k)
                 {
-                    for (std::size_t j = 0; j != columns; ++j)
+                    for (std::size_t i = 0; i != rows; ++i)
                     {
-                        result(i, j) = f(rhs.at(i, j), i, j);
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            result(k, i, j) = f(rhs.at(i, j), k, i, j);
+                        }
                     }
                 }
                 return;
             }
 
         case 3:
-            break;
+            {
+                // tensors of size one can be broadcast into any other tensor
+                if (rhs.size() == 1)
+                {
+                    result.resize(pages, rows, columns);
+
+                    for (std::size_t k = 0; k != pages; ++k)
+                    {
+                        for (std::size_t i = 0; i != rows; ++i)
+                        {
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                result(k, i, j) = f(rhs.at(0, 0, 0), k, i, j);
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // tensors with just one row can be broadcast into any other
+                // tensor with the same number of columns
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == 1 &&
+                    rhs.dimension(2) == columns)
+                {
+                    result.resize(pages, rows, columns);
+
+                    auto t = rhs.tensor();
+                    auto row = blaze::row(blaze::pageslice(t, 0), 0);
+                    for (std::size_t k = 0; k != pages; ++k)
+                    {
+                        for (std::size_t i = 0; i != rows; ++i)
+                        {
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                result(k, i, j) = f(row[j], k, i, j);
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // tensors with just one column can be broadcast into any other
+                // tensor with the same number of rows
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == rows &&
+                    rhs.dimension(2) == 1)
+                {
+                    result.resize(pages, rows, columns);
+
+                    auto t = rhs.tensor();
+                    auto column = blaze::column(blaze::pageslice(t, 0), 0);
+                    for (std::size_t k = 0; k != pages; ++k)
+                    {
+                        for (std::size_t i = 0; i != rows; ++i)
+                        {
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                result(k, i, j) = f(column[i], k, i, j);
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                // tensors with just one page can be broadcast into any other
+                // tensor with the same number of columns/rows
+                if (rhs.dimension(0) == 1 && rhs.dimension(1) == rows &&
+                    rhs.dimension(2) == columns)
+                {
+                    result.resize(pages, rows, columns);
+
+                    auto t = rhs.tensor();
+                    auto page_col = blaze::row(blaze::pageslice(t, 0), 0);
+                    for (std::size_t k = 0; k != pages; ++k)
+                    {
+                        for (std::size_t i = 0; i != rows; ++i)
+                        {
+                            for (std::size_t j = 0; j != columns; ++j)
+                            {
+                                result(k, i, j) = f(page_col[k], k, i, j);
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                if (rhs.dimension(0) != pages || rhs.dimension(1) != rows ||
+                    rhs.dimension(2) != columns)
+                {
+                    HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                        "phylanx::execution_tree::extract_value_tensor",
+                        util::generate_error_message(
+                            "cannot broadcast a tensor into a differently "
+                                "sized tensor",
+                            name, codename));
+                }
+
+                for (std::size_t k = 0; k != pages; ++k)
+                {
+                    for (std::size_t i = 0; i != rows; ++i)
+                    {
+                        for (std::size_t j = 0; j != columns; ++j)
+                        {
+                            result(k, i, j) = f(rhs.at(k, i, j), k, i, j);
+                        }
+                    }
+                }
+                return;
+            }
 
         default:
             break;
