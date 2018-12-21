@@ -9,8 +9,9 @@ import re
 import ast
 import inspect
 import phylanx.execution_tree
-from phylanx import compiler_state
+from phylanx import compiler_state, PhylanxSession
 from phylanx.ast.utils import dump_info
+
 
 mapped_methods = {
     "add": "__add",
@@ -195,7 +196,9 @@ class PhySL:
         self.defined = set()
         self.numpy_aliases = {'numpy'}
         self.wrapped_function = func
-        self.fglobals = kwargs['fglobals']
+        self.kwargs = kwargs
+        self.fglobals = self.kwargs['fglobals']
+        self.is_compiled = False
         for key, val in self.fglobals.items():
             if type(val).__name__ == 'module' and val.__name__ == 'numpy':
                 self.numpy_aliases.add(key)
@@ -203,7 +206,7 @@ class PhySL:
         if not self.file_name:
             self.file_name = "<none>"
 
-        self.performance = kwargs.get('performance')
+        self.performance = self.kwargs.get('performance')
         self.__perfdata__ = (None, None, None)
 
         # Add arguments of the function to the list of discovered variables.
@@ -217,18 +220,20 @@ class PhySL:
         check_return(self.ir)
         self.__src__ = self.generate_physl(self.ir)
 
-        if kwargs.get("debug"):
+        if self.kwargs.get("debug"):
             print_physl_src(self.__src__)
             print(end="", flush="")
 
-        if "compiler_state" in kwargs:
-            PhySL.compiler_state = kwargs['compiler_state']
-        # the static method compiler_state is constructed only once
-        elif PhySL.compiler_state is None:
-            PhySL.compiler_state = compiler_state()
+        if PhylanxSession.is_initialized:
+            if "compiler_state" in self.kwargs:
+                PhySL.compiler_state = self.kwargs['compiler_state']
+            # the static method compiler_state is constructed only once
+            elif PhySL.compiler_state is None:
+                PhySL.compiler_state = compiler_state()
 
-        phylanx.execution_tree.compile(
-            self.file_name, self.__src__, PhySL.compiler_state)
+            phylanx.execution_tree.compile(
+                self.file_name, self.__src__, PhySL.compiler_state)
+            self.is_compiled = True
 
     def generate_physl(self, ir):
         if len(ir) == 2 and isinstance(ir[0], str) and isinstance(
@@ -276,10 +281,24 @@ class PhySL:
         self.__perfdata__ = (None, None, None)
         self.performance_primitives = None
 
+        if not PhylanxSession.is_initialized:
+            PhylanxSession.init(1)
+
         if self.performance:
             self.performance_primitives = \
                 phylanx.execution_tree.enable_measurements(
                     PhySL.compiler_state, True)
+
+        if not self.is_compiled:
+            if "compiler_state" in self.kwargs:
+                PhySL.compiler_state = self.kwargs['compiler_state']
+            # the static method compiler_state is constructed only once
+            elif PhySL.compiler_state is None:
+                PhySL.compiler_state = compiler_state()
+
+            phylanx.execution_tree.compile(
+                self.file_name, self.__src__, PhySL.compiler_state)
+            self.is_compiled = True
 
         result = phylanx.execution_tree.eval(
             self.file_name, func_name, PhySL.compiler_state, *args)
