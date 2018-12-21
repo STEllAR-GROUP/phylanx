@@ -271,9 +271,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 1:
             {
                 auto lhs = extract_value_vector<T>(
-                    std::move(op1), sizes[1], name_, codename_);
+                    std::move(op1), sizes[0], name_, codename_);
                 auto rhs = extract_value_vector<T>(
-                    std::move(op2), sizes[1], name_, codename_);
+                    std::move(op2), sizes[0], name_, codename_);
 
                 return numeric1d1d<T>(std::move(lhs), std::move(rhs));
             }
@@ -379,7 +379,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (auto && op : std::move(ops))
                 {
                     args.emplace_back(extract_value_vector<T>(
-                        std::move(op), sizes[1], name_, codename_));
+                        std::move(op), sizes[0], name_, codename_));
                 }
 
                 return numeric1d1d<T>(std::move(args));

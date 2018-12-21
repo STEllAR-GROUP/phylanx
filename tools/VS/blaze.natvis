@@ -24,7 +24,7 @@
         </Expand>
     </Type>
 
-    <Type Name="blaze::CustomTensor&lt;*,*,*&gt;">
+    <Type Name="blaze::CustomTensor&lt;*,*,*,*&gt;">
         <DisplayString>{{pages={o_}, rows={m_}, columns={n_}}}</DisplayString>
         <Expand>
             <Item Name="[pages]">o_</Item>
@@ -68,7 +68,7 @@
         </Expand>
     </Type>
 
-    <Type Name="blaze::CustomMatrix&lt;*,*,*,0&gt;">
+    <Type Name="blaze::CustomMatrix&lt;*,*,*,0,*&gt;">
         <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
         <Expand>
             <Item Name="[rows]">m_</Item>
@@ -83,7 +83,7 @@
         </Expand>
     </Type>
 
-    <Type Name="blaze::CustomMatrix&lt;*,*,*,1&gt;">
+    <Type Name="blaze::CustomMatrix&lt;*,*,*,1,*&gt;">
         <DisplayString>{{rows={m_}, columns={n_}}}</DisplayString>
         <Expand>
             <Item Name="[rows]">m_</Item>
@@ -124,7 +124,7 @@
         </Expand>
     </Type>
 
-    <Type Name="blaze::CustomVector&lt;*,*,*,0&gt;">
+    <Type Name="blaze::CustomVector&lt;*,*,*,0,*&gt;">
         <DisplayString>{{size={size_}}}</DisplayString>
         <Expand>
             <Item Name="[size]">size_</Item>
@@ -137,7 +137,7 @@
         </Expand>
     </Type>
 
-    <Type Name="blaze::CustomVector&lt;*,*,*,1&gt;">
+    <Type Name="blaze::CustomVector&lt;*,*,*,1,*&gt;">
         <DisplayString>{{size={size_}}}</DisplayString>
         <Expand>
             <Item Name="[size]">size_</Item>

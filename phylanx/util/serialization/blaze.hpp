@@ -69,17 +69,16 @@ namespace hpx { namespace serialization
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     template <typename T>
-    void load(input_archive& archive, blaze::DynamicTensor<T>& target,
-        unsigned)
+    void load(input_archive& archive, blaze::DynamicTensor<T>& target, unsigned)
     {
         // De-serialize matrix
+        std::size_t pages = 0UL;
         std::size_t rows = 0UL;
         std::size_t columns = 0UL;
-        std::size_t pages = 0UL;
         std::size_t spacing = 0UL;
-        archive >> rows >> columns >> pages >> spacing;
+        archive >> pages >> rows >> columns >> spacing;
 
-        target.resize(rows, columns, pages, false);
+        target.resize(pages, rows, columns, false);
         archive >> hpx::serialization::make_array(
                        target.data(), rows * spacing * pages);
     }
@@ -156,14 +155,14 @@ namespace hpx { namespace serialization
         unsigned)
     {
         // Serialize tensor
+        std::size_t pages = target.pages();
         std::size_t rows = target.rows();
         std::size_t columns = target.columns();
-        std::size_t pages = target.pages();
         std::size_t spacing = target.spacing();
-        archive << rows << columns << pages << spacing;
+        archive << pages << rows << columns << spacing;
 
         archive << hpx::serialization::make_array(
-            target.data(), rows * spacing * pages);
+            target.data(), pages * rows * spacing);
     }
 #endif
 
@@ -214,14 +213,14 @@ namespace hpx { namespace serialization
         blaze::CustomTensor<T, AF, PF, RT> const& target, unsigned)
     {
         // Serialize tensor
+        std::size_t pages = target.pages();
         std::size_t rows = target.rows();
         std::size_t columns = target.columns();
-        std::size_t pages = target.pages();
         std::size_t spacing = target.spacing();
-        archive << rows << columns << pages << spacing;
+        archive << pages << rows << columns << spacing;
 
         archive << hpx::serialization::make_array(
-            target.data(), rows * spacing * pages);
+            target.data(), pages * rows * spacing);
     }
 #endif
 

@@ -104,15 +104,27 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    // Adjust dimensions such that the sizes are right aligned
+    PHYLANX_EXPORT std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_aligned_dimensions(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+        std::size_t numdims, std::string const& name,
+        std::string const& codename);
+
     // Extract the largest dimension from all of the given arguments
     template <typename... Ts>
     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_largest_dimensions(
         std::string const& name, std::string const& codename, Ts const&... args)
     {
+        std::size_t numdims =
+            extract_largest_dimension(name, codename, args...);
+
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const __dummy[] =
         {
-            extract_numeric_value_dimensions(args, name, codename)...,
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{0, 0}
+            extract_aligned_dimensions(
+                extract_numeric_value_dimensions(args, name, codename),
+                numdims, name, codename)...,
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{}
         };
 
         auto max_array =
@@ -120,11 +132,16 @@ namespace phylanx { namespace execution_tree
                 std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& rhs)
             {
                 return std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{
-                    (std::max)(lhs[0], rhs[0]), (std::max)(lhs[1], rhs[1])};
+                    (std::max)(lhs[0], rhs[0]),
+                    (std::max)(lhs[1], rhs[1])
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                  , (std::max)(lhs[2], rhs[2])
+#endif
+                };
             };
 
         return std::accumulate(&__dummy[0], &__dummy[sizeof...(args)],
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{0, 0}, max_array);
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>{}, max_array);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -319,6 +336,7 @@ namespace phylanx { namespace execution_tree
                             name, codename));
                 }
 
+                result.resize(size);
                 for (std::size_t i = 0; i != size; ++i)
                 {
                     result[i] = f(rhs[i], i);
@@ -432,10 +450,10 @@ namespace phylanx { namespace execution_tree
                     result.resize(size);
 
                     auto t = rhs.tensor();
-                    auto column = blaze::column(blaze::rowslice(t, 0), 0);
+                    auto row = blaze::row(blaze::rowslice(t, 0), 0);
                     for (std::size_t i = 0; i != size; ++i)
                     {
-                        result[i] = f(column[i], i);
+                        result[i] = f(row[i], i);
                     }
                     return;
                 }

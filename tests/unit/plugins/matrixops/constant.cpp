@@ -121,6 +121,18 @@ void test_empty_operation(std::string const& code,
     HPX_TEST_EQ(dims[1], result_dims[1]);
 }
 
+void test_empty_operation(std::string const& code,
+    std::array<int, 3> const& dims)
+{
+    auto f = compile_and_run(code);
+    auto result_dims =
+        phylanx::execution_tree::extract_numeric_value_dimensions(f());
+
+    HPX_TEST_EQ(dims[0], result_dims[0]);
+    HPX_TEST_EQ(dims[1], result_dims[1]);
+    HPX_TEST_EQ(dims[2], result_dims[2]);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -143,15 +155,21 @@ int main(int argc, char* argv[])
         "hstack(vstack(42, 42), vstack(42, 42))");
 
     // empty
-    test_empty_operation("constant__int(list())", {1, 1});
-    test_empty_operation("constant__int(list(4))", {1, 4});
-    test_empty_operation("constant__int(list(2, 2))", {2, 2});
+    test_empty_operation(
+        "constant__int(list())", std::array<int, PHYLANX_MAX_DIMENSIONS>{});
+    test_empty_operation(
+        "constant__int(list(4))", std::array<int, PHYLANX_MAX_DIMENSIONS>{4});
+    test_empty_operation("constant__int(list(2, 2))",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
 
     // empty_like
-    test_empty_operation("constant_like__int(1)", {1, 1});
-    test_empty_operation("constant_like__int(hstack(1, 2, 3, 4))", {1, 4});
+    test_empty_operation("constant_like__int(1)",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{});
+    test_empty_operation("constant_like__int(hstack(1, 2, 3, 4))",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{4});
     test_empty_operation(
-        "constant_like__int(hstack(vstack(1, 2), vstack(3, 4)))", {2, 2});
+        "constant_like__int(hstack(vstack(1, 2), vstack(3, 4)))",
+        std::array<int, PHYLANX_MAX_DIMENSIONS>{2, 2});
 
     return hpx::util::report_errors();
 }

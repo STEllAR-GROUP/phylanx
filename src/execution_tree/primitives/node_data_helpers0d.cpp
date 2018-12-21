@@ -11,6 +11,7 @@
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 
 #include <algorithm>
 #include <array>
@@ -116,6 +117,112 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    std::size_t num_dimensions(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
+    {
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        if (dims[2] != 0)
+        {
+            return 3;
+        }
+#endif
+        if (dims[1] != 0)
+        {
+            return 2;
+        }
+        if (dims[0] != 0)
+        {
+            return 1;
+        }
+        return 0;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    align_dimensions_to_vector(std::size_t real_numdims,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
+    {
+        HPX_ASSERT(real_numdims == 0);
+        return {};
+    }
+
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    align_dimensions_to_matrix(std::size_t real_numdims,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
+    {
+        HPX_ASSERT(real_numdims <= 1);
+        if (real_numdims == 0)
+        {
+            return {};
+        }
+
+        return {0, dims[0]};
+    }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    align_dimensions_to_tensor(std::size_t real_numdims,
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
+    {
+        HPX_ASSERT(real_numdims <= 2);
+        if (real_numdims == 0)
+        {
+            return {};
+        }
+        if (real_numdims == 1)
+        {
+            return {0, 0, dims[0]};
+        }
+
+        return {0, dims[0], dims[1]};
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_aligned_dimensions(
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
+        std::size_t numdims, std::string const& name,
+        std::string const& codename)
+    {
+        std::size_t real_numdims = num_dimensions(dims);
+        if (real_numdims == numdims)
+        {
+            return dims;
+        }
+
+        if (real_numdims > numdims)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::extract_aligned_dimensions",
+                util::generate_error_message(
+                    "invalid dimensionality",
+                    name, codename));
+        }
+
+        switch (numdims)
+        {
+        case 1:
+            return align_dimensions_to_vector(real_numdims, dims);
+
+        case 2:
+            return align_dimensions_to_matrix(real_numdims, dims);
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3:
+            return align_dimensions_to_tensor(real_numdims, dims);
+#endif
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_aligned_dimensions",
+            util::generate_error_message(
+                "unexpected dimensionality",
+                name, codename));
+    }
+
     std::size_t extract_largest_dimension(
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
@@ -126,7 +233,7 @@ namespace phylanx { namespace execution_tree
             result = (std::max)(
                 result, extract_numeric_value_dimension(arg, name, codename));
 
-            if (result == 2)
+            if (result == PHYLANX_MAX_DIMENSIONS)
             {
                 break;      // can't get larger than that
             }
@@ -135,20 +242,24 @@ namespace phylanx { namespace execution_tree
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_largest_dimensions(
+    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_largest_dimensions(
         primitive_arguments_type const& args,
         std::string const& name, std::string const& codename)
     {
+        std::size_t numdims = extract_largest_dimension(args, name, codename);
+
         std::vector<std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>> sizes;
         sizes.reserve(args.size());
 
         for (auto const& arg : args)
         {
-            sizes.emplace_back(
-                extract_numeric_value_dimensions(arg, name, codename));
+            sizes.emplace_back(extract_aligned_dimensions(
+                extract_numeric_value_dimensions(arg, name, codename),
+                numdims, name, codename));
         }
 
-        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{0, 0};
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{};
 
         auto max_array =
             [](std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& lhs,

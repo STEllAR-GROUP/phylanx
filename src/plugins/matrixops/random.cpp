@@ -71,8 +71,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 7:    // phylanx::ir::range
             {
-                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{
-                    1ull, 1ull};
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result{};
                 auto const& list = util::get<7>(val);
                 auto const& args = list;
                 switch (args.size())
@@ -86,7 +85,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return result;
 
                 case 1:
-                    result[1] = extract_integer_value(*args.begin())[0];
+                    result[0] = extract_integer_value(*args.begin())[0];
                     return result;
 
                 case 0:
@@ -529,11 +528,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         inline int num_dimensions(
             std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims)
         {
-            if (dims[0] != 1)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            if (dims[2] != 0)
+            {
+                return 3;
+            }
+#endif
+            if (dims[1] != 0)
             {
                 return 2;
             }
-            if (dims[1] != 1)
+            if (dims[0] != 0)
             {
                 return 1;
             }
@@ -594,7 +599,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->random0d(std::move(params));
 
                 case 1:
-                    return this_->random1d(dims[1], std::move(params));
+                    return this_->random1d(dims[0], std::move(params));
 
                 case 2:
                     return this_->random2d(dims, std::move(params));

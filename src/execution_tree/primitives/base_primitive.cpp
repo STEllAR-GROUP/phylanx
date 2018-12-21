@@ -1281,6 +1281,54 @@ namespace phylanx { namespace execution_tree
                 name, codename));
     }
 
+    std::size_t extract_numeric_value_size(
+        primitive_argument_type const& val, std::string const& name,
+        std::string const& codename)
+    {
+        switch (val.index())
+        {
+        case 1:    // phylanx::ir::node_data<std::uint8_t>
+            return util::get<1>(val).size();
+
+        case 2:     // ir::node_data<std::int64_t>
+            return util::get<2>(val).size();
+
+        case 4:     // phylanx::ir::node_data<double>
+            return util::get<4>(val).size();
+
+        case 6:     // std::vector<ast::expression>
+            {
+                auto const& exprs = util::get<6>(val);
+                if (exprs.size() == 1)
+                {
+                    if (ast::detail::is_literal_value(exprs[0]))
+                    {
+                        return to_primitive_numeric_type(
+                            ast::detail::literal_value(exprs[0]))
+                                .size();
+                    }
+                }
+            }
+            break;
+
+        case 0: HPX_FALLTHROUGH;    // nil
+        case 3: HPX_FALLTHROUGH;    // string
+        case 5: HPX_FALLTHROUGH;    // primitive
+        case 7: HPX_FALLTHROUGH;    // phylanx::ir::range
+        case 8: HPX_FALLTHROUGH;    // phylanx::ir::dictionary
+        default:
+            break;
+        }
+
+        std::string type(detail::get_primitive_argument_type_name(val.index()));
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_numeric_value_size",
+            util::generate_error_message(
+                "primitive_argument_type does not hold a numeric "
+                    "value type (type held: '" + type + "')",
+                name, codename));
+    }
+
     std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
     extract_numeric_value_dimensions(primitive_argument_type const& val,
         std::string const& name, std::string const& codename)

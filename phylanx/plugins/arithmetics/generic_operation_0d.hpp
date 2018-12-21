@@ -105,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::string const& name, std::string const& codename)
     {
         auto func_map = get_0d_map<T>();
-        auto it = func_map.find(name);
+        auto it = func_map.find(funcname);
         if (it == func_map.end())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,

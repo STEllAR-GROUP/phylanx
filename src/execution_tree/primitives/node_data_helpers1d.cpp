@@ -152,7 +152,7 @@ namespace phylanx { namespace execution_tree
                     rhs.dimension(2) == 1)
                 {
                     auto t = rhs.tensor();
-                    result = blaze::column(blaze::rowslice(t, 0), 0);
+                    result = blaze::trans(blaze::row(blaze::rowslice(t, 0), 0));
                     return;
                 }
 

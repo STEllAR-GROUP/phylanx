@@ -240,6 +240,11 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT std::size_t extract_numeric_value_size(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
     extract_numeric_value_dimensions(primitive_argument_type const& val,
         std::string const& name = "",

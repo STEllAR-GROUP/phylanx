@@ -68,12 +68,7 @@ namespace phylanx { namespace execution_tree { namespace detail
 
             if (is_integer_operand_strict(first_element))
             {
-                auto&& idx = extract_integer_value_strict(
-                    std::move(first_element), name, codename);
-                if (idx.size() > 1)
-                {
-                    return slicing_index_advanced_integer;
-                }
+                return slicing_index_advanced_integer;
             }
         }
         return slicing_index_basic;
@@ -101,13 +96,37 @@ namespace phylanx { namespace execution_tree { namespace detail
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    std::size_t extract_index_size(
+        primitive_argument_type const& indices, std::string const& name,
+        std::string const& codename)
+    {
+        switch (extract_numeric_value_dimension(indices, name, codename))
+        {
+        case 0:
+            return 1;
+
+        case 1:
+            return extract_numeric_value_dimensions(indices, name, codename)[0];
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        case 3: HPX_FALLTHROUGH;
+#endif
+        case 2:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "phylanx::execution_tree::extract_index_size",
+            util::generate_error_message(
+                "unsupported indexing type", name, codename));
+    }
+
     std::size_t extract_advanced_index_size(
         primitive_argument_type const& indices, std::string const& name,
         std::string const& codename)
     {
         ir::range const& list = util::get<7>(indices);
-        return extract_numeric_value_dimensions(
-            *list.begin(), name, codename)[0];
+        return extract_index_size(*list.begin(), name, codename);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -149,8 +168,7 @@ namespace phylanx { namespace execution_tree { namespace detail
             if (is_integer_operand(indices))
             {
                 // advanced indexing (integer array indexing)
-                return extract_numeric_value_dimensions(
-                    indices, name, codename)[0];
+                return extract_index_size(indices, name, codename);
             }
         }
         else

@@ -7,6 +7,8 @@
 #include <phylanx/plugins/arithmetics/arithmetics.hpp>
 #include <phylanx/plugins/plugin_factory.hpp>
 
+#include <string>
+
 PHYLANX_REGISTER_PLUGIN_MODULE();
 
 PHYLANX_REGISTER_PLUGIN_FACTORY(add_operation_plugin,

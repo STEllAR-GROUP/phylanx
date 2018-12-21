@@ -225,7 +225,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 1:
             {
                 std::size_t size =
-                    extract_largest_dimensions(name_, codename_, lhs, rhs)[1];
+                    extract_largest_dimensions(name_, codename_, lhs, rhs)[0];
                 return primitive_argument_type{extract_value_vector<R>(
                     op.scalar() ? std::move(lhs) : std::move(rhs),
                     size, name_, codename_)};
@@ -271,13 +271,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             return op[index] ? val : rhs_val.scalar();
                         },
-                        sizes[1], name_, codename_)};
+                        sizes[0], name_, codename_)};
             }
 
         case 1:
             {
                 auto rhs_val = extract_value_vector<R>(
-                    std::move(rhs), sizes[1], name_, codename_);
+                    std::move(rhs), sizes[0], name_, codename_);
                 auto rhs_vector = rhs_val.vector();
 
                 return primitive_argument_type{
@@ -286,7 +286,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         {
                             return op[index] ? val : rhs_vector[index];
                         },
-                        sizes[1], name_, codename_)};
+                        sizes[0], name_, codename_)};
             }
 
         case 2:
@@ -342,7 +342,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 1:
             {
                 auto rhs_val = extract_value_vector<R>(
-                    std::move(rhs), sizes[1], name_, codename_);
+                    std::move(rhs), sizes[0], name_, codename_);
                 auto rhs_vector = rhs_val.vector();
 
                 return primitive_argument_type{

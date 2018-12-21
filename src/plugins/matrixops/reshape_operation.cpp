@@ -57,27 +57,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
         : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    bool reshape_operation::validate_shape(std::int64_t n, ir::range&& arg) const
+    bool reshape_operation::validate_shape(
+        std::int64_t n, ir::range const& arg) const
     {
         if (arg.size() == 1)
         {
             auto first = extract_scalar_integer_value_strict(*arg.begin());
             if (first == -1)
                 return true;
-            else
-                return first == n;
+
+            return first == n;
         }
         else if (arg.size() == 2)
         {
             auto it = arg.begin();
-            auto first = extract_scalar_integer_value_strict(*it++);
-            auto second = extract_scalar_integer_value_strict(*it);
+            auto first = extract_scalar_integer_value_strict(*it);
+            auto second = extract_scalar_integer_value_strict(*++it);
             if (second == -1 && first > 0)
             {
                 if (n % first == 0)
                     return true;
             }
-            else if(first>0 && second > 0)
+            else if (first > 0 && second > 0)
             {
                 return first * second == n;
             }
@@ -103,9 +104,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         case 1:
             return primitive_argument_type{
                 blaze::DynamicVector<T>{arr.scalar()}};
+
         case 2:
             return primitive_argument_type{
                 blaze::DynamicMatrix<T>{1, 1, arr.scalar()}};
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::eval",
@@ -159,8 +162,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto a = arr.vector();
 
         auto it = arg.begin();
-        auto first = extract_scalar_integer_value(*it++);
-        auto second = extract_scalar_integer_value(*it);
+        auto first = extract_scalar_integer_value(*it);
+        auto second = extract_scalar_integer_value(*++it);
 
         blaze::DynamicMatrix<T> result(first, second);
 
@@ -177,9 +180,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         switch (arg.size())
         {
         case 1:
-            return primitive_argument_type{arr};
+            return primitive_argument_type{std::move(arr)};
+
         case 2:
             return reshape1d_2d(std::move(arr),std::move(arg));
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::reshape1d",
@@ -235,8 +240,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicVector<T> result(a.rows() * a.columns(), T(0));
 
-        const matrix_row_iterator<decltype(a)> a_begin(a);
-        const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+        matrix_row_iterator<decltype(a)> const a_begin(a);
+        matrix_row_iterator<decltype(a)> const a_end(a, a.rows());
 
         auto d = result.data();
         for (auto it = a_begin; it != a_end; ++it)
@@ -259,8 +264,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicMatrix<T> result(first, second);
 
-        const matrix_row_iterator<decltype(a)> a_begin(a);
-        const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+        matrix_row_iterator<decltype(a)> const a_begin(a);
+        matrix_row_iterator<decltype(a)> const a_end(a, a.rows());
 
         auto d = result.data();
         for (auto it = a_begin; it != a_end; ++it)
@@ -278,14 +283,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case 1:
             return reshape2d_1d(std::move(arr));
+
         case 2:
-            return reshape2d_2d(std::move(arr),std::move(arg));
+            return reshape2d_2d(std::move(arr), std::move(arg));
+
         default:
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "reshape_operation::reshape2d",
                 util::generate_error_message(
-                    "reshaping to >2d is not supported",
-                    name_, codename_));
+                    "reshaping to >2d is not supported", name_, codename_));
         }
     }
 
@@ -354,24 +360,27 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto this_ = this->shared_from_this();
-        return hpx::dataflow(hpx::launch::sync,
-            hpx::util::unwrapping([this_ = std::move(this_)](
-                                      primitive_argument_type&& arr,
-                                      ir::range&& arg)
-                                      -> primitive_argument_type {
+        return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
+            [this_ = std::move(this_)](
+                    primitive_argument_type&& arr, ir::range&& arg)
+            ->  primitive_argument_type
+            {
                 auto arr_dims_num = extract_numeric_value_dimension(
                     arr, this_->name_, this_->codename_);
-                auto arr_dims = extract_numeric_value_dimensions(
+                auto size = extract_numeric_value_size(
                     arr, this_->name_, this_->codename_);
 
                 if (arr_dims_num > 2)
+                {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "reshape_operation::eval",
                         util::generate_error_message("operand a has an invalid "
-                                                     "number of dimensions",
+                            "number of dimensions",
                             this_->name_, this_->codename_));
+                }
 
-                if (this_->validate_shape(arr_dims[0]* arr_dims[1], std::move(arg)))
+                if (this_->validate_shape(size, arg))
+                {
                     switch (arr_dims_num)
                     {
                     case 0:
@@ -390,10 +399,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions",
                                 this_->name_, this_->codename_));
                     }
+                }
                 else
                 {
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                        "reshape_operation::validate_shape",
+                        "reshape_operation::eval",
                         util::generate_error_message("The given shape is not "
                             "compatible with the shape of the original array",
                             this_->name_, this_->codename_));

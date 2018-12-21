@@ -282,32 +282,51 @@ namespace phylanx { namespace ast
         {
         }
 
-        primary_expr(phylanx::ir::node_data<double> const& val)
+        template <typename T>
+        primary_expr(phylanx::ir::node_data<T> const& val)
           : expr_node_type(val)
         {
         }
-        primary_expr(phylanx::ir::node_data<double> && val)
+        template <typename T>
+        primary_expr(phylanx::ir::node_data<T> && val)
           : expr_node_type(std::move(val))
         {
         }
 
-        primary_expr(std::vector<double> const& val)
-          : expr_node_type(phylanx::ir::node_data<double>{val})
+        template <typename T>
+        primary_expr(std::vector<T> const& val)
+          : expr_node_type(phylanx::ir::node_data<T>{val})
         {
         }
-        primary_expr(std::vector<double> && val)
-          : expr_node_type(phylanx::ir::node_data<double>{std::move(val)})
+        template <typename T>
+        primary_expr(std::vector<T> && val)
+          : expr_node_type(phylanx::ir::node_data<T>{std::move(val)})
         {
         }
 
-        primary_expr(std::vector<std::vector<double>> const& val)
-          : expr_node_type(phylanx::ir::node_data<double>{val})
+        template <typename T>
+        primary_expr(std::vector<std::vector<T>> const& val)
+          : expr_node_type(phylanx::ir::node_data<T>{val})
         {
         }
-        primary_expr(std::vector<std::vector<double>> && val)
-          : expr_node_type(phylanx::ir::node_data<double>{std::move(val)})
+        template <typename T>
+        primary_expr(std::vector<std::vector<T>> && val)
+          : expr_node_type(phylanx::ir::node_data<T>{std::move(val)})
         {
         }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        template <typename T>
+        primary_expr(std::vector<std::vector<std::vector<T>>> const& val)
+          : expr_node_type(phylanx::ir::node_data<T>{val})
+        {
+        }
+        template <typename T>
+        primary_expr(std::vector<std::vector<std::vector<T>>> && val)
+          : expr_node_type(phylanx::ir::node_data<T>{std::move(val)})
+        {
+        }
+#endif
 
         primary_expr(identifier const& val)
           : expr_node_type(val)

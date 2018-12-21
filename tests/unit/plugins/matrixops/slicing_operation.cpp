@@ -558,43 +558,43 @@ void test_slicing_operation_3d_single_slice()
 
 int main(int argc, char* argv[])
 {
-//     test_slicing_operation_0d();
-//
-//     test_slicing_operation_1d();
-//     test_slicing_operation_1d_start();
-//     test_slicing_operation_1d_start_negative();
-//     test_slicing_operation_1d_step();
-//     test_slicing_operation_1d_neg_step();
-//
-//     test_slicing_operation_1d_negative_index();
-//     test_slicing_operation_1d_single_slice_negative_index();
-//     test_slicing_operation_1d_negative_index_zero_start();
-//     test_slicing_operation_1d_negative_index_neg_step();
-//     test_slicing_operation_1d_single();
-//     test_slicing_operation_1d_single_negative();
-//
-//     test_slicing_operation_2d_value();
-//     test_slicing_operation_2d_single_row();
-//     test_slicing_operation_2d_single_row_v2();
-//     test_slicing_operation_2d_single_row_result_matrix();
-//     test_slicing_operation_2d();
-//     test_slicing_operation_2d_step();
-//     test_slicing_operation_2d_neg_step();
-//
-//     test_slicing_operation_2d_negative_index();
-//     test_slicing_operation_2d_single_slice_negative_index();
-//     test_slicing_operation_2d_single_slice_negative_index_v2();
-//     test_slicing_operation_2d_negative_index_zero_start();
-//     test_slicing_operation_2d_negative_index_neg_step();
-//
-//     test_set_index_scalar();
-//     test_set_index_list();
+    test_slicing_operation_0d();
+
+    test_slicing_operation_1d();
+    test_slicing_operation_1d_start();
+    test_slicing_operation_1d_start_negative();
+    test_slicing_operation_1d_step();
+    test_slicing_operation_1d_neg_step();
+
+    test_slicing_operation_1d_negative_index();
+    test_slicing_operation_1d_single_slice_negative_index();
+    test_slicing_operation_1d_negative_index_zero_start();
+    test_slicing_operation_1d_negative_index_neg_step();
+    test_slicing_operation_1d_single();
+    test_slicing_operation_1d_single_negative();
+
+    test_slicing_operation_2d_value();
+    test_slicing_operation_2d_single_row();
+    test_slicing_operation_2d_single_row_v2();
+    test_slicing_operation_2d_single_row_result_matrix();
+    test_slicing_operation_2d();
+    test_slicing_operation_2d_step();
+    test_slicing_operation_2d_neg_step();
+
+    test_slicing_operation_2d_negative_index();
+    test_slicing_operation_2d_single_slice_negative_index();
+    test_slicing_operation_2d_single_slice_negative_index_v2();
+    test_slicing_operation_2d_negative_index_zero_start();
+    test_slicing_operation_2d_negative_index_neg_step();
+
+    test_set_index_scalar();
+    test_set_index_list();
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
     test_slicing_operation_3d_value();
     test_slicing_operation_3d_value_negative_index();
 
-    test_slicing_operation_3d_single_slice();
+//     test_slicing_operation_3d_single_slice();
 #endif
 
     return hpx::util::report_errors();

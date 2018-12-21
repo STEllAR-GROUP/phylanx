@@ -52,7 +52,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        bool validate_shape(std::int64_t, ir::range&& arg) const;
+        bool validate_shape(std::int64_t, ir::range const& arg) const;
+
         primitive_argument_type reshape0d(
             primitive_argument_type&& arr, ir::range&& arg) const;
         primitive_argument_type reshape1d(

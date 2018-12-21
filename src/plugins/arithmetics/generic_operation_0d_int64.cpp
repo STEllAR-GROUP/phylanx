@@ -7,6 +7,7 @@
 #include <phylanx/plugins/arithmetics/generic_operation.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation_0d.hpp>
 
+#include <cstdint>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////

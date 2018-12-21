@@ -8,6 +8,8 @@
 #include <hpx/hpx_main.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <utility>
+
 #include <blaze/Math.h>
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 #include <blaze_tensor/Math.h>

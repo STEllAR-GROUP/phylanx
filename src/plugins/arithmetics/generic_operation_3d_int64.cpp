@@ -9,6 +9,7 @@
 #include <phylanx/plugins/arithmetics/generic_operation.hpp>
 #include <phylanx/plugins/arithmetics/generic_operation_3d.hpp>
 
+#include <cstdint>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////

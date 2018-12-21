@@ -14,6 +14,7 @@
 #include <hpx/include/serialization.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/runtime/threads/run_as_os_thread.hpp>
+#include <hpx/runtime/threads/run_as_os_thread.hpp>
 #include <hpx/util/register_locks.hpp>
 
 #include <atomic>
@@ -752,7 +753,7 @@ namespace phylanx { namespace ir
 
         case storage1d:         HPX_FALLTHROUGH;
         case custom_storage1d:
-            return vector()[index2];
+            return vector()[index1];
 
         case storage2d:         HPX_FALLTHROUGH;
         case custom_storage2d:
@@ -779,7 +780,7 @@ namespace phylanx { namespace ir
 
         case storage1d:         HPX_FALLTHROUGH;
         case custom_storage1d:
-            return vector()[index2];
+            return vector()[index1];
 
         case storage2d:         HPX_FALLTHROUGH;
         case custom_storage2d:

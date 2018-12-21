@@ -54,7 +54,7 @@ void dstack_operation_0d()
     hpx::future<phylanx::execution_tree::primitive_argument_type> f =
         dstack.eval();
 
-    blaze::DynamicTensor<double> expected{{{42.0, 5.0}}};
+    blaze::DynamicTensor<double> expected{{{42.0}}, {{5.0}}};
 
     HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
         phylanx::execution_tree::extract_numeric_value(f.get()));

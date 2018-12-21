@@ -723,8 +723,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         std::size_t vec_size = args.size();
 
-        blaze::DynamicTensor<T> result(1, 1, vec_size);
-        auto row = blaze::row(blaze::pageslice(result, 0), 0);
+        blaze::DynamicTensor<T> result(vec_size, 1, 1);
+        auto row = blaze::row(blaze::rowslice(result, 0), 0);
 
         std::size_t i = 0;
         for (auto && arg : args)

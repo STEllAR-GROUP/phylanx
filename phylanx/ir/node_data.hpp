@@ -257,6 +257,12 @@ namespace phylanx { namespace ir
                 increment_copy_construction_count();
                 return storage_type(d.matrix());
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            case storage3d:         HPX_FALLTHROUGH;
+            case custom_storage3d:
+                increment_copy_construction_count();
+                return storage_type(d.tensor());
+#endif
             default:
                 HPX_THROW_EXCEPTION(hpx::invalid_status,
                     "phylanx::ir::node_data<T>::node_data<U>",

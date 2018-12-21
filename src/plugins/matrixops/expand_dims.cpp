@@ -124,18 +124,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (axis == 0)
         {
             blaze::DynamicMatrix<T> result(1, data.size());
-            for (std::size_t i = 0; i != data.size(); ++i)
-            {
-                result(0, i) = data[i];
-            }
+            blaze::row(result, 0) = blaze::trans(data);
             return primitive_argument_type{std::move(result)};
         }
 
         blaze::DynamicMatrix<T> result(data.size(), 1);
-        for (std::size_t i = 0; i != data.size(); ++i)
-        {
-            result(i, 0) = data[i];
-        }
+        blaze::column(result, 0) = data;
         return primitive_argument_type{std::move(result)};
     }
 
@@ -207,7 +201,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else if (axis == 1)
         {
             blaze::DynamicTensor<T> result(data.rows(), 1, data.columns());
-            blaze::rowslice(result, 0) = data;
+            blaze::rowslice(result, 0) = blaze::trans(data);
             return primitive_argument_type{std::move(result)};
         }
 

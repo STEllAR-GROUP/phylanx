@@ -38,12 +38,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
             ir::range const& shape)
         {
-            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {1, 1};
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0, 0};
             if (!shape.empty())
             {
                 if (shape.size() == 1)
                 {
-                    result[1] = extract_scalar_integer_value(*shape.begin());
+                    result[0] = extract_scalar_integer_value(*shape.begin());
                 }
                 else if (shape.size() == 2)
                 {
@@ -51,6 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     result[0] = extract_scalar_integer_value(*elem_1);
                     result[1] = extract_scalar_integer_value(*++elem_1);
                 }
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                else if (shape.size() == 3)
+                {
+                    auto elem_1 = shape.begin();
+                    result[0] = extract_scalar_integer_value(*elem_1);
+                    result[1] = extract_scalar_integer_value(*++elem_1);
+                    result[2] = extract_scalar_integer_value(*++elem_1);
+                }
+#endif
             }
             return result;
         }
@@ -312,7 +321,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                         ir::range&& r = extract_list_value_strict(
                             std::move(op1), this_->name_, this_->codename_);
-                        if (r.size() > 2)
+                        if (r.size() > PHYLANX_MAX_DIMENSIONS)
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "constant::eval",
@@ -398,7 +407,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::range&& r = extract_list_value_strict(
                         std::move(op0), this_->name_, this_->codename_);
 
-                    if (r.size() > 2)
+                    if (r.size() > PHYLANX_MAX_DIMENSIONS)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
