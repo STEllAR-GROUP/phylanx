@@ -156,6 +156,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type reshape_operation::reshape1d_2d(
         ir::node_data<T>&& arr, ir::range&& arg) const
     {
+        using phylanx::util::matrix_row_iterator;
         auto a = arr.vector();
 
         auto it = arg.begin();
@@ -164,13 +165,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         blaze::DynamicMatrix<T> result(first, second);
 
-        //const matrix_row_iterator<decltype(a)> a_begin(a);
-        //const matrix_row_iterator<decltype(a)> a_end(a, a.rows());
+        const matrix_row_iterator<decltype(result)> r_begin(result);
+        const matrix_row_iterator<decltype(result)> r_end(result, first);
 
-        //auto d = result.data();
-        //for (auto i = 0; i != first; i++)
-            d = std::copy(a.begin(), a.end(), d);
+        auto b = a.begin();
+        auto e = b;
+        std::advance(e, second);
 
+        for (auto i = r_begin; i != r_end; i++)
+        {
+            std::copy(b, e, i->begin());
+            b = e;
+            std::advance(e, second);
+        }
         return primitive_argument_type{std::move(result)};
     }
 
