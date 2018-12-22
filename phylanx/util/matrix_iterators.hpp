@@ -19,16 +19,13 @@ namespace phylanx { namespace util
     // NOTE: These iterators are not swappable.
     template <typename T>
     class matrix_row_iterator
-        : public hpx::util::iterator_facade<
-            matrix_row_iterator<T>,
-            blaze::Row<T>,
-            std::random_access_iterator_tag,
-            blaze::Row<T>>
+      : public hpx::util::iterator_facade<matrix_row_iterator<T>, blaze::Row<T>,
+            std::random_access_iterator_tag, blaze::Row<T>>
     {
     public:
         explicit matrix_row_iterator(T& t, const std::size_t index = 0)
-            : data_(&t)
-            , index_(index)
+          : data_(&t)
+          , index_(index)
         {
         }
 
@@ -72,16 +69,13 @@ namespace phylanx { namespace util
 
     template <typename T>
     class matrix_column_iterator
-        : public hpx::util::iterator_facade<
-        matrix_column_iterator<T>,
-        blaze::Column<T>,
-        std::random_access_iterator_tag,
-        blaze::Column<T>>
+      : public hpx::util::iterator_facade<matrix_column_iterator<T>,
+            blaze::Column<T>, std::random_access_iterator_tag, blaze::Column<T>>
     {
     public:
         explicit matrix_column_iterator(T& t, const std::size_t index = 0)
-            : data_(&t)
-            , index_(index)
+          : data_(&t)
+          , index_(index)
         {
         }
 

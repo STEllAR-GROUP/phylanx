@@ -9,6 +9,7 @@
 #include <phylanx/plugins/arithmetics/add_operation.hpp>
 #include <phylanx/plugins/arithmetics/cumsum.hpp>
 #include <phylanx/plugins/arithmetics/div_operation.hpp>
+#include <phylanx/plugins/arithmetics/generic_operation.hpp>
 #include <phylanx/plugins/arithmetics/mul_operation.hpp>
 #include <phylanx/plugins/arithmetics/prod_operation.hpp>
 #include <phylanx/plugins/arithmetics/sub_operation.hpp>

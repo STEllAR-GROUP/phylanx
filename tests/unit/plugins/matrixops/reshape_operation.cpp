@@ -188,9 +188,9 @@ void test_reshape_operation_2d_matrix()
 
 int main(int argc, char* argv[])
 {
-    test_reshape_operation_0d_vector();
-    test_reshape_operation_0d_matrix();
-    test_reshape_operation_1d_vector();
+//     test_reshape_operation_0d_vector();
+//     test_reshape_operation_0d_matrix();
+//     test_reshape_operation_1d_vector();
     test_reshape_operation_1d_matrix();
     test_reshape_operation_2d_vector();
     test_reshape_operation_2d_matrix();

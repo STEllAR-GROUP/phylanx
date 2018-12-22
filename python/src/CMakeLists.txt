@@ -69,10 +69,15 @@ include_directories(${pybind11_INCLUDE_DIR})
 
 # this makes sure CMake uses the proper HPX library dependencies
 target_link_libraries(phylanx_py
-  PRIVATE
+  ${HPX_TLL_PRIVATE}
     phylanx_component
     blaze::blaze
     ${pybind11_LIBRARIES})
+if(PHYLANX_WITH_BLAZE_TENSOR)
+  target_link_libraries(phylanx_py
+    ${HPX_TLL_PRIVATE}
+      BlazeTensor::BlazeTensor)
+endif()
 if(NOT MSVC)
     foreach(dir ${HPX_LIBRARY_DIR})
         target_link_libraries(phylanx_py PRIVATE -L${dir})

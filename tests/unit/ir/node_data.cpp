@@ -14,6 +14,11 @@
 #include <cstdint>
 #include <vector>
 
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
+
 void test_serialization(phylanx::ir::node_data<double> const& array_value1)
 {
     phylanx::ir::node_data<double> array_value2;
@@ -31,7 +36,7 @@ int main(int argc, char* argv[])
         HPX_TEST_EQ(single_value[0], 42.0);
         HPX_TEST_EQ(single_value.num_dimensions(), std::size_t(0UL));
         HPX_TEST(single_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({1, 1}));
+            phylanx::ir::node_data<double>::dimensions_type{});
 
         test_serialization(single_value);
     }
@@ -41,7 +46,7 @@ int main(int argc, char* argv[])
         HPX_TEST_EQ(single_value[0], false);
         HPX_TEST_EQ(single_value.num_dimensions(), std::size_t(0UL));
         HPX_TEST(single_value.dimensions() ==
-            phylanx::ir::node_data<std::uint8_t>::dimensions_type({1, 1}));
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type{});
     }
 
     {
@@ -49,7 +54,7 @@ int main(int argc, char* argv[])
         HPX_TEST_EQ(single_value[0], 42);
         HPX_TEST_EQ(single_value.num_dimensions(), std::size_t(0UL));
         HPX_TEST(single_value.dimensions() ==
-                 phylanx::ir::node_data<std::uint8_t>::dimensions_type({1, 1}));
+                 phylanx::ir::node_data<std::uint8_t>::dimensions_type{});
     }
 
     {
@@ -60,7 +65,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({1UL, v.size()}));
+            phylanx::ir::node_data<double>::dimensions_type{v.size()});
 
         test_serialization(array_value);
     }
@@ -72,8 +77,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<std::uint8_t>::dimensions_type(
-                {1UL, v.size()}));
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type{v.size()});
     }
 
     {
@@ -84,8 +88,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<std::int64_t>::dimensions_type(
-                {1UL, v.size()}));
+            phylanx::ir::node_data<std::int64_t>::dimensions_type{v.size()});
 
         test_serialization(array_value);
     }
@@ -98,7 +101,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type({1UL, v.size()}));
+            phylanx::ir::node_data<double>::dimensions_type{v.size()});
 
         test_serialization(array_value);
     }
@@ -111,8 +114,7 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(1UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<std::int64_t>::dimensions_type(
-                {1UL, v.size()}));
+            phylanx::ir::node_data<std::int64_t>::dimensions_type{v.size()});
 
         test_serialization(array_value);
     }
@@ -125,8 +127,8 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<double>::dimensions_type(
-                {m.rows(), m.columns()}));
+            phylanx::ir::node_data<double>::dimensions_type({
+                m.rows(), m.columns()}));
 
         test_serialization(array_value);
     }
@@ -139,8 +141,8 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
-            phylanx::ir::node_data<std::uint8_t>::dimensions_type(
-                {m.rows(), m.columns()}));
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type({
+                m.rows(), m.columns()}));
     }
 
     {
@@ -151,11 +153,53 @@ int main(int argc, char* argv[])
 
         HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(2UL));
         HPX_TEST(array_value.dimensions() ==
-                 phylanx::ir::node_data<std::int64_t>::dimensions_type(
-                         {m.rows(), m.columns()}));
+            phylanx::ir::node_data<std::int64_t>::dimensions_type({
+                m.rows(), m.columns()}));
 
         test_serialization(array_value);
     }
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    {
+        blaze::Rand<blaze::DynamicTensor<double>> gen{};
+        blaze::DynamicTensor<double> t = gen.generate(3UL, 42UL, 101UL);
+
+        phylanx::ir::node_data<double> array_value(t);
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(3UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<double>::dimensions_type({
+                t.pages(), t.rows(), t.columns()}));
+
+        test_serialization(array_value);
+    }
+
+    {
+        blaze::Rand<blaze::DynamicTensor<double>> gen{};
+        blaze::DynamicTensor<double> t = gen.generate(3UL, 42UL, 101UL);
+
+        phylanx::ir::node_data<std::uint8_t> array_value(t);
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(3UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<std::uint8_t>::dimensions_type({
+                t.pages(), t.rows(), t.columns()}));
+    }
+
+    {
+        blaze::Rand<blaze::DynamicTensor<double>> gen{};
+        blaze::DynamicTensor<double> t = gen.generate(3UL, 42UL, 101UL);
+
+        phylanx::ir::node_data<double> array_value(t);
+
+        HPX_TEST_EQ(array_value.num_dimensions(), std::size_t(3UL));
+        HPX_TEST(array_value.dimensions() ==
+            phylanx::ir::node_data<std::int64_t>::dimensions_type({
+                t.pages(), t.rows(), t.columns()}));
+
+        test_serialization(array_value);
+    }
+#endif
 
     return hpx::util::report_errors();
 }

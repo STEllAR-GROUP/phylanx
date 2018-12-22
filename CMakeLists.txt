@@ -49,6 +49,7 @@ link_directories(${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_DEBUG_POSTFIX "d")
 set(PHYLANX_DEBUG_POSTFIX "d")
 
+include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 include(CMakeDependentOption)
 
@@ -118,8 +119,13 @@ phylanx_option(
 
 phylanx_option(
   PHYLANX_WITH_ITERATIVE_SOLVERS BOOL
-  "Enable or disable the iterative solvers"
-  OFF ADVANCED CATEGORY "BUILD")
+  "Enable or disable the Blaze iterative solvers"
+  OFF ADVANCED CATEGORY "Build")
+
+phylanx_option(
+  PHYLANX_WITH_BLAZE_TENSOR BOOL
+  "Enable or disable Blaze tensor types"
+  OFF ADVANCED CATEGORY "Build")
 
 if(MSVC)
   phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
@@ -147,13 +153,6 @@ endif()
 
 set(PHYLANX_TLL_PUBLIC ${HPX_TLL_PUBLIC})
 set(PHYLANX_TLL_PRIVATE ${HPX_TLL_PRIVATE})
-
-################################################################################
-# Add iterative solvers from Blaxeiterative
-################################################################################
-if(PHYLANX_WITH_ITERATIVE_SOLVERS)
-find_package(BlazeIterative)
-endif()
 
 ################################################################################
 # Set basic search paths for the generated Phylanx headers

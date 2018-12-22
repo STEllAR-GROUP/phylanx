@@ -29,9 +29,12 @@ mapped_methods = {
 methods_supporting_dtype = [
     'arange',
     'cumsum',
-    'expand_dims',
+    'dstack',
+    'eye',
     'hstack',
     'identity',
+    'prod',
+    'stack',
     'vstack',
 ]
 
@@ -537,7 +540,7 @@ class PhySL:
             else:
                 return [symbol, (args[1], args[0])]
         else:
-            method = [m for m in methods_supporting_dtype if m in symbol]
+            method = [m for m in methods_supporting_dtype if symbol.find(m, 0) == 0]
             if len(method) == 1:
                 symbol = symbol.replace(method[0], method[0] + dtype)
 

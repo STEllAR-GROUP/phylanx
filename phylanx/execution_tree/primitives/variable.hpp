@@ -52,6 +52,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type&& params);
         void store2dslice(primitive_arguments_type&& data,
             primitive_arguments_type&& params);
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        void store3dslice(primitive_arguments_type&& data,
+            primitive_arguments_type&& params);
+#endif
 
     private:
         mutable primitive_argument_type bound_value_;

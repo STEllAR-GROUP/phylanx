@@ -7,6 +7,7 @@ set(tests
     advanced_boolean_slicing
     advanced_integer_slicing
     assert_condition
+    broadcast
     define_operation
     dictionary
     format_string
