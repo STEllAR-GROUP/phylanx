@@ -27,20 +27,19 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("shape",
             std::vector<std::string>{"shape(_1, _2)", "shape(_1)"},
-            &create_extract_shape, &create_primitive<extract_shape>,
-            "m, dim\n"
-            "Args:\n"
-            "\n"
-            "    m (object): a vector or matrix\n"
-            "    dim (optional, int): the dimension to get the size of\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "Without the optional argument, it returns a list of integers "
-            "corresponding to the size of each dimension of the vector or "
-            "matrix. If the optional `dim` argument is supplied, then the "
-            "size for that dimension is returned as an integer."
-            )
+            &create_extract_shape, &create_primitive<extract_shape>, R"(
+            m, dim
+            Args:
+
+                m (object): a vector or matrix
+                dim (optional, int): the dimension to get the size of
+
+            Returns:
+
+            Without the optional argument, it returns a list of integers
+            corresponding to the size of each dimension of the vector or
+            matrix. If the optional `dim` argument is supplied, then the
+            size for that dimension is returned as an integer.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -50,68 +49,100 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
     {}
 
-    primitive_argument_type extract_shape::shape0d(arg_type&& arg) const
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type extract_shape::shape0d() const
     {
-        primitive_arguments_type result{};
-        return primitive_argument_type{std::move(result)};
+        return primitive_argument_type{primitive_arguments_type{}};
     }
 
-    primitive_argument_type extract_shape::shape0d(arg_type&& arg,
-        std::int64_t index) const
+    primitive_argument_type extract_shape::shape0d(std::int64_t index) const
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "extract_shape::eval",
-            generate_error_message(
-                "index out of range"));
+            "extract_shape::shape0d",
+            generate_error_message("index out of range"));
     }
 
-    primitive_argument_type extract_shape::shape1d(arg_type&& arg) const
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type extract_shape::shape1d(std::int64_t size) const
     {
-        primitive_arguments_type result{
-            primitive_argument_type{std::int64_t(arg.size())}};
+        primitive_arguments_type result{primitive_argument_type{size}};
         return primitive_argument_type{std::move(result)};
     }
 
-    primitive_argument_type extract_shape::shape1d(arg_type&& arg,
+    primitive_argument_type extract_shape::shape1d(std::int64_t size,
         std::int64_t index) const
     {
         if (index == 0)
         {
-            return primitive_argument_type{std::int64_t(arg.size())};
+            return primitive_argument_type{size};
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "extract_shape::eval",
-            generate_error_message(
-                "index out of range"));
+            "extract_shape::shape1d",
+            generate_error_message("index out of range"));
     }
 
-    primitive_argument_type extract_shape::shape2d(arg_type&& arg) const
+    ///////////////////////////////////////////////////////////////////////////
+    primitive_argument_type extract_shape::shape2d(
+        std::int64_t rows, std::int64_t columns) const
     {
-        // return a list of numbers representing the
-        // dimensions of the first argument
-        auto dims = arg.dimensions();
+        // return a list of numbers representing the dimensions of the argument
         primitive_arguments_type result{
-            primitive_argument_type{std::int64_t(dims[0])},
-            primitive_argument_type{std::int64_t(dims[1])}};
+            primitive_argument_type{rows}, primitive_argument_type{columns}};
         return primitive_argument_type{std::move(result)};
     }
 
-    primitive_argument_type extract_shape::shape2d(arg_type&& arg,
-        std::int64_t index) const
+    primitive_argument_type extract_shape::shape2d(
+        std::int64_t rows, std::int64_t columns, std::int64_t index) const
     {
-        if (index == 0 || index == 1)
+        if (index == 0)
         {
-            auto dims = arg.dimensions();
-            return primitive_argument_type{std::int64_t(dims[index])};
+            return primitive_argument_type{rows};
+        }
+        if (index == 1)
+        {
+            return primitive_argument_type{columns};
         }
 
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
-            "extract_shape::eval",
-            generate_error_message(
-                "index out of range"));
+            "extract_shape::shape2d",
+            generate_error_message("index out of range"));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    primitive_argument_type extract_shape::shape3d(
+        std::int64_t pages, std::int64_t rows, std::int64_t columns) const
+    {
+        // return a list of numbers representing the dimensions of the argument
+        primitive_arguments_type result{primitive_argument_type{pages},
+            primitive_argument_type{rows}, primitive_argument_type{columns}};
+        return primitive_argument_type{std::move(result)};
+    }
+
+    primitive_argument_type extract_shape::shape3d(std::int64_t pages,
+        std::int64_t rows, std::int64_t columns, std::int64_t index) const
+    {
+        if (index == 0)
+        {
+            return primitive_argument_type{pages};
+        }
+        if (index == 1)
+        {
+            return primitive_argument_type{rows};
+        }
+        if (index == 2)
+        {
+            return primitive_argument_type{columns};
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "extract_shape::shape3d",
+            generate_error_message("index out of range"));
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> extract_shape::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -139,21 +170,34 @@ namespace phylanx { namespace execution_tree { namespace primitives
         if (operands.size() == 1)
         {
             return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-                [this_ = std::move(this_)](arg_type && arg)
+                [this_ = std::move(this_)](primitive_argument_type && arg)
                 -> primitive_argument_type
                 {
-                    auto dims = arg.num_dimensions();
-                    switch (dims)
+                    switch (extract_numeric_value_dimension(
+                        arg, this_->name_, this_->codename_))
                     {
                     case 0:
-                        return this_->shape0d(std::move(arg));
+                        return this_->shape0d();
 
                     case 1:
-                        return this_->shape1d(std::move(arg));
+                        return this_->shape1d(extract_numeric_value_size(
+                            arg, this_->name_, this_->codename_));
 
                     case 2:
-                        return this_->shape2d(std::move(arg));
+                        {
+                            auto dims = extract_numeric_value_dimensions(
+                                arg, this_->name_, this_->codename_);
+                            return this_->shape2d(dims[0], dims[1]);
+                        }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                    case 3:
+                        {
+                            auto dims = extract_numeric_value_dimensions(
+                                arg, this_->name_, this_->codename_);
+                            return this_->shape3d(dims[0], dims[1], dims[2]);
+                        }
+#endif
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "extract_shape::eval",
@@ -162,26 +206,42 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "number of dimensions"));
                     }
                 }),
-                numeric_operand(operands[0], args,
+                value_operand(operands[0], args,
                     name_, codename_, std::move(ctx)));
         }
 
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](arg_type && arg, std::int64_t index)
+            [this_ = std::move(this_)](
+                    primitive_argument_type && arg, std::int64_t index)
             ->  primitive_argument_type
             {
-                auto dims = arg.num_dimensions();
-                switch (dims)
+                switch (extract_numeric_value_dimension(
+                    arg, this_->name_, this_->codename_))
                 {
                 case 0:
-                    return this_->shape0d(std::move(arg), index);
+                    return this_->shape0d(index);
 
                 case 1:
-                    return this_->shape1d(std::move(arg), index);
+                    return this_->shape1d(
+                        extract_numeric_value_size(
+                            arg, this_->name_, this_->codename_),
+                        index);
 
                 case 2:
-                    return this_->shape2d(std::move(arg), index);
+                    {
+                        auto dims = extract_numeric_value_dimensions(
+                            arg, this_->name_, this_->codename_);
+                        return this_->shape2d(dims[0], dims[1], index);
+                    }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:
+                    {
+                        auto dims = extract_numeric_value_dimensions(
+                            arg, this_->name_, this_->codename_);
+                        return this_->shape3d(dims[0], dims[1], dims[2], index);
+                    }
+#endif
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "extract_shape::eval",
@@ -190,7 +250,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[0], args, name_, codename_, ctx),
             scalar_integer_operand_strict(operands[1], args,
                 name_, codename_, ctx));
     }
