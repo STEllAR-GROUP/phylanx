@@ -38,10 +38,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             Args:
 
                 m (vector or matrix) : values to take the gradient of
-                axis (optional, integer) : the axis along which to take
-                                the gradient
+                axis (optional, integer) : the axis along which to take the gradient
 
-            Returns:\n"
+            Returns:
 
             The numerical gradient, i.e., differences of adjacent values
             along the specified axis.)")
@@ -60,24 +59,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ir::node_data<T>&& arg) const
     {
         auto input = arg.vector();
-        std::size_t length = input.size();
-        blaze::DynamicVector<T> gradient(length);
+        std::size_t last = input.size() - 1;
+        blaze::DynamicVector<T> gradient(last + 1);
 
-        for (std::size_t i = 0; i != length; i++)
+        gradient[0] = input[1] - input[0];
+        for (std::size_t i = 1; i != last; i++)
         {
-            if (i == 0)
-            {
-                gradient[i] = input[i + 1] - input[i];
-            }
-            else if (i == length - 1)
-            {
-                gradient[i] = input[i] - input[i - 1];
-            }
-            else
-            {
-                gradient[i] = (input[i + 1] - input[i - 1]) / 2;
-            }
+            gradient[i] = (input[i + 1] - input[i - 1]) / 2;
         }
+        gradient[last] = input[last] - input[last - 1];
 
         return primitive_argument_type{ir::node_data<T>{std::move(gradient)}};
     }
@@ -101,7 +91,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     auto temp = blaze::column(input, i);
                     gradient(0, i) = temp[1] - temp[0];
-                    for (std::size_t j = 0; j != last; j++)
+                    for (std::size_t j = 1; j != last; j++)
                     {
                         gradient(j, i) = (temp[j + 1] - temp[j - 1]) / 2;
                     }
@@ -115,7 +105,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 {
                     auto temp = blaze::row(input, i);
                     gradient(i, 0) = temp[1] - temp[0];
-                    for (std::size_t j = 0; j != last; j++)
+                    for (std::size_t j = 1; j != last; j++)
                     {
                         gradient(i, j) = (temp[j + 1] - temp[j - 1]) / 2;
                     }

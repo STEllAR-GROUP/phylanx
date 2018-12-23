@@ -111,7 +111,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto& t = op.tensor_non_ref();
         for (std::size_t p = 0; p != t.pages(); ++p)
         {
-            blaze::invert(blaze::pageslice(t, p));
+            auto ps = blaze::pageslice(t, p);
+            blaze::invert(ps);
         }
         return primitive_argument_type{std::move(op)};
     }
