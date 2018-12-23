@@ -156,7 +156,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             }),
             value_operand(operands[0], args, name_, codename_, ctx),
             value_operand(operands[1], args, name_, codename_, ctx),
-            scalar_integer_operand_strict(
-                operands[2], args, name_, codename_, ctx));
+            scalar_integer_operand(operands[2], args, name_, codename_, ctx));
     }
 }}}

@@ -325,6 +325,13 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
 
+    PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
+
     // Extract a ir::node_data<std::int64_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value_strict(
@@ -347,12 +354,6 @@ namespace phylanx { namespace execution_tree
     // Extract an integer value from a primitive_argument_type
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>>
     integer_operand_strict(primitive_argument_type const& val,
-        primitive_arguments_type const& args,
-        std::string const& name = "",
-        std::string const& codename = "<unknown>",
-        eval_context ctx = eval_context{});
-    PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
-        primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
@@ -390,6 +391,14 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_integer_operand_strict(
         primitive_argument_type const& val);
+
+    ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a boolean type from a given primitive_argument_type,

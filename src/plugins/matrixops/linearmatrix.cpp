@@ -14,6 +14,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -167,10 +168,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 return this_->linmatrix(nx, ny, std::move(x0),
                     std::move(dx), std::move(dy));
             }),
-            scalar_integer_operand_strict(
-                operands[0], args, name_, codename_, ctx),
-            scalar_integer_operand_strict(
-                operands[1], args, name_, codename_, ctx),
+            scalar_integer_operand(operands[0], args, name_, codename_, ctx),
+            scalar_integer_operand(operands[1], args, name_, codename_, ctx),
             value_operand(operands[2], args, name_, codename_, ctx),
             value_operand(operands[3], args, name_, codename_, ctx),
             value_operand(operands[4], args, name_, codename_, ctx));
