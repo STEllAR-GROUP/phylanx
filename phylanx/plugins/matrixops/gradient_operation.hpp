@@ -30,10 +30,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using operand_type = ir::node_data<double>;
-        using operands_type =
-            std::vector<operand_type, arguments_allocator<operand_type>>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -58,9 +54,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type gradient0d(operands_type&& ops) const;
-        primitive_argument_type gradient1d(operands_type&& ops) const;
-        primitive_argument_type gradient2d(operands_type&& ops) const;
+        primitive_argument_type gradient0d(primitive_arguments_type&& ops) const;
+        primitive_argument_type gradient1d(primitive_arguments_type&& ops) const;
+        primitive_argument_type gradient2d(primitive_arguments_type&& ops) const;
+
+        template <typename T>
+        primitive_argument_type gradient1d(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type gradient2d(
+            ir::node_data<T>&& arg, std::int64_t axis) const;
     };
 
     inline primitive create_gradient_operation(hpx::id_type const& locality,
