@@ -34,6 +34,7 @@ methods_supporting_dtype = [
     'hstack',
     'identity',
     'linearmatrix',
+    'linspace',
     'prod',
     'stack',
     'vstack',

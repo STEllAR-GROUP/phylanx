@@ -13,6 +13,7 @@
 #include <hpx/throw_exception.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -24,36 +25,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const linspace::match_data =
     {
-        hpx::util::make_tuple("linspace",
+        match_pattern_type{
+            "linspace",
             std::vector<std::string>{"linspace(_1, _2, _3)"},
-            &create_linspace, &create_primitive<linspace>,
-            "start, end, nelements\n"
-            "Args:\n"
-            "\n"
-            "    start (number) : the start of the numeric range\n"
-            "    end (number) : the end of the numeric range\n"
-            "    nelements (int) : the number of elements\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "An array with the requested number of elements, the first "
-            "of which is `start`, and the last is `end`."
-            )
+            &create_linspace, &create_primitive<linspace>, R"(
+            start, end, nelements
+            Args:
+
+                start (number) : the start of the numeric range
+                end (number) : the end of the numeric range
+                nelements (int) : the number of elements
+
+            Returns:
+
+            An array with the requested number of elements, the first "
+            of which is `start`, and the last is `end`.)",
+            true
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
     linspace::linspace(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(args), name, codename)
+      , dtype_(extract_dtype(name_))
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    primitive_argument_type linspace::linspace1d(args_type&& args) const
+    template <typename T>
+    primitive_argument_type linspace::linspace1d(
+        T start, T end, std::int64_t num_samples) const
     {
-        double start = args[0][0];
-        double stop = args[1][0];
-        double num_samples = args[2][0];
-
         if (num_samples < 1)
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -65,21 +67,59 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (1 == num_samples)
         {
-            vector_type result{ start };
-            return primitive_argument_type{ arg_type{std::move(result)} };
+            blaze::DynamicVector<T> result(1, start);
+            return primitive_argument_type{std::move(result)};
         }
         else
         {
-            auto result = vector_type(num_samples);
-            double dx = (stop - start) / (num_samples - 1);
-            for (std::size_t i = 0; i < num_samples; i++)
+            blaze::DynamicVector<T> result(num_samples);
+            double dx = (end - start) / (num_samples - 1);
+            for (std::size_t i = 0; i != num_samples; ++i)
             {
                 result[i] = start + dx * i;
             }
-            return primitive_argument_type{ arg_type{std::move(result)} };
+            return primitive_argument_type{std::move(result)};
         }
     }
 
+    primitive_argument_type linspace::linspace1d(
+        primitive_argument_type&& start, primitive_argument_type&& end,
+        std::int64_t nelements) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(start, end);
+        }
+
+        switch (t)
+        {
+        case node_data_type_int64:
+            return linspace1d(
+                extract_scalar_integer_value(std::move(start), name_, codename_),
+                extract_scalar_integer_value(std::move(end), name_, codename_),
+                nelements);
+
+        case node_data_type_bool:   HPX_FALLTHROUGH;
+        case node_data_type_double: HPX_FALLTHROUGH;
+        case node_data_type_unknown:
+            return linspace1d(
+                extract_scalar_numeric_value(std::move(start), name_, codename_),
+                extract_scalar_numeric_value(std::move(end), name_, codename_),
+                nelements);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "linspace::linspace1d",
+            generate_error_message(
+                "the linspace primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> linspace::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -107,13 +147,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](args_type&& args)
+            [this_ = std::move(this_)](primitive_argument_type&& start,
+                    primitive_argument_type&& end, std::int64_t nelements)
             -> primitive_argument_type
             {
-                return this_->linspace1d(std::move(args));
+                return this_->linspace1d(
+                    std::move(start), std::move(end), nelements);
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            value_operand(operands[0], args, name_, codename_, ctx),
+            value_operand(operands[1], args, name_, codename_, ctx),
+            scalar_integer_operand_strict(
+                operands[2], args, name_, codename_, ctx));
     }
 }}}
