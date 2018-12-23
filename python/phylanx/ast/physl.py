@@ -33,6 +33,7 @@ methods_supporting_dtype = [
     'eye',
     'hstack',
     'identity',
+    'linearmatrix',
     'prod',
     'stack',
     'vstack',

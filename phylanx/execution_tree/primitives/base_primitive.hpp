@@ -352,10 +352,10 @@ namespace phylanx { namespace execution_tree
         std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
-            primitive_argument_type const& val,
-            primitive_arguments_type const& args,
-            std::string const& name = "",
-            std::string const& codename = "<unknown>",
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>>
     integer_operand_strict(primitive_argument_type const& val,
@@ -722,6 +722,12 @@ namespace phylanx { namespace execution_tree
     // Extract a node_data<double> from a primitive_argument_type (that
     // could be a primitive or a literal value).
     PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
+    PHYLANX_EXPORT hpx::future<double> scalar_numeric_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",
