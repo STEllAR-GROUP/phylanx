@@ -123,16 +123,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             t = extract_common_type(lhs, rhs);
         }
 
+        // #FIXME: for now, map all power operations on the double dtype (Blaze
+        // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:
-            return power0d(extract_boolean_value(std::move(lhs)),
-                extract_boolean_value(std::move(rhs)));
-
-        case node_data_type_int64:
-            return power0d(extract_integer_value(std::move(lhs)),
-                extract_integer_value(std::move(rhs)));
-
+        case node_data_type_bool:    HPX_FALLTHROUGH;
+        case node_data_type_int64:   HPX_FALLTHROUGH;
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return power0d(extract_numeric_value(std::move(lhs)),
@@ -158,16 +154,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             t = extract_common_type(lhs, rhs);
         }
 
+        // #FIXME: for now, map all power operations on the double dtype (Blaze
+        // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:
-            return power1d(extract_boolean_value(std::move(lhs)),
-                extract_boolean_value(std::move(rhs)));
-
-        case node_data_type_int64:
-            return power1d(extract_integer_value(std::move(lhs)),
-                extract_integer_value(std::move(rhs)));
-
+        case node_data_type_bool:    HPX_FALLTHROUGH;
+        case node_data_type_int64:   HPX_FALLTHROUGH;
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return power1d(extract_numeric_value(std::move(lhs)),
@@ -193,16 +185,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             t = extract_common_type(lhs, rhs);
         }
 
+        // #FIXME: for now, map all power operations on the double dtype (Blaze
+        // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:
-            return power2d(extract_boolean_value(std::move(lhs)),
-                extract_boolean_value(std::move(rhs)));
-
-        case node_data_type_int64:
-            return power2d(extract_integer_value(std::move(lhs)),
-                extract_integer_value(std::move(rhs)));
-
+        case node_data_type_bool:    HPX_FALLTHROUGH;
+        case node_data_type_int64:   HPX_FALLTHROUGH;
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return power2d(extract_numeric_value(std::move(lhs)),
@@ -229,16 +217,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
             t = extract_common_type(lhs, rhs);
         }
 
+        // #FIXME: for now, map all power operations on the double dtype (Blaze
+        // throws compilation error for int64_t)
         switch (t)
         {
-        case node_data_type_bool:
-            return power3d(extract_boolean_value(std::move(lhs)),
-                extract_boolean_value(std::move(rhs)));
-
-        case node_data_type_int64:
-            return power3d(extract_integer_value(std::move(lhs)),
-                extract_integer_value(std::move(rhs)));
-
+        case node_data_type_bool:    HPX_FALLTHROUGH;
+        case node_data_type_int64:   HPX_FALLTHROUGH;
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return power3d(extract_numeric_value(std::move(lhs)),
