@@ -36,6 +36,7 @@ methods_supporting_dtype = [
     'linearmatrix',
     'linspace',
     'mean',
+    'power',
     'prod',
     'stack',
     'vstack',
