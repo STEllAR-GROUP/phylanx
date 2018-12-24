@@ -17,11 +17,13 @@
 #include <hpx/include/naming.hpp>
 #include <hpx/include/util.hpp>
 #include <hpx/throw_exception.hpp>
+#include <hpx/util/assert.hpp>
 #include <hpx/util/optional.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,7 +48,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics0d(
-        arg_type<T>&& arg, hpx::util::optional<std::int64_t> axis,
+        arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
         bool keep_dims) const
     {
         if (axis && axis.value() != 0 && axis.value() != -1)
@@ -64,7 +66,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics1d(
-        arg_type<T>&& arg, hpx::util::optional<std::int64_t> axis,
+        arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
         bool keep_dims) const
     {
         if (axis && axis.value() != 0 && axis.value() != -1)
@@ -123,7 +125,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             for (std::size_t i = 0; i != m.columns(); ++i)
             {
                 auto col = blaze::column(m, i);
-                result(1, i) =
+                result(0, i) =
                     Op{}(col.begin(), col.end(), Op::template initial<T>());
             }
 
@@ -173,7 +175,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d(
-        arg_type<T>&& arg, hpx::util::optional<std::int64_t> axis,
+        arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
         bool keep_dims) const
     {
         if (axis)
@@ -208,12 +210,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
-        if (keep_dims)
-        {
-            return primitive_argument_type{
-                blaze::DynamicTensor<T>(1, 1, 1, result)};
-        }
-
         T result = Op::template initial<T>();
         for (std::size_t k = 0; k != t.pages(); ++k)
         {
@@ -223,6 +219,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto row = blaze::row(page, i);
                 result = Op{}(row.begin(), row.end(), result);
             }
+        }
+
+        if (keep_dims)
+        {
+            return primitive_argument_type{
+                blaze::DynamicTensor<T>(1, 1, 1, result)};
         }
 
         return primitive_argument_type{result};
@@ -276,14 +278,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         if (keep_dims)
         {
-            blaze::DynamicTensor<T> result(t.columns(), 1, t.pages());
+            blaze::DynamicTensor<T> result(t.pages(), 1, t.columns());
             for (std::size_t k = 0; k != t.pages(); ++k)
             {
                 auto slice = blaze::pageslice(t, k);
                 for (std::size_t j = 0; j != t.columns(); ++j)
                 {
                     auto col = blaze::column(slice, j);
-                    result(j, 0, k) =
+                    result(k, 0, j) =
                         Op{}(col.begin(), col.end(), Op::template initial<T>());
                 }
             }
@@ -291,14 +293,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return primitive_argument_type{std::move(result)};
         }
 
-        blaze::DynamicMatrix<T> result(t.columns(), t.pages());
+        blaze::DynamicMatrix<T> result(t.pages(), t.columns());
         for (std::size_t k = 0; k != t.pages(); ++k)
         {
             auto slice = blaze::pageslice(t, k);
             for (std::size_t j = 0; j != t.columns(); ++j)
             {
                 auto col = blaze::column(slice, j);
-                result(j, k) =
+                result(k, j) =
                     Op{}(col.begin(), col.end(), Op::template initial<T>());
             }
         }
@@ -321,7 +323,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto slice = blaze::pageslice(t, k);
                 for (std::size_t i = 0; i != t.rows(); ++i)
                 {
-                    auto row = blaze::row(slice, k);
+                    auto row = blaze::row(slice, i);
                     result(k, i, 0) =
                         Op{}(row.begin(), row.end(), Op::template initial<T>());
                 }
@@ -336,7 +338,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto slice = blaze::pageslice(t, k);
             for (std::size_t i = 0; i != t.rows(); ++i)
             {
-                auto row = blaze::row(slice, k);
+                auto row = blaze::row(slice, i);
                 result(k, i) =
                     Op{}(row.begin(), row.end(), Op::template initial<T>());
             }
@@ -348,7 +350,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d(
-        arg_type<T>&& arg, hpx::util::optional<std::int64_t> axis,
+        arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
         bool keep_dims) const
     {
         if (axis)
@@ -375,7 +377,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "axis to be between -3 and 2 for tensors."));
             }
         }
-        return statistics2d_flat(std::move(arg), keep_dims);
+        return statistics3d_flat(std::move(arg), keep_dims);
     }
 #endif
 
@@ -383,7 +385,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     template <typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statisticsnd(
-        arg_type<T>&& arg, hpx::util::optional<std::int64_t> axis,
+        arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
         bool keep_dims) const
     {
         std::size_t a_dims = arg.num_dimensions();
@@ -408,6 +410,143 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 generate_error_message(
                     "operand a has an invalid number of dimensions"));
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Op, typename Derived>
+    primitive_argument_type statistics<Op, Derived>::statisticsnd(
+        primitive_argument_type&& arg,
+        hpx::util::optional<std::int64_t> const& axis, bool keep_dims) const
+    {
+        node_data_type t = dtype_;
+        if (t == node_data_type_unknown)
+        {
+            t = extract_common_type(arg);
+        }
+
+        switch (t)
+        {
+        case node_data_type_bool:
+            return statisticsnd(
+                extract_boolean_value_strict(std::move(arg), name_, codename_),
+                axis, keep_dims);
+
+        case node_data_type_int64:
+            return statisticsnd(
+                extract_integer_value_strict(std::move(arg), name_, codename_),
+                axis, keep_dims);
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return statisticsnd(
+                extract_numeric_value(std::move(arg), name_, codename_),
+                axis, keep_dims);
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "statistics::statisticsnd",
+            generate_error_message(
+                "the statistics primitive requires for all arguments "
+                "to be numeric data types"));
+    }
+
+    namespace detail
+    {
+        // This function is a hack helping to map the 3d axes into 2d/1d axes
+        // while iterating over the given list of axes (which reduces the
+        // dimensionality of the data we work on).
+        inline std::int64_t adapt_axis(std::int64_t dim, std::size_t dims,
+            std::int64_t prev_axis, std::int64_t axis)
+        {
+            if (dim == 1)
+            {
+                if (dims == 2)
+                {
+                    axis = 0;       // collapse remaining vector
+                }
+                else
+                {
+                    HPX_ASSERT(dims == 3);
+                    HPX_ASSERT(prev_axis != -1);
+                    switch (prev_axis)
+                    {
+                    case 0:
+                        axis -= 3;
+                        break;
+
+                    case 1:
+                        if (axis == 2)
+                        {
+                            axis = 1;
+                        }
+                        else
+                        {
+                            HPX_ASSERT(axis == 0);
+                        }
+                        break;
+
+                    case 2:
+                        axis -= 2;
+                        break;
+                    }
+
+                }
+            }
+            else if (dim == 2)
+            {
+                axis = 0;       // collapse remaining vector
+            }
+
+            return axis;
+        }
+    }
+
+    template <typename Op, typename Derived>
+    primitive_argument_type statistics<Op, Derived>::statisticsnd(
+        primitive_argument_type&& arg, ir::range&& axes, bool keep_dims) const
+    {
+        std::size_t dims =
+            extract_numeric_value_dimension(arg, name_, codename_);
+
+        // for a list of axes simply repeat the invocation of statisticsnd
+        std::int64_t dim = 0;
+        std::int64_t prev_axis = -1;
+        std::set<std::int64_t> seen_axes;
+        for (auto && elem : axes)
+        {
+            std::int64_t axis =
+                extract_scalar_integer_value(std::move(elem), name_, codename_);
+            if (seen_axes.find(axis) != seen_axes.end())
+            {
+                // axes must be unique
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "statistics::statisticsnd",
+                    generate_error_message(
+                        "the statistics primitive requires for all axis "
+                        "arguments to be unique"));
+            }
+            seen_axes.insert(axis);
+            if (keep_dims)
+            {
+                arg = statisticsnd(std::move(arg),
+                    hpx::util::optional<std::int64_t>(axis), true);
+            }
+            else
+            {
+                axis = detail::adapt_axis(dim, dims, prev_axis, axis);
+
+                arg = statisticsnd(std::move(arg),
+                    hpx::util::optional<std::int64_t>(axis),
+                    false);
+
+                prev_axis = axis;
+            }
+            ++dim;
+        }
+        return arg;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -450,56 +589,31 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 // axis is argument #2
                 if (args.size() > 1)
                 {
-                    if (valid(args[1]))
-                    {
-                        axis = extract_scalar_integer_value(
-                            args[1], this_->name_, this_->codename_);
-                    }
-
                     // keep_dims is argument #3
                     if (args.size() == 3)
                     {
                         keep_dims = extract_scalar_boolean_value(
                             args[2], this_->name_, this_->codename_);
                     }
+
+                    if (valid(args[1]))
+                    {
+                        // the second argument is either a list of integers...
+                        if (is_list_operand_strict(args[1]))
+                        {
+                            return this_->statisticsnd(std::move(args[0]),
+                                extract_list_value_strict(std::move(args[1]),
+                                    this_->name_, this_->codename_),
+                                keep_dims);
+                        }
+
+                        // ... or a single integer
+                        axis = extract_scalar_integer_value(
+                            args[1], this_->name_, this_->codename_);
+                    }
                 }
 
-                node_data_type t = this_->dtype_;
-                if (t == node_data_type_unknown)
-                {
-                    t = extract_common_type(args[0]);
-                }
-
-                switch (t)
-                {
-                case node_data_type_bool:
-                    return this_->statisticsnd(
-                        extract_boolean_value_strict(std::move(args[0]),
-                            this_->name_, this_->codename_),
-                        axis, keep_dims);
-
-                case node_data_type_int64:
-                    return this_->statisticsnd(
-                        extract_integer_value_strict(std::move(args[0]),
-                            this_->name_, this_->codename_),
-                        axis, keep_dims);
-
-                case node_data_type_unknown: HPX_FALLTHROUGH;
-                case node_data_type_double:
-                    return this_->statisticsnd(
-                        extract_numeric_value(std::move(args[0]),
-                            this_->name_, this_->codename_),
-                        axis, keep_dims);
-
-                default:
-                    break;
-                }
-
-                HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                    "statistics::eval",
-                    this_->generate_error_message(
-                        "the statistics primitive requires for all arguments "
-                        "to be numeric data types"));
+                return this_->statisticsnd(std::move(args[0]), axis, keep_dims);
             }),
             detail::map_operands(operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));

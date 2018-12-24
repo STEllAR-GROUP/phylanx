@@ -61,13 +61,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     private:
         template <typename T>
         primitive_argument_type statistics0d(arg_type<T>&& arg,
-            hpx::util::optional<std::int64_t> axis, bool keep_dims) const;
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keep_dims) const;
         template <typename T>
         primitive_argument_type statistics1d(arg_type<T>&& arg,
-            hpx::util::optional<std::int64_t> axis, bool keep_dims) const;
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keep_dims) const;
         template <typename T>
         primitive_argument_type statistics2d(arg_type<T>&& arg,
-            hpx::util::optional<std::int64_t> axis, bool keep_dims) const;
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keep_dims) const;
 
         template <typename T>
         primitive_argument_type statistics2d_flat(
@@ -81,12 +84,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         template <typename T>
         primitive_argument_type statisticsnd(arg_type<T>&& arg,
-            hpx::util::optional<std::int64_t> axis, bool keep_dims) const;
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keep_dims) const;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         template <typename T>
         primitive_argument_type statistics3d(arg_type<T>&& arg,
-            hpx::util::optional<std::int64_t> axis, bool keep_dims) const;
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keep_dims) const;
 
         template <typename T>
         primitive_argument_type statistics3d_flat(
@@ -101,6 +106,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
         primitive_argument_type statistics3d_axis2(
             arg_type<T>&& arg, bool keep_dims) const;
 #endif
+
+        primitive_argument_type statisticsnd(primitive_argument_type&& arg,
+            hpx::util::optional<std::int64_t> const& axis,
+            bool keep_dims) const;
+        primitive_argument_type statisticsnd(primitive_argument_type&& arg,
+            ir::range&& axes, bool keep_dims) const;
 
     private:
         node_data_type dtype_;

@@ -280,7 +280,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 }
 
                 switch (extract_numeric_value_dimension(
-                    op2, this_->name_, this_->codename_))
+                    op1, this_->name_, this_->codename_))
                 {
                 case 0:
                     return this_->power0d(std::move(op1), std::move(op2));
