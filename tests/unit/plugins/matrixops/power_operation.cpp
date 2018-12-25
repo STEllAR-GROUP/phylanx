@@ -9,11 +9,15 @@
 #include <hpx/include/lcos.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
+#include <cstdint>
 #include <iostream>
 #include <utility>
 #include <vector>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 void test_power_operation_0d()
 {
@@ -101,11 +105,48 @@ void test_power_operation_2d()
         phylanx::execution_tree::extract_numeric_value(f.get()));
 }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+void test_power_operation_3d()
+{
+    blaze::Rand<blaze::DynamicTensor<double>> gen{};
+    blaze::DynamicTensor<double> t = gen.generate(11UL, 42UL, 42UL);
+
+    phylanx::execution_tree::primitive lhs =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(), phylanx::execution_tree::primitive_argument_type{
+                phylanx::ir::node_data<double>(t)});
+
+    phylanx::execution_tree::primitive rhs =
+        phylanx::execution_tree::primitives::create_variable(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_argument_type{2.0});
+
+    phylanx::execution_tree::primitive power =
+        phylanx::execution_tree::primitives::create_power_operation(
+            hpx::find_here(),
+            phylanx::execution_tree::primitive_arguments_type{
+                phylanx::execution_tree::primitive_argument_type{std::move(lhs)},
+                phylanx::execution_tree::primitive_argument_type{std::move(rhs)}
+            });
+
+    hpx::future<phylanx::execution_tree::primitive_argument_type> f =
+        power.eval();
+
+    blaze::DynamicTensor<double> expected = blaze::pow(t, 2.0);
+
+    HPX_TEST_EQ(phylanx::ir::node_data<double>(std::move(expected)),
+        phylanx::execution_tree::extract_numeric_value(f.get()));
+}
+#endif
+
 int main(int argc, char* argv[])
 {
     test_power_operation_0d();
     test_power_operation_1d();
     test_power_operation_2d();
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    test_power_operation_3d();
+#endif
 
     return hpx::util::report_errors();
 }
