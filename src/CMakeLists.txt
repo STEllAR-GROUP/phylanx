@@ -108,6 +108,12 @@ target_link_libraries(phylanx_component
   ${HPX_TLL_PRIVATE}
     blaze::blaze)
 
+if(PHYLANX_WITH_BLAZE_TENSOR)
+  target_link_libraries(phylanx_component
+    ${HPX_TLL_PRIVATE}
+      BlazeTensor::BlazeTensor)
+endif()
+
 set_target_properties(
   phylanx_component PROPERTIES
     VERSION ${PHYLANX_VERSION}

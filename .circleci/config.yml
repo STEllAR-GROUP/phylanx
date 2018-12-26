@@ -71,7 +71,7 @@ anchors:
 
     - &attach_phylanx_tree
         attach_workspace:
-            at: /phylanx
+            at: /
 
 ################################################################################
 jobs:
@@ -82,22 +82,32 @@ jobs:
             - checkout:
                 path:
                     /phylanx
+            # Install blaze_tensors library
+            - run:
+                name: Install blaze_tensors
+                command: |
+                    git clone https://github.com/STEllAR-GROUP/blaze_tensor.git --depth=1 /blaze_tensor
+                    cmake -H/blaze_tensor -B/blaze_tensor/build
+                    cmake --build /blaze_tensor/build --target install
             # CMake
             - run:
                 name: Run CMake
-                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
+                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DPHYLANX_WITH_BLAZE_TENSOR=ON -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
             # Build all targets
             - run:
                 name: Build all targets
-                command: cmake --build build -- -j2
+                command: cmake --build build -- -j1
             # CTest to JUnit XML transformation sheet
             - run:
                 name: Download CTest XML to JUnit XML transformation stylesheet
                 command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o build/conv.xsl
             - persist_to_workspace:
-                root: /phylanx
+                root: /
                 paths:
-                    - .
+                    - phylanx
+                    - usr/local/include/blaze_tensor
+                    - usr/local/share/BlazeTensor
+
     check.code_format:
         <<: *docker_config
         working_directory: /phylanx
@@ -303,9 +313,9 @@ jobs:
                 path: tests.unit.group_2
     deploy_image:
         <<: *machine_config
+        working_directory: /phylanx
         steps:
-            - attach_workspace:
-                at: ~/project
+            - <<: *attach_phylanx_tree
             - run:
                 name: Enable experimental features on Docker daemon
                 command: |

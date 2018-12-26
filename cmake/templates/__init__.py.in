@@ -56,5 +56,3 @@ except Exception:
         print("hpx_bindir: ", hpx_bindir)
 
         sys.exit(1)
-
-init_hpx_runtime()

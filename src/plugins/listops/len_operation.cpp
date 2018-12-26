@@ -95,12 +95,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                 case 1:     // for vectors, return number of elements
                     return primitive_argument_type{ir::node_data<std::int64_t>{
-                        static_cast<std::int64_t>(val[1])}};
+                        static_cast<std::int64_t>(val[0])}};
 
                 case 2:     // for matrices, return number of rows
                     return primitive_argument_type{ir::node_data<std::int64_t>{
                         static_cast<std::int64_t>(val[0])}};
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                case 3:     // for tensors, return number of pages
+                    return primitive_argument_type{ir::node_data<std::int64_t>{
+                        static_cast<std::int64_t>(val[0])}};
+#endif
                 default:
                     break;
                 }

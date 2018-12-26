@@ -145,8 +145,8 @@ get_command_line const& init_command_line()
 // This class initializes a console instance of HPX (locality 0).
 struct manage_global_runtime
 {
-    manage_global_runtime()
-      : running_(false), rts_(nullptr)
+    manage_global_runtime(std::vector<std::string> const& config)
+      : running_(false), rts_(nullptr), cfg(config)
     {
 #if defined(HPX_WINDOWS)
         hpx::detail::init_winsocket();
@@ -158,21 +158,6 @@ struct manage_global_runtime
             init_command_line();
         }
 #endif
-
-        std::vector<std::string> const cfg = {
-            // make sure hpx_main is always executed
-            "hpx.run_hpx_main!=1",
-            // allow for unknown command line options
-            "hpx.commandline.allow_unknown!=1",
-            // disable HPX' short options
-            "hpx.commandline.aliasing!=0",
-            // run one thread only (for now)
-            "hpx.os_threads!=1",
-            // don't print diagnostics during forced terminate
-            "hpx.diagnostics_on_terminate!=0",
-            // disable the TCP parcelport
-            "hpx.parcel.tcp.enable!=0"
-        };
 
         using hpx::util::placeholders::_1;
         using hpx::util::placeholders::_2;
@@ -265,6 +250,7 @@ private:
     bool running_;
 
     hpx::runtime* rts_;
+    std::vector<std::string> const cfg;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -272,12 +258,12 @@ private:
 // stops running in its destructor.
 manage_global_runtime* rts = nullptr;
 
-void init_hpx_runtime()
+void init_hpx_runtime(std::vector<std::string> const& cfg)
 {
     if (rts == nullptr)
     {
         pybind11::gil_scoped_release release;
-        rts = new manage_global_runtime;
+        rts = new manage_global_runtime(cfg);
     }
 }
 

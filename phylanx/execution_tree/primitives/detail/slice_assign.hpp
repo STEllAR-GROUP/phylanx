@@ -54,6 +54,26 @@ namespace phylanx { namespace execution_tree { namespace detail
         }
     }
 
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    template <typename Lhs, typename Rhs>
+    void check_tensor_sizes(Lhs const& lhs, Rhs const& rhs)
+    {
+        if (lhs.rows() != rhs.rows() || lhs.columns() != rhs.columns() ||
+            lhs.pages() != rhs.pages())
+        {
+            std::ostringstream msg;
+            msg << "size mismatch during tensor assignment, "
+                << "rows: " << lhs.rows() << ", " << rhs.rows()
+                << "columns: " << lhs.columns() << ", " << rhs.columns()
+                << "pages: " << lhs.pages() << ", " << rhs.pages();
+
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "phylanx::execution_tree::detail::check_tensor_sizes",
+                msg.str());
+        }
+    }
+#endif
+
     ///////////////////////////////////////////////////////////////////////////
     template <typename T>
     struct slice_assign_scalar

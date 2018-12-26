@@ -14,8 +14,11 @@
 #include <string>
 #include <sstream>
 
-std::string const hstack = "block(hstack())";
-std::string const vstack = "block(vstack())";
+std::string const hstack = "block(define(f, a, hstack(a, a)), f)";
+std::string const vstack = "block(define(f, a, vstack(a, a)), f)";
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+std::string const dstack = "block(define(f, a, dstack(a, a)), f)";
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -27,23 +30,38 @@ int main(int argc, char* argv[])
     auto hstack_f = hstack_f_code.run();
 
     auto hstack_data =
-        phylanx::execution_tree::extract_numeric_value(hstack_f(arg, arg));
+        phylanx::execution_tree::extract_numeric_value(hstack_f(arg));
 
     HPX_TEST(hstack_data.num_dimensions() == 1);
-    HPX_TEST(hstack_data.dimension(0) == 0);
-    HPX_TEST(hstack_data.size() == 0);
+    HPX_TEST(hstack_data.dimension(0) == 2);
+    HPX_TEST(hstack_data.size() == 2);
 
     auto const& vstack_f_code =
         phylanx::execution_tree::compile(vstack, snippets);
     auto vstack_f = vstack_f_code.run();
 
     auto vstack_data =
-        phylanx::execution_tree::extract_numeric_value(vstack_f(arg, arg));
+        phylanx::execution_tree::extract_numeric_value(vstack_f(arg));
 
     HPX_TEST(vstack_data.num_dimensions() == 2);
-    HPX_TEST(vstack_data.dimension(0) == 0);
+    HPX_TEST(vstack_data.dimension(0) == 2);
     HPX_TEST(vstack_data.dimension(1) == 1);
-    HPX_TEST(vstack_data.size() == 0);
+    HPX_TEST(vstack_data.size() == 2);
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+    auto const& dstack_f_code =
+        phylanx::execution_tree::compile(dstack, snippets);
+    auto dstack_f = dstack_f_code.run();
+
+    auto dstack_data =
+        phylanx::execution_tree::extract_numeric_value(dstack_f(arg));
+
+    HPX_TEST(dstack_data.num_dimensions() == 3);
+    HPX_TEST(dstack_data.dimension(0) == 2);
+    HPX_TEST(dstack_data.dimension(1) == 1);
+    HPX_TEST(dstack_data.dimension(2) == 1);
+    HPX_TEST(dstack_data.size() == 2);
+#endif
 
     return hpx::util::report_errors();
 }
