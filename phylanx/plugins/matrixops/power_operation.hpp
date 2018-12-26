@@ -8,6 +8,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
@@ -24,10 +25,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       : public primitive_component_base
       , public std::enable_shared_from_this<power_operation>
     {
-    protected:
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -38,16 +35,37 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         primitive_argument_type power0d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
         primitive_argument_type power1d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
         primitive_argument_type power2d(
-            operand_type&& lhs, operand_type&& rhs) const;
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+
+        template <typename T>
+        primitive_argument_type power0d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type power1d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+        template <typename T>
+        primitive_argument_type power2d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type power3d(
+            primitive_argument_type&& lhs, primitive_argument_type&& rhs) const;
+        template <typename T>
+        primitive_argument_type power3d(
+            ir::node_data<T>&& lhs, ir::node_data<T>&& rhs) const;
+#endif
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
             eval_context ctx) const override;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_power_operation(hpx::id_type const& locality,

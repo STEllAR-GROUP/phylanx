@@ -40,9 +40,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -52,8 +49,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type shuffle_1d(arg_type&& arg) const;
-        primitive_argument_type shuffle_2d(arg_type&& arg) const;
+        primitive_argument_type shuffle_1d(primitive_argument_type&& arg) const;
+        primitive_argument_type shuffle_2d(primitive_argument_type&& arg) const;
+
+        template <typename T>
+        primitive_argument_type shuffle_1d(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type shuffle_2d(ir::node_data<T>&& arg) const;
     };
 
     inline primitive create_shuffle_operation(hpx::id_type const& locality,
