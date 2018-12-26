@@ -7,10 +7,13 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/min_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
+#include <phylanx/util/blaze_traits.hpp>
 
 #include <algorithm>
-#include <functional>
+#include <cstddef>
+#include <limits>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -27,16 +30,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct statistics_min_op
         {
+            statistics_min_op(std::string const& name,
+                std::string const& codename)
+            {}
+
             template <typename T>
             static constexpr T initial()
             {
-                return T(0);
+                return (std::numeric_limits<T>::max)();
+            }
+
+            template <typename Scalar, typename T>
+            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
+            operator()(Scalar s, T initial) const
+            {
+                return (std::min)(s, initial);
             }
 
             template <typename Vector, typename T>
-            T operator()(Vector const& v, T initial) const
+            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
+            operator()(Vector const& v, T initial) const
             {
-                return (blaze::min)(v);
+                return (std::min)((blaze::min)(v), initial);
             }
 
             template <typename T>
@@ -53,7 +68,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         match_pattern_type{
             "amin",
             std::vector<std::string>{
-                "amin(_1)", "amin(_1,_2)", "amin(_1,_2,_3)"},
+                "amin(_1)", "amin(_1, _2)", "amin(_1, _2, _3)",
+                "amin(_1, _2, _3, _4)"
+            },
             &create_amin_operation, &create_primitive<min_operation>, R"(
             a, axis, keepdims
             Args:

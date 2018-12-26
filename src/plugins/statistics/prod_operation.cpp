@@ -8,12 +8,19 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/prod_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
+#include <phylanx/util/blaze_traits.hpp>
 
-#include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -23,17 +30,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         struct statistics_prod_op
         {
+            statistics_prod_op(std::string const& name,
+                std::string const& codename)
+            {}
+
             template <typename T>
             static constexpr T initial()
             {
                 return T(1);
             }
 
-            template <typename Vector, typename T>
-            T operator()(Vector const& v, T initial) const
+            template <typename Scalar, typename T>
+            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
+            operator()(Scalar s, T initial) const
             {
-                return std::accumulate(
-                    v.begin(), v.end(), initial, std::multiplies<T>());
+                return s * initial;
+            }
+
+            template <typename Vector, typename T>
+            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
+            operator()(Vector const& v, T initial) const
+            {
+                return blaze::prod(v) * initial;
             }
 
             template <typename T>
@@ -50,9 +68,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         match_pattern_type{
             "prod",
             std::vector<std::string>{
-                "prod(_1)", "prod(_1, _2)", "prod(_1, _2, _3)"},
+                "prod(_1)", "prod(_1, _2)", "prod(_1, _2, _3)",
+                "prod(_1, _2, _3, _4)"
+            },
             &create_prod_operation, &create_primitive<prod_operation>, R"(
-            v, axis, keep_dim
+            v, axis, keepdims
             Args:
 
                 v (vector or matrix) : a vector or matrix

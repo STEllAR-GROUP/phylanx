@@ -7,10 +7,15 @@
 #include <phylanx/config.hpp>
 #include <phylanx/plugins/statistics/max_operation.hpp>
 #include <phylanx/plugins/statistics/statistics_base_impl.hpp>
+#include <phylanx/util/blaze_traits.hpp>
+
+#include <hpx/util/optional.hpp>
 
 #include <algorithm>
-#include <functional>
+#include <cstddef>
+#include <limits>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -25,18 +30,43 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        template <typename T>
+        T numeric_limits_min()
+        {
+            return -(std::numeric_limits<T>::max)();
+        }
+
+        template <>
+        std::uint8_t numeric_limits_min<std::uint8_t>()
+        {
+            return 0;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
         struct statistics_max_op
         {
+            statistics_max_op(std::string const& name,
+                std::string const& codename)
+            {}
+
             template <typename T>
             static constexpr T initial()
             {
-                return T(0);
+                return numeric_limits_min<T>();
+            }
+
+            template <typename Scalar, typename T>
+            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
+            operator()(Scalar s, T initial) const
+            {
+                return (std::max)(s, initial);
             }
 
             template <typename Vector, typename T>
-            T operator()(Vector const& v, T initial) const
+            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
+            operator()(Vector const& v, T initial) const
             {
-                return (blaze::max)(v);
+                return (std::max)((blaze::max)(v), initial);
             }
 
             template <typename T>
@@ -53,7 +83,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         match_pattern_type{
             "amax",
             std::vector<std::string>{
-                "amax(_1)", "amax(_1,_2)", "amax(_1,_2,_3)"},
+                "amax(_1)", "amax(_1, _2)", "amax(_1, _2, _3)",
+                "amax(_1, _2, _3, _4)"
+            },
             &create_amax_operation, &create_primitive<max_operation>, R"(
             a, axis, keepdims
             Args:
