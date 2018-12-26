@@ -8,8 +8,8 @@
 
 FROM stellargroup/phylanx_base:prerequisites
 
-ADD . /phylanx
-RUN cmake --build /phylanx/build -- -j2 install && rm -rf /phylanx/build
+# docker build needs to be run in /usr/local
+ADD . /usr/local
 RUN ldconfig
 WORKDIR /
 CMD /bin/bash
