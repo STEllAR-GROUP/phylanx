@@ -313,9 +313,9 @@ jobs:
                 path: tests.unit.group_2
     deploy_image:
         <<: *machine_config
-        working_directory: /phylanx
         steps:
-            - <<: *attach_phylanx_tree
+            - attach_workspace:
+                at: ~/project
             - run:
                 name: Enable experimental features on Docker daemon
                 command: |
