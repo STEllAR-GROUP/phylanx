@@ -9,7 +9,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
-#include <phylanx/plugins/arithmetics/statistics.hpp>
+#include <phylanx/plugins/statistics/statistics_base.hpp>
 
 #include <string>
 #include <utility>

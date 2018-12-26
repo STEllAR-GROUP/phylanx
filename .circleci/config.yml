@@ -184,22 +184,22 @@ jobs:
                 path: tests.regressions
             - store_artifacts:
                 path: tests.regressions
-    tests.unit.plugins.arithmetic:
+    tests.unit.plugins.arithmetics:
         <<: *docker_config
         working_directory: /phylanx/build
         steps:
             - <<: *attach_phylanx_tree
             - run:
-                name: Build arithmetic primitive plugin unit tests
+                name: Build arithmetics primitive plugin unit tests
                 command: cmake --build . -- -j1 tests.unit.plugins.arithmetics
             - run:
-                name: Run arithmetic primitive plugin unit tests
+                name: Run arithmetics primitive plugin unit tests
                 command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.arithmetics
             - <<: *convert_xml
             - store_test_results:
-                path: tests.unit.plugins.arithmetic
+                path: tests.unit.plugins.arithmetics
             - store_artifacts:
-                path: tests.unit.plugins.arithmetic
+                path: tests.unit.plugins.arithmetics
     tests.unit.plugins.booleans:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -280,6 +280,22 @@ jobs:
                 path: tests.unit.plugins.matrixops
             - store_artifacts:
                 path: tests.unit.plugins.matrixops
+    tests.unit.plugins.statistics:
+        <<: *docker_config
+        working_directory: /phylanx/build
+        steps:
+            - <<: *attach_phylanx_tree
+            - run:
+                name: Build statistics primitive plugin unit tests
+                command: cmake --build . -- -j1 tests.unit.plugins.statistics
+            - run:
+                name: Run statistics primitive plugin unit tests
+                command: ctest -T test --no-compress-output --output-on-failure -R tests.unit.plugins.statistics
+            - <<: *convert_xml
+            - store_test_results:
+                path: tests.unit.plugins.statistics
+            - store_artifacts:
+                path: tests.unit.plugins.statistics
     tests.unit.group_1:
         <<: *docker_config
         working_directory: /phylanx/build
@@ -363,7 +379,7 @@ workflows:
             - tests.regressions:
                 requires:
                     - build_test
-            - tests.unit.plugins.arithmetic:
+            - tests.unit.plugins.arithmetics:
                 requires:
                     - build_test
             - tests.unit.plugins.booleans:
@@ -381,6 +397,9 @@ workflows:
             - tests.unit.plugins.matrixops:
                 requires:
                     - build_test
+            - tests.unit.plugins.statistics:
+                requires:
+                    - build_test
             - tests.unit.group_1:
                 requires:
                     - build_test
@@ -391,12 +410,14 @@ workflows:
                 requires:
                     - build_test
                     - check.code_format
+                    - check.help_format
                     - tests.regressions
-                    - tests.unit.plugins.arithmetic
+                    - tests.unit.plugins.arithmetics
                     - tests.unit.plugins.booleans
                     - tests.unit.plugins.controls
                     - tests.unit.plugins.fileio_solvers
                     - tests.unit.plugins.listops
                     - tests.unit.plugins.matrixops
+                    - tests.unit.plugins.statistics
                     - tests.unit.group_1
                     - tests.unit.group_2

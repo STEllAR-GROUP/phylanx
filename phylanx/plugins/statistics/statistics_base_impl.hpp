@@ -10,7 +10,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
-#include <phylanx/plugins/arithmetics/statistics.hpp>
+#include <phylanx/plugins/statistics/statistics_base.hpp>
 #include <phylanx/util/matrix_iterators.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -60,7 +60,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "to be either 0 or -1 for scalar values."));
         }
 
-        return primitive_argument_type{arg.scalar()};
+        return primitive_argument_type{std::move(arg)};
     }
 
     template <typename Op, typename Derived>
@@ -79,14 +79,26 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         auto v = arg.vector();
-        T result = Op{}(v.begin(), v.end(), Op::template initial<T>());
+
+        if (v.size() == 0)
+        {
+            HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                "statistics::statistics1d",
+                generate_error_message(
+                    "empty sequences are not supported"));
+        }
+
+        Op op;
+
+        T result = op(v, op.template initial<T>());
 
         if (keep_dims)
         {
-            return primitive_argument_type{blaze::DynamicVector<T>(1, result)};
+            return primitive_argument_type{
+                blaze::DynamicVector<T>(1, op.finalize(result, v.size()))};
         }
 
-        return primitive_argument_type{result};
+        return primitive_argument_type{op.finalize(result, v.size())};
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -97,19 +109,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arg.matrix();
 
-        T result = Op::template initial<T>();
+        Op op;
+        std::size_t size = 0;
+
+        T result = op.template initial<T>();
         for (std::size_t i = 0; i != m.rows(); ++i)
         {
             auto row = blaze::row(m, i);
-            result = Op{}(row.begin(), row.end(), result);
+            result = op(row, result);
+            size += row.size();
         }
 
         if (keep_dims)
         {
-            return primitive_argument_type{blaze::DynamicMatrix<T>(1, 1, result)};
+            return primitive_argument_type{
+                blaze::DynamicMatrix<T>(1, 1, op.finalize(result, size))};
         }
 
-        return primitive_argument_type{result};
+        return primitive_argument_type{op.finalize(result, size)};
     }
 
     template <typename Op, typename Derived>
@@ -119,6 +136,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arg.matrix();
 
+        Op op;
+
         if (keep_dims)
         {
             blaze::DynamicMatrix<T> result(1, m.columns());
@@ -126,7 +145,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 auto col = blaze::column(m, i);
                 result(0, i) =
-                    Op{}(col.begin(), col.end(), Op::template initial<T>());
+                    op.finalize(op(col, op.template initial<T>()), col.size());
             }
 
             return primitive_argument_type{std::move(result)};
@@ -136,7 +155,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         for (std::size_t i = 0; i != m.columns(); ++i)
         {
             auto col = blaze::column(m, i);
-            result[i] = Op{}(col.begin(), col.end(), Op::template initial<T>());
+            result[i] =
+                op.finalize(op(col, op.template initial<T>()), col.size());
         }
 
         return primitive_argument_type{std::move(result)};
@@ -149,6 +169,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arg.matrix();
 
+        Op op;
+
         if (keep_dims)
         {
             blaze::DynamicMatrix<T> result(m.rows(), 1);
@@ -156,7 +178,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 auto row = blaze::row(m, i);
                 result(i, 0) =
-                    Op{}(row.begin(), row.end(), Op::template initial<T>());
+                    op.finalize(op(row, op.template initial<T>()), row.size());
             }
 
             return primitive_argument_type{std::move(result)};
@@ -166,7 +188,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         for (std::size_t i = 0; i != m.rows(); ++i)
         {
             auto row = blaze::row(m, i);
-            result[i] = Op{}(row.begin(), row.end(), Op::template initial<T>());
+            result[i] =
+                op.finalize(op(row, op.template initial<T>()), row.size());
         }
 
         return primitive_argument_type{std::move(result)};
@@ -210,24 +233,29 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
-        T result = Op::template initial<T>();
+        Op op;
+
+        std::size_t size = 0;
+
+        T result = op.template initial<T>();
         for (std::size_t k = 0; k != t.pages(); ++k)
         {
             auto page = blaze::pageslice(t, k);
             for (std::size_t i = 0; i != t.rows(); ++i)
             {
                 auto row = blaze::row(page, i);
-                result = Op{}(row.begin(), row.end(), result);
+                result = op(row, result);
+                size += row.size();
             }
         }
 
         if (keep_dims)
         {
             return primitive_argument_type{
-                blaze::DynamicTensor<T>(1, 1, 1, result)};
+                blaze::DynamicTensor<T>(1, 1, 1, op.finalize(result, size))};
         }
 
-        return primitive_argument_type{result};
+        return primitive_argument_type{op.finalize(result, size)};
     }
 
     template <typename Op, typename Derived>
@@ -236,6 +264,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         arg_type<T>&& arg, bool keep_dims) const
     {
         auto t = arg.tensor();
+
+        Op op;
 
         if (keep_dims)
         {
@@ -246,8 +276,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (std::size_t j = 0; j != t.columns(); ++j)
                 {
                     auto row = blaze::row(slice, j);
-                    result(0, i, j) =
-                        Op{}(row.begin(), row.end(), Op::template initial<T>());
+                    result(0, i, j) = op.finalize(
+                        op(row, op.template initial<T>()), row.size());
                 }
             }
 
@@ -262,7 +292,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 auto row = blaze::row(slice, j);
                 result(i, j) =
-                    Op{}(row.begin(), row.end(), Op::template initial<T>());
+                    op.finalize(op(row, op.template initial<T>()), row.size());
             }
         }
 
@@ -276,6 +306,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
+        Op op;
+
         if (keep_dims)
         {
             blaze::DynamicTensor<T> result(t.pages(), 1, t.columns());
@@ -285,8 +317,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (std::size_t j = 0; j != t.columns(); ++j)
                 {
                     auto col = blaze::column(slice, j);
-                    result(k, 0, j) =
-                        Op{}(col.begin(), col.end(), Op::template initial<T>());
+                    result(k, 0, j) = op.finalize(
+                        op(col, op.template initial<T>()), col.size());
                 }
             }
 
@@ -301,7 +333,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 auto col = blaze::column(slice, j);
                 result(k, j) =
-                    Op{}(col.begin(), col.end(), Op::template initial<T>());
+                    op.finalize(op(col, op.template initial<T>()), col.size());
             }
         }
 
@@ -315,6 +347,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
+        Op op;
+
         if (keep_dims)
         {
             blaze::DynamicTensor<T> result(t.pages(), t.rows(), 1);
@@ -324,8 +358,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 for (std::size_t i = 0; i != t.rows(); ++i)
                 {
                     auto row = blaze::row(slice, i);
-                    result(k, i, 0) =
-                        Op{}(row.begin(), row.end(), Op::template initial<T>());
+                    result(k, i, 0) = op.finalize(
+                        op(row, op.template initial<T>()), row.size());
                 }
             }
 
@@ -340,7 +374,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 auto row = blaze::row(slice, i);
                 result(k, i) =
-                    Op{}(row.begin(), row.end(), Op::template initial<T>());
+                    op.finalize(op(row, op.template initial<T>()), row.size());
             }
         }
 

@@ -35,8 +35,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
         generic_operation::get_0d_map()
     {
         static std::map<std::string, scalar_function_ptr<T>> map0d = {
-            {"amin", [](T m) -> T { return m; }},
-            {"amax", [](T m) -> T { return m; }},
             {"absolute", [](T m) -> T { return blaze::abs(m); }},
             {"floor", [](T m) -> T { return blaze::floor(m); }},
             {"ceil", [](T m) -> T { return blaze::ceil(m); }},
