@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    319_fold_right_copy_list
     allow_empty_blocks_278
     assign_variable_twice_491
     assign_wrong_variable_245
