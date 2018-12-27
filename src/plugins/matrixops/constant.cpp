@@ -35,14 +35,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             return shape.size();
         }
 
-        std::array<std::size_t, 2> extract_dimensions(ir::range const& shape)
+        std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> extract_dimensions(
+            ir::range const& shape)
         {
-            std::array<std::size_t, 2> result = {1, 1};
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> result = {0, 0};
             if (!shape.empty())
             {
                 if (shape.size() == 1)
                 {
-                    result[1] = extract_scalar_integer_value(*shape.begin());
+                    result[0] = extract_scalar_integer_value(*shape.begin());
                 }
                 else if (shape.size() == 2)
                 {
@@ -50,6 +51,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     result[0] = extract_scalar_integer_value(*elem_1);
                     result[1] = extract_scalar_integer_value(*++elem_1);
                 }
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+                else if (shape.size() == 3)
+                {
+                    auto elem_1 = shape.begin();
+                    result[0] = extract_scalar_integer_value(*elem_1);
+                    result[1] = extract_scalar_integer_value(*++elem_1);
+                    result[2] = extract_scalar_integer_value(*++elem_1);
+                }
+#endif
             }
             return result;
         }
@@ -296,7 +306,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                     "scalar value"));
                     }
 
-                    std::array<std::size_t, 2> dims;
+                    std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims;
                     std::size_t numdims = 0;
                     if (is_list_operand_strict(op1))
                     {
@@ -311,7 +321,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
                         ir::range&& r = extract_list_value_strict(
                             std::move(op1), this_->name_, this_->codename_);
-                        if (r.size() > 2)
+                        if (r.size() > PHYLANX_MAX_DIMENSIONS)
                         {
                             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                                 "constant::eval",
@@ -334,7 +344,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         }
                         else
                         {
-                            dims[1] = extract_scalar_integer_value(
+                            dims[0] = extract_scalar_integer_value(
                                 std::move(op1), this_->name_, this_->codename_);
                             numdims = 1;
                         }
@@ -355,7 +365,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         return this_->constant0d(std::move(op0));
 
                     case 1:
-                        return this_->constant1d(std::move(op0), dims[1]);
+                        return this_->constant1d(std::move(op0), dims[0]);
 
                     case 2:
                         return this_->constant2d(std::move(op0), dims);
@@ -378,7 +388,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             ->  primitive_argument_type
             {
                 primitive_argument_type value;
-                std::array<std::size_t, 2> dims{1, 1};
+                std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> dims{1, 1};
                 std::size_t numdims = 0;
 
                 if (is_list_operand_strict(op0))
@@ -397,7 +407,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     ir::range&& r = extract_list_value_strict(
                         std::move(op0), this_->name_, this_->codename_);
 
-                    if (r.size() > 2)
+                    if (r.size() > PHYLANX_MAX_DIMENSIONS)
                     {
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "constant::eval",
@@ -441,7 +451,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     return this_->constant0d(std::move(value));
 
                 case 1:
-                    return this_->constant1d(std::move(value), dims[1]);
+                    return this_->constant1d(std::move(value), dims[0]);
 
                 case 2:
                     return this_->constant2d(std::move(value), dims);

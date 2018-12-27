@@ -5,15 +5,18 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
-    eval
     dictionary
+    config_hpx
+    dynamic_init
     for
-    slice
+    eval
     make_array
     map_numpy
-    set_operation
-    parallel
+    multi_init
     multi_return
+    parallel
+    set_operation
+    slice
    )
 
 foreach(test ${tests})

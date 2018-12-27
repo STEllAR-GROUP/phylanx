@@ -24,10 +24,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<transpose_operation>
     {
     protected:
-        using operand_type = ir::node_data<double>;
-        using operands_type =
-            std::vector<operand_type, arguments_allocator<operand_type>>;
-
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
@@ -42,8 +38,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type transpose0d1d(operands_type&& ops) const;
-        primitive_argument_type transpose2d(operands_type && ops) const;
+        primitive_argument_type transpose0d1d(primitive_argument_type&& arg) const;
+        primitive_argument_type transpose2d(primitive_argument_type && arg) const;
+
+        template <typename T>
+        primitive_argument_type transpose2d(ir::node_data<T>&& arg) const;
     };
 
     inline primitive create_transpose_operation(hpx::id_type const& locality,

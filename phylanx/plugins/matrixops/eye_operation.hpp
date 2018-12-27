@@ -37,7 +37,7 @@ namespace phylanx { namespace execution_tree { namespace primitives {
     {
     protected:
         using arg_type = ir::node_data<std::int64_t>;
-        using args_type = std::vector<arg_type>;
+        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,

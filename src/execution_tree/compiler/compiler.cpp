@@ -526,9 +526,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::pair<iterator, iterator> pargs =
                 placeholders.equal_range("__2");
 
-            // handle only cases with one of two slicing arguments
+            // handle only cases with one, two, or three slicing arguments
             std::size_t numargs = std::distance(pargs.first, pargs.second);
-            if (numargs == 0 || numargs > 2)
+            if (numargs == 0 || numargs > PHYLANX_MAX_DIMENSIONS)
             {
                 return false;
             }

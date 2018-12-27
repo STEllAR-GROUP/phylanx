@@ -1,5 +1,6 @@
 # Copyright (c) 2017 R. Tohid
 # Copyright (c) 2018 Parsa Amini
+# Copyright (c) 2018 Thomas Heller
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -71,7 +72,7 @@ anchors:
 
     - &attach_phylanx_tree
         attach_workspace:
-            at: /phylanx
+            at: /
 
 ################################################################################
 jobs:
@@ -82,22 +83,32 @@ jobs:
             - checkout:
                 path:
                     /phylanx
+            # Install blaze_tensors library
+            - run:
+                name: Install blaze_tensors
+                command: |
+                    git clone https://github.com/STEllAR-GROUP/blaze_tensor.git --depth=1 /blaze_tensor
+                    cmake -H/blaze_tensor -B/blaze_tensor/build
+                    cmake --build /blaze_tensor/build --target install
             # CMake
             - run:
                 name: Run CMake
-                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
+                command: cmake -H. -Bbuild -DPHYLANX_WITH_GIT_COMMIT=${CIRCLE_SHA1} -DPHYLANX_WITH_TOOLS=On -DHPX_DIR=/usr/local/lib/cmake/HPX -Dblaze_DIR=/blaze/share/blaze/cmake -DPHYLANX_WITH_BLAZE_TENSOR=ON -DPHYLANX_WITH_ITERATIVE_SOLVERS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DPHYLANX_WITH_HIGHFIVE=On
             # Build all targets
             - run:
                 name: Build all targets
-                command: cmake --build build -- -j2
+                command: cmake --build build -- -j1
             # CTest to JUnit XML transformation sheet
             - run:
                 name: Download CTest XML to JUnit XML transformation stylesheet
                 command: curl https://raw.githubusercontent.com/Kitware/CDash/master/tests/circle/conv.xsl -o build/conv.xsl
             - persist_to_workspace:
-                root: /phylanx
+                root: /
                 paths:
-                    - .
+                    - phylanx
+                    - usr/local/include/blaze_tensor
+                    - usr/local/share/BlazeTensor
+
     check.code_format:
         <<: *docker_config
         working_directory: /phylanx
@@ -302,19 +313,26 @@ jobs:
             - store_artifacts:
                 path: tests.unit.group_2
     deploy_image:
-        <<: *machine_config
+        <<: *docker_config
+        environment:
+            TARGET_IMAGE_NAME: stellargroup/phylanx:devel
         steps:
             - attach_workspace:
-                at: ~/project
+                at: /
+            - setup_remote_docker
             - run:
-                name: Enable experimental features on Docker daemon
-                command: |
-                    sudo sh -c 'echo '\''DOCKER_OPTS="--experimental=true"'\'' >> /etc/default/docker'
-                    sudo service docker restart
+                name: Installing
+                command: cmake --build /phylanx/build -- -j2 install
             - run:
-                name: Install to the image
+                name: Create Docker Image
                 command: |
-                    docker build -t ${TARGET_IMAGE_NAME} -f tools/docker/circleci/Dockerfile --squash .
+                    cp /phylanx/tools/docker/circleci/Dockerfile .
+                    VER="18.03.0-ce"
+                    curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
+                    tar -xz -C /tmp -f /tmp/docker-$VER.tgz
+                    mv /tmp/docker/* /usr/bin
+                    docker build -t ${TARGET_IMAGE_NAME} .
+                working_directory: /usr/local
             - run:
                 name: Test installation
                 command: docker run --rm ${TARGET_IMAGE_NAME} physl --hpx:threads=1 --code=1+2 --print
@@ -322,10 +340,12 @@ jobs:
             - deploy:
                 name: Push the Phylanx build environment Docker image
                 command: |
-                    if [ "$CIRCLE_BRANCH" == "master" ]; then
-                        docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-                        docker push ${TARGET_IMAGE_NAME}
-                    fi
+                  if [ -z "$CIRCLE_PR_NUMBER" ] && [ "$CIRCLE_BRANCH" == "master" ]; then
+                    docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+                    docker push ${TARGET_IMAGE_NAME}
+                  else
+                    echo "Skipping docker push on non-master branch"
+                  fi
 
 ################################################################################
 workflows:

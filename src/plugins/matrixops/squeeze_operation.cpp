@@ -51,7 +51,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
     squeeze_operation::squeeze_operation(primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
-      , dtype_(extract_dtype(name_))
     {}
 
     primitive_argument_type squeeze_operation::squeeze0d(
@@ -99,7 +98,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::squeeze_operation::squeeze1d",
             generate_error_message(
-                "the arange primitive requires for all arguments to "
+                "the squeeze primitive requires for all arguments to "
                 "be numeric data types"));
     }
 
@@ -151,7 +150,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "phylanx::execution_tree::primitives::squeeze_operation::squeeze2d",
             generate_error_message(
-                "the arange primitive requires for all arguments to "
+                "the squeeze primitive requires for all arguments to "
                 "be numeric data types"));
     }
 

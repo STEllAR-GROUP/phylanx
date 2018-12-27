@@ -25,12 +25,23 @@ class PhylanxSession:
 
     is_initialized = False
 
-    def __init__(self, num_threads=1):
-        # load and initialize the HPX runtime
+    @staticmethod
+    def init(num_threads=1):
         if not PhylanxSession.is_initialized:
             hpx_thread = "hpx.os_threads!=%s" % num_threads
             PhylanxSession.cfg[3] = hpx_thread
             init_hpx_runtime(PhylanxSession.cfg)
             PhylanxSession.is_initialized = True
         else:
-            raise RuntimeAlreadyInitializedError
+            raise RuntimeAlreadyInitializedError(
+                "Phylanx is already initialized with %s" % PhylanxSession.cfg)
+
+    @staticmethod
+    def config(cfg):
+        if not PhylanxSession.is_initialized:
+            PhylanxSession.cfg = cfg
+            init_hpx_runtime(cfg)
+            PhylanxSession.is_initialized = True
+        else:
+            raise RuntimeAlreadyInitializedError(
+                "Phylanx is already initialized with %s" % PhylanxSession.cfg)
