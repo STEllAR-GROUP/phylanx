@@ -28,33 +28,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        template <typename T>
         struct statistics_prod_op
         {
             statistics_prod_op(std::string const& name,
                 std::string const& codename)
             {}
 
-            template <typename T>
             static constexpr T initial()
             {
                 return T(1);
             }
 
-            template <typename Scalar, typename T>
+            template <typename Scalar>
             typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
             operator()(Scalar s, T initial) const
             {
                 return s * initial;
             }
 
-            template <typename Vector, typename T>
+            template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
             operator()(Vector const& v, T initial) const
             {
                 return blaze::prod(v) * initial;
             }
 
-            template <typename T>
             static T finalize(T value, std::size_t size)
             {
                 return value;

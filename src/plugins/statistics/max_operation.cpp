@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -43,33 +44,32 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
         ///////////////////////////////////////////////////////////////////////
+        template <typename T>
         struct statistics_max_op
         {
             statistics_max_op(std::string const& name,
                 std::string const& codename)
             {}
 
-            template <typename T>
             static constexpr T initial()
             {
                 return numeric_limits_min<T>();
             }
 
-            template <typename Scalar, typename T>
+            template <typename Scalar>
             typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
             operator()(Scalar s, T initial) const
             {
                 return (std::max)(s, initial);
             }
 
-            template <typename Vector, typename T>
+            template <typename Vector>
             typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
             operator()(Vector const& v, T initial) const
             {
                 return (std::max)((blaze::max)(v), initial);
             }
 
-            template <typename T>
             static T finalize(T value, std::size_t size)
             {
                 return value;

@@ -10,7 +10,9 @@
 #include <phylanx/plugins/statistics/mean_operation.hpp>
 #include <phylanx/plugins/statistics/min_operation.hpp>
 #include <phylanx/plugins/statistics/prod_operation.hpp>
+#include <phylanx/plugins/statistics/std_operation.hpp>
 #include <phylanx/plugins/statistics/sum_operation.hpp>
+#include <phylanx/plugins/statistics/var_operation.hpp>
 
 #endif
 

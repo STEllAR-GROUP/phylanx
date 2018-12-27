@@ -8,7 +8,9 @@ set(tests
     mean_operation
     min_operation
     prod_operation
+    std_operation
     sum_operation
+    var_operation
    )
 
 foreach(test ${tests})

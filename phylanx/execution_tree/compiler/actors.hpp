@@ -116,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return extract_copy_value(value_operand_sync(arg_,
                     primitive_arguments_type{}, name_));
             }
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         // interpret this function as an invocable (evaluate object itself and
@@ -135,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return extract_copy_value(
                     value_operand_sync(arg_, std::move(params), name_));
             }
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         result_type operator()(arguments_type && args) const
@@ -155,7 +155,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return extract_copy_value(
                     value_operand_sync(arg_, std::move(params), name_));
             }
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         template <typename ... Ts>
@@ -187,7 +187,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     value_operand_sync(arg_, std::move(params), name_));
             }
 
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         hpx::future<result_type> eval(arguments_type && args) const

@@ -37,17 +37,15 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     statistics<Op, Derived>::statistics(primitive_arguments_type&& operands,
-            std::string const& name, std::string const& codename,
-            std::size_t max_expected_args)
+            std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , dtype_(extract_dtype(name_))
-      , max_expected_args_(max_expected_args)
     {
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics0d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -62,9 +60,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     "to be either 0 or -1 for scalar values."));
         }
 
-        Op op{name_, codename_};
+        Op<T> op{name_, codename_};
 
-        T initial_value = op.template initial<T>();
+        T initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -75,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 initial_value)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics1d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -91,9 +89,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
 
 
-        Op op{name_, codename_};
+        Op<T> op{name_, codename_};
 
-        T initial_value = op.template initial<T>();
+        T initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -112,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d_flat(
         arg_type<T>&& arg, bool keepdims,
@@ -120,10 +118,10 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arg.matrix();
 
-        Op op{name_, codename_};
+        Op<T> op{name_, codename_};
         std::size_t size = 0;
 
-        T result = op.template initial<T>();
+        T result = Op<T>::initial();
         if (initial)
         {
             result = *initial;
@@ -145,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{op.finalize(result, size)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d_axis0(
         arg_type<T>&& arg, bool keepdims,
@@ -153,9 +151,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arg.matrix();
 
-        Op op{name_, codename_};
-
-        T initial_value = op.template initial<T>();
+        T initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -166,6 +162,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::DynamicMatrix<T> result(1, m.columns());
             for (std::size_t i = 0; i != m.columns(); ++i)
             {
+                Op<T> op{name_, codename_};
                 auto col = blaze::column(m, i);
                 result(0, i) = op.finalize(op(col, initial_value), col.size());
             }
@@ -176,6 +173,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<T> result(m.columns());
         for (std::size_t i = 0; i != m.columns(); ++i)
         {
+            Op<T> op{name_, codename_};
             auto col = blaze::column(m, i);
             result[i] = op.finalize(op(col, initial_value), col.size());
         }
@@ -183,7 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d_axis1(
         arg_type<T>&& arg, bool keepdims,
@@ -191,9 +189,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto m = arg.matrix();
 
-        Op op{name_, codename_};
-
-        T initial_value = op.template initial<T>();
+        T initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -204,6 +200,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             blaze::DynamicMatrix<T> result(m.rows(), 1);
             for (std::size_t i = 0; i != m.rows(); ++i)
             {
+                Op<T> op{name_, codename_};
                 auto row = blaze::row(m, i);
                 result(i, 0) = op.finalize(op(row, initial_value), row.size());
             }
@@ -214,6 +211,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         blaze::DynamicVector<T> result(m.rows());
         for (std::size_t i = 0; i != m.rows(); ++i)
         {
+            Op<T> op{name_, codename_};
             auto row = blaze::row(m, i);
             result[i] = op.finalize(op(row, initial_value), row.size());
         }
@@ -221,7 +219,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -252,7 +250,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_flat(
         arg_type<T>&& arg, bool keepdims,
@@ -260,11 +258,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
-        Op op{name_, codename_};
+        Op<T> op{name_, codename_};
 
         std::size_t size = 0;
 
-        T result = op.template initial<T>();
+        T result = Op<T>::initial();
         if (initial)
         {
             result = *initial;
@@ -290,7 +288,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{op.finalize(result, size)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis0(
         arg_type<T>&& arg, bool keepdims,
@@ -298,9 +296,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
-        Op op{name_, codename_};
-
-        T initial_value = op.template initial<T>();
+        T initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -314,6 +310,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto slice = blaze::rowslice(t, i);
                 for (std::size_t j = 0; j != t.columns(); ++j)
                 {
+                    Op<T> op{name_, codename_};
                     auto row = blaze::row(slice, j);
                     result(0, i, j) =
                         op.finalize(op(row, initial_value), row.size());
@@ -329,6 +326,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto slice = blaze::rowslice(t, i);
             for (std::size_t j = 0; j != t.columns(); ++j)
             {
+                Op<T> op{name_, codename_};
                 auto row = blaze::row(slice, j);
                 result(i, j) = op.finalize(op(row, initial_value), row.size());
             }
@@ -337,7 +335,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis1(
         arg_type<T>&& arg, bool keepdims,
@@ -345,9 +343,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
-        Op op{name_, codename_};
-
-        T initial_value = op.template initial<T>();
+        T initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -361,6 +357,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto slice = blaze::pageslice(t, k);
                 for (std::size_t j = 0; j != t.columns(); ++j)
                 {
+                    Op<T> op{name_, codename_};
                     auto col = blaze::column(slice, j);
                     result(k, 0, j) =
                         op.finalize(op(col, initial_value), col.size());
@@ -376,6 +373,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto slice = blaze::pageslice(t, k);
             for (std::size_t j = 0; j != t.columns(); ++j)
             {
+                Op<T> op{name_, codename_};
                 auto col = blaze::column(slice, j);
                 result(k, j) = op.finalize(op(col, initial_value), col.size());
             }
@@ -384,7 +382,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis2(
         arg_type<T>&& arg, bool keepdims,
@@ -392,9 +390,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         auto t = arg.tensor();
 
-        Op op{name_, codename_};
-
-        T initial_value = op.template initial<T>();
+        T initial_value = Op<T>::initial();
         if (initial)
         {
             initial_value = *initial;
@@ -408,6 +404,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 auto slice = blaze::pageslice(t, k);
                 for (std::size_t i = 0; i != t.rows(); ++i)
                 {
+                    Op<T> op{name_, codename_};
                     auto row = blaze::row(slice, i);
                     result(k, i, 0) =
                         op.finalize(op(row, initial_value), row.size());
@@ -423,6 +420,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             auto slice = blaze::pageslice(t, k);
             for (std::size_t i = 0; i != t.rows(); ++i)
             {
+                Op<T> op{name_, codename_};
                 auto row = blaze::row(slice, i);
                 result(k, i) = op.finalize(op(row, initial_value), row.size());
             }
@@ -431,7 +429,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -466,7 +464,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statisticsnd(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -504,7 +502,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     primitive_argument_type statistics<Op, Derived>::statisticsnd(
         primitive_argument_type&& arg,
         hpx::util::optional<std::int64_t> const& axis, bool keepdims,
@@ -596,7 +594,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     primitive_argument_type statistics<Op, Derived>::statisticsnd(
         primitive_argument_type&& arg, ir::range&& axes, bool keepdims,
         primitive_argument_type&& initial) const
@@ -648,12 +646,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     hpx::future<primitive_argument_type> statistics<Op, Derived>::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
     {
-        if (operands.empty() || operands.size() > max_expected_args_)
+        if (operands.empty() ||
+            operands.size() > derived().match_data.patterns_.size())
         {
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "statistics::eval",
@@ -662,9 +661,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "three operands"));
         }
 
+        std::size_t count = 0;
         for (auto const& i : operands)
         {
-            if (!valid(i))
+            // axis (arg1) and keepdims (arg2) are allowed to be nil
+            if (count != 1 && count != 2 && !valid(i))
             {
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "statistics::eval",
@@ -672,6 +673,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "the statistics_operation primitive requires that the "
                         "arguments given by the operands array are valid"));
             }
+            ++count;
         }
 
         auto this_ = this->shared_from_this();
@@ -685,21 +687,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 bool keepdims = false;
                 primitive_argument_type initial;
 
-                // axis is argument #2
                 if (args.size() > 1)
                 {
-                    // keepdims is argument #3
-                    if (args.size() >= 3)
+                    // keepdims is (optional) argument #3
+                    if (args.size() > 2 && valid(args[2]))
                     {
                         keepdims = extract_scalar_boolean_value(
                             args[2], this_->name_, this_->codename_);
                     }
 
-                    if (args.size() == 4)
+                    // initial is (optional) argument #4
+                    if (args.size() > 3)
                     {
                         initial = std::move(args[3]);
                     }
 
+                    // axis is (optional) argument #2
                     if (valid(args[1]))
                     {
                         // the second argument is either a list of integers...

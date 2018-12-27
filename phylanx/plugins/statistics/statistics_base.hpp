@@ -25,7 +25,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    template <typename Op, typename Derived>
+    template <template <class T> typename Op, typename Derived>
     class statistics
       : public primitive_component_base
       , public std::enable_shared_from_this<Derived>
@@ -57,7 +57,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         statistics() = default;
 
         statistics(primitive_arguments_type&& operands, std::string const& name,
-            std::string const& codename, std::size_t max_expected_args = 4);
+            std::string const& codename);
 
     private:
         template <typename T>
@@ -117,7 +117,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     private:
         node_data_type dtype_;
-        std::size_t max_expected_args_;
     };
 }}}
 

@@ -19,6 +19,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        template <typename T>
         struct statistics_mean_op;
     }
 
