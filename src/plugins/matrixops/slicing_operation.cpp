@@ -90,7 +90,9 @@ namespace phylanx {namespace execution_tree {    namespace primitives
       : primitive_component_base(std::move(operands), name, codename)
       , slice_rows_(false)
       , slice_columns_(false)
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
       , slice_pages_(false)
+#endif
     {
         auto func_name = extract_function_name(name_);
         if (func_name == "slice_row")
