@@ -1056,7 +1056,7 @@ namespace phylanx { namespace execution_tree
         typename Enable = typename std::enable_if<std::is_same<
             typename std::decay<Arg>::type, primitive_argument_type
         >::value>::type>
-    void extract_value_tensor(Arg&& arg, F&& f, std::size_t pages,
+    ir::node_data<T> extract_value_tensor(Arg&& arg, F&& f, std::size_t pages,
         std::size_t rows, std::size_t columns,
         std::string const& name, std::string const& codename)
     {
