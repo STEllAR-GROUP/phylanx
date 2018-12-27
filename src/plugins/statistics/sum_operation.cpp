@@ -5,14 +5,21 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <phylanx/config.hpp>
-#include <phylanx/plugins/arithmetics/sum_operation.hpp>
-#include <phylanx/plugins/arithmetics/statistics_impl.hpp>
+#include <phylanx/plugins/statistics/sum_operation.hpp>
+#include <phylanx/plugins/statistics/statistics_base_impl.hpp>
+#include <phylanx/util/blaze_traits.hpp>
 
-#include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace execution_tree { namespace primitives
@@ -20,18 +27,35 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     namespace detail
     {
+        template <typename T>
         struct statistics_sum_op
         {
-            template <typename T>
+            statistics_sum_op(std::string const& name,
+                std::string const& codename)
+            {}
+
             static constexpr T initial()
             {
                 return T(0);
             }
 
-            template <typename Iter, typename T>
-            T operator()(Iter b, Iter e, T initial) const
+            template <typename Scalar>
+            typename std::enable_if<traits::is_scalar<Scalar>::value, T>::type
+            operator()(Scalar s, T initial) const
             {
-                return std::accumulate(b, e, initial, std::plus<T>());
+                return s + initial;
+            }
+
+            template <typename Vector>
+            typename std::enable_if<!traits::is_scalar<Vector>::value, T>::type
+            operator()(Vector const& v, T initial) const
+            {
+                return blaze::sum(v) + initial;
+            }
+
+            static T finalize(T value, std::size_t size)
+            {
+                return value;
             }
         };
     }
@@ -42,14 +66,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         match_pattern_type{
             "sum",
             std::vector<std::string>{
-                "sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)"},
+                "sum(_1)", "sum(_1, _2)", "sum(_1, _2, _3)",
+                "sum(_1, _2, _3, _4)"
+            },
             &create_sum_operation, &create_primitive<sum_operation>, R"(
-            v, axis, keep_dim
+            v, axis, keepdims
             Args:
 
                 v (vector or matrix) : a vector or matrix
                 axis (optional, integer): a axis to sum along
-                keep_dim (optional, boolean): keep dimension of input
+                keepdims (optional, boolean): keep dimension of input
 
             Returns:
 
