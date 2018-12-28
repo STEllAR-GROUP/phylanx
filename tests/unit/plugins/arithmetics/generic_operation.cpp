@@ -22,7 +22,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 using custom_vector_type = blaze::CustomVector<double, true, true>;
 using custom_matrix_type = blaze::CustomMatrix<double, true, true>;
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
 using custom_tensor_type = blaze::CustomTensor<double, true, true>;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 void test_generic_operation_0d(std::string const& func_name,
