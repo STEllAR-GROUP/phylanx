@@ -25,7 +25,7 @@
 
 namespace phylanx { namespace execution_tree { namespace primitives
 {
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     class statistics
       : public primitive_component_base
       , public std::enable_shared_from_this<Derived>

@@ -37,7 +37,7 @@
 namespace phylanx { namespace execution_tree { namespace primitives
 {
     ///////////////////////////////////////////////////////////////////////////
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     statistics<Op, Derived>::statistics(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
@@ -45,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics0d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -73,7 +73,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 initial_value)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics1d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -110,7 +110,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d_flat(
         arg_type<T>&& arg, bool keepdims,
@@ -143,7 +143,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{op.finalize(result, size)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d_axis0(
         arg_type<T>&& arg, bool keepdims,
@@ -181,7 +181,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d_axis1(
         arg_type<T>&& arg, bool keepdims,
@@ -219,7 +219,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics2d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -250,7 +250,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_flat(
         arg_type<T>&& arg, bool keepdims,
@@ -288,7 +288,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{op.finalize(result, size)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis0(
         arg_type<T>&& arg, bool keepdims,
@@ -335,7 +335,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis1(
         arg_type<T>&& arg, bool keepdims,
@@ -382,7 +382,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d_axis2(
         arg_type<T>&& arg, bool keepdims,
@@ -429,7 +429,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return primitive_argument_type{std::move(result)};
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statistics3d(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -464,7 +464,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 #endif
 
     ///////////////////////////////////////////////////////////////////////////
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     template <typename T>
     primitive_argument_type statistics<Op, Derived>::statisticsnd(
         arg_type<T>&& arg, hpx::util::optional<std::int64_t> const& axis,
@@ -502,7 +502,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     primitive_argument_type statistics<Op, Derived>::statisticsnd(
         primitive_argument_type&& arg,
         hpx::util::optional<std::int64_t> const& axis, bool keepdims,
@@ -594,7 +594,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     }
 
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     primitive_argument_type statistics<Op, Derived>::statisticsnd(
         primitive_argument_type&& arg, ir::range&& axes, bool keepdims,
         primitive_argument_type&& initial) const
@@ -646,7 +646,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    template <template <class T> typename Op, typename Derived>
+    template <template <class T> class Op, typename Derived>
     hpx::future<primitive_argument_type> statistics<Op, Derived>::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
