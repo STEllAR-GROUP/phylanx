@@ -324,8 +324,8 @@ endif()
 phylanx_include(GeneratePackage)
 
 # Create a symlink in share pointing to the latest Phylanx installation
-create_symbolic_link("${CMAKE_BINARY_DIR}/share/phylanx-${PHYLANX_VERSION}"
-                     "${CMAKE_BINARY_DIR}/share/phylanx")
+# create_symbolic_link("${CMAKE_BINARY_DIR}/share/phylanx-${PHYLANX_VERSION}"
+#                      "${CMAKE_BINARY_DIR}/share/phylanx")
 
 message("")
 message("Phylanx will be installed to ${CMAKE_INSTALL_PREFIX}")
