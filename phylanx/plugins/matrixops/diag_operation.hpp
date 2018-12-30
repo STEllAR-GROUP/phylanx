@@ -49,6 +49,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
          *
          * @param operands Vector of phylanx node data objects of
          * size either one or two
+         * @param name The name of the primitive
+         * @param codename The codename of the primitive
          *
          * If used inside PhySL:
          *

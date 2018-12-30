@@ -122,6 +122,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///             values, distributed according to the student probability
         ///             density function (n: degrees of freedom)\n
         ///
+        ///
+        /// \param name The name of the primitive
+        /// \param codename The codename of the primitive
         random(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 

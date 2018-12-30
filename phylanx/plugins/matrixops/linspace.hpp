@@ -61,6 +61,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         /// samples is less than 2.\n
         /// num_samples: number of samples in the sequence.
         ///
+        /// \param name The name of the primitive
+        /// \param codename The codename of the primitive
+
         linspace(primitive_arguments_type&& args,
             std::string const& name, std::string const& codename);
 
