@@ -118,7 +118,7 @@ add_custom_target(git_docs
     -DPHYLANX_VERSION:STRING=${PHYLANX_VERSION}
     -DPHYLANX_WITH_GIT_BRANCH=${PHYLANX_WITH_GIT_BRANCH}
     -DPHYLANX_WITH_GIT_TAG=${PHYLANX_WITH_GIT_TAG}
-    -P "${CMAKE_SOURCE_DIR}/cmake/PHYLANX_UpdateGitDocs.cmake")
+    -P "${CMAKE_SOURCE_DIR}/cmake/Phylanx_UpdateGitDocs.cmake")
 
 set_target_properties(git_docs
     PROPERTIES FOLDER "Documentation/")
