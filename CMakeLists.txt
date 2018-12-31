@@ -175,6 +175,10 @@ if(PHYLANX_WITH_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
+if(PHYLANX_WITH_DOCUMENTATION)
+  add_subdirectory(docs)
+endif()
+
 ################################################################################
 # Targets related to Python (must come before tests)
 add_subdirectory(python)
@@ -301,11 +305,26 @@ install(
   DESTINATION share/phylanx-${PHYLANX_VERSION}
   COMPONENT license)
 
+# install phylanx docs
+if(PHYLANX_WITH_DOCUMENTATION)
+  # Install Phylanx documentation files
+  install(
+    FILES "${PROJECT_SOURCE_DIR}/docs/index.html"
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/
+    COMPONENT docs)
+
+  install(
+    DIRECTORY "${CMAKE_BINARY_DIR}/share/phylanx/docs/html/"
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/docs/html
+    COMPONENT docs
+    PATTERN ".git" EXCLUDE)
+endif()
+
 phylanx_include(GeneratePackage)
 
 # Create a symlink in share pointing to the latest Phylanx installation
-create_symbolic_link("${CMAKE_BINARY_DIR}/share/phylanx-${PHYLANX_VERSION}"
-                     "${CMAKE_BINARY_DIR}/share/phylanx")
+# create_symbolic_link("${CMAKE_BINARY_DIR}/share/phylanx-${PHYLANX_VERSION}"
+#                      "${CMAKE_BINARY_DIR}/share/phylanx")
 
 message("")
 message("Phylanx will be installed to ${CMAKE_INSTALL_PREFIX}")
