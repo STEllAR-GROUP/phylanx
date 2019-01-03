@@ -22,15 +22,6 @@ from .utils import dump_to_file
 
 
 
-# new:
-#   new python package dependency: astpretty
-
-# BUGS:
-#   search "BUG"
-
-
-
-
 def Phylanx(__phylanx_arg=None, **kwargs):
 
     class __PhylanxDecorator(object):
@@ -57,7 +48,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
 
             valid_kwargs = {
-                    "target"            : ["PhySL", "OpenSCoP"],
+                    "target"            : ["OpenSCoP", "PhySL", "OpenSCoP"],
                     "compiler_state"    : [None, "skip_validation"],
                     "performance"       : [None, "skip_validation"],
                     "debug"             : [True, False],
@@ -102,7 +93,6 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                     print("Phylanx kwargs:     %-20s =" % key, value)
 
 
-
         def get_env(self, func):
 
             # Obtain global environment if the object is a function.
@@ -111,17 +101,12 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             else:
                 kwargs["fglobals"] = func.__globals__
 
-
-            # BUGGY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # each decorated function should have a unique tag
-            #
-            #f1 = os.path.realpath(__file__)                    # bad
-            #f1 = inspect.getfile(inspect.currentframe())       # bad
-            f2 = func.__name__
-            f3 = inspect.getsourcelines(func)[-1]
-            #print(f1, f2, f3)
-            s = "%s%d" % (f2, f3)
-            #print(s)
+            # Assign each decorated function a unique tag
+            f1 = func.__code__.co_filename
+            f2 = inspect.getsourcelines(func)[-1]
+            f3 = func.__name__
+            s = "%s_line%d_%s" % (f1, f2, f3)
+            s = s.replace("/", "")
             kwargs["python_src_tag"] = s
 
 
