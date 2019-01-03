@@ -7,6 +7,8 @@ import phylanx
 
 ###############################################################################
 
+phylanx.PhylanxSession.init(1)
+
 
 class traverse_ast:
     def __init__(self):

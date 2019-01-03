@@ -8,11 +8,13 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
 #include <phylanx/ir/node_data.hpp>
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -23,7 +25,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///
     /// \brief Mean Operation Primitive
     ///
-    /// This primitive computes the arithmatic mean along the specified axis.
+    /// This primitive computes the arithmetic mean along the specified axis.
     /// \param operands Vector of phylanx node data objects
     ///
     /// If used inside PhySL:
@@ -38,10 +40,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<mean_operation>
     {
     protected:
-        using val_type = double;
-        using arg_type = ir::node_data<val_type>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
@@ -56,12 +54,28 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type mean0d(args_type&& args) const;
-        primitive_argument_type mean1d(args_type&& args) const;
-        primitive_argument_type mean2d_flatten(arg_type&& arg_a) const;
-        primitive_argument_type mean2d_x_axis(arg_type&& arg_a) const;
-        primitive_argument_type mean2d_y_axis(arg_type&& arg_a) const;
-        primitive_argument_type mean2d(args_type&& args) const;
+        primitive_argument_type mean0d(primitive_argument_type&& arg,
+            bool has_axis = false, std::int64_t axis = 0) const;
+        primitive_argument_type mean1d(primitive_argument_type&& arg,
+            bool has_axis = false, std::int64_t axis = 0) const;
+        primitive_argument_type mean2d(primitive_argument_type&& arg,
+            bool has_axis = false, std::int64_t axis = 0) const;
+
+        template <typename T>
+        primitive_argument_type mean1d(ir::node_data<T>&& arg) const;
+
+        template <typename T>
+        primitive_argument_type mean2d_flatten(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type mean2d_x_axis(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type mean2d_y_axis(ir::node_data<T>&& arg) const;
+        template <typename T>
+        primitive_argument_type mean2d(ir::node_data<T>&& arg,
+            bool has_axis, std::int64_t axis) const;
+
+    private:
+        node_data_type dtype_;
     };
 
     inline primitive create_mean_operation(hpx::id_type const& locality,

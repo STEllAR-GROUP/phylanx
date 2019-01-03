@@ -11,14 +11,13 @@ set(tests
     constant
     count_nonzero
     cross_operation
-    cumsum
     determinant
     diag_operation
     dot_operation
     expand_dims
     extract_shape
+    eye_operation
     flatten
-    generic_operation
     gradient_operation
     hstack_operation
     identity
@@ -30,16 +29,22 @@ set(tests
     power_operation
     random
     random_distributions
+    reshape_operation
     row_slicing
     shuffle_operation
     slicing_operation
+    softmax_operation
     squeeze_operation
-    sum_operation
+    tile_operation
     transpose_operation
     unique
     vsplit_operation
     vstack_operation
    )
+
+if(PHYLANX_WITH_BLAZE_TENSOR)
+  set(tests ${tests} dstack_operation)
+endif()
 
 foreach(test ${tests})
   set(sources ${test}.cpp)

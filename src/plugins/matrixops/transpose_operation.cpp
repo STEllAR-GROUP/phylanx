@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/matrixops/transpose_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -27,15 +28,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {
         hpx::util::make_tuple("transpose",
             std::vector<std::string>{"transpose(_1)"},
-            &create_transpose_operation, &create_primitive<transpose_operation>,
-            "m\n"
-            "Args:\n"
-            "\n"
-            "    m (matrix) : a matrix\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The transpose of `m`.")
+            &create_transpose_operation,
+            &create_primitive<transpose_operation>, R"(
+            arg
+            Args:
+
+                arg (arr) : an array
+
+            Returns:
+
+            The transpose of `arg`.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -47,24 +49,51 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     primitive_argument_type transpose_operation::transpose0d1d(
-        operands_type&& ops) const
+        primitive_argument_type&& arg) const
     {
-        return primitive_argument_type{std::move(ops[0])};       // no-op
+        return primitive_argument_type{std::move(arg)};       // no-op
     }
 
+    template <typename T>
     primitive_argument_type transpose_operation::transpose2d(
-        operands_type&& ops) const
+        ir::node_data<T>&& arg) const
     {
-        if (ops[0].is_ref())
+        if (arg.is_ref())
         {
-            ops[0] = blaze::trans(ops[0].matrix());
+            arg = blaze::trans(arg.matrix());
         }
         else
         {
-            blaze::transpose(ops[0].matrix_non_ref());
+            blaze::transpose(arg.matrix_non_ref());
         }
 
-        return primitive_argument_type{std::move(ops[0])};
+        return primitive_argument_type{std::move(arg)};
+    }
+
+    primitive_argument_type transpose_operation::transpose2d(
+        primitive_argument_type&& arg) const
+    {
+        switch (extract_common_type(arg))
+        {
+        case node_data_type_bool:
+            return transpose2d(extract_boolean_value_strict(std::move(arg)));
+
+        case node_data_type_int64:
+            return transpose2d(extract_integer_value_strict(std::move(arg)));
+
+        case node_data_type_unknown: HPX_FALLTHROUGH;
+        case node_data_type_double:
+            return transpose2d(extract_numeric_value(std::move(arg)));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "transpose_operation::transpose2d",
+            generate_error_message(
+                "the transpose primitive requires for its argument to "
+                    "be numeric data type"));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -93,18 +122,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](operands_type&& ops)
+            [this_ = std::move(this_)](primitive_argument_type&& arg)
             -> primitive_argument_type
             {
-                std::size_t dims = ops[0].num_dimensions();
-                switch (dims)
+                switch (extract_numeric_value_dimension(
+                    arg, this_->name_, this_->codename_))
                 {
                 case 0: HPX_FALLTHROUGH;
                 case 1:
-                    return this_->transpose0d1d(std::move(ops));
+                    return this_->transpose0d1d(std::move(arg));
 
                 case 2:
-                    return this_->transpose2d(std::move(ops));
+                    return this_->transpose2d(std::move(arg));
 
                 default:
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
@@ -114,8 +143,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
                                 "number of dimensions"));
                 }
             }),
-            detail::map_operands(
-                operands, functional::numeric_operand{}, args,
-                name_, codename_, std::move(ctx)));
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

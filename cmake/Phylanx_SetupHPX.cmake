@@ -50,6 +50,24 @@ macro(phylanx_setup_hpx)
           "with TCMalloc")
     endif()
 
+    if(MSVC AND HPX_WITH_DATAPAR_VC)
+      phylanx_add_target_compile_option(-std:c++latest PUBLIC)
+      phylanx_add_config_cond_define(_HAS_AUTO_PTR_ETC 1)
+      phylanx_add_config_cond_define(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS 1)
+
+      # unary minus operator applied to unsigned type, result still unsigned
+      phylanx_add_compile_flag(-wd4146)
+
+      # '<=': signed/unsigned mismatch
+      phylanx_add_compile_flag(-wd4018)
+
+      # 'return': conversion from 'short' to 'Vc_1::schar', possible loss of data
+      phylanx_add_compile_flag(-wd4244)
+
+      # '*': integral constant overflow
+      phylanx_add_compile_flag(-wd4307)
+    endif()
+
   else()
     phylanx_error("HPX_DIR has not been specified, please set it to help locating HPX")
   endif()

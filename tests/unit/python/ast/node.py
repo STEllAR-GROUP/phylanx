@@ -9,6 +9,8 @@ import phylanx.util as util
 
 ###############################################################################
 
+phylanx.PhylanxSession.init(1)
+
 
 def test_serialization(in_ast):
     data = util.serialize(in_ast)
