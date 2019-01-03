@@ -323,13 +323,13 @@ int hpx_main(boost::program_options::variables_map& vm)
     }
 
     // compile the given code
-    phylanx::execution_tree::compiler::function_list snippets_read_x;
+    phylanx::execution_tree::compiler::function_list snippets;
     auto const& code_read_x =
-        phylanx::execution_tree::compile("read_x", read_x_code, snippets_read_x);
+        phylanx::execution_tree::compile("read_x", read_x_code, snippets);
 
-    phylanx::execution_tree::compiler::function_list snippets_als;
     auto const& code_als = phylanx::execution_tree::compile(
-        vm.count("direct") != 0 ? als_direct : als_explicit, snippets_als);
+        vm.count("direct") != 0 ? "als_direct" : "als_explicit",
+        vm.count("direct") != 0 ? als_direct : als_explicit, snippets);
 
     // Enable collection of performance data for all existing primitives
     auto primitives = phylanx::util::enable_measurements();

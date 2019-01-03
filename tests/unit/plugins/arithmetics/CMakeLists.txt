@@ -10,9 +10,7 @@ set(tests
     div_operation
     generic_operation
     mul_operation
-    prod_operation
     sub_operation
-    sum_operation
     unary_minus_operation
    )
 

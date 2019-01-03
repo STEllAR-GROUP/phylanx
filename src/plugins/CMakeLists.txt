@@ -12,6 +12,7 @@ set(subdirs
     listops
     matrixops
     solvers
+    statistics
    )
 
 foreach(subdir ${subdirs})

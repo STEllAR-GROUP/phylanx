@@ -37,11 +37,10 @@ namespace phylanx { namespace bindings
                 if (c.enable_measurements)
                 {
                     c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(
-                            code.entry_point().name_));
+                        phylanx::util::enable_measurements(code.name_));
                 }
 
-                return code.entry_point().name_;
+                return code.name_;
             });
     }
 
@@ -61,8 +60,7 @@ namespace phylanx { namespace bindings
                 if (c.enable_measurements)
                 {
                     c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(
-                            code_x.entry_point().name_));
+                        phylanx::util::enable_measurements(code_x.name_));
                 }
 
                 auto x = code_x.run();
@@ -169,18 +167,25 @@ namespace phylanx { namespace bindings
                 if (c.enable_measurements)
                 {
                     c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(
-                            code.entry_point().name_));
+                        phylanx::util::enable_measurements(code.name_));
                 }
 
+                auto const& program = c.eval_snippets.program_;
+
                 std::set<std::string> resolve_children;
-                for (auto const& f : code.entry_points())
+                for (auto const& ep : program.entry_points())
                 {
-                    resolve_children.insert(f.name_);
+                    for (auto const& f : ep.functions())
+                    {
+                        resolve_children.insert(f.name_);
+                    }
                 }
-                for (auto const& f : code.scratchpad())
+                for (auto const& entry : program.scratchpad())
                 {
-                    resolve_children.insert(f.name_);
+                    for (auto const& f : entry.second)
+                    {
+                        resolve_children.insert(f.name_);
+                    }
                 }
 
                 auto topology = code.get_expression_topology(
@@ -204,18 +209,25 @@ namespace phylanx { namespace bindings
                 if (c.enable_measurements)
                 {
                     c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(
-                            code.entry_point().name_));
+                        phylanx::util::enable_measurements(code.name_));
                 }
 
+                auto const& program = c.eval_snippets.program_;
+
                 std::set<std::string> resolve_children;
-                for (auto const& f : code.entry_points())
+                for (auto const& ep : program.entry_points())
                 {
-                    resolve_children.insert(f.name_);
+                    for (auto const& f : ep.functions())
+                    {
+                        resolve_children.insert(f.name_);
+                    }
                 }
-                for (auto const& f : code.scratchpad())
+                for (auto const& entry : program.scratchpad())
                 {
-                    resolve_children.insert(f.name_);
+                    for (auto const& f : entry.second)
+                    {
+                        resolve_children.insert(f.name_);
+                    }
                 }
 
                 auto topology = code.get_expression_topology(
@@ -240,18 +252,25 @@ namespace phylanx { namespace bindings
                 if (c.enable_measurements)
                 {
                     c.primitive_instances.push_back(
-                        phylanx::util::enable_measurements(
-                            code.entry_point().name_));
+                        phylanx::util::enable_measurements(code.name_));
                 }
 
+                auto const& program = c.eval_snippets.program_;
+
                 std::set<std::string> resolve_children;
-                for (auto const& f : code.entry_points())
+                for (auto const& ep : program.entry_points())
                 {
-                    resolve_children.insert(f.name_);
+                    for (auto const& f : ep.functions())
+                    {
+                        resolve_children.insert(f.name_);
+                    }
                 }
-                for (auto const& f : code.scratchpad())
+                for (auto const& entry : program.scratchpad())
                 {
-                    resolve_children.insert(f.name_);
+                    for (auto const& f : entry.second)
+                    {
+                        resolve_children.insert(f.name_);
+                    }
                 }
 
                 auto topology = code.get_expression_topology(
