@@ -295,7 +295,7 @@ install(
 # Install all Phylanx cmake utility files
 install(
   DIRECTORY cmake/
-  DESTINATION ${LIB}/cmake/${PHYLANX_PACKAGE_NAME}
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PHYLANX_PACKAGE_NAME}
   COMPONENT core
   PATTERN ".in" EXCLUDE
   PATTERN ".git" EXCLUDE)
