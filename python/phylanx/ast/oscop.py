@@ -9,13 +9,12 @@ import numpy as np
 from string import Template
 from itertools import chain
 
-from .templates import *
-from .utils import dump_ast
+from .oscop_templates import *
+from .utils import dump_to_file
 
 
 class OpenSCoP:
-    def __init__(self, root, kwargs):
-        print(dump_ast(root))
+    def __init__(self, func, python_ast, kwargs):
 
         self.domain_stack = []
         self.params_stack = []
@@ -31,7 +30,7 @@ class OpenSCoP:
         self.statement_idx = 0
         self.oscop_global = empty_oscop_global()
 
-        kernel = root.body[0]
+        kernel = python_ast.body[0]
         for node in kernel.body:
             self.function[node.__class__.__name__](self, node)
 
@@ -39,6 +38,11 @@ class OpenSCoP:
         self.template = Template(oscop_global)
         self.__src__ = self.template.substitute(
             self.oscop_global) + '\n' + self.__src__
+
+        if kwargs["dump_openscop"] == True:
+            ofn = "./dump_openscop_" + kwargs["python_src_tag"] + ".txt"
+            dump_to_file(self.__src__, ofn, kwargs["verbos"])
+
 
     def _Add(self, node, expr={}, coef=1):
         left = node.left

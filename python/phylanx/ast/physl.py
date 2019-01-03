@@ -11,6 +11,7 @@ import inspect
 import phylanx.execution_tree
 from phylanx import compiler_state, PhylanxSession
 from phylanx.ast.utils import dump_info
+from phylanx.ast.utils import dump_to_file
 
 
 mapped_methods = {
@@ -226,6 +227,11 @@ class PhySL:
         self.ir = self.apply_rule(tree.body[0])
         check_return(self.ir)
         self.__src__ = self.generate_physl(self.ir)
+
+        if kwargs["dump_physl"] == True:
+            ofn = "./dump_pyhsl_" + kwargs["python_src_tag"] + ".txt"
+            dump_to_file(self.__src__, ofn, kwargs["verbos"])
+
 
         if self.kwargs.get("debug"):
             print_physl_src(self.__src__)

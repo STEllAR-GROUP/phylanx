@@ -91,3 +91,12 @@ def dump_ast(node, annotate_fields=True, include_attributes=False,
     if not isinstance(node, ast.AST):
         raise TypeError('expected AST, got %r' % node.__class__.__name__)
     return _format(node)
+
+
+def dump_to_file(data, ofn, verbos=False):
+    with open(ofn, "w") as f:
+        print(data, file = f)
+    if verbos == True:
+        print(ofn, "saved")
+
+
