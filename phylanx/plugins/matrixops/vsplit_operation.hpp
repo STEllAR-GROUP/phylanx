@@ -5,8 +5,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#if !defined(PHYLANX_EXECUTION_TREE_VSLICING_OCT_17_2018_1527PM)
-#define PHYLANX_EXECUTION_TREE_SLICING_OCT_17_2018_1527PM
+#if !defined(PHYLANX_VSPLIT_OPERATION_JAN_3_2019_1623PM)
+#define PHYLANX_VSPLIT_OPERATION_JAN_3_2019_1623PM
 
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
