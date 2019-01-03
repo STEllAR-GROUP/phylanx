@@ -52,10 +52,6 @@ if(NOT PHYLANX_CMAKE_LOGLEVEL)
   set(PHYLANX_CMAKE_LOGLEVEL "WARN")
 endif()
 
-if(NOT LIB)
-  set(LIB "lib")
-endif()
-
 enable_language(C)
 
 phylanx_check_compiler_compatibility()
