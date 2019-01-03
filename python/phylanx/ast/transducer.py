@@ -48,7 +48,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
 
             valid_kwargs = {
-                    "target"            : ["OpenSCoP", "PhySL", "OpenSCoP"],
+                    "target"            : ["PhySL", "OpenSCoP"],
                     "compiler_state"    : [None, "skip_validation"],
                     "performance"       : [None, "skip_validation"],
                     "debug"             : [True, False],
