@@ -18,6 +18,7 @@ set(tests
     extract_shape
     eye_operation
     flatten
+    flip_operation
     gradient_operation
     hstack_operation
     identity
