@@ -230,7 +230,7 @@ class PhySL:
 
         if kwargs["dump_physl"] == True:
             ofn = "./dump_pyhsl_" + kwargs["python_src_tag"] + ".txt"
-            dump_to_file(self.__src__, ofn, kwargs["verbos"])
+            dump_to_file(self.__src__, ofn, kwargs["verbose"])
 
 
         if self.kwargs.get("debug"):

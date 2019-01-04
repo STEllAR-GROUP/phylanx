@@ -93,10 +93,10 @@ def dump_ast(node, annotate_fields=True, include_attributes=False,
     return _format(node)
 
 
-def dump_to_file(data, ofn, verbos=False):
+def dump_to_file(data, ofn, verbose=False):
     with open(ofn, "w") as f:
         print(data, file = f)
-    if verbos == True:
+    if verbose == True:
         print(ofn, "saved")
 
 

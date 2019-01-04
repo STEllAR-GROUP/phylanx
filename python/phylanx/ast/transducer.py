@@ -53,8 +53,8 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                     "performance"       : [None, "skip_validation"],
                     "debug"             : [True, False],
 
-                    # verbos mode, printing the compilation details
-                    "verbos"            : [True, False],
+                    # verbose mode, printing the compilation details
+                    "verbose"           : [True, False],
                     # saving python src to file
                     "dump_python_src"   : [True, False],
                     # saving python ast to file
@@ -88,7 +88,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                         ("Unknown Phylanx kwarg: %s = " % key, value)
 
             # dump kwargs
-            if kwargs["verbos"] == True:
+            if kwargs["verbose"] == True:
                 for key, value in kwargs.items():
                     print("Phylanx kwargs:     %-20s =" % key, value)
 
@@ -123,7 +123,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
 
             if kwargs["dump_python_src"] == True:
                 ofn = "./dump_python_src_" + kwargs["python_src_tag"] + ".txt"
-                dump_to_file(src, ofn, kwargs["verbos"])
+                dump_to_file(src, ofn, kwargs["verbose"])
 
             return src
 
@@ -139,7 +139,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             if kwargs["dump_python_ast"] == True:
                 aststr = astpretty.pformat(tree, show_offsets=False)
                 ofn = "./dump_python_ast_" + kwargs["python_src_tag"] + ".txt"
-                dump_to_file(aststr, ofn, kwargs["verbos"])
+                dump_to_file(aststr, ofn, kwargs["verbose"])
 
             return tree
 

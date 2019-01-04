@@ -41,7 +41,7 @@ class OpenSCoP:
 
         if kwargs["dump_openscop"] == True:
             ofn = "./dump_openscop_" + kwargs["python_src_tag"] + ".txt"
-            dump_to_file(self.__src__, ofn, kwargs["verbos"])
+            dump_to_file(self.__src__, ofn, kwargs["verbose"])
 
 
     def _Add(self, node, expr={}, coef=1):
