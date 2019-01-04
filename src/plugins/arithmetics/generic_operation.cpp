@@ -86,8 +86,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     ///////////////////////////////////////////////////////////////////////////
     generic_operation::generic_operation(
-            primitive_arguments_type && operands,
-            std::string const& name, std::string const& codename)
+        primitive_arguments_type && operands,
+        std::string const& name, std::string const& codename)
       : primitive_component_base(std::move(operands), name, codename)
       , func_name_(extract_function_name(name))
       , dtype_(extract_dtype(name_))
