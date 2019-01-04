@@ -6,7 +6,6 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-import os
 import re
 import ast
 import astpretty
@@ -48,24 +47,55 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             """
 
             valid_kwargs = {
-                    "target"            : ["PhySL", "OpenSCoP"],
-                    "compiler_state"    : [None, "skip_validation"],
-                    "performance"       : [None, "skip_validation"],
-                    "debug"             : [True, False],
+                "target" : [
+                    "PhySL",
+                    "OpenSCoP",
+                ],
 
-                    # verbose mode, printing the compilation details
-                    "verbose"           : [True, False],
-                    # saving python src to file
-                    "dump_python_src"   : [True, False],
-                    # saving python ast to file
-                    "dump_python_ast"   : [True, False],
-                    # saving openscop file, should combine with "target="OpenSCoP""
-                    "dump_openscop"     : [True, False],
-                    # saving physl file, should combine with "target="PhySL""
-                    "dump_physl"        : [True, False],
-                    # assigning unique uname to decorated functions
-                    "python_src_tag"    : ["skip_validation"],
-                    }
+                "compiler_state" : [
+                    None,
+                    "skip_validation",
+                ],
+
+                "performance" : [
+                    None,
+                    "skip_validation",
+                ],
+
+                "debug" : [
+                    False,
+                    True,
+                ],
+
+                # saving python src to file
+                "dump_python_src" : [
+                    False,
+                    True,
+                    "path_to_file_you_specify",
+                    "skip_validation",
+                ],
+                # saving python ast to file
+                "dump_python_ast" : [
+                    False,
+                    True,
+                    "path_to_file_you_specify",
+                    "skip_validation",
+                ],
+                # saving openscop file, should combine with "target="OpenSCoP""
+                "dump_openscop" : [
+                    True,
+                    False,
+                    "path_to_file_you_specify",
+                    "skip_validation",
+                ],
+                # saving physl file, should combine with "target="PhySL""
+                "dump_physl" : [
+                    False,
+                    True,
+                    "path_to_file_you_specify",
+                    "skip_validation",
+                ],
+            }
             default_kwargs = {}
             for key, value in valid_kwargs.items():
                 default_kwargs[key] = value[0]
@@ -85,10 +115,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
                 v2 = valid_kwargs[key]
                 if ((value not in v2) and ("skip_validation" not in v2)):
                     raise NotImplementedError \
-                        ("Unknown Phylanx kwarg: %s = " % key, value)
+                        ("Unknown Phylanx kwarg value: %s = " % key, value)
 
             # dump kwargs
-            if kwargs["verbose"] == True:
+            if kwargs["debug"] == True:
                 for key, value in kwargs.items():
                     print("Phylanx kwargs:     %-20s =" % key, value)
 
@@ -110,6 +140,7 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             kwargs["python_src_tag"] = s
 
 
+
         def get_python_src(self, func):
             """Gets the function's source and removes the decorator line."""
 
@@ -117,13 +148,10 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             src = inspect.getsource(func)
             src = re.sub(r'^\s*@\w+.*\n', '', src)
 
-            # Strip off indentation if the function is not defined at top
-            # level.
+            # Strip off indentation if the function is not defined at top level
             src = re.sub(r'^\s*', '', src)
 
-            if kwargs["dump_python_src"] == True:
-                ofn = "./dump_python_src_" + kwargs["python_src_tag"] + ".txt"
-                dump_to_file(src, ofn, kwargs["verbose"])
+            dump_to_file(src, "dump_python_src", kwargs)
 
             return src
 
@@ -136,10 +164,8 @@ def Phylanx(__phylanx_arg=None, **kwargs):
             ast.increment_lineno(tree, actual_lineno)
             assert len(tree.body) == 1
 
-            if kwargs["dump_python_ast"] == True:
-                aststr = astpretty.pformat(tree, show_offsets=False)
-                ofn = "./dump_python_ast_" + kwargs["python_src_tag"] + ".txt"
-                dump_to_file(aststr, ofn, kwargs["verbose"])
+            aststr = astpretty.pformat(tree, show_offsets=False)
+            dump_to_file(aststr, "dump_python_ast", kwargs)
 
             return tree
 

@@ -7,6 +7,7 @@
 
 import ast
 import re
+import os
 
 
 def dump_info(a, depth=0):
@@ -93,10 +94,27 @@ def dump_ast(node, annotate_fields=True, include_attributes=False,
     return _format(node)
 
 
-def dump_to_file(data, ofn, verbose=False):
+
+
+def save_to_file(data, ofn, verbose=False):
+    d = os.path.dirname(ofn)
+    if d != "":
+        os.makedirs(d, exist_ok=True)
+
     with open(ofn, "w") as f:
         print(data, file = f)
     if verbose == True:
         print(ofn, "saved")
+
+
+def dump_to_file(data, key, kwargs):
+    if kwargs[key] != False:
+        if kwargs[key] == True:
+            # generating file name automatically
+            ofn = key + "_" + kwargs["python_src_tag"] + ".txt"
+        else:
+            # using the user-specified dictionary value as the file name
+            ofn = kwargs[key]
+        save_to_file(data, ofn, kwargs["debug"])
 
 

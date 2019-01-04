@@ -228,9 +228,7 @@ class PhySL:
         check_return(self.ir)
         self.__src__ = self.generate_physl(self.ir)
 
-        if kwargs["dump_physl"] == True:
-            ofn = "./dump_pyhsl_" + kwargs["python_src_tag"] + ".txt"
-            dump_to_file(self.__src__, ofn, kwargs["verbose"])
+        dump_to_file(self.__src__, "dump_physl", kwargs)
 
 
         if self.kwargs.get("debug"):

@@ -39,9 +39,7 @@ class OpenSCoP:
         self.__src__ = self.template.substitute(
             self.oscop_global) + '\n' + self.__src__
 
-        if kwargs["dump_openscop"] == True:
-            ofn = "./dump_openscop_" + kwargs["python_src_tag"] + ".txt"
-            dump_to_file(self.__src__, ofn, kwargs["verbose"])
+        dump_to_file(self.__src__, "dump_openscop", kwargs)
 
 
     def _Add(self, node, expr={}, coef=1):
