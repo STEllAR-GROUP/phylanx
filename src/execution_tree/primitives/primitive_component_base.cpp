@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -189,7 +189,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // store_action
     void primitive_component_base::store(primitive_arguments_type&&,
-        primitive_arguments_type&&)
+        primitive_arguments_type&&, eval_context)
     {
         HPX_THROW_EXCEPTION(hpx::invalid_status,
             "phylanx::execution_tree::primitives::primitive_component_base::"
@@ -200,11 +200,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
     }
 
     void primitive_component_base::store(primitive_argument_type&& param,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
         primitive_arguments_type args;
         args.emplace_back(std::move(param));
-        return this->store(std::move(args), std::move(params));
+        return this->store(std::move(args), std::move(params), std::move(ctx));
     }
 
     // extract_topology_action
@@ -254,6 +254,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
         return true;
     }
 
+    // initialize evaluation context (used by target-reference only)
+    void primitive_component_base::set_eval_context(eval_context)
+    {
+        HPX_THROW_EXCEPTION(hpx::invalid_status,
+            "phylanx::execution_tree::primitives::primitive_component_base::"
+                "set_eval_context",
+            generate_error_message(
+                "set_eval_context function should only be called for the "
+                "primitives that support it (e.g. target-references)"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     std::string primitive_component_base::generate_error_message(
         std::string const& msg) const
     {

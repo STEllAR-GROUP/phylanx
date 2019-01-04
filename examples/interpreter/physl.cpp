@@ -422,11 +422,14 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     auto args = read_arguments(positional_args, snippets, env);
 
     // Compile AST into expression tree (into actual executable code);
-    phylanx::execution_tree::define_variable(code_source_name,
+    auto def = phylanx::execution_tree::define_variable(code_source_name,
         phylanx::execution_tree::compiler::primitive_name_parts{
             "sys_argv", -1, 0, 0},
         snippets, env,
         phylanx::execution_tree::primitive_argument_type{args});
+
+    phylanx::execution_tree::eval_context ctx;
+    def.run(ctx);
 
     auto const& code = phylanx::execution_tree::compile(
         code_source_name, ast, snippets, env);
@@ -439,10 +442,10 @@ phylanx::execution_tree::compiler::result_type compile_and_run(
     // Evaluate user code using the read data
     if (!dry_run)
     {
-        auto retval = code.run();
+        auto retval = code.run(ctx);
         if (phylanx::execution_tree::is_primitive_operand(retval))
         {
-            return retval(std::move(args));
+            return retval(ctx, std::move(args));
         }
         return retval;
     }

@@ -527,8 +527,8 @@ namespace phylanx { namespace ast
         expression result{rule.second};
         for (auto const& placeholder : placeholders)
         {
-            result = detail::transduce(result, identifier{placeholder.first},
-                placeholder.second);
+            result = detail::transduce(result,
+                identifier{placeholder.first}, placeholder.second);
         }
 
         // simplify tree (eliminate expressions with only one operand)

@@ -67,6 +67,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
     };
 
+    ///////////////////////////////////////////////////////////////////////////
     nonzero_where::nonzero_where(
             primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename)

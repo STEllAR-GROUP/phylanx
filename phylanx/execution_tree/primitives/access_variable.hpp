@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/execution_tree/primitives/base_primitive.hpp>
 #include <phylanx/execution_tree/primitives/primitive_component_base.hpp>
+#include <phylanx/util/hashed_string.hpp>
 
 #include <hpx/lcos/future.hpp>
 
@@ -32,9 +33,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
         void store(primitive_arguments_type&& val,
-            primitive_arguments_type&& params) override;
+            primitive_arguments_type&& params, eval_context ctx) override;
         void store(primitive_argument_type&& val,
-            primitive_arguments_type&& params) override;
+            primitive_arguments_type&& params, eval_context ctx) override;
 
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& params,
@@ -44,7 +45,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::set<std::string>&& resolve_children) const override;
 
     private:
-        std::shared_ptr<primitive_component> target_;
+        util::hashed_string target_name_;   // name of the represented variable
     };
 }}}
 

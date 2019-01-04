@@ -38,13 +38,13 @@ char const* const als_test = R"(
                 define(num_users, shape(ratings, 0)),
                 define(num_items, shape(ratings, 1)),
                 define(conf, alpha * ratings),
-                define(conf_u, constant(0.0, make_list(num_items))),
-                define(conf_i, constant(0.0,make_list(num_users))),
+                define(conf_u, constant(0.0, list(num_items))),
+                define(conf_i, constant(0.0,list(num_users))),
 
-                define(c_u, constant(0.0, make_list(num_items, num_items))),
-                define(c_i, constant(0.0, make_list(num_users, num_users))),
-                define(p_u, constant(0.0, make_list(num_items))),
-                define(p_i, constant(0.0, make_list(num_users))),
+                define(c_u, constant(0.0, list(num_items, num_items))),
+                define(c_i, constant(0.0, list(num_users, num_users))),
+                define(p_u, constant(0.0, list(num_items))),
+                define(p_i, constant(0.0, list(num_users))),
 
                 define(X, [[0.302805, 1.12279, 0.0730414],
                                    [0.0708592, 1.52007, -1.42233],
@@ -63,8 +63,8 @@ char const* const als_test = R"(
                            [-0.731458, 1.2927, 0.989476]]),
                 if(random_input, block(
                         set_seed(0),
-                        store(X, random(make_list(num_users, num_factors))),
-                        store(Y, random(make_list(num_items, num_factors)))
+                        store(X, random(list(num_users, num_factors))),
+                        store(Y, random(list(num_items, num_factors)))
                         )
                 ),
                 define(I_f, identity(num_factors)),
@@ -74,10 +74,10 @@ char const* const als_test = R"(
                 define(i, 0),
                 define(u, 0),
 
-                define(XtX, constant(0.0, make_list(num_factors, num_factors))),
-                define(YtY, constant(0.0, make_list(num_factors, num_factors))),
-                define(A, constant(0.0, make_list(num_factors, num_factors))),
-                define(b, constant(0.0, make_list(num_factors))),
+                define(XtX, constant(0.0, list(num_factors, num_factors))),
+                define(YtY, constant(0.0, list(num_factors, num_factors))),
+                define(A, constant(0.0, list(num_factors, num_factors))),
+                define(b, constant(0.0, list(num_factors))),
 
                 while(k < iterations,
                     block(
@@ -120,7 +120,7 @@ char const* const als_test = R"(
                         store(k,k+1)
                     )
                 ),
-                make_list(X, Y)
+                list(X, Y)
             )
         )
     define(result_physl, als_physl(ratings, regularization, num_factors, iterations,

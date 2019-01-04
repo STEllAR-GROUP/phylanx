@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -61,10 +61,10 @@ namespace phylanx { namespace execution_tree
 
             // store_action
             virtual void store(primitive_arguments_type&&,
-                primitive_arguments_type&&);
+                primitive_arguments_type&&, eval_context ctx);
 
             virtual void store(primitive_argument_type&&,
-                primitive_arguments_type&&);
+                primitive_arguments_type&&, eval_context ctx);
 
             // extract_topology_action
             virtual topology expression_topology(
@@ -74,6 +74,9 @@ namespace phylanx { namespace execution_tree
             // bind_action
             virtual bool bind(
                 primitive_arguments_type const& params, eval_context ctx) const;
+
+            // initialize evaluation context (used by target-reference only)
+            virtual void set_eval_context(eval_context ctx);
 
         protected:
             friend class primitive_component;
@@ -216,6 +219,12 @@ namespace phylanx { namespace execution_tree
     PHYLANX_EXPORT primitive create_primitive_component(
         hpx::id_type const& locality, std::string const& type,
         primitive_arguments_type&& operands,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT primitive create_primitive_component(
+        hpx::id_type const& locality, std::string const& type,
+        primitive_arguments_type&& operands, eval_context ctx,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 

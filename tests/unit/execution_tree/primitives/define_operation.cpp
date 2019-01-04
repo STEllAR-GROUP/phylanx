@@ -17,13 +17,16 @@
 void test_define_operation_var(
     char const* expr, char const* name, double expected)
 {
+    phylanx::execution_tree::eval_context ctx;
+
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
     std::size_t num_entries = env.size();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    code.run(ctx);
 
     HPX_TEST_EQ(env.size(), num_entries + 1);
 
@@ -34,25 +37,26 @@ void test_define_operation_var(
     auto var_def =
         (*cf)(std::list<phylanx::execution_tree::compiler::function>{}, name,
             "<unknown>");
-    auto var = var_def.run();       // bind the variable
+    auto var = var_def.run(ctx);       // bind the variable
 
     // evaluate expression
     HPX_TEST_EQ(expected,
-        phylanx::execution_tree::extract_numeric_value(
-            var()
-        )[0]);
+        phylanx::execution_tree::extract_scalar_numeric_value(var(ctx)));
 }
 
 void test_define_operation(char const* expr, char const* name, double expected,
     std::vector<double> const& argvalues)
 {
+    phylanx::execution_tree::eval_context ctx;
+
     phylanx::execution_tree::compiler::environment env =
         phylanx::execution_tree::compiler::default_environment();
     phylanx::execution_tree::compiler::function_list snippets;
 
     std::size_t num_entries = env.size();
 
-    phylanx::execution_tree::compile(expr, snippets, env);
+    auto const& code = phylanx::execution_tree::compile(expr, snippets, env);
+    code.run(ctx);
 
     HPX_TEST_EQ(env.size(), num_entries + 1);
 
@@ -61,7 +65,7 @@ void test_define_operation(char const* expr, char const* name, double expected,
 
     auto def_f = (*cf)(std::list<phylanx::execution_tree::compiler::function>{},
         name, "<unknown>");
-    auto f = def_f.run();     // bind the function
+    auto f = def_f.run(ctx);     // bind the function
 
     // evaluate expression
     phylanx::execution_tree::primitive_arguments_type values;
@@ -71,9 +75,9 @@ void test_define_operation(char const* expr, char const* name, double expected,
     }
 
     HPX_TEST_EQ(expected,
-        phylanx::execution_tree::extract_numeric_value(
-            f(std::move(values))
-        )[0]);
+        phylanx::execution_tree::extract_scalar_numeric_value(
+            f(std::move(values), ctx)
+        ));
 }
 
 int main(int argc, char* argv[])

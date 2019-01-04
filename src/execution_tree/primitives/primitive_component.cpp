@@ -1,4 +1,4 @@
-//  Copyright (c) 2017-2018 Hartmut Kaiser
+//  Copyright (c) 2017-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -140,15 +140,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
     // store_action
     void primitive_component::store(primitive_arguments_type&& args,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
-        primitive_->store(std::move(args), std::move(params));
+        primitive_->store(std::move(args), std::move(params), std::move(ctx));
     }
 
     void primitive_component::store_single(primitive_argument_type&& arg,
-        primitive_arguments_type&& params)
+        primitive_arguments_type&& params, eval_context ctx)
     {
-        primitive_->store(std::move(arg), std::move(params));
+        primitive_->store(std::move(arg), std::move(params), std::move(ctx));
     }
 
     // extract_topology_action
@@ -207,14 +207,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
 namespace phylanx { namespace execution_tree
 {
-    primitive create_primitive_component(
-        hpx::id_type const& locality, std::string const& type,
-        primitive_arguments_type&& operands,
+    primitive create_primitive_component(hpx::id_type const& locality,
+        std::string const& type, primitive_arguments_type&& operands,
         std::string const& name, std::string const& codename)
     {
         return primitive{
             hpx::new_<primitives::primitive_component>(
                 locality, type, std::move(operands), name, codename),
+            name};
+    }
+
+    primitive create_primitive_component(hpx::id_type const& locality,
+        std::string const& type, primitive_arguments_type&& operands,
+        eval_context ctx, std::string const& name, std::string const& codename)
+    {
+        return primitive{
+            hpx::new_<primitives::primitive_component>(locality, type,
+                std::move(operands), std::move(ctx), name, codename),
             name};
     }
 

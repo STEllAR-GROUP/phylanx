@@ -13,15 +13,17 @@
 #include <string>
 #include <vector>
 
+using placeholder_map_type =
+    std::multimap<std::string, phylanx::ast::expression>;
+
 struct on_placeholder_match
 {
-    std::multimap<std::string, phylanx::ast::expression>& placeholders;
+    placeholder_map_type& placeholders;
 
     template <typename Ast1, typename Ast2, typename ... Ts>
     bool operator()(Ast1 const& ast1, Ast2 const& ast2, Ts const&... ts) const
     {
-        using value_type = typename std::multimap<std::string,
-            phylanx::ast::expression>::value_type;
+        using value_type = placeholder_map_type::value_type;
 
         if (phylanx::ast::detail::is_placeholder(ast1))
         {
@@ -66,7 +68,7 @@ void test_placeholder_matching(std::string const& to_match,
     HPX_TEST_EQ(match.size(), std::size_t(1));
     HPX_TEST_EQ(expr.size(), std::size_t(1));
 
-    std::multimap<std::string, phylanx::ast::expression> placeholders;
+    placeholder_map_type placeholders;
     HPX_TEST(phylanx::ast::match_ast(
         expr[0], match[0], on_placeholder_match{placeholders}));
 
@@ -87,7 +89,7 @@ void test_placeholder_matching(std::string const& to_match,
     HPX_TEST_EQ(match.size(), std::size_t(1));
     HPX_TEST_EQ(expr.size(), std::size_t(1));
 
-    std::multimap<std::string, phylanx::ast::expression> placeholders;
+    placeholder_map_type placeholders;
     HPX_TEST(phylanx::ast::match_ast(
         expr[0], match[0], on_placeholder_match{placeholders}));
 
@@ -114,7 +116,7 @@ void test_placeholder_matching_ellipses(std::string const& to_match,
     HPX_TEST_EQ(match.size(), std::size_t(1));
     HPX_TEST_EQ(expr.size(), std::size_t(1));
 
-    std::multimap<std::string, phylanx::ast::expression> placeholders;
+    placeholder_map_type placeholders;
     HPX_TEST(phylanx::ast::match_ast(
         expr[0], match[0], on_placeholder_match{placeholders}));
 

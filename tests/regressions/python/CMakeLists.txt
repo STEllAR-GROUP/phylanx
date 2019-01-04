@@ -4,6 +4,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 set(tests
+    364_local_variables
     466_compiler_problems
     508_unknown_named_argument
     522_multidimension_np_arrays
