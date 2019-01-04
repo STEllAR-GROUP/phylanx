@@ -116,7 +116,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return extract_copy_value(value_operand_sync(arg_,
                     primitive_arguments_type{}, name_));
             }
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         // interpret this function as an invocable (evaluate object itself and
@@ -135,7 +135,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return extract_copy_value(
                     value_operand_sync(arg_, std::move(params), name_));
             }
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         result_type operator()(arguments_type && args) const
@@ -155,7 +155,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                 return extract_copy_value(
                     value_operand_sync(arg_, std::move(params), name_));
             }
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         template <typename ... Ts>
@@ -187,7 +187,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     value_operand_sync(arg_, std::move(params), name_));
             }
 
-            return extract_ref_value(arg_);
+            return extract_copy_value(arg_);
         }
 
         hpx::future<result_type> eval(arguments_type && args) const
@@ -256,75 +256,124 @@ namespace phylanx { namespace execution_tree { namespace compiler
         std::string name_;
     };
 
+    ///////////////////////////////////////////////////////////////////////////
+    struct entry_point
+    {
+        entry_point(std::string const& name)
+          : name_(name)
+        {
+        }
+
+        void add_entry_point(function&& f)
+        {
+            code_.emplace_back(std::move(f));
+        }
+
+        // execute the code represented by this entry point
+        primitive_argument_type run() const
+        {
+            auto last = code_.end(); --last;
+            for (auto it = code_.begin(); it != code_.end(); ++it)
+            {
+                if (it == last)
+                {
+                    return it->run();
+                }
+                it->run();
+            }
+            return primitive_argument_type{};
+        }
+
+        std::list<function> const& functions() const
+        {
+            return code_;
+        }
+
+        topology get_expression_topology() const
+        {
+            std::set<std::string> functions;
+            return code_.back().get_expression_topology(std::move(functions));
+        }
+        topology get_expression_topology(
+            std::set<std::string>&& functions) const
+        {
+            return code_.back().get_expression_topology(std::move(functions));
+        }
+        topology get_expression_topology(std::set<std::string>&& functions,
+            std::set<std::string>&& resolve_children) const
+        {
+            return code_.back().get_expression_topology(
+                std::move(functions), std::move(resolve_children));
+        }
+
+        std::string name_;          // the name of this entry point
+        std::list<function> code_;  // the functions representing this
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
     // this must be a list to ensure stable references
     struct program
     {
+        using entry_points_type = std::pair<std::string, std::list<function>>;
+
         program() = default;
 
-        program(std::list<function> const& code)
-          : code_(code)
-        {
-        }
-        program(std::list<function>&& code)
-          : code_(std::move(code))
-        {
-        }
+//         program(std::string name, std::list<function> code)
+//           : code_(std::move(name), std::move(code))
+//         {
+//         }
 
         ///////////////////////////////////////////////////////////////////////
         // simply run the program, return whatever the last snippet has returned
         primitive_argument_type run() const
         {
             primitive_argument_type result;
-            for (auto const& f : code_)
+            for (auto const& ep : entrypoints_)
             {
-                result = f.run();
+                result = ep.run();
             }
             return result;
         }
 
         ///////////////////////////////////////////////////////////////////////
-        function& add_empty()
+        function& add_empty(std::string const& name)
         {
-            scratchpad_.emplace_back(function{});
-            return scratchpad_.back();
-        }
-        function& add(function&& f)
-        {
-            scratchpad_.emplace_back(std::move(f));
-            return scratchpad_.back();
-        }
-
-        function& add_entry_point(function&& f)
-        {
-            code_.emplace_back(std::move(f));
-            return code_.back();
+            auto it = scratchpad_.find(name);
+            if (it == scratchpad_.end())
+            {
+                it = scratchpad_
+                         .insert(std::make_pair(name, std::list<function>{}))
+                         .first;
+            }
+            it->second.emplace_back(function{});
+            return it->second.back();
         }
 
-        function const& entry_point() const
+        compiler::entry_point const& add_entry_point(compiler::entry_point&& ep)
         {
-            return code_.back();
+            entrypoints_.emplace_back(std::move(ep));
+            return entrypoints_.back();
         }
 
-        std::list<function> const& entry_points() const
+        compiler::entry_point entry_point() const
         {
-            return code_;
-        }
-
-        void store_entry_points()
-        {
-            // move all current entry points to scratch pad
-            scratchpad_.splice(scratchpad_.end(), code_);
+            return entrypoints_.back();
         }
 
         bool has_entry_points() const
         {
-            return !code_.empty();
+            return !entrypoints_.back().functions().empty();
         }
 
         ///////////////////////////////////////////////////////////////////////
-        std::list<function> const& scratchpad() const
+        std::map<std::string, std::list<function>> const& scratchpad() const
         {
             return scratchpad_;
+        }
+
+        std::list<compiler::entry_point> const& entry_points() const
+        {
+            return entrypoints_;
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -332,27 +381,27 @@ namespace phylanx { namespace execution_tree { namespace compiler
         {
             HPX_ASSERT(has_entry_points());
             std::set<std::string> functions;
-            return entry_point().get_expression_topology(
+            return entrypoints_.back().get_expression_topology(
                 std::move(functions));
         }
         topology get_expression_topology(
             std::set<std::string>&& functions) const
         {
             HPX_ASSERT(has_entry_points());
-            return entry_point().get_expression_topology(
+            return entrypoints_.back().get_expression_topology(
                 std::move(functions));
         }
         topology get_expression_topology(std::set<std::string>&& functions,
             std::set<std::string>&& resolve_children) const
         {
             HPX_ASSERT(has_entry_points());
-            return entry_point().get_expression_topology(
+            return entrypoints_.back().get_expression_topology(
                 std::move(functions), std::move(resolve_children));
         }
 
     private:
-        std::list<function> code_;
-        std::list<function> scratchpad_;
+        std::map<std::string, std::list<function>> scratchpad_;
+        std::list<compiler::entry_point> entrypoints_;
     };
 
     struct function_list

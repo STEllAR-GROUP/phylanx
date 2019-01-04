@@ -42,6 +42,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
          * Returns gradient of the input
          *
          * @param operands phylanx node data objects
+         * @param name The name of the primitive
+         * @param codename The codename of the primitive
          *
          * If used inside PhySL:
          *

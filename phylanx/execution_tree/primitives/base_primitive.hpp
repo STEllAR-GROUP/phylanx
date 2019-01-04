@@ -610,6 +610,11 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT std::size_t extract_list_value_size(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT bool is_list_operand_strict(
         primitive_argument_type const& val);
 

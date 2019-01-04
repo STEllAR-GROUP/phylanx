@@ -22,7 +22,7 @@ std::string const codestr = R"(
     ultimate_answer
 )";
 
-std::string const blocked_code = R"(block(
+std::string const blocked_codestr = R"(block(
     define(ultimate_answer, 42),
     debug(ultimate_answer),
     define(ultimate_answer, lambda(debug("'42'"))),
@@ -42,9 +42,9 @@ int hpx_main(int argc, char* argv[])
 
     {
         phylanx::execution_tree::compiler::function_list snippets;
-        auto const& code = phylanx::execution_tree::compile(
-            "blocked_code", blocked_code, snippets);
-        auto ultimate_answer = code.run();
+        auto const& blocked_code = phylanx::execution_tree::compile(
+            "blocked_code", blocked_codestr, snippets);
+        auto ultimate_answer = blocked_code.run();
 
         ultimate_answer();
     }
