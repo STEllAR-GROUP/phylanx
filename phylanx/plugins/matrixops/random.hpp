@@ -122,6 +122,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         ///             values, distributed according to the student probability
         ///             density function (n: degrees of freedom)\n
         ///
+        ///
+        /// \param name The name of the primitive
+        /// \param codename The codename of the primitive
         random(primitive_arguments_type&& operands,
             std::string const& name, std::string const& codename);
 
@@ -135,7 +138,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             distribution_parameters_type&& params) const;
         primitive_argument_type random1d(
             std::size_t dim, distribution_parameters_type&& params) const;
-        primitive_argument_type random2d(std::array<std::size_t, 2> const& dims,
+        primitive_argument_type random2d(
+            std::array<std::size_t, PHYLANX_MAX_DIMENSIONS> const& dims,
             distribution_parameters_type&& params) const;
     };
 

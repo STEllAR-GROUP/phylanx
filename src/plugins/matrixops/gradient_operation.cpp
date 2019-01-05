@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/matrixops/gradient_operation.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -32,19 +33,17 @@ namespace phylanx { namespace execution_tree { namespace primitives
         hpx::util::make_tuple("gradient",
             std::vector<std::string>{"gradient(_1, _2)", "gradient(_1)"},
             &create_gradient_operation,
-            &create_primitive<gradient_operation>,
-            "m, axis\n"
-            "Args:\n"
-            "\n"
-            "    m (vector or matrix) : values to take the gradient of\n"
-            "    axis (optional, integer) : the axis along whic to take\n"
-            "                    the gradient.\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The numerical gradient, i.e., differences of adjacent values "
-            "along the specified axis."
-            )
+            &create_primitive<gradient_operation>, R"(
+            m, axis
+            Args:
+
+                m (vector or matrix) : values to take the gradient of
+                axis (optional, integer) : the axis along which to take the gradient
+
+            Returns:
+
+            The numerical gradient, i.e., differences of adjacent values
+            along the specified axis.)")
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -55,143 +54,179 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
-    using arg_type = ir::node_data<double>;
-    using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-    using storage1d_type = typename arg_type::storage1d_type;
-    using storage2d_type = typename arg_type::storage2d_type;
+    template <typename T>
+    primitive_argument_type gradient_operation::gradient1d(
+        ir::node_data<T>&& arg) const
+    {
+        auto input = arg.vector();
+        std::size_t last = input.size() - 1;
+        blaze::DynamicVector<T> gradient(last + 1);
+
+        gradient[0] = input[1] - input[0];
+        for (std::size_t i = 1; i != last; i++)
+        {
+            gradient[i] = (input[i + 1] - input[i - 1]) / 2;
+        }
+        gradient[last] = input[last] - input[last - 1];
+
+        return primitive_argument_type{ir::node_data<T>{std::move(gradient)}};
+    }
+
+    template <typename T>
+    primitive_argument_type gradient_operation::gradient2d(
+        ir::node_data<T>&& arg, std::int64_t axis) const
+    {
+        auto input = arg.matrix();
+        std::size_t num_rows = input.rows();
+        std::size_t num_cols = input.columns();
+
+        blaze::DynamicMatrix<T> gradient(num_rows, num_cols);
+
+        if (axis >= 0)
+        {
+            if (axis == 0)
+            {
+                auto last = num_rows - 1;
+                for (std::size_t i = 0; i != num_cols; i++)
+                {
+                    auto temp = blaze::column(input, i);
+                    gradient(0, i) = temp[1] - temp[0];
+                    for (std::size_t j = 1; j != last; j++)
+                    {
+                        gradient(j, i) = (temp[j + 1] - temp[j - 1]) / 2;
+                    }
+                    gradient(last, i) = temp[last] - temp[last - 1];
+                }
+            }
+            else    // axis = 1
+            {
+                auto last = num_cols - 1;
+                for (std::size_t i = 0; i != num_rows; i++)
+                {
+                    auto temp = blaze::row(input, i);
+                    gradient(i, 0) = temp[1] - temp[0];
+                    for (std::size_t j = 1; j != last; j++)
+                    {
+                        gradient(i, j) = (temp[j + 1] - temp[j - 1]) / 2;
+                    }
+                    gradient(i, last) = temp[last] - temp[last - 1];
+                }
+            }
+
+            return primitive_argument_type{
+                ir::node_data<T>{std::move(gradient)}};
+        }
+
+        // args_size = 1
+        blaze::DynamicMatrix<T> gradient_1(num_rows, num_cols);
+        auto last = num_rows - 1;
+        for (std::size_t i = 0; i != num_cols; i++)
+        {
+            auto temp = blaze::column(input, i);
+            auto temp_1 = blaze::row(input, i);
+
+            gradient(0, i) = temp[1] - temp[0];
+            gradient_1(i, 0) = temp_1[1] - temp_1[0];
+
+            for (std::size_t j = 1; j != last; j++)
+            {
+                gradient(j, i) = (temp[j + 1] - temp[j - 1]) / 2;
+                gradient_1(i, j) = (temp_1[j + 1] - temp_1[j - 1]) / 2;
+            }
+
+            gradient(last, i) = temp[last] - temp[last - 1];
+            gradient_1(i, last) = temp_1[last] - temp_1[last - 1];
+        }
+
+        return primitive_argument_type{primitive_arguments_type{
+            primitive_argument_type{ir::node_data<T>{std::move(gradient)}},
+            primitive_argument_type{ir::node_data<T>{std::move(gradient_1)}}
+        }};
+    }
 
     primitive_argument_type gradient_operation::gradient0d(
-        args_type&& args) const
+        primitive_arguments_type&& args) const
     {
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "gradient_operation::gradient0d",
-            util::generate_error_message(
-                "gradient operation is not supported on 0d input", this->name_,
-                this->codename_));
+            generate_error_message(
+                "gradient operation is not supported on 0d input"));
     }
 
     primitive_argument_type gradient_operation::gradient1d(
-        args_type&& args) const
+        primitive_arguments_type&& args) const
     {
-        blaze::DynamicVector<double> input = args[0].vector();
-        std::size_t length = input.size();
-        blaze::DynamicVector<double> gradient(length);
-
-        for (std::size_t i = 0; i < length; i++)
+        switch (extract_common_type(args[0]))
         {
-            if (i == 0)
-            {
-                gradient[i] = input[i + 1] - input[i];
-            }
-            else if (i == length - 1)
-            {
-                gradient[i] = input[i] - input[i - 1];
-            }
-            else
-            {
-                gradient[i] = (input[i + 1] - input[i - 1]) / 2;
-            }
+        case node_data_type_bool:
+            return gradient1d(
+                extract_boolean_value(std::move(args[0]), name_, codename_));
+
+        case node_data_type_int64:
+            return gradient1d(
+                extract_integer_value(std::move(args[0]), name_, codename_));
+
+        case node_data_type_double:
+            return gradient1d(extract_numeric_value_strict(
+                std::move(args[0]), name_, codename_));
+
+        case node_data_type_unknown:
+            return gradient1d(
+                extract_numeric_value(std::move(args[0]), name_, codename_));
+
+        default:
+            break;
         }
 
-        return primitive_argument_type{
-            ir::node_data<double>{storage1d_type{std::move(gradient)}}};
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "gradient_operation::gradient1d",
+            generate_error_message(
+                "the gradient primitive requires for all arguments to "
+                    "be numeric data types"));
     }
 
     primitive_argument_type gradient_operation::gradient2d(
-        args_type&& args) const
+        primitive_arguments_type&& args) const
     {
-        blaze::DynamicMatrix<double> input = args[0].matrix();
-        std::size_t num_rows = input.rows();
-        std::size_t num_cols = input.columns();
-        std::size_t args_size = args.size();
-
-        blaze::DynamicMatrix<double> gradient(num_rows, num_cols);
-
-        if (args_size == 2)
+        std::int64_t axis = -1;
+        if (args.size() == 2)
         {
-            std::int64_t axis = args[1].scalar();
+            axis = extract_scalar_integer_value(args[1], name_, codename_);
+        }
 
-            if (axis == 0)
-            {
-                for (std::size_t i = 0; i < num_cols; i++)
-                {
-                    auto temp = blaze::column(input, i);
-                    for (std::size_t j = 0; j < num_rows; j++)
-                    {
-                        if (j == 0)
-                        {
-                            gradient(j, i) = temp[j + 1] - temp[j];
-                        }
-                        else if (j == num_rows - 1)
-                        {
-                            gradient(j, i) = temp[j] - temp[j - 1];
-                        }
-                        else
-                        {
-                            gradient(j, i) = (temp[j + 1] - temp[j - 1]) / 2;
-                        }
-                    }
-                }
-            }
-            else    //axis = 1
-            {
-                for (std::size_t i = 0; i < num_rows; i++)
-                {
-                    auto temp = blaze::row(input, i);
-                    for (std::size_t j = 0; j < num_cols; j++)
-                    {
-                        if (j == 0)
-                        {
-                            gradient(i, j) = temp[j + 1] - temp[j];
-                        }
-                        else if (j == num_rows - 1)
-                        {
-                            gradient(i, j) = temp[j] - temp[j - 1];
-                        }
-                        else
-                        {
-                            gradient(i, j) = (temp[j + 1] - temp[j - 1]) / 2;
-                        }
-                    }
-                }
-            }
-            return primitive_argument_type{
-                ir::node_data<double>{storage2d_type{std::move(gradient)}}};
-        }
-        else    // args_size = 1
+        switch (extract_common_type(args[0]))
         {
-            blaze::DynamicMatrix<double> gradient_1(num_rows, num_cols);
-            for (std::size_t i = 0; i < num_cols; i++)
-            {
-                auto temp = blaze::column(input, i);
-                auto temp_1 = blaze::row(input, i);
-                for (std::size_t j = 0; j < num_rows; j++)
-                {
-                    if (j == 0)
-                    {
-                        gradient(j, i) = temp[j + 1] - temp[j];
-                        gradient_1(i, j) = temp_1[j + 1] - temp_1[j];
-                    }
-                    else if (j == num_rows - 1)
-                    {
-                        gradient(j, i) = temp[j] - temp[j - 1];
-                        gradient_1(i, j) = temp_1[j] - temp_1[j - 1];
-                    }
-                    else
-                    {
-                        gradient(j, i) = (temp[j + 1] - temp[j - 1]) / 2;
-                        gradient_1(i, j) = (temp_1[j + 1] - temp_1[j - 1]) / 2;
-                    }
-                }
-            }
-            return primitive_argument_type{primitive_arguments_type{
-                primitive_argument_type{
-                    ir::node_data<double>{storage2d_type{std::move(gradient)}}},
-                primitive_argument_type{ir::node_data<double>{
-                    storage2d_type{std::move(gradient_1)}}}}};
+        case node_data_type_bool:
+            return gradient2d(
+                extract_boolean_value(std::move(args[0]), name_, codename_),
+                axis);
+
+        case node_data_type_int64:
+            return gradient2d(
+                extract_integer_value(std::move(args[0]), name_, codename_),
+                axis);
+
+        case node_data_type_double:
+            return gradient2d(extract_numeric_value_strict(
+                std::move(args[0]), name_, codename_), axis);
+
+        case node_data_type_unknown:
+            return gradient2d(
+                extract_numeric_value(std::move(args[0]), name_, codename_),
+                axis);
+
+        default:
+            break;
         }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "gradient_operation::gradient2d",
+            generate_error_message(
+                "the gradient primitive requires for all arguments to "
+                    "be numeric data types"));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> gradient_operation::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -227,11 +262,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync,
             hpx::util::unwrapping(
-                [this_ = std::move(this_)](args_type&& args)
+                [this_ = std::move(this_)](primitive_arguments_type&& args)
                 -> primitive_argument_type
                 {
-                    std::size_t matrix_dims = args[0].num_dimensions();
-                    switch (matrix_dims)
+                    switch (extract_numeric_value_dimension(
+                        args[0], this_->name_, this_->codename_))
                     {
                     case 0:
                         return this_->gradient0d(std::move(args));
@@ -245,14 +280,13 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     default:
                         HPX_THROW_EXCEPTION(hpx::bad_parameter,
                             "gradient_operation::eval",
-                            util::generate_error_message(
+                            this_->generate_error_message(
                                 "left hand side operand has unsupported "
-                                    "number of dimensions",
-                                this_->name_, this_->codename_));
+                                    "number of dimensions"));
                     }
                 }),
             detail::map_operands(
-                operands, functional::numeric_operand{}, args,
+                operands, functional::value_operand{}, args,
                 name_, codename_, std::move(ctx)));
     }
 }}}

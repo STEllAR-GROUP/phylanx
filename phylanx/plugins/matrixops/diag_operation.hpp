@@ -13,6 +13,7 @@
 
 #include <hpx/lcos/future.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -30,11 +31,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using arg_type = ir::node_data<double>;
-        using args_type = std::vector<arg_type, arguments_allocator<arg_type>>;
-        using storage1d_type = typename arg_type::storage1d_type;
-        using storage2d_type = typename arg_type::storage2d_type;
-
     public:
         static match_pattern_type const match_data;
 
@@ -49,6 +45,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
          *
          * @param operands Vector of phylanx node data objects of
          * size either one or two
+         * @param name The name of the primitive
+         * @param codename The codename of the primitive
          *
          * If used inside PhySL:
          *
@@ -67,9 +65,22 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type diag0d(args_type&& args) const;
-        primitive_argument_type diag1d(args_type&& args) const;
-        primitive_argument_type diag2d(args_type&& args) const;
+        template <typename T>
+        primitive_argument_type diag0d(
+            ir::node_data<T>&& args, std::int64_t k) const;
+        template <typename T>
+        primitive_argument_type diag1d(
+            ir::node_data<T>&& args, std::int64_t k) const;
+        template <typename T>
+        primitive_argument_type diag2d(
+            ir::node_data<T>&& args, std::int64_t k) const;
+
+        primitive_argument_type diag0d(
+            primitive_argument_type&& args, std::int64_t k) const;
+        primitive_argument_type diag1d(
+            primitive_argument_type&& args, std::int64_t k) const;
+        primitive_argument_type diag2d(
+            primitive_argument_type&& args, std::int64_t k) const;
     };
 
     inline primitive create_diag_operation(hpx::id_type const& locality,

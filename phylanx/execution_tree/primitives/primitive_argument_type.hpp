@@ -25,6 +25,9 @@
 #include <vector>
 
 #include <blaze/Math.h>
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+#include <blaze_tensor/Math.h>
+#endif
 
 namespace phylanx { namespace execution_tree
 {
@@ -285,10 +288,19 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(blaze::DynamicMatrix<std::uint8_t>&& val)
           : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
         {}
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        explicit primitive_argument_type(
+                blaze::DynamicTensor<std::uint8_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{val}}
+        {}
+        explicit primitive_argument_type(blaze::DynamicTensor<std::uint8_t>&& val)
+          : argument_value_type{phylanx::ir::node_data<std::uint8_t>{std::move(val)}}
+        {}
+#endif
+
         primitive_argument_type(phylanx::ir::node_data<std::uint8_t> const& val)
           : argument_value_type{val}
         {}
-
         primitive_argument_type(phylanx::ir::node_data<std::uint8_t>&& val)
           : argument_value_type{std::move(val)}
         {}
@@ -319,6 +331,15 @@ namespace phylanx { namespace execution_tree
                 phylanx::ir::node_data<std::int64_t>{std::move(val)}}
         {
         }
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        explicit primitive_argument_type(
+                blaze::DynamicTensor<std::int64_t> const& val)
+          : argument_value_type{phylanx::ir::node_data<std::int64_t>{val}}
+        {}
+        explicit primitive_argument_type(blaze::DynamicTensor<std::int64_t>&& val)
+          : argument_value_type{phylanx::ir::node_data<std::int64_t>{std::move(val)}}
+        {}
+#endif
 
         primitive_argument_type(phylanx::ir::node_data<std::int64_t> const& val)
           : argument_value_type{val}
@@ -339,20 +360,26 @@ namespace phylanx { namespace execution_tree
         explicit primitive_argument_type(double val)
           : argument_value_type{phylanx::ir::node_data<double>{val}}
         {}
-        explicit primitive_argument_type(
-                blaze::DynamicVector<double> const& val)
+        explicit primitive_argument_type(blaze::DynamicVector<double> const& val)
           : argument_value_type{phylanx::ir::node_data<double>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicVector<double>&& val)
           : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
         {}
-        explicit primitive_argument_type(
-                blaze::DynamicMatrix<double> const& val)
+        explicit primitive_argument_type(blaze::DynamicMatrix<double> const& val)
           : argument_value_type{phylanx::ir::node_data<double>{val}}
         {}
         explicit primitive_argument_type(blaze::DynamicMatrix<double>&& val)
           : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
         {}
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        explicit primitive_argument_type(blaze::DynamicTensor<double> const& val)
+          : argument_value_type{phylanx::ir::node_data<double>{val}}
+        {}
+        explicit primitive_argument_type(blaze::DynamicTensor<double>&& val)
+          : argument_value_type{phylanx::ir::node_data<double>{std::move(val)}}
+        {}
+#endif
 
         primitive_argument_type(phylanx::ir::node_data<double> const& val)
           : argument_value_type{val}

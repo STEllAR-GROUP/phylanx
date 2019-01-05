@@ -35,19 +35,19 @@ void test_where_operation(std::string const& code,
 void test_one_argument_where()
 {
     // test 0d data (scalars)
-    test_where_operation("where(false)", "list(hstack())");
-    test_where_operation("where(0)", "list(hstack())");
-    test_where_operation("where(0.)", "list(hstack())");
+    test_where_operation("where(false)", "list(hstack__int())");
+    test_where_operation("where(0)", "list(hstack__int())");
+    test_where_operation("where(0.)", "list(hstack__int())");
     test_where_operation("where(true)", "list(hstack(0))");
     test_where_operation("where(1)", "list(hstack(0))");
     test_where_operation("where(1.)", "list(hstack(0))");
 
     // test 1d data (vectors)
-    test_where_operation("where(hstack())", "list(hstack())");
+    test_where_operation("where(hstack())", "list(hstack__int())");
 
-    test_where_operation("where(hstack(false))", "list(hstack())");
-    test_where_operation("where(hstack(0))", "list(hstack())");
-    test_where_operation("where(hstack(0.))", "list(hstack())");
+    test_where_operation("where(hstack(false))", "list(hstack__int())");
+    test_where_operation("where(hstack(0))", "list(hstack__int())");
+    test_where_operation("where(hstack(0.))", "list(hstack__int())");
 
     test_where_operation("where(hstack(true))", "list(hstack(0))");
     test_where_operation("where(hstack(1))", "list(hstack(0))");
@@ -61,10 +61,10 @@ void test_one_argument_where()
 
     // test 2d data (matrix)
     test_where_operation(
-        "where(vstack(hstack()))", "list(hstack(), hstack())");
+        "where(vstack(hstack()))", "list(hstack__int(), hstack__int())");
     test_where_operation(
         "where(vstack(hstack(0, 0), hstack(0, 0)))",
-        "list(hstack(), hstack())");
+        "list(hstack__int(), hstack__int())");
 
     test_where_operation(
         "where(vstack(hstack(0, 1), hstack(2, 0)))",

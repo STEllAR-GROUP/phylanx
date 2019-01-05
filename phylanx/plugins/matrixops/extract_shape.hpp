@@ -31,8 +31,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using arg_type = ir::node_data<double>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -42,13 +40,24 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type shape0d(arg_type&& arg) const;
-        primitive_argument_type shape1d(arg_type&& arg) const;
-        primitive_argument_type shape2d(arg_type&& arg) const;
+        primitive_argument_type shape0d() const;
+        primitive_argument_type shape0d(std::int64_t index) const;
 
-        primitive_argument_type shape0d(arg_type&& arg, std::int64_t index) const;
-        primitive_argument_type shape1d(arg_type&& arg, std::int64_t index) const;
-        primitive_argument_type shape2d(arg_type&& arg, std::int64_t index) const;
+        primitive_argument_type shape1d(std::int64_t size) const;
+        primitive_argument_type shape1d(
+            std::int64_t size, std::int64_t index) const;
+
+        primitive_argument_type shape2d(
+            std::int64_t rows, std::int64_t columns) const;
+        primitive_argument_type shape2d(
+            std::int64_t rows, std::int64_t columns, std::int64_t index) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type shape3d(
+            std::int64_t pages, std::int64_t rows, std::int64_t columns) const;
+        primitive_argument_type shape3d(std::int64_t pages, std::int64_t rows,
+            std::int64_t columns, std::int64_t index) const;
+#endif
     };
 
     inline primitive create_extract_shape(hpx::id_type const& locality,

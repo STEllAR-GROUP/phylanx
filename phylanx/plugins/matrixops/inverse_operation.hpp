@@ -25,9 +25,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
       , public std::enable_shared_from_this<inverse_operation>
     {
     protected:
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
-
         hpx::future<primitive_argument_type> eval(
             primitive_arguments_type const& operands,
             primitive_arguments_type const& args,
@@ -42,8 +39,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type inverse0d(operand_type&& ops) const;
-        primitive_argument_type inverse2d(operand_type&& ops) const;
+        primitive_argument_type inverse0d(primitive_argument_type&& ops) const;
+        primitive_argument_type inverse2d(primitive_argument_type&& ops) const;
+        template <typename T>
+        primitive_argument_type inverse0d(ir::node_data<T>&& ops) const;
+        template <typename T>
+        primitive_argument_type inverse2d(ir::node_data<T>&& ops) const;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        primitive_argument_type inverse3d(primitive_argument_type&& ops) const;
+        template <typename T>
+        primitive_argument_type inverse3d(ir::node_data<T>&& ops) const;
+#endif
     };
 
     inline primitive create_inverse_operation(hpx::id_type const& locality,

@@ -60,8 +60,8 @@ void generate_0d(phylanx::execution_tree::compiler::function const& call,
     Gen& gen, Dist& dist)
 {
     phylanx::execution_tree::primitive_arguments_type dims = {
-        phylanx::execution_tree::primitive_argument_type{std::int64_t{1}},
-        phylanx::execution_tree::primitive_argument_type{std::int64_t{1}}
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{0}},
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{0}}
     };
 
     auto result = call(dims);
@@ -78,8 +78,8 @@ void generate_1d(phylanx::execution_tree::compiler::function const& call,
     Gen& gen, Dist& dist)
 {
     phylanx::execution_tree::primitive_arguments_type dims = {
-        phylanx::execution_tree::primitive_argument_type{std::int64_t{1}},
-        phylanx::execution_tree::primitive_argument_type{std::int64_t{32}}
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{32}},
+        phylanx::execution_tree::primitive_argument_type{std::int64_t{0}}
     };
 
     auto result = call(dims);

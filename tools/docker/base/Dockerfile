@@ -34,6 +34,7 @@ RUN apt-get update &&                                                           
     pip3 --no-cache-dir install setuptools                                       && \
     pip3 --no-cache-dir install pytest                                           && \
     pip3 --no-cache-dir install numpy                                            && \
+    pip3 --no-cache-dir install astpretty                                        && \
     pip3 --no-cache-dir install flake8                                           && \
                                                                                     \
     git clone --depth=1 https://github.com/pybind/pybind11.git /pybind11-src     && \

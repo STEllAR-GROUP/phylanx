@@ -296,7 +296,7 @@ namespace phylanx { namespace execution_tree
         if (is_list_operand_strict(indices))
         {
             detail::slicing_index_type t =
-                detail::is_advanced_slicing_index(indices);
+                detail::extract_slicing_index_type(indices, name, codename);
 
             if (t == detail::slicing_index_basic)
             {

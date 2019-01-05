@@ -240,8 +240,13 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
-    PHYLANX_EXPORT std::array<std::size_t, 2> extract_numeric_value_dimensions(
+    PHYLANX_EXPORT std::size_t extract_numeric_value_size(
         primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
+    PHYLANX_EXPORT std::array<std::size_t, PHYLANX_MAX_DIMENSIONS>
+    extract_numeric_value_dimensions(primitive_argument_type const& val,
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
@@ -320,6 +325,13 @@ namespace phylanx { namespace execution_tree
 
     PHYLANX_EXPORT bool is_integer_operand(primitive_argument_type const& val);
 
+    PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
+
     // Extract a ir::node_data<std::int64_t> type from a given primitive_argument_type,
     // throw if it doesn't hold one.
     PHYLANX_EXPORT ir::node_data<std::int64_t> extract_integer_value_strict(
@@ -345,12 +357,6 @@ namespace phylanx { namespace execution_tree
         primitive_arguments_type const& args,
         std::string const& name = "",
         std::string const& codename = "<unknown>",
-        eval_context ctx = eval_context{});
-    PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
-            primitive_argument_type const& val,
-            primitive_arguments_type const& args,
-            std::string const& name = "",
-            std::string const& codename = "<unknown>",
         eval_context ctx = eval_context{});
     PHYLANX_EXPORT hpx::future<ir::node_data<std::int64_t>>
     integer_operand_strict(primitive_argument_type const& val,
@@ -378,13 +384,21 @@ namespace phylanx { namespace execution_tree
             template <typename... Ts>
             hpx::future<ir::node_data<std::int64_t>> operator()(Ts&&... ts) const
             {
-                return execution_tree::integer_operand(std::forward<Ts>(ts)...);
+                return execution_tree::integer_operand_strict(std::forward<Ts>(ts)...);
             }
         };
     }
 
     PHYLANX_EXPORT bool is_integer_operand_strict(
         primitive_argument_type const& val);
+
+    ///////////////////////////////////////////////////////////////////////////
+    PHYLANX_EXPORT hpx::future<std::int64_t> scalar_integer_operand_strict(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
 
     ///////////////////////////////////////////////////////////////////////////
     // Extract a boolean type from a given primitive_argument_type,
@@ -596,6 +610,11 @@ namespace phylanx { namespace execution_tree
         std::string const& name = "",
         std::string const& codename = "<unknown>");
 
+    PHYLANX_EXPORT std::size_t extract_list_value_size(
+        primitive_argument_type const& val,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>");
+
     PHYLANX_EXPORT bool is_list_operand_strict(
         primitive_argument_type const& val);
 
@@ -717,6 +736,12 @@ namespace phylanx { namespace execution_tree
     // Extract a node_data<double> from a primitive_argument_type (that
     // could be a primitive or a literal value).
     PHYLANX_EXPORT hpx::future<ir::node_data<double>> numeric_operand(
+        primitive_argument_type const& val,
+        primitive_arguments_type const& args,
+        std::string const& name = "",
+        std::string const& codename = "<unknown>",
+        eval_context ctx = eval_context{});
+    PHYLANX_EXPORT hpx::future<double> scalar_numeric_operand(
         primitive_argument_type const& val,
         primitive_arguments_type const& args,
         std::string const& name = "",

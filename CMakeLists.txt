@@ -49,6 +49,7 @@ link_directories(${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_DEBUG_POSTFIX "d")
 set(PHYLANX_DEBUG_POSTFIX "d")
 
+include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 include(CMakeDependentOption)
 
@@ -118,8 +119,13 @@ phylanx_option(
 
 phylanx_option(
   PHYLANX_WITH_ITERATIVE_SOLVERS BOOL
-  "Enable or disable the iterative solvers"
-  OFF ADVANCED CATEGORY "BUILD")
+  "Enable or disable the Blaze iterative solvers"
+  OFF ADVANCED CATEGORY "Build")
+
+phylanx_option(
+  PHYLANX_WITH_BLAZE_TENSOR BOOL
+  "Enable or disable Blaze tensor types"
+  OFF ADVANCED CATEGORY "Build")
 
 if(MSVC)
   phylanx_option(PHYLANX_WITH_PSEUDO_DEPENDENCIES BOOL
@@ -149,13 +155,6 @@ set(PHYLANX_TLL_PUBLIC ${HPX_TLL_PUBLIC})
 set(PHYLANX_TLL_PRIVATE ${HPX_TLL_PRIVATE})
 
 ################################################################################
-# Add iterative solvers from Blaxeiterative
-################################################################################
-if(PHYLANX_WITH_ITERATIVE_SOLVERS)
-find_package(BlazeIterative)
-endif()
-
-################################################################################
 # Set basic search paths for the generated Phylanx headers
 ################################################################################
 include_directories("${CMAKE_BINARY_DIR}")
@@ -174,6 +173,10 @@ if(PHYLANX_WITH_EXAMPLES)
   add_phylanx_pseudo_target(examples)
   include_directories(examples)
   add_subdirectory(examples)
+endif()
+
+if(PHYLANX_WITH_DOCUMENTATION)
+  add_subdirectory(docs)
 endif()
 
 ################################################################################
@@ -292,7 +295,7 @@ install(
 # Install all Phylanx cmake utility files
 install(
   DIRECTORY cmake/
-  DESTINATION ${LIB}/cmake/${PHYLANX_PACKAGE_NAME}
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PHYLANX_PACKAGE_NAME}
   COMPONENT core
   PATTERN ".in" EXCLUDE
   PATTERN ".git" EXCLUDE)
@@ -302,11 +305,26 @@ install(
   DESTINATION share/phylanx-${PHYLANX_VERSION}
   COMPONENT license)
 
+# install phylanx docs
+if(PHYLANX_WITH_DOCUMENTATION)
+  # Install Phylanx documentation files
+  install(
+    FILES "${PROJECT_SOURCE_DIR}/docs/index.html"
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/
+    COMPONENT docs)
+
+  install(
+    DIRECTORY "${CMAKE_BINARY_DIR}/share/phylanx/docs/html/"
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/phylanx/docs/html
+    COMPONENT docs
+    PATTERN ".git" EXCLUDE)
+endif()
+
 phylanx_include(GeneratePackage)
 
 # Create a symlink in share pointing to the latest Phylanx installation
-create_symbolic_link("${CMAKE_BINARY_DIR}/share/phylanx-${PHYLANX_VERSION}"
-                     "${CMAKE_BINARY_DIR}/share/phylanx")
+# create_symbolic_link("${CMAKE_BINARY_DIR}/share/phylanx-${PHYLANX_VERSION}"
+#                      "${CMAKE_BINARY_DIR}/share/phylanx")
 
 message("")
 message("Phylanx will be installed to ${CMAKE_INSTALL_PREFIX}")

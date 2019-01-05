@@ -31,9 +31,6 @@ namespace phylanx { namespace execution_tree { namespace primitives
             primitive_arguments_type const& args,
             eval_context ctx) const override;
 
-        using operand_type = ir::node_data<double>;
-        using operands_type = std::vector<operand_type>;
-
     public:
         static match_pattern_type const match_data;
 
@@ -43,8 +40,15 @@ namespace phylanx { namespace execution_tree { namespace primitives
             std::string const& name, std::string const& codename);
 
     private:
-        primitive_argument_type determinant0d(operand_type&& op) const;
-        primitive_argument_type determinant2d(operand_type&& op) const;
+        primitive_argument_type determinant0d(
+            primitive_argument_type&& op) const;
+        primitive_argument_type determinant2d(
+            primitive_argument_type&& op) const;
+
+        template <typename T>
+        primitive_argument_type determinant0d(ir::node_data<T>&& op) const;
+        template <typename T>
+        primitive_argument_type determinant2d(ir::node_data<T>&& op) const;
     };
 
     inline primitive create_determinant(hpx::id_type const& locality,

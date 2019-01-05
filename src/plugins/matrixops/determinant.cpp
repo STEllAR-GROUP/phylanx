@@ -5,6 +5,7 @@
 
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
+#include <phylanx/execution_tree/primitives/node_data_helpers.hpp>
 #include <phylanx/plugins/matrixops/determinant.hpp>
 
 #include <hpx/include/lcos.hpp>
@@ -27,17 +28,18 @@ namespace phylanx { namespace execution_tree { namespace primitives
     ///////////////////////////////////////////////////////////////////////////
     match_pattern_type const determinant::match_data =
     {
-        hpx::util::make_tuple("determinant",
+        match_pattern_type{"determinant",
             std::vector<std::string>{"determinant(_1)"},
-            &create_determinant, &create_primitive<determinant>,
-            "arg\n"
-            "Args:\n"
-            "\n"
-            "    arg (matrix) : a square matrix of numbers\n"
-            "\n"
-            "Returns:\n"
-            "\n"
-            "The determinant of the matrix represnted by `arg`.")
+            &create_determinant, &create_primitive<determinant>, R"(
+            arg
+            Args:
+
+                arg (matrix) : a square matrix of numbers
+
+            Returns:
+
+            The determinant of the matrix represented by `arg`.)"
+        }
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -47,7 +49,81 @@ namespace phylanx { namespace execution_tree { namespace primitives
     {}
 
     ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type determinant::determinant0d(
+        ir::node_data<T>&& op) const
+    {
+        return primitive_argument_type{std::move(op)};       // no-op
+    }
 
+    primitive_argument_type determinant::determinant0d(
+        primitive_argument_type&& op) const
+    {
+        switch (extract_common_type(op))
+        {
+        case node_data_type_bool:
+            return determinant0d(
+                extract_boolean_value_strict(std::move(op), name_, codename_));
+
+        case node_data_type_int64:
+            return determinant0d(
+                extract_integer_value_strict(std::move(op), name_, codename_));
+
+        case node_data_type_double:
+            return determinant0d(
+                extract_numeric_value_strict(std::move(op), name_, codename_));
+
+        case node_data_type_unknown:
+            return determinant0d(
+                extract_numeric_value(std::move(op), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "determinant::determinant0d",
+            generate_error_message(
+                "the determinant primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename T>
+    primitive_argument_type determinant::determinant2d(
+        ir::node_data<T>&& op) const
+    {
+        double d = blaze::det(op.matrix());
+        return primitive_argument_type{ir::node_data<T>(d)};
+    }
+
+    primitive_argument_type determinant::determinant2d(
+        primitive_argument_type&& op) const
+    {
+        switch (extract_common_type(op))
+        {
+        case node_data_type_double:
+            return determinant2d(
+                extract_numeric_value_strict(std::move(op), name_, codename_));
+
+        case node_data_type_int64:  HPX_FALLTHROUGH;
+        case node_data_type_bool:   HPX_FALLTHROUGH;
+        case node_data_type_unknown:
+            return determinant2d(
+                extract_numeric_value(std::move(op), name_, codename_));
+
+        default:
+            break;
+        }
+
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "determinant::determinant2d",
+            generate_error_message(
+                "the determinant primitive requires for all arguments to "
+                    "be numeric data types"));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     hpx::future<primitive_argument_type> determinant::eval(
         primitive_arguments_type const& operands,
         primitive_arguments_type const& args, eval_context ctx) const
@@ -71,11 +147,11 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         auto this_ = this->shared_from_this();
         return hpx::dataflow(hpx::launch::sync, hpx::util::unwrapping(
-            [this_ = std::move(this_)](operand_type&& op)
+            [this_ = std::move(this_)](primitive_argument_type&& op)
             -> primitive_argument_type
             {
-                std::size_t dims = op.num_dimensions();
-                switch (dims)
+                switch (extract_numeric_value_dimension(
+                    op, this_->name_, this_->codename_))
                 {
                 case 0:
                     return this_->determinant0d(std::move(op));
@@ -88,22 +164,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
                     HPX_THROW_EXCEPTION(hpx::bad_parameter,
                         "determinant::eval",
                         this_->generate_error_message(
-                            "left hand side operand has unsupported "
-                                "number of dimensions"));
+                            "operand has unsupported number of dimensions"));
                 }
             }),
-            numeric_operand(operands[0], args,
-                name_, codename_, std::move(ctx)));
-    }
-
-    primitive_argument_type determinant::determinant0d(operand_type&& op) const
-    {
-        return primitive_argument_type{std::move(op)};       // no-op
-    }
-
-    primitive_argument_type determinant::determinant2d(operand_type&& op) const
-    {
-        double d = blaze::det(op.matrix());
-        return primitive_argument_type{operand_type(d)};
+            value_operand(operands[0], args, name_, codename_, std::move(ctx)));
     }
 }}}

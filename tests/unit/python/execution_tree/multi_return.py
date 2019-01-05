@@ -24,7 +24,6 @@ try:
         return 5
     raise Exception("Test Failed")
 except NotImplementedError as e:
-    print(e)
     assert re.match('Illegal return', str(e))
 
 
@@ -127,3 +126,10 @@ def recur11(n):
         return 4
     else:
         return 8
+
+
+@Phylanx
+def recur12():
+    def add(a, b):
+        return a + b
+    return add(3, 2)

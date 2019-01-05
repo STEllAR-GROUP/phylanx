@@ -6,7 +6,9 @@
 # #466: ast compiler hangs and gives the wrong answer
 
 import numpy as np
-from phylanx import Phylanx
+from phylanx import Phylanx, PhylanxSession
+
+PhylanxSession.init(1)
 
 
 @Phylanx

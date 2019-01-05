@@ -29,7 +29,7 @@ namespace phylanx { namespace execution_tree
     ///////////////////////////////////////////////////////////////////////////
     // Extracting slice functionality
     template <typename T, typename F>
-    ir::node_data<T> slice0d(T data, ir::slicing_indices const& indices,
+    ir::node_data<T> slice0d_basic(T data, ir::slicing_indices const& indices,
         F const& f, std::string const& name, std::string const& codename)
     {
         if (indices.start() != 0 || indices.span() != 1 || indices.step() != 1)
@@ -50,7 +50,7 @@ namespace phylanx { namespace execution_tree
         execution_tree::primitive_argument_type const& indices,
         std::string const& name, std::string const& codename)
     {
-        return slice0d<T>(data.scalar(),
+        return slice0d_basic<T>(data.scalar(),
             util::slicing_helpers::extract_slicing(indices, 1, name, codename),
             detail::slice_identity<T>{}, name, codename);
     }
@@ -70,7 +70,7 @@ namespace phylanx { namespace execution_tree
                 extract_value_scalar(result, std::move(value), name, codename);
 
                 ir::node_data<T> rhs(std::move(result));
-                return slice0d<T>(data.scalar(),
+                return slice0d_basic<T>(data.scalar(),
                     util::slicing_helpers::extract_slicing(
                         indices, 1, name, codename),
                     detail::slice_assign_scalar<T>{rhs}, name, codename);

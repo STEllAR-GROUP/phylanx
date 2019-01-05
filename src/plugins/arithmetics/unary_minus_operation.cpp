@@ -145,16 +145,16 @@ namespace phylanx { namespace execution_tree { namespace primitives
         {
         case node_data_type_bool:
             return neg1d(extract_value_vector<std::uint8_t>(
-                std::move(op), sizes[1], name_, codename_));
+                std::move(op), sizes[0], name_, codename_));
 
         case node_data_type_int64:
             return neg1d(extract_value_vector<std::int64_t>(
-                std::move(op), sizes[1], name_, codename_));
+                std::move(op), sizes[0], name_, codename_));
 
         case node_data_type_unknown: HPX_FALLTHROUGH;
         case node_data_type_double:
             return neg1d(extract_value_vector<double>(
-                std::move(op), sizes[1], name_, codename_));
+                std::move(op), sizes[0], name_, codename_));
 
         default:
             break;

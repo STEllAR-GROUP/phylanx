@@ -59,7 +59,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     builtin_function(p.create_primitive_, default_locality));
                 result.define(p.primitive_type_ + "__float",
                     builtin_function(p.create_primitive_, default_locality));
-            }
+        }
         }
 
         return result;
@@ -116,8 +116,8 @@ namespace phylanx { namespace execution_tree { namespace compiler
                     detail::insert_pattern(result, pattern, p, "__bool");
                     detail::insert_pattern(result, pattern, p, "__int");
                     detail::insert_pattern(result, pattern, p, "__float");
-                }
             }
+        }
         }
         return result;
     }
@@ -319,7 +319,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         function compile_lambda(std::vector<ast::expression> const& args,
             ast::expression const& body, ast::tagged const& id)
         {
-            function& f = snippets_.program_.add_empty();
+            function& f = snippets_.program_.add_empty(name_);
 
             static std::string define_lambda_("lambda");
 
@@ -369,7 +369,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
 
             // extract expressions representing the newly defined variable
             // and store new function description for later use
-            function& f = snippets_.program_.add_empty();
+            function& f = snippets_.program_.add_empty(name_);
 
             ast::expression name_expr = extract_name(p, define_id);
             std::string name = ast::detail::identifier_name(name_expr);
@@ -526,9 +526,9 @@ namespace phylanx { namespace execution_tree { namespace compiler
             std::pair<iterator, iterator> pargs =
                 placeholders.equal_range("__2");
 
-            // handle only cases with one of two slicing arguments
+            // handle only cases with one, two, or three slicing arguments
             std::size_t numargs = std::distance(pargs.first, pargs.second);
-            if (numargs == 0 || numargs > 2)
+            if (numargs == 0 || numargs > PHYLANX_MAX_DIMENSIONS)
             {
                 return false;
             }
@@ -853,7 +853,7 @@ namespace phylanx { namespace execution_tree { namespace compiler
         environment& env, primitive_argument_type body,
         hpx::id_type const& default_locality)
     {
-        function& f = snippets.program_.add_empty();
+        function& f = snippets.program_.add_empty(codename);
 
         if (name_parts.instance.empty())
         {
