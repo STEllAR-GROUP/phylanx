@@ -103,17 +103,17 @@ namespace phylanx { namespace ast { namespace parser
 
         ///////////////////////////////////////////////////////////////////////
         // Main expression grammar
-        expr =
+        expr %=
                 unary_expr
             >> *(binary_op > unary_expr)
             ;
 
-        unary_expr =
+        unary_expr %=
                 primary_expr
             |   as<ast::unary_expr>()[unary_op > unary_expr]
             ;
 
-        primary_expr =
+        primary_expr %=
                 strict_double
             |   function_call
             |   list
@@ -135,45 +135,46 @@ namespace phylanx { namespace ast { namespace parser
             ;
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        int64_tensor = '[' >> (int64_matrix % ',') > ']';
+        int64_tensor %= '[' >> (int64_matrix % ',') > ']';
 #endif
-        int64_matrix = '[' >> (int64_vector % ',') > ']';
+        int64_matrix %= '[' >> (int64_vector % ',') > ']';
 
-        int64_vector = '[' >> (long_long % ',') >> ']';
+        int64_vector %= '[' >> (long_long % ',') >> ']';
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
-        double_tensor = '[' >> (double_matrix % ',') > ']';
+        double_tensor %= '[' >> (double_matrix % ',') > ']';
 #endif
-        double_matrix = '[' >> (double_vector % ',') > ']';
+        double_matrix %= '[' >> (double_vector % ',') > ']';
 
-        double_vector = '[' > (double_ % ',') > ']';
+        double_vector %= '[' > (double_ % ',') > ']';
 
-        function_call =
+        function_call %=
                 (identifier >> '(')
             >   argument_list
             >   ')'
             ;
 
-        list =
+        list %=
                 (lit('\'') >> '(')
             >   argument_list
             >   ')'
             ;
 
-        argument_list = -(expr % ',');
+        argument_list %= -(expr % ',');
 
-        identifier =
+        identifier %=
                 identifier_name
             >>  (('$' > long_long) | attr(std::int64_t(-1)))
             >>  (('$' > long_long) | attr(std::int64_t(-1)))
             ;
 
-        identifier_name =
+        identifier_name %=
                !lexeme[keywords >> !(alnum | '_')]
             >>  raw[lexeme[(alpha | '_') >> *(alnum | '_')]]
             ;
 
-        string = lexeme['"' > *(unesc_char | "\\x" >> hex | (char_ - '"')) > '"']
+        string %=
+                lexeme['"' > *(unesc_char | "\\x" >> hex | (char_ - '"')) > '"']
             ;
 
         ///////////////////////////////////////////////////////////////////////
