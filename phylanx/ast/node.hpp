@@ -239,6 +239,7 @@ namespace phylanx { namespace ast
           , phylanx::util::recursive_wrapper<expression>
           , phylanx::util::recursive_wrapper<function_call>
           , phylanx::util::recursive_wrapper<std::vector<ast::expression>>
+          , phylanx::ir::node_data<std::int64_t>
         >;
 
     struct primary_expr : expr_node_type, tagged
@@ -787,6 +788,7 @@ namespace phylanx { namespace ast
           , std::string
           , phylanx::ir::node_data<double>
           , phylanx::util::recursive_wrapper<std::vector<literal_argument_type>>
+          , phylanx::ir::node_data<std::int64_t>
         >;
 
     struct literal_argument_type : literal_value_type

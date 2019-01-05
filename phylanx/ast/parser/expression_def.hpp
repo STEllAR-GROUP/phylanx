@@ -1,5 +1,5 @@
 //  Copyright (c) 2001-2011 Joel de Guzman
-//  Copyright (c) 2001-2018 Hartmut Kaiser
+//  Copyright (c) 2001-2019 Hartmut Kaiser
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -122,12 +122,24 @@ namespace phylanx { namespace ast { namespace parser
             |   long_long
             |   string
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+            |   int64_tensor
+#endif
+            |   int64_matrix
+            |   int64_vector
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
             |   double_tensor
 #endif
             |   double_matrix
             |   double_vector
             |   '(' > expr > ')'
             ;
+
+#if defined(PHYLANX_HAVE_BLAZE_TENSOR)
+        int64_tensor = '[' >> (int64_matrix % ',') > ']';
+#endif
+        int64_matrix = '[' >> (int64_vector % ',') > ']';
+
+        int64_vector = '[' >> (long_long % ',') >> ']';
 
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         double_tensor = '[' >> (double_matrix % ',') > ']';
@@ -168,6 +180,7 @@ namespace phylanx { namespace ast { namespace parser
         // Debugging and error handling and reporting support.
 #if defined(PHYLANX_HAVE_BLAZE_TENSOR)
         BOOST_SPIRIT_DEBUG_NODES(
+            (int64_tensor)
             (double_tensor)
         );
 #endif
@@ -176,6 +189,8 @@ namespace phylanx { namespace ast { namespace parser
             (unary_expr)
             (primary_expr)
             (list)
+            (int64_matrix)
+            (int64_vector)
             (double_matrix)
             (double_vector)
             (function_call)
