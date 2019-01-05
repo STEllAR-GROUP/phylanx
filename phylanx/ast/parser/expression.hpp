@@ -25,6 +25,7 @@
 
 #include <boost/spirit/include/qi.hpp>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
