@@ -9,8 +9,10 @@
 
 #include <hpx/util/detail/pp/expand.hpp>
 #include <hpx/util/detail/pp/stringize.hpp>
+#include <hpx/util/format.hpp>
 
 #include <cstdint>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -65,16 +67,25 @@ namespace phylanx
             std::vector<std::string> cfg(config);
 
             // add directory for this shared library to the component_path
-            cfg.emplace_back("hpx.component_path=$[hpx.component_path]"
-                    HPX_INI_PATH_DELIMITER +
-                        hpx::util::find_prefix(HPX_COMPONENT_STRING));
+            cfg.emplace_back(hpx::util::format(
+                "hpx.component_base_paths=$[hpx.component_base_paths]{1}{2}",
+                HPX_INI_PATH_DELIMITER,
+                hpx::util::find_prefix(HPX_COMPONENT_STRING)));
 
             // add additional search suffix for plugins to configuration
-            cfg.emplace_back(
+            cfg.emplace_back(hpx::util::format(
                 "hpx.component_path_suffixes="
-                    "$[hpx.component_path_suffixes]"
-                        HPX_INI_PATH_DELIMITER "/lib/phylanx"
-                        HPX_INI_PATH_DELIMITER "/bin/phylanx");
+                    "$[hpx.component_path_suffixes]{1}{2}{1}{3}",
+                    HPX_INI_PATH_DELIMITER, "/lib/phylanx", "/bin/phylanx"));
+
+            // add plugin directories to search path
+            char const* path = std::getenv("PHYLANX_PLUGINS_PATH");
+            if (path != nullptr)
+            {
+                cfg.emplace_back(hpx::util::format(
+                    "hpx.plugin_paths=$[hpx.plugin_paths]{1}{2}",
+                    HPX_INI_PATH_DELIMITER, std::string(path)));
+            }
 
             // If there was another config function registered, call it
             if (prev_user_main_config_function)

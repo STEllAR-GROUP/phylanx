@@ -25,7 +25,7 @@ PHYLANX_REGISTER_PLUGIN_FACTORY(append_operation_plugin,
 namespace phylanx { namespace plugin {
     struct car_cdr_plugin : plugin_base
     {
-        void register_known_primitives() override
+        void register_known_primitives(std::string const& fullpath) override
         {
             namespace pet = phylanx::execution_tree;
 
@@ -33,7 +33,7 @@ namespace phylanx { namespace plugin {
             for (auto const& pattern :
                 pet::primitives::car_cdr_operation::match_data)
             {
-                pet::register_pattern(car_cdr_name, pattern);
+                pet::register_pattern(car_cdr_name, pattern, fullpath);
             }
         }
     };

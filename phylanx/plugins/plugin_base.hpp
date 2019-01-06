@@ -8,13 +8,15 @@
 
 #include <phylanx/config.hpp>
 
+#include <string>
+
 ///////////////////////////////////////////////////////////////////////////////
 namespace phylanx { namespace plugin
 {
     struct plugin_base
     {
         virtual ~plugin_base() {}
-        virtual void register_known_primitives() = 0;
+        virtual void register_known_primitives(std::string const& fullpath) = 0;
     };
 }}
 
