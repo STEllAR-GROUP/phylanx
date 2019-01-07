@@ -22,9 +22,11 @@
 #include <vector>
 
 namespace phylanx { namespace execution_tree { namespace primitives {
-    /// \brief
-    /// \param a         The scalar, vector, or matrix to repeat
-
+/// \brief Returns repeated array which has the same shape as a, except
+///        along the given axis.
+/// \param a         The scalar, vector, or matrix to repeat
+/// \param repeats
+/// \param axis
 
 
     class repeat_operation
@@ -47,6 +49,8 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             std::string const& name, std::string const& codename);
 
     private:
+        bool validate_repetition(ir::node_data<val_type>&& rep) const;
+
         template <typename T>
         primitive_argument_type repeat0d0d(ir::node_data<T>&& arg,
             ir::node_data<val_type>&& rep) const;
@@ -59,12 +63,40 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             hpx::util::optional<val_type> axis) const;
 
         template <typename T>
-        primitive_argument_type repeatnd(ir::node_data<T>&& arg,
+        primitive_argument_type repeat1d0d(ir::node_data<T>&& arg,
+            val_type&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat1d1d(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat1d(ir::node_data<T>&& arg,
             ir::node_data<val_type>&& rep,
             hpx::util::optional<val_type> axis) const;
 
-    private:
-        node_data_type dtype_;
+        //template <typename T>
+        //primitive_argument_type repeat2d0d(ir::node_data<T>&& arg,
+        //    val_type&& rep) const;
+        //template <typename T>
+        //primitive_argument_type repeat2d1d(ir::node_data<T>&& arg,
+        //    ir::node_data<val_type>&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d0d_axis0(ir::node_data<T>&& arg,
+            val_type&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d1d_axis0(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d_axis0(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep,
+            hpx::util::optional<val_type> axis) const;
+
+        template <typename T>
+        primitive_argument_type repeatnd(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep,
+            hpx::util::optional<val_type> axis) const;
     };
 
     inline primitive create_repeat_operation(hpx::id_type const& locality,
