@@ -7,7 +7,7 @@
 #include <phylanx/config.hpp>
 #include <phylanx/ir/node_data.hpp>
 #include <phylanx/plugins/matrixops/repeat_operation.hpp>
-#include <phylanx/util/step_iterator.hpp>
+#include <phylanx/util/matrix_iterators.hpp>
 
 #include <hpx/include/lcos.hpp>
 #include <hpx/include/naming.hpp>
@@ -36,7 +36,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "a, repeats, axis\n"
             "Args:\n"
             "\n"
-            "    a (vector or matrix) : a scalar, a vector or a matrix\n"
+            "    a (scalar, vector or matrix) : a scalar, a vector or a "
+            "       matrix\n"
             "    repeats (integer or a vector of integers) : The number of "
             "       repetitions for each element. repeats is broadcasted to "
             "       fit the shape of the given axis.\n"
@@ -46,7 +47,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
             "Returns:\n"
             "\n"
             "Repeated array which has the same shape as a, except along the "
-            "given axis.")};
+            "given axis. In case of no axis for matrices flatten result is "
+            "returned")};
 
     ///////////////////////////////////////////////////////////////////////////
     repeat_operation::repeat_operation(primitive_arguments_type&& operands,
@@ -92,8 +94,8 @@ namespace phylanx { namespace execution_tree { namespace primitives
         else
             HPX_THROW_EXCEPTION(hpx::bad_parameter,
                 "repeat_operation::repeat0d1d",
-                generate_error_message(
-                    "the repetition should be a scalar or a unit-size vector"));
+                generate_error_message("the repetition should be a scalar or a "
+                                       "unit-size vector for scalar values."));
     }
 
     template <typename T>
@@ -117,13 +119,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
 
         case 1:
             return repeat0d1d(std::move(arg), std::move(rep));
+
         default:
             break;
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "repeat_operation::repeat0d",
-            generate_error_message(
-                "the repetition should be a scalar or a unit-size vector"));
+            generate_error_message("the repetition should be a scalar or a "
+                                   "unit-size vector for scalar values."));
     }
 
 
@@ -131,12 +134,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
     primitive_argument_type repeat_operation::repeat1d0d(ir::node_data<T>&& arg,
         val_type&& rep) const
     {
-        //using phylanx::util::make_step_iterator;
         auto arr = arg.vector();
 
         blaze::DynamicVector<T> result(rep * arr.size());
-        //auto r_begin = make_step_iterator(result.begin(), rep.scalar());
-        //auto r_end = make_step_iterator(result.end());
 
         std::size_t c = 0;
         for (auto it = arr.begin(); it != arr.end(); ++it, ++c)
@@ -163,9 +163,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 blaze::DynamicVector<T> result(blaze::sum(v));
 
-                std::size_t c = 0; // counter on result's elements
-                auto it2 = v.begin(); // iterator over repetition vector
-                for (auto it1 = arr.begin(); it1!= arr.end();++it1,++it2)
+                std::size_t c = 0;       // counter on result's elements
+                auto it2 = v.begin();    // iterator over repetition vector
+                for (auto it1 = arr.begin(); it1 != arr.end(); ++it1, ++it2)
                 {
                     blaze::subvector(result, c, *it2) = *it1;
                     c += *it2;
@@ -175,8 +175,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         }
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "repeat_operation::repeat1d1d",
-            generate_error_message("the repetition should be a unit-size "
-                                    "vector or a vector of size a"));
+            generate_error_message(
+                "the repetition should be a unit-size "
+                "vector or a vector of size a for vectors."));
     }
 
     template <typename T>
@@ -190,7 +191,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 "repeat_operation::repeat1d",
                 generate_error_message(
                     "the repeat_operation primitive requires operand axis to be "
-                    "either 0 or -1 for scalar values."));
+                    "either 0 or -1 for vectors."));
         }
         switch (rep.num_dimensions())
         {
@@ -207,7 +208,7 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "repeat_operation::repeat1d",
             generate_error_message(
-                "the repetition should be a scalar or a vector"));
+                "the repetition should be a scalar or a vector."));
     }
 
     template <typename T>
@@ -244,10 +245,14 @@ namespace phylanx { namespace execution_tree { namespace primitives
             {
                 blaze::DynamicMatrix<T> result(blaze::sum(v), m.columns());
 
-                auto it = v.begin();
+                auto it = v.begin();    // iterator on repetition vector
                 for (auto i = 0, c1 = 0, c2 = 0; i != result.rows(); i++, c2++)
                 {
                     if (*it == c2) {
+                        ++it; ++c1;
+                        c2 = 0;
+                    }
+                    if (*it == 0) {
                         ++it; ++c1;
                         c2 = 0;
                     }
@@ -259,8 +264,9 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "repeat_operation::repeat2d1d_axis0",
             generate_error_message(
-                "the repetition should be a unit-size "
-                "vector or a vector with the size of a's number of rows."));
+                "for matrices, the repetition along axis 0 should be a scalar, "
+                "a unit-size vector or a vector with the size of a's number of "
+                "rows."));
     }
 
     template <typename T>
@@ -283,7 +289,146 @@ namespace phylanx { namespace execution_tree { namespace primitives
         HPX_THROW_EXCEPTION(hpx::bad_parameter,
             "repeat_operation::repeat2d_axis0",
             generate_error_message(
-                "the repetition should be a scalar or a vector"));
+                "the repetition should be a scalar or a vector for matrices."));
+    }
+
+    template <typename T>
+    primitive_argument_type repeat_operation::repeat2d0d_axis1(
+        ir::node_data<T>&& arg,
+        val_type&& rep) const
+    {
+        auto m = arg.matrix();
+        blaze::DynamicMatrix<T> result(m.rows(), m.columns() * rep);
+
+        for (std::size_t i = 0; i != result.columns(); ++i)
+        {
+            blaze::column(result, i) =
+                blaze::column(m, static_cast<std::int64_t>(i / rep));
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type repeat_operation::repeat2d1d_axis1(
+        ir::node_data<T>&& arg,
+        ir::node_data<val_type>&& rep) const
+    {
+        auto v = rep.vector();
+        if (v.size() == 1)
+        {
+            return repeat2d0d_axis1(std::move(arg), std::move(v[0]));
+        }
+        else
+        {
+            auto m = arg.matrix();
+            if (v.size() == m.columns())
+            {
+                blaze::DynamicMatrix<T> result(m.rows(), blaze::sum(v));
+
+                auto it = v.begin();    // iterator on repetition vector
+                for (auto i = 0, c1 = 0, c2 = 0; i != result.columns();
+                     i++, c2++)
+                {
+                    if (*it == c2) {
+                        ++it; ++c1;
+                        c2 = 0;
+                    }
+                    if (*it == 0) {
+                        ++it; ++c1;
+                        c2 = 0;
+                    }
+                    blaze::column(result, i) = blaze::column(m, c1);
+                }
+                return primitive_argument_type{std::move(result)};
+            }
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "repeat_operation::repeat2d1d_axis1",
+            generate_error_message(
+                "for matrices, the repetition along axis 1 should be a scalar, "
+                "a unit-size vector or a vector with the size of a's number of "
+                "columns."));
+    }
+
+    template <typename T>
+    primitive_argument_type repeat_operation::repeat2d_axis1(
+        ir::node_data<T>&& arg,
+        ir::node_data<val_type>&& rep) const
+    {
+        switch (rep.num_dimensions())
+        {
+
+        case 0:
+            return repeat2d0d_axis1(std::move(arg), std::move(rep.scalar()));
+
+        case 1:
+            return repeat2d1d_axis1(std::move(arg), std::move(rep));
+
+        default:
+            break;
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "repeat_operation::repeat2d_axis1",
+            generate_error_message(
+                "the repetition should be a scalar or a vector for matrices."));
+    }
+
+    template <typename T>
+    primitive_argument_type repeat_operation::repeat2d0d_flatten(
+        ir::node_data<T>&& arg,
+        val_type&& rep) const
+    {
+        auto m = arg.matrix();
+        blaze::DynamicVector<T> result(m.rows() * m.columns() * rep);
+        using phylanx::util::matrix_iterator;
+        matrix_iterator<decltype(m)> begin(m, 0);
+        matrix_iterator<decltype(m)> end(m, m.rows());
+
+        std::size_t c = 0;
+        for (auto it = begin; it != end; ++it, ++c)
+        {
+            blaze::subvector(result, c * rep, rep) = *it;
+        }
+
+        return primitive_argument_type{std::move(result)};
+    }
+
+    template <typename T>
+    primitive_argument_type repeat_operation::repeat2d1d_flatten(
+        ir::node_data<T>&& arg,
+        ir::node_data<val_type>&& rep) const
+    {
+        auto v = rep.vector();
+        if (v.size() == 1)
+        {
+            return repeat2d0d_flatten(std::move(arg), std::move(v[0]));
+        }
+        else
+        {
+            auto m = arg.matrix();
+            if (v.size() == m.rows() * m.columns())
+            {
+                blaze::DynamicVector<T> result(blaze::sum(v));
+                using phylanx::util::matrix_iterator;
+                matrix_iterator<decltype(m)> begin(m, 0);
+                matrix_iterator<decltype(m)> end(m, m.rows());
+
+                std::size_t c = 0;       // counter on result's elements
+                auto it2 = v.begin();    // iterator over repetition vector
+                for (auto it1 = begin; it1 != end; ++it1, ++it2)
+                {
+                    blaze::subvector(result, c, *it2) = *it1;
+                    c += *it2;
+                }
+                return primitive_argument_type{std::move(result)};
+            }
+        }
+        HPX_THROW_EXCEPTION(hpx::bad_parameter,
+            "repeat_operation::repeat2d1d_flatten",
+            generate_error_message("the repetition should be a unit-size "
+                                   "vector or a vector which size is the "
+                                   "number of a's elements."));
     }
 
     template <typename T>
@@ -299,9 +444,12 @@ namespace phylanx { namespace execution_tree { namespace primitives
                 HPX_FALLTHROUGH;
             case 0:
                 return repeat2d_axis0(std::move(arg), std::move(rep));
+
             case -1:
                 HPX_FALLTHROUGH;
-            //case 1:
+            case 1:
+                return repeat2d_axis1(std::move(arg), std::move(rep));
+
             default:
                 HPX_THROW_EXCEPTION(hpx::bad_parameter,
                     "repeat_operation::repeat2d",
@@ -310,23 +458,23 @@ namespace phylanx { namespace execution_tree { namespace primitives
                         "to be between -2 and 1 for matrix values."));
             }
         }
-        else {
-            //switch (rep.num_dimensions())
-            //{
+        else
+        {
+            switch (rep.num_dimensions())
+            {
+            case 0:
+                return repeat2d0d_flatten(
+                    std::move(arg), std::move(rep.scalar()));
 
-            //case 0:
-            //    return repeat2d0d_flatten(std::move(arg), std::move(rep));
+            case 1:
+                return repeat2d1d_flatten(std::move(arg), std::move(rep));
 
-            //case 1:
-            //    return repeat1d1d(std::move(arg), std::move(rep));
-
-            //default:
-            //    break;
-            //}
-            HPX_THROW_EXCEPTION(hpx::bad_parameter,
-                "repeat_operation::repeat2d",
-                generate_error_message(
-                    "the repetition should be a scalar or a vector"));
+            default:
+                HPX_THROW_EXCEPTION(hpx::bad_parameter,
+                    "repeat_operation::repeat2d",
+                    generate_error_message("the repetition should be a scalar "
+                                           "or a vector for matrix values"));
+            }
         }
     }
 

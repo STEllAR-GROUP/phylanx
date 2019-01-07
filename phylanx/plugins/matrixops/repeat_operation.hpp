@@ -25,9 +25,10 @@ namespace phylanx { namespace execution_tree { namespace primitives {
 /// \brief Returns repeated array which has the same shape as a, except
 ///        along the given axis.
 /// \param a         The scalar, vector, or matrix to repeat
-/// \param repeats
-/// \param axis
-
+/// \param repeats   The number of repetitions for each element. repeats is
+///                  broadcasted to fit the shape of the given axis.
+/// \param axis      Optional. If provided, repeat is calculated along the
+///                  provided axis.
 
     class repeat_operation
       : public primitive_component_base
@@ -73,12 +74,6 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::node_data<val_type>&& rep,
             hpx::util::optional<val_type> axis) const;
 
-        //template <typename T>
-        //primitive_argument_type repeat2d0d(ir::node_data<T>&& arg,
-        //    val_type&& rep) const;
-        //template <typename T>
-        //primitive_argument_type repeat2d1d(ir::node_data<T>&& arg,
-        //    ir::node_data<val_type>&& rep) const;
         template <typename T>
         primitive_argument_type repeat2d0d_axis0(ir::node_data<T>&& arg,
             val_type&& rep) const;
@@ -87,6 +82,21 @@ namespace phylanx { namespace execution_tree { namespace primitives {
             ir::node_data<val_type>&& rep) const;
         template <typename T>
         primitive_argument_type repeat2d_axis0(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d0d_axis1(ir::node_data<T>&& arg,
+            val_type&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d1d_axis1(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d_axis1(ir::node_data<T>&& arg,
+            ir::node_data<val_type>&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d0d_flatten(ir::node_data<T>&& arg,
+            val_type&& rep) const;
+        template <typename T>
+        primitive_argument_type repeat2d1d_flatten(ir::node_data<T>&& arg,
             ir::node_data<val_type>&& rep) const;
         template <typename T>
         primitive_argument_type repeat2d(ir::node_data<T>&& arg,

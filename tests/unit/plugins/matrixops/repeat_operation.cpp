@@ -38,6 +38,17 @@ int main(int argc, char* argv[])
 {
     test_repeat_operation("repeat(42., 4)", "[42.,42.,42.,42.]");
     test_repeat_operation("repeat(42., hstack(4), 0)", "[42.,42.,42.,42.]");
+    test_repeat_operation(
+        "repeat([42, 13, 33], 3, -1)", "[42, 42, 42, 13, 13, 13, 33, 33, 33]");
+    test_repeat_operation("repeat([42, 13, 33], hstack(3))",
+        "[42, 42, 42, 13, 13, 13, 33, 33, 33]");
+    test_repeat_operation(
+        "repeat([42, 13, 33], hstack(3, 0, 2), 0)", "[42, 42, 42, 33, 33]");
+    test_repeat_operation("repeat([[42, 13, 33],[5, 44, 6]], hstack(3, 2), 0)",
+        "[[42, 13, 33],[42, 13, 33],[42, 13, 33],[5, 44, 6],[5, 44, 6]]");
+    test_repeat_operation(
+        "repeat([[42, 13, 33],[5, 44, 6]], hstack(2, 0, 3), 1)",
+        "[[42, 42, 33, 33, 33],[ 5,  5,  6,  6,  6]]");
 
     return hpx::util::report_errors();
 }
